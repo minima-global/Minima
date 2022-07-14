@@ -31,7 +31,7 @@ plugins {
 sourceCompatibility = JavaVersion.VERSION_11
 
 group 'org.minima'
-version '0.100.32'
+version '0.103.3'
 
 
 repositories {
@@ -47,14 +47,11 @@ dependencies {
     // Use JUnit test framework
     testImplementation 'junit:junit:4.13'
 
-    //implementation 'org.mozilla:rhino:1.7R4'
+    implementation 'org.mozilla:rhino:1.7.14'
 
-    implementation 'com.jcraft:jsch:0.1.55'
-
-//    implementation group: 'com.h2database', name: 'h2', version: '1.4.200'
+//    implementation 'com.jcraft:jsch:0.1.55'
 
     //implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.25'
-
 
     implementation 'com.h2database:h2:1.4.200'
  	implementation 'org.bouncycastle:bcpkix-jdk15on:1.69'

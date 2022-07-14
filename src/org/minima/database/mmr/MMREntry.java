@@ -150,8 +150,7 @@ public class MMREntry implements Streamable {
 		//Entry number
 		mEntryNumber.writeDataStream(zOut);
 		
-		//And finally the data - always write both value and hash
-		mMMRData.setHashSum(true);
+		//And finally the data
 		mMMRData.writeDataStream(zOut);
 	}
 
@@ -160,7 +159,7 @@ public class MMREntry implements Streamable {
 		mIsEmpty 	 = false;
 		mRow         = MiniNumber.ReadFromStream(zIn).getAsInt();
 		mEntryNumber = MMREntryNumber.ReadFromStream(zIn);
-		mMMRData     = MMRData.ReadFromStream(true,zIn);
+		mMMRData     = MMRData.ReadFromStream(zIn);
 	}
 	
 	public static MMREntry ReadFromStream(DataInputStream zIn) throws IOException{

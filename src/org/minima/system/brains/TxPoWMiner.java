@@ -13,6 +13,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 
@@ -31,17 +32,19 @@ public class TxPoWMiner extends MessageProcessor {
 	 */
 	ArrayList<String> mMiningCoins;
 	
-	
 	public TxPoWMiner() {
 		super("MINER");
 		
 		mMiningCoins = new ArrayList<>();
 	}
 	
-	public void mineTxPoW(TxPoW zTxPoW) {
+	public void mineTxPoWAsync(TxPoW zTxPoW) {
 		
 		//Add these coins to our Mining list
 		addMiningCoins(zTxPoW);
+		
+		//Hard set the Header Body hash - now we are mining it can never change
+		zTxPoW.setHeaderBodyHash();
 		
 		//Now post a Mining message
 		PostMessage(new Message(TXPOWMINER_MINETXPOW).addObject("txpow", zTxPoW));
@@ -60,9 +63,6 @@ public class TxPoWMiner extends MessageProcessor {
 			
 			//Set the nonce.. we make it a large size in bytes then edit those - no reserialisation
 			txpow.setNonce(START_NONCE_BYTES);
-			
-			//Set the Time..
-			txpow.setTimeMilli(new MiniNumber(System.currentTimeMillis()));
 			
 			//Post a message.. Mining Started
 			Message mining = new Message(Main.MAIN_MINING);
@@ -113,6 +113,11 @@ public class TxPoWMiner extends MessageProcessor {
 			
 			//Calculate TxPoWID
 			txpow.calculateTXPOWID();
+			
+			//Make a log..
+			if(txpow.isTransaction()) {
+				MinimaLogger.log("Transaction Mined : "+txpow.getTxPoWID());
+			}
 			
 			//Post a message.. Mining Finished
 			Message miningend = new Message(Main.MAIN_MINING);
@@ -189,4 +194,110 @@ public class TxPoWMiner extends MessageProcessor {
 		return mMiningCoins.contains(zCoinID);
 	}
 	
+	/**
+	 * Calculate the Hash rate of this node...
+	 */
+	public static MiniNumber calculateHashRate(MiniNumber zHashes) {
+		
+		int ihashes = zHashes.getAsInt();
+		
+		long timestart = System.currentTimeMillis();
+		MiniData data = MiniData.getRandomData(512);
+		for(int i=0;i<ihashes;i++) {
+			data = Crypto.getInstance().hashObject(data);
+		}
+		long timediff = System.currentTimeMillis() - timestart;
+		
+		
+		MiniNumber timesecs = new MiniNumber(timediff).div(MiniNumber.THOUSAND);
+		
+		MiniNumber spd 		= zHashes.div(timesecs);
+		
+//		MinimaLogger.log("Did "+ihashes+" in "+timesecs+ " speed:"+spd);
+		
+		return spd;
+	}
+	
+	/**
+	 * Mine a TxPoW - Used to Mine Maxima Messages
+	 */
+	public boolean MineMaxTxPoW(TxPoW zTxPoW, long zTimeLimit) {
+		
+		//Hard set the Header Body hash - now we are mining it can never change
+		zTxPoW.setHeaderBodyHash();
+		
+		//Set the nonce.. we make it a large size in bytes then edit those - no reserialisation
+		zTxPoW.setNonce(START_NONCE_BYTES);
+		
+		//Get the byte data
+		byte[] data = MiniData.getMiniDataVersion(zTxPoW.getTxHeader()).getBytes();
+		
+		//What is the time..
+		long timenow = System.currentTimeMillis();
+		
+		//Cycle until done..
+		MiniNumber finalnonce 	= MiniNumber.ZERO;
+		BigInteger newnonce 	= BigInteger.ZERO;
+		int counter				= 0;
+		while(true) {
+			
+			//Get a nonce to write over the data
+			byte[] noncebytes = newnonce.toByteArray();
+			newnonce 		  = newnonce.add(BigInteger.ONE);
+			
+			//Copy these into the byte array of the TxHeader 
+			//start 2 numbers in so leading zero is not changed
+			System.arraycopy(noncebytes, 0, data, 4, noncebytes.length);
+			
+			//Hash the data array
+			byte[] hashedbytes = Crypto.getInstance().hashData(data);
+			
+			//Make into a MiniData structure
+			MiniData hash = new MiniData(hashedbytes);
+			
+			//Have we found a valid txpow
+			if(hash.isLess(zTxPoW.getTxnDifficulty())) {
+				
+				//Ok read in the final data..
+				MiniData finaldata = new MiniData(data);
+				
+				//Now convert to a TxHeader
+				TxHeader txh = TxHeader.convertMiniDataVersion(finaldata);
+				
+				//What was the nonce..
+				finalnonce = txh.mNonce;
+				
+				break;
+			}
+			
+			//Check time yet..
+			counter++;
+			if(counter>10000) {
+				long timediff = System.currentTimeMillis() - timenow;
+				if(timediff > zTimeLimit) {
+						
+					//No good - took too long..
+					return false;
+				}
+				
+				//Reset
+				counter = 0;
+			}
+		}
+		
+		//Now set the final nonce..
+		zTxPoW.setNonce(finalnonce);
+		
+		//Calculate TxPoWID
+		zTxPoW.calculateTXPOWID();
+		
+		//Post it on..
+		Main.getInstance().PostMessage(new Message(Main.MAIN_TXPOWMINED).addObject("txpow", zTxPoW));
+
+		//Remove the coins from our mining list
+		removeMiningCoins(zTxPoW);
+		
+		//Found it..
+		return true;
+	}
 }

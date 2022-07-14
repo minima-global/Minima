@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.archive.ArchiveManager;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.txpowtree.TxPowTree;
@@ -29,7 +30,7 @@ public class IBD implements Streamable {
 	
 	public IBD() {
 		mCascade	= null;
-		mTxBlocks = new ArrayList<>();
+		mTxBlocks 	= new ArrayList<>();
 	}
 	
 	public void createIBD(Greeting zGreeting) {
@@ -76,11 +77,28 @@ public class IBD implements Streamable {
 					
 					//Find a block in archive that we have..
 					MiniNumber found = MiniNumber.MINUSONE;
+					int counter=0;
 					for(MiniData current : zGreeting.getChain()) {
-						//Look in DB
-						found = MinimaDB.getDB().getArchive().exists(current.to0xString());
-						if(!found.isEqual(MiniNumber.MINUSONE)) {
-							break;
+						
+						//Only check every 20 blocks.. just send duplicates as this much faster
+						if(counter % 20 == 0) {
+							
+							//Look in DB
+							found = MinimaDB.getDB().getArchive().exists(current.to0xString());
+							if(!found.isEqual(MiniNumber.MINUSONE)) {
+								break;
+							}
+						}
+						
+						//increment the counter..
+						counter++;
+					}
+					
+					//Check the very last one.. just in case we skipped it..
+					if(found.isEqual(MiniNumber.MINUSONE)) {
+						int size = zGreeting.getChain().size();
+						if(size>0) {
+							found = MinimaDB.getDB().getArchive().exists(zGreeting.getChain().get(size-1).to0xString());
 						}
 					}
 					
@@ -155,6 +173,33 @@ public class IBD implements Streamable {
 						MinimaLogger.log("[!] No Crossover found whilst syncing with new node. They are on a different chain. Please check you are on the correct chain");
 					}
 				}
+			}
+			
+		}catch(Exception exc) {
+			MinimaLogger.log(exc);
+		}
+		
+		//Unlock..
+		MinimaDB.getDB().readLock(false);
+	}
+	
+	public void createSyncIBD(TxPoW zLastBlock) {
+		
+		//No cascade
+		mCascade = null;
+		
+		//Get the ArchiveManager
+		ArchiveManager arch = MinimaDB.getDB().getArchive();
+		
+		//Lock the DB - cascade and tree tip / root cannot change while doing this..
+		MinimaDB.getDB().readLock(true);
+		
+		try {
+			
+			//Load the block range..
+			ArrayList<TxBlock> blocks = arch.loadSyncBlockRange(zLastBlock.getBlockNumber());
+			for(TxBlock block : blocks) {
+				mTxBlocks.add(block);
 			}
 			
 		}catch(Exception exc) {

@@ -1,0 +1,148 @@
+body {
+    font-family: Manrope;
+}
+
+@font-face {
+	font-family: Manrope;
+	src: url('./Manrope-Regular.ttf');
+}
+
+.sidebartable {
+	
+		border: 1px solid #EDEDED;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	
+  	position:absolute;
+		top:0;
+		bottom:0;
+		left: 0; 
+  	right: 0; 
+  	margin-top: auto;
+  	margin-bottom: auto;
+  	margin-left: auto; 
+  	margin-right: auto;
+  	z-index:0;
+  	width:80%;
+  	height:80%;
+  
+}
+
+.nosidebartable {
+    border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding:5px;
+  	z-index:0;
+  	width:100%;
+  	height:100%;
+}
+
+.sidebar{
+	width:100%;
+  	height:100%;
+  	overflow-y:auto;
+}
+
+.sidebarroom {
+    border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	
+  	width:100%;
+  	height:40px;
+		padding: 8px;
+  	font-size: 14px;
+  	cursor:pointer;
+}
+
+.sidebarroom:hover{
+  background-color: #eee;
+}
+
+.mainview{
+		border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	vertical-align:top;
+  	font-size: 14px;
+  	
+}
+
+.chatwindow{
+	width:100%;
+	height:100%;
+	vertical-align:top;
+	overflow-y: auto;
+	word-break: break-word;	
+}
+
+.chatline{
+		border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding:8px 8px;
+  	height:40;
+	}
+.chatline-edit {
+	background: #EDEDED;
+}
+.chatline-edit:focus {
+	outline: 0.5px solid #EDEDED!important;
+	background: #fff;
+}
+.chatline-edit:active {
+	border: 0.5px solid #EDEDED!important;
+}
+
+.chatline {
+		border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding:8px 8px;
+  	font-size:14px;
+}
+
+.solobutton {
+    background-color: #eee;
+    border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	font-size: 14px;
+}
+.solobutton-edit {
+	background: #fff;
+}
+.solobutton-edit:focus {
+	border: 0.5px solid #EDEDED;
+}
+
+.solobutton:hover {
+	 	cursor: pointer;
+    color: #fff;
+		background-color: #16181C;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+		border-color: #16181C;
+}
+
+.solobutton:active {
+  	opacity: 0.8;
+		font-style: italic;
+}
+
+#sendmoney {
+		position:absolute;
+		top:0;
+		bottom:0;
+		left: 0; 
+  	right: 0; 
+  	margin-top: auto;
+  	margin-bottom: auto;
+  	margin-left: auto; 
+  	margin-right: auto; 
+    background-color: #fff;
+    border: 0.5px solid #EDEDED;
+  	border-radius: 10px;
+  	padding:16px;
+  	font-size:18px;
+  	width:340;
+  	height:200;
+  	z-index:1;
+}

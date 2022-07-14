@@ -6,13 +6,14 @@ import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class txnlist extends Command {
 
 	public txnlist() {
-		super("txnlist","List current custom transactions");
+		super("txnlist","(id:) - List current custom transactions");
 	}
 	
 	@Override
@@ -22,15 +23,26 @@ public class txnlist extends Command {
 		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
 		
 		//The transaction
-		ArrayList<TxnRow> txns = db.listTxns();
+		String id = getParam("id","");
 		
-		JSONArray arr = new JSONArray();
-		for(TxnRow txnrow : txns) {
-			arr.add(txnrow.toJSON());
+		if(id.equals("")) {
+			//The transaction
+			ArrayList<TxnRow> txns = db.listTxns();
+			
+			JSONArray arr = new JSONArray();
+			for(TxnRow txnrow : txns) {
+				arr.add(txnrow.toJSON());
+			}
+			
+			ret.put("response", arr);
+		}else {
+			TxnRow txnrow 	= db.getTransactionRow(getParam("id"));
+			if(txnrow == null) {
+				throw new CommandException("Transaction not found : "+id);
+			}
+			
+			ret.put("response", txnrow.toJSON());
 		}
-		
-		JSONObject resp = new JSONObject();
-		ret.put("response", arr);
 		
 		return ret;
 	}

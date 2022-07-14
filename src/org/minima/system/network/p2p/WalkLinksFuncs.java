@@ -214,16 +214,20 @@ public class WalkLinksFuncs {
         List<Message> retMsg = new ArrayList<>();
         if (state.getOutLinks().size() < tgtNumOutLinks) {
             if (!walkLinks.getPathTaken().get(walkLinks.getPathTaken().size() - 1).equals(state.getMyMinimaAddress())) {
-                state.getKnownPeers().addAll(walkLinks.getPathTaken());
-                state.getKnownPeers().remove(state.getMyMinimaAddress());
-                InetSocketAddress connectTargetAddress = walkLinks.getPathTaken().get(walkLinks.getPathTaken().size() - 1);
-                retMsg.add(new Message(P2PManager.P2P_SEND_CONNECT)
-                        .addObject("address", connectTargetAddress));
+                boolean doConnect = false;
+                while (!doConnect && walkLinks.getPathTaken().size() > 1) {
+                    InetSocketAddress connectTargetAddress = walkLinks.getPathTaken().get(walkLinks.getPathTaken().size() - 1);
+
+                    P2PFunctions.log_debug("[+] Walk to scale out-links returned. Path: " + walkLinks.getPathTaken() + " Connecting to node: " + connectTargetAddress);
+                    doConnect = P2PFunctions.checkConnect(connectTargetAddress.getHostString(), connectTargetAddress.getPort());
+                    walkLinks.getPathTaken().remove(connectTargetAddress);
+                }
+//                retMsg.add(new Message(P2PManager.P2P_SEND_CONNECT).addObject("address", connectTargetAddress));
             } else {
-                MinimaLogger.log("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting as returned own address");
+                P2PFunctions.log_debug("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting as returned own address");
             }
         } else {
-            MinimaLogger.log("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting already have max numLinks");
+            P2PFunctions.log_debug("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting already have max numLinks");
         }
 
         return retMsg;
@@ -233,11 +237,10 @@ public class WalkLinksFuncs {
         List<Message> returnMessage = new ArrayList<>();
         InetSocketAddress connectTargetAddress = msg.getPathTaken().get(msg.getPathTaken().size() - 1);
         if (!connectTargetAddress.equals(state.getMyMinimaAddress())) {
-            state.getKnownPeers().add(connectTargetAddress);
             returnMessage.addAll(genLoadBalanceDoSwaps(state, connectTargetAddress, msg.getAvailableNoneP2PConnectionSlots()));
 
         } else {
-            MinimaLogger.log("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting as returned own address");
+            P2PFunctions.log_debug("[!] P2P_WALK_LINKS_RESPONSE: Not Connecting as returned own address");
         }
 
         return returnMessage;
@@ -248,8 +251,9 @@ public class WalkLinksFuncs {
 
         List<Message> retMessages = new ArrayList<>();
         if (state.getNotAcceptingConnP2PLinks().size() > state.getMaxNumNoneP2PConnections()) {
-            int numClientsToSend = state.getMaxNumNoneP2PConnections() / 2;
-            int numSwaps = Math.min(Math.min(numClientsToSend, maxClientsCanReceive), state.getNotAcceptingConnP2PLinks().size());
+            // Either maxClientsCanReceive or 1/2 MaxNoneP2pConnections a node can handle number of swaps
+            // Using 1/2 MaxNoneP2pConnections to prevent essential just swapping clients between nodes when not needed
+            int numSwaps = Math.min(maxClientsCanReceive, state.getMaxNumNoneP2PConnections() / 2);
             for (int i = 0; i < numSwaps; i++) {
                 // Send a DOSWAP message to numSwaps clients
                 List<String> nonP2PLinkUIDs = new ArrayList<>(state.getNotAcceptingConnP2PLinks().keySet());

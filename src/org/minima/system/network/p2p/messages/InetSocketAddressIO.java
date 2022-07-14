@@ -25,6 +25,16 @@ public class InetSocketAddressIO {
         return array;
     }
 
+    public static JSONArray addressesListToJSONArray(List<InetSocketAddress> peers) {
+        JSONArray array = new JSONArray();
+        if (!peers.isEmpty()) {
+            for (InetSocketAddress address : peers) {
+                array.add(address.getAddress().getHostAddress() + ":" + address.getPort());
+            }
+        }
+        return array;
+    }
+
     public static List<InetSocketAddress> addressesJSONToList(JSONArray jsonArray) {
         ArrayList<InetSocketAddress> peers = new ArrayList<>();
         if (!jsonArray.isEmpty()) {

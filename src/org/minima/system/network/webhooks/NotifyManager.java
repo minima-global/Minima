@@ -31,15 +31,8 @@ public class NotifyManager extends MessageProcessor {
 	}
 
 	public void shutDown() {
-		
 		//Stop this processor
 		stopMessageProcessor();
-				
-		synchronized (mHooks) {
-		
-			//Save the hooks..
-			MinimaDB.getDB().getUserDB().setWebHooks(mHooks);
-		}
 	}
 	
 	/**
@@ -68,18 +61,27 @@ public class NotifyManager extends MessageProcessor {
 			if(!mHooks.contains(zHook) && !zHook.equals("")) {
 				mHooks.add(zHook);
 			}
+			
+			//Save the hooks..
+			MinimaDB.getDB().getUserDB().setWebHooks(mHooks);
 		}
 	}
 	
 	public void removeHook(String zHook) {
 		synchronized (mHooks) {
 			mHooks.remove(zHook);
+			
+			//Save the hooks..
+			MinimaDB.getDB().getUserDB().setWebHooks(mHooks);
 		}
 	}
 	
 	public void clearHooks() {
 		synchronized (mHooks) {
 			mHooks.clear();
+			
+			//Save the hooks..
+			MinimaDB.getDB().getUserDB().setWebHooks(mHooks);
 		}
 	}
 	

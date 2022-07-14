@@ -1,0 +1,203 @@
+<html>
+
+<head>
+	<!--   The MINIMA MDS Javascript Library -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<title>TERMINAL</title>
+</head>
+
+<body style='margin:0;'>
+
+<script type="text/javascript">
+
+	//Simple History mechanic
+	var HISTORY = [];
+    var histcounter=0; 
+
+	//Add text to the TextArea
+	function addText(text){
+		//Get the TextArea
+		var txt = document.getElementById("terminal");
+		
+		//Add the text 
+		txt.value += text;
+		txt.focus();
+		txt.setSelectionRange(txt.value.length,txt.value.length);
+		
+		//Scroll to the bottom
+		txt.scrollTop = txt.scrollHeight;
+	}
+	
+	function deleteLastLine(){
+		var txt      	= document.getElementById("terminal");
+		var content  	= txt.value;
+	    var prelastLine = content.substr(0, content.lastIndexOf("\n")+1);
+	    txt.value 		= prelastLine;
+	}
+	
+	//Disable all arrow keys..  
+	window.addEventListener("keydown", function(event) {
+		
+		
+		switch (event.key) {
+		    
+			case "ArrowUp":
+				//And prevent normal behaviour
+    			event.preventDefault();
+				deleteLastLine();
+    			
+	        	//No History
+				if(HISTORY.length == 0){
+					return;
+				}
+				
+	        	//Move back through history
+	        	histcounter--;
+	            if(histcounter<0){
+	            	histcounter = 0;
+	            }
+	            
+            	//UP
+            	addText(HISTORY[histcounter]);
+	            
+		    	break;
+		    
+		    case "ArrowDown":
+		    	//And prevent normal behaviour
+    			event.preventDefault();
+				deleteLastLine();
+		    	
+				//No History
+				if(HISTORY.length == 0){
+					return;
+				}
+				
+				//Move forward
+	        	histcounter++;
+	            if(histcounter>HISTORY.length){
+	            	histcounter = HISTORY.length;
+	            	
+	            }else{
+	            	if(histcounter == HISTORY.length){
+	            		addText("");
+	            	}else{
+	            		addText(HISTORY[histcounter]);	
+	            	}
+	            }
+	            
+            	break;
+            	
+		    case "Enter":
+		    	//Grab the Last Line..
+	            var txt      = document.getElementById("terminal");
+				var content  = txt.value;
+			    var lastLine = content.substr(content.lastIndexOf("\n")+1).trim();
+				
+			    //Run it on Minima
+			    if(lastLine !== ""){
+			    	//Add to the History
+			    	if(lastLine != HISTORY[HISTORY.length-1]){
+			    		HISTORY.push(lastLine);	
+			    	}
+			    	histcounter = HISTORY.length;
+			    	
+			    	//Now run the command
+			    	MDS.cmd(lastLine,function(resp){
+				    	//Get the JSON..
+				    	var respstring = JSON.stringify(resp, null, 2);
+			    		
+				    	//Convert line breakers..
+				    	var linebreaker = respstring.replace(/\\n/g,"\n");
+				    	
+				    	//And add..
+				    	addText(linebreaker+"\n");
+				    });
+				    	
+			    }else{
+			    	addText("");
+			    }
+			    
+		        break;
+		}
+        
+    }, false); 
+
+</script>
+
+<style>
+
+#logsbox {
+	border: 2px solid white;
+  	border-radius: 10px;
+  	padding:5px;
+  	z-index:1;
+  	position:absolute;
+  	top:0;
+  	right:0;
+  	color:white;
+  	margin-right:40;
+  	margin-top:20;
+  	background-color:#ff0000";
+}
+  	
+</style>
+
+<center>
+
+<textarea spellcheck="false" style="resize:none;width:100%;height:100%;background-color:#000000;color:#FFFFFF;" id="terminal"></textarea>
+
+<div id="logsbox">
+	Minima Logs <input type="checkbox" id="minimalogs">
+</div>
+
+</center>
+
+<script type="text/javascript">
+
+	//Are we showing the logs
+	var SHOW_MINIMA_LOGS = document.getElementById("minimalogs").checked;
+
+	//Initialise MiFi
+	MDS.init(function(msg){
+		if(msg.event == "inited"){
+				
+			//Lets get started
+ 			addText("**********************************************\n");
+ 			addText("*  __  __  ____  _  _  ____  __  __    __    *\n");
+ 			addText("* (  \\/  )(_  _)( \\( )(_  _)(  \\/  )  /__\\   *\n");
+ 			addText("*  )    (  _)(_  )  (  _)(_  )    (  /(__)\\  *\n");
+ 			addText("* (_/\\/\\_)(____)(_)\\_)(____)(_/\\/\\_)(__)(__) *\n");
+ 			addText("*                                            *\n");
+ 			addText("**********************************************\n");
+			addText("Welcome to Minima. For assistance type help. Then press enter.\n");
+			
+		
+		}else if(msg.event == "MINIMALOG"){
+			if(SHOW_MINIMA_LOGS){
+				//Get the message
+				addText(msg.data.message+"\n");
+			}
+			
+		}else{
+			
+			//Log it..
+			//MDS.log(JSON.stringify(msg));
+			
+		}
+	});
+
+	//Listen to the CheckBox for change events
+	var checkbox = document.getElementById("minimalogs");
+	checkbox.addEventListener('change', function() {
+		//Are we showing logs
+		SHOW_MINIMA_LOGS = this.checked;
+	});
+	
+</script>
+
+</body>
+
+</html>

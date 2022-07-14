@@ -21,11 +21,6 @@ public class MMRData implements Streamable{
 	 */
 	private MiniNumber mValue;
 	
-	/**
-	 * Are we a hashsum tree or just a hash tree
-	 */
-	boolean mHashSum = true;
-	
 	private MMRData() {}
 	
 	public MMRData(MiniData zHash) {
@@ -35,10 +30,6 @@ public class MMRData implements Streamable{
 	public MMRData(MiniData zHash, MiniNumber zValue) {
 		mData = zHash;
 		mValue = zValue; 
-	}
-	
-	public void setHashSum(boolean zHashSum) {
-		mHashSum = zHashSum;
 	}
 	
 	public MiniData getData() {
@@ -68,26 +59,17 @@ public class MMRData implements Streamable{
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mData.writeDataStream(zOut);
-		
-		if(mHashSum) {
-			mValue.writeDataStream(zOut);
-		}
+		mValue.writeDataStream(zOut);
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		mData 	= MiniData.ReadFromStream(zIn);
-		
-		if(mHashSum) {
-			mValue	= MiniNumber.ReadFromStream(zIn);
-		}else {
-			mValue	= MiniNumber.ZERO;
-		}
+		mValue	= MiniNumber.ReadFromStream(zIn);
 	}
 	
-	public static MMRData ReadFromStream(boolean zHashSum, DataInputStream zIn) throws IOException{
+	public static MMRData ReadFromStream(DataInputStream zIn) throws IOException{
 		MMRData data = new MMRData();
-		data.setHashSum(zHashSum);
 		data.readDataStream(zIn);
 		return data;	
 	}

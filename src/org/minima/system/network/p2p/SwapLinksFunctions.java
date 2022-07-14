@@ -2,12 +2,7 @@ package org.minima.system.network.p2p;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
@@ -15,8 +10,6 @@ import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOClientInfo;
 import org.minima.system.network.p2p.messages.P2PGreeting;
 import org.minima.system.network.p2p.messages.P2PWalkLinks;
-import org.minima.system.network.p2p.params.P2PParams;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 
@@ -43,20 +36,14 @@ public class SwapLinksFunctions {
         //Get the details
         String uid = info.getUID();
         boolean sendMessages = true;
+        
         if (incoming) {
             InetSocketAddress incomingAddress = new InetSocketAddress(info.getHost(), 0);
-
-            if(info.getHost().equals("127.0.0.1")) {
-            	//It's an SSH Forward address with no HOST set..
-            	state.getNoneP2PLinks().put(uid, new InetSocketAddress(info.getHost(), 0));
-
-            }else {
-                if (state.getNoneP2PLinks().containsValue(incomingAddress) && !info.isMaximaClient()) {
-	                msgs.add(new Message(P2PManager.P2P_SEND_DISCONNECT).addString("uid", uid));
-	                sendMessages = false;
-	            }
-	            state.getNoneP2PLinks().put(uid, new InetSocketAddress(info.getHost(), 0));
+            if (state.getNoneP2PLinks().containsValue(incomingAddress)) {
+                msgs.add(new Message(P2PManager.P2P_SEND_DISCONNECT).addString("uid", uid));
+                sendMessages = false;
             }
+            state.getNoneP2PLinks().put(uid, new InetSocketAddress(info.getHost(), 0));
         } else {
             state.getNoneP2PLinks().put(uid, new InetSocketAddress(info.getHost(), info.getPort()));
         }
@@ -93,7 +80,11 @@ public class SwapLinksFunctions {
             NIOClientInfo minimaClient = UtilFuncs.getClientFromInetAddress(nextHop, state);
             P2PWalkLinks walkLinks = new P2PWalkLinks(true, false, minimaClient.getUID());
             walkLinks.setClientWalk(true);
-            msgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", minimaClient.getUID()).addObject("json", walkLinks.toJson()));
+            // Send out multiple load balance request messages if node is highly overloaded
+            int multipleOverMax = state.getInLinks().size() / state.getMaxNumP2PConnections();
+            for (int i=0; i < multipleOverMax; i++) {
+                msgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", minimaClient.getUID()).addObject("json", walkLinks.toJson()));
+            }
         }
         return msgs;
     }
@@ -109,46 +100,27 @@ public class SwapLinksFunctions {
         state.getNoneP2PLinks().remove(uid);
     }
 
-    public static void updateKnownPeersFromGreeting(P2PState state, P2PGreeting greeting) {
-        List<InetSocketAddress> newPeers = Stream.of(greeting.getInLinks(), greeting.getKnownPeers())
-                .flatMap(Collection::stream)
-                .distinct()
-                .filter(x -> x.getPort() != 0)
-                .filter(x -> !x.equals(state.getMyMinimaAddress()))
-                .collect(Collectors.toCollection(ArrayList::new));
-
-        state.getKnownPeers().addAll(newPeers);
-
-        List<InetSocketAddress> peers = new ArrayList<>(state.getKnownPeers());
-        Collections.shuffle(peers);
-
-        // Added upto 20 peers into the list + outlinks
-        int numOutLinks = state.getOutLinks().size();
-        state.setKnownPeers(new HashSet<>(peers.subList(0, Math.min(peers.size(), P2PParams.PEERS_LIST_SIZE - numOutLinks))));
-        state.getKnownPeers().addAll(state.getOutLinks().values());
-    }
-
-    public static boolean processGreeting(P2PState state, P2PGreeting greeting, String uid, NIOClientInfo client, boolean noconnect) {
+    public static boolean processGreeting(P2PState state, P2PGreeting greeting, NIOClientInfo client, boolean noconnect) {
 
         if (client != null) {
+            String uid = client.getUID();
             String host = client.getHost();
             int port = greeting.getMyMinimaPort();
             InetSocketAddress minimaAddress = new InetSocketAddress(host, port);
 
             boolean addtoknown = !host.contains("127.0.0.1");
-//            MinimaLogger.log("P2P GREETING UID:"+uid+" valid:"+state.getNoneP2PLinks().containsKey(uid)+" @ "+minimaAddress+" addtoknown:"+addtoknown);
+//            P2PFunctions.log_debug("P2P GREETING UID:"+uid+" valid:"+state.getNoneP2PLinks().containsKey(uid)+" @ "+minimaAddress+" addtoknown:"+addtoknown);
             state.getNoneP2PLinks().remove(uid);
 
             //The NIOClient has received a P2Pgreeting.. Check if NULL or Tests fail
             if(Main.getInstance() != null) {
 	            NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(uid);
-	            nioclient.setReceivedP2PGreeting();
+                if (nioclient != null){
+	                nioclient.setReceivedP2PGreeting();
+                }
             }
 
             if (greeting.isAcceptingInLinks()) {
-            	if(addtoknown) {
-            		state.getKnownPeers().add(minimaAddress);
-            	}
 
                 // Peers are assumed to not be P2P Links until we get a valid P2P Greeting
 
@@ -158,7 +130,6 @@ public class SwapLinksFunctions {
                     state.getOutLinks().put(uid, minimaAddress);
                     if (state.getOutLinks().size() > state.getMaxNumP2PConnections()) {
                         P2PFunctions.disconnect(uid);
-                        MinimaLogger.log("[-] Too many outgoing connections, disconnecting");
                     }
                 }
 
@@ -175,7 +146,7 @@ public class SwapLinksFunctions {
                 state.getNotAcceptingConnP2PLinks().put(uid, minimaAddress);
             }
         } else {
-            MinimaLogger.log("[-] ERROR Client is null UID:"+uid+" when processing greeting: " + greeting.toJson());
+            P2PFunctions.log_debug("[-] ERROR Client is null when processing greeting: " + greeting.toJson());
         }
         return noconnect;
     }
@@ -197,26 +168,22 @@ public class SwapLinksFunctions {
             state.setMyMinimaAddress(hostIP);
             state.setHostSet(true);
             state.getKnownPeers().remove(state.getMyMinimaAddress());
-            MinimaLogger.log("[+] Setting My IP: " + hostIP);
+            P2PFunctions.log_debug("[+] Setting My IP: " + hostIP);
 
-//            //Set this globally..
-//            if(!GeneralParams.IS_HOST_SET) {
-//            	GeneralParams.IS_HOST_SET = true;
-//            	GeneralParams.MINIMA_HOST = hostIP;
-//            }
-
-        } else {
-            MinimaLogger.log("[-] WARNING : Failed to set my ip. Secrets do not match - could be a delay. MySecret: " + state.getIpReqSecret() + " Received secret: " + secret);
         }
+
     }
 
     public static List<Message> joinScaleOutLinks(P2PState state, int targetNumLinks, ArrayList<NIOClientInfo> clients) {
         List<Message> sendMsgs = new ArrayList<>();
-        InetSocketAddress nextHop = UtilFuncs.selectRandomAddress(new ArrayList<>(state.getOutLinks().values()));
-        NIOClientInfo minimaClient = UtilFuncs.getClientFromInetAddress(nextHop, state);
-        if (minimaClient != null && state.getOutLinks().size() < targetNumLinks) {
-            P2PWalkLinks walkLinksMsg = new P2PWalkLinks(true, true, minimaClient.getUID());
-            sendMsgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", minimaClient.getUID()).addObject("json", walkLinksMsg.toJson()));
+        if (state.getOutLinks().size() < targetNumLinks) {
+            P2PFunctions.log_debug("Attempting to scale outlinks");
+            InetSocketAddress nextHop = UtilFuncs.selectRandomAddress(new ArrayList<>(state.getOutLinks().values()));
+            NIOClientInfo minimaClient = UtilFuncs.getClientFromInetAddress(nextHop, state);
+            if (minimaClient != null) {
+                P2PWalkLinks walkLinksMsg = new P2PWalkLinks(true, true, minimaClient.getUID());
+                sendMsgs.add(new Message(P2PManager.P2P_SEND_MSG).addString("uid", minimaClient.getUID()).addObject("json", walkLinksMsg.toJson()));
+            }
         }
         return sendMsgs;
     }
@@ -224,6 +191,7 @@ public class SwapLinksFunctions {
     public static List<Message> requestInLinks(P2PState state, int targetNumLinks, ArrayList<NIOClientInfo> clients) {
         List<Message> sendMsgs = new ArrayList<>();
         if (state.isAcceptingInLinks() && state.getInLinks().size() < targetNumLinks) {
+            P2PFunctions.log_debug("Attempting to scale inlinks");
             InetSocketAddress nextHop = UtilFuncs.selectRandomAddress(new ArrayList<>(state.getOutLinks().values()));
             NIOClientInfo minimaClient = UtilFuncs.getClientFromInetAddress(nextHop, state);
             if (minimaClient != null) {

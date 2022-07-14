@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 import org.minima.database.MinimaDB;
+import org.minima.database.mmr.MMRProof;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
@@ -21,6 +22,7 @@ import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
+import org.minima.objects.CoinProof;
 import org.minima.objects.ScriptProof;
 import org.minima.objects.Token;
 import org.minima.objects.Transaction;
@@ -91,6 +93,10 @@ public class GETINIDTests {
             fail();
         }
 
+        //Add the coin proofs to the witness
+        w.addCoinProof(new CoinProof(in1, new MMRProof()));
+        w.addCoinProof(new CoinProof(in2, new MMRProof()));
+        
         Contract ctr = new Contract("", "", w, trx, new ArrayList<>());
 
         GETINID fn = new GETINID();

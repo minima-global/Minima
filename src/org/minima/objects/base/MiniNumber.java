@@ -66,10 +66,12 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	public static final MiniNumber ZERO 		= new MiniNumber("0");
 	public static final MiniNumber ONE 		    = new MiniNumber("1");
 	public static final MiniNumber TWO 		    = new MiniNumber("2");
+	public static final MiniNumber THREE 		= new MiniNumber("3");
 	public static final MiniNumber FOUR 		= new MiniNumber("4");
 	public static final MiniNumber EIGHT        = new MiniNumber("8");
 	public static final MiniNumber TWELVE       = new MiniNumber("12");
 	public static final MiniNumber SIXTEEN      = new MiniNumber("16");
+	public static final MiniNumber TWENTY      	= new MiniNumber("20");
 	public static final MiniNumber THIRTYTWO    = new MiniNumber("32");
 	public static final MiniNumber FIFTY    	= new MiniNumber("50");
 	public static final MiniNumber SIXTYFOUR    = new MiniNumber("64");
@@ -316,29 +318,5 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 	
 	public static void WriteToStream(DataOutputStream zOut, int zNumber) throws IOException{
 		new MiniNumber(zNumber).writeDataStream(zOut);
-	}
-
-	public static void main(String[] zArgs) {
-		
-//		MiniNumber num = MiniNumber.MAXIMUM.add(MiniNumber.MINI_UNIT);
-		MiniNumber num = MiniNumber.MAXIMUM;
-		System.out.println("Number : "+num);
-		
-		MiniData md = MiniData.getMiniDataVersion(num);
-		System.out.println("HEX NUm : "+md.getLength()+" "+md.to0xString());
-		
-		num = MiniNumber.MAXIMUM.sub(MiniNumber.MINI_UNIT);
-		System.out.println("Number : "+num);
-		
-		md = MiniData.getMiniDataVersion(num);
-		System.out.println("HEX NUm : "+md.getLength()+" "+md.to0xString());
-		
-		num = MiniNumber.MAXIMUM.mult(MiniNumber.MINUSONE).add(MiniNumber.MINI_UNIT);
-		System.out.println("Number : "+num);
-		
-		md = MiniData.getMiniDataVersion(num);
-		System.out.println("HEX NUm : "+md.getLength()+" "+md.to0xString());
-		
-		
 	}
 }

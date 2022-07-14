@@ -2,6 +2,7 @@ package org.minima.system.commands.base;
 
 import org.minima.database.MinimaDB;
 import org.minima.system.commands.Command;
+import org.minima.system.params.GlobalParams;
 import org.minima.utils.RPCClient;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
@@ -36,7 +37,7 @@ public class incentivecash extends Command {
 		//Make sure there is a User specified
 		if(!user.equals("")) {
 			//Call the RPC End point..
-			String reply = RPCClient.sendPUT("https://incentivecash.minima.global/api/ping/"+user);
+			String reply = RPCClient.sendPUT("https://incentivecash.minima.global/api/ping/" + user + "?version="+ GlobalParams.MINIMA_VERSION);
 			
 			//Convert response..
 			JSONObject json = (JSONObject) new JSONParser().parse(reply);

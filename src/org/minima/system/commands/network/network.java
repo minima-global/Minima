@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.system.network.minima.NIOClientInfo;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -11,24 +12,55 @@ import org.minima.utils.json.JSONObject;
 public class network extends Command {
 
 	public network() {
-		super("network","Show network status");
+		super("network","(action:list|restart) - Show network status or restart");
 	}
 	
 	@Override
-	public JSONObject runCommand() {
+	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
-		//Get the NIO Details
-		ArrayList<NIOClientInfo> clients = Main.getInstance().getNetworkManager().getNIOManager().getAllConnectionInfo();
+		String action = getParam("action", "list");
 		
-		//Create a JSONArray
-		JSONArray clarr = new JSONArray();
-		for(NIOClientInfo info : clients) {
-			clarr.add(info.toJSON());
+		if(action.equals("list")) {
+			//Get the NIO Details
+			ArrayList<NIOClientInfo> clients = Main.getInstance().getNetworkManager().getNIOManager().getAllConnectionInfo();
+			
+			//Create a JSONArray
+			JSONArray clarr = new JSONArray();
+			for(NIOClientInfo info : clients) {
+				clarr.add(info.toJSON());
+			}
+			
+			//Add to the response
+			ret.put("response", clarr);
+			
+		}else if(action.equals("restart")) {
+			
+			//Send tyhe message to restart the network
+			Main.getInstance().PostMessage(Main.MAIN_NETRESTART);
+			
+			//Add to the response
+			ret.put("response", "Restarting..");
+		
+		}else if(action.equals("loggingon")) {
+		
+			Main.getInstance().getNetworkManager().getNIOManager().setFullLogging(true, "");
+			Main.getInstance().getNetworkManager().getP2PManager().setFullLogging(true, "");
+			
+			//Add to the response
+			ret.put("response", "Full Network logging ON");
+		
+		}else if(action.equals("loggingoff")) {
+			
+			Main.getInstance().getNetworkManager().getNIOManager().setFullLogging(false, "");
+			Main.getInstance().getNetworkManager().getP2PManager().setFullLogging(false, "");
+			
+			//Add to the response
+			ret.put("response", "Full Network logging OFF");
+		
+		}else {
+			throw new CommandException("Invalid action");
 		}
-		
-		//Add to the response
-		ret.put("response", clarr);
 		
 		return ret;
 	}
