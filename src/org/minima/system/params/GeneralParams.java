@@ -13,16 +13,6 @@ public class GeneralParams {
 	public static boolean IS_ACCEPTING_IN_LINKS = true;
 	
 	/**
-	 * Is this a private network - don;t connect to any users..
-	 */
-	public static boolean PRIVATE_NETWORK = false;
-	
-	/**
-	 * Are we automining a TxPoW every block
-	 */
-	public static boolean AUTOMINE = false;
-	
-	/**
 	 * Are we creating the genesis block 
 	 */
 	public static boolean GENESIS = false;
@@ -53,14 +43,24 @@ public class GeneralParams {
 	public static int MINIMA_PORT = 9001;
 	
 	/**
-	 * The Maxima port
-	 */
-	public static int MAXIMA_PORT = 9003;
-	
-	/**
 	 * The Minima RPC port
 	 */
-	public static int RPC_PORT = 9002;
+	public static int RPC_PORT = MINIMA_PORT+1;
+	
+	/**
+	 * The MDS webserver
+	 */
+	public static int MDSFILE_PORT = MINIMA_PORT+2;
+	
+	/**
+	 * The MDS Command Server
+	 */
+	public static int MDSCOMMAND_PORT = MINIMA_PORT+3;
+	
+	/**
+	 * MDS ENabled
+	 */
+	public static boolean MDS_ENABLED = false;
 	
 	/**
 	 * Test Params or Main Params
@@ -78,6 +78,11 @@ public class GeneralParams {
 	public static String P2P_ROOTNODE = "";
 	
 	/**
+	 * Are all IP allowed for Maxima Hosts
+	 */
+	public static boolean ALLOW_ALL_IP = false;
+	
+	/**
 	 * Manual list of Minima nodes to connect to
 	 */
 	public static boolean NOCONNECT = false;
@@ -90,7 +95,7 @@ public class GeneralParams {
 	/**
 	 * How many days do you keep the TxPoW in the SQL DB
 	 */
-	public static long NUMBER_DAYS_SQLTXPOWDB = 2;
+	public static long NUMBER_DAYS_SQLTXPOWDB = 3;
 	
 	/**
 	 * How Many Hours do you keep the TxPOW in the RAM mempool
@@ -100,7 +105,7 @@ public class GeneralParams {
 	/**
 	 * How many days do you archive the TxBlocks to resync Users
 	 */
-	public static long NUMBER_DAYS_ARCHIVE = 28;
+	public static long NUMBER_DAYS_ARCHIVE = 90;
 	
 	/**
 	 * Number of seconds before sending a pulse message - every 10 minutes

@@ -1,7 +1,6 @@
 package org.minima.system.commands.signatures;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.Signature;
@@ -17,19 +16,18 @@ public class sign extends Command {
 	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
-		
+	
 		MiniData data = getDataParam("data");
 		MiniData pubk = getDataParam("publickey");
 		
 		//Get the Key row..
 		Wallet wallet = MinimaDB.getDB().getWallet();
-		KeyRow kr = wallet.getKeysRowFromPublicKey(pubk.to0xString());
 		
 		//Use the wallet..
-		Signature signature = wallet.sign(kr.getPrivateKey(), data);
+		Signature signature = wallet.signData(pubk.to0xString(), data);
 		
 		ret.put("response", MiniData.getMiniDataVersion(signature).to0xString());
-		
+	
 		return ret;
 	}
 

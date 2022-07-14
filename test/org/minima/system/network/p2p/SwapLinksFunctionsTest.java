@@ -68,7 +68,7 @@ public class SwapLinksFunctionsTest extends TestCase {
         P2PGreeting greeting = new P2PGreeting(greetingState);
 
         P2PState state = QuickState.stateNoneP2PLink(1, 9001);
-        SwapLinksFunctions.processGreeting(state, greeting, "noneP2PUID1", client, true);
+        SwapLinksFunctions.processGreeting(state, greeting, client, true);
 
         assertFalse(state.getInLinks().isEmpty());
         assertTrue(state.getNoneP2PLinks().isEmpty());
@@ -83,7 +83,7 @@ public class SwapLinksFunctionsTest extends TestCase {
         P2PGreeting greeting = new P2PGreeting(greetingState);
 
         P2PState state = QuickState.stateNoneP2PLink(1, 9001);
-        SwapLinksFunctions.processGreeting(state, greeting, "noneP2PUID1", client, true);
+        SwapLinksFunctions.processGreeting(state, greeting, client, true);
 
         assertFalse(state.getOutLinks().isEmpty());
         assertTrue(state.getNoneP2PLinks().isEmpty());
@@ -109,42 +109,6 @@ public class SwapLinksFunctionsTest extends TestCase {
         SwapLinksFunctions.processResponseIPMsg(state, respMsg);
 
         assertEquals(new InetSocketAddress("10.0.0.1", GeneralParams.MINIMA_PORT), state.getMyMinimaAddress());
-    }
-
-    public void testUpdateKnownPeersFromGreeting() throws UnknownHostException {
-        P2PState greetingState = QuickState.stateInAndOutLinks(5, 5, 0);
-        greetingState.setMyMinimaAddress("10.0.1.1");
-        P2PGreeting greeting = new P2PGreeting(greetingState);
-
-        P2PState state = QuickState.stateNoConnections(true);
-        SwapLinksFunctions.updateKnownPeersFromGreeting(state, greeting);
-
-        assertEquals(7, state.getKnownPeers().size());
-    }
-
-    public void testUpdateKnownPeersFromGreetingUniquenessTest() throws UnknownHostException {
-        P2PState greetingState = QuickState.stateInLinksOnly(5, 9001);
-        greetingState.setOutLinks(QuickInetLists.generateConnectionUIDMap("inLinkUID", "60.0.0.", 5, 9001));
-
-        greetingState.setMyMinimaAddress("10.0.1.1");
-        P2PGreeting greeting = new P2PGreeting(greetingState);
-
-        P2PState state = QuickState.stateNoConnections(true);
-        SwapLinksFunctions.updateKnownPeersFromGreeting(state, greeting);
-
-        assertEquals(7, state.getKnownPeers().size());
-    }
-
-    public void testUpdateKnownPeersFromGreetingEmpty() throws UnknownHostException {
-        P2PState greetingState = QuickState.stateNoConnections(true);
-        greetingState.setKnownPeers(new HashSet<>());
-        greetingState.setMyMinimaAddress("10.0.1.1");
-        P2PGreeting greeting = new P2PGreeting(greetingState);
-
-        P2PState state = QuickState.stateNoConnections(true);
-        SwapLinksFunctions.updateKnownPeersFromGreeting(state, greeting);
-
-        assertEquals(2, state.getKnownPeers().size());
     }
 
 

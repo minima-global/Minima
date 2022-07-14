@@ -39,10 +39,8 @@ public class ParamConfigurerTest {
                 "-rpcenable",
                 "-daemon",
                 "-host", "124.0.1.10",
-                "-rpc", "4444",
                 "-data", "mydaatafolder",
                 "-p2pnode", "124.0.1.9",
-                "-automine",
                 "-genesis",
                 "-nop2p",
                 "-noconnect",
@@ -56,11 +54,10 @@ public class ParamConfigurerTest {
                 .configure();
 
         assertEquals(8888, GeneralParams.MINIMA_PORT);
-        assertEquals("mydaatafolder", GeneralParams.DATA_FOLDER);
-        assertEquals(4444, GeneralParams.RPC_PORT);
+//        assertEquals("mydaatafolder", GeneralParams.DATA_FOLDER);
         assertEquals("124.0.1.10", GeneralParams.MINIMA_HOST);
         assertTrue(GeneralParams.IS_HOST_SET);
-        assertTrue(GeneralParams.AUTOMINE);
+//        assertTrue(GeneralParams.AUTOMINE);
         assertTrue(GeneralParams.NOCONNECT);
         assertTrue(GeneralParams.IS_MOBILE);
         assertFalse(GeneralParams.P2P_ENABLED);
@@ -69,9 +66,9 @@ public class ParamConfigurerTest {
         assertTrue(configurer.isRpcenable());
         assertTrue(configurer.isDaemon());
         assertTrue(GeneralParams.CLEAN);
-        assertTrue(GeneralParams.PRIVATE_NETWORK);
+//        assertTrue(GeneralParams.PRIVATE_NETWORK);
         assertTrue( GeneralParams.GENESIS);
-        assertTrue(GeneralParams.AUTOMINE);
+//        assertTrue(GeneralParams.AUTOMINE);
         assertTrue(GeneralParams.TEST_PARAMS);
         assertEquals(TestParams.MINIMA_BLOCK_SPEED, GlobalParams.MINIMA_BLOCK_SPEED);
 
@@ -100,7 +97,6 @@ public class ParamConfigurerTest {
         envVarMap.put("MINIMA_CONNECT", "124.0.1.9:7777");
         envVarMap.put("MINIMA_RPCENABLE", "TRUE");
         envVarMap.put("MINIMA_DAEMON", "true");
-        envVarMap.put("minima_rpc", "1111");
         envVarMap.put("MINIMA_NOCONNECT", "something");
         envVarMap.put("OTHER_PROG_NOCONNECT", "something");
 
@@ -111,7 +107,6 @@ public class ParamConfigurerTest {
                 .usingProgramArgs(progArgs)
                 .configure();
 
-        assertEquals(1111, GeneralParams.RPC_PORT);
         assertEquals(8888, GeneralParams.MINIMA_PORT);
         assertFalse(GeneralParams.NOCONNECT);
         assertEquals("124.0.1.9:7777", GeneralParams.CONNECT_LIST);

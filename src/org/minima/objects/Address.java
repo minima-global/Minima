@@ -1,12 +1,13 @@
 package org.minima.objects;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
-import org.minima.system.params.GlobalParams;
 import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
@@ -37,10 +38,6 @@ public class Address implements Streamable{
 	public Address() {}
 	
 	public Address(String zScript) {
-		this(zScript, GlobalParams.MINIMA_DEFAULT_HASH_STRENGTH);
-	}
-	
-	public Address(String zScript, int zBitLength) {
 		//Convert script..
 		mScript = new MiniString(zScript);
 		
@@ -54,19 +51,14 @@ public class Address implements Streamable{
 	public Address(MiniData zAddressData) {
 		mScript         = new MiniString("");
 		mAddressData 	= zAddressData;
-		
-		if(mAddressData.getLength()<20) {
-			mMinimaAddress  = mAddressData.to0xString();
-		}else {
-			mMinimaAddress  = makeMinimaAddress(mAddressData);	
-		}
+		mMinimaAddress  = makeMinimaAddress(mAddressData);	
 	}
 	
 	public JSONObject toJSON() {
 		JSONObject addr = new JSONObject();
 		addr.put("script", mScript.toString());
 		addr.put("hexaddress", mAddressData.toString());
-//		addr.put("miniaddress", mMinimaAddress);
+		addr.put("miniaddress", mMinimaAddress);
 		return addr;
 	}
 	
@@ -102,14 +94,9 @@ public class Address implements Streamable{
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mAddressData   = MiniData.ReadHashFromStream(zIn);
-		mScript        = MiniString.ReadFromStream(zIn);
-		
-		if(mAddressData.getLength()<20) {
-			mMinimaAddress  = mAddressData.to0xString();
-		}else {
-			mMinimaAddress  = makeMinimaAddress(mAddressData);	
-		}	
+		mAddressData   	= MiniData.ReadHashFromStream(zIn);
+		mScript        	= MiniString.ReadFromStream(zIn);
+		mMinimaAddress  = makeMinimaAddress(mAddressData);		
 	}
 	
 	public static Address ReadFromStream(DataInputStream zIn) throws IOException {
@@ -119,170 +106,128 @@ public class Address implements Streamable{
 	}
 	
 	/**
-	 * Convert an address into a Minima Checksum Base32 address
-	 * 
-	 * @param zAddress
-	 * @return the address
+	 * Convert an address into a Minima Checksum Base32 address - MAX 32k
 	 */
-	public static String makeMinimaAddress(MiniData zAddress) throws ArithmeticException {
+	public static String makeMinimaAddress(MiniData zAddress){
+		
 		//The Original data
 		byte[] data = zAddress.getBytes();
+		int datalen = data.length;
 		
-		//First hash it to add some checksum digits..
-		byte[] hash = Crypto.getInstance().hashData(data, 256);
+		//First hash it to for checksum digits..
+		byte[] hash 		= Crypto.getInstance().hashData(data);
+		byte[] checksum		= new byte[4];
+		for(int i=0;i<4;i++) {
+			checksum[i] = hash[i]; 
+		}
 		
-		//Calculate a new length - ONLY certain lengths allowed!
-		int len    = data.length;
-		int newlen = 0;
+		//Now write this info to stream
+		ByteArrayOutputStream bos 	= new ByteArrayOutputStream();
+	    DataOutputStream dos 		= new DataOutputStream(bos);
 		
-		//160 bit - no checksum for 160 bit address.. not expecting people to use it though.. 
-		if(len == 20) {
-			newlen = 20;
-
-		//192 bit
-		}else if(len == 24) {
-			newlen = 25;
-					
-		//224 bit
-		}else if(len == 28) {
-			newlen = 30;
-				
-		//256 bit
-		}else if(len == 32) {
-			newlen = 35;
-		
-		//288 bit
-		}else if(len == 36) {
-			newlen = 40;
-		
-		//320 bit
-		}else if(len == 40) {
-			newlen = 45;
-		
-		//384 bit
-		}else if(len == 48) {
-			newlen = 50;
-		
-		//416 bit
-		}else if(len == 52) {
-			newlen = 55;
-		
-		//448 bit
-		}else if(len == 56) {
-			newlen = 60;
-		
-		//480 bit
-		}else if(len == 60) {
-			newlen = 65;
-							
-		//512 bit
-		}else if(len == 64) {
-			newlen = 70;
-		
-		}else {
-			return zAddress.to0xString();
+	    try {
+	    	//MUST write 1 non 0 byte first to ensure no truncation in base 32 conversion
+	    	dos.write(1);
+	    	
+	    	//the length 
+			dos.writeShort(datalen);
 			
-			//Hmm.. should we through an error ?
-			//throw new IllegalArgumentException("ERROR - Make Minima Address : not a valid length address!");
+		    //the data itself..
+			dos.write(data);
+			
+			//4 bytes of the hash
+			dos.write(checksum);
+			
+			//Close the Streams
+			dos.close();
+			bos.close();
+		    
+	    } catch (IOException e) {
+	    	throw new IllegalArgumentException("Invalid MxAddress - "+e.toString());
 		}
-		
-		int nbytes = newlen - len;
-		
-		//Add the first 4 digits..
-		byte[] addr = new byte[len+nbytes];
-		
-		//Copy the old..
-		for(int i=0;i<len;i++) {
-			addr[i] = data[i];
-		}
-		
-		//Add the checksum..
-		for(int i=0;i<nbytes;i++) {
-			addr[len+i] = hash[i];
-		}
+	    
+		//Get the bytes
+		byte[] origdata = bos.toByteArray();
 		
 		//Now convert the whole thing to Base 32
-		String b32 = BaseConverter.encode32(addr);
-		
-		return "Mx"+b32;
+		return BaseConverter.encode32(origdata);
 	}
+	
+	public static MiniData convertMinimaAddress(String zMinimAddress) throws IllegalArgumentException {
+		
+		//First convert the whole thing back..
+		byte[] decode 	= BaseConverter.decode32(zMinimAddress);
 
-	/**
-	 * Convert and check a Minima address..
-	 * @param zMinimaAddress
-	 * @return
-	 */
-	public static MiniData convertMinimaAddress(String zMinimaAddress) throws ArithmeticException {
-		if(!zMinimaAddress.startsWith("Mx")) {
-			throw new ArithmeticException("Minima Addresses must start with Mx");
+		//Now read in the data..
+		ByteArrayInputStream bais 	= new ByteArrayInputStream(decode);
+		DataInputStream dis 		= new DataInputStream(bais);
+		
+		byte[] data;
+		byte[] checksum = new byte[4];
+		
+		try {
+			//Read the first byte
+			int one = dis.read();
+			if(one!=1) {
+				throw new IllegalArgumentException("Invalid MxAddress - should start with 1 "+zMinimAddress);
+			}
+			
+	    	//First the data length
+			int datalen = dis.readShort();
+			
+		    //the data itself..
+			data = new byte[datalen];
+			dis.readFully(data);
+			
+			//And the checksum
+			dis.readFully(checksum); 
+			
+			//Close the Streams
+			dis.close();
+			bais.close();
+		    
+	    } catch (IOException e) {
+	    	throw new IllegalArgumentException("Invalid MxAddress - "+e.toString());
 		}
 		
-		//Get the data
-		byte[] data = BaseConverter.decode32(zMinimaAddress.substring(2)); 
+		//Now check the hash
+		byte[] hash = Crypto.getInstance().hashData(data);
 		
-		int len    = data.length;
-		int bitlen = 0; 
-		
-		//Convert back..
-		if(len == 20) {
-			bitlen = 20;
-		}else if(len == 25) {
-			bitlen = 24;
-		}else if(len == 30) {
-			bitlen = 28;
-		}else if(len == 35) {
-			bitlen = 32;
-		}else if(len == 40) {
-			bitlen = 36;
-		}else if(len == 45) {
-			bitlen = 40;
-		}else if(len == 50) {
-			bitlen = 48;
-		}else if(len == 55) {
-			bitlen = 52;
-		}else if(len == 60) {
-			bitlen = 56;
-		}else if(len == 65) {
-			bitlen = 60;
-		}else if(len == 70) {
-			bitlen = 64;
-		}else {
-			throw new ArithmeticException("Wrong length Minima Address : "+len);
-		}
-		
-		int hashlen = len - bitlen;
-		byte[] newdata = new byte[bitlen];
-		
-		//Copy the old..
-		for(int i=0;i<bitlen;i++) {
-			newdata[i] = data[i];
-		}
-		
-		//Now Hash it.. 
-		byte[] hash = Crypto.getInstance().hashData(newdata, 256);
-				
-		//Check it with the checksum..
-		for(int i=0;i<hashlen;i++) {
-			if(hash[i] != data[i+bitlen]) {
-				throw new ArithmeticException("Minima Address Checksum Error");	
+		//Check the first 4 bytes..
+		for(int i=0;i<4;i++) {
+			if(hash[i] != checksum[i]) {
+				throw new IllegalArgumentException("Invalid MxAddress - checksum wrong for "+zMinimAddress);
 			}
 		}
 		
-		return new MiniData(newdata);
+		return new MiniData(data);
 	}
 	
-	
-	
-	public static void main(String[] zArgs) {
-		MiniData tt = MiniData.getRandomData(24);
+	public static void main(String[] zArgs) throws Exception {
 		
-		String madd = Address.makeMinimaAddress(tt);
+		MiniData test 	= new MiniData("0x53AF91ED101E93824CED856E76BF4B23508100D6CE9EFFEB207BF1A949DFDC9D");
+		String mx 		= makeMinimaAddress(test);
 		
-		MiniData conv = Address.convertMinimaAddress(madd);
+		System.out.println("lj   : MxG082JYU8UQ40UWE14PRC5DPRBUWP3A20G1YMEJRVUM83RU6KKJNUSJYKJJ4PP");
+		System.out.println("mx   : "+mx);
 		
-		System.out.println("Address   : "+tt.to0xString());
-		System.out.println("Conv      : "+conv.to0xString());
-		System.out.println("MxAddress : "+madd);
+		MiniData conv 	= Address.convertMinimaAddress(mx);
+		System.out.println("conv : "+conv.to0xString());
+		
+//		MiniData tt = MiniData.getRandomData(320);
+////		MiniData tt = new MiniData("0x001");
+//		
+//		Address addr = new Address(tt);
+//		System.out.println("Address   : "+addr.toString());
+//		
+//		String madd 	= Address.makeMinimaAddress(tt);
+//		System.out.println("MxAddress : "+madd);
+//		
+//		MiniData conv 	= Address.convertMinimaAddress(madd);
+//		System.out.println("Converted : "+conv.to0xString());
+		
+//		conv 	= Address.convertMinimaAddress("Mx1010CAGPCN14YDBKQ9AARA7S1EH76M39W712URVZPV4K57K8P042VK91HFVY789F0E7NFVNZRPEYPJ4WUQYFKMJUEK7ETZZG4SFE0BMT8BTM12ZTG");
+//		System.out.println("Hard Converted : "+conv.to0xString());
 		
 	}
 	

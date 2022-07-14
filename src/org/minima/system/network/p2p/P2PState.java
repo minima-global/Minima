@@ -1,22 +1,16 @@
 package org.minima.system.network.p2p;
 
-import java.math.BigInteger;
 import java.net.InetSocketAddress;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.minima.database.MinimaDB;
-import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniNumber;
+import org.minima.system.network.p2p.messages.InetSocketAddressIO;
 import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.system.params.GeneralParams;
-import org.minima.system.params.GlobalParams;
-import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class P2PState {
@@ -38,9 +32,9 @@ public class P2PState {
     private Set<InetSocketAddress> knownPeers = new HashSet<>();
 
     /**
-     * The hosts Minima Address
+     * The hosts Minima Address - set a default
      */
-    private InetSocketAddress myMinimaAddress = null;
+    private InetSocketAddress myMinimaAddress = new InetSocketAddress(9001);
 
     /**
      * A secret to send with the ip request message
@@ -71,6 +65,11 @@ public class P2PState {
     private boolean doingDiscoveryConnection = false;
 
     /**
+     * IS P2P system still starting up?
+     */
+    private boolean startupComplete = false;
+
+    /**
      * The loop delay for the p2p manager
      */
     private long loopDelay = P2PParams.LOOP_DELAY;
@@ -78,16 +77,6 @@ public class P2PState {
     private boolean noConnect = false;
 
     private boolean isHostSet = false;
-
-    private float deviceHashRate = 0.0f;
-
-    public float getDeviceHashRate() {
-        return deviceHashRate;
-    }
-
-    public void setDeviceHashRate(float deviceHashRate) {
-        this.deviceHashRate = deviceHashRate;
-    }
 
     public P2PState() {
         // Creates a new empty state
@@ -192,64 +181,22 @@ public class P2PState {
 
     public JSONObject toJson() {
         JSONObject json = new JSONObject();
-        json.put("address", myMinimaAddress.toString().replace("/", ""));
-        json.put("timestamp", Instant.ofEpochMilli(System.currentTimeMillis()).toString());
-        json.put("minima_version", GlobalParams.MINIMA_VERSION);
-        json.put("is_mobile", GeneralParams.IS_MOBILE);
-        json.put("out_links", addressListToJSONArray(new ArrayList<>(outLinks.values())));
-        json.put("in_links", addressListToJSONArray(new ArrayList<>(inLinks.values())));
-        json.put("not_accepting_conn_links", addressListToJSONArray(new ArrayList<>(notAcceptingConnP2PLinks.values())));
-        json.put("none_p2p_links", addressListToJSONArray(new ArrayList<>(noneP2PLinks.values())));
-        json.put("all_links", addressListToJSONArray(new ArrayList<>(allLinks.values())));
-        json.put("knownPeers", addressListToJSONArray(new ArrayList<>(knownPeers)));
-        json.put("is_accepting_connections", isAcceptingInLinks);
-        json.put("all_links_count", allLinks.size());
-        json.put("deviceHashRate", getDeviceHashRate());
-        //Block details..
-        TxPoWTreeNode topnode 	= MinimaDB.getDB().getTxPoWTree().getTip();
-        MiniNumber topblock 	= topnode.getBlockNumber();
-        json.put("top_block_number", topblock);
-        
-        //Get the last 2 mod 50..
-        if(topblock.isMore(MiniNumber.HUNDRED)) {
-
-        	//The 2 blocks we are interested in..
-        	MiniNumber current 	= topblock.div(MiniNumber.FIFTY).floor().mult(MiniNumber.FIFTY);
-        	MiniNumber last 	= current.sub(MiniNumber.FIFTY);
-
-        	//Get  those details..
-        	String currenthash 	= topnode.getPastNode(current).getTxPoW().getTxPoWID();
-        	String lasthash 	= topnode.getPastNode(last).getTxPoW().getTxPoWID();
-
-        	json.put("50_block_number", current);
-        	json.put("50_current_hash", currenthash);
-        	json.put("50_last_hash", lasthash);
-    	}else {
-    		json.put("50_block_number", 0);
-        	json.put("50_current_hash", "");
-        	json.put("50_last_hash", "");
-    	}
-        
-        //And finally a total Weight Metric..
-        BigInteger chainweight 	= MinimaDB.getDB().getTxPoWTree().getRoot().getTotalWeight().toBigInteger();
-		BigInteger cascweight 	= MinimaDB.getDB().getCascade().getTotalWeight().toBigInteger();
-		json.put("weight", chainweight.add(cascweight));
-        
-        return json;
-    }
-
-    private JSONArray addressListToJSONArray(ArrayList<InetSocketAddress> addresses) {
-        JSONArray links = new JSONArray();
-        if (!addresses.isEmpty()) {
-            for (InetSocketAddress inetSocketAddress : addresses) {
-                if (inetSocketAddress != null) {
-                    links.add(inetSocketAddress.toString().replaceAll("/", ""));
-                } else {
-                    links.add("nullAddress:9001");
-                }
-            }
+        if (myMinimaAddress != null) {
+            json.put("address", myMinimaAddress.toString().replace("/", ""));
+        } else {
+            json.put("address", "not set");
         }
-        return links;
+        json.put("is_mobile", GeneralParams.IS_MOBILE);
+        json.put("is_accepting_connections", isAcceptingInLinks);
+
+        json.put("InLinks", InetSocketAddressIO.addressesListToJSONArray(new ArrayList<>(getInLinks().values())));
+        json.put("OutLinks", InetSocketAddressIO.addressesListToJSONArray(new ArrayList<>(getOutLinks().values())));
+        json.put("NotAcceptingConnP2PLinks", InetSocketAddressIO.addressesListToJSONArray(new ArrayList<>(getNotAcceptingConnP2PLinks().values())));
+        json.put("NoneP2PLinks", InetSocketAddressIO.addressesListToJSONArray(new ArrayList<>(getNoneP2PLinks().values())));
+        json.put("numAllLinks", getAllLinks().size());
+        json.put("numKnownPeers", getKnownPeers().size());
+
+        return json;
     }
 
     public boolean isNoConnect() {
@@ -282,5 +229,13 @@ public class P2PState {
 
     public void setAllLinks(Map<String, InetSocketAddress> allLinks) {
         this.allLinks = allLinks;
+    }
+
+    public boolean isStartupComplete() {
+        return startupComplete;
+    }
+
+    public void setStartupComplete(boolean startupComplete) {
+        this.startupComplete = startupComplete;
     }
 }

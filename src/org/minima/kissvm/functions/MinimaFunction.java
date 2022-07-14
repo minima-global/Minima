@@ -9,11 +9,15 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.Expression;
-import org.minima.kissvm.functions.cast.ADDRESS;
+import org.minima.kissvm.functions.cast.ASCII;
 import org.minima.kissvm.functions.cast.BOOL;
 import org.minima.kissvm.functions.cast.HEX;
 import org.minima.kissvm.functions.cast.NUMBER;
 import org.minima.kissvm.functions.cast.STRING;
+import org.minima.kissvm.functions.cast.UTF8;
+import org.minima.kissvm.functions.general.ADDRESS;
+import org.minima.kissvm.functions.general.EXISTS;
+import org.minima.kissvm.functions.general.FUNCTION;
 import org.minima.kissvm.functions.general.GET;
 import org.minima.kissvm.functions.hex.BITCOUNT;
 import org.minima.kissvm.functions.hex.BITGET;
@@ -42,17 +46,20 @@ import org.minima.kissvm.functions.sigs.SIGNEDBY;
 import org.minima.kissvm.functions.state.PREVSTATE;
 import org.minima.kissvm.functions.state.SAMESTATE;
 import org.minima.kissvm.functions.state.STATE;
+import org.minima.kissvm.functions.string.CLEAN;
 import org.minima.kissvm.functions.string.REPLACE;
 import org.minima.kissvm.functions.string.SUBSTR;
-import org.minima.kissvm.functions.string.UTF8;
 import org.minima.kissvm.functions.txn.input.GETINADDR;
 import org.minima.kissvm.functions.txn.input.GETINAMT;
 import org.minima.kissvm.functions.txn.input.GETINID;
 import org.minima.kissvm.functions.txn.input.GETINTOK;
+import org.minima.kissvm.functions.txn.input.SUMINPUTS;
 import org.minima.kissvm.functions.txn.input.VERIFYIN;
 import org.minima.kissvm.functions.txn.output.GETOUTADDR;
 import org.minima.kissvm.functions.txn.output.GETOUTAMT;
+import org.minima.kissvm.functions.txn.output.GETOUTKEEPSTATE;
 import org.minima.kissvm.functions.txn.output.GETOUTTOK;
+import org.minima.kissvm.functions.txn.output.SUMOUTPUTS;
 import org.minima.kissvm.functions.txn.output.VERIFYOUT;
 import org.minima.kissvm.values.Value;
 
@@ -67,16 +74,17 @@ public abstract class MinimaFunction {
 	 */
 	public static MinimaFunction[] ALL_FUNCTIONS = 
 			{ 
-				new CONCAT(), new LEN(), new REV(),new SUBSET(), new GET(), new ADDRESS(),
-				new BOOL(), new HEX(), new NUMBER(), new STRING(),
+				new CONCAT(), new LEN(), new REV(),new SUBSET(), new GET(), new EXISTS(), new ADDRESS(),
+				new BOOL(), new HEX(), new NUMBER(), new STRING(),new ASCII(),new UTF8(),
 				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(), 
-				new SIGDIG(), new POW(), 
-				new REPLACE(), new SUBSTR(), new OVERWRITE(), new UTF8(),
+				new SIGDIG(), new POW(), new FUNCTION(),
+				new SUMINPUTS(),new SUMOUTPUTS(), new CLEAN(), 
+				new REPLACE(), new SUBSTR(), new OVERWRITE(), 
 				new KECCAK(), new SHA2(), new SHA3(), new PROOF(), 
 				new BITSET(), new BITGET(), new BITCOUNT(),
 				new SIGNEDBY(), new MULTISIG(), new CHECKSIG(),
 				new GETINADDR(), new GETINAMT(), new GETINID(), new GETINTOK(),new VERIFYIN(),
-				new GETOUTADDR(), new GETOUTAMT(), new GETOUTTOK(),new VERIFYOUT(),
+				new GETOUTADDR(), new GETOUTAMT(), new GETOUTTOK(),new GETOUTKEEPSTATE(), new VERIFYOUT(),
 				new STATE(), new PREVSTATE(), new SAMESTATE()
 			};
 	

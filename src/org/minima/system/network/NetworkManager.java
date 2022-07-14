@@ -2,6 +2,7 @@ package org.minima.system.network;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.Socket;
 import java.net.SocketException;
 import java.util.Enumeration;
 
@@ -10,8 +11,8 @@ import org.minima.database.userprefs.UserDB;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.P2PManager;
-import org.minima.system.network.rpc.RPCServer;
-import org.minima.system.network.sshtunnel.SSHManager;
+import org.minima.system.network.rpc.CMDHandler;
+import org.minima.system.network.rpc.HTTPServer;
 import org.minima.system.network.webhooks.NotifyManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
@@ -34,12 +35,7 @@ public class NetworkManager {
 	/**
 	 * The RPC server
 	 */
-	RPCServer mRPCServer = null;
-	
-	/**
-	 * The SSH Tunnel Manager
-	 */
-	SSHManager mSSHManager;
+	HTTPServer mRPCServer = null;
 	
 	/**
 	 * The Web Hooks for Minima messages
@@ -73,9 +69,6 @@ public class NetworkManager {
 		if(MinimaDB.getDB().getUserDB().isRPCEnabled()) {
 			startRPC();
 		}
-		
-		//Start the SSH Tunnel manager
-		mSSHManager = new SSHManager();
 		
 		//Notifucation of Events
 		mNotifyManager = new NotifyManager();
@@ -144,11 +137,14 @@ public class NetworkManager {
 //			stats.put("port", GeneralParams.MINIMA_PORT);
 //		}
 		
-		stats.put("connecting", mNIOManager.getConnnectingClients());
-		stats.put("connected", mNIOManager.getConnectedClients());
+		stats.put("connecting", mNIOManager.getNumberOfConnnectingClients());
+		stats.put("connected", mNIOManager.getNumberOfConnectedClients());
 		
 		//RPC Stats
-		stats.put("rpc", MinimaDB.getDB().getUserDB().isRPCEnabled());
+		JSONObject rpcjson = new JSONObject();
+		rpcjson.put("enabled", MinimaDB.getDB().getUserDB().isRPCEnabled());
+		rpcjson.put("port", GeneralParams.RPC_PORT);
+		stats.put("rpc", rpcjson);
 		
 		//P2P stats
 		if(GeneralParams.P2P_ENABLED) {
@@ -173,9 +169,14 @@ public class NetworkManager {
 	public void startRPC() {
 		if(mRPCServer == null) {
 			//Start The RPC server
-			mRPCServer = new RPCServer(GeneralParams.RPC_PORT);
-		}else {
-			//Already started..
+			mRPCServer = new HTTPServer(GeneralParams.RPC_PORT) {
+				
+				@Override
+				public Runnable getSocketHandler(Socket zSocket) {
+					return new CMDHandler(zSocket);
+				}
+			};
+			
 		}
 	}
 	
@@ -197,16 +198,14 @@ public class NetworkManager {
 		//Send a message to the P2P
 		mP2PManager.PostMessage(P2PFunctions.P2P_SHUTDOWN);
 		
-		//And the SSH
-		mSSHManager.PostMessage(SSHManager.SSHTUNNEL_SHUTDOWN);
-		
 		//And the notify Manager
 		mNotifyManager.shutDown();
 	}
 	
 	public boolean isShutDownComplete() {
 		return 		mNIOManager.isShutdownComplete() 
-				&& 	mP2PManager.isShutdownComplete();
+				&&  mP2PManager.isShutdownComplete()
+				&&  mNotifyManager.isShutdownComplete();
 	}
 	
 	public MessageProcessor getP2PManager() {
@@ -215,10 +214,6 @@ public class NetworkManager {
 	
 	public NIOManager getNIOManager() {
 		return mNIOManager;
-	}
-	
-	public SSHManager getSSHManager() {
-		return mSSHManager;
 	}
 	
 	public NotifyManager getNotifyManager() {

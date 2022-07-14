@@ -1,5 +1,6 @@
 package org.minima.objects;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -9,6 +10,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
@@ -50,6 +52,11 @@ public class Token implements Streamable{
 	protected MiniString mTokenScript;
 	
 	/**
+	 * The Block this Token was created in
+	 */
+	protected MiniNumber mTokenCreated;
+	
+	/**
 	 * TokenID created after all the details are set
 	 */
 	protected MiniData mTokenID;
@@ -67,12 +74,17 @@ public class Token implements Streamable{
 	 * @param zName
 	 */
 	public Token(MiniData zCoindID, MiniNumber zScale, MiniNumber zMinimaAmount, MiniString zName, MiniString zTokenScript) {
+		this(zCoindID, zScale, zMinimaAmount, zName, zTokenScript, MiniNumber.ZERO);
+	}
+	
+	public Token(MiniData zCoindID, MiniNumber zScale, MiniNumber zMinimaAmount, MiniString zName, MiniString zTokenScript, MiniNumber zCreated) {
 				
 		mCoinID 			= zCoindID;
 		mTokenName 			= zName;
 		mTokenScale 		= zScale;
 		mTokenMinimaAmount 	= zMinimaAmount;
 		mTokenScript        = new MiniString(zTokenScript.toString()) ;
+		mTokenCreated		= zCreated;
 		
 		calculateTokenID();
 	}
@@ -123,6 +135,10 @@ public class Token implements Streamable{
 		return mCoinID;
 	}
 	
+	public MiniNumber getCreated() {
+		return mTokenCreated;
+	}
+	
 	public MiniData getTokenID() {
 		return mTokenID;
 	}
@@ -144,7 +160,8 @@ public class Token implements Streamable{
 		obj.put("decimals", getDecimalPlaces());
 		obj.put("script", mTokenScript.toString());
 		obj.put("totalamount", mTokenMinimaAmount.toString());
-		obj.put("scale", mTokenScale );
+		obj.put("scale", mTokenScale.toString() );
+		obj.put("created", mTokenCreated.toString());
 		obj.put("tokenid", mTokenID.to0xString());
 		
 		return obj;
@@ -185,6 +202,7 @@ public class Token implements Streamable{
 		mTokenScale.writeDataStream(zOut);
 		mTokenMinimaAmount.writeDataStream(zOut);
 		mTokenName.writeDataStream(zOut);
+		mTokenCreated.writeDataStream(zOut);
 	}
 
 	@Override
@@ -194,8 +212,32 @@ public class Token implements Streamable{
 		mTokenScale 		= MiniNumber.ReadFromStream(zIn);
 		mTokenMinimaAmount	= MiniNumber.ReadFromStream(zIn);
 		mTokenName 			= MiniString.ReadFromStream(zIn);
+		mTokenCreated		= MiniNumber.ReadFromStream(zIn);
 		
 		calculateTokenID();
+	}
+	
+	/**
+	 * Convert a MiniData version into a Token
+	 */
+	public static Token convertMiniDataVersion(MiniData zTxpData) {
+		ByteArrayInputStream bais 	= new ByteArrayInputStream(zTxpData.getBytes());
+		DataInputStream dis 		= new DataInputStream(bais);
+		
+		Token tok = null;
+		
+		try {
+			//Convert data into a TxPoW
+			tok = Token.ReadFromStream(dis);
+		
+			dis.close();
+			bais.close();
+			
+		} catch (IOException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return tok;
 	}
 	
 	public static Token ReadFromStream(DataInputStream zIn) throws IOException{

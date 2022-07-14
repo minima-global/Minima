@@ -56,6 +56,9 @@ public class MASTstatement implements Statement {
 			//Now run it..
 			mBlock.run(zContract);
 		
+		}catch(ExecutionException exc) {
+			throw exc;
+		
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			throw new ExecutionException(e.toString());

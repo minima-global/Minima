@@ -1,9 +1,10 @@
 package org.minima.system.commands.base;
 
+import org.minima.system.Main;
 import org.minima.system.commands.Command;
-import org.minima.utils.MinimaLogger;
-import org.minima.utils.json.JSONArray;
+import org.minima.system.network.maxima.MaximaManager;
 import org.minima.utils.json.JSONObject;
+import org.minima.utils.messages.Message;
 
 public class test extends Command {
 
@@ -15,23 +16,11 @@ public class test extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
-		//Get a JSON parameter
-//		JSONObject json = getJSONParam("json");
-//		MinimaLogger.log("JSON Received : "+json.toString());
+		Message mls = new Message(MaximaManager.MAXIMA_CHECK_MLS);
+		mls.addBoolean("force", true);
+		Main.getInstance().getMaxima().PostMessage(mls);
 		
-		if(isParamJSONObject("jj")) {
-			JSONObject jsonp = getJSONObjectParam("jj");
-			
-			MinimaLogger.log("JSON : "+jsonp.toJSONString());
-			
-		}else {
-			MinimaLogger.log("STRING : "+getParam("jj"));
-		}
-		
-		JSONArray jarr = getJSONArrayParam("arr");
-		
-		
-		ret.put("response", jarr);
+		ret.put("response", "Checking MLS servers..");
 		
 		return ret;
 	}

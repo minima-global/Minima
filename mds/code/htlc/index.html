@@ -1,0 +1,251 @@
+<html>
+
+<head>
+	<!--   The MINIMA MDS Javascript Library -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<title>HTLC Contract</title>
+</head>
+
+<script type="text/javascript">
+
+	function genRandomSecret(){
+		
+		//Get a secure random number..
+		MDS.cmd("random", function(resp){
+		
+			//Get the random value..
+			var rand = resp.response.random;
+			
+			//Set it..
+			document.getElementById("idsecret").value = rand;
+		});	
+	}
+
+	function hashSecret(){
+		
+		//What is the secret value..
+		var secret = document.getElementById("idsecret").value;
+		
+		//Hash the secret value
+		MDS.cmd("hash data:\""+secret+"\" type:sha2", function(resp){
+		
+			//Get the random value..
+			var hash = resp.response.hash;
+			
+			//Set it..
+			document.getElementById("idhash").value = hash;
+		});
+	}
+	
+	function genHTLCtxn(){
+		
+		//Get the secret
+		var secret = document.getElementById("idsecret").value;
+		
+		//Get the hash of the secret..
+		var hash = document.getElementById("idhash").value;
+		
+		//What is the TXN..
+		var actualscript = "RETURN SHA2(STATE(0)) EQ "+hash;
+		MDS.log("HTLC contract : "+actualscript);
+		
+		//Now create a script that we track with this value..
+		MDS.cmd("newscript track:true script:\""+actualscript+"\"", function(resp){
+			MDS.log(JSON.stringify(resp));
+		
+			//Details
+			var script 	= resp.response.script;
+			var address = resp.response.address;
+			
+			//Now lets put this in the DB
+			var sql = "INSERT INTO htlc(htlcscript,address,secret,hash) VALUES ('"+script+"','"+address+"','"+secret+"','"+hash+"')";
+			MDS.sql(sql,function(sqlresp){
+				MDS.log(JSON.stringify(sqlresp));
+				
+				var minima = document.getElementById("idminima").value;
+				
+				//And finally .. send 10 minima to that address
+				MDS.cmd("send amount:"+minima+" address:"+address, function(sendresp){
+					MDS.log(JSON.stringify(sendresp));
+			
+					//And now reload..
+					loadHTLC();
+				});	
+			});
+		});
+	}
+
+	function loadHTLC(){
+		
+		var sql = "SELECT * FROM htlc ORDER BY ID DESC";
+		MDS.sql(sql,function(sqlresp){
+			//MDS.log(JSON.stringify(sqlresp));
+			
+			var table 			= document.getElementById("myhtlc");
+			table.innerHTML 	= "";
+			
+			var data = sqlresp.rows;
+			for(var i = 0; i < data.length; i++) {
+			    var sqlrow = data[i];
+			
+			    //Add the rows..
+			    var row 	= table.insertRow(0);
+			    var cell1 	= row.insertCell(0);
+			    
+			    var text =  
+			    		"ID      : "+sqlrow.ID+"<br>"+
+			    		"Script  : "+sqlrow.HTLCSCRIPT+"<br>"+
+			    		"Address : "+sqlrow.ADDRESS+"<br>"+
+			    		"Secret  : "+sqlrow.SECRET+"<br>"+
+			    		"Hash    : "+sqlrow.HASH+"<br>"+
+			    		"<input type='button' value='Collect' onclick=\"collect('"+sqlrow.ADDRESS+"','"+sqlrow.SECRET+"')\"/>"+
+			    		"&nbsp;&nbsp;&nbsp;<input type='button' value='DISCARD' onclick=\"discard('"+sqlrow.ID+"')\" />"+
+			    		"<br><br>"
+			    cell1.innerHTML = text;
+			}		
+		});
+	}
+	
+	function collect(address,secret){
+		
+		//First.. get the coin..
+		MDS.cmd("coins address:"+address, function(coinresp){
+			//MDS.log(JSON.stringify(coinresp));
+			
+			var coins = coinresp.response;
+			if(coins.length < 1){
+				alert("Unspent Coin NOT found! @ "+address);
+				return;
+			}
+			
+			//Gat the coin
+			var coin = coins[0];
+			
+			//Get an address to collect to..
+			MDS.cmd("getaddress",function(getresp){
+				var getaddress = getresp.response.address;
+				
+				//Now construct a txn..
+				var txncreate = 
+					"txndelete id:myhtlc;"+
+					"txncreate id:myhtlc;"+
+					"txninput id:myhtlc coinid:"+coin.coinid+";"+
+					"txnoutput id:myhtlc amount:"+coin.amount+" address:"+getaddress+" storestate:false;"+
+					"txnstate id:myhtlc port:0 value:"+secret+";"+
+					"txnpost id:myhtlc auto:true;"+
+					"txndelete id:myhtlc";
+				
+				//Lets Post it..
+				MDS.cmd(txncreate, function(txnresp){
+					MDS.log("TXNCreate : "+JSON.stringify(txnresp));
+				});
+			});
+		});
+	}
+	
+	function discard(id){
+		MDS.sql("DELETE FROM htlc WHERE ID="+id,function(sqlresp){
+			//Reload..
+			loadHTLC();
+		});
+	}
+	
+</script>
+
+<body style='margin:0;'>
+
+<center>
+
+<br>
+<h1>HTLC Contract Page</h1>
+
+<table>
+
+	<tr>
+		<td style="text-align:right;"> SECRET : </td>
+		<td> <input type=text id=idsecret> </td>
+		<td> <input type=button value="Generate" onclick="genRandomSecret();"> </td>
+	</tr>
+	
+	<tr>
+		<td style="text-align:right;"> HASH : </td>
+		<td> <input type=text id=idhash> </td>
+		<td> <input type=button value="Hash Secret SHA2" onclick="hashSecret();"> </td>
+	</tr>
+
+	<tr>
+		<td colspan=3><hr></td>
+	</tr>
+
+	<tr>
+		<td style="text-align:right;"> Minima : </td>
+		<td> <input type=text id=idminima value="10"> </td>
+		<td> <input type=button value="Create HTLC Coin" onclick="genHTLCtxn();"> </td>
+	</tr>
+	
+	<tr>
+		<td colspan=3>
+		<b> 
+			RETURN SHA2(STATE(0)) EQ <i>HASH</i>
+		</b>
+		</td>
+	</tr>
+	
+	<tr>
+		<td colspan=3><hr></td>
+	</tr>
+	
+</table>
+
+<table id="myhtlc" style="font-size:12;font-family:monospace;">
+	
+</table>
+
+</center>
+
+<script type="text/javascript">
+
+	/*MDS.DEBUG_HOST 			= "127.0.0.1";
+	MDS.DEBUG_PORT 			= 9003;
+	MDS.DEBUG_MINIDAPPID 	= "0xDFA3DBBBF167F45E16DC5B7C5717D12FFC45C365A1C9FBFBD9E461F374A223B8";
+	*/
+	
+	//Initialise MiFi
+	MDS.init(function(msg){
+		if(msg.event == "inited"){
+			
+			//Drop it..
+			//MDS.sql("DROP table htlc", function(sqlresp){
+			
+				//My HTLC contracts
+				initsql = "CREATE TABLE IF NOT EXISTS `htlc` ( "
+							+"  `id` IDENTITY PRIMARY KEY, "
+							+"  `htlcscript` varchar(512) NOT NULL, "
+							+"  `address` varchar(160) NOT NULL, "
+							+"  `secret` varchar(160) NOT NULL, "
+							+"  `hash` varchar(160) NOT NULL"
+							+" )";
+							
+				//Run this..
+				MDS.sql(initsql,function(msg){
+					MDS.log("HTLC SQL Inited..");
+					
+					loadHTLC();
+				});
+			//});
+		
+		}else if(msg.event == "NEWBLOCK"){
+			
+		}else{
+			//All other messages - Log it..
+			//MDS.log(JSON.stringify(msg));
+		}
+	});
+	
+	
+</script>
+
+</body>
+
+</html>

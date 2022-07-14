@@ -119,6 +119,8 @@ public class VERIFYOUTTests {
             mf.addParameter(new ConstantExpression(new HexValue(addr4.getAddressData())));
             mf.addParameter(new ConstantExpression(new NumberValue(out1.getAmount())));
             mf.addParameter(new ConstantExpression(new HexValue(out1.getTokenID())));
+            mf.addParameter(new ConstantExpression(new BooleanValue(true)));
+            
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
@@ -163,6 +165,7 @@ public class VERIFYOUTTests {
             mf.addParameter(new ConstantExpression(new HexValue(addr5.getAddressData())));
             mf.addParameter(new ConstantExpression(new NumberValue(out1.getAmount())));
             mf.addParameter(new ConstantExpression(new HexValue(out1.getTokenID())));
+            mf.addParameter(new ConstantExpression(new BooleanValue(true)));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
@@ -177,6 +180,7 @@ public class VERIFYOUTTests {
             mf.addParameter(new ConstantExpression(new HexValue(addr4.getAddressData())));
             mf.addParameter(new ConstantExpression(new NumberValue(out2.getAmount())));
             mf.addParameter(new ConstantExpression(new HexValue(out1.getTokenID())));
+            mf.addParameter(new ConstantExpression(new BooleanValue(true)));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
@@ -191,6 +195,7 @@ public class VERIFYOUTTests {
             mf.addParameter(new ConstantExpression(new HexValue(addr4.getAddressData())));
             mf.addParameter(new ConstantExpression(new NumberValue(out1.getAmount())));
             mf.addParameter(new ConstantExpression(new HexValue(MiniData.getRandomData(16))));
+            mf.addParameter(new ConstantExpression(new BooleanValue(true)));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
@@ -207,6 +212,7 @@ public class VERIFYOUTTests {
             mf.addParameter(new ConstantExpression(new NumberValue(tmp.getScaledTokenAmount(out2.getAmount()))));
 //            mf.addParameter(new ConstantExpression(new NumberValue(out2.getAmount().mult(tp.getScaleFactor()))));
             mf.addParameter(new ConstantExpression(new HexValue(out2.getTokenID())));
+            mf.addParameter(new ConstantExpression(new BooleanValue(true)));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
@@ -252,6 +258,7 @@ public class VERIFYOUTTests {
             mf.addParameter(new ConstantExpression(new NumberValue(tmp.getScaledTokenAmount(out2.getAmount()))));
 //            mf.addParameter(new ConstantExpression(new NumberValue(out2.getAmount().mult(tp.getScaleFactor()))));
             mf.addParameter(new ConstantExpression(new HexValue(out2.getTokenID())));
+            mf.addParameter(new ConstantExpression(new BooleanValue(true)));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
@@ -266,6 +273,7 @@ public class VERIFYOUTTests {
             mf.addParameter(new ConstantExpression(new HexValue(addr5.getAddressData())));
             mf.addParameter(new ConstantExpression(new NumberValue(out2.getAmount())));
             mf.addParameter(new ConstantExpression(new HexValue(out2.getTokenID())));
+            mf.addParameter(new ConstantExpression(new BooleanValue(true)));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
@@ -281,6 +289,7 @@ public class VERIFYOUTTests {
             mf.addParameter(new ConstantExpression(new NumberValue(tmp.getScaledTokenAmount(out2.getAmount()))));
 //            mf.addParameter(new ConstantExpression(new NumberValue(out2.getAmount().mult(tp.getScaleFactor()))));
             mf.addParameter(new ConstantExpression(new HexValue(MiniData.getRandomData(16))));
+            mf.addParameter(new ConstantExpression(new BooleanValue(true)));
             try {
                 Value res = mf.runFunction(ctr);
                 assertEquals(Value.VALUE_BOOLEAN, res.getValueType());
@@ -297,6 +306,7 @@ public class VERIFYOUTTests {
             mf.addParameter(new ConstantExpression(new NumberValue(tmp.getScaledTokenAmount(out2.getAmount()))));
 //            mf.addParameter(new ConstantExpression(new NumberValue(out3.getAmount().mult(tp.getScaleFactor()))));
             mf.addParameter(new ConstantExpression(new HexValue(out3.getTokenID())));
+            mf.addParameter(new ConstantExpression(new BooleanValue(true)));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });

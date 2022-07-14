@@ -9,7 +9,11 @@ public class TimerProcessor implements Runnable {
 	/**
 	 * Static function for all Timed Messages
 	 */
-	private static TimerProcessor mTimerProcessor = new TimerProcessor();
+	private static TimerProcessor mTimerProcessor= null;
+	public static void createTimerProcessor(){
+		mTimerProcessor = new TimerProcessor();
+	}
+	
 	public static TimerProcessor getTimerProcessor() {
 		return mTimerProcessor;
 	}
@@ -32,9 +36,17 @@ public class TimerProcessor implements Runnable {
 	 */
 	private ArrayList<TimerMessage> mTimerMessages;
 	
+	/**
+	 * Synchronization lock for mTimerMessages
+	 */
+	private Object mMessagesLock;
+	
 	private TimerProcessor() {
 		mRunning 		= true;
 		mTimerMessages 	= new ArrayList<TimerMessage>();
+		mMessagesLock	= new Object();
+		
+		mMessagesLock = new Object();
 		
 		mMainThread = new Thread(this);
 		mMainThread.start();
@@ -47,8 +59,20 @@ public class TimerProcessor implements Runnable {
 	}
 	
 	public void PostMessage(TimerMessage zMessage) {
-		synchronized (mTimerMessages) {
-			mTimerMessages.add(zMessage);
+		synchronized (mMessagesLock) {
+			if(zMessage != null) {
+				mTimerMessages.add(zMessage);
+			}else {
+				//Intermittent Bug..
+				MinimaLogger.log("NULL TIMER Message attempt:");
+				
+				//Print Stack Strace
+				Throwable tt = new Throwable();
+				for(StackTraceElement stack : tt.getStackTrace()) {
+					//Print it..
+					MinimaLogger.log("     "+stack.toString());
+				}
+			}
 		}
 	}
 	
@@ -57,7 +81,7 @@ public class TimerProcessor implements Runnable {
 		while(mRunning) {
 			
 			//Check the stack for messages..
-			synchronized (mTimerMessages) {
+			synchronized (mMessagesLock) {
 				//New list to store the ongoing timers
 				ArrayList<TimerMessage> newlist = new ArrayList<TimerMessage>();
 				
@@ -66,6 +90,13 @@ public class TimerProcessor implements Runnable {
 				
 				//Cycle through all the timers
 				for(TimerMessage tm : mTimerMessages) {
+					
+					//Check for null... strange internittent BUG..
+					if(tm == null) {
+						MinimaLogger.log("Timer Message is NULL.. ?");
+						continue;
+					}
+					
 					//Get the time..
 					if(tm.getTimer()<time) {
 						//Who get's it

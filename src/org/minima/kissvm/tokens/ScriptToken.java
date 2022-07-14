@@ -23,6 +23,7 @@ public class ScriptToken {
 	public static final int TOKEN_CLOSEBRACKET   	= 8;
 	public static final int TOKEN_TRUE   			= 9;
 	public static final int TOKEN_FALSE   			= 10;
+	public static final int TOKEN_FUNCTIIONPARAM 	= 11;
 	
 	private int 	mTokenType;
 	private String 	mToken;
@@ -48,6 +49,8 @@ public class ScriptToken {
 			return "FALSE";
 		case TOKEN_FUNCTIION:
 			return "FUNCTION";
+		case TOKEN_FUNCTIIONPARAM:
+			return "FUNCTIONPARAM";
 		case TOKEN_VALUE:
 			return "VALUE";
 		case TOKEN_OPENBRACKET:

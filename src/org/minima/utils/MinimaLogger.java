@@ -8,7 +8,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import org.minima.system.Main;
-import org.minima.utils.messages.Message;
+import org.minima.utils.json.JSONObject;
 
 /**
  * @author Spartacus Rex
@@ -25,9 +25,11 @@ public class MinimaLogger {
 		String full_log = "Minima @ "+DATEFORMAT.format(new Date())+" ["+MiniFormat.formatSize(mem)+"] : "+zLog;
 		System.out.println(full_log);
 		
-		//Is there a listener..
-		if(Main.getMinimaListener() != null) {
-			Main.getMinimaListener().processMessage(new Message(MINIMA_LOG).addString("log", full_log));
+		//Create a Notify Message for the listeners
+		if(Main.getInstance() != null) {
+			JSONObject data = new JSONObject();
+			data.put("message", full_log);
+			Main.getInstance().PostNotifyEvent("MINIMALOG", data);
 		}
 	}
 	

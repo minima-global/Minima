@@ -2,6 +2,7 @@ package org.minima.system.brains;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -11,6 +12,8 @@ import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Coin;
+import org.minima.objects.CoinProof;
+import org.minima.objects.Magic;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
@@ -24,40 +27,58 @@ import org.minima.utils.MinimaLogger;
 public class TxPoWGenerator {
 	
 	/**
-	 * TESTER hash difficulty
+	 * The Bounding range for a difficulty change +/- 20% per block
 	 */
-	public static final MiniData MIN_DIFFICULTY = new MiniData(
-					"0xFFFFFFFFFFFFFFFFFFFF"+
-					  "FFFFFFFFFFFFFFFFFFFF"+
-					  "FFFFFFFFFFFFFFFFFFFF"+
-					  "FFFF");
+	private final static MiniNumber MAX_SPBOUND_DIFFICULTY = new MiniNumber("1.2");
+	private final static MiniNumber MIN_SPBOUND_DIFFICULTY = new MiniNumber("0.8");
 	
 	/**
-	 * For Now - Hard set the Min TxPoW Difficulty
+	 * The Bounding range for a difficulty change x2 or half from 4 hr avg
 	 */
-	public static final BigInteger MIN_HASHES 		= new BigInteger("10000");
-	public static final BigInteger MIN_TXPOW_VAL 	= Crypto.MAX_VAL.divide(MIN_HASHES);
-	public static final MiniData MIN_TXPOWDIFF 		= new MiniData(MIN_TXPOW_VAL);
+	private final static MiniNumber RETARGET_CHANGE 			= new MiniNumber("20000");
+	private final static MiniNumber MAX_NEW_SPBOUND_DIFFICULTY 	= new MiniNumber("2.0");
+	private final static MiniNumber MIN_NEW_SPBOUND_DIFFICULTY 	= new MiniNumber("0.5");
 	
+	/**
+	 * Calculate a Difficulty Hash for a given hash number
+	 */
+	public static MiniData calculateDifficultyData(MiniNumber zHashes) {
+		return new MiniData(Crypto.MAX_VAL.divide(zHashes.getAsBigInteger()));
+	}
+	
+	/**
+	 * Generate a complete TxPoW
+	 */
 	public static TxPoW generateTxPoW(Transaction zTransaction, Witness zWitness) {
+		return generateTxPoW(zTransaction, zWitness, null, null);
+	}
+	
+	public static TxPoW generateTxPoW(Transaction zTransaction, Witness zWitness, Transaction zBurnTransaction, Witness zBurnWitness) {
 		//Base
 		TxPoW txpow = new TxPoW();
 		
 		//Current top block
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 		
-		//Set the time..
-		txpow.setTimeMilli(new MiniNumber(System.currentTimeMillis()));
+		//Set the block number
+		txpow.setBlockNumber(tip.getTxPoW().getBlockNumber().increment());
+			
+		//Set the current time
+		txpow.setTimeMilli( new MiniNumber(System.currentTimeMillis()) );
 		
 		//Set the Transaction..
 		txpow.setTransaction(zTransaction);
 		txpow.setWitness(zWitness);
 		
-		//Set the TXN Difficulty..
-		txpow.setTxDifficulty(MIN_TXPOWDIFF);
+		//Is there a BURN - otherwise use the default empty one
+		if(zBurnTransaction != null) {
+			txpow.setBurnTransaction(zBurnTransaction);
+			txpow.setBurnWitness(zBurnWitness);
+		}
 		
-		//Set the details..
-		txpow.setBlockNumber(tip.getTxPoW().getBlockNumber().increment());
+		//Set the correct Magic Numbers..
+		Magic txpowmagic = tip.getTxPoW().getMagic().calculateNewCurrent();
+		txpow.setMagic(txpowmagic);
 		
 		//Set the parents..
 		for(int i=0;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
@@ -73,83 +94,109 @@ public class TxPoWGenerator {
 			txpow.setSuperParent(i, tiptxid);
 		}
 		
-		/**
-		 * Calculate the current speed and block difficulty
-		 */
-		MiniNumber topblock = tip.getTxPoW().getBlockNumber();
+		//Set the block difficulty - minimum is the TxPoW diff..
+		MiniData blkdiff = getBlockDifficulty(tip);
+		txpow.setBlockDifficulty(blkdiff);
+				
+		//Set the TXN Difficulty.. currently 1 second work..
+		MiniNumber userhashrate = MinimaDB.getDB().getUserDB().getHashRate();
+		MiniData minhash 		= calculateDifficultyData(userhashrate);
 		
-		//First couple of blocks 
-		if(topblock.isLessEqual(MiniNumber.TWO)) {
-			txpow.setBlockDifficulty(MIN_TXPOWDIFF);
-		}else {
-			MiniNumber blocksback = GlobalParams.MINIMA_BLOCKS_SPEED_CALC;
-			if(topblock.isLessEqual(blocksback)) {
-				blocksback = topblock.decrement();
-			}
-			
-			//Get current speed
-			MiniNumber speed 		= getChainSpeed(tip, blocksback);
-			MiniNumber speedratio 	= GlobalParams.MINIMA_BLOCK_SPEED.div(speed);
-			
-			//Get average difficulty over that period
-			BigInteger averagedifficulty 	= getAverageDifficulty(tip, blocksback);
-			BigDecimal averagedifficultydec	= new BigDecimal(averagedifficulty);
-			
-			//Recalculate..
-			BigDecimal newdifficultydec = averagedifficultydec.multiply(speedratio.getAsBigDecimal());  
-			BigInteger newdifficulty	= newdifficultydec.toBigInteger();
-			
-			//MUST be more than the MIN TxPoW..
-			if(newdifficulty.compareTo(MIN_TXPOW_VAL)>0) {
-				newdifficulty = MIN_TXPOW_VAL;
-			}
-			
-			if(newdifficulty.compareTo(BigInteger.ZERO)<0) {
-				MinimaLogger.log("SERIOUS ERROR : NEGATIVE DIFFICULTY!");
-				MinimaLogger.log("speed         : "+speed);
-				MinimaLogger.log("speedratio    : "+speedratio);
-				MinimaLogger.log("newdifficulty :"+newdifficulty.toString());
-			}
-			
-			txpow.setBlockDifficulty(new MiniData(newdifficulty));
+		//Check is not MORE than the block difficulty - this only happens at genesis..
+		if(minhash.isLess(blkdiff)) {
+			minhash = blkdiff;
 		}
 		
+		//Check is acceptable.. if not add 10% as may be changing..
+		if(minhash.isMore(txpowmagic.getMinTxPowWork())) {
+			
+			//Warn them..
+			MinimaLogger.log("WARNING : Your Hashrate is lower than the current Minimum allowed by the network");
+			
+			//Add 10%.. to give yourself some space
+			BigDecimal hashes 	= txpowmagic.getMinTxPowWork().getDataValueDecimal();
+			hashes 				= hashes.divide(new BigDecimal("1.1"), MathContext.DECIMAL64);
+			minhash 			= new MiniData(hashes.toBigInteger());
+			
+			//This could be too low if the Hash value is going up..
+//			minhash = txpowmagic.getMinTxPowWork();
+		}
+		txpow.setTxDifficulty(minhash);
 		
 		//And add the current mempool txpow..
 		ArrayList<TxPoW> mempool = MinimaDB.getDB().getTxPoWDB().getAllUnusedTxns();
 		
+		//Order the mempool txns by BURN..
+		Collections.sort(mempool, new Comparator<TxPoW>() {
+			@Override
+			public int compare(TxPoW o1, TxPoW o2) {
+				return o2.getBurn().compareTo(o1.getBurn());
+			}
+		});
+		
 		//The final TxPoW transactions put in this TxPoW
 		ArrayList<TxPoW> chosentxns = new ArrayList<>();
-		
-		//Order the mempool by BURN..
-		//..
-		
+				
 		//A list of the added coins
 		ArrayList<String> addedcoins = new ArrayList<>();
 		
-		//Add the main transaction inputs..
-		ArrayList<Coin> inputcoins = txpow.getTransaction().getAllInputs();
-		for(Coin cc : inputcoins) {
-			addedcoins.add(cc.getCoinID().to0xString());
+		//Main
+		ArrayList<CoinProof> proofs = txpow.getWitness().getAllCoinProofs();
+		for(CoinProof proof : proofs) {
+			addedcoins.add(proof.getCoin().getCoinID().to0xString());
+		}
+
+		//Burn
+		proofs = txpow.getBurnWitness().getAllCoinProofs();
+		for(CoinProof proof : proofs) {
+			addedcoins.add(proof.getCoin().getCoinID().to0xString());
 		}
 		
 		//Check them all..
 		int totaladded = 0;
 		for(TxPoW memtxp : mempool) {
 			
+			//Is it a transaction
+			if(!memtxp.isTransaction()) {
+				continue;
+			}
+			
+			//Start off assuming it's valid
+			boolean valid = true;
 			try {
 				
-				//Check CoinIDs not added already..
-				ArrayList<Coin> inputs = memtxp.getTransaction().getAllInputs();
-				for(Coin cc : inputs) {
-					if(addedcoins.contains(cc.getCoinID().to0xString())) {
+				//Input coin checkers - For the CoinProofs as CoinID may be ELTOO
+				ArrayList<CoinProof> inputs;
+				
+				//Check CoinIDs not added already.. for Transaction
+				inputs = memtxp.getWitness().getAllCoinProofs();
+				for(CoinProof proof : inputs) {
+					if(addedcoins.contains(proof.getCoin().getCoinID().to0xString())) {
 						//Coin already added in previous TxPoW
 						continue;
 					}
 				}
 				
+				//Check CoinIDs not added already.. for Burn Transaction
+				inputs = memtxp.getBurnWitness().getAllCoinProofs();
+				for(CoinProof proof : inputs) {
+					if(addedcoins.contains(proof.getCoin().getCoinID().to0xString())) {
+						//Coin already added in previous TxPoW
+						continue;
+					}
+				}
+				
+				//Check against the Magic Numbers
+				if(memtxp.getSizeinBytesWithoutBlockTxns() > txpowmagic.getMaxTxPoWSize().getAsLong()) {
+					MinimaLogger.log("Mempool txn too big.. "+memtxp.getTxPoWID());
+					valid = false;
+				}else if(memtxp.getTxnDifficulty().isMore(txpowmagic.getMinTxPowWork())) {
+					MinimaLogger.log("Mempool txn TxPoW too low.. "+memtxp.getTxPoWID());
+					valid = false;
+				}
+				
 				//Check if Valid!
-				if(TxPoWChecker.checkTxPoWSimple(tip.getMMR(), memtxp, txpow.getBlockNumber())) {
+				if(valid && TxPoWChecker.checkTxPoWSimple(tip.getMMR(), memtxp, txpow)) {
 					//Add to our list
 					chosentxns.add(memtxp);
 					
@@ -159,25 +206,33 @@ public class TxPoWGenerator {
 					//One more to the total..
 					totaladded++;
 					
-					//Add all the input coins
-					ArrayList<Coin> memtxpinputcoins = memtxp.getTransaction().getAllInputs();
-					for(Coin cc : memtxpinputcoins) {
-						addedcoins.add(cc.getCoinID().to0xString());
+					//Add all the input coins - from transaction
+					ArrayList<CoinProof> memtxpinputcoins = memtxp.getWitness().getAllCoinProofs();
+					for(CoinProof cc : memtxpinputcoins) {
+						addedcoins.add(cc.getCoin().getCoinID().to0xString());
 					}
 					
-				}else {
-					
-					//Invalid TxPoW - remove from mempool
-					MinimaLogger.log("Invalid TxPoW in mempool.. removing.. "+memtxp.getTxPoWID());
-					MinimaDB.getDB().getTxPoWDB().removeMemPoolTxPoW(memtxp.getTxPoWID());
+					//Add all the input coins - from burn transaction
+					memtxpinputcoins = memtxp.getBurnWitness().getAllCoinProofs();
+					for(CoinProof cc : memtxpinputcoins) {
+						addedcoins.add(cc.getCoin().getCoinID().to0xString());
+					}	
 				}
 				
 			}catch(Exception exc) {
-				MinimaLogger.log("ERROR Checking TxPoW "+memtxp.getTxPoWID());
+				MinimaLogger.log("ERROR Checking TxPoW "+memtxp.getTxPoWID()+" "+exc.toString());
+				valid = false;
 			}
 			
-			//Max allowed.. 1 txn/s - for now..
-			if(totaladded > 50) {
+			//Was it valid
+			if(!valid) {
+				//Invalid TxPoW - remove from mempool
+				MinimaLogger.log("Invalid TxPoW in mempool.. removing.. "+memtxp.getTxPoWID());
+				MinimaDB.getDB().getTxPoWDB().removeMemPoolTxPoW(memtxp.getTxPoWID());
+			}
+			
+			//Max allowed..
+			if(totaladded >= txpowmagic.getMaxNumTxns().getAsInt()) {
 				break;
 			}
 		}
@@ -197,38 +252,111 @@ public class TxPoWGenerator {
 		return txpow;
 	}
 	
-	
-	public static MiniNumber getChainSpeed(TxPoWTreeNode zTopBlock, MiniNumber zBlocksBack) {
-		//Which block are we looking for..
-		MiniNumber block = zTopBlock.getTxPoW().getBlockNumber().sub(zBlocksBack);
+	/**
+	 * Get the next Block Difficulty - using bounds..
+	 */
+	public static MiniData getBlockDifficulty(TxPoWTreeNode zParent) {
 		
-		//Get the past block - initially there may be less than that available
-		TxPoWTreeNode pastblock = zTopBlock.getPastNode(block);
-		if(pastblock == null) {
-			//too soon..
-			MinimaLogger.log("SPEED TOO SOON "+zTopBlock.getTxPoW().getBlockNumber()+" "+zBlocksBack);
-			return MiniNumber.ONE;
+		//Are we just starting out.. first 8 blocks are minimum difficulty
+		if(zParent.getBlockNumber().isLess(MiniNumber.EIGHT)) {
+			return Magic.MIN_TXPOW_WORK;
 		}
+		
+		//Start from the parent..
+		TxPoWTreeNode startblock 	= zParent;
+		MiniNumber origstart 		= startblock.getBlockNumber();
+		
+		//Where to..
+		TxPoWTreeNode endblock 		= zParent.getParent(GlobalParams.MINIMA_BLOCKS_SPEED_CALC.getAsInt());
+		MiniNumber origend 			= endblock.getBlockNumber();
+		
+		//Now use the Median Times..
+		startblock 				= getMedianTimeBlock(startblock);
+		endblock 				= getMedianTimeBlock(endblock);
+		MiniNumber blockdiff 	= startblock.getBlockNumber().sub(endblock.getBlockNumber()); 
+		
+		//If the start and end are the same..
+		if(startblock.getBlockNumber().isEqual(endblock.getBlockNumber())) {
+			//Must be the root of the tree.. Return the LATEST value..
+			return zParent.getTxBlock().getTxPoW().getBlockDifficulty();
+		}
+		
+		//In case of serious time error
+		MiniNumber timediff = startblock.getTxPoW().getTimeMilli().sub(endblock.getTxPoW().getTimeMilli());
+		if(timediff.isLessEqual(MiniNumber.ZERO)) {
+			//This should not happen..
+			MinimaLogger.log("SERIOUS NEGATIVE TIME ERROR @ "+zParent.getBlockNumber()+" Using latest block diff..");
+			MinimaLogger.log("StartBlock @ "+origstart+"/"+startblock.getBlockNumber()+" "+new Date(startblock.getTxPoW().getTimeMilli().getAsLong()));
+			MinimaLogger.log("EndBlock   @ "+origend+"/"+endblock.getBlockNumber()+" "+new Date(endblock.getTxPoW().getTimeMilli().getAsLong()));
+			MinimaLogger.log("Root node : "+MinimaDB.getDB().getTxPoWTree().getRoot().getBlockNumber());
+			
+			//Return the LATEST value..
+			return zParent.getTxBlock().getTxPoW().getBlockDifficulty();
+		}
+		
+		//Get current speed
+		MiniNumber speed 		= getChainSpeed(startblock, blockdiff);
+		
+		//What is the speed ratio.. what we use to decide the NEW difficulty
+		MiniNumber speedratio 	= GlobalParams.MINIMA_BLOCK_SPEED.div(speed);
+		
+		//STEALTH FORK
+		if(zParent.getBlockNumber().isMore(RETARGET_CHANGE)) {
+			
+			//Faster re-targetting
+			if(speedratio.isMore(MAX_NEW_SPBOUND_DIFFICULTY)) {
+				speedratio = MAX_NEW_SPBOUND_DIFFICULTY;
+			}else if(speedratio.isLess(MIN_NEW_SPBOUND_DIFFICULTY)) {
+				speedratio = MIN_NEW_SPBOUND_DIFFICULTY;
+			}
+			
+		}else {
+			
+			//Older slower retarget
+			if(speedratio.isMore(MAX_SPBOUND_DIFFICULTY)) {
+//				MinimaLogger.log("MAX speedratio bound hit : "+speedratio+" setting to "+MAX_SPBOUND_DIFFICULTY);
+				speedratio = MAX_SPBOUND_DIFFICULTY;
+				
+			}else if(speedratio.isLess(MIN_SPBOUND_DIFFICULTY)) {
+//				MinimaLogger.log("MIN speedratio bound hit : "+speedratio+" setting to "+MIN_SPBOUND_DIFFICULTY);
+				speedratio = MIN_SPBOUND_DIFFICULTY;
+			}
+		}
+		
+		
+		
+		//Get average difficulty over that period
+		BigInteger averagedifficulty 	= getAverageDifficulty(startblock, blockdiff);
+		BigDecimal averagedifficultydec	= new BigDecimal(averagedifficulty);
+		
+		//Recalculate..
+		BigDecimal newdifficultydec = averagedifficultydec.multiply(speedratio.getAsBigDecimal());  
+		MiniData newdiff 			= new MiniData(newdifficultydec.toBigInteger());
+		
+		//Check harder than the absolute minimum
+		if(newdiff.isMore(Magic.MIN_TXPOW_WORK)) {
+			newdiff = Magic.MIN_TXPOW_WORK;
+		}
+		
+		return newdiff;
+	}
+	
+	public static MiniNumber getChainSpeed(TxPoWTreeNode zStartBlock, MiniNumber zBlocksBack) {
+		
+		//Get the past block
+		TxPoWTreeNode pastblock = zStartBlock.getParent(zBlocksBack.getAsInt());
 		
 		MiniNumber blockpast	= pastblock.getTxPoW().getBlockNumber();
 		MiniNumber timepast 	= pastblock.getTxPoW().getTimeMilli();
 		
-		MiniNumber blocknow		= zTopBlock.getTxPoW().getBlockNumber();
-		MiniNumber timenow 		= zTopBlock.getTxPoW().getTimeMilli();
+		MiniNumber blocknow		= zStartBlock.getTxPoW().getBlockNumber();
+		MiniNumber timenow 		= zStartBlock.getTxPoW().getTimeMilli();
 		
 		MiniNumber blockdiff 	= blocknow.sub(blockpast);
 		MiniNumber timediff 	= timenow.sub(timepast);
 		
 		MiniNumber speedmilli 	= blockdiff.div(timediff);
 		MiniNumber speedsecs 	= speedmilli.mult(MiniNumber.THOUSAND);
-		
-		if(speedsecs.isLessEqual(MiniNumber.ZERO)) {
-			MinimaLogger.log("SERIOUS ERROR NEGATIVE SPEED AS PAST BLOCK AHEAD OF CURRENT TIME!");
-			MinimaLogger.log(blockpast+" "+new Date(timepast.getAsLong()).toString()+" "+blocknow+" "+new Date(timenow.getAsLong()).toString());
-			MinimaLogger.log("PAST    : "+blockpast+" "+pastblock.getTxPoW().getTxPoWID()+" "+timepast.getAsLong());
-			MinimaLogger.log("CURRENT : "+blocknow+" "+zTopBlock.getTxPoW().getTxPoWID()+" "+timenow.getAsLong());
-			return GlobalParams.MINIMA_BLOCK_SPEED;
-		}
 		
 		return speedsecs;
 	}
@@ -258,44 +386,104 @@ public class TxPoWGenerator {
 	}
 	
 	/**
-	 * Get the Median time of the last 128 blocks..
+	 * Get the Median Block based on milli time..
 	 */
-	public static MiniNumber getMedianTime(TxPoWTreeNode zTopBlock) {
+	public static TxPoWTreeNode getMedianTimeBlock(TxPoWTreeNode zStartBlock) {
+		return getMedianTimeBlock(zStartBlock, GlobalParams.MEDIAN_BLOCK_CALC);
+	}
+	
+	public static TxPoWTreeNode getMedianTimeBlock(TxPoWTreeNode zStartBlock, int zBlocksBack) {
 		
-		//Create a list of times..
-		ArrayList<MiniNumber> alltimes = new ArrayList<>();
+		//The block we start checking from
+		TxPoWTreeNode current = zStartBlock;
 		
-		TxPoWTreeNode current = zTopBlock;
+		//Create a list of blocks..
+		ArrayList<TxPoWTreeNode> allblocks = new ArrayList<>();
+		
 		int counter=0;
-		while(counter<128 && current!=null) {
+		while(counter<zBlocksBack && current!=null) {
 			
 			//Add to our list
-			alltimes.add(current.getTxPoW().getTimeMilli());
+			allblocks.add(current);
 			
 			//Move back up the tree
 			current = current.getParent();
 			counter++;
 		}
 		
-		//Now sort them..
-		Collections.sort(alltimes, new Comparator<MiniNumber>() {
+		//Now sort them.. by time milli
+		Collections.sort(allblocks, new Comparator<TxPoWTreeNode>() {
 			@Override
-			public int compare(MiniNumber o1, MiniNumber o2) {
-				return o1.compareTo(o2);
+			public int compare(TxPoWTreeNode o1, TxPoWTreeNode o2) {
+				return o1.getTxPoW().getTimeMilli().compareTo(o2.getTxPoW().getTimeMilli());
 			}
 		});
 		
 		//Now pick the middle one
-		int size = alltimes.size();
-		
-		//Middle..
-		MiniNumber median = alltimes.get(size/2);
-		
-//		String timenow 		= new Date(zTopBlock.getTxPoW().getTimeMilli().getAsLong()).toString();
-//		String timemedian 	= new Date(median.getAsLong()).toString();
-//		MinimaLogger.log("MEDIAN TIME @ "+timenow+" MEDIAN:"+timemedian+" "+counter);
+		int middle 	= allblocks.size()/2;
 		
 		//Return the middle one!
-		return median;
+		return allblocks.get(middle);
+	}
+	
+	public static void precomputeTransactionCoinID(Transaction zTransaction) {
+		
+		//Get the inputs.. 
+		ArrayList<Coin> inputs = zTransaction.getAllInputs();
+		
+		//Are there any..
+		if(inputs.size() == 0) {
+			return;
+		}
+		
+		//Get the first coin..
+		Coin firstcoin = inputs.get(0);
+		
+		//Is it an ELTOO input
+		boolean eltoo = false; 
+		if(firstcoin.getCoinID().isEqual(Coin.COINID_ELTOO)) {
+			eltoo = true;
+		}
+		
+		//The base modifier
+		MiniData basecoinid = firstcoin.getCoinID();
+		
+		//Now cycle..
+		ArrayList<Coin> outputs = zTransaction.getAllOutputs();
+		int num=0;
+		for(Coin output : outputs) {
+			
+			//Calculate the CoinID..
+			if(eltoo) {
+				
+				//Normal
+				output.resetCoinID(Coin.COINID_OUTPUT);
+				
+			}else {
+				
+				//The CoinID
+				MiniData coinid = zTransaction.calculateCoinID(basecoinid, num);
+				output.resetCoinID(coinid);
+			}
+			
+			num++;
+		}
+	}
+	
+	public static void main(String[] zArgs) {
+		
+		ArrayList<MiniNumber> nums = new ArrayList<>();
+		nums.add(MiniNumber.ZERO);
+		nums.add(MiniNumber.ONE);
+		nums.add(MiniNumber.TWO);
+		
+		Collections.sort(nums, new Comparator<MiniNumber>() {
+			@Override
+			public int compare(MiniNumber o1, MiniNumber o2) {
+				return o2.compareTo(o1);
+			}
+		});
+		
+		System.out.println(nums.toString());
 	}
 }
