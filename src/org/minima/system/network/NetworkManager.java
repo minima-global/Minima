@@ -164,7 +164,7 @@ public class NetworkManager {
 		JSONObject readwrite = new JSONObject();
 		
 		Duration dur = Duration.ofMillis(System.currentTimeMillis() - mNIOManager.getTrafficListener().getStartTime());
-		int mins 	 = dur.toMinutesPart(); 
+		long mins 	 = dur.toMinutes(); 
 		if(mins==0) {
 			mins = 1;
 		}
