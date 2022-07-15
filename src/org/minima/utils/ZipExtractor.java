@@ -10,7 +10,7 @@ import java.util.zip.ZipInputStream;
 public class ZipExtractor {
 
 	public static void unzip(InputStream archive, File zDestPath) throws IOException {
-        MinimaLogger.log("unzipping package into " + zDestPath.getAbsolutePath());
+        //MinimaLogger.log("unzipping package into " + zDestPath.getAbsolutePath());
         byte[] buffer = new byte[1024];
         ZipInputStream zis = new ZipInputStream(archive);
         ZipEntry zipEntry = zis.getNextEntry();

@@ -31,7 +31,9 @@ public class MDSManager extends MessageProcessor {
 
 	public static final String MDS_INIT 				= "MDS_INIT";
 	public static final String MDS_POLLMESSAGE 			= "MDS_POLLMESSAGE";
-	public static final String MDS_MINIDAPPS_CHANGED 	= "MDS_MINIDAPPS_CHANGED";
+	public static final String MDS_MINIDAPPS_RESETALL 	= "MDS_MINIDAPPS_RESETALL";
+	
+	public static final String MDS_MINIDAPPS_INSTALLED 	= "MDS_MINIDAPPS_INSTALLED";
 	
 	//The Main File and Command server
 	HTTPSServer mMDSFileServer;
@@ -231,9 +233,13 @@ public class MDSManager extends MessageProcessor {
 				}
 			};
 			
+			//Create a NEW Main Password..
+			MiniData password 	= MiniData.getRandomData(32);
+			String b32			= BaseConverter.encode32(password.getBytes());
+			mMiniHUBPassword	= b32.substring(2,6)+"-"+b32.substring(7,11)+"-"+b32.substring(12,16);
 			
 			//Scan for MiniDApps
-			PostMessage(MDS_MINIDAPPS_CHANGED);
+			PostMessage(MDS_MINIDAPPS_RESETALL);
 			
 		}else if(zMessage.getMessageType().equals(MDS_POLLMESSAGE)) {
 
@@ -255,17 +261,12 @@ public class MDSManager extends MessageProcessor {
 			//Add then to the Poll Stack - web minidapps
 			mPollStack.addMessage(poll);
 		
-		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_CHANGED)) {
+		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_RESETALL)) {
 			
 			//Shut down all the Context Objkects..
 			for(MDSJS mds : mRunnables) {
 				mds.shutdown();
 			}
-			
-			//Create a NEW Main Password..
-			MiniData password 	= MiniData.getRandomData(32);
-			String b32			= BaseConverter.encode32(password.getBytes());
-			mMiniHUBPassword	= b32.substring(2,6)+"-"+b32.substring(7,11)+"-"+b32.substring(12,16);
 			
 			//Now clear
 			mRunnables.clear();
@@ -275,47 +276,63 @@ public class MDSManager extends MessageProcessor {
 			ArrayList<MiniDAPP> dapps = MinimaDB.getDB().getMDSDB().getAllMiniDAPPs();
 			for(MiniDAPP dapp : dapps) {
 				
-				//Is there a service.js class
-				File service = new File(getMiniDAPPFolder(dapp.getUID()),"service.js");
-				if(service.exists()) {
-					
-					try {
-						//Load the file..
-						byte[] serv = MiniFile.readCompleteFile(service);
-						String code = new String(serv,MiniString.MINIMA_CHARSET);
-						
-						//Load it into the servcei runner..
-						Context ctx = Context.enter();
-						ctx.setOptimizationLevel(-1);
-						ctx.setLanguageVersion(Context.VERSION_1_7);
-						
-						//Create the Scope
-						Scriptable scope = ctx.initStandardObjects();
-						
-						//Create an MDSJS object
-						MDSJS mdsjs = new MDSJS(this, dapp.getUID(), dapp.getName(), ctx, scope);
-						ScriptableObject.putProperty(scope, "MDS", Context.javaToJS(mdsjs, scope));
-						
-						//Add the DECIMAL.js code..
-						ctx.evaluateString(scope, DECIMALJS, "<decimaljs_"+dapp.getUID()+">", 1, null);
-						
-						//Add the main code to the Runnable
-						ctx.evaluateString(scope, code, "<mds_"+dapp.getUID()+">", 1, null);
-					
-						//Add to our list
-						mRunnables.add(mdsjs);
-					
-					}catch(Exception exc) {
-						MinimaLogger.log("ERROR starting service "+dapp.getName()+" "+exc);
-					}
-				}
+				//Set it up
+				setupMiniDAPP(dapp);
+			}
+		
+		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_INSTALLED)) {
+			
+			//Get the MiniDAPP
+			MiniDAPP dapp = (MiniDAPP) zMessage.getObject("minidapp");
 				
-				//Now add a uniques random SessionID
-				String sessionid = MiniData.getRandomData(32).to0xString();
-				mSessionID.put(sessionid, dapp.getUID());
+			//Install it..
+			setupMiniDAPP(dapp);
+		}
+	}
+
+	/**
+	 * Initialise a MiniDAPP
+	 */
+	private void setupMiniDAPP(MiniDAPP zDAPP) {
+		
+		//Is there a service.js class
+		File service = new File(getMiniDAPPFolder(zDAPP.getUID()),"service.js");
+		if(service.exists()) {
+			
+			try {
+				//Load the file..
+				byte[] serv = MiniFile.readCompleteFile(service);
+				String code = new String(serv,MiniString.MINIMA_CHARSET);
+				
+				//Load it into the servcei runner..
+				Context ctx = Context.enter();
+				ctx.setOptimizationLevel(-1);
+				ctx.setLanguageVersion(Context.VERSION_1_7);
+				
+				//Create the Scope
+				Scriptable scope = ctx.initStandardObjects();
+				
+				//Create an MDSJS object
+				MDSJS mdsjs = new MDSJS(this, zDAPP.getUID(), zDAPP.getName(), ctx, scope);
+				ScriptableObject.putProperty(scope, "MDS", Context.javaToJS(mdsjs, scope));
+				
+				//Add the DECIMAL.js code..
+				ctx.evaluateString(scope, DECIMALJS, "<decimaljs_"+zDAPP.getUID()+">", 1, null);
+				
+				//Add the main code to the Runnable
+				ctx.evaluateString(scope, code, "<mds_"+zDAPP.getUID()+">", 1, null);
+			
+				//Add to our list
+				mRunnables.add(mdsjs);
+			
+			}catch(Exception exc) {
+				MinimaLogger.log("ERROR starting service "+zDAPP.getName()+" "+exc);
 			}
 		}
 		
+		//Now add a uniques random SessionID
+		String sessionid = MiniData.getRandomData(32).to0xString();
+		mSessionID.put(sessionid, zDAPP.getUID());
 	}
-
+	
 }
