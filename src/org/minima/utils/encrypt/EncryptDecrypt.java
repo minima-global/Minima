@@ -5,7 +5,10 @@ import java.security.PublicKey;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.PBEParameterSpec;
 
 import org.minima.objects.base.MiniData;
 
@@ -51,6 +54,31 @@ public class EncryptDecrypt {
 		
     	return aesCipher.doFinal(encryptedData);
     }
+    
+    
+//    public static byte[] encryptSYMPassword(String zPassword, byte[] inputData) throws Exception {
+//    	
+//    	//Generate an IVParam
+//    	byte[] ivparam = GenerateKey.IvParam();
+//    	
+//    	//Password Based Encryption..
+//    	PBEParameterSpec pbeParamSpec = new PBEParameterSpec(psswdSalt, PBKDF_INTERATIONS, ivParamSpec);
+//    	PBEKeySpec pbeKeySpec = new PBEKeySpec(password.toCharArray());
+//    	SecretKeyFactory pbeKeyFactory = 
+//    	SecretKeyFactory.getInstance("PBEWithHmacSHA256AndAES_128");
+//    	SecretKey pbeKey = pbeKeyFactory.generateSecret(pbeKeySpec);
+//
+//    	Cipher cipher = Cipher.getInstance(PBE_CIPHER_NAME);
+//    	cipher.init(Cipher.ENCRYPT_MODE, pbeKey, pbeParamSpec);
+//    	
+//    	SecretKey sk 		= GenerateKey.convertSecret(zSecretKey);    	
+//    	IvParameterSpec iv 	= new IvParameterSpec(zIvParam);
+//    	
+//    	Cipher aesCipher 	= GenerateKey.getSymetricCipher();
+//		aesCipher.init(Cipher.ENCRYPT_MODE, sk, iv);
+//		
+//    	return aesCipher.doFinal(inputData);
+//    }
     
     public static void main(String[] args) throws Exception {
 
