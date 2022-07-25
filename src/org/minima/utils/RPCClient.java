@@ -21,6 +21,7 @@ public class RPCClient {
 		
 		//Open her up
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		con.setConnectTimeout(10000);
 		con.setRequestMethod("GET");
 		con.setRequestProperty("User-Agent", USER_AGENT);
 		con.setRequestProperty("Connection", "close");
@@ -54,6 +55,7 @@ public class RPCClient {
 		
 		//Open her up
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		con.setConnectTimeout(10000);
 		con.setRequestMethod("PUT");
 		con.setRequestProperty("User-Agent", USER_AGENT);
 		con.setRequestProperty("Connection", "close");
@@ -88,7 +90,7 @@ public class RPCClient {
 	public static String sendPOST(String zHost, String zParams, String zType) throws IOException {
 		URL obj = new URL(zHost);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-		//con.setConnectTimeout(20000);
+		con.setConnectTimeout(10000);
 		con.setRequestMethod("POST");
 		con.setRequestProperty("User-Agent", USER_AGENT);
 		con.setRequestProperty("Connection", "close");
