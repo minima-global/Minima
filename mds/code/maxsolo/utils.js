@@ -35,7 +35,7 @@ function showDiv(id,show) {
 
 function showNotification(from, message){
 	
-	//MDS.log("NOTIFICATION : "+message+" permission:"+Notification.permission+" visibility:"+document.visibilityState);
+	MDS.log("NOTIFICATION : "+message+" permission:"+Notification.permission+" visibility:"+document.visibilityState);
 	
 	//Only show if we can''t see it..
 	if(document.visibilityState !== "visible") {

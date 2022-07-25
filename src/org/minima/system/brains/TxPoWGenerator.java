@@ -27,17 +27,10 @@ import org.minima.utils.MinimaLogger;
 public class TxPoWGenerator {
 	
 	/**
-	 * The Bounding range for a difficulty change +/- 20% per block
+	 * The Bounding range for a difficulty change
 	 */
-	private final static MiniNumber MAX_SPBOUND_DIFFICULTY = new MiniNumber("1.2");
-	private final static MiniNumber MIN_SPBOUND_DIFFICULTY = new MiniNumber("0.8");
-	
-	/**
-	 * The Bounding range for a difficulty change x2 or half from 4 hr avg
-	 */
-	private final static MiniNumber RETARGET_CHANGE 			= new MiniNumber("20000");
-	private final static MiniNumber MAX_NEW_SPBOUND_DIFFICULTY 	= new MiniNumber("2.0");
-	private final static MiniNumber MIN_NEW_SPBOUND_DIFFICULTY 	= new MiniNumber("0.5");
+	private final static MiniNumber MAX_SPBOUND_DIFFICULTY = new MiniNumber("2.0");
+	private final static MiniNumber MIN_SPBOUND_DIFFICULTY = new MiniNumber("0.5");
 	
 	/**
 	 * Calculate a Difficulty Hash for a given hash number
@@ -300,30 +293,12 @@ public class TxPoWGenerator {
 		//What is the speed ratio.. what we use to decide the NEW difficulty
 		MiniNumber speedratio 	= GlobalParams.MINIMA_BLOCK_SPEED.div(speed);
 		
-		//STEALTH FORK
-		if(zParent.getBlockNumber().isMore(RETARGET_CHANGE)) {
-			
-			//Faster re-targetting
-			if(speedratio.isMore(MAX_NEW_SPBOUND_DIFFICULTY)) {
-				speedratio = MAX_NEW_SPBOUND_DIFFICULTY;
-			}else if(speedratio.isLess(MIN_NEW_SPBOUND_DIFFICULTY)) {
-				speedratio = MIN_NEW_SPBOUND_DIFFICULTY;
-			}
-			
-		}else {
-			
-			//Older slower retarget
-			if(speedratio.isMore(MAX_SPBOUND_DIFFICULTY)) {
-//				MinimaLogger.log("MAX speedratio bound hit : "+speedratio+" setting to "+MAX_SPBOUND_DIFFICULTY);
-				speedratio = MAX_SPBOUND_DIFFICULTY;
-				
-			}else if(speedratio.isLess(MIN_SPBOUND_DIFFICULTY)) {
-//				MinimaLogger.log("MIN speedratio bound hit : "+speedratio+" setting to "+MIN_SPBOUND_DIFFICULTY);
-				speedratio = MIN_SPBOUND_DIFFICULTY;
-			}
+		//Re-target Boundary
+		if(speedratio.isMore(MAX_SPBOUND_DIFFICULTY)) {
+			speedratio = MAX_SPBOUND_DIFFICULTY;
+		}else if(speedratio.isLess(MIN_SPBOUND_DIFFICULTY)) {
+			speedratio = MIN_SPBOUND_DIFFICULTY;
 		}
-		
-		
 		
 		//Get average difficulty over that period
 		BigInteger averagedifficulty 	= getAverageDifficulty(startblock, blockdiff);
