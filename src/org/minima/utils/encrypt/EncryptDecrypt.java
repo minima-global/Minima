@@ -2,11 +2,14 @@ package org.minima.utils.encrypt;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 
 import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
@@ -72,17 +75,23 @@ public class EncryptDecrypt {
 //        byte[] decryptedData = decryptASM(privk.getBytes(), encryptedData);
 //        System.out.println(new String(decryptedData));
 
+    	
+    	//The DATA
+//    	MiniData data = new MiniData("0x30819F300D06092A864886F70D010101050003818D0030818902818100C62066FF7598C930630E0CBFE9D067677F41075EC817CDFE807619F9A4AAC510C2FC82E398C0DBA126F562FC05031ECE32ED2B7E92696AB7FCE0DA183BA93E8E441046323B40CB2049749B6B1278D0E7C1A4AB1D688E53C8869450C243534DDC350ADED0506E39F444609AA537E47FAC75FA209110FE3D2BF7ECCD386D1BC3750203010001");
+    	MiniData data = MiniData.getRandomData(1024);
+    	
+    	//The Password
+    	String password = "hello";
+    	
+    	//The SALT
     	SecureRandom rand 	= new SecureRandom();
     	byte[] salt 		= new byte[8];
     	rand.nextBytes(salt);
-    	
-    	String password = "hello";
-    	
-//    	MiniData data = new MiniData("0x30819F300D06092A864886F70D010101050003818D0030818902818100C62066FF7598C930630E0CBFE9D067677F41075EC817CDFE807619F9A4AAC510C2FC82E398C0DBA126F562FC05031ECE32ED2B7E92696AB7FCE0DA183BA93E8E441046323B40CB2049749B6B1278D0E7C1A4AB1D688E53C8869450C243534DDC350ADED0506E39F444609AA537E47FAC75FA209110FE3D2BF7ECCD386D1BC3750203010001");
-    	MiniData data = MiniData.getRandomData(32);
+    	MiniData mdsalt = new MiniData(salt);
     	
     	//Create a IvParam for this round of encryption
 		byte[] ivparam = GenerateKey.IvParam();
+		MiniData mdiv  = new MiniData(ivparam);
 		
 		//Create an Password based AES key
 		byte[] secret = GenerateKey.secretKey(password,salt).getEncoded();
@@ -91,36 +100,61 @@ public class EncryptDecrypt {
 		Cipher ciph = GenerateKey.getCipherSYM(Cipher.ENCRYPT_MODE, ivparam, secret);
 		
 		//Write it out..
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ByteArrayOutputStream baos 	= new ByteArrayOutputStream();
+		DataOutputStream dos 		= new DataOutputStream(baos);
 		
 		//First the salt..
-		baos.write(salt);
+		mdsalt.writeDataStream(dos);
 		
 		//And now the IVParam
-		baos.write(ivparam);
+		mdiv.writeDataStream(dos);
 		
 		//Now write the data
-		CipherOutputStream cos = new CipherOutputStream(baos, ciph);
+		CipherOutputStream cos = new CipherOutputStream(dos, ciph);
 		cos.write(data.getBytes());
 		cos.flush();
 		
 		cos.close();
+		dos.close();
 		baos.close();
 		
 		byte[] encdata 		= baos.toByteArray();
 		MiniData mEncData 	= new MiniData(encdata);
 		
 		System.out.println("Orig : "+data.to0xString());
+		System.out.println("Salt : "+mdsalt.to0xString());
+		System.out.println("IVPa : "+mdiv.to0xString());
 		System.out.println("Len  : "+data.getLength());
     	System.out.println("Enc  : "+mEncData.to0xString());
     	System.out.println("Len  : "+mEncData.getLength());
 		
-    	
     	//Now read in 
-    	ByteArrayInputStream bais = new ByteArrayInputStream(encdata);
+    	ByteArrayInputStream bais 	= new ByteArrayInputStream(encdata);
+    	DataInputStream dis 		= new DataInputStream(bais);
     	
+    	//First read in the salt..
+    	MiniData insalt = MiniData.ReadFromStream(dis);
     	
+    	//Now the IV..
+    	MiniData iniv = MiniData.ReadFromStream(dis); 
+    	
+    	//Now convert to CipherStream
+    	byte[] insecret 		= GenerateKey.secretKey(password,insalt.getBytes()).getEncoded();
+    	Cipher inciph 			= GenerateKey.getCipherSYM(Cipher.DECRYPT_MODE, iniv.getBytes(), insecret);
+    	CipherInputStream cis 	= new CipherInputStream(dis, inciph);
+
+    	//Now read in data..
+    	int len=0;
+    	byte[] indata = cis.readAllBytes();
+    	
+    	MiniData infinal = new MiniData(indata);
+    	System.out.println("Salt : "+insalt.to0xString());
+		System.out.println("IVPa : "+iniv.to0xString());
+		System.out.println("Dec  : "+infinal.to0xString());
+    	System.out.println("Len  : "+infinal.getLength());
+    	System.out.println("Valid: "+infinal.isEqual(data));
 		
+    	
 //		//Now encrypt the data with the secret
 //		byte[] encrypteddata 	= EncryptDecrypt.encryptSYM(ivparam, secret, data.getBytes());
 //		MiniData mEncData 			= new MiniData(encrypteddata);
