@@ -188,8 +188,9 @@ public class MDSCompleteHandler implements Runnable {
 						//And return..
 						JSONObject res=  new JSONObject();
 						res.put("command", minimacommand);
-						res.put("status", "pending");
-						res.put("message", "This command needs to be confirmed");
+						res.put("status", false);
+						res.put("pending", true);
+						res.put("message", "This command needs to be confirmed and has been added to pending commands");
 						res.put("complete", data);
 						
 						result = res.toString();

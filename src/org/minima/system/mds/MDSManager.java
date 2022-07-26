@@ -166,6 +166,23 @@ public class MDSManager extends MessageProcessor {
 		return mPending;
 	}
 	
+	public boolean removePending(String zUID) {
+		ArrayList<PendingCommand> newpending = new ArrayList<>();
+		boolean found = false;
+		for(PendingCommand pending : mPending) {
+			if(!pending.getUID().equals(zUID)) {
+				newpending.add(pending);
+			}else {
+				found = true;
+			}
+		}
+
+		//Switch
+		mPending = newpending;
+		
+		return found;
+	}
+	
 	public JSONObject runSQL(String zUID, String zSQL) {
 		
 //		//Check / convert the UID..

@@ -80,6 +80,7 @@ public class mds extends Command {
 			ArrayList<PendingCommand> allpending = Main.getInstance().getMDSManager().getAllPending(); 
 			
 			//Make into JSONArray
+			boolean found = false;
 			for(PendingCommand pending : allpending) {
 				if(pending.getUID().equals(uid)) {
 					
@@ -93,9 +94,31 @@ public class mds extends Command {
 						ret.put("response", (JSONArray) new JSONParser().parse(result));
 					}
 					
+					found = true;
 					break;
 				}
 			}
+			
+			//Did we find it..
+			if(found) {
+				//Remove it from the list
+				Main.getInstance().getMDSManager().removePending(uid);
+			}else {
+				throw new CommandException("Pending UID not found : "+uid);
+			}
+			
+		}else if(action.equals("deny")) {
+			
+			//Get the uid
+			String uid = getParam("uid");
+			
+			//Remove it from the list
+			boolean found = Main.getInstance().getMDSManager().removePending(uid);
+			if(!found) {
+				throw new CommandException("Pending UID not found : "+uid);
+			}
+			
+			ret.put("response", "Pending action removed : "+uid);
 			
 		}else if(action.equals("install")) {
 		
