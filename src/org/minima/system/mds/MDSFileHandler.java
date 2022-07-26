@@ -22,7 +22,6 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.CommandException;
-import org.minima.system.commands.base.newaddress;
 import org.minima.system.mds.hub.MDSHub;
 import org.minima.system.mds.hub.MDSHubError;
 import org.minima.system.mds.hub.MDSHubInstall;
