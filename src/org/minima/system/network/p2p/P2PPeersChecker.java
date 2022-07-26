@@ -44,9 +44,17 @@ public class P2PPeersChecker extends MessageProcessor {
     /**
      * Max number of Wanted Verified Peers
      */
-    public int MAX_VERIFIED_PEERS = 250; 
-    
+    public int MAX_VERIFIED_PEERS = 250;
+
+    public Set<InetSocketAddress> getUnverifiedPeers() {
+        return unverifiedPeers;
+    }
+
     private final Set<InetSocketAddress> unverifiedPeers = new HashSet<>();
+
+    public Set<InetSocketAddress> getVerifiedPeers() {
+        return verifiedPeers;
+    }
 
     private final Set<InetSocketAddress> verifiedPeers = new HashSet<>();
 
@@ -90,6 +98,7 @@ public class P2PPeersChecker extends MessageProcessor {
 			}
 
         } else if (zMessage.getMessageType().equals(PEERS_CHECKPEERS)) {
+
             InetSocketAddress address = (InetSocketAddress) zMessage.getObject("address");
             if (P2PFunctions.getAllConnectedConnections().size() > 0) {
                 
@@ -151,7 +160,9 @@ public class P2PPeersChecker extends MessageProcessor {
                 				//Wrong chain.. !
                 				validversion = false;
                 			}
-                		}
+                		} else {
+                            MinimaLogger.log("[-] Can't check peer as we have no block data");
+                        }
                 	}else {
                 		MinimaLogger.log("PEERS CHECKER no block data @ "+address.toString());
                 		
