@@ -18,6 +18,7 @@ import org.minima.utils.ZipExtractor;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
+import org.minima.utils.messages.Message;
 
 public class mds extends Command {
 
@@ -101,7 +102,9 @@ public class mds extends Command {
 			ret.put("response", mds);
 			
 			//There has been a change
-			Main.getInstance().getMDSManager().PostMessage(MDSManager.MDS_MINIDAPPS_CHANGED);
+			Message installed = new Message(MDSManager.MDS_MINIDAPPS_INSTALLED);
+			installed.addObject("minidapp", md);
+			Main.getInstance().getMDSManager().PostMessage(installed);
 			
 		}else if(action.equals("uninstall")) {
 
@@ -127,7 +130,7 @@ public class mds extends Command {
 			ret.put("response", mds);
 			
 			//There has been a change
-			Main.getInstance().getMDSManager().PostMessage(MDSManager.MDS_MINIDAPPS_CHANGED);
+			Main.getInstance().getMDSManager().PostMessage(MDSManager.MDS_MINIDAPPS_RESETALL);
 			
 		}else if(action.equals("reload")) {
 			
@@ -165,7 +168,7 @@ public class mds extends Command {
 			ret.put("response", mds);
 			
 			//There has been a change
-			Main.getInstance().getMDSManager().PostMessage(MDSManager.MDS_MINIDAPPS_CHANGED);
+			Main.getInstance().getMDSManager().PostMessage(MDSManager.MDS_MINIDAPPS_RESETALL);
 		}
 		
 		return ret;

@@ -48,6 +48,13 @@
 			"version" : "1.83"
 		},
 		{
+			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/ic/ic_1.3.10.mds.zip",
+			"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/icons/incentiveprogram.png",
+			"name":"Incentive Program",
+			"description": "Earn rewards for running a node",
+			"version" : "1.3.10"
+		},
+		{
 			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/scriptide-1.7.mds.zip",
 			"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/icons/scriptide.png",
 			"name":"Script IDE",

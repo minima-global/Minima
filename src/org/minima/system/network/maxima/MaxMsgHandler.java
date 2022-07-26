@@ -154,11 +154,20 @@ public class MaxMsgHandler extends MessageProcessor {
 		zMaxMessage.writeDataStream(dos);
 		dos.flush();
 		
+		//Tell the NIO
+		Main.getInstance().getNIOManager().getTrafficListener().addWriteBytes(zMaxMessage.getLength());
+		
 		//Now get a response.. should be ONE_ID.. give it 10 second max.. ( might get a block..)
 		MiniData valid = MaximaManager.MAXIMA_RESPONSE_FAIL;
 		long maxtime = System.currentTimeMillis() + 10000;
 		while(System.currentTimeMillis() < maxtime) {
+			
+			//Read the data
 			MiniData resp = MiniData.ReadFromStream(dis);
+			
+			//Tell the NIO
+			Main.getInstance().getNIOManager().getTrafficListener().addReadBytes(resp.getLength());
+			
 			if(resp.isEqual(MaximaManager.MAXIMA_RESPONSE_OK)) {
 				valid = resp;
 				break;

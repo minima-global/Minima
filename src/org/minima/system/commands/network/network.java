@@ -12,7 +12,7 @@ import org.minima.utils.json.JSONObject;
 public class network extends Command {
 
 	public network() {
-		super("network","(action:list|restart) - Show network status or restart");
+		super("network","(action:list|reset) - Show network status or reset traffic counter");
 	}
 	
 	@Override
@@ -33,6 +33,11 @@ public class network extends Command {
 			
 			//Add to the response
 			ret.put("response", clarr);
+			
+		}else if(action.equals("reset")) {
+			
+			Main.getInstance().getNIOManager().getTrafficListener().reset();
+			ret.put("response", "Traffic counter restarted..");
 			
 		}else if(action.equals("restart")) {
 			

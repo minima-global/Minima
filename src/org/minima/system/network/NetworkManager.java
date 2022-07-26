@@ -4,6 +4,11 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.Enumeration;
 
 import org.minima.database.MinimaDB;
@@ -15,6 +20,8 @@ import org.minima.system.network.rpc.CMDHandler;
 import org.minima.system.network.rpc.HTTPServer;
 import org.minima.system.network.webhooks.NotifyManager;
 import org.minima.system.params.GeneralParams;
+import org.minima.utils.MiniFile;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -153,15 +160,35 @@ public class NetworkManager {
 			stats.put("p2p", "disabled");
 		}
 		
-		//SSH Tunnel
-		JSONObject ssh = new JSONObject();
-		if(udb.isSSHTunnelEnabled()) {
-			ssh.put("enabled", true);
-			ssh.put("user", sshsettings.get("username")+"@"+sshsettings.get("host"));
-			stats.put("sshtunnel", ssh);
-		}else {
-			ssh.put("enabled", false);
+		//Read / Write stats..
+		JSONObject readwrite = new JSONObject();
+		
+		Duration dur = Duration.ofMillis(System.currentTimeMillis() - mNIOManager.getTrafficListener().getStartTime());
+		long mins 	 = dur.toMinutes(); 
+		if(mins==0) {
+			mins = 1;
 		}
+		
+		Date starter = new Date(mNIOManager.getTrafficListener().getStartTime());
+		readwrite.put("from", starter.toString());
+		readwrite.put("totalread", MiniFormat.formatSize(mNIOManager.getTrafficListener().getTotalRead()));
+		readwrite.put("totalwrite", MiniFormat.formatSize(mNIOManager.getTrafficListener().getTotalWrite()));
+		long speedread 	= mNIOManager.getTrafficListener().getTotalRead() / mins;
+		long speedwrite = mNIOManager.getTrafficListener().getTotalWrite() / mins;
+		readwrite.put("read",MiniFormat.formatSize(speedread)+"/min");
+		readwrite.put("write",MiniFormat.formatSize(speedwrite)+"/min");
+		stats.put("traffic", readwrite);
+		
+		
+//		//SSH Tunnel
+//		JSONObject ssh = new JSONObject();
+//		if(udb.isSSHTunnelEnabled()) {
+//			ssh.put("enabled", true);
+//			ssh.put("user", sshsettings.get("username")+"@"+sshsettings.get("host"));
+//			stats.put("sshtunnel", ssh);
+//		}else {
+//			ssh.put("enabled", false);
+//		}
 		
 		return stats;
 	}

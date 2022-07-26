@@ -3,6 +3,8 @@ package org.minima.objects;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
@@ -227,6 +229,21 @@ public class IBD implements Streamable {
 	
 	public ArrayList<TxBlock> getTxBlocks(){
 		return mTxBlocks;
+	}
+	
+	public BigInteger getTotalWeight(){
+		
+		//The total weight of the chain
+		BigDecimal total  = BigDecimal.ZERO;
+		for(TxBlock block : mTxBlocks) {
+			total = total.add(block.getTxPoW().getWeight());
+		}
+		BigInteger chainweight 	= total.toBigInteger();
+		
+		//The weight of the cascade
+		BigInteger cascweight 	= getCascade().getTotalWeight().toBigInteger();
+
+		return cascweight.add(chainweight);
 	}
 	
 	@Override

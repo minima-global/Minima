@@ -124,15 +124,6 @@ public class MDSCompleteHandler implements Runnable {
 			//Convert ther sessionid
 			String minidappid = mMDS.convertSessionID(uid);
 			if(minidappid == null) {
-				// send HTTP Headers
-				out.println("HTTP/1.1 500 OK");
-				out.println("Server: HTTP SQL Server from Minima : 1.3");
-				out.println("Date: " + new Date());
-				out.println("Content-type: text/plain");
-				out.println("Access-Control-Allow-Origin: *");
-				out.println(); // blank line between headers and content, very important !
-				out.flush(); // flush character output stream buffer
-				
 				throw new Exception("Invalid session id for MiniDAPP "+uid);
 			}
 			
@@ -226,7 +217,7 @@ public class MDSCompleteHandler implements Runnable {
 			
 			// send HTTP Headers
 			out.println("HTTP/1.1 500 OK");
-			out.println("Server: HTTP RPC Server from Minima : 1.3");
+			out.println("Server: HTTP MDS Server from Minima : 1.3");
 			out.println("Date: " + new Date());
 			out.println("Content-type: text/plain");
 			out.println("Access-Control-Allow-Origin: *");

@@ -103,12 +103,19 @@ public class NIOManager extends MessageProcessor {
 	HashSet<String> mAwaitingConnect = new HashSet<String>();
 	
 	/**
+	 * How much data is being read / written over Minima protocol
+	 */
+	NIOTraffic mTrafficListener;
+	
+	/**
 	 * Thread pool to manage incoming messages
 	 */
 	ExecutorService THREAD_POOL = Executors.newFixedThreadPool(8);
 	
 	public NIOManager(NetworkManager zNetManager) {
 		super("NIOMANAGER");
+		
+		mTrafficListener = new NIOTraffic();
 		
 		mNetworkManager = zNetManager;
 		
@@ -224,6 +231,10 @@ public class NIOManager extends MessageProcessor {
 		}
 		
 		return null;
+	}
+	
+	public NIOTraffic getTrafficListener() {
+		return mTrafficListener;
 	}
 	
 	@Override
