@@ -25,11 +25,13 @@ import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaxTxPoW;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.P2PManager;
+import org.minima.system.network.p2p.messages.InetSocketAddressIO;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.ListCheck;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.messages.Message;
@@ -634,12 +636,32 @@ public class NIOMessage implements Runnable {
 				
 				TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 				
-				pinggreet.getExtraData().put("topblock", tip.getBlockNumber().toString());
-				pinggreet.getExtraData().put("tophash", tip.getTxPoW().getTxPoWID());
+				if(tip != null) {
+					pinggreet.getExtraData().put("topblock", tip.getBlockNumber().toString());
+					pinggreet.getExtraData().put("tophash", tip.getTxPoW().getTxPoWID());
+					
+					TxPoWTreeNode tip50 = tip.getParent(100);
+					pinggreet.getExtraData().put("50block", tip50.getBlockNumber().toString());
+					pinggreet.getExtraData().put("50hash", tip50.getTxPoW().getTxPoWID());
+				}else {
+					pinggreet.getExtraData().put("topblock", "0");
+					pinggreet.getExtraData().put("tophash", "0x00");
+					pinggreet.getExtraData().put("50block", "0");
+					pinggreet.getExtraData().put("50hash", "0x00");
+				}
 				
-				TxPoWTreeNode tip50 = MinimaDB.getDB().getTxPoWTree().getTip().getParent(50);
-				pinggreet.getExtraData().put("50block", tip50.getBlockNumber().toString());
-				pinggreet.getExtraData().put("50hash", tip50.getTxPoW().getTxPoWID());
+				//Is the P2P Enable..
+				if(GeneralParams.P2P_ENABLED) {
+					
+					//Get the peers list
+					P2PManager p2PManager 	= (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();
+					JSONArray peers 		= InetSocketAddressIO.addressesListToJSONArray(new ArrayList<>(p2PManager.getPeers()));
+					pinggreet.getExtraData().put("peers-list", peers);
+					
+				}else {
+					//No peers..
+					pinggreet.getExtraData().put("peers-list", new JSONArray());
+				}
 				
 				//Send this back to them.. 
 				NIOManager.sendNetworkMessage(mClientUID, MSG_SINGLE_PONG, pinggreet);
