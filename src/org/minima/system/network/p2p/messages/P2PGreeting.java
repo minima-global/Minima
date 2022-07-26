@@ -2,6 +2,7 @@ package org.minima.system.network.p2p.messages;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.minima.system.network.p2p.P2PState;
@@ -61,6 +62,7 @@ public class P2PGreeting {
         this.numNoneP2PConnections = state.getNoneP2PLinks().size();
         this.maxNumNoneP2PConnections = state.getMaxNumNoneP2PConnections();
         this.knownPeers = new ArrayList<>(state.getKnownPeers());
+        Collections.shuffle(this.knownPeers);
         if (state.getMyMinimaAddress() != null && state.isAcceptingInLinks()) {
             this.knownPeers.add(state.getMyMinimaAddress());
         }
