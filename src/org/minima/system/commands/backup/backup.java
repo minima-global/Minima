@@ -36,7 +36,10 @@ public class backup extends Command {
 		}
 
 		//Get a password if there is one..
-		String password = getParam("pasword",""); 
+		String password = getParam("pasword","minima"); 
+		if(password.equals("")) {
+			throw new CommandException("Cannot have a blank password");
+		}
 		
 		boolean complete = getBooleanParam("complete", false);
 		

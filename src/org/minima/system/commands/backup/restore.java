@@ -14,6 +14,7 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.encrypt.GenerateKey;
@@ -36,8 +37,11 @@ public class restore extends Command {
 		}
 		
 		//Get a password if there is one..
-		String password = getParam("pasword","");
-				
+		String password = getParam("pasword","minima");
+		if(password.equals("")) {
+			throw new CommandException("Cannot have a blank password");
+		}
+		
 		//Does it exist..
 		File restorefile = new File(file);
 		if(!restorefile.exists()) {
