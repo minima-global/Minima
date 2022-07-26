@@ -13,9 +13,11 @@ import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.mds.MDSManager;
+import org.minima.system.mds.handler.CMDcommand;
 import org.minima.system.mds.pending.PendingCommand;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.ZipExtractor;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -25,7 +27,7 @@ import org.minima.utils.messages.Message;
 public class mds extends Command {
 
 	public mds() {
-		super("mds","(action:list|install|uninstall|pending) (file:) (uid:) - MiniDAPP System management");
+		super("mds","(action:list|install|uninstall|pending|accept|deny) (file:) (uid:) - MiniDAPP System management");
 	}
 	
 	@Override
@@ -69,6 +71,32 @@ public class mds extends Command {
 		
 			ret.put("response", mds);
 		
+		}else if(action.equals("accept")) {
+			
+			//Get the uid
+			String uid = getParam("uid");
+			
+			//Get all the pending commands..
+			ArrayList<PendingCommand> allpending = Main.getInstance().getMDSManager().getAllPending(); 
+			
+			//Make into JSONArray
+			for(PendingCommand pending : allpending) {
+				if(pending.getUID().equals(uid)) {
+					
+					//RUN it..
+					CMDcommand cmd 	= new CMDcommand(pending.getMiniDAPPID(), pending.getCommand());
+					String result 	= cmd.runCommand();
+					
+					if(result.startsWith("{")) {
+						ret.put("response", (JSONObject) new JSONParser().parse(result));
+					}else{
+						ret.put("response", (JSONArray) new JSONParser().parse(result));
+					}
+					
+					break;
+				}
+			}
+			
 		}else if(action.equals("install")) {
 		
 			String file = getParam("file");

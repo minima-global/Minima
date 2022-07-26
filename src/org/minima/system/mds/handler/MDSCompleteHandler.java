@@ -183,7 +183,7 @@ public class MDSCompleteHandler implements Runnable {
 					}else {
 						
 						//Add to the MDS Pending stack..
-						mMDS.addPendingCommand(minidappid, minimacommand);
+						mMDS.addPendingCommand(minidappid, data);
 						
 						//And return..
 						JSONObject res=  new JSONObject();
