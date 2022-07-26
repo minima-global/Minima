@@ -13,6 +13,7 @@ import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.mds.MDSManager;
+import org.minima.system.mds.pending.PendingCommand;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.ZipExtractor;
@@ -24,7 +25,7 @@ import org.minima.utils.messages.Message;
 public class mds extends Command {
 
 	public mds() {
-		super("mds","(action:list|install|uninstall) (file:) (uid:) - MiniDAPP System management");
+		super("mds","(action:list|install|uninstall|pending) (file:) (uid:) - MiniDAPP System management");
 	}
 	
 	@Override
@@ -50,6 +51,22 @@ public class mds extends Command {
 			mds.put("connect", "https://"+GeneralParams.MINIMA_HOST+":"+GeneralParams.MDSFILE_PORT);
 			mds.put("password", Main.getInstance().getMDSManager().getMiniHUBPasword());
 			mds.put("minidapps", arr);
+			ret.put("response", mds);
+		
+		}else if(action.equals("pending")) {
+			
+			//Get all the pending commands..
+			ArrayList<PendingCommand> allpending = Main.getInstance().getMDSManager().getAllPending(); 
+			
+			//Make into JSONArray
+			JSONArray pend = new JSONArray();
+			for(PendingCommand pending : allpending) {
+				pend.add(pending.toJSON());
+			}
+			
+			JSONObject mds = new JSONObject();
+			mds.put("pending", pend);
+		
 			ret.put("response", mds);
 		
 		}else if(action.equals("install")) {

@@ -161,7 +161,7 @@ public class MDSCompleteHandler implements Runnable {
 				}
 				
 				//Set this..
-				String data = new String(cbuf);
+				String data = new String(cbuf).trim();
 				
 				String result = null;
 				if(command.equals("sql")) {
@@ -171,9 +171,30 @@ public class MDSCompleteHandler implements Runnable {
 					
 				}else if(command.equals("cmd")) {
 					
-					CMDcommand cmd = new CMDcommand();
-					result = cmd.runCommand(minidappid, data);
+					//First get the function..
+					String minimacommand = getCommandPart(data);
 					
+					//Is this an allowed one..
+					boolean allowed = isCommandAllowed(minidappid, minimacommand);
+					
+					if(allowed) {
+						CMDcommand cmd = new CMDcommand(minidappid, data);
+						result = cmd.runCommand();
+					}else {
+						
+						//Add to the MDS Pending stack..
+						mMDS.addPendingCommand(minidappid, minimacommand);
+						
+						//And return..
+						JSONObject res=  new JSONObject();
+						res.put("command", minimacommand);
+						res.put("status", "pending");
+						res.put("message", "This command needs to be confirmed");
+						res.put("complete", data);
+						
+						result = res.toString();
+					}
+						
 				}else if(command.equals("poll")) {
 					
 					POLLcommand poll = new POLLcommand(mPollStack);
@@ -234,5 +255,20 @@ public class MDSCompleteHandler implements Runnable {
 //				MinimaLogger.log(e);
 			} 	
 		}	
+	}
+	
+	private String getCommandPart(String zCommand) {
+		
+		int index = zCommand.indexOf(" ");
+		if(index == -1){
+			//Just one command..
+			return zCommand;
+		}
+		
+		return zCommand.substring(0,index);
+	}
+	
+	private boolean isCommandAllowed(String zMiniDAPPID, String zCommand) {
+		return false;
 	}
 }

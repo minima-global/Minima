@@ -7,9 +7,15 @@ import org.minima.utils.json.JSONObject;
 
 public class CMDcommand {
 
-	public CMDcommand() {}
+	String mMiniDAPPID;
+	String mCompleteCommand;
 	
-	public String runCommand(String zMiniDAPPID, String zCMD) {
+	public CMDcommand(String zMiniDAPPID, String zCommand) {
+		mMiniDAPPID 		= zMiniDAPPID;
+		mCompleteCommand 	= zCommand;
+	}
+	
+	public String runCommand() {
 		
 		JSONObject statfalse = new JSONObject();
 		statfalse.put("status", false);
@@ -17,7 +23,7 @@ public class CMDcommand {
 		
 		try {
 			//Now run this function..
-			JSONArray res = Command.runMultiCommand(zCMD);
+			JSONArray res = Command.runMultiCommand(mCompleteCommand);
 	    	
 			//Get the result.. is it a multi command or single.. 
 			if(res.size() == 1) {
@@ -27,7 +33,7 @@ public class CMDcommand {
 			}
 			
 		}catch(Exception exc) {
-			MinimaLogger.log("ERROR CMDHANDLER : "+zCMD+" "+exc);
+			MinimaLogger.log("ERROR CMDHANDLER : "+mCompleteCommand+" "+exc);
 		}
 		
 		return result;

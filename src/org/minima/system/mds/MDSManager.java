@@ -12,6 +12,7 @@ import org.minima.database.minidapps.MiniDAPP;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.mds.handler.MDSCompleteHandler;
+import org.minima.system.mds.pending.PendingCommand;
 import org.minima.system.mds.polling.PollStack;
 import org.minima.system.mds.runnable.MDSJS;
 import org.minima.system.mds.sql.MiniDAPPDB;
@@ -68,6 +69,11 @@ public class MDSManager extends MessageProcessor {
 	 * All the current Contexts
 	 */
 	ArrayList<MDSJS> mRunnables = new ArrayList();
+	
+	/**
+	 * All the Pending Commands
+	 */
+	ArrayList<PendingCommand> mPending = new ArrayList<>();
 	
 	/**
 	 * Main Constructor
@@ -150,6 +156,14 @@ public class MDSManager extends MessageProcessor {
 		}
 		
 		return "";
+	}
+	
+	public void addPendingCommand(String zMiniDAPPID, String zCommand) {
+		mPending.add(new PendingCommand(zMiniDAPPID, zCommand));
+	}
+	
+	public ArrayList<PendingCommand> getAllPending(){
+		return mPending;
 	}
 	
 	public JSONObject runSQL(String zUID, String zSQL) {
