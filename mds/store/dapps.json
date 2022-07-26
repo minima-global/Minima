@@ -20,7 +20,7 @@
 			"version" : "0.1.5"
 		},
 		{
-			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/wallet_1.6.2.mds.zip",
+			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/wallet/wallet_1.8.4.mds.zip",
 			"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/icons/wallet.png",
 			"name":"Wallet",
 			"description": "Official Minima wallet",
@@ -34,7 +34,7 @@
 			"version" : "1.91"
 		},
 		{
-			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/docs/docs_1.1.0.mds.zip",
+			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/docs/docs_1.1.1.mds.zip",
 			"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/icons/helpdocs.png",
 			"name":"Docs",
 			"description": "Minima Documentation and Tutorial",
