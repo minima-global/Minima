@@ -640,7 +640,7 @@ public class NIOMessage implements Runnable {
 					pinggreet.getExtraData().put("topblock", tip.getBlockNumber().toString());
 					pinggreet.getExtraData().put("tophash", tip.getTxPoW().getTxPoWID());
 					
-					TxPoWTreeNode tip50 = tip.getParent(50);
+					TxPoWTreeNode tip50 = tip.getParent(100);
 					pinggreet.getExtraData().put("50block", tip50.getBlockNumber().toString());
 					pinggreet.getExtraData().put("50hash", tip50.getTxPoW().getTxPoWID());
 				}else {
