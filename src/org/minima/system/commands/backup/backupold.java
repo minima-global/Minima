@@ -3,11 +3,7 @@ package org.minima.system.commands.backup;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.security.SecureRandom;
 import java.util.zip.GZIPOutputStream;
-
-import javax.crypto.Cipher;
-import javax.crypto.CipherOutputStream;
 
 import org.minima.database.MinimaDB;
 import org.minima.objects.base.MiniByte;
@@ -17,13 +13,12 @@ import org.minima.system.commands.CommandException;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
-import org.minima.utils.encrypt.GenerateKey;
 import org.minima.utils.json.JSONObject;
 
-public class backup extends Command {
+public class backupold extends Command {
 
-	public backup() {
-		super("backup","(password:) (file:) (complete:false|true) - Backup the system. Uses a timestamped name by default");
+	public backupold() {
+		super("backup","(file:) (complete:false|true) - Backup the system. Uses a timestamped name by default");
 	}
 	
 	@Override
@@ -35,9 +30,6 @@ public class backup extends Command {
 			file = "minima-backup-"+System.currentTimeMillis()+".bak.gz";
 		}
 
-		//Get a password if there is one..
-		String password = getParam("pasword",""); 
-		
 		boolean complete = getBooleanParam("complete", false);
 		
 		//Does it exist..
@@ -99,44 +91,22 @@ public class backup extends Command {
 			GZIPOutputStream gzos	= new GZIPOutputStream(fos);
 			DataOutputStream dos 	= new DataOutputStream(gzos);
 			
-			//Now create a CipherStream.. first need an IVParam
-			MiniData ivparam = new MiniData(GenerateKey.IvParam());
-			
-			//The SALT - for the password
-	    	byte[] bsalt 	= new byte[8];
-	    	new SecureRandom().nextBytes(bsalt);
-	    	MiniData salt = new MiniData(bsalt);
-	    	
-			//Now write these 2 bits of info to the stream..
-			salt.writeDataStream(dos);
-			ivparam.writeDataStream(dos);
-			
-			//Create an AES SecretKey with Password and Salt
-			byte[] secret = GenerateKey.secretKey(password,bsalt).getEncoded();
-			
-			//Create the cipher..
-			Cipher ciph = GenerateKey.getCipherSYM(Cipher.ENCRYPT_MODE, ivparam.getBytes(), secret);
-			CipherOutputStream cos 		= new CipherOutputStream(dos, ciph);
-			DataOutputStream ciphdos 	= new DataOutputStream(cos);
-			
 			//Is it Complete
-			MiniByte.WriteToStream(ciphdos, complete);
+			MiniByte.WriteToStream(dos, complete);
 			
 			//And now put ALL of those files into a single file..
-			walletata.writeDataStream(ciphdos);
-			cascadedata.writeDataStream(ciphdos);
-			chaindata.writeDataStream(ciphdos);
-			userdata.writeDataStream(ciphdos);
-			p2pdata.writeDataStream(ciphdos);
+			walletata.writeDataStream(dos);
+			cascadedata.writeDataStream(dos);
+			chaindata.writeDataStream(dos);
+			userdata.writeDataStream(dos);
+			p2pdata.writeDataStream(dos);
 			
 			if(complete) {
-				txpowdata.writeDataStream(ciphdos);
-				archivedata.writeDataStream(ciphdos);
+				txpowdata.writeDataStream(dos);
+				archivedata.writeDataStream(dos);
 			}
 			
 			//All done..
-			ciphdos.close();
-			cos.close();
 			dos.close();
 			gzos.close();
 			fos.close();
@@ -202,7 +172,7 @@ public class backup extends Command {
 
 	@Override
 	public Command getFunction() {
-		return new backup();
+		return new backupold();
 	}
 
 }

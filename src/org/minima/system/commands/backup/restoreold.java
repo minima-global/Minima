@@ -6,9 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.zip.GZIPInputStream;
 
-import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
-
 import org.minima.database.MinimaDB;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
@@ -16,14 +13,13 @@ import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
-import org.minima.utils.encrypt.GenerateKey;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.ssl.SSLManager;
 
-public class restore extends Command {
+public class restoreold extends Command {
 
-	public restore() {
-		super("restore","[file:] (password:) - Restore the entire system.");
+	public restoreold() {
+		super("restore","[file:] - Restore the entire system.");
 	}
 	
 	@Override
@@ -35,9 +31,6 @@ public class restore extends Command {
 			throw new Exception("MUST specify a file to restore from");
 		}
 		
-		//Get a password if there is one..
-		String password = getParam("pasword","");
-				
 		//Does it exist..
 		File restorefile = new File(file);
 		if(!restorefile.exists()) {
@@ -59,41 +52,29 @@ public class restore extends Command {
 		GZIPInputStream gzin 		= new GZIPInputStream(bais);
 		DataInputStream dis 		= new DataInputStream(gzin);
 		
-		//Read in the SALT and IVParam
-		MiniData salt 		= MiniData.ReadFromStream(dis);
-		MiniData ivparam 	= MiniData.ReadFromStream(dis);
-		
-		//Create an AES SecretKey with Password and Salt
-		byte[] secret = GenerateKey.secretKey(password,salt.getBytes()).getEncoded();
-		
-		//Create the cipher..
-		Cipher ciph = GenerateKey.getCipherSYM(Cipher.DECRYPT_MODE, ivparam.getBytes(), secret);
-		CipherInputStream cis 	= new CipherInputStream(dis, ciph);
-		DataInputStream disciph = new DataInputStream(cis);
-		
 		//Is this a complete backup..
-		boolean complete = MiniByte.ReadFromStream(disciph).isTrue();
+		boolean complete = MiniByte.ReadFromStream(dis).isTrue();
 		
 		//The total size of files..
 		long total = 1;
 		
 		//Read in each section..
-		total += readNextBackup(new File(restorefolder,"wallet.sql"), disciph);
+		total += readNextBackup(new File(restorefolder,"wallet.sql"), dis);
 		
 		//The rest write directly 
 		File basedb = MinimaDB.getDB().getBaseDBFolder();
-		total += readNextBackup(new File(basedb,"cascade.db"), disciph);
-		total += readNextBackup(new File(basedb,"chaintree.db"), disciph);
-		total += readNextBackup(new File(basedb,"userprefs.db"), disciph);
-		total += readNextBackup(new File(basedb,"p2p.db"), disciph);
+		total += readNextBackup(new File(basedb,"cascade.db"), dis);
+		total += readNextBackup(new File(basedb,"chaintree.db"), dis);
+		total += readNextBackup(new File(basedb,"userprefs.db"), dis);
+		total += readNextBackup(new File(basedb,"p2p.db"), dis);
 		
 		//Now load the sql
 		MinimaDB.getDB().getWallet().restoreFromFile(new File(restorefolder,"wallet.sql"));
 				
 		//Complete
 		if(complete) {
-			total += readNextBackup(new File(restorefolder,"txpowdb.sql"), disciph);
-			total += readNextBackup(new File(restorefolder,"archive.sql"), disciph);
+			total += readNextBackup(new File(restorefolder,"txpowdb.sql"), dis);
+			total += readNextBackup(new File(restorefolder,"archive.sql"), dis);
 		
 			MinimaDB.getDB().getTxPoWDB().getSQLDB().restoreFromFile(new File(restorefolder,"txpowdb.sql"));
 			MinimaDB.getDB().getArchive().restoreFromFile(new File(restorefolder,"archive.sql"));
@@ -108,8 +89,6 @@ public class restore extends Command {
 		}
 		
 		//Close up shop..
-		disciph.close();
-		cis.close();
 		dis.close();
 		gzin.close();
 		bais.close();
@@ -150,7 +129,7 @@ public class restore extends Command {
 
 	@Override
 	public Command getFunction() {
-		return new restore();
+		return new restoreold();
 	}
 
 }
