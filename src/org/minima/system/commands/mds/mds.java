@@ -13,6 +13,7 @@ import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.mds.MDSManager;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.ZipExtractor;
 import org.minima.utils.json.JSONArray;
@@ -45,6 +46,8 @@ public class mds extends Command {
 			}
 
 			JSONObject mds = new JSONObject();
+			mds.put("enabled", GeneralParams.MDS_ENABLED);
+			mds.put("connect", "https://"+GeneralParams.MINIMA_HOST+":"+GeneralParams.MDSFILE_PORT);
 			mds.put("password", Main.getInstance().getMDSManager().getMiniHUBPasword());
 			mds.put("minidapps", arr);
 			ret.put("response", mds);

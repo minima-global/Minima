@@ -160,6 +160,9 @@ public class ParamConfigurer {
             	GeneralParams.MDS_ENABLED = true;
             }
         }),
+        mdspassword("mdspassword", "Specify the Minima MDS password", (arg, configurer) -> {
+            GeneralParams.MDS_PASSWORD = arg.trim();
+        }),
         conf("conf", "Specify a configuration file (absolute)", (args, configurer) -> {
             // do nothing
         }),

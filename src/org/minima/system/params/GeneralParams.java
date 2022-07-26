@@ -58,6 +58,11 @@ public class GeneralParams {
 	public static int MDSCOMMAND_PORT = MINIMA_PORT+3;
 	
 	/**
+	 * The MDS Password - blank will set automagically
+	 */
+	public static String MDS_PASSWORD = "";
+	
+	/**
 	 * MDS ENabled
 	 */
 	public static boolean MDS_ENABLED = false;

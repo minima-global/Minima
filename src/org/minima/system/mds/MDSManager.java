@@ -121,7 +121,11 @@ public class MDSManager extends MessageProcessor {
 	}
 	
 	public boolean checkMiniHUBPasword(String zPassword) {
-		return mMiniHUBPassword.replace("-", "").equalsIgnoreCase(zPassword.replace("-", "").trim());
+		if(GeneralParams.MDS_PASSWORD.equals("")) {
+			return mMiniHUBPassword.replace("-", "").equalsIgnoreCase(zPassword.replace("-", "").trim());
+		}
+		
+		return mMiniHUBPassword.equals(zPassword.trim());
 	}
 	
 	/**
@@ -233,10 +237,18 @@ public class MDSManager extends MessageProcessor {
 				}
 			};
 			
-			//Create a NEW Main Password..
-			MiniData password 	= MiniData.getRandomData(32);
-			String b32			= BaseConverter.encode32(password.getBytes());
-			mMiniHUBPassword	= b32.substring(2,6)+"-"+b32.substring(7,11)+"-"+b32.substring(12,16);
+			//The MDS Password
+			if(GeneralParams.MDS_PASSWORD.equals("")) {
+				//Create a NEW Main Password..
+				MiniData password 	= MiniData.getRandomData(32);
+				String b32			= BaseConverter.encode32(password.getBytes());
+				
+				mMiniHUBPassword	= b32.substring(2,6)+"-"+b32.substring(7,11)+"-"+b32.substring(12,16);
+			
+			}else {
+				//Pre-set..
+				mMiniHUBPassword	= GeneralParams.MDS_PASSWORD;
+			}
 			
 			//Scan for MiniDApps
 			PostMessage(MDS_MINIDAPPS_RESETALL);
