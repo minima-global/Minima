@@ -90,8 +90,12 @@ public class mds extends Command {
 					
 					if(result.startsWith("{")) {
 						ret.put("response", (JSONObject) new JSONParser().parse(result));
-					}else{
+					
+					}else if(result.startsWith("[")) {
 						ret.put("response", (JSONArray) new JSONParser().parse(result));
+					
+					}else {
+						ret.put("response", result);
 					}
 					
 					found = true;
