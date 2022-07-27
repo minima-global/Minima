@@ -5,13 +5,13 @@ import org.minima.utils.json.JSONObject;
 
 public class PendingCommand {
 
-	String mUID;
-	String mMiniDAPPID;
-	String mCommand;
+	String 		mUID;
+	JSONObject 	mMiniDAPP;
+	String 		mCommand;
 	
-	public PendingCommand(String zMiniDAPPID, String zCommand) {
+	public PendingCommand(JSONObject zMiniDAPP, String zCommand) {
 		mUID		= MiniData.getRandomData(16).to0xString();
-		mMiniDAPPID = zMiniDAPPID;
+		mMiniDAPP	= zMiniDAPP;
 		mCommand 	= zCommand;
 	}
 	
@@ -19,8 +19,8 @@ public class PendingCommand {
 		return mUID;
 	}
 	
-	public String getMiniDAPPID() {
-		return mMiniDAPPID;
+	public JSONObject getMiniDAPP() {
+		return mMiniDAPP;
 	}
 	
 	public String getCommand() {
@@ -30,7 +30,7 @@ public class PendingCommand {
 	public JSONObject toJSON() {
 		JSONObject json = new JSONObject();
 		json.put("uid", mUID);
-		json.put("minidappid", mMiniDAPPID);
+		json.put("minidapp", mMiniDAPP);
 		json.put("command", mCommand);
 		return json;
 	}

@@ -84,8 +84,8 @@ public class mds extends Command {
 			for(PendingCommand pending : allpending) {
 				if(pending.getUID().equals(uid)) {
 					
-					//RUN it..
-					CMDcommand cmd 	= new CMDcommand(pending.getMiniDAPPID(), pending.getCommand());
+					//RUN it.. as normal 0x00 - so is accepted
+					CMDcommand cmd 	= new CMDcommand("0x00", pending.getCommand());
 					String result 	= cmd.runCommand();
 					
 					if(result.startsWith("{")) {
