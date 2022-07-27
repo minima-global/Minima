@@ -185,16 +185,7 @@ public class MDSManager extends MessageProcessor {
 	
 	public JSONObject runSQL(String zUID, String zSQL) {
 		
-//		//Check / convert the UID..
-//		if(!mValid.contains(zUID) && !zUID.equals("0x00")) {
-//			
-//			//Invalid..
-//			JSONObject fail = new JSONObject();
-//			fail.put("status", false);
-//			fail.put("error", "MiniDAPP not found : "+zUID);
-//			return fail;
-//		}
-		
+		//The MiniDAPPID
 		String minidappid = zUID;
 		
 		//The final DB

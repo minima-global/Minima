@@ -1,6 +1,7 @@
 package org.minima.system.commands;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -8,6 +9,7 @@ import java.util.regex.Pattern;
 import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.Main;
 import org.minima.system.commands.base.automine;
 import org.minima.system.commands.base.backup;
 import org.minima.system.commands.base.balance;
@@ -136,7 +138,7 @@ public abstract class Command {
 	
 	public JSONObject getJSONReply() {
 		JSONObject json = new JSONObject();
-		json.put("command", getname());
+		json.put("command", getName());
 		
 		//Are they empty..
 		if(!getParams().isEmpty()) {
@@ -144,10 +146,12 @@ public abstract class Command {
 		}
 		
 		json.put("status", true);
+		json.put("pending", false);
+		
 		return json;
 	}
 	
-	public String getname() {
+	public String getName() {
 		return mName;
 	}
 	
@@ -279,6 +283,10 @@ public abstract class Command {
 	 * @param zCommand
 	 */
 	public static JSONArray runMultiCommand(String zCommand) {
+		return runMultiCommand("0x00", zCommand);
+	}
+	
+	public static JSONArray runMultiCommand(String zMiniDAPPID, String zCommand) {
 		JSONArray res = new JSONArray();
 		
 		//First break it up..
@@ -289,11 +297,45 @@ public abstract class Command {
 			//Run this command..
 			Command cmd = Command.getCommand(command);
 			
-			//Run it..
+			//The final result
 			JSONObject result = null;
+			
+			//Is this a MiniDAPP..
+			if(!zMiniDAPPID.equals("0x00")) {
+			
+				//What is the command
+				String comname = cmd.getName();
+				
+				//Check this MiniDAPP can make this call..
+				boolean allowed = isCommandAllowed(comname);
+				
+				if(!allowed) {
+					
+					//Check if MiniDAPP has WRITE access
+					//..
+					
+					//Add to pending..
+					Main.getInstance().getMDSManager().addPendingCommand(zMiniDAPPID, command);
+					
+					//And return..
+					result=  new JSONObject();
+					result.put("command", command);
+					result.put("status", false);
+					result.put("pending", true);
+					result.put("message", "This command needs to be confirmed");
+					result.put("complete", command);
+					
+					//Add to the List..
+					res.add(result);
+					
+					//And that's all folks..
+					break;
+				}
+			}
+			
 			try {
 				result = cmd.runCommand();
-			
+				
 			}catch(CommandException cexc) {
 				result = cmd.getJSONReply();
 				result.put("status", false);
@@ -331,7 +373,7 @@ public abstract class Command {
 		
 		Command comms = null;
 		for(int i=0;i<commandlen;i++) {
-			if(ALL_COMMANDS[i].getname().equals(command)) {
+			if(ALL_COMMANDS[i].getName().equals(command)) {
 				comms = ALL_COMMANDS[i].getFunction();
 				break;
 			}
@@ -566,6 +608,24 @@ public abstract class Command {
 	    }
 	    
 		return finaltokens.toArray(new String[0]);
+	}
+	
+	/**
+	 * Which Commands are allowed..
+	 */
+	public static final String[] ALL_WRITE_COMMANDS = 
+		{"send","tokencreate","consolidate","cointrack","sign","txnsign","mds","backup","restore","vault"};
+	
+	public static final ArrayList<String> ALL_WRITE_COMMANDS_ARRAY = new ArrayList<String>(Arrays.asList(ALL_WRITE_COMMANDS));
+	
+	public static boolean isCommandAllowed(String zCommand) {
+		
+		//Is it a simple READ command
+		if(ALL_WRITE_COMMANDS_ARRAY.contains(zCommand)) {
+			return false;
+		}
+		
+		return true;
 	}
 	
 //	public static String[] splitterQuotedPattern(String zInput) {

@@ -17,13 +17,15 @@ public class CMDcommand {
 	
 	public String runCommand() {
 		
+		//Default fail result
 		JSONObject statfalse = new JSONObject();
 		statfalse.put("status", false);
+		statfalse.put("pending", false);
 		String result = statfalse.toJSONString();
 		
 		try {
 			//Now run this function..
-			JSONArray res = Command.runMultiCommand(mCompleteCommand);
+			JSONArray res = Command.runMultiCommand(mMiniDAPPID,mCompleteCommand);
 	    	
 			//Get the result.. is it a multi command or single.. 
 			if(res.size() == 1) {

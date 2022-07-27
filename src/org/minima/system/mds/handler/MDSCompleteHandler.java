@@ -124,7 +124,7 @@ public class MDSCompleteHandler implements Runnable {
 			//Convert ther sessionid
 			String minidappid = mMDS.convertSessionID(uid);
 			if(minidappid == null) {
-				throw new Exception("Invalid session id for MiniDAPP "+uid);
+				throw new IllegalArgumentException("Invalid session id for MiniDAPP "+uid);
 			}
 			
 			//Get the Headers..
@@ -171,30 +171,9 @@ public class MDSCompleteHandler implements Runnable {
 					
 				}else if(command.equals("cmd")) {
 					
-					//First get the function..
-					String minimacommand = getCommandPart(data);
-					
-					//Is this an allowed one..
-					boolean allowed = isCommandAllowed(minidappid, minimacommand);
-					
-					if(allowed) {
-						CMDcommand cmd = new CMDcommand(minidappid, data);
-						result = cmd.runCommand();
-					}else {
-						
-						//Add to the MDS Pending stack..
-						mMDS.addPendingCommand(minidappid, data);
-						
-						//And return..
-						JSONObject res=  new JSONObject();
-						res.put("command", minimacommand);
-						res.put("status", false);
-						res.put("pending", true);
-						res.put("message", "This command needs to be confirmed and has been added to pending commands");
-						res.put("complete", data);
-						
-						result = res.toString();
-					}
+					//Create a Command and run it..
+					CMDcommand cmd = new CMDcommand(minidappid, data);
+					result = cmd.runCommand();
 						
 				}else if(command.equals("poll")) {
 					
@@ -232,7 +211,16 @@ public class MDSCompleteHandler implements Runnable {
 		}catch(SSLException exc) {
 		
 		}catch(IllegalArgumentException exc) {
-			//MinimaLogger.log(exc);
+			MinimaLogger.log(exc.toString());
+			
+			// send HTTP Headers
+			out.println("HTTP/1.1 500 OK");
+			out.println("Server: HTTP MDS Server from Minima : 1.3");
+			out.println("Date: " + new Date());
+			out.println("Content-type: text/plain");
+			out.println("Access-Control-Allow-Origin: *");
+			out.println(); // blank line between headers and content, very important !
+			out.flush(); // flush character output stream buffer
 			
 		}catch(Exception ioe) {
 			MinimaLogger.log(ioe);
@@ -256,20 +244,5 @@ public class MDSCompleteHandler implements Runnable {
 //				MinimaLogger.log(e);
 			} 	
 		}	
-	}
-	
-	private String getCommandPart(String zCommand) {
-		
-		int index = zCommand.indexOf(" ");
-		if(index == -1){
-			//Just one command..
-			return zCommand;
-		}
-		
-		return zCommand.substring(0,index);
-	}
-	
-	private boolean isCommandAllowed(String zMiniDAPPID, String zCommand) {
-		return false;
 	}
 }

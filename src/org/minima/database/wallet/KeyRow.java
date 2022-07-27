@@ -73,7 +73,7 @@ public class KeyRow {
 		ret.put("depth", mDepth);
 		ret.put("uses", mUses);
 		ret.put("maxuses", mMaxUses);
-		ret.put("modifier", getModifier());
+//		ret.put("modifier", getModifier());
 //		ret.put("privatekey", getPrivateKey());
 		ret.put("publickey", getPublicKey());
 		
