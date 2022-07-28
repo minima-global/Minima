@@ -25,8 +25,9 @@ public class CMDcommand {
 		
 		try {
 			//Now run this function..
-			JSONArray res = Command.runMultiCommand(mMiniDAPPID,mCompleteCommand);
-	    	
+//			JSONArray res = Command.runMultiCommand(mMiniDAPPID,mCompleteCommand);
+			JSONArray res = Command.runMultiCommand("0x00",mCompleteCommand);
+			
 			//Get the result.. is it a multi command or single.. 
 			if(res.size() == 1) {
 				result = res.get(0).toString();

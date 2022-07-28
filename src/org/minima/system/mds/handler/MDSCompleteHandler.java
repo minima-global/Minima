@@ -99,7 +99,7 @@ public class MDSCompleteHandler implements Runnable {
 			}
 			
 			//And finally URL decode..
-			fileRequested = URLDecoder.decode(fileRequested,"UTF-8").trim();
+			fileRequested = URLDecoder.decode(fileRequested,MiniString.MINIMA_CHARSET).trim();
 			
 			//Get the command / params only
 			int index 		= fileRequested.indexOf("?");
@@ -140,6 +140,10 @@ public class MDSCompleteHandler implements Runnable {
 				input = in.readLine();
 			}
 			
+			if(!command.equals("poll")) {
+				MinimaLogger.log("length : "+contentlength);
+			}
+			
 			//Is it a POST request
 			if(!method.equals("POST") || uid.equals("")) {
 				
@@ -161,7 +165,8 @@ public class MDSCompleteHandler implements Runnable {
 				}
 				
 				//Set this..
-				String data = new String(cbuf).trim();
+				String dataenc 	= new String(cbuf).trim();
+				String data 	= URLDecoder.decode(dataenc, MiniString.MINIMA_CHARSET);
 				
 				String result = null;
 				if(command.equals("sql")) {
