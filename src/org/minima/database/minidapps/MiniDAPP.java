@@ -78,4 +78,12 @@ public class MiniDAPP {
 	public String getBrowser() {
 		return mConfData.getString("browser", "internal");
 	}
+	
+	public String getPermissiona() {
+		return mConfData.getString("permission", "read");
+	}
+	
+	public void setPermission(String zPermission) {
+		mConfData.put("permission", zPermission);
+	}
 }

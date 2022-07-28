@@ -264,6 +264,9 @@ public class MDSFileHandler implements Runnable {
 				//Now create the JSON..
 				JSONObject jsonconf = (JSONObject) new JSONParser().parse(data.toString());
 				
+				//ALWAYS starts with only READ Permission
+				jsonconf.put("permission", "read");
+				
 				//Create the MiniDAPP
 				MiniDAPP md = new MiniDAPP(rand, jsonconf);
 				

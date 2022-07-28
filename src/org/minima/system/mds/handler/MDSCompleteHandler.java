@@ -140,10 +140,6 @@ public class MDSCompleteHandler implements Runnable {
 				input = in.readLine();
 			}
 			
-			if(!command.equals("poll")) {
-				MinimaLogger.log("length : "+contentlength);
-			}
-			
 			//Is it a POST request
 			if(!method.equals("POST") || uid.equals("")) {
 				

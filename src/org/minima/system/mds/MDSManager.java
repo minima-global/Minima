@@ -158,13 +158,10 @@ public class MDSManager extends MessageProcessor {
 		return "";
 	}
 	
-	public void addPendingCommand(String zMiniDAPPID, String zCommand) {
-		
-		//Get that MiniDAPP..
-		MiniDAPP md = MinimaDB.getDB().getMDSDB().getMiniDAPP(zMiniDAPPID);
+	public void addPendingCommand(MiniDAPP zMiniDAPP, String zCommand) {
 		
 		//New Pending Command
-		mPending.add(new PendingCommand(md.toJSON(), zCommand));
+		mPending.add(new PendingCommand(zMiniDAPP.toJSON(), zCommand));
 	}
 	
 	public ArrayList<PendingCommand> getAllPending(){

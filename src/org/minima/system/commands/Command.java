@@ -6,6 +6,8 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.minima.database.MinimaDB;
+import org.minima.database.minidapps.MiniDAPP;
 import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -311,25 +313,28 @@ public abstract class Command {
 				
 				if(!allowed) {
 					
-					//Check if MiniDAPP has WRITE access
-					//..
+					//Get that MiniDAPP..
+					MiniDAPP md = MinimaDB.getDB().getMDSDB().getMiniDAPP(zMiniDAPPID);
 					
-					//Add to pending..
-					Main.getInstance().getMDSManager().addPendingCommand(zMiniDAPPID, command);
+					//Does it have WRITE permission..
+					if(md.getPermissiona().equals("read")) {
 					
-					//And return..
-					result=  new JSONObject();
-					result.put("command", command);
-					result.put("status", false);
-					result.put("pending", true);
-					result.put("message", "This command needs to be confirmed");
-					result.put("complete", command);
-					
-					//Add to the List..
-					res.add(result);
-					
-					//And that's all folks..
-					break;
+						//Add to pending..
+						Main.getInstance().getMDSManager().addPendingCommand(md, command);
+						
+						//And return..
+						result=  new JSONObject();
+						result.put("command", command);
+						result.put("status", false);
+						result.put("pending", true);
+						result.put("error", "This command needs to be confirmed and is now pending..");
+						
+						//Add to the List..
+						res.add(result);
+						
+						//And that's all folks..
+						break;
+					}
 				}
 			}
 			
