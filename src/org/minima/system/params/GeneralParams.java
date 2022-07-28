@@ -63,6 +63,16 @@ public class GeneralParams {
 	public static String MDS_PASSWORD = "";
 	
 	/**
+	 * A folder of MDS dapps to install at startup
+	 */
+	public static String MDS_INITFOLDER = "";
+	
+	/**
+	 * Make a MiniDAPP WRITE access - on init install
+	 */
+	public static String MDS_WRITE = "";
+	
+	/**
 	 * MDS ENabled
 	 */
 	public static boolean MDS_ENABLED = false;
