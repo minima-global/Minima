@@ -45,6 +45,15 @@ public class MiniDAPP {
 	public JSONObject toJSON() {
 		JSONObject ret = new JSONObject();
 		
+		//Make sure browser are poermissions are in there
+		if(!mConfData.containsKey("browser")) {
+			mConfData.put("browser", getBrowser());
+		}
+		
+		if(!mConfData.containsKey("permission")) {
+			mConfData.put("permission", getPermission());
+		}
+		
 		ret.put("uid", mUID);
 		ret.put("conf", mConfData);
 		
@@ -79,7 +88,7 @@ public class MiniDAPP {
 		return mConfData.getString("browser", "internal");
 	}
 	
-	public String getPermissiona() {
+	public String getPermission() {
 		return mConfData.getString("permission", "read");
 	}
 	

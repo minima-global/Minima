@@ -317,7 +317,7 @@ public abstract class Command {
 					MiniDAPP md = MinimaDB.getDB().getMDSDB().getMiniDAPP(zMiniDAPPID);
 					
 					//Does it have WRITE permission..
-					if(md.getPermissiona().equals("read")) {
+					if(md.getPermission().equals("read")) {
 					
 						//Add to pending..
 						Main.getInstance().getMDSManager().addPendingCommand(md, command);
@@ -619,7 +619,7 @@ public abstract class Command {
 	 * Which Commands are allowed..
 	 */
 	public static final String[] ALL_WRITE_COMMANDS = 
-		{"send","tokencreate","consolidate","cointrack","sign","txnsign","mds","backup","restore","vault"};
+		{"send","tokencreate","consolidate","cointrack","sign","txnsign","mds","backup","restore","vault","incentivecash"};
 	
 	public static final ArrayList<String> ALL_WRITE_COMMANDS_ARRAY = new ArrayList<String>(Arrays.asList(ALL_WRITE_COMMANDS));
 	
