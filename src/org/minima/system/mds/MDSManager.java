@@ -2,8 +2,6 @@ package org.minima.system.mds;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -15,7 +13,6 @@ import org.minima.database.minidapps.MiniDAPP;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
-import org.minima.system.commands.CommandException;
 import org.minima.system.mds.handler.MDSCompleteHandler;
 import org.minima.system.mds.pending.PendingCommand;
 import org.minima.system.mds.polling.PollStack;
