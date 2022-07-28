@@ -12,6 +12,7 @@ import org.minima.database.minidapps.MiniDAPP;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.mds.handler.MDSCompleteHandler;
+import org.minima.system.mds.pending.PendingCommand;
 import org.minima.system.mds.polling.PollStack;
 import org.minima.system.mds.runnable.MDSJS;
 import org.minima.system.mds.sql.MiniDAPPDB;
@@ -68,6 +69,11 @@ public class MDSManager extends MessageProcessor {
 	 * All the current Contexts
 	 */
 	ArrayList<MDSJS> mRunnables = new ArrayList();
+	
+	/**
+	 * All the Pending Commands
+	 */
+	ArrayList<PendingCommand> mPending = new ArrayList<>();
 	
 	/**
 	 * Main Constructor
@@ -152,18 +158,36 @@ public class MDSManager extends MessageProcessor {
 		return "";
 	}
 	
+	public void addPendingCommand(MiniDAPP zMiniDAPP, String zCommand) {
+		
+		//New Pending Command
+		mPending.add(new PendingCommand(zMiniDAPP.toJSON(), zCommand));
+	}
+	
+	public ArrayList<PendingCommand> getAllPending(){
+		return mPending;
+	}
+	
+	public boolean removePending(String zUID) {
+		ArrayList<PendingCommand> newpending = new ArrayList<>();
+		boolean found = false;
+		for(PendingCommand pending : mPending) {
+			if(!pending.getUID().equals(zUID)) {
+				newpending.add(pending);
+			}else {
+				found = true;
+			}
+		}
+
+		//Switch
+		mPending = newpending;
+		
+		return found;
+	}
+	
 	public JSONObject runSQL(String zUID, String zSQL) {
 		
-//		//Check / convert the UID..
-//		if(!mValid.contains(zUID) && !zUID.equals("0x00")) {
-//			
-//			//Invalid..
-//			JSONObject fail = new JSONObject();
-//			fail.put("status", false);
-//			fail.put("error", "MiniDAPP not found : "+zUID);
-//			return fail;
-//		}
-		
+		//The MiniDAPPID
 		String minidappid = zUID;
 		
 		//The final DB

@@ -157,7 +157,7 @@ public class help extends Command {
 
 	
 	private void addCommand(JSONObject zDetails, Command zCommand) {
-		zDetails.put(getStrOfLength(15,zCommand.getname()), zCommand.getHelp());
+		zDetails.put(getStrOfLength(15,zCommand.getName()), zCommand.getHelp());
 	}
 	
 	public String getStrOfLength(int zDesiredLen, String zString) {

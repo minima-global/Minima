@@ -124,7 +124,7 @@ public class MDSCompleteHandler implements Runnable {
 			//Convert ther sessionid
 			String minidappid = mMDS.convertSessionID(uid);
 			if(minidappid == null) {
-				throw new Exception("Invalid session id for MiniDAPP "+uid);
+				throw new IllegalArgumentException("Invalid session id for MiniDAPP "+uid);
 			}
 			
 			//Get the Headers..
@@ -161,7 +161,8 @@ public class MDSCompleteHandler implements Runnable {
 				}
 				
 				//Set this..
-				String data = new String(cbuf);
+				String dataenc 	= new String(cbuf).trim();
+				String data 	= URLDecoder.decode(dataenc, "UTF-8");
 				
 				String result = null;
 				if(command.equals("sql")) {
@@ -171,9 +172,10 @@ public class MDSCompleteHandler implements Runnable {
 					
 				}else if(command.equals("cmd")) {
 					
-					CMDcommand cmd = new CMDcommand();
-					result = cmd.runCommand(minidappid, data);
-					
+					//Create a Command and run it..
+					CMDcommand cmd = new CMDcommand(minidappid, data);
+					result = cmd.runCommand();
+						
 				}else if(command.equals("poll")) {
 					
 					POLLcommand poll = new POLLcommand(mPollStack);
@@ -210,7 +212,16 @@ public class MDSCompleteHandler implements Runnable {
 		}catch(SSLException exc) {
 		
 		}catch(IllegalArgumentException exc) {
-			//MinimaLogger.log(exc);
+			MinimaLogger.log(exc.toString());
+			
+			// send HTTP Headers
+			out.println("HTTP/1.1 500 OK");
+			out.println("Server: HTTP MDS Server from Minima : 1.3");
+			out.println("Date: " + new Date());
+			out.println("Content-type: text/plain");
+			out.println("Access-Control-Allow-Origin: *");
+			out.println(); // blank line between headers and content, very important !
+			out.flush(); // flush character output stream buffer
 			
 		}catch(Exception ioe) {
 			MinimaLogger.log(ioe);

@@ -13,8 +13,11 @@ import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.mds.MDSManager;
+import org.minima.system.mds.handler.CMDcommand;
+import org.minima.system.mds.pending.PendingCommand;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.ZipExtractor;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -24,7 +27,7 @@ import org.minima.utils.messages.Message;
 public class mds extends Command {
 
 	public mds() {
-		super("mds","(action:list|install|uninstall) (file:) (uid:) - MiniDAPP System management");
+		super("mds","(action:list|install|uninstall|pending|accept|deny|permission) (file:) (uid:) (trust:read|write)- MiniDAPP System management");
 	}
 	
 	@Override
@@ -52,6 +55,75 @@ public class mds extends Command {
 			mds.put("minidapps", arr);
 			ret.put("response", mds);
 		
+		}else if(action.equals("pending")) {
+			
+			//Get all the pending commands..
+			ArrayList<PendingCommand> allpending = Main.getInstance().getMDSManager().getAllPending(); 
+			
+			//Make into JSONArray
+			JSONArray pend = new JSONArray();
+			for(PendingCommand pending : allpending) {
+				pend.add(pending.toJSON());
+			}
+			
+			JSONObject mds = new JSONObject();
+			mds.put("pending", pend);
+		
+			ret.put("response", mds);
+		
+		}else if(action.equals("accept")) {
+			
+			//Get the uid
+			String uid = getParam("uid");
+			
+			//Get all the pending commands..
+			ArrayList<PendingCommand> allpending = Main.getInstance().getMDSManager().getAllPending(); 
+			
+			//Make into JSONArray
+			boolean found = false;
+			for(PendingCommand pending : allpending) {
+				if(pending.getUID().equals(uid)) {
+					
+					//RUN it.. as normal 0x00 - so is accepted
+					CMDcommand cmd 	= new CMDcommand("0x00", pending.getCommand());
+					String result 	= cmd.runCommand();
+					
+					if(result.startsWith("{")) {
+						ret.put("response", (JSONObject) new JSONParser().parse(result));
+					
+					}else if(result.startsWith("[")) {
+						ret.put("response", (JSONArray) new JSONParser().parse(result));
+					
+					}else {
+						ret.put("response", result);
+					}
+					
+					found = true;
+					break;
+				}
+			}
+			
+			//Did we find it..
+			if(found) {
+				//Remove it from the list
+				Main.getInstance().getMDSManager().removePending(uid);
+			}else {
+				throw new CommandException("Pending UID not found : "+uid);
+			}
+			
+		}else if(action.equals("deny")) {
+			
+			//Get the uid
+			String uid = getParam("uid");
+			
+			//Remove it from the list
+			boolean found = Main.getInstance().getMDSManager().removePending(uid);
+			if(!found) {
+				throw new CommandException("Pending UID not found : "+uid);
+			}
+			
+			ret.put("response", "Pending action removed : "+uid);
+			
 		}else if(action.equals("install")) {
 		
 			String file = getParam("file");
@@ -94,6 +166,9 @@ public class mds extends Command {
 			//Now create the JSON..
 			JSONObject jsonconf = (JSONObject) new JSONParser().parse(data.toString());
 			
+			//ALWAYS starts with only READ Permission
+			jsonconf.put("permission", "read");
+			
 			//Create the MiniDAPP
 			MiniDAPP md = new MiniDAPP(rand, jsonconf);
 			
@@ -103,6 +178,8 @@ public class mds extends Command {
 			JSONObject mds = new JSONObject();
 			mds.put("installed", md.toJSON());
 			ret.put("response", mds);
+			
+			MinimaLogger.log(ret.toJSONString());
 			
 			//There has been a change
 			Message installed = new Message(MDSManager.MDS_MINIDAPPS_INSTALLED);
@@ -134,6 +211,36 @@ public class mds extends Command {
 			
 			//There has been a change
 			Main.getInstance().getMDSManager().PostMessage(MDSManager.MDS_MINIDAPPS_RESETALL);
+			
+		}else if(action.equals("permission")) {
+			
+			String uid 		= getParam("uid");
+			String trust 	= getParam("trust");
+			
+			//Get the MIninDAPP..
+			MiniDAPP md = db.getMiniDAPP(uid);
+			if(md == null) {
+				throw new CommandException("MiniDAPP not found : "+uid);
+			}
+			
+			//Now update the TRUST level..
+			if(trust.equals("write")) {
+				md.setPermission("write");
+			
+			}else if(trust.equals("read")) {
+				md.setPermission("read");
+				
+			}else {
+				throw new CommandException("Invalid trust setting - must be read/write : "+trust);
+			}
+			
+			//Now update.. delete the old / insert the new..
+			db.deleteMiniDAPP(uid);
+			
+			//And insert..
+			db.insertMiniDAPP(md);
+			
+			ret.put("response", md.toJSON());
 			
 		}else if(action.equals("reload")) {
 			
