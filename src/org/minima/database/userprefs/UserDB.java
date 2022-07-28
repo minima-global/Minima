@@ -140,4 +140,15 @@ public class UserDB extends JsonDB{
 	public String getMaximaName() {
 		return getString("maximaname", "noname");
 	}
+	
+	/**
+	 * Install MDS DAPPs the first time
+	 */
+	public boolean getMDSINIT() {
+		return getBoolean("mdsinitdapps", false);
+	}
+	
+	public void setMDSINIT(boolean zInit) {
+		setBoolean("mdsinitdapps", zInit);
+	}
 }

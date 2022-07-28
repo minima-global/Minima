@@ -1,6 +1,9 @@
 package org.minima.system.mds;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -11,6 +14,8 @@ import org.minima.database.MinimaDB;
 import org.minima.database.minidapps.MiniDAPP;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
+import org.minima.system.Main;
+import org.minima.system.commands.CommandException;
 import org.minima.system.mds.handler.MDSCompleteHandler;
 import org.minima.system.mds.pending.PendingCommand;
 import org.minima.system.mds.polling.PollStack;
@@ -21,7 +26,9 @@ import org.minima.system.params.GeneralParams;
 import org.minima.utils.BaseConverter;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.ZipExtractor;
 import org.minima.utils.json.JSONObject;
+import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.mozilla.javascript.Context;
@@ -274,6 +281,24 @@ public class MDSManager extends MessageProcessor {
 				mMiniHUBPassword	= GeneralParams.MDS_PASSWORD;
 			}
 			
+			//Is there a Foler of DAPPs to be installed..
+			if(!GeneralParams.MDS_INITFOLDER.equals("") && !MinimaDB.getDB().getUserDB().getMDSINIT()) {
+				
+				//Scan that folder..
+				File[] dapps = new File(GeneralParams.MDS_INITFOLDER).listFiles();
+				if(dapps!=null) {
+					
+					//Cycle through..
+					for(File dapp : dapps) {
+						installMiniDAPP(dapp, GeneralParams.MDS_WRITE);
+					}
+				}
+				
+				//Ok we have done it now..
+				MinimaDB.getDB().getUserDB().setMDSINIT(true);
+				MinimaDB.getDB().saveUserDB();
+			}
+			
 			//Scan for MiniDApps
 			PostMessage(MDS_MINIDAPPS_RESETALL);
 			
@@ -369,6 +394,86 @@ public class MDSManager extends MessageProcessor {
 		//Now add a uniques random SessionID
 		String sessionid = MiniData.getRandomData(32).to0xString();
 		mSessionID.put(sessionid, zDAPP.getUID());
+	}
+	
+	/**
+	 * Install a MiniDAPP file
+	 */
+	public boolean installMiniDAPP(File zMiniDAPP, String zWriteAccess) {		
+	
+		if(!zMiniDAPP.isFile()) {
+			return false;
+		}
+		
+		if(!zMiniDAPP.exists()) {
+			MinimaLogger.log("MiniDAPP @ "+zMiniDAPP.getAbsolutePath()+" does not exist..");
+			return false;
+		}
+		
+		//Now start
+		try {
+			FileInputStream fis = new FileInputStream(zMiniDAPP);
+		
+			//Where is it going..
+			String rand = MiniData.getRandomData(16).to0xString();
+			
+			//The file where the package is extracted..
+			File dest 	= new File( Main.getInstance().getMDSManager().getWebFolder() , rand);
+			if(dest.exists()) {
+				MiniFile.deleteFileOrFolder(dest.getAbsolutePath(), dest);
+			}
+			dest.mkdirs();
+			
+			//Send it to the extractor..
+			ZipExtractor.unzip(fis, dest);
+			fis.close();
+			
+			//Is there a conf file..
+			File conf = new File(dest,"dapp.conf");
+			if(!conf.exists()) {
+				
+				MinimaLogger.log("MiniDAPP @ "+zMiniDAPP.getAbsolutePath()+" no conf file..");
+				
+				//Delete the install
+				MiniFile.deleteFileOrFolder(dest.getAbsolutePath(), dest);	
+				
+				return false;
+			}
+			
+			//Load the Conf file.. to get the data
+			MiniString data = new MiniString(MiniFile.readCompleteFile(conf)); 	
+			
+			//Now create the JSON..
+			JSONObject jsonconf = (JSONObject) new JSONParser().parse(data.toString());
+			
+			//Is this one set to write
+			if(!zWriteAccess.equals("") && jsonconf.containsKey("name")) {
+				if(jsonconf.getString("name").equals(zWriteAccess)){
+					MinimaLogger.log(jsonconf.getString("name","")+" MiniDAPP set to WRITE access");
+					jsonconf.put("permission", "write");
+				}else {
+					//ALWAYS starts with only READ Permission
+					jsonconf.put("permission", "read");
+				}
+			}else {
+				//ALWAYS starts with only READ Permission
+				jsonconf.put("permission", "read");
+			}
+			
+			//Create the MiniDAPP
+			MiniDAPP md = new MiniDAPP(rand, jsonconf);
+			
+			//Now add to the DB
+			MinimaDB.getDB().getMDSDB().insertMiniDAPP(md);
+			
+			MinimaLogger.log("MiniDAPP @ "+zMiniDAPP.getAbsolutePath()+" installed..");
+			
+		} catch (Exception e) {
+			MinimaLogger.log(e);
+			return false;
+		}
+		
+		return true;
 	}
 	
 }

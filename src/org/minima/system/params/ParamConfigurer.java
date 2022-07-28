@@ -163,6 +163,16 @@ public class ParamConfigurer {
         mdspassword("mdspassword", "Specify the Minima MDS password", (arg, configurer) -> {
             GeneralParams.MDS_PASSWORD = arg.trim();
         }),
+        mdsinit("mdsinit", "Specify a folder of MiniDAPPs", (arg, configurer) -> {
+        	//Get that folder
+    		File initFolder 	= new File(arg);
+    		initFolder.mkdirs();
+    		
+        	GeneralParams.MDS_INITFOLDER= initFolder.getAbsolutePath();
+        }),
+        mdswrite("mdswrite", "Make an init MiniDAPP WRITE access", (arg, configurer) -> {
+        	GeneralParams.MDS_WRITE= arg;
+        }),
         conf("conf", "Specify a configuration file (absolute)", (args, configurer) -> {
             // do nothing
         }),
