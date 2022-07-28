@@ -2,7 +2,12 @@ package org.minima.system.network.p2p;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 import org.minima.database.MinimaDB;
 import org.minima.objects.Greeting;
