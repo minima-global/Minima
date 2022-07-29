@@ -248,6 +248,8 @@ public class MDSManager extends MessageProcessor {
 		if(db != null) {
 			db.saveDB();
 		}
+		
+		mSqlDB.remove(zMiniDAPPID);
 	}
 	
 	@Override
