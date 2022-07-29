@@ -193,17 +193,23 @@ public class mds extends Command {
 				throw new CommandException("Invalid UID for MiniDAPP");
 			}
 			
-			//Start deleting..
+			//Delete from the DB
+			db.deleteMiniDAPP(uid);
+			
+			// Delete web..
+			String mdsroot 	= Main.getInstance().getMDSManager().getRootMDSFolder().getAbsolutePath();
 			File dest 		= Main.getInstance().getMDSManager().getWebFolder();
 			File minidapp 	= new File(dest,uid);
-			if(!minidapp.exists()) {
-				throw new CommandException("MiniDAPP not found.. : "+minidapp.getAbsolutePath());
+			if(minidapp.exists()) {
+				MiniFile.deleteFileOrFolder(mdsroot, minidapp);
 			}
 			
-			MiniFile.deleteFileOrFolder(minidapp.getAbsolutePath(), minidapp);
-			
-			//And from the DB
-			db.deleteMiniDAPP(uid);
+			//Delete Data folder
+			Main.getInstance().getMDSManager().shutdownSQL(uid);
+			File dbfolder1 = Main.getInstance().getMDSManager().getMiniDAPPDataFolder(uid);
+			if(dbfolder1.exists()) {
+				MiniFile.deleteFileOrFolder(mdsroot, dbfolder1);
+			}
 			
 			JSONObject mds = new JSONObject();
 			mds.put("uninstalled", uid);

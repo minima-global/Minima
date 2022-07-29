@@ -122,8 +122,16 @@ public class MDSManager extends MessageProcessor {
 		return new File(mMDSRootFile, "web");
 	}
 	
-	public File getMiniDAPPFolder(String zUID) {
+	public File getDataFolder() {
+		return new File(mMDSRootFile, "data");
+	}
+	
+	public File getMiniDAPPWebFolder(String zUID) {
 		return new File(getWebFolder(), zUID);
+	}
+	
+	public File getMiniDAPPDataFolder(String zUID) {
+		return new File(getDataFolder(), zUID);
 	}
 	
 	public String getMiniHUBPasword() {
@@ -210,8 +218,7 @@ public class MDSManager extends MessageProcessor {
 				db = new MiniDAPPDB();
 				
 				//The location
-				File dbfolder1 = new File(getRootMDSFolder(),"data");
-				File dbfolder2 = new File(dbfolder1,minidappid);
+				File dbfolder2 = getMiniDAPPDataFolder(minidappid);
 				File dbfolder3 = new File(dbfolder2,"sql");
 				if(!dbfolder3.exists()) {
 					dbfolder3.mkdirs();
@@ -232,6 +239,15 @@ public class MDSManager extends MessageProcessor {
 		JSONObject res = db.executeSQL(zSQL);
 		
 		return res;
+	}
+	
+	public void shutdownSQL(String zMiniDAPPID){
+		//The final DB
+		MiniDAPPDB db = mSqlDB.get(zMiniDAPPID);
+		
+		if(db != null) {
+			db.saveDB();
+		}
 	}
 	
 	@Override
@@ -354,7 +370,7 @@ public class MDSManager extends MessageProcessor {
 	private void setupMiniDAPP(MiniDAPP zDAPP) {
 		
 		//Is there a service.js class
-		File service = new File(getMiniDAPPFolder(zDAPP.getUID()),"service.js");
+		File service = new File(getMiniDAPPWebFolder(zDAPP.getUID()),"service.js");
 		if(service.exists()) {
 			
 			try {
