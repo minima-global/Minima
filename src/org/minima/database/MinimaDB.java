@@ -130,10 +130,6 @@ public class MinimaDB {
 		return mMDSDB;
 	}
 	
-//	public MiniDAPPDB getMiniDAPPDB() {
-//		return mMiniDAPP;
-//	}
-	
 	private long getDBFileSie(String zFilename) {
 		//Get the base Database folder
 		File basedb = getBaseDBFolder();
