@@ -39,7 +39,8 @@ public class MDSManager extends MessageProcessor {
 	public static final String MDS_POLLMESSAGE 			= "MDS_POLLMESSAGE";
 	public static final String MDS_MINIDAPPS_RESETALL 	= "MDS_MINIDAPPS_RESETALL";
 	
-	public static final String MDS_MINIDAPPS_INSTALLED 	= "MDS_MINIDAPPS_INSTALLED";
+	public static final String MDS_MINIDAPPS_INSTALLED 		= "MDS_MINIDAPPS_INSTALLED";
+	public static final String MDS_MINIDAPPS_UNINSTALLED 	= "MDS_MINIDAPPS_UNINSTALLED";
 	
 	//The Main File and Command server
 	HTTPSServer mMDSFileServer;
@@ -374,6 +375,27 @@ public class MDSManager extends MessageProcessor {
 				
 			//Install it..
 			setupMiniDAPP(dapp);
+		
+		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_UNINSTALLED)) {
+			
+			//Remove a MiniDAPP
+			String uid = zMessage.getString("uid");
+			
+			//First remove the Runnable
+			ArrayList<MDSJS> runnables = new ArrayList();
+			for(MDSJS mds : mRunnables) {
+				if(mds.getMiniDAPPID().equals(uid)) {
+					mds.shutdown();
+				}else {
+					runnables.add(mds);
+				}
+			}
+			
+			//And switch the list over..
+			mRunnables = runnables;
+			
+			//And now remove the sessionid
+			mSessionID.remove(convertMiniDAPPID(uid));
 		}
 	}
 

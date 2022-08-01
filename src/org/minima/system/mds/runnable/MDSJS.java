@@ -52,6 +52,10 @@ public class MDSJS {
 		mScope 			= zScope;
 	}
 	
+	public String getMiniDAPPID() {
+		return mMiniDAPPID;
+	}
+	
 	public void shutdown() {
 		mContext.exit();
 	}
@@ -107,17 +111,7 @@ public class MDSJS {
 		//Run it
 		String result  = cmd.runCommand();
 		
-//		//Run the command
-//		JSONArray res = Command.runMultiCommand(zCommand);
-//    	
-//    	//Get the result.. is it a multi command or single.. 
-//		String result = null;
-//		if(res.size() == 1) {
-//			result = res.get(0).toString();
-//		}else {
-//			result = res.toString();
-//		}
-		
+		//Send Info Back
 		if(zCallback == null) {
 			return;
 		}

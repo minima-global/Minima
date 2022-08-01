@@ -216,7 +216,9 @@ public class mds extends Command {
 			ret.put("response", mds);
 			
 			//There has been a change
-			Main.getInstance().getMDSManager().PostMessage(MDSManager.MDS_MINIDAPPS_RESETALL);
+			Message uninstall = new Message(MDSManager.MDS_MINIDAPPS_UNINSTALLED);
+			uninstall.addString("uid", uid);
+			Main.getInstance().getMDSManager().PostMessage(uninstall);
 			
 		}else if(action.equals("permission")) {
 			
