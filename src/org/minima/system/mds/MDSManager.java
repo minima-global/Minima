@@ -226,7 +226,6 @@ public class MDSManager extends MessageProcessor {
 					dbfolder3.mkdirs();
 				}
 				
-				
 				try {
 					
 					//Now create the actual sql db

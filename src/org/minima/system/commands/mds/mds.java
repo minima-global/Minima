@@ -27,7 +27,7 @@ import org.minima.utils.messages.Message;
 public class mds extends Command {
 
 	public mds() {
-		super("mds","(action:list|install|uninstall|pending|accept|deny|permission) (file:) (uid:) (trust:read|write)- MiniDAPP System management");
+		super("mds","(action:list|install|update|uninstall|pending|accept|deny|permission) (file:) (uid:) (trust:read|write)- MiniDAPP System management");
 	}
 	
 	@Override
@@ -167,7 +167,8 @@ public class mds extends Command {
 			JSONObject jsonconf = (JSONObject) new JSONParser().parse(data.toString());
 			
 			//ALWAYS starts with only READ Permission
-			jsonconf.put("permission", "read");
+			String trust = getParam("permission", "read");
+			jsonconf.put("permission", trust);
 			
 			//Create the MiniDAPP
 			MiniDAPP md = new MiniDAPP(rand, jsonconf);
@@ -178,8 +179,6 @@ public class mds extends Command {
 			JSONObject mds = new JSONObject();
 			mds.put("installed", md.toJSON());
 			ret.put("response", mds);
-			
-			MinimaLogger.log(ret.toJSONString());
 			
 			//There has been a change
 			Message installed = new Message(MDSManager.MDS_MINIDAPPS_INSTALLED);
@@ -219,6 +218,88 @@ public class mds extends Command {
 			Message uninstall = new Message(MDSManager.MDS_MINIDAPPS_UNINSTALLED);
 			uninstall.addString("uid", uid);
 			Main.getInstance().getMDSManager().PostMessage(uninstall);
+			
+		}else if(action.equals("update")) {
+			
+			String uid = getParam("uid");
+			if(!uid.startsWith("0x")) {
+				throw new CommandException("Invalid UID for MiniDAPP");
+			}
+			
+			String file = getParam("file");
+			File minifile = new File(file);
+			if(!minifile.exists()) {
+				throw new CommandException("MiniDAPP not found.. : "+file);
+			}
+			
+			//Get the MiniDAPP
+			MiniDAPP oldmd = db.getMiniDAPP(uid);
+			if(oldmd == null) {
+				throw new CommandException("MiniDAPP not found.. : "+uid);
+			}
+			
+			//Get the Conf..
+			JSONObject miniconf = oldmd.getConfData();
+			
+			//The MiniDAPP
+			FileInputStream fis = new FileInputStream(minifile);
+			
+			//Delete ONLY the old WEB files
+			String mdsroot 	= Main.getInstance().getMDSManager().getRootMDSFolder().getAbsolutePath();
+			File minidapp 	= new File(Main.getInstance().getMDSManager().getWebFolder(),uid);
+			if(minidapp.exists()) {
+				MiniFile.deleteFileOrFolder(mdsroot, minidapp);
+			}
+			
+			//Extract the new files.. make sure exists
+			minidapp.mkdirs();
+			
+			//Send it to the extractor..
+			ZipExtractor.unzip(fis, minidapp);
+			fis.close();
+			
+			//Is there a conf file..
+			File conf = new File(minidapp,"dapp.conf");
+			if(!conf.exists()) {
+				
+				//Delete the install
+				MiniFile.deleteFileOrFolder(mdsroot, minidapp);	
+				
+				throw new CommandException("No dapp.conf file found");
+			}
+			
+			//Load the Conf file.. to get the data
+			MiniString data = new MiniString(MiniFile.readCompleteFile(conf)); 	
+			
+			//Now create the JSON..
+			JSONObject jsonconf = (JSONObject) new JSONParser().parse(data.toString());
+			
+			//Copy the trust
+			String trust = miniconf.getString("permission", "read");
+			jsonconf.put("permission", trust);
+			
+			//Delete the old..
+			db.deleteMiniDAPP(uid);
+			
+			//There has been a change
+			Message uninstall = new Message(MDSManager.MDS_MINIDAPPS_UNINSTALLED);
+			uninstall.addString("uid", uid);
+			Main.getInstance().getMDSManager().PostMessage(uninstall);
+			
+			//The NEW miniDAPP
+			MiniDAPP newmd = new MiniDAPP(uid, jsonconf);
+			
+			//Now add to the DB
+			db.insertMiniDAPP(newmd);
+			
+			//There has been a change
+			Message installed = new Message(MDSManager.MDS_MINIDAPPS_INSTALLED);
+			installed.addObject("minidapp", newmd);
+			Main.getInstance().getMDSManager().PostMessage(installed);
+			
+			JSONObject mds = new JSONObject();
+			mds.put("updated", newmd.toJSON());
+			ret.put("response", mds);
 			
 		}else if(action.equals("permission")) {
 			
