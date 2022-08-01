@@ -68,7 +68,6 @@ public class ParamConfigurer {
                 .entrySet().stream()
                 .filter(e -> toParamKey(e.getKey()).isPresent())
                 .collect(toMap(entry -> toParamKey(entry.getKey()).get(), Map.Entry::getValue)));
-
         return this;
     }
 
@@ -84,6 +83,10 @@ public class ParamConfigurer {
                                 lookAheadToNonParamKeyArg(programArgs, imuCounter).orElse("true")));
                 index++;
             }
+        MinimaLogger.log("Config Parameters");
+        for (Map.Entry<ParamKeys, String> entry : paramKeysToArg.entrySet()) {
+            MinimaLogger.log(entry.getKey() + ":" + entry.getValue());
+        }
         return this;
     }
 
