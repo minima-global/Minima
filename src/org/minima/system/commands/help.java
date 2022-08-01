@@ -19,6 +19,7 @@ import org.minima.system.commands.base.quit;
 import org.minima.system.commands.base.random;
 import org.minima.system.commands.base.restore;
 import org.minima.system.commands.base.send;
+import org.minima.system.commands.base.sendpoll;
 import org.minima.system.commands.base.status;
 import org.minima.system.commands.base.tokencreate;
 import org.minima.system.commands.base.tokenvalidate;
@@ -89,6 +90,7 @@ public class help extends Command {
 		addCommand(details, new getaddress());
 		addCommand(details, new newaddress());
 		addCommand(details, new send());
+		addCommand(details, new sendpoll());
 		addCommand(details, new balance());
 		addCommand(details, new tokencreate());
 		addCommand(details, new tokenvalidate());

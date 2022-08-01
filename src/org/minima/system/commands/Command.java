@@ -38,6 +38,7 @@ import org.minima.system.commands.base.quit;
 import org.minima.system.commands.base.random;
 import org.minima.system.commands.base.restore;
 import org.minima.system.commands.base.send;
+import org.minima.system.commands.base.sendpoll;
 import org.minima.system.commands.base.status;
 import org.minima.system.commands.base.test;
 import org.minima.system.commands.base.tokencreate;
@@ -98,7 +99,7 @@ public abstract class Command {
 			//Removed code..
 //			new sshtunnel(), 
 			
-			new mds(),
+			new mds(), new sendpoll(),
 			
 			new ping(), new random(),
 			new sql(),new file(),
@@ -125,9 +126,19 @@ public abstract class Command {
 	
 	JSONObject mParams = new JSONObject();
 	
+	String mCompleteCommand = new String("");
+	
 	public Command(String zName, String zHelp) {
 		mName = zName;
 		mHelp = zHelp;
+	}
+	
+	public void setCompleteCommand(String zCommand) {
+		mCompleteCommand = zCommand;
+	}
+	
+	public String getCompleteCommand() {
+		return mCompleteCommand;
 	}
 	
 	public String getHelp() {
@@ -389,6 +400,9 @@ public abstract class Command {
 			return new missingcmd(command,"Command not found");
 		}
 		
+		//Set the Complete Command - for reference..
+		comms.setCompleteCommand(zCommand);
+		
 		//get the parameters if any
 		int len = split.length;
 		for(int i=1;i<len;i++) {
@@ -619,7 +633,7 @@ public abstract class Command {
 	 * Which Commands are allowed..
 	 */
 	public static final String[] ALL_WRITE_COMMANDS = 
-		{"send","tokencreate","consolidate","cointrack","sign","txnsign","mds","backup","restore","vault"};
+		{"send","sendpoll","tokencreate","consolidate","cointrack","sign","txnsign","mds","backup","restore","vault"};
 	
 	public static final ArrayList<String> ALL_WRITE_COMMANDS_ARRAY = new ArrayList<String>(Arrays.asList(ALL_WRITE_COMMANDS));
 	
