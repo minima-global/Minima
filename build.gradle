@@ -121,7 +121,7 @@ publishing {
 }
 
 docker {
-    name 'minima:latest'
+    name 'minimaglobal/minima:latest'
     files tasks.shadowJar, "$rootDir/dapps/"
     copySpec.from("$buildDir/lib/minima-all.jar",).into(".")
     copySpec.from("dapps/*").into(".")
