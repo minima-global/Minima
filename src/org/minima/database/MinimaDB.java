@@ -1,7 +1,6 @@
 package org.minima.database;
 
 import java.io.File;
-import java.sql.SQLException;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
