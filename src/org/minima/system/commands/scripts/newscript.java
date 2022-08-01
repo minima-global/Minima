@@ -10,7 +10,7 @@ import org.minima.utils.json.JSONObject;
 public class newscript extends Command {
 
 	public newscript() {
-		super("newscript","[script:] (track:true|false) - Add a new custom script to track");
+		super("newscript","[script:] (track:true|false) - Add a new custom script. Track ALL addresses or just ones with relevant state variables.");
 	}
 	
 	@Override
