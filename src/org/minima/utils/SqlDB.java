@@ -35,8 +35,9 @@ public abstract class SqlDB {
 	
 	/**
 	 * Specify the location of the DB
+	 * @throws SQLException 
 	 */
-	public void loadDB(File zFile) {
+	public void loadDB(File zFile) throws SQLException {
 		
 		//Make sure the parent files exist
 		zFile.getParentFile().mkdirs();
@@ -47,34 +48,29 @@ public abstract class SqlDB {
 		//Store this
 		mSQLFile = new File(path+".mv.db");
 				
-		try {
-			//The H2 JDBC URL
-			String h2db = "jdbc:h2:"+path+";MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE";
-			
-			//Create the connection
-			mSQLConnection = DriverManager.getConnection(h2db, "SA", "");
-			
-			//Save and compact the DB!
-			Statement stmt = mSQLConnection.createStatement();
+		//The H2 JDBC URL
+		String h2db = "jdbc:h2:"+path+";MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE";
 		
-			//Shut down.. this saves and closes all the data
-			stmt.execute("SHUTDOWN COMPACT");
-
-			//Close the connection
-			mSQLConnection.close();
-			
-			//Now open a NEW Connection..
-			mSQLConnection = DriverManager.getConnection(h2db, "SA", "");
-			
-			//Auto commit changes
-			mSQLConnection.setAutoCommit(true);
+		//Create the connection
+		mSQLConnection = DriverManager.getConnection(h2db, "SA", "");
+		
+		//Save and compact the DB!
+		Statement stmt = mSQLConnection.createStatement();
 	
-			//Perform Create SQL
-			createSQL();
-			
-		} catch (SQLException e) {
-			MinimaLogger.log(e);
-		}
+		//Shut down.. this saves and closes all the data
+		stmt.execute("SHUTDOWN COMPACT");
+
+		//Close the connection
+		mSQLConnection.close();
+		
+		//Now open a NEW Connection..
+		mSQLConnection = DriverManager.getConnection(h2db, "SA", "");
+		
+		//Auto commit changes
+		mSQLConnection.setAutoCommit(true);
+
+		//Perform Create SQL
+		createSQL();
 	}
 	
 	public void saveDB() {
@@ -134,7 +130,7 @@ public abstract class SqlDB {
 	/**
 	 * Perform the Create SQL
 	 */
-	protected abstract void createSQL();
+	protected abstract void createSQL() throws SQLException;
 	
 	/**
 	 * Utility Functions

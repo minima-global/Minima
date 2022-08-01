@@ -1,6 +1,7 @@
 package org.minima.database;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -221,7 +222,11 @@ public class MinimaDB {
 			mP2PDB.loadDB(new File(basedb,"p2p.db"));
 			
 		}catch(Exception exc) {
-			MinimaLogger.log("ERROR loadAllDB "+exc);
+			MinimaLogger.log("SERIOUS ERROR loadAllDB ");
+			MinimaLogger.log(exc);
+			
+			//At this point.. STOP..
+			System.exit(1);
 		}
 		
 		//Release the krakken

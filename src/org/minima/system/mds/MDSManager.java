@@ -2,6 +2,7 @@ package org.minima.system.mds;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -224,11 +225,21 @@ public class MDSManager extends MessageProcessor {
 					dbfolder3.mkdirs();
 				}
 				
-				//Now create the actual sql db
-				db.loadDB(new File(dbfolder3,"sqldb"));
 				
-				//Notify the first time
-//				MinimaLogger.log("SQL DB initialised for MiniDAPP : "+minidappid);
+				try {
+					
+					//Now create the actual sql db
+					db.loadDB(new File(dbfolder3,"sqldb"));
+				
+				} catch (SQLException e) {
+					MinimaLogger.log(e);
+					
+					JSONObject err = new JSONObject();
+					err.put("sql", zSQL);
+					err.put("status", false);
+					err.put("err", e.toString());
+					return err;
+				}
 				
 				//Add to the List
 				mSqlDB.put(minidappid, db);
