@@ -138,7 +138,9 @@ public class MDSHubEdit {
 						+ "                        <div>"+dapp.getDescription()+"</div>\r\n"
 						+ "                    </div>"
 						+ "					</a>"
-						+ "<br>"
+						+ "</li>"
+						+ ""
+						+ "<li>"
 						+ "<table width=100% border=0>"
 						+ "<tr>"
 						+ "<td style='text-align:left;'>"
@@ -156,9 +158,7 @@ public class MDSHubEdit {
 						+ "</td>"
 						+ "</tr>"
 						+ "</table>"
-						+ ""
-						+ "                \r\n"
-						+ "            </li>";
+						+ "</li>";
 			}
 		}
 		
