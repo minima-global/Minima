@@ -23,6 +23,7 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.CommandException;
 import org.minima.system.mds.hub.MDSHub;
+import org.minima.system.mds.hub.MDSHubEdit;
 import org.minima.system.mds.hub.MDSHubError;
 import org.minima.system.mds.hub.MDSHubInstall;
 import org.minima.system.mds.hub.MDSHubLogon;
@@ -173,7 +174,7 @@ public class MDSFileHandler implements Runnable {
 					MinimaLogger.log("Incorrect Password : "+pass);
 					webpage 	= MDSHubError.createHubPage();
 				}else {
-					webpage 	= MDSHub.createHubPage(mMDS, pass);
+					webpage 	= MDSHubEdit.createHubPage(mMDS, pass);
 				}
 				
 				//It's the root file..
@@ -339,7 +340,7 @@ public class MDSFileHandler implements Runnable {
 		}catch(SSLException exc) {
 		}catch(IllegalArgumentException exc) {
 		}catch(Exception exc) {
-			MinimaLogger.log(exc);
+			MinimaLogger.log(exc.toString());
 			
 		}finally {
 			try {
