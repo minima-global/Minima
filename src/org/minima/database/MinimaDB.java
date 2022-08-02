@@ -221,7 +221,8 @@ public class MinimaDB {
 			MinimaLogger.log(exc);
 			
 			//At this point.. STOP..
-			System.exit(1);
+			Runtime.getRuntime().halt(0);
+//			System.exit(1);
 		}
 		
 		//Release the krakken
