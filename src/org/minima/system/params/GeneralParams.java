@@ -28,6 +28,11 @@ public class GeneralParams {
 	public static String DATA_FOLDER = "";
 	
 	/**
+	 * Default backup / restore folder
+	 */
+	public static String BACKUP_FOLDER = "";
+	
+	/**
 	 * The Host IP
 	 */
 	public static String MINIMA_HOST = "";
