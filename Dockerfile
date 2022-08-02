@@ -30,4 +30,5 @@ RUN chown -R minima:minima $HOME
 EXPOSE 9001 9002 9003 9004 9005
 
 USER minima
-ENTRYPOINT ["java", "-jar", "minima/minima.jar", "-daemon" ,"-conf", "/home/minima/minima.config"]
+# ENTRYPOINT ["java", "-jar", "minima/minima.jar", "-daemon" ,"-conf", "/home/minima/minima.config"]
+ENTRYPOINT ["java", "-jar", "minima/minima.jar", "-conf", "/home/minima/minima.config"]
