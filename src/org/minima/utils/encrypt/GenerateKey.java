@@ -33,7 +33,7 @@ public class GenerateKey {
 	
 	public static KeyPair generateKeyPair() throws Exception {
 
-		SecureRandom random 	= SecureRandom.getInstanceStrong();
+		SecureRandom random 	= new SecureRandom();
 		
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance(ASYMETRIC_ALGORITHM_GEN);
         keyGen.initialize(1024, random);
@@ -87,7 +87,7 @@ public class GenerateKey {
 	
 	public static byte[] IvParam() throws Exception {
     	
-		SecureRandom random 	= SecureRandom.getInstanceStrong();
+		SecureRandom random 	= new SecureRandom();
 		byte[] ivBytes 			= new byte[16];
 		random.nextBytes(ivBytes);
     	

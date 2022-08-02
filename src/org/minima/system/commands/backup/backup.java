@@ -17,7 +17,6 @@ import org.minima.system.commands.CommandException;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.encrypt.GenerateKey;
 import org.minima.utils.json.JSONObject;
 
@@ -52,8 +51,6 @@ public class backup extends Command {
 			backupfile = new File(GeneralParams.BACKUP_FOLDER,file);
 		}
 		
-		MinimaLogger.log("BACKUP TO FILE "+backupfile.getAbsolutePath());
-		
 		//Wipe if exists..
 		if(backupfile.exists()) {
 			backupfile.delete();
@@ -63,27 +60,18 @@ public class backup extends Command {
 		File backupfolder = new File(GeneralParams.DATA_FOLDER,"backup");
 		backupfolder.mkdirs();
 		
-		MinimaLogger.log("BACKUP TEMP FOLDER "+backupfolder.getAbsolutePath());
-		
-		
 		//Lock the DB
 		MinimaDB.getDB().readLock(true);
 		
 		try {
 		
-			MinimaLogger.log("INSIDE READ ");
-			
 			//Save the current state..
 			MinimaDB.getDB().saveState();
-			
-			MinimaLogger.log("AFTER SAVE STATE");
 			
 			//Write the SQL Dbs
 			File walletfile = new File(backupfolder,"wallet.sql");
 			MinimaDB.getDB().getWallet().backupToFile(walletfile);
 			MiniData walletata 	= new MiniData(MiniFile.readCompleteFile(walletfile));
-			
-			MinimaLogger.log("SAVE WALLET "+walletfile.getAbsolutePath());
 			
 			File cascade = new File(backupfolder,"cascade.bak");
 			MinimaDB.getDB().getCascade().saveDB(cascade);
@@ -116,8 +104,6 @@ public class backup extends Command {
 				archivedata = new MiniData(MiniFile.readCompleteFile(archivedb));
 			}
 			
-			MinimaLogger.log("STREAMS ");
-			
 			//Now create the streams to save these
 			FileOutputStream fos 	= new FileOutputStream(backupfile);
 			GZIPOutputStream gzos	= new GZIPOutputStream(fos);
@@ -125,8 +111,6 @@ public class backup extends Command {
 			
 			//Now create a CipherStream.. first need an IVParam
 			MiniData ivparam = new MiniData(GenerateKey.IvParam());
-			
-			MinimaLogger.log("STREAMS 2");
 			
 			//The SALT - for the password
 	    	byte[] bsalt 	= new byte[8];
@@ -137,12 +121,8 @@ public class backup extends Command {
 			salt.writeDataStream(dos);
 			ivparam.writeDataStream(dos);
 			
-			MinimaLogger.log("STREAMS 3");
-			
 			//Create an AES SecretKey with Password and Salt
 			byte[] secret = GenerateKey.secretKey(password,bsalt).getEncoded();
-			
-			MinimaLogger.log("STREAMS 4");
 			
 			//Create the cipher..
 			Cipher ciph = GenerateKey.getCipherSYM(Cipher.ENCRYPT_MODE, ivparam.getBytes(), secret);
@@ -151,8 +131,6 @@ public class backup extends Command {
 			
 			//Is it Complete
 			MiniByte.WriteToStream(ciphdos, complete);
-			
-			MinimaLogger.log("STREAMS 5");
 			
 			//And now put ALL of those files into a single file..
 			walletata.writeDataStream(ciphdos);
@@ -208,14 +186,10 @@ public class backup extends Command {
 			resp.put("size", MiniFormat.formatSize(backupfile.length()));
 			ret.put("backup", resp);
 			
-			MinimaLogger.log("CLEAN UP ");
-			
 			//And now clean up..
 			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, backupfolder);
 			
 		}catch(Exception exc) {
-			
-			MinimaLogger.log(exc);
 			
 			//Unlock DB..
 			MinimaDB.getDB().readLock(false);
@@ -229,9 +203,7 @@ public class backup extends Command {
 		
 		//Unlock..
 		MinimaDB.getDB().readLock(false);
-		
-		MinimaLogger.log("OUT OF READ LOCK");
-		
+				
 		//Delete backup folder
 		MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, backupfolder);
 		
