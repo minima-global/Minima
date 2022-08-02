@@ -70,6 +70,11 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_PULSE 		= "MAIN_PULSE";
 	
 	/**
+	 * Aync Shutdown call
+	 */
+	public static final String MAIN_SHUTDOWN 		= "MAIN_SHUTDOWN";
+	
+	/**
 	 * Network Restart
 	 */
 	public static final String MAIN_NETRESTART 	= "MAIN_NETRESTART";
@@ -615,6 +620,10 @@ public class Main extends MessageProcessor {
 			
 			//Restart the Networking..
 			restartNIO();
+		
+		}else if(zMessage.getMessageType().equals(MAIN_SHUTDOWN)) {
+			
+			shutdown();
 			
 		}else if(zMessage.getMessageType().equals(MAIN_CHECKER)) {
 			

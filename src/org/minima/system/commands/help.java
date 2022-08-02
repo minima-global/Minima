@@ -1,6 +1,7 @@
 package org.minima.system.commands;
 
-import org.minima.system.commands.base.backup;
+import org.minima.system.commands.backup.backup;
+import org.minima.system.commands.backup.restore;
 import org.minima.system.commands.base.balance;
 import org.minima.system.commands.base.burn;
 import org.minima.system.commands.base.coinexport;
@@ -17,7 +18,6 @@ import org.minima.system.commands.base.newaddress;
 import org.minima.system.commands.base.printtree;
 import org.minima.system.commands.base.quit;
 import org.minima.system.commands.base.random;
-import org.minima.system.commands.base.restore;
 import org.minima.system.commands.base.send;
 import org.minima.system.commands.base.sendpoll;
 import org.minima.system.commands.base.status;

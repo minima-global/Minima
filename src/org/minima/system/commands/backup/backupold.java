@@ -1,4 +1,4 @@
-package org.minima.system.commands.base;
+package org.minima.system.commands.backup;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -15,9 +15,9 @@ import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.json.JSONObject;
 
-public class backup extends Command {
+public class backupold extends Command {
 
-	public backup() {
+	public backupold() {
 		super("backup","(file:) (complete:false|true) - Backup the system. Uses a timestamped name by default");
 	}
 	
@@ -172,7 +172,7 @@ public class backup extends Command {
 
 	@Override
 	public Command getFunction() {
-		return new backup();
+		return new backupold();
 	}
 
 }

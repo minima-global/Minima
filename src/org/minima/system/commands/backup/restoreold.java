@@ -1,4 +1,4 @@
-package org.minima.system.commands.base;
+package org.minima.system.commands.backup;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -16,9 +16,9 @@ import org.minima.utils.MiniFile;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.ssl.SSLManager;
 
-public class restore extends Command {
+public class restoreold extends Command {
 
-	public restore() {
+	public restoreold() {
 		super("restore","[file:] - Restore the entire system.");
 	}
 	
@@ -129,7 +129,7 @@ public class restore extends Command {
 
 	@Override
 	public Command getFunction() {
-		return new restore();
+		return new restoreold();
 	}
 
 }
