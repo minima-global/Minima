@@ -15,12 +15,10 @@ COPY minima-all.jar minima/minima.jar
 
 # Get other permissions right, too
 RUN mkdir -p $HOME/data
-RUN mkdir -p $HOME/data/.minima
 RUN mkdir -p $HOME/dapps
 
-COPY terminal-1.91.mds.zip $HOME/dapps/terminal-1.91.mds.zip
-COPY block-0.1.5.mds.zip $HOME/dapps/block-0.1.5.mds.zip
-COPY wallet_1.6.2.mds.zip $HOME/dapps/wallet_1.6.2.mds.zip
+COPY *.mds.zip $HOME/dapps/
+
 COPY minima.config $HOME/minima.config
 
 RUN chown -R minima:minima $HOME
