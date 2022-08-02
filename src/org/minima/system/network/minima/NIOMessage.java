@@ -264,6 +264,15 @@ public class NIOMessage implements Runnable {
 				//IBD received..
 				IBD ibd = IBD.ReadFromStream(dis);
 				
+				//Check Seems Valid..
+				if(!ibd.checkValidData()) {
+					
+					//Disconnect
+					Main.getInstance().getNIOManager().disconnect(mClientUID);
+					
+					return;
+				}
+				
 				//A small message..
 				MinimaLogger.log("[+] Connected to the blockchain Initial Block Download received. size:"+MiniFormat.formatSize(data.length)+" blocks:"+ibd.getTxBlocks().size());
 				
