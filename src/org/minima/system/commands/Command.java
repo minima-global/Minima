@@ -48,13 +48,7 @@ import org.minima.system.commands.base.vault;
 import org.minima.system.commands.maxima.maxcontacts;
 import org.minima.system.commands.maxima.maxima;
 import org.minima.system.commands.mds.mds;
-import org.minima.system.commands.network.connect;
-import org.minima.system.commands.network.disconnect;
-import org.minima.system.commands.network.message;
-import org.minima.system.commands.network.network;
-import org.minima.system.commands.network.ping;
-import org.minima.system.commands.network.rpc;
-import org.minima.system.commands.network.webhooks;
+import org.minima.system.commands.network.*;
 import org.minima.system.commands.persistent.file;
 import org.minima.system.commands.persistent.sql;
 import org.minima.system.commands.scripts.newscript;
@@ -93,7 +87,7 @@ public abstract class Command {
 		{   new quit(), new status(), new coins(), new txpow(), new connect(), new disconnect(), new network(),
 			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(), new rpc(),
 			new send(), new balance(), new tokencreate(), new tokenvalidate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
-			new incentivecash(), new webhooks(), new peers(), new p2pstate(),
+			new incentivecash(), new webhooks(), new peers(), new p2pstate(), new nodecount(),
 
 			//Removed code..
 //			new sshtunnel(), 
