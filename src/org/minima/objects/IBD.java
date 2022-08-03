@@ -234,15 +234,17 @@ public class IBD implements Streamable {
 	//Check this IBD at least seems right..
 	public boolean checkValidData() {
 		
+		boolean validcascade = hasCascade() && getCascade().getLength()>0;
+		
 		//Need some blocks
-		if(getTxBlocks().size()==0 && hasCascade() && getCascade().getLength()>0) {
+		if(getTxBlocks().size()==0 && validcascade) {
 			
 			//Something wrong..
 			MinimaLogger.log("[!] Received INVALID IBD no blocks.. with a cascade");
 			
 			return false;
 		
-		}else if(hasCascade() && getCascade().getLength()>0) {
+		}else if(validcascade) {
 			
 			//Check the Tip is one less than the tree..
 			MiniNumber casctip 		= getCascade().getTip().getTxPoW().getBlockNumber();
