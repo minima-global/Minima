@@ -135,7 +135,9 @@ public class NIOServer implements Runnable {
 	        	MinimaLogger.log("[!] NIO ERROR - MAIN PORT " + mPort + " ALREADY IN USE. SHUTTING DOWN");
                 
                 //Shut down..
-                System.exit(1);
+	        	Runtime.getRuntime().halt(0);
+                //System.exit(1);
+	        	
                 return;
             }
         

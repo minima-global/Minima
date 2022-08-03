@@ -75,6 +75,11 @@ public class P2PManager extends MessageProcessor {
         return state.getKnownPeers();
     }
 
+    public float getClients() {
+        // Divided by number of connections clients haves to convert client connections into num clients
+        return (float) state.getNoneP2PLinks().size() / P2PParams.MIN_NUM_CONNECTIONS;
+    }
+
     protected List<Message> init(P2PState state) {
         List<Message> msgs = new ArrayList<>();
         //Get the P2P DB
@@ -129,6 +134,7 @@ public class P2PManager extends MessageProcessor {
         if (connectionAddress != null) {
             msgs.add(new Message(P2PManager.P2P_SEND_CONNECT).addObject(ADDRESS_LITERAL, connectionAddress));
         }
+
         return msgs;
     }
 

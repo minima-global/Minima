@@ -231,6 +231,38 @@ public class IBD implements Streamable {
 		return mTxBlocks;
 	}
 	
+	//Check this IBD at least seems right..
+	public boolean checkValidData() {
+		
+		//Need some blocks
+		if(getTxBlocks().size()==0) {
+			//Something wrong..
+			MinimaLogger.log("[!] Received INVALID IBD no blocks..");
+			
+			return false;
+		}
+		
+		if(hasCascade()) {
+			
+			if(getCascade().getLength()>0) {
+			
+				//Check the Tip is one less than the tree..
+				MiniNumber casctip 		= getCascade().getTip().getTxPoW().getBlockNumber();
+				MiniNumber treestart 	= mTxBlocks.get(0).getTxPoW().getBlockNumber();
+				
+				if(!treestart.isEqual(casctip.increment())) {
+					
+					//Something wrong..
+					MinimaLogger.log("[!] Received INVALID IBD with cascade tip:"+casctip+" and tree start:"+treestart);
+					
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+	
 	public BigInteger getTotalWeight(){
 		
 		//The total weight of the chain

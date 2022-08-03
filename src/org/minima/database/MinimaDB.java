@@ -129,10 +129,6 @@ public class MinimaDB {
 		return mMDSDB;
 	}
 	
-//	public MiniDAPPDB getMiniDAPPDB() {
-//		return mMiniDAPP;
-//	}
-	
 	private long getDBFileSie(String zFilename) {
 		//Get the base Database folder
 		File basedb = getBaseDBFolder();
@@ -221,7 +217,12 @@ public class MinimaDB {
 			mP2PDB.loadDB(new File(basedb,"p2p.db"));
 			
 		}catch(Exception exc) {
-			MinimaLogger.log("ERROR loadAllDB "+exc);
+			MinimaLogger.log("SERIOUS ERROR loadAllDB ");
+			MinimaLogger.log(exc);
+			
+			//At this point.. STOP..
+			Runtime.getRuntime().halt(0);
+//			System.exit(1);
 		}
 		
 		//Release the krakken

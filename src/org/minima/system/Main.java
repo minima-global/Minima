@@ -23,6 +23,7 @@ import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
+import org.minima.system.sendpoll.SendPollManager;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.RPCClient;
@@ -67,6 +68,11 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_AUTOMINE 	= "MAIN_CHECKAUTOMINE";
 	public static final String MAIN_CLEANDB 	= "MAIN_CLEANDB";
 	public static final String MAIN_PULSE 		= "MAIN_PULSE";
+	
+	/**
+	 * Aync Shutdown call
+	 */
+	public static final String MAIN_SHUTDOWN 		= "MAIN_SHUTDOWN";
 	
 	/**
 	 * Network Restart
@@ -123,6 +129,11 @@ public class Main extends MessageProcessor {
 	 * MDS
 	 */
 	MDSManager mMDS;
+	
+	/**
+	 * Send POll Manager
+	 */
+	SendPollManager mSendPoll;
 	
 	/**
 	 * Are we shutting down..
@@ -220,6 +231,9 @@ public class Main extends MessageProcessor {
 		//Start MDS
 		mMDS = new MDSManager();
 		
+		//New Send POll Manager
+		mSendPoll = new SendPollManager();
+		
 		//Simulate traffic message ( only if auto mine is set )
 		AUTOMINE_TIMER = MiniNumber.THOUSAND.div(GlobalParams.MINIMA_BLOCK_SPEED).getAsLong();
 		PostTimerMessage(new TimerMessage(AUTOMINE_TIMER, MAIN_AUTOMINE));
@@ -280,6 +294,9 @@ public class Main extends MessageProcessor {
 			//Stop the Miner
 			mTxPoWMiner.stopMessageProcessor();
 			
+			//Stop sendPoll
+			mSendPoll.stopMessageProcessor();
+			
 			//Stop the main TxPoW processor
 			mTxPoWProcessor.stopMessageProcessor();
 			while(!mTxPoWProcessor.isShutdownComplete()) {
@@ -323,6 +340,9 @@ public class Main extends MessageProcessor {
 				
 		//Stop the Miner
 		mTxPoWMiner.stopMessageProcessor();
+		
+		//Stop sendPoll
+		mSendPoll.stopMessageProcessor();
 		
 		//Stop the main TxPoW processor
 		mTxPoWProcessor.stopMessageProcessor();
@@ -418,6 +438,10 @@ public class Main extends MessageProcessor {
 	
 	public MDSManager getMDSManager() {
 		return mMDS;
+	}
+	
+	public SendPollManager getSendPoll() {
+		return mSendPoll;
 	}
 	
 	public void setTrace(boolean zTrace, String zFilter) {
@@ -596,6 +620,10 @@ public class Main extends MessageProcessor {
 			
 			//Restart the Networking..
 			restartNIO();
+		
+		}else if(zMessage.getMessageType().equals(MAIN_SHUTDOWN)) {
+			
+			shutdown();
 			
 		}else if(zMessage.getMessageType().equals(MAIN_CHECKER)) {
 			

@@ -1,9 +1,8 @@
 package org.minima.system.mds.runnable;
 
-import org.minima.system.commands.Command;
 import org.minima.system.mds.MDSManager;
+import org.minima.system.mds.handler.CMDcommand;
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
@@ -51,6 +50,10 @@ public class MDSJS {
 		mMiniDAPPName	= zMiniName;
 		mContext 		= zContext;
 		mScope 			= zScope;
+	}
+	
+	public String getMiniDAPPID() {
+		return mMiniDAPPID;
 	}
 	
 	public void shutdown() {
@@ -102,22 +105,18 @@ public class MDSJS {
 	
 	public void cmd(String zCommand, Function zCallback) {
 	
-		//Run the command
-		JSONArray res = Command.runMultiCommand(zCommand);
-    	
-    	//Get the result.. is it a multi command or single.. 
-		String result = null;
-		if(res.size() == 1) {
-			result = res.get(0).toString();
-		}else {
-			result = res.toString();
-		}
+		//Create a Command
+		CMDcommand cmd = new CMDcommand(mMiniDAPPID, zCommand);
 		
+		//Run it
+		String result  = cmd.runCommand();
+		
+		//Send Info Back
 		if(zCallback == null) {
 			return;
 		}
 		
-		//The argumnets
+		//The arguments
 		Object[] args = { NativeJSON.parse(mContext, mScope, result, new NullCallable()) };
 		
 		//Call the main MDS Function in JS

@@ -80,82 +80,78 @@ public class Wallet extends SqlDB {
 	}
 	
 	@Override
-	protected void createSQL() {
-		try {
-			
-			//Create the various tables..
-			Statement stmt = mSQLConnection.createStatement();
-			
-			//Create keys table
-			String createkeys = "CREATE TABLE IF NOT EXISTS `keys` ("
-							+ "  `id` IDENTITY PRIMARY KEY,"
-							+ "  `size` int NOT NULL,"
-							+ "  `depth` int NOT NULL,"
-							+ "  `uses` bigint NOT NULL,"
-							+ "  `maxuses` bigint NOT NULL,"
-							+ "  `modifier` varchar(80) NOT NULL,"
-							+ "  `privatekey` varchar(80) NOT NULL,"
-							+ "  `publickey` varchar(80) NOT NULL"
-							+ ")";
-			
-			//Run it..
-			stmt.execute(createkeys);
-			
-			//Create scripts table
-			String scriptsdb = "CREATE TABLE IF NOT EXISTS `scripts` ("
-							 + "  `id` IDENTITY PRIMARY KEY,"
-							 + "  `script` varchar(8192) NOT NULL,"
-							 + "  `address` varchar(80) NOT NULL,"
-							 + "  `simple` int NOT NULL,"
-							 + "  `defaultaddress` int NOT NULL,"
-							 + "  `publickey` varchar(80) NOT NULL,"
-							 + "  `track` int NOT NULL"
-							 + ")";
-			
-			//Run it..
-			stmt.execute(scriptsdb);
-			
-			//All done..
-			stmt.close();
-			
-			//KEY functions
-			SQL_CREATE_PUBLIC_KEY 			= mSQLConnection.prepareStatement("INSERT IGNORE INTO keys ( size, depth, uses, maxuses, modifier, privatekey, publickey ) VALUES ( ?, ?, ?, ? ,? ,? ,? )");
-			SQL_GET_ALL_KEYS				= mSQLConnection.prepareStatement("SELECT * FROM keys");
-			SQL_GET_KEY						= mSQLConnection.prepareStatement("SELECT * FROM keys WHERE publickey=?");
-			SQL_UPDATE_KEY_USES				= mSQLConnection.prepareStatement("UPDATE keys SET uses=? WHERE publickey=?");
-			
-			//Base Seed functions
-			SQL_WIPE_PRIVATE_KEYS			= mSQLConnection.prepareStatement("UPDATE keys SET privatekey='0x00' WHERE privatekey!='0x00'");
-			SQL_UPDATE_PRIVATE_KEYS			= mSQLConnection.prepareStatement("UPDATE keys SET privatekey=? WHERE publickey=?");
-			
-			//ScriptsDB
-			SQL_ADD_SCRIPT				= mSQLConnection.prepareStatement("INSERT IGNORE INTO scripts ( script, address, simple, defaultaddress, publickey, track ) VALUES ( ? , ? , ? , ? , ? , ? )");
-			SQL_LIST_ALL_SCRIPTS		= mSQLConnection.prepareStatement("SELECT * FROM scripts");
-			SQL_LIST_SIMPLE_SCRIPTS		= mSQLConnection.prepareStatement("SELECT * FROM scripts WHERE simple<>0");
-			SQL_LIST_TRACK_SCRIPTS		= mSQLConnection.prepareStatement("SELECT * FROM scripts WHERE track<>0");
-			SQL_LIST_DEFAULT_SCRIPTS	= mSQLConnection.prepareStatement("SELECT * FROM scripts WHERE defaultaddress<>0");
-			SQL_GET_SCRIPT				= mSQLConnection.prepareStatement("SELECT * FROM scripts WHERE address=?");
-			
-			//Now load up the caches..
-			ArrayList<KeyRow> allkeys = getAllKeys();
-			for(KeyRow key : allkeys) {
-				mAllKeys.add(key.getPublicKey());
-			}
-			
-			ArrayList<ScriptRow> allscripts = getAllAddresses();
-			for(ScriptRow srow : allscripts) {
-				String address = srow.getAddress();
-				if(srow.isTrack()) {
-					mAllTrackedAddress.add(address);
-				}
-				if(srow.isSimple()) {
-					mAllSimpleAddress.add(address);
-				}
-			}
-			
-		} catch (SQLException e) {
-			MinimaLogger.log(e);
+	protected void createSQL() throws SQLException {
+		
+		//Create the various tables..
+		Statement stmt = mSQLConnection.createStatement();
+		
+		//Create keys table
+		String createkeys = "CREATE TABLE IF NOT EXISTS `keys` ("
+						+ "  `id` IDENTITY PRIMARY KEY,"
+						+ "  `size` int NOT NULL,"
+						+ "  `depth` int NOT NULL,"
+						+ "  `uses` bigint NOT NULL,"
+						+ "  `maxuses` bigint NOT NULL,"
+						+ "  `modifier` varchar(80) NOT NULL,"
+						+ "  `privatekey` varchar(80) NOT NULL,"
+						+ "  `publickey` varchar(80) NOT NULL"
+						+ ")";
+		
+		//Run it..
+		stmt.execute(createkeys);
+		
+		//Create scripts table
+		String scriptsdb = "CREATE TABLE IF NOT EXISTS `scripts` ("
+						 + "  `id` IDENTITY PRIMARY KEY,"
+						 + "  `script` varchar(8192) NOT NULL,"
+						 + "  `address` varchar(80) NOT NULL,"
+						 + "  `simple` int NOT NULL,"
+						 + "  `defaultaddress` int NOT NULL,"
+						 + "  `publickey` varchar(80) NOT NULL,"
+						 + "  `track` int NOT NULL"
+						 + ")";
+		
+		//Run it..
+		stmt.execute(scriptsdb);
+		
+		//All done..
+		stmt.close();
+		
+		//KEY functions
+		SQL_CREATE_PUBLIC_KEY 			= mSQLConnection.prepareStatement("INSERT IGNORE INTO keys ( size, depth, uses, maxuses, modifier, privatekey, publickey ) VALUES ( ?, ?, ?, ? ,? ,? ,? )");
+		SQL_GET_ALL_KEYS				= mSQLConnection.prepareStatement("SELECT * FROM keys");
+		SQL_GET_KEY						= mSQLConnection.prepareStatement("SELECT * FROM keys WHERE publickey=?");
+		SQL_UPDATE_KEY_USES				= mSQLConnection.prepareStatement("UPDATE keys SET uses=? WHERE publickey=?");
+		
+		//Base Seed functions
+		SQL_WIPE_PRIVATE_KEYS			= mSQLConnection.prepareStatement("UPDATE keys SET privatekey='0x00' WHERE privatekey!='0x00'");
+		SQL_UPDATE_PRIVATE_KEYS			= mSQLConnection.prepareStatement("UPDATE keys SET privatekey=? WHERE publickey=?");
+		
+		//ScriptsDB
+		SQL_ADD_SCRIPT				= mSQLConnection.prepareStatement("INSERT IGNORE INTO scripts ( script, address, simple, defaultaddress, publickey, track ) VALUES ( ? , ? , ? , ? , ? , ? )");
+		SQL_LIST_ALL_SCRIPTS		= mSQLConnection.prepareStatement("SELECT * FROM scripts");
+		SQL_LIST_SIMPLE_SCRIPTS		= mSQLConnection.prepareStatement("SELECT * FROM scripts WHERE simple<>0");
+		SQL_LIST_TRACK_SCRIPTS		= mSQLConnection.prepareStatement("SELECT * FROM scripts WHERE track<>0");
+		SQL_LIST_DEFAULT_SCRIPTS	= mSQLConnection.prepareStatement("SELECT * FROM scripts WHERE defaultaddress<>0");
+		SQL_GET_SCRIPT				= mSQLConnection.prepareStatement("SELECT * FROM scripts WHERE address=?");
+		
+		//Now load up the caches..
+		ArrayList<KeyRow> allkeys = getAllKeys();
+		for(KeyRow key : allkeys) {
+			mAllKeys.add(key.getPublicKey());
 		}
+		
+		ArrayList<ScriptRow> allscripts = getAllAddresses();
+		for(ScriptRow srow : allscripts) {
+			String address = srow.getAddress();
+			if(srow.isTrack()) {
+				mAllTrackedAddress.add(address);
+			}
+			if(srow.isSimple()) {
+				mAllSimpleAddress.add(address);
+			}
+		}
+		
 	}
 	
 	/**

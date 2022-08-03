@@ -264,6 +264,15 @@ public class NIOMessage implements Runnable {
 				//IBD received..
 				IBD ibd = IBD.ReadFromStream(dis);
 				
+				//Check Seems Valid..
+				if(!ibd.checkValidData()) {
+					
+					//Disconnect
+					Main.getInstance().getNIOManager().disconnect(mClientUID);
+					
+					return;
+				}
+				
 				//A small message..
 				MinimaLogger.log("[+] Connected to the blockchain Initial Block Download received. size:"+MiniFormat.formatSize(data.length)+" blocks:"+ibd.getTxBlocks().size());
 				
@@ -640,7 +649,7 @@ public class NIOMessage implements Runnable {
 					pinggreet.getExtraData().put("topblock", tip.getBlockNumber().toString());
 					pinggreet.getExtraData().put("tophash", tip.getTxPoW().getTxPoWID());
 					
-					TxPoWTreeNode tip50 = tip.getParent(50);
+					TxPoWTreeNode tip50 = tip.getParent(100);
 					pinggreet.getExtraData().put("50block", tip50.getBlockNumber().toString());
 					pinggreet.getExtraData().put("50hash", tip50.getTxPoW().getTxPoWID());
 				}else {
@@ -657,10 +666,12 @@ public class NIOMessage implements Runnable {
 					P2PManager p2PManager 	= (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();
 					JSONArray peers 		= InetSocketAddressIO.addressesListToJSONArray(new ArrayList<>(p2PManager.getPeers()));
 					pinggreet.getExtraData().put("peers-list", peers);
+					pinggreet.getExtraData().put("clients", p2PManager.getClients());
 					
 				}else {
 					//No peers..
 					pinggreet.getExtraData().put("peers-list", new JSONArray());
+					pinggreet.getExtraData().put("clients", 0);
 				}
 				
 				//Send this back to them.. 
