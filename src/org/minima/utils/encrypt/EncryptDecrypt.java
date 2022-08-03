@@ -145,14 +145,14 @@ public class EncryptDecrypt {
 
     	//Now read in data..
     	int len=0;
-    	byte[] indata = cis.readAllBytes();
-    	
-    	MiniData infinal = new MiniData(indata);
-    	System.out.println("Salt : "+insalt.to0xString());
-		System.out.println("IVPa : "+iniv.to0xString());
-		System.out.println("Dec  : "+infinal.to0xString());
-    	System.out.println("Len  : "+infinal.getLength());
-    	System.out.println("Valid: "+infinal.isEqual(data));
+//    	byte[] indata = cis.readAllBytes();
+//
+//    	MiniData infinal = new MiniData(indata);
+//    	System.out.println("Salt : "+insalt.to0xString());
+//		System.out.println("IVPa : "+iniv.to0xString());
+//		System.out.println("Dec  : "+infinal.to0xString());
+//    	System.out.println("Len  : "+infinal.getLength());
+//    	System.out.println("Valid: "+infinal.isEqual(data));
 		
     	
 //		//Now encrypt the data with the secret
