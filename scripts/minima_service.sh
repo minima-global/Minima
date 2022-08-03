@@ -85,7 +85,7 @@ fi
 
 echo "[+] Creating service minima_$PORT"
 
-MINIMA_PARAMS="-daemon -port $PORT -data $HOME/.minima_$PORT"
+MINIMA_PARAMS="-daemon -rpcenable -port $PORT -data $HOME/.minima_102_$PORT"
 if [ $CLEAN_FLAG ]; then
   MINIMA_PARAMS="$MINIMA_PARAMS -clean"
 fi
@@ -97,10 +97,6 @@ fi
 
 if [ $HOST ]; then
   MINIMA_PARAMS="$MINIMA_PARAMS -host $HOST"
-fi
-
-if [ $RPC ]; then
-  MINIMA_PARAMS="$MINIMA_PARAMS -rpcenable -rpc $RPC"
 fi
 
 tee <<EOF >/dev/null /etc/systemd/system/minima_$PORT.service

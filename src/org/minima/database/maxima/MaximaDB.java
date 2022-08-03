@@ -45,70 +45,66 @@ public class MaximaDB extends SqlDB {
 	}
 	
 	@Override
-	protected void createSQL() {
-		try {
+	protected void createSQL() throws SQLException {
 			
-			//Create the various tables..
-			Statement stmt = mSQLConnection.createStatement();
+		//Create the various tables..
+		Statement stmt = mSQLConnection.createStatement();
 
-			//Create hosts table
-			String hosts = "CREATE TABLE IF NOT EXISTS `hosts` ("
-							+ "  `id` IDENTITY PRIMARY KEY,"
-							+ "  `host` varchar(255) NOT NULL UNIQUE,"
-							+ "  `publickey` blob NOT NULL,"
-							+ "  `privatekey` blob NOT NULL,"
-							+ "  `connected` int NOT NULL,"
-							+ "  `lastseen` bigint NOT NULL"
-							+ ")";
-			
-			//Run it..
-			stmt.execute(hosts);
+		//Create hosts table
+		String hosts = "CREATE TABLE IF NOT EXISTS `hosts` ("
+						+ "  `id` IDENTITY PRIMARY KEY,"
+						+ "  `host` varchar(255) NOT NULL UNIQUE,"
+						+ "  `publickey` blob NOT NULL,"
+						+ "  `privatekey` blob NOT NULL,"
+						+ "  `connected` int NOT NULL,"
+						+ "  `lastseen` bigint NOT NULL"
+						+ ")";
+		
+		//Run it..
+		stmt.execute(hosts);
 
-			//Create contacts table
-			String contacts = "CREATE TABLE IF NOT EXISTS `contacts` ("
-							+ "  `id` IDENTITY PRIMARY KEY,"
-							+ "  `extradata` blob NOT NULL,"
-							+ "  `publickey` varchar(512) NOT NULL UNIQUE,"
-							+ "  `currentaddress` varchar(512) NOT NULL,"
-							+ "  `myaddress` varchar(512) NOT NULL,"
-							+ "  `lastseen` bigint NOT NULL"
-							+ ")";
-			
-			//Run it..
-			stmt.execute(contacts);
-			
-			//All done..
-			stmt.close();
-			
-			//Create some prepared statements..
-			SQL_SELECT_ALL_HOSTS	= mSQLConnection.prepareStatement("SELECT * FROM hosts");
-			SQL_INSERT_MAXIMA_HOST	= mSQLConnection.prepareStatement("INSERT IGNORE INTO hosts ( host, publickey, privatekey, connected, lastseen ) VALUES ( ?, ? , ? ,? ,? )");
-			SQL_UPDATE_MAXIMA_HOST	= mSQLConnection.prepareStatement("UPDATE hosts SET publickey=?, privatekey=?, connected=?, lastseen=? WHERE host=?");
-			SQL_DELETE_HOST			= mSQLConnection.prepareStatement("DELETE FROM hosts WHERE host=?");
-			SQL_DELETE_OLD_HOSTS	= mSQLConnection.prepareStatement("DELETE FROM hosts WHERE connected=0 AND lastseen < ?");
-			SQL_UPDATE_ALL_NOTCONECTED = mSQLConnection.prepareStatement("UPDATE hosts SET connected=0");
-			
-			SQL_INSERT_MAXIMA_CONTACT 	= mSQLConnection.prepareStatement("INSERT IGNORE INTO contacts "
-					+ "( extradata, publickey, currentaddress, myaddress, lastseen ) VALUES ( ?, ?, ?, ?, ? )");
-			
-			SQL_SELECT_ALL_CONTACTS		 = mSQLConnection.prepareStatement("SELECT * FROM contacts");
-			SQL_SELECT_CONTACT_PUBLICKEY = mSQLConnection.prepareStatement("SELECT * FROM contacts WHERE publickey=?");
-			SQL_SELECT_CONTACT_ID 		 = mSQLConnection.prepareStatement("SELECT * FROM contacts WHERE id=?");
-			
-			SQL_UPDATE_CONTACT			= mSQLConnection.prepareStatement("UPDATE contacts SET "
-					+ "extradata=?, currentaddress=?, myaddress=?, lastseen=? WHERE publickey=?");
-			
-			SQL_DELETE_CONTACT			= mSQLConnection.prepareStatement("DELETE FROM contacts WHERE id=?");
-			
-			//All Host are not connected
-			allHostNotConnected();
-			
-			//Load all the hosts
-			getAllHosts();
-			
-		} catch (SQLException e) {
-			MinimaLogger.log(e);
-		}
+		//Create contacts table
+		String contacts = "CREATE TABLE IF NOT EXISTS `contacts` ("
+						+ "  `id` IDENTITY PRIMARY KEY,"
+						+ "  `extradata` blob NOT NULL,"
+						+ "  `publickey` varchar(512) NOT NULL UNIQUE,"
+						+ "  `currentaddress` varchar(512) NOT NULL,"
+						+ "  `myaddress` varchar(512) NOT NULL,"
+						+ "  `lastseen` bigint NOT NULL"
+						+ ")";
+		
+		//Run it..
+		stmt.execute(contacts);
+		
+		//All done..
+		stmt.close();
+		
+		//Create some prepared statements..
+		SQL_SELECT_ALL_HOSTS	= mSQLConnection.prepareStatement("SELECT * FROM hosts");
+		SQL_INSERT_MAXIMA_HOST	= mSQLConnection.prepareStatement("INSERT IGNORE INTO hosts ( host, publickey, privatekey, connected, lastseen ) VALUES ( ?, ? , ? ,? ,? )");
+		SQL_UPDATE_MAXIMA_HOST	= mSQLConnection.prepareStatement("UPDATE hosts SET publickey=?, privatekey=?, connected=?, lastseen=? WHERE host=?");
+		SQL_DELETE_HOST			= mSQLConnection.prepareStatement("DELETE FROM hosts WHERE host=?");
+		SQL_DELETE_OLD_HOSTS	= mSQLConnection.prepareStatement("DELETE FROM hosts WHERE connected=0 AND lastseen < ?");
+		SQL_UPDATE_ALL_NOTCONECTED = mSQLConnection.prepareStatement("UPDATE hosts SET connected=0");
+		
+		SQL_INSERT_MAXIMA_CONTACT 	= mSQLConnection.prepareStatement("INSERT IGNORE INTO contacts "
+				+ "( extradata, publickey, currentaddress, myaddress, lastseen ) VALUES ( ?, ?, ?, ?, ? )");
+		
+		SQL_SELECT_ALL_CONTACTS		 = mSQLConnection.prepareStatement("SELECT * FROM contacts");
+		SQL_SELECT_CONTACT_PUBLICKEY = mSQLConnection.prepareStatement("SELECT * FROM contacts WHERE publickey=?");
+		SQL_SELECT_CONTACT_ID 		 = mSQLConnection.prepareStatement("SELECT * FROM contacts WHERE id=?");
+		
+		SQL_UPDATE_CONTACT			= mSQLConnection.prepareStatement("UPDATE contacts SET "
+				+ "extradata=?, currentaddress=?, myaddress=?, lastseen=? WHERE publickey=?");
+		
+		SQL_DELETE_CONTACT			= mSQLConnection.prepareStatement("DELETE FROM contacts WHERE id=?");
+		
+		//All Host are not connected
+		allHostNotConnected();
+		
+		//Load all the hosts
+		getAllHosts();
+	
 	}
 
 	/**

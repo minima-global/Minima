@@ -1,6 +1,8 @@
 package org.minima.system.mds;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -11,7 +13,9 @@ import org.minima.database.MinimaDB;
 import org.minima.database.minidapps.MiniDAPP;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
+import org.minima.system.Main;
 import org.minima.system.mds.handler.MDSCompleteHandler;
+import org.minima.system.mds.pending.PendingCommand;
 import org.minima.system.mds.polling.PollStack;
 import org.minima.system.mds.runnable.MDSJS;
 import org.minima.system.mds.sql.MiniDAPPDB;
@@ -20,7 +24,9 @@ import org.minima.system.params.GeneralParams;
 import org.minima.utils.BaseConverter;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.ZipExtractor;
 import org.minima.utils.json.JSONObject;
+import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.mozilla.javascript.Context;
@@ -33,7 +39,8 @@ public class MDSManager extends MessageProcessor {
 	public static final String MDS_POLLMESSAGE 			= "MDS_POLLMESSAGE";
 	public static final String MDS_MINIDAPPS_RESETALL 	= "MDS_MINIDAPPS_RESETALL";
 	
-	public static final String MDS_MINIDAPPS_INSTALLED 	= "MDS_MINIDAPPS_INSTALLED";
+	public static final String MDS_MINIDAPPS_INSTALLED 		= "MDS_MINIDAPPS_INSTALLED";
+	public static final String MDS_MINIDAPPS_UNINSTALLED 	= "MDS_MINIDAPPS_UNINSTALLED";
 	
 	//The Main File and Command server
 	HTTPSServer mMDSFileServer;
@@ -68,6 +75,11 @@ public class MDSManager extends MessageProcessor {
 	 * All the current Contexts
 	 */
 	ArrayList<MDSJS> mRunnables = new ArrayList();
+	
+	/**
+	 * All the Pending Commands
+	 */
+	ArrayList<PendingCommand> mPending = new ArrayList<>();
 	
 	/**
 	 * Main Constructor
@@ -112,8 +124,16 @@ public class MDSManager extends MessageProcessor {
 		return new File(mMDSRootFile, "web");
 	}
 	
-	public File getMiniDAPPFolder(String zUID) {
+	public File getDataFolder() {
+		return new File(mMDSRootFile, "data");
+	}
+	
+	public File getMiniDAPPWebFolder(String zUID) {
 		return new File(getWebFolder(), zUID);
+	}
+	
+	public File getMiniDAPPDataFolder(String zUID) {
+		return new File(getDataFolder(), zUID);
 	}
 	
 	public String getMiniHUBPasword() {
@@ -121,7 +141,11 @@ public class MDSManager extends MessageProcessor {
 	}
 	
 	public boolean checkMiniHUBPasword(String zPassword) {
-		return mMiniHUBPassword.replace("-", "").equalsIgnoreCase(zPassword.replace("-", "").trim());
+		if(GeneralParams.MDS_PASSWORD.equals("")) {
+			return mMiniHUBPassword.replace("-", "").equalsIgnoreCase(zPassword.replace("-", "").trim());
+		}
+		
+		return mMiniHUBPassword.equals(zPassword.trim());
 	}
 	
 	/**
@@ -148,18 +172,36 @@ public class MDSManager extends MessageProcessor {
 		return "";
 	}
 	
+	public void addPendingCommand(MiniDAPP zMiniDAPP, String zCommand) {
+		
+		//New Pending Command
+		mPending.add(new PendingCommand(zMiniDAPP.toJSON(), zCommand));
+	}
+	
+	public ArrayList<PendingCommand> getAllPending(){
+		return mPending;
+	}
+	
+	public boolean removePending(String zUID) {
+		ArrayList<PendingCommand> newpending = new ArrayList<>();
+		boolean found = false;
+		for(PendingCommand pending : mPending) {
+			if(!pending.getUID().equals(zUID)) {
+				newpending.add(pending);
+			}else {
+				found = true;
+			}
+		}
+
+		//Switch
+		mPending = newpending;
+		
+		return found;
+	}
+	
 	public JSONObject runSQL(String zUID, String zSQL) {
 		
-//		//Check / convert the UID..
-//		if(!mValid.contains(zUID) && !zUID.equals("0x00")) {
-//			
-//			//Invalid..
-//			JSONObject fail = new JSONObject();
-//			fail.put("status", false);
-//			fail.put("error", "MiniDAPP not found : "+zUID);
-//			return fail;
-//		}
-		
+		//The MiniDAPPID
 		String minidappid = zUID;
 		
 		//The final DB
@@ -178,18 +220,26 @@ public class MDSManager extends MessageProcessor {
 				db = new MiniDAPPDB();
 				
 				//The location
-				File dbfolder1 = new File(getRootMDSFolder(),"data");
-				File dbfolder2 = new File(dbfolder1,minidappid);
+				File dbfolder2 = getMiniDAPPDataFolder(minidappid);
 				File dbfolder3 = new File(dbfolder2,"sql");
 				if(!dbfolder3.exists()) {
 					dbfolder3.mkdirs();
 				}
 				
-				//Now create the actual sql db
-				db.loadDB(new File(dbfolder3,"sqldb"));
+				try {
+					
+					//Now create the actual sql db
+					db.loadDB(new File(dbfolder3,"sqldb"));
 				
-				//Notify the first time
-//				MinimaLogger.log("SQL DB initialised for MiniDAPP : "+minidappid);
+				} catch (SQLException e) {
+					MinimaLogger.log(e);
+					
+					JSONObject err = new JSONObject();
+					err.put("sql", zSQL);
+					err.put("status", false);
+					err.put("err", e.toString());
+					return err;
+				}
 				
 				//Add to the List
 				mSqlDB.put(minidappid, db);
@@ -200,6 +250,17 @@ public class MDSManager extends MessageProcessor {
 		JSONObject res = db.executeSQL(zSQL);
 		
 		return res;
+	}
+	
+	public void shutdownSQL(String zMiniDAPPID){
+		//The final DB
+		MiniDAPPDB db = mSqlDB.get(zMiniDAPPID);
+		
+		if(db != null) {
+			db.saveDB();
+		}
+		
+		mSqlDB.remove(zMiniDAPPID);
 	}
 	
 	@Override
@@ -233,10 +294,36 @@ public class MDSManager extends MessageProcessor {
 				}
 			};
 			
-			//Create a NEW Main Password..
-			MiniData password 	= MiniData.getRandomData(32);
-			String b32			= BaseConverter.encode32(password.getBytes());
-			mMiniHUBPassword	= b32.substring(2,6)+"-"+b32.substring(7,11)+"-"+b32.substring(12,16);
+			//The MDS Password
+			if(GeneralParams.MDS_PASSWORD.equals("")) {
+				//Create a NEW Main Password..
+				MiniData password 	= MiniData.getRandomData(32);
+				String b32			= BaseConverter.encode32(password.getBytes());
+				
+				mMiniHUBPassword	= b32.substring(2,6)+"-"+b32.substring(7,11)+"-"+b32.substring(12,16);
+			
+			}else {
+				//Pre-set..
+				mMiniHUBPassword	= GeneralParams.MDS_PASSWORD;
+			}
+			
+			//Is there a Foler of DAPPs to be installed..
+			if(!GeneralParams.MDS_INITFOLDER.equals("") && !MinimaDB.getDB().getUserDB().getMDSINIT()) {
+				
+				//Scan that folder..
+				File[] dapps = new File(GeneralParams.MDS_INITFOLDER).listFiles();
+				if(dapps!=null) {
+					
+					//Cycle through..
+					for(File dapp : dapps) {
+						installMiniDAPP(dapp, GeneralParams.MDS_WRITE);
+					}
+				}
+				
+				//Ok we have done it now..
+				MinimaDB.getDB().getUserDB().setMDSINIT(true);
+				MinimaDB.getDB().saveUserDB();
+			}
 			
 			//Scan for MiniDApps
 			PostMessage(MDS_MINIDAPPS_RESETALL);
@@ -287,6 +374,27 @@ public class MDSManager extends MessageProcessor {
 				
 			//Install it..
 			setupMiniDAPP(dapp);
+		
+		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_UNINSTALLED)) {
+			
+			//Remove a MiniDAPP
+			String uid = zMessage.getString("uid");
+			
+			//First remove the Runnable
+			ArrayList<MDSJS> runnables = new ArrayList();
+			for(MDSJS mds : mRunnables) {
+				if(mds.getMiniDAPPID().equals(uid)) {
+					mds.shutdown();
+				}else {
+					runnables.add(mds);
+				}
+			}
+			
+			//And switch the list over..
+			mRunnables = runnables;
+			
+			//And now remove the sessionid
+			mSessionID.remove(convertMiniDAPPID(uid));
 		}
 	}
 
@@ -296,7 +404,7 @@ public class MDSManager extends MessageProcessor {
 	private void setupMiniDAPP(MiniDAPP zDAPP) {
 		
 		//Is there a service.js class
-		File service = new File(getMiniDAPPFolder(zDAPP.getUID()),"service.js");
+		File service = new File(getMiniDAPPWebFolder(zDAPP.getUID()),"service.js");
 		if(service.exists()) {
 			
 			try {
@@ -333,6 +441,86 @@ public class MDSManager extends MessageProcessor {
 		//Now add a uniques random SessionID
 		String sessionid = MiniData.getRandomData(32).to0xString();
 		mSessionID.put(sessionid, zDAPP.getUID());
+	}
+	
+	/**
+	 * Install a MiniDAPP file
+	 */
+	public boolean installMiniDAPP(File zMiniDAPP, String zWriteAccess) {		
+	
+		if(!zMiniDAPP.isFile()) {
+			return false;
+		}
+		
+		if(!zMiniDAPP.exists()) {
+			MinimaLogger.log("MiniDAPP @ "+zMiniDAPP.getAbsolutePath()+" does not exist..");
+			return false;
+		}
+		
+		//Now start
+		try {
+			FileInputStream fis = new FileInputStream(zMiniDAPP);
+		
+			//Where is it going..
+			String rand = MiniData.getRandomData(16).to0xString();
+			
+			//The file where the package is extracted..
+			File dest 	= new File( Main.getInstance().getMDSManager().getWebFolder() , rand);
+			if(dest.exists()) {
+				MiniFile.deleteFileOrFolder(dest.getAbsolutePath(), dest);
+			}
+			dest.mkdirs();
+			
+			//Send it to the extractor..
+			ZipExtractor.unzip(fis, dest);
+			fis.close();
+			
+			//Is there a conf file..
+			File conf = new File(dest,"dapp.conf");
+			if(!conf.exists()) {
+				
+				MinimaLogger.log("MiniDAPP @ "+zMiniDAPP.getAbsolutePath()+" no conf file..");
+				
+				//Delete the install
+				MiniFile.deleteFileOrFolder(dest.getAbsolutePath(), dest);	
+				
+				return false;
+			}
+			
+			//Load the Conf file.. to get the data
+			MiniString data = new MiniString(MiniFile.readCompleteFile(conf)); 	
+			
+			//Now create the JSON..
+			JSONObject jsonconf = (JSONObject) new JSONParser().parse(data.toString());
+			
+			//Is this one set to write
+			if(!zWriteAccess.equals("") && jsonconf.containsKey("name")) {
+				if(jsonconf.getString("name").equals(zWriteAccess)){
+					MinimaLogger.log(jsonconf.getString("name","")+" MiniDAPP set to WRITE access");
+					jsonconf.put("permission", "write");
+				}else {
+					//ALWAYS starts with only READ Permission
+					jsonconf.put("permission", "read");
+				}
+			}else {
+				//ALWAYS starts with only READ Permission
+				jsonconf.put("permission", "read");
+			}
+			
+			//Create the MiniDAPP
+			MiniDAPP md = new MiniDAPP(rand, jsonconf);
+			
+			//Now add to the DB
+			MinimaDB.getDB().getMDSDB().insertMiniDAPP(md);
+			
+			MinimaLogger.log("MiniDAPP @ "+zMiniDAPP.getAbsolutePath()+" installed..");
+			
+		} catch (Exception e) {
+			MinimaLogger.log(e);
+			return false;
+		}
+		
+		return true;
 	}
 	
 }

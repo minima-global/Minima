@@ -366,10 +366,16 @@ function sendMoney(){
 			
 			//Did it work..
 			if(resp.status == false){
-				MDS.log(JSON.stringify(resp));
-				alert("ERROR : "+resp.message);
-				document.getElementById("sendbutton").disabled = false;
-				return;
+				
+				//Is it pending..
+				if(resp.pending){
+					alert("This transaction is now pending!");
+				}else{
+					MDS.log(JSON.stringify(resp));
+					alert("ERROR : "+resp.message);
+					document.getElementById("sendbutton").disabled = false;
+					return;	
+				}	
 			}
 			
 			var data = {};

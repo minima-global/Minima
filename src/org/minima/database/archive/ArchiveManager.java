@@ -40,49 +40,44 @@ public class ArchiveManager extends SqlDB {
 	}
 	
 	@Override
-	protected void createSQL() {
-		try {
+	protected void createSQL() throws SQLException {
 			
-			//Create the various tables..
-			Statement stmt = mSQLConnection.createStatement();
-			
-			//Create main table
-			String create = "CREATE TABLE IF NOT EXISTS `syncblock` ("
-							+ "  `id` IDENTITY PRIMARY KEY,"
-							+ "  `txpowid` varchar(80) NOT NULL UNIQUE,"
-							+ "  `block` bigint NOT NULL UNIQUE,"
-							+ "  `timemilli` bigint NOT NULL,"
-							+ "  `syncdata` blob NOT NULL"
-							+ ")";
-			
-			//Run it..
-			stmt.execute(create);
-			
-			//Create some fast indexes..
-			String index = "CREATE INDEX IF NOT EXISTS fastsearch ON syncblock ( txpowid, block )";
-					
-			//Run it..
-			stmt.execute(index);
-			
-			//All done..
-			stmt.close();
-			
-			//Create some prepared statements..
-			String insert 			= "INSERT IGNORE INTO syncblock ( txpowid, block, timemilli, syncdata ) VALUES ( ?, ? ,? ,? )";
-			SQL_INSERT_SYNCBLOCK 	= mSQLConnection.prepareStatement(insert);
-			
-			//Select 
-			SQL_FIND_SYNCBLOCK 		= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE txpowid=?");
-			SQL_EXISTS_SYNCBLOCK	= mSQLConnection.prepareStatement("SELECT block FROM syncblock WHERE txpowid=?");
-			SQL_TOTAL_COUNT			= mSQLConnection.prepareStatement("SELECT COUNT(*) as tot FROM syncblock");
-			SQL_SELECT_RANGE		= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block>? AND block<? ORDER BY block DESC");
-			SQL_DELETE_TXBLOCKS		= mSQLConnection.prepareStatement("DELETE FROM syncblock WHERE timemilli < ?");
-			SQL_SELECT_LAST			= mSQLConnection.prepareStatement("SELECT * FROM syncblock ORDER BY block ASC LIMIT 1");
-			SQL_SELECT_SYNC_LIST	= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block<? ORDER BY block DESC LIMIT 1000");
-			
-		} catch (SQLException e) {
-			MinimaLogger.log(e);
-		}
+		//Create the various tables..
+		Statement stmt = mSQLConnection.createStatement();
+		
+		//Create main table
+		String create = "CREATE TABLE IF NOT EXISTS `syncblock` ("
+						+ "  `id` IDENTITY PRIMARY KEY,"
+						+ "  `txpowid` varchar(80) NOT NULL UNIQUE,"
+						+ "  `block` bigint NOT NULL UNIQUE,"
+						+ "  `timemilli` bigint NOT NULL,"
+						+ "  `syncdata` blob NOT NULL"
+						+ ")";
+		
+		//Run it..
+		stmt.execute(create);
+		
+		//Create some fast indexes..
+		String index = "CREATE INDEX IF NOT EXISTS fastsearch ON syncblock ( txpowid, block )";
+				
+		//Run it..
+		stmt.execute(index);
+		
+		//All done..
+		stmt.close();
+		
+		//Create some prepared statements..
+		String insert 			= "INSERT IGNORE INTO syncblock ( txpowid, block, timemilli, syncdata ) VALUES ( ?, ? ,? ,? )";
+		SQL_INSERT_SYNCBLOCK 	= mSQLConnection.prepareStatement(insert);
+		
+		//Select 
+		SQL_FIND_SYNCBLOCK 		= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE txpowid=?");
+		SQL_EXISTS_SYNCBLOCK	= mSQLConnection.prepareStatement("SELECT block FROM syncblock WHERE txpowid=?");
+		SQL_TOTAL_COUNT			= mSQLConnection.prepareStatement("SELECT COUNT(*) as tot FROM syncblock");
+		SQL_SELECT_RANGE		= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block>? AND block<? ORDER BY block DESC");
+		SQL_DELETE_TXBLOCKS		= mSQLConnection.prepareStatement("DELETE FROM syncblock WHERE timemilli < ?");
+		SQL_SELECT_LAST			= mSQLConnection.prepareStatement("SELECT * FROM syncblock ORDER BY block ASC LIMIT 1");
+		SQL_SELECT_SYNC_LIST	= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block<? ORDER BY block DESC LIMIT 1000");
 	}
 	
 	public synchronized int getSize() {
@@ -319,7 +314,7 @@ public class ArchiveManager extends SqlDB {
 		return 0;
 	}
 	
-	public static void main(String[] zArgs) {
+	public static void main(String[] zArgs) throws SQLException {
 		
 		File testdbfolder 	= new File(System.getProperty("user.home"),"testfolder");
 		File testdb 		= new File(testdbfolder,"sqlsync");

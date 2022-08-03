@@ -25,35 +25,30 @@ public class MDSDB extends SqlDB {
 	}
 	
 	@Override
-	protected void createSQL() {
-		try {
+	protected void createSQL() throws SQLException {
 			
-			//Create the various tables..
-			Statement stmt = mSQLConnection.createStatement();
-			
-			//Create main table
-			String create = "CREATE TABLE IF NOT EXISTS `minidapps` ("
-							+ "  `uid` varchar(80) NOT NULL,"
-							+ "  `confdata` blob NOT NULL"
-							+ ")";
-			
-			//Run it..
-			stmt.execute(create);
-			
-			//All done..
-			stmt.close();
-			
-			//Create some prepared statements..
-			String insert 			= "INSERT IGNORE INTO minidapps ( uid, confdata ) VALUES ( ?, ? )";
-			SQL_INSERT_MINIDAPP 	= mSQLConnection.prepareStatement(insert);
-			
-			SQL_DELETE_MINIDAPP		= mSQLConnection.prepareStatement("DELETE FROM minidapps WHERE uid = ?");
-			SQL_LIST_MINIDAPPS		= mSQLConnection.prepareStatement("SELECT * FROM minidapps");
-			SQL_GET_MINIDAPP		= mSQLConnection.prepareStatement("SELECT * FROM minidapps WHERE uid = ?");
-			
-		} catch (SQLException e) {
-			MinimaLogger.log(e);
-		}
+		//Create the various tables..
+		Statement stmt = mSQLConnection.createStatement();
+		
+		//Create main table
+		String create = "CREATE TABLE IF NOT EXISTS `minidapps` ("
+						+ "  `uid` varchar(80) NOT NULL,"
+						+ "  `confdata` blob NOT NULL"
+						+ ")";
+		
+		//Run it..
+		stmt.execute(create);
+		
+		//All done..
+		stmt.close();
+		
+		//Create some prepared statements..
+		String insert 			= "INSERT IGNORE INTO minidapps ( uid, confdata ) VALUES ( ?, ? )";
+		SQL_INSERT_MINIDAPP 	= mSQLConnection.prepareStatement(insert);
+		
+		SQL_DELETE_MINIDAPP		= mSQLConnection.prepareStatement("DELETE FROM minidapps WHERE uid = ?");
+		SQL_LIST_MINIDAPPS		= mSQLConnection.prepareStatement("SELECT * FROM minidapps");
+		SQL_GET_MINIDAPP		= mSQLConnection.prepareStatement("SELECT * FROM minidapps WHERE uid = ?");
 	}
 	
 	public synchronized boolean insertMiniDAPP(MiniDAPP zDapp) {

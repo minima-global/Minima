@@ -1,6 +1,7 @@
 package org.minima.system.commands;
 
-import org.minima.system.commands.base.backup;
+import org.minima.system.commands.backup.backup;
+import org.minima.system.commands.backup.restore;
 import org.minima.system.commands.base.balance;
 import org.minima.system.commands.base.burn;
 import org.minima.system.commands.base.coinexport;
@@ -17,8 +18,8 @@ import org.minima.system.commands.base.newaddress;
 import org.minima.system.commands.base.printtree;
 import org.minima.system.commands.base.quit;
 import org.minima.system.commands.base.random;
-import org.minima.system.commands.base.restore;
 import org.minima.system.commands.base.send;
+import org.minima.system.commands.base.sendpoll;
 import org.minima.system.commands.base.status;
 import org.minima.system.commands.base.tokencreate;
 import org.minima.system.commands.base.tokenvalidate;
@@ -89,6 +90,7 @@ public class help extends Command {
 		addCommand(details, new getaddress());
 		addCommand(details, new newaddress());
 		addCommand(details, new send());
+		addCommand(details, new sendpoll());
 		addCommand(details, new balance());
 		addCommand(details, new tokencreate());
 		addCommand(details, new tokenvalidate());
@@ -157,7 +159,7 @@ public class help extends Command {
 
 	
 	private void addCommand(JSONObject zDetails, Command zCommand) {
-		zDetails.put(getStrOfLength(15,zCommand.getname()), zCommand.getHelp());
+		zDetails.put(getStrOfLength(15,zCommand.getName()), zCommand.getHelp());
 	}
 	
 	public String getStrOfLength(int zDesiredLen, String zString) {
