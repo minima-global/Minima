@@ -55,9 +55,21 @@ public class TxPoWGenerator {
 		
 		//Set the block number
 		txpow.setBlockNumber(tip.getTxPoW().getBlockNumber().increment());
-			
+		
+		//What is the millitime..
+		MiniNumber millitime = new MiniNumber(System.currentTimeMillis());
+		
+		//Check TimeMilli is acceptable..
+		MiniNumber mintime 	= getMedianTimeBlock(tip, GlobalParams.MEDIAN_BLOCK_CALC*2).getTxPoW().getTimeMilli();
+		MiniNumber maxtime 	= mintime.add(TxPoWChecker.MAX_TIME_FUTURE); 
+		if(millitime.isLess(mintime)) {
+			millitime = mintime.add(new MiniNumber(1000*50));
+		}else if(millitime.isMore(maxtime)) {
+			millitime = maxtime;
+		}
+		
 		//Set the current time
-		txpow.setTimeMilli( new MiniNumber(System.currentTimeMillis()) );
+		txpow.setTimeMilli( millitime );
 		
 		//Set the Transaction..
 		txpow.setTransaction(zTransaction);
