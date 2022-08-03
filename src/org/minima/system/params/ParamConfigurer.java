@@ -136,13 +136,13 @@ public class ParamConfigurer {
     		//Set this globally
     		GeneralParams.DATA_FOLDER 	= minimafolder.getAbsolutePath();
         }),
-    	backupfolder("backupfolder", "Specify a default backup / restore folder", (args, configurer) -> {
+    	basefolder("basefolder", "Specify a default file creation / backup / restore folder", (args, configurer) -> {
     		//Get that folder
     		File backupfolder 	= new File(args);
     		backupfolder.mkdirs();
     		
     		//Set this globally
-    		GeneralParams.BACKUP_FOLDER = backupfolder.getAbsolutePath();
+    		GeneralParams.BASE_FILE_FOLDER = backupfolder.getAbsolutePath();
         }),
     	host("host", "Specify the host IP", (arg, configurer) -> {
             GeneralParams.MINIMA_HOST = arg;
