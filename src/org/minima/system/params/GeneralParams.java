@@ -28,6 +28,11 @@ public class GeneralParams {
 	public static String DATA_FOLDER = "";
 	
 	/**
+	 * Default backup / restore / file creation  folder
+	 */
+	public static String BASE_FILE_FOLDER = "";
+	
+	/**
 	 * The Host IP
 	 */
 	public static String MINIMA_HOST = "";
@@ -56,6 +61,21 @@ public class GeneralParams {
 	 * The MDS Command Server
 	 */
 	public static int MDSCOMMAND_PORT = MINIMA_PORT+3;
+	
+	/**
+	 * The MDS Password - blank will set automagically
+	 */
+	public static String MDS_PASSWORD = "";
+	
+	/**
+	 * A folder of MDS dapps to install at startup
+	 */
+	public static String MDS_INITFOLDER = "";
+	
+	/**
+	 * Make a MiniDAPP WRITE access - on init install
+	 */
+	public static String MDS_WRITE = "";
 	
 	/**
 	 * MDS ENabled

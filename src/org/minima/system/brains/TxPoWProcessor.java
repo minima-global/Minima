@@ -332,7 +332,12 @@ public class TxPoWProcessor extends MessageProcessor {
 			
 			//Get the IBD
 			IBD ibd = (IBD) zMessage.getObject("ibd");
-					
+			
+			//Does it seem Valid..
+			if(!ibd.checkValidData()) {
+				return;
+			}
+			
 			//Does it have a cascade
 			if(ibd.hasCascade()) {
 				

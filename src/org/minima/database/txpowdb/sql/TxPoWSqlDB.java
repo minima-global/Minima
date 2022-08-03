@@ -38,9 +38,9 @@ public class TxPoWSqlDB extends SqlDB {
 		
 	/**
 	 * Perform the Create SQL
+	 * @throws SQLException 
 	 */
-	protected void createSQL() {
-		try {
+	protected void createSQL() throws SQLException {
 		
 			//Create the various tables..
 			Statement stmt = mSQLConnection.createStatement();
@@ -78,10 +78,7 @@ public class TxPoWSqlDB extends SqlDB {
 			SQL_TOTAL_TXPOW		= mSQLConnection.prepareStatement("SELECT COUNT(*) AS tot FROM txpow");
 			SQL_DELETE_TXPOW	= mSQLConnection.prepareStatement("DELETE FROM txpow WHERE timemilli < ?");
 			SQL_EXISTS			= mSQLConnection.prepareStatement("SELECT txpowid FROM txpow WHERE txpowid=?");
-			
-		} catch (SQLException e) {
-			MinimaLogger.log(e);
-		}
+		
 	}
 	
 	
@@ -240,7 +237,7 @@ public class TxPoWSqlDB extends SqlDB {
 		return 0;
 	}
 	
-	public static void main(String[] zArgs) throws IOException {
+	public static void main(String[] zArgs) throws IOException, SQLException {
 		
 		File testdb = new File(System.getProperty("user.home"),"testsql");
 		

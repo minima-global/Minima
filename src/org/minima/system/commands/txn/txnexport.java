@@ -37,7 +37,7 @@ public class txnexport extends Command {
 			String file = getParam("file");
 			
 			//Create the file
-			File output = new File(file);
+			File output = MiniFile.createBaseFile(file);
 			if(output.exists()) {
 				output.delete();
 			}

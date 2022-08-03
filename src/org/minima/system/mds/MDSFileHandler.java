@@ -22,7 +22,6 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.CommandException;
-import org.minima.system.commands.base.newaddress;
 import org.minima.system.mds.hub.MDSHub;
 import org.minima.system.mds.hub.MDSHubError;
 import org.minima.system.mds.hub.MDSHubInstall;
@@ -263,6 +262,9 @@ public class MDSFileHandler implements Runnable {
 				
 				//Now create the JSON..
 				JSONObject jsonconf = (JSONObject) new JSONParser().parse(data.toString());
+				
+				//ALWAYS starts with only READ Permission
+				jsonconf.put("permission", "read");
 				
 				//Create the MiniDAPP
 				MiniDAPP md = new MiniDAPP(rand, jsonconf);

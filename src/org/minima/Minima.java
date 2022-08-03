@@ -90,7 +90,6 @@ public class Minima {
 		
 		//Depends on the VERSION
 		File minimafolder 			= new File(dataFolder,GlobalParams.MINIMA_BASE_VERSION);
-		minimafolder.mkdirs();
 		
 		//Set this globally
 		GeneralParams.DATA_FOLDER 	= minimafolder.getAbsolutePath();
@@ -107,9 +106,13 @@ public class Minima {
 			System.exit(1);
 		}
 
-		boolean daemon = configurer.isDaemon();
-		boolean rpcenable = configurer.isRpcenable();
-		boolean shutdownhook = configurer.isShutDownHook();
+		//Make sure the main DATA folder exists..
+		File maindata = new File(GeneralParams.DATA_FOLDER);
+		maindata.mkdirs();
+		
+		boolean daemon 			= configurer.isDaemon();
+		boolean rpcenable 		= configurer.isRpcenable();
+		boolean shutdownhook 	= configurer.isShutDownHook();
 		
 		//Set the Ports.. If Minima port has changed
 		GeneralParams.RPC_PORT 			= GeneralParams.MINIMA_PORT+1;
