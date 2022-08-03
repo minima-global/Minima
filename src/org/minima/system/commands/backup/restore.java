@@ -43,13 +43,7 @@ public class restore extends Command {
 		}
 		
 		//Does it exist..
-		File restorefile = null;
-		if(GeneralParams.BACKUP_FOLDER.equals("")) {
-			restorefile = new File(file);
-		}else {
-			restorefile = new File(GeneralParams.BACKUP_FOLDER,file);
-		}
-		
+		File restorefile = MiniFile.createBaseFile(file);
 		if(!restorefile.exists()) {
 			throw new Exception("Restore file doesn't exist : "+restorefile.getAbsolutePath());
 		}

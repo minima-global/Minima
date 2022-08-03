@@ -28,9 +28,9 @@ public class GeneralParams {
 	public static String DATA_FOLDER = "";
 	
 	/**
-	 * Default backup / restore folder
+	 * Default backup / restore / file creation  folder
 	 */
-	public static String BACKUP_FOLDER = "";
+	public static String BASE_FILE_FOLDER = "";
 	
 	/**
 	 * The Host IP

@@ -43,13 +43,8 @@ public class backup extends Command {
 		
 		boolean complete = getBooleanParam("complete", false);
 		
-		//Does it exist..
-		File backupfile = null;
-		if(GeneralParams.BACKUP_FOLDER.equals("")) {
-			backupfile = new File(file);
-		}else {
-			backupfile = new File(GeneralParams.BACKUP_FOLDER,file);
-		}
+		//Create the file
+		File backupfile = MiniFile.createBaseFile(file);
 		
 		//Wipe if exists..
 		if(backupfile.exists()) {
