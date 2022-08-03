@@ -227,7 +227,7 @@ public class mds extends Command {
 			}
 			
 			String file = getParam("file");
-			File minifile = new File(file);
+			File minifile = MiniFile.createBaseFile(file);
 			if(!minifile.exists()) {
 				throw new CommandException("MiniDAPP not found.. : "+file);
 			}
