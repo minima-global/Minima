@@ -135,23 +135,6 @@ public class P2PManager extends MessageProcessor {
             msgs.add(new Message(P2PManager.P2P_SEND_CONNECT).addObject(ADDRESS_LITERAL, connectionAddress));
         }
 
-        Set<InetSocketAddress> allPeers = new HashSet<>();
-        Set<InetSocketAddress> pingedPeers = new HashSet<>();
-
-        for (InetSocketAddress addr: P2PParams.DEFAULT_NODE_LIST)
-        {
-            Greeting greet = NIOManager.sendPingMessage(addr.getHostString(), addr.getPort(), true);
-            if (greet != null) {
-                JSONArray peersArrayList = (JSONArray) greet.getExtraData().get("peers-list");
-                if (peersArrayList != null) {
-//                    MinimaLogger.log(peersArrayList.toString());
-                    List<InetSocketAddress> newPeers = InetSocketAddressIO.addressesJSONArrayToList(peersArrayList);
-                    allPeers.addAll(newPeers);
-                }
-            }
-            pingedPeers.add(addr);
-        }
-
         return msgs;
     }
 
