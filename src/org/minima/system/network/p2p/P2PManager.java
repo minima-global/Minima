@@ -151,36 +151,6 @@ public class P2PManager extends MessageProcessor {
             }
             pingedPeers.add(addr);
         }
-        boolean keepGoing = true;
-        Set<InetSocketAddress> peersToCheck = new HashSet<>(allPeers);
-        peersToCheck.removeAll(pingedPeers);
-
-        while (keepGoing){
-            for (InetSocketAddress addr: peersToCheck){
-                Greeting greet = NIOManager.sendPingMessage(addr.getHostString(), addr.getPort(), true);
-                if (greet != null) {
-                    JSONArray peersArrayList = (JSONArray) greet.getExtraData().get("peers-list");
-                    if (peersArrayList != null) {
-//                    MinimaLogger.log(peersArrayList.toString());
-                        List<InetSocketAddress> newPeers = InetSocketAddressIO.addressesJSONArrayToList(peersArrayList);
-                        allPeers.addAll(newPeers);
-                    }
-                }
-                pingedPeers.add(addr);
-                MinimaLogger.log("Total unique peers: " + allPeers.size() + " Peers Checked: " + pingedPeers.size());
-            }
-            peersToCheck = new HashSet<>(allPeers);
-            peersToCheck.removeAll(pingedPeers);
-            if (peersToCheck.size() == 0){
-                keepGoing = false;
-            }
-        }
-
-
-
-
-
-
 
         return msgs;
     }
