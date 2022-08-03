@@ -657,10 +657,12 @@ public class NIOMessage implements Runnable {
 					P2PManager p2PManager 	= (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();
 					JSONArray peers 		= InetSocketAddressIO.addressesListToJSONArray(new ArrayList<>(p2PManager.getPeers()));
 					pinggreet.getExtraData().put("peers-list", peers);
+					pinggreet.getExtraData().put("clients", p2PManager.getClients());
 					
 				}else {
 					//No peers..
 					pinggreet.getExtraData().put("peers-list", new JSONArray());
+					pinggreet.getExtraData().put("clients", 0);
 				}
 				
 				//Send this back to them.. 

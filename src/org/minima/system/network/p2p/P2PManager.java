@@ -2,12 +2,7 @@ package org.minima.system.network.p2p;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 import org.minima.database.MinimaDB;
 import org.minima.objects.Greeting;
@@ -80,6 +75,11 @@ public class P2PManager extends MessageProcessor {
         return state.getKnownPeers();
     }
 
+    public float getClients() {
+        // Divided by number of connections clients haves to convert client connections into num clients
+        return (float) state.getNoneP2PLinks().size() / P2PParams.MIN_NUM_CONNECTIONS;
+    }
+
     protected List<Message> init(P2PState state) {
         List<Message> msgs = new ArrayList<>();
         //Get the P2P DB
@@ -134,6 +134,54 @@ public class P2PManager extends MessageProcessor {
         if (connectionAddress != null) {
             msgs.add(new Message(P2PManager.P2P_SEND_CONNECT).addObject(ADDRESS_LITERAL, connectionAddress));
         }
+
+        Set<InetSocketAddress> allPeers = new HashSet<>();
+        Set<InetSocketAddress> pingedPeers = new HashSet<>();
+
+        for (InetSocketAddress addr: P2PParams.DEFAULT_NODE_LIST)
+        {
+            Greeting greet = NIOManager.sendPingMessage(addr.getHostString(), addr.getPort(), true);
+            if (greet != null) {
+                JSONArray peersArrayList = (JSONArray) greet.getExtraData().get("peers-list");
+                if (peersArrayList != null) {
+//                    MinimaLogger.log(peersArrayList.toString());
+                    List<InetSocketAddress> newPeers = InetSocketAddressIO.addressesJSONArrayToList(peersArrayList);
+                    allPeers.addAll(newPeers);
+                }
+            }
+            pingedPeers.add(addr);
+        }
+        boolean keepGoing = true;
+        Set<InetSocketAddress> peersToCheck = new HashSet<>(allPeers);
+        peersToCheck.removeAll(pingedPeers);
+
+        while (keepGoing){
+            for (InetSocketAddress addr: peersToCheck){
+                Greeting greet = NIOManager.sendPingMessage(addr.getHostString(), addr.getPort(), true);
+                if (greet != null) {
+                    JSONArray peersArrayList = (JSONArray) greet.getExtraData().get("peers-list");
+                    if (peersArrayList != null) {
+//                    MinimaLogger.log(peersArrayList.toString());
+                        List<InetSocketAddress> newPeers = InetSocketAddressIO.addressesJSONArrayToList(peersArrayList);
+                        allPeers.addAll(newPeers);
+                    }
+                }
+                pingedPeers.add(addr);
+                MinimaLogger.log("Total unique peers: " + allPeers.size() + " Peers Checked: " + pingedPeers.size());
+            }
+            peersToCheck = new HashSet<>(allPeers);
+            peersToCheck.removeAll(pingedPeers);
+            if (peersToCheck.size() == 0){
+                keepGoing = false;
+            }
+        }
+
+
+
+
+
+
+
         return msgs;
     }
 
