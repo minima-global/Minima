@@ -234,29 +234,28 @@ public class IBD implements Streamable {
 	//Check this IBD at least seems right..
 	public boolean checkValidData() {
 		
+		boolean validcascade = hasCascade() && getCascade().getLength()>0;
+		
 		//Need some blocks
-		if(getTxBlocks().size()==0) {
+		if(getTxBlocks().size()==0 && validcascade) {
+			
 			//Something wrong..
-			MinimaLogger.log("[!] Received INVALID IBD no blocks..");
+			MinimaLogger.log("[!] Received INVALID IBD no blocks.. with a cascade");
 			
 			return false;
-		}
 		
-		if(hasCascade()) {
+		}else if(validcascade) {
 			
-			if(getCascade().getLength()>0) {
+			//Check the Tip is one less than the tree..
+			MiniNumber casctip 		= getCascade().getTip().getTxPoW().getBlockNumber();
+			MiniNumber treestart 	= mTxBlocks.get(0).getTxPoW().getBlockNumber();
 			
-				//Check the Tip is one less than the tree..
-				MiniNumber casctip 		= getCascade().getTip().getTxPoW().getBlockNumber();
-				MiniNumber treestart 	= mTxBlocks.get(0).getTxPoW().getBlockNumber();
+			if(!treestart.isEqual(casctip.increment())) {
 				
-				if(!treestart.isEqual(casctip.increment())) {
-					
-					//Something wrong..
-					MinimaLogger.log("[!] Received INVALID IBD with cascade tip:"+casctip+" and tree start:"+treestart);
-					
-					return false;
-				}
+				//Something wrong..
+				MinimaLogger.log("[!] Received INVALID IBD with cascade tip:"+casctip+" and tree start:"+treestart);
+				
+				return false;
 			}
 		}
 		
