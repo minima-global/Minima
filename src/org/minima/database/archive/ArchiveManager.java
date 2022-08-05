@@ -35,8 +35,35 @@ public class ArchiveManager extends SqlDB {
 	PreparedStatement SQL_SELECT_LAST			= null;
 	PreparedStatement SQL_SELECT_SYNC_LIST		= null;
 	
+	/**
+	 * Is there a MySQL backup of ALL the blocks..
+	 */
+	boolean mStoreMySQL = false;
+	MySQLConnect mMySQL;
+	
 	public ArchiveManager() {
 		super();
+	}
+	
+	public void setupMySQL(String zHost, String zDB, String zUser, String zPassword) throws SQLException {
+		
+		//New MySQL
+		mMySQL = new MySQLConnect(zHost, zDB, zUser, zPassword);
+		
+		//Initialise it..
+		mMySQL.init();
+		
+		//We are storing in MySQL
+		mStoreMySQL = true;
+	}
+	
+	@Override
+	public void saveDB() {
+		super.saveDB();
+		
+		if(mStoreMySQL) {
+			mMySQL.shutdown();
+		}
 	}
 	
 	@Override
@@ -119,6 +146,11 @@ public class ArchiveManager extends SqlDB {
 			
 			//Do it.
 			SQL_INSERT_SYNCBLOCK.execute();
+		
+			//Do we MySQL
+			if(mStoreMySQL) {
+				mMySQL.saveBlock(zBlock);
+			}
 			
 			return true;
 			

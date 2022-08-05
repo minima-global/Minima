@@ -239,6 +239,18 @@ public class ParamConfigurer {
                 GeneralParams.CLEAN = true;
             }
         }),
+        mysqlhost("mysqlhost", "Store all archive data in a MySQL DB", (args, configurer) -> {
+            GeneralParams.MYSQL_HOST = args;
+        }),
+        mysqldb("mysqldb", "The MySQL Database", (args, configurer) -> {
+        	GeneralParams.MYSQL_DB = args;
+        }),
+        mysqluser("mysqluser", "The MySQL User", (args, configurer) -> {
+        	GeneralParams.MYSQL_USER = args;
+        }),
+        mysqlpassword("mysqlpassword", "The MySQL Password", (args, configurer) -> {
+        	GeneralParams.MYSQL_PASSWORD = args;
+        }),
         genesis("genesis", "Create a genesis block, -clean and -automine", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.CLEAN = true;

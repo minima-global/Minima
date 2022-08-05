@@ -113,6 +113,14 @@ public class GeneralParams {
 	public static String CONNECT_LIST = "";
 	
 	/**
+	 * MySQL Archive Settings
+	 */
+	public static String MYSQL_HOST 	= "";
+	public static String MYSQL_DB 		= "";
+	public static String MYSQL_USER 	= "";
+	public static String MYSQL_PASSWORD = "";
+	
+	/**
 	 * How many days do you keep the TxPoW in the SQL DB
 	 */
 	public static long NUMBER_DAYS_SQLTXPOWDB = 3;
