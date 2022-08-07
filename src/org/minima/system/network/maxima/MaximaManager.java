@@ -502,7 +502,7 @@ public class MaximaManager extends MessageProcessor {
 						Main.getInstance().getNetworkManager().getP2PManager().PostMessage(P2PManager.P2P_RANDOM_CONNECT);
 					
 					}else {
-						MinimaLogger.log("Connected to "+conns+" Maxima Hosts.. not disconnecting..");
+						MinimaLogger.log("MAXIMA Connected to "+conns+" Hosts.. not disconnecting..");
 					}
 				}
 				
