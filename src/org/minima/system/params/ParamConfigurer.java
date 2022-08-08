@@ -197,6 +197,17 @@ public class ParamConfigurer {
                 GeneralParams.IS_ACCEPTING_IN_LINKS = false;
             }
         }),
+        desktop("desktop", "Use Desktop settings - this node can't accept incoming connections", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.IS_ACCEPTING_IN_LINKS = false;
+            }
+        }),
+        server("server", "Use Server settings - this node can accept incoming connections", (args, configurer) -> {
+        	GeneralParams.IS_ACCEPTING_IN_LINKS = true;
+//        	if ("true".equals(args)) {
+//                GeneralParams.IS_ACCEPTING_IN_LINKS = false;
+//            }
+        }),
         mobile("mobile", "Sets this device to a mobile device - used for metrics only", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.IS_MOBILE = true;

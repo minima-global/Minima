@@ -8,7 +8,7 @@ public class GeneralParams {
 	public static boolean IS_MOBILE = false;
 	
 	/**
-	 * Can you accpet incoming connections.. 
+	 * Can you accept incoming connections.. 
 	 */
 	public static boolean IS_ACCEPTING_IN_LINKS = true;
 	
