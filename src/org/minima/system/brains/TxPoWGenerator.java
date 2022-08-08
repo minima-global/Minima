@@ -175,22 +175,34 @@ public class TxPoWGenerator {
 				//Input coin checkers - For the CoinProofs as CoinID may be ELTOO
 				ArrayList<CoinProof> inputs;
 				
+				//Did we find this coin..
+				boolean found = false;
+				
 				//Check CoinIDs not added already.. for Transaction
 				inputs = memtxp.getWitness().getAllCoinProofs();
 				for(CoinProof proof : inputs) {
 					if(addedcoins.contains(proof.getCoin().getCoinID().to0xString())) {
 						//Coin already added in previous TxPoW
-						continue;
+						found = true;
+						break;
 					}
 				}
 				
 				//Check CoinIDs not added already.. for Burn Transaction
-				inputs = memtxp.getBurnWitness().getAllCoinProofs();
-				for(CoinProof proof : inputs) {
-					if(addedcoins.contains(proof.getCoin().getCoinID().to0xString())) {
-						//Coin already added in previous TxPoW
-						continue;
+				if(!found) {
+					inputs = memtxp.getBurnWitness().getAllCoinProofs();
+					for(CoinProof proof : inputs) {
+						if(addedcoins.contains(proof.getCoin().getCoinID().to0xString())) {
+							//Coin already added in previous TxPoW
+							found = true;
+							break;
+						}
 					}
+				}
+				
+				//Did we find it..
+				if(found) {
+					continue;
 				}
 				
 				//Check against the Magic Numbers
