@@ -12,6 +12,9 @@ echo Running as .. $(id -un)
 #Create a new folder - as current user
 mkdir ~/minidocker
 
+# Make it private..
+chmod 700 ~/minidocker
+
 #Remove the old container
 sudo docker rm minima
 
