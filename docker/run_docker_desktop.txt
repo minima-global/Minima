@@ -3,4 +3,4 @@
 # Then run this line.. on windows / mac 
 
 # Start her up in Desktop Mode - using docker desktop
-docker run -it -e minima_desktop=true -e minima_mdspassword=123 -p 9001-9004:9001-9004 -d --restart unless-stopped ~/minidocker:/home/minima/data --name minima minimaglobal/minima:latest
+docker run -e minima_desktop=true -e minima_mdspassword=123 -p 9001-9004:9001-9004 -d --restart unless-stopped ~/minidocker:/home/minima/data --name minima minimaglobal/minima:latest
