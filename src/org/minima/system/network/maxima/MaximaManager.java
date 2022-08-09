@@ -203,7 +203,8 @@ public class MaximaManager extends MessageProcessor {
 		return mls;
 	}
 	
-	public String getRandomMaximaAddress() {
+	public ArrayList<MaximaHost> getAllConnectedHosts(){
+		
 		//Get all the current hosts
 		ArrayList<MaximaHost> hosts = MinimaDB.getDB().getMaximaDB().getAllHosts();
 		
@@ -214,6 +215,14 @@ public class MaximaManager extends MessageProcessor {
 				connctedhosts.add(host);
 			}
 		}
+		
+		return connctedhosts;
+	}
+	
+	public String getRandomMaximaAddress() {
+
+		//Who are we connected to
+		ArrayList<MaximaHost> connctedhosts = getAllConnectedHosts();
 		
 		//Are there any..
 		if(connctedhosts.size() == 0) {
@@ -480,13 +489,21 @@ public class MaximaManager extends MessageProcessor {
 				//If not connected..
 				if(mxhost.getConnected() == 0) {
 					
-					MinimaLogger.log("MAXIMA disconnecting from "+nioc.getFullAddress()+" reconnecting to random host");
+					//How many valid hosts are we connected to.. if enough leave it..
+					int conns = getAllConnectedHosts().size();
+					if(conns < 2) {
 					
-					//Disconnect
-					Main.getInstance().getNIOManager().disconnect(uid);
+						MinimaLogger.log("MAXIMA disconnecting from "+nioc.getFullAddress()+" reconnecting to random host");
+						
+						//Disconnect
+						Main.getInstance().getNIOManager().disconnect(uid);
+						
+						//Disconnect this and reconnect to a random peer..
+						Main.getInstance().getNetworkManager().getP2PManager().PostMessage(P2PManager.P2P_RANDOM_CONNECT);
 					
-					//Disconnect this and reconnect to a random peer..
-					Main.getInstance().getNetworkManager().getP2PManager().PostMessage(P2PManager.P2P_RANDOM_CONNECT);
+					}else {
+						MinimaLogger.log("MAXIMA Connected to "+conns+" Hosts.. not disconnecting..");
+					}
 				}
 				
 			}else {
