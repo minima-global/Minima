@@ -273,6 +273,17 @@ public class NIOMessage implements Runnable {
 					return;
 				}
 				
+				//Is it a complete IBD even though we have a cascade
+				if(MinimaDB.getDB().getCascade().getLength()>0 && ibd.hasCascadeWithBlocks()) {
+					
+					//Hmm.. they sent us the whole Cascade.. check WEIGHT
+					MinimaLogger.log("Checking IBD Weight.. ");
+					
+					IBD.checkChainHeavier(ibd);
+					
+					return;
+				}
+				
 				//A small message..
 				MinimaLogger.log("[+] Connected to the blockchain Initial Block Download received. size:"+MiniFormat.formatSize(data.length)+" blocks:"+ibd.getTxBlocks().size());
 				

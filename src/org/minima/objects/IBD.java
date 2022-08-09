@@ -6,10 +6,12 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
 import org.minima.database.cascade.Cascade;
+import org.minima.database.cascade.CascadeNode;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.txpowtree.TxPowTree;
 import org.minima.objects.base.MiniByte;
@@ -46,6 +48,8 @@ public class IBD implements Streamable {
 			return;
 		}
 		
+		MinimaLogger.log("Create IBD.. ");
+		
 		//Lock the DB - cascade and tree tip / root cannot change while doing this..
 		MinimaDB.getDB().readLock(true);
 		
@@ -59,15 +63,8 @@ public class IBD implements Streamable {
 			
 			//Complete IBD ?
 			if(fresh) {
-				//First copy the current Cascade
-				mCascade = MinimaDB.getDB().getCascade().deepCopy();
-			
-				//And now add all the blocks.. root will be first
-				TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
-				while(tip != null) {
-					mTxBlocks.add(0,tip.getTxBlock());
-					tip = tip.getParent();
-				}
+				MinimaLogger.log("FRESH.. ");
+				createCompleteIBD();
 				
 			}else {
 				MiniNumber myroot 		= txptree.getRoot().getTxBlock().getTxPoW().getBlockNumber();
@@ -120,11 +117,13 @@ public class IBD implements Streamable {
 						}
 					}else {
 						MinimaLogger.log("No Archive blocks found to match New User.. ");
+						createCompleteIBD();
 					}
 					
 				}else if(greetroot.isMore(mytip)) {
 					//We are behind their cascade! - Nothing to send!
-//					MinimaLogger.log("We are Too old to sync new user! greetroot"+greetroot+" mytip:"+mytip);
+					MinimaLogger.log("We are Too old to sync new user! greetroot"+greetroot+" mytip:"+mytip);
+					createCompleteIBD();
 					
 				}else {
 					boolean found 			= false;
@@ -137,7 +136,7 @@ public class IBD implements Streamable {
 					}
 					
 					//Create a string array of our blocks..
-					ArrayList<String> myblocks = new ArrayList<>();
+					HashSet<String> myblocks = new HashSet<>();
 					while(tip != null) {
 						myblocks.add(tip.getTxPoW().getTxPoWID());
 						tip = tip.getParent();
@@ -156,6 +155,8 @@ public class IBD implements Streamable {
 					//Did we find it.. ?
 					if(found) {
 						
+						MinimaLogger.log("Crossover found @ "+foundblockID);
+						
 						//Send from then onwards as SyncBlocks..
 						tip = MinimaDB.getDB().getTxPoWTree().getTip();
 						while(tip != null) {
@@ -173,6 +174,7 @@ public class IBD implements Streamable {
 						}
 					}else {
 						MinimaLogger.log("[!] No Crossover found whilst syncing with new node. They are on a different chain. Please check you are on the correct chain");
+						createCompleteIBD();
 					}
 				}
 			}
@@ -183,6 +185,18 @@ public class IBD implements Streamable {
 		
 		//Unlock..
 		MinimaDB.getDB().readLock(false);
+	}
+	
+	public void createCompleteIBD() throws IOException {
+		//First copy the current Cascade
+		mCascade = MinimaDB.getDB().getCascade().deepCopy();
+	
+		//And now add all the blocks.. root will be first
+		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+		while(tip != null) {
+			mTxBlocks.add(0,tip.getTxBlock());
+			tip = tip.getParent();
+		}
 	}
 	
 	public void createSyncIBD(TxPoW zLastBlock) {
@@ -227,6 +241,10 @@ public class IBD implements Streamable {
 		return mCascade!=null;
 	}
 	
+	public boolean hasCascadeWithBlocks() {
+		return hasCascade() && getCascade().getLength()>0;
+	}
+	
 	public ArrayList<TxBlock> getTxBlocks(){
 		return mTxBlocks;
 	}
@@ -234,28 +252,30 @@ public class IBD implements Streamable {
 	//Check this IBD at least seems right..
 	public boolean checkValidData() {
 		
-		boolean validcascade = hasCascade() && getCascade().getLength()>0;
-		
-		//Need some blocks
-		if(getTxBlocks().size()==0 && validcascade) {
+		//Do we have a cascade
+		if(hasCascadeWithBlocks()) {
 			
-			//Something wrong..
-			MinimaLogger.log("[!] Received INVALID IBD no blocks.. with a cascade");
-			
-			return false;
-		
-		}else if(validcascade) {
-			
-			//Check the Tip is one less than the tree..
-			MiniNumber casctip 		= getCascade().getTip().getTxPoW().getBlockNumber();
-			MiniNumber treestart 	= mTxBlocks.get(0).getTxPoW().getBlockNumber();
-			
-			if(!treestart.isEqual(casctip.increment())) {
+			//Any Blocks..
+			if(getTxBlocks().size()==0) {
 				
 				//Something wrong..
-				MinimaLogger.log("[!] Received INVALID IBD with cascade tip:"+casctip+" and tree start:"+treestart);
+				MinimaLogger.log("[!] Received INVALID IBD no blocks.. with a cascade");
 				
 				return false;
+			
+			}else{
+				
+				//Check the Tip is one less than the tree..
+				MiniNumber casctip 		= getCascade().getTip().getTxPoW().getBlockNumber();
+				MiniNumber treestart 	= mTxBlocks.get(0).getTxPoW().getBlockNumber();
+				
+				if(!treestart.isEqual(casctip.increment())) {
+					
+					//Something wrong..
+					MinimaLogger.log("[!] Received INVALID IBD with cascade tip:"+casctip+" and tree start:"+treestart);
+					
+					return false;
+				}
 			}
 		}
 		
@@ -317,6 +337,159 @@ public class IBD implements Streamable {
 	public static IBD ReadFromStream(DataInputStream zIn) throws IOException {
 		IBD ibd = new IBD();
 		ibd.readDataStream(zIn);
+		return ibd;
+	}
+	
+	
+	/**
+	 * Check the weight of this IBD with our Own!..
+	 */
+	public static void checkChainHeavier(IBD zIBD) throws IOException {
+		
+		//First get OUR own complete IBD..
+		IBD current = new IBD();
+		current.createCompleteIBD();
+		
+		//Now compare this to the provided IBD.. find the cross over..
+		boolean found 			= false;
+		String foundblockID 	= null;
+		
+		//We overlap somewhere.. 
+		ArrayList<String> greetblocks 	= new ArrayList<>();
+		for(TxBlock block : zIBD.getTxBlocks()) {
+			greetblocks.add(0, block.getTxPoW().getTxPoWID());
+		}
+		
+		ArrayList<String> greetcascblocks 	= new ArrayList<>();
+		CascadeNode tip = zIBD.getCascade().getTip();
+		while(tip != null) {
+			greetcascblocks.add(tip.getTxPoW().getTxPoWID());
+			tip = tip.getParent();
+		}
+		
+		//Create a set of OUR blocks..
+		HashSet<String> myblocks = new HashSet<>();
+		for(TxBlock block : current.getTxBlocks()) {
+			myblocks.add(block.getTxPoW().getTxPoWID());
+		}
+		
+		//Create a set of OUR Cascade blocks..
+		HashSet<String> mycascblocks = new HashSet<>();
+		tip = current.getCascade().getTip();
+		while(tip != null) {
+			mycascblocks.add(tip.getTxPoW().getTxPoWID());
+			tip = tip.getParent();
+		}
+		
+		//Now check for intersection
+		for(String block : greetblocks) {
+			if(myblocks.contains(block)) {
+				//Found one!
+				found 			= true;
+				foundblockID 	= block;
+				MinimaLogger.log("Their Blocks Found Interesction with MY Blocks @ "+foundblockID);
+				break;
+			}
+		}
+		
+		//Now check for intersection
+		if(!found) {
+			for(String block : greetblocks) {
+				if(mycascblocks.contains(block)) {
+					//Found one!
+					found 			= true;
+					foundblockID 	= block;
+					MinimaLogger.log("Their Blocks Found Interesction with My Casc Blocks @ "+foundblockID);
+					break;
+				}
+			}
+		}
+		
+		//Now check for intersection
+		if(!found) {
+			for(String block : greetcascblocks) {
+				if(myblocks.contains(block)) {
+					//Found one!
+					found 			= true;
+					foundblockID 	= block;
+					MinimaLogger.log("Their Casc Blocks Found Interesction with My Blocks @ "+foundblockID);
+					break;
+				}
+			}
+		}
+		
+		//Now check for intersection
+		if(!found) {
+			for(String block : greetcascblocks) {
+				if(mycascblocks.contains(block)) {
+					//Found one!
+					found 			= true;
+					foundblockID 	= block;
+					MinimaLogger.log("Their Casc Blocks Found Interesction with My Casc Blocks @ "+foundblockID);
+					break;
+				}
+			}
+		}
+		
+		//Now create 2 new IBD.. up to and including the intersection block
+		if(found) {
+			IBD mynew 		= createShortenedIBD(current, foundblockID);
+			IBD theirnew 	= createShortenedIBD(zIBD, foundblockID);
+			
+			MinimaLogger.log("Intersection found.. "+foundblockID);
+			MinimaLogger.log("MY    IBD WEIGHT : "+mynew.getTotalWeight());
+			MinimaLogger.log("THEIR IBD WEIGHT : "+theirnew.getTotalWeight());
+			
+		}else {
+			//Current toal weights..
+			MinimaLogger.log("NO Intersection found..");
+			MinimaLogger.log("MY    IBD WEIGHT : "+current.getTotalWeight());
+			MinimaLogger.log("THEIR IBD WEIGHT : "+zIBD.getTotalWeight());
+		}
+	}
+	
+	public static IBD createShortenedIBD(IBD zIBD, String zTxPOWID) {
+		
+		IBD ibd = new IBD();
+		ibd.setCascade(new Cascade());
+		
+		//Cycle through the blocks and add..
+		boolean found = false;
+		ArrayList<TxBlock> blocks = zIBD.getTxBlocks();
+		for(TxBlock block : blocks) {
+			
+			//Add this block to the new IBD
+			ibd.getTxBlocks().add(block);
+			
+			//Have we found the intersection 
+			if(block.getTxPoW().getTxPoWID().equals(zTxPOWID)) {
+				found = true;
+				break;
+			}
+		}
+		
+		if(!found) {
+			
+			//Add the cascade blocks..
+			CascadeNode tip = zIBD.getCascade().getTip();
+			while(tip != null) {
+				
+				CascadeNode node = ibd.getCascade().getTip();
+				if(node == null) {
+					
+				}else {
+					
+				}
+				
+				
+			}
+			
+			
+			
+		}
+		
+		
+		
 		return ibd;
 	}
 }
