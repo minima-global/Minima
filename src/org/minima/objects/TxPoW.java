@@ -57,6 +57,11 @@ public class TxPoW implements Streamable {
 	protected BigDecimal _mBlockWeight 	= BigDecimal.ZERO;
 	
 	/**
+	 * When Checking TxPoW for block inclusion..
+	 */
+	int mCheckNumber	= 0;
+	
+	/**
 	 * Test Parameters
 	 */
 	protected boolean 	  mIsTesting 		= false;
@@ -299,6 +304,14 @@ public class TxPoW implements Streamable {
 	
 	public void setCustomHash(MiniData zCustomHash) {
 		mHeader.mCustomHash = zCustomHash;
+	}
+	
+	public int getCheckRejectNumber() {
+		return mCheckNumber;
+	}
+	
+	public void incrementCheckRejectNumber() {
+		mCheckNumber++;
 	}
 	
 	public JSONObject toJSON() {

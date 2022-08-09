@@ -47,14 +47,17 @@ dependencies {
     // Use JUnit test framework
     testImplementation 'junit:junit:4.13'
 
-    implementation 'org.mozilla:rhino:1.7.14'
+	implementation 'org.mozilla:rhino:1.7.14'
 
 //    implementation 'com.jcraft:jsch:0.1.55'
-
-    //implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.25'
-
+    
     implementation 'com.h2database:h2:1.4.200'
+    
  	implementation 'org.bouncycastle:bcpkix-jdk15on:1.69'
+ 	
+ 	implementation "mysql:mysql-connector-java:8.0.25"
+ 	
+ 	//implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.25'
  	
  //	implementation 'org.bouncycastle:bcpprov-jdk15on:1.69'
  	//implementation 'org.bouncycastle:bcputil-jdk15on:1.69'

@@ -28,6 +28,7 @@ import org.minima.system.commands.base.debugflag;
 import org.minima.system.commands.base.getaddress;
 import org.minima.system.commands.base.hash;
 import org.minima.system.commands.base.hashtest;
+import org.minima.system.commands.base.healthcheck;
 import org.minima.system.commands.base.incentivecash;
 import org.minima.system.commands.base.missingcmd;
 import org.minima.system.commands.base.mmrcreate;
@@ -95,7 +96,7 @@ public abstract class Command {
 			//Removed code..
 //			new sshtunnel(), 
 			
-			new mds(), new sendpoll(),
+			new mds(), new sendpoll(), new healthcheck(),
 			
 			new backupold(), new restoreold(),
 			

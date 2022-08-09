@@ -8,7 +8,7 @@ public class GeneralParams {
 	public static boolean IS_MOBILE = false;
 	
 	/**
-	 * Can you accpet incoming connections.. 
+	 * Can you accept incoming connections.. 
 	 */
 	public static boolean IS_ACCEPTING_IN_LINKS = true;
 	
@@ -111,6 +111,14 @@ public class GeneralParams {
 	 * Manual list of Minima nodes to connect to
 	 */
 	public static String CONNECT_LIST = "";
+	
+	/**
+	 * MySQL Archive Settings
+	 */
+	public static String MYSQL_HOST 	= "";
+	public static String MYSQL_DB 		= "";
+	public static String MYSQL_USER 	= "";
+	public static String MYSQL_PASSWORD = "";
 	
 	/**
 	 * How many days do you keep the TxPoW in the SQL DB
