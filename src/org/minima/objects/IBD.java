@@ -292,8 +292,11 @@ public class IBD implements Streamable {
 		BigInteger chainweight 	= total.toBigInteger();
 		
 		//The weight of the cascade
-		BigInteger cascweight 	= getCascade().getTotalWeight().toBigInteger();
-
+		BigInteger cascweight = BigInteger.ZERO;
+		if(getCascade() != null) {
+			cascweight 	= getCascade().getTotalWeight().toBigInteger();
+		}
+			
 		return cascweight.add(chainweight);
 	}
 	
@@ -436,6 +439,10 @@ public class IBD implements Streamable {
 			IBD mynew 		= createShortenedIBD(current, foundblockID);
 			IBD theirnew 	= createShortenedIBD(zIBD, foundblockID);
 			
+			//Current toal weights..
+			MinimaLogger.log("DEF MY    IBD WEIGHT : "+current.getTotalWeight());
+			MinimaLogger.log("DEF THEIR IBD WEIGHT : "+zIBD.getTotalWeight());
+			
 			MinimaLogger.log("Intersection found.. "+foundblockID);
 			MinimaLogger.log("MY    IBD WEIGHT : "+mynew.getTotalWeight());
 			MinimaLogger.log("THEIR IBD WEIGHT : "+theirnew.getTotalWeight());
@@ -471,24 +478,25 @@ public class IBD implements Streamable {
 		if(!found) {
 			
 			//Add the cascade blocks..
+			ArrayList<TxPoW> txps = new ArrayList<>();
 			CascadeNode tip = zIBD.getCascade().getTip();
 			while(tip != null) {
+				txps.add(0,tip.getTxPoW());
 				
-				CascadeNode node = ibd.getCascade().getTip();
-				if(node == null) {
-					
-				}else {
-					
+				if(tip.getTxPoW().getTxPoWID().equals(zTxPOWID)) {
+					break;
 				}
 				
-				
+				tip = tip.getParent();
 			}
 			
+			//Now add those to the IBD
+			for(TxPoW txp : txps) {
+				ibd.getCascade().addToTip(txp);	
+			}
 			
-			
+			ibd.getCascade().cascadeChain();
 		}
-		
-		
 		
 		return ibd;
 	}
