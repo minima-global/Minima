@@ -18,7 +18,7 @@ import org.minima.utils.json.JSONObject;
 public class backupold extends Command {
 
 	public backupold() {
-		super("backup","(file:) (complete:false|true) - Backup the system. Uses a timestamped name by default");
+		super("backupold","(file:) (complete:false|true) - Backup the system. Uses a timestamped name by default");
 	}
 	
 	@Override

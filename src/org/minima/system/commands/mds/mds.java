@@ -167,7 +167,7 @@ public class mds extends Command {
 			JSONObject jsonconf = (JSONObject) new JSONParser().parse(data.toString());
 			
 			//ALWAYS starts with only READ Permission
-			String trust = getParam("permission", "read");
+			String trust = getParam("trust", "read");
 			jsonconf.put("permission", trust);
 			
 			//Create the MiniDAPP

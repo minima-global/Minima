@@ -184,6 +184,15 @@ public class MinimaDB {
 			File archsqlfolder = new File(basedb,"archivesql");
 			mArchive.loadDB(new File(archsqlfolder,"archive"));
 			
+			//Are we Storing in a MySQL..
+			if(!GeneralParams.MYSQL_HOST.equals("")) {
+				mArchive.setupMySQL(
+						GeneralParams.MYSQL_HOST, 
+						GeneralParams.MYSQL_DB,
+						GeneralParams.MYSQL_USER,
+						GeneralParams.MYSQL_PASSWORD);
+			}
+			
 			//Load the wallet
 			File walletsqlfolder = new File(basedb,"walletsql");
 			mWallet.loadDB(new File(walletsqlfolder,"wallet"));

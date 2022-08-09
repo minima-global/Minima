@@ -406,6 +406,7 @@ public class NIOMessage implements Runnable {
 				//Check for mempool coins..
 				if(TxPoWChecker.checkMemPoolCoins(txpow)) {
 					//Same coins in different transaction - could have been requested by us from branch
+					MinimaLogger.log("TxPoW with existing mempoolcoins "+txpow.getTxPoWID());
 					fullyvalid = false;
 				}
 				

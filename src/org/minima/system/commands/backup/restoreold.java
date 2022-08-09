@@ -19,7 +19,7 @@ import org.minima.utils.ssl.SSLManager;
 public class restoreold extends Command {
 
 	public restoreold() {
-		super("restore","[file:] - Restore the entire system.");
+		super("restoreold","[file:] - Restore the entire system.");
 	}
 	
 	@Override
