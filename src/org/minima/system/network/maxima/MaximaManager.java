@@ -970,4 +970,18 @@ public class MaximaManager extends MessageProcessor {
 			mHaveContacts = false;
 		}
 	}
+	
+	/**
+	 * Notify users that something has changed
+	 */
+	public void MaximaMessage(boolean zHosts, boolean zContacts) {
+		
+		//Something has changed
+		JSONObject data = new JSONObject();
+		data.put("hosts", zHosts);
+		data.put("contacts", zContacts);
+		
+		//Post it on the stack
+		Main.getInstance().PostNotifyEvent("MAXIMACHANGE", data);
+	}
 }
