@@ -279,7 +279,7 @@ public class NIOMessage implements Runnable {
 					boolean heavier = IBD.checkOurChainHeavier(ibd);
 					
 					if(!heavier) {
-						MinimaLogger.log("[!] CONNECTED TO HEAVIER CHAIN..");
+						MinimaLogger.log("[!] CONNECTED TO HEAVIER CHAIN.. from "+mClientUID);
 					}
 					
 					return;
