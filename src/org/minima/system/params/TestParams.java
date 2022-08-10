@@ -35,13 +35,13 @@ public class TestParams {
 	/**
 	 * Depth before we cascade..
 	 */
-	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(16);
+	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(128);
 	
 	
 	/**
 	 * Number of blocks at each cascade level 
 	 */
-	public static int MINIMA_CASCADE_LEVEL_NODES  = 2;
+	public static int MINIMA_CASCADE_LEVEL_NODES  = 4;
 	
 	/**
 	 * How Many Cascade Levels

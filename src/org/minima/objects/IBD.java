@@ -48,8 +48,6 @@ public class IBD implements Streamable {
 			return;
 		}
 		
-		MinimaLogger.log("Create IBD.. ");
-		
 		//Lock the DB - cascade and tree tip / root cannot change while doing this..
 		MinimaDB.getDB().readLock(true);
 		
@@ -63,7 +61,6 @@ public class IBD implements Streamable {
 			
 			//Complete IBD ?
 			if(fresh) {
-				MinimaLogger.log("FRESH.. ");
 				createCompleteIBD();
 				
 			}else {
@@ -347,7 +344,7 @@ public class IBD implements Streamable {
 	/**
 	 * Check the weight of this IBD with our Own!..
 	 */
-	public static void checkChainHeavier(IBD zIBD) throws IOException {
+	public static boolean checkOurChainHeavier(IBD zIBD) throws IOException {
 		
 		//First get OUR own complete IBD..
 		IBD current = new IBD();
@@ -390,7 +387,6 @@ public class IBD implements Streamable {
 				//Found one!
 				found 			= true;
 				foundblockID 	= block;
-				MinimaLogger.log("Their Blocks Found Interesction with MY Blocks @ "+foundblockID);
 				break;
 			}
 		}
@@ -402,7 +398,6 @@ public class IBD implements Streamable {
 					//Found one!
 					found 			= true;
 					foundblockID 	= block;
-					MinimaLogger.log("Their Blocks Found Interesction with My Casc Blocks @ "+foundblockID);
 					break;
 				}
 			}
@@ -415,7 +410,6 @@ public class IBD implements Streamable {
 					//Found one!
 					found 			= true;
 					foundblockID 	= block;
-					MinimaLogger.log("Their Casc Blocks Found Interesction with My Blocks @ "+foundblockID);
 					break;
 				}
 			}
@@ -428,31 +422,38 @@ public class IBD implements Streamable {
 					//Found one!
 					found 			= true;
 					foundblockID 	= block;
-					MinimaLogger.log("Their Casc Blocks Found Interesction with My Casc Blocks @ "+foundblockID);
 					break;
 				}
 			}
 		}
 		
 		//Now create 2 new IBD.. up to and including the intersection block
+		BigInteger myweight;
+		BigInteger theirweight;
 		if(found) {
+			MinimaLogger.log("Intersection of chains found @ "+foundblockID);
+			
 			IBD mynew 		= createShortenedIBD(current, foundblockID);
+			myweight 		= mynew.getTotalWeight();
+			
 			IBD theirnew 	= createShortenedIBD(zIBD, foundblockID);
-			
-			//Current toal weights..
-			MinimaLogger.log("DEF MY    IBD WEIGHT : "+current.getTotalWeight());
-			MinimaLogger.log("DEF THEIR IBD WEIGHT : "+zIBD.getTotalWeight());
-			
-			MinimaLogger.log("Intersection found.. "+foundblockID);
-			MinimaLogger.log("MY    IBD WEIGHT : "+mynew.getTotalWeight());
-			MinimaLogger.log("THEIR IBD WEIGHT : "+theirnew.getTotalWeight());
+			theirweight		= theirnew.getTotalWeight();
 			
 		}else {
-			//Current toal weights..
-			MinimaLogger.log("NO Intersection found..");
-			MinimaLogger.log("MY    IBD WEIGHT : "+current.getTotalWeight());
-			MinimaLogger.log("THEIR IBD WEIGHT : "+zIBD.getTotalWeight());
+			//Current total weights..
+			myweight 	= current.getTotalWeight();
+			theirweight = zIBD.getTotalWeight();
 		}
+		
+		boolean heavier = myweight.compareTo(theirweight) >= 0;
+		
+		if(!heavier) {
+			MinimaLogger.log("YOUR  WEIGHT : "+myweight);
+			MinimaLogger.log("THEIR WEIGHT : "+theirweight);
+		}
+		
+		//Now see if we are Heavier..
+		return heavier;
 	}
 	
 	public static IBD createShortenedIBD(IBD zIBD, String zTxPOWID) {
@@ -463,10 +464,16 @@ public class IBD implements Streamable {
 		//Cycle through the blocks and add..
 		boolean found = false;
 		ArrayList<TxBlock> blocks = zIBD.getTxBlocks();
+		
+		ArrayList<TxBlock> revblocks = new ArrayList<>();
 		for(TxBlock block : blocks) {
+			revblocks.add(0, block);
+		}
+		
+		for(TxBlock block : revblocks) {
 			
 			//Add this block to the new IBD
-			ibd.getTxBlocks().add(block);
+			ibd.getTxBlocks().add(0,block);
 			
 			//Have we found the intersection 
 			if(block.getTxPoW().getTxPoWID().equals(zTxPOWID)) {
@@ -499,5 +506,22 @@ public class IBD implements Streamable {
 		}
 		
 		return ibd;
+	}
+	
+	public static void printIBD(IBD zIBD) {
+		System.out.println("Cascade:");
+		System.out.println(zIBD.getCascade().printCascade());
+		
+		//And the blocks..
+		System.out.println("Blocks:");
+		ArrayList<TxBlock> blox = zIBD.getTxBlocks();
+		for(TxBlock block : blox) {
+			TxPoW txp = block.getTxPoW();
+			System.out.println(txp.getBlockNumber()+") "+txp.getTxPoWID());
+		}
+		
+		//Total Weight..
+		System.out.println("Total Weight : "+zIBD.getTotalWeight());
+		System.out.println();
 	}
 }

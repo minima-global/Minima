@@ -276,10 +276,11 @@ public class NIOMessage implements Runnable {
 				//Is it a complete IBD even though we have a cascade
 				if(MinimaDB.getDB().getCascade().getLength()>0 && ibd.hasCascadeWithBlocks()) {
 					
-					//Hmm.. they sent us the whole Cascade.. check WEIGHT
-					MinimaLogger.log("Checking IBD Weight.. ");
+					boolean heavier = IBD.checkOurChainHeavier(ibd);
 					
-					IBD.checkChainHeavier(ibd);
+					if(!heavier) {
+						MinimaLogger.log("[!] CONNECTED TO HEAVIER CHAIN..");
+					}
 					
 					return;
 				}
@@ -454,10 +455,12 @@ public class NIOMessage implements Runnable {
 						}
 					}
 					
-					//Get the parent if we don't have it..
-					exists = MinimaDB.getDB().getTxPoWDB().exists(txpow.getParentID().to0xString());
-					if(!exists) {
-						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txpow.getParentID());
+					//Get the parent if we don't have it.. and is in front of our cascade
+					if(block.isMoreEqual(cascadeblock)) {
+						exists = MinimaDB.getDB().getTxPoWDB().exists(txpow.getParentID().to0xString());
+						if(!exists) {
+							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txpow.getParentID());
+						}
 					}
 				}
 				
