@@ -173,7 +173,7 @@ public class balance extends Command {
 				tokbal.put("unconfirmed", tok.getScaledTokenAmount(unconf).toString());
 				tokbal.put("sendable", tok.getScaledTokenAmount(send).toString());
 				tokbal.put("coins", totcoins.toString());
-				tokbal.put("total", tok.getTotalTokens());
+				tokbal.put("total", tok.getTotalTokens().toString());
 			}
 			
 			//And add to the total..
