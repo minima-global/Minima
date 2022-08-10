@@ -29,12 +29,7 @@ import org.minima.system.commands.base.vault;
 import org.minima.system.commands.maxima.maxcontacts;
 import org.minima.system.commands.maxima.maxima;
 import org.minima.system.commands.mds.mds;
-import org.minima.system.commands.network.connect;
-import org.minima.system.commands.network.disconnect;
-import org.minima.system.commands.network.message;
-import org.minima.system.commands.network.network;
-import org.minima.system.commands.network.rpc;
-import org.minima.system.commands.network.webhooks;
+import org.minima.system.commands.network.*;
 import org.minima.system.commands.scripts.newscript;
 import org.minima.system.commands.scripts.runscript;
 import org.minima.system.commands.scripts.scripts;
@@ -149,7 +144,8 @@ public class help extends Command {
 		addCommand(details, new vault());
 		addCommand(details, new restore());
 		addCommand(details, new incentivecash());
-		
+
+		addCommand(details, new nodecount());
 		addCommand(details, new quit());
 		
 		ret.put("response", details);
