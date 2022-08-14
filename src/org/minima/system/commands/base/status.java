@@ -10,13 +10,16 @@ import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowdb.TxPoWDB;
+import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.txpowtree.TxPowTree;
 import org.minima.database.wallet.Wallet;
+import org.minima.objects.Magic;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.system.network.NetworkManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
@@ -49,24 +52,34 @@ public class status extends Command {
 
 		//Do we haver any blocks..
 		if(txptree.getTip() == null) {
-			throw new Exception("NO Blocks yet..");
+			throw new CommandException("No Blocks yet..");
 		}
-
 
 		JSONObject details = new JSONObject();
 		details.put("version", GlobalParams.MINIMA_VERSION);
 
+		//Uptime..
+		details.put("uptime", MiniFormat.ConvertMilliToTime(Main.getInstance().getUptimeMilli()));
+		
 		//How many Devices..
 		BigDecimal blkweightdec 	= new BigDecimal(txptree.getTip().getTxPoW().getBlockDifficulty().getDataValue());
 		BigDecimal blockWeight 		= Crypto.MAX_VALDEC.divide(blkweightdec, MathContext.DECIMAL32);
 
-		MiniNumber ratio 			= new MiniNumber(blockWeight).div(new MiniNumber(TxPoWGenerator.MIN_HASHES));
-		MiniNumber pulsespeed 		= MiniNumber.THOUSAND.div(new MiniNumber(GeneralParams.USER_PULSE_FREQ));
+		//What is the user hashrate..
+		MiniNumber userhashrate 	= MinimaDB.getDB().getUserDB().getHashRate();
+		if(userhashrate.isLess(Magic.MIN_HASHES)) {
+			userhashrate = Magic.MIN_HASHES;
+		}
+		MiniNumber ratio 			= new MiniNumber(blockWeight).div(userhashrate);
+		
+//		MinimaLogger.log("blkweight    : "+blockWeight);
+//		MinimaLogger.log("userhashrate : "+userhashrate);
+//		MinimaLogger.log("ratio        : "+ratio.toString());
+//		MiniNumber pulsespeed 		= MiniNumber.THOUSAND.div(new MiniNumber(GeneralParams.USER_PULSE_FREQ));
+//		MiniNumber usersperpulse 	= MiniNumber.ONE.div(new MiniNumber(""+pulsespeed).div(GlobalParams.MINIMA_BLOCK_SPEED));
+//		MiniNumber totaldevs 		= usersperpulse.mult(ratio).floor();
 
-		MiniNumber usersperpulse 	= MiniNumber.ONE.div(new MiniNumber(""+pulsespeed).div(GlobalParams.MINIMA_BLOCK_SPEED));
-		MiniNumber totaldevs 		= usersperpulse.mult(ratio).floor();
-
-		details.put("devices", totaldevs.getAsLong());
+		details.put("devices", ratio.ceil().toString());
 
 		//The Current total Length of the Minima Chain
 		long totallength = txptree.getHeaviestBranchLength()+cascade.getLength();
@@ -123,11 +136,22 @@ public class status extends Command {
 			if(txptree.getTip().getTxPoW().getBlockNumber().isLessEqual(MiniNumber.TWO)){
 				tree.put("speed", 1);
 			}else {
-				MiniNumber blocksback = GlobalParams.MINIMA_BLOCKS_SPEED_CALC;
-				if(txptree.getTip().getTxPoW().getBlockNumber().isLessEqual(GlobalParams.MINIMA_BLOCKS_SPEED_CALC)) {
-					blocksback = txptree.getTip().getTxPoW().getBlockNumber().decrement();
+				
+				//What are the start and end point BEFORE we do the median..
+				TxPoWTreeNode treestartblock 	= txptree.getTip();
+				TxPoWTreeNode treeendblock 		= treestartblock.getParent(GlobalParams.MINIMA_BLOCKS_SPEED_CALC.getAsInt());
+				
+				//Now use the Median Times..
+				TxPoWTreeNode startblock 	= TxPoWGenerator.getMedianTimeBlock(treestartblock);
+				TxPoWTreeNode endblock 	 	= TxPoWGenerator.getMedianTimeBlock(treeendblock);
+				
+				MiniNumber blockdiff 		= startblock.getBlockNumber().sub(endblock.getBlockNumber()); 
+				if(blockdiff.isEqual(MiniNumber.ZERO)) {
+					throw new CommandException("ZERO blockdiff on speed check.. start:"+startblock.getBlockNumber()+" end:"+endblock.getBlockNumber());
 				}
-				tree.put("speed", TxPoWGenerator.getChainSpeed(txptree.getTip(),blocksback).setSignificantDigits(5));
+				
+				MiniNumber speed = TxPoWGenerator.getChainSpeed(startblock, blockdiff);
+				tree.put("speed", speed.setSignificantDigits(5));
 			}
 			
 			MiniData difficulty = new MiniData(txptree.getTip().getTxPoW().getBlockDifficulty().getBytes(),32);

@@ -61,6 +61,9 @@ public class BooleanExpression implements Expression {
 	public Value getValue(Contract zContract) throws ExecutionException {
 		Value ret = null;
 		
+		//This action counts as one instruction
+		zContract.incrementInstructions();
+				
 		//Calculate the left and the right side
 		Value lval = mLeft.getValue(zContract);
 		Value rval = mRight.getValue(zContract);
@@ -227,9 +230,6 @@ public class BooleanExpression implements Expression {
 			default :
 				throw new ExecutionException("UNKNOWN boolean operator : "+mBooleanType);	
 		}
-		
-		//This action counts as one instruction
-		zContract.incrementInstructions();
 				
 		//And trace it..
 		zContract.traceLog(toString()+" returns:"+ret.toString());

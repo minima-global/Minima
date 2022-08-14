@@ -32,52 +32,52 @@ public class ArchiveManager extends SqlDB {
 	PreparedStatement SQL_TOTAL_COUNT 			= null;
 	PreparedStatement SQL_DELETE_TXBLOCKS		= null;
 	
+	PreparedStatement SQL_SELECT_LAST			= null;
+	PreparedStatement SQL_SELECT_SYNC_LIST		= null;
+	
 	public ArchiveManager() {
 		super();
 	}
 	
 	@Override
-	protected void createSQL() {
-		try {
+	protected void createSQL() throws SQLException {
 			
-			//Create the various tables..
-			Statement stmt = mSQLCOnnection.createStatement();
-			
-			//Create main table
-			String create = "CREATE TABLE IF NOT EXISTS `syncblock` ("
-							+ "  `id` IDENTITY PRIMARY KEY,"
-							+ "  `txpowid` varchar(80) NOT NULL UNIQUE,"
-							+ "  `block` bigint NOT NULL UNIQUE,"
-							+ "  `timemilli` bigint NOT NULL,"
-							+ "  `syncdata` blob NOT NULL"
-							+ ")";
-			
-			//Run it..
-			stmt.execute(create);
-			
-			//Create some fast indexes..
-			String index = "CREATE INDEX IF NOT EXISTS fastsearch ON syncblock ( txpowid, block )";
-					
-			//Run it..
-			stmt.execute(index);
-			
-			//All done..
-			stmt.close();
-			
-			//Create some prepared statements..
-			String insert 			= "INSERT IGNORE INTO syncblock ( txpowid, block, timemilli, syncdata ) VALUES ( ?, ? ,? ,? )";
-			SQL_INSERT_SYNCBLOCK 	= mSQLCOnnection.prepareStatement(insert);
-			
-			//Select 
-			SQL_FIND_SYNCBLOCK 		= mSQLCOnnection.prepareStatement("SELECT syncdata FROM syncblock WHERE txpowid=?");
-			SQL_EXISTS_SYNCBLOCK	= mSQLCOnnection.prepareStatement("SELECT block FROM syncblock WHERE txpowid=?");
-			SQL_TOTAL_COUNT			= mSQLCOnnection.prepareStatement("SELECT COUNT(*) as tot FROM syncblock");
-			SQL_SELECT_RANGE		= mSQLCOnnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block>? AND block<? ORDER BY block DESC");
-			SQL_DELETE_TXBLOCKS		= mSQLCOnnection.prepareStatement("DELETE FROM syncblock WHERE timemilli < ?");
-			
-		} catch (SQLException e) {
-			MinimaLogger.log(e);
-		}
+		//Create the various tables..
+		Statement stmt = mSQLConnection.createStatement();
+		
+		//Create main table
+		String create = "CREATE TABLE IF NOT EXISTS `syncblock` ("
+						+ "  `id` IDENTITY PRIMARY KEY,"
+						+ "  `txpowid` varchar(80) NOT NULL UNIQUE,"
+						+ "  `block` bigint NOT NULL UNIQUE,"
+						+ "  `timemilli` bigint NOT NULL,"
+						+ "  `syncdata` blob NOT NULL"
+						+ ")";
+		
+		//Run it..
+		stmt.execute(create);
+		
+		//Create some fast indexes..
+		String index = "CREATE INDEX IF NOT EXISTS fastsearch ON syncblock ( txpowid, block )";
+				
+		//Run it..
+		stmt.execute(index);
+		
+		//All done..
+		stmt.close();
+		
+		//Create some prepared statements..
+		String insert 			= "INSERT IGNORE INTO syncblock ( txpowid, block, timemilli, syncdata ) VALUES ( ?, ? ,? ,? )";
+		SQL_INSERT_SYNCBLOCK 	= mSQLConnection.prepareStatement(insert);
+		
+		//Select 
+		SQL_FIND_SYNCBLOCK 		= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE txpowid=?");
+		SQL_EXISTS_SYNCBLOCK	= mSQLConnection.prepareStatement("SELECT block FROM syncblock WHERE txpowid=?");
+		SQL_TOTAL_COUNT			= mSQLConnection.prepareStatement("SELECT COUNT(*) as tot FROM syncblock");
+		SQL_SELECT_RANGE		= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block>? AND block<? ORDER BY block DESC");
+		SQL_DELETE_TXBLOCKS		= mSQLConnection.prepareStatement("DELETE FROM syncblock WHERE timemilli < ?");
+		SQL_SELECT_LAST			= mSQLConnection.prepareStatement("SELECT * FROM syncblock ORDER BY block ASC LIMIT 1");
+		SQL_SELECT_SYNC_LIST	= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block<? ORDER BY block DESC LIMIT 1000");
 	}
 	
 	public synchronized int getSize() {
@@ -160,6 +160,74 @@ public class ArchiveManager extends SqlDB {
 		}
 		
 		return null;
+	}
+	
+	public synchronized TxBlock loadLastBlock() {
+		
+		try {
+			
+			//Set search params
+			SQL_SELECT_LAST.clearParameters();
+			
+			//Run the query
+			ResultSet rs = SQL_SELECT_LAST.executeQuery();
+			
+			//Is there a valid result.. ?
+			if(rs.next()) {
+				
+				//Get the details..
+				byte[] syncdata 	= rs.getBytes("syncdata");
+				
+				//Create MiniData version
+				MiniData minisync = new MiniData(syncdata);
+				
+				//Convert
+				TxBlock sb = TxBlock.convertMiniDataVersion(minisync);
+				
+				return sb;
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return null;
+	}
+	
+	public synchronized ArrayList<TxBlock> loadSyncBlockRange(MiniNumber zStartBlock) {
+		
+		ArrayList<TxBlock> blocks = new ArrayList<>();
+		
+		try {
+			
+			//Set Search params
+			SQL_SELECT_SYNC_LIST.clearParameters();
+			SQL_SELECT_SYNC_LIST.setLong(1,zStartBlock.getAsLong());
+			
+			//Run the query
+			ResultSet rs = SQL_SELECT_SYNC_LIST.executeQuery();
+			
+			//Multiple results
+			while(rs.next()) {
+				
+				//Get the details..
+				byte[] syncdata 	= rs.getBytes("syncdata");
+				
+				//Create MiniData version
+				MiniData minisync = new MiniData(syncdata);
+				
+				//Convert
+				TxBlock sb = TxBlock.convertMiniDataVersion(minisync);
+				
+				//Add to our list
+				blocks.add(sb);
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return blocks;
 	}
 	
 	public synchronized MiniNumber exists(String zTxPoWID) {
@@ -246,7 +314,7 @@ public class ArchiveManager extends SqlDB {
 		return 0;
 	}
 	
-	public static void main(String[] zArgs) {
+	public static void main(String[] zArgs) throws SQLException {
 		
 		File testdbfolder 	= new File(System.getProperty("user.home"),"testfolder");
 		File testdb 		= new File(testdbfolder,"sqlsync");
@@ -262,8 +330,9 @@ public class ArchiveManager extends SqlDB {
 		txp.setSuperParent(0, new MiniData("0xFFEEFF"));
 		
 		//Create a SyncBlock
-		TxBlock sb = new TxBlock(null,txp,new ArrayList<>());
+		TxBlock sb = new TxBlock(txp);
 		
+		arch.saveBlock(sb);
 		arch.saveBlock(sb);
 		
 		int rows = arch.getSize();

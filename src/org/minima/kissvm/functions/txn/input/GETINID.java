@@ -35,6 +35,9 @@ public class GETINID extends MinimaFunction {
 		//Get it..
 		Coin cc = ins.get(input);
 		
+		//Use the witness data
+		cc = zContract.getWitness().getAllCoinProofs().get(input).getCoin();
+		
 		//Return the address	
 		return new HexValue(cc.getCoinID());
 	}

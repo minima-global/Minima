@@ -59,6 +59,18 @@ public class LENTests {
                 fail();
             }
         }
+        
+        {
+            MinimaFunction mf = fn.getNewFunction();
+            mf.addParameter(new ConstantExpression(new StringValue("HEllo")));
+            try {
+                Value res = mf.runFunction(ctr);
+                assertEquals(Value.VALUE_NUMBER, res.getValueType());
+                assertEquals(5, ((NumberValue) res).getNumber().getAsInt());
+            } catch (ExecutionException ex) {
+                fail();
+            }
+        }
     }
 
     @Test
@@ -94,13 +106,6 @@ public class LENTests {
         {
             MinimaFunction mf = fn.getNewFunction();
             mf.addParameter(new ConstantExpression(new NumberValue(100)));
-            assertThrows(ExecutionException.class, () -> {
-                Value res = mf.runFunction(ctr);
-            });
-        }
-        {
-            MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new StringValue("Hello World")));
             assertThrows(ExecutionException.class, () -> {
                 Value res = mf.runFunction(ctr);
             });

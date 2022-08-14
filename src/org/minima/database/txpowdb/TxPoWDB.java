@@ -1,6 +1,7 @@
 package org.minima.database.txpowdb;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 import org.minima.database.txpowdb.ram.RamDB;
@@ -31,7 +32,7 @@ public class TxPoWDB {
 		mSqlDB = new TxPoWSqlDB();
 	}
 	
-	public void loadSQLDB(File zFile) {
+	public void loadSQLDB(File zFile) throws SQLException {
 		//Set the SQL DB base file
 		mSqlDB.loadDB(zFile);
 	}

@@ -7,7 +7,7 @@ networks:
 services:
   minima_one:
     image: minima:latest
-    command: -daemon -genesis -automine -noconnect -test -port 9001 -rpc 9002 -rpcenable -clean 
+    command: -daemon -genesis -noconnect -test -port 9001 -rpc 9002 -rpcenable
     networks:
       minima_testnet:
         aliases:
@@ -19,11 +19,11 @@ services:
       resources:
         limits:
           cpus: '1'
-          memory: 500M
+          memory: 1000M
 
   minima_peer:
     image: minima:latest
-    command: -daemon -test -port 9121 -p2pnode minima_one:9001 -clean
+    command: -daemon -test -port 9121 -p2pnode minima_one:9001
     networks:
       minima_testnet:
         aliases:
@@ -34,10 +34,11 @@ services:
       resources:
         limits:
           cpus: '1'
-          memory: 500M
+          memory: 1000M
+
   minima_client:
     image: minima:latest
-    command: -test -daemon -isclient -p2pnode minima_one:9001 -clean
+    command: -test -daemon -isclient -p2pnode minima_one:9001
     networks:
       minima_testnet:
         aliases:
@@ -48,10 +49,10 @@ services:
       resources:
         limits:
           cpus: '0.25'
-          memory: 300M
+          memory: 1000M
   minima_no_p2p:
     image: minima:latest
-    command: -test -daemon -nop2p -connect minima_one:9001  -clean
+    command: -test -daemon -nop2p -connect minima_one:9001
     networks:
       minima_testnet:
         aliases:
@@ -62,4 +63,4 @@ services:
       resources:
         limits:
           cpus: '0.5'
-          memory: 500M
+          memory: 1000M

@@ -6,7 +6,8 @@ import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
-import org.minima.database.wallet.KeyRow;
+import org.minima.database.userprefs.txndb.TxnRow;
+import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
@@ -26,20 +27,20 @@ import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.txn.txnutils;
 import org.minima.system.params.GlobalParams;
-import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONObject;
 
 public class tokencreate extends Command {
 
 	public tokencreate() {
-		super("tokencreate","[name:] [amount:] (decimals:) (script:) (state:{}) - Create a token. 'name' can be a JSON Object");
+		super("tokencreate","[name:] [amount:] (decimals:) (script:) (state:{}) (signtoken:) (webvalidate:) (burn:) - Create a token. 'name' can be a JSON Object");
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
-		
+	
 		//Check the basics..
 		if(!existsParam("name") || !existsParam("amount")) {
 			throw new CommandException("MUST specify name and amount");
@@ -52,25 +53,29 @@ public class tokencreate extends Command {
 		}
 		
 		//Is name a JSON
-		String name = null;
+		JSONObject jsonname = null;
 		if(isParamJSONObject("name")) {
 			
 			//Get the JSON
-			JSONObject jsonname = getJSONObjectParam("name");
+			jsonname = getJSONObjectParam("name");
 			
-			//Get the String version
-			name = jsonname.toString();
+			//make sure there is a name object
+			if(!jsonname.containsKey("name")) {
+				throw new CommandException("MUST specify a 'name' for the token in the JSON");
+			}
 			
 		}else {
 			
 			//It's a String.. create a JSON
-			JSONObject namejson = new JSONObject();
-			namejson.put("name", getParam("name"));
-			name = namejson.toString();
+			jsonname = new JSONObject();
+			jsonname.put("name", getParam("name"));
 		}
 		
 		//The amount is always a MiniNumber
 		String amount   = (String)getParams().get("amount");
+		
+		//The burn
+		MiniNumber burn = getNumberParam("burn", MiniNumber.ZERO);
 		
 		//How many decimals - can be 0.. for an NFT
 		int decimals = 8;
@@ -89,7 +94,7 @@ public class tokencreate extends Command {
 		}
 		
 		//Now construct the txn..
-		if(name==null || amount==null) {
+		if(jsonname==null || amount==null) {
 			throw new CommandException("MUST specify name and amount");
 		}
 		
@@ -97,9 +102,10 @@ public class tokencreate extends Command {
 		MiniNumber totaltoks = new MiniNumber(amount).floor(); 
 		
 		//Safety check Amount is within tolerant levels.. could use ALL their Minima otherwise..
-		//This is not set by consensus - could be more - just for safety
 		if(totaltoks.isMore(MiniNumber.TRILLION)) {
 			throw new CommandException("MAX 1 Trillion coins for a token");
+		}else if(totaltoks.isLessEqual(MiniNumber.ZERO)) {
+			throw new CommandException("Cannot create less than 1 token");
 		}
 		
 		//Decimals as a number
@@ -110,19 +116,12 @@ public class tokencreate extends Command {
 		
 		//What is the scale..
 		int scale = MiniNumber.MAX_DECIMAL_PLACES - decimals;
-				
-		//Lets create the token..
-		Token createtoken = new Token(Coin.COINID_OUTPUT, 
-										new MiniNumber(scale), 
-										colorminima,
-										new MiniString(name),
-										new MiniString(script));
 		
 		//The actual amount of Minima that needs to be sent
 		MiniNumber sendamount 	= new MiniNumber(colorminima);
 		
 		//Send it to ourselves
-		KeyRow sendkey 			= MinimaDB.getDB().getWallet().createNewKey();
+		ScriptRow sendkey 		= MinimaDB.getDB().getWallet().getDefaultAddress();
 		MiniData sendaddress 	= new MiniData(sendkey.getAddress());
 		
 		//get the tip..
@@ -225,8 +224,14 @@ public class tokencreate extends Command {
 		//Create a list of the required signatures
 		ArrayList<String> reqsigs = new ArrayList<>();
 		
+		//Which Coins are added
+		ArrayList<String> addedcoinid = new ArrayList<>();
+				
 		//Add the MMR proofs for the coins..
 		for(Coin input : currentcoins) {
+			
+			//Keep for burn calc
+			addedcoinid.add(input.getCoinID().to0xString());
 			
 			//Get the proof..
 			MMRProof proof = mmrnode.getMMR().getProofToPeak(input.getMMREntryNumber());
@@ -239,23 +244,59 @@ public class tokencreate extends Command {
 			
 			//Add the script proofs
 			String scraddress 	= input.getAddress().to0xString();
-			KeyRow keyrow 		= walletdb.getKeysRowFromAddress(scraddress); 
-			if(keyrow == null) {
+			ScriptRow srow 		= walletdb.getScriptFromAddress(scraddress);
+			if(srow == null) {
 				throw new CommandException("SERIOUS ERROR script missing for simple address : "+scraddress);
 			}
-			
-			ScriptProof pscr = new ScriptProof(keyrow.getScript());
+			ScriptProof pscr = new ScriptProof(srow.getScript());
 			witness.addScript(pscr);
 			
-			//Add this address to the list we need to sign as..
-			String priv = keyrow.getPrivateKey();
-			if(!reqsigs.contains(priv)) {
-				reqsigs.add(priv);
+			//Add this address / public key to the list we need to sign as..
+			String pubkey = srow.getPublicKey();
+			if(!reqsigs.contains(pubkey)) {
+				reqsigs.add(pubkey);
 			}
 		}
 		
 		//Now add the output..
-		Coin recipient = new Coin(sendaddress, sendamount, Token.TOKENID_CREATE);
+		Coin recipient = new Coin(Coin.COINID_OUTPUT, sendaddress, sendamount, Token.TOKENID_CREATE, true);
+		
+		//Is there a Web Validation URL
+		if(existsParam("webvalidate")) {
+			
+			//Add to the description
+			jsonname.put("webvalidate", getParam("webvalidate"));
+		}
+		
+		//Are we signing the token..
+		if(existsParam("signtoken")) {
+		
+			//What is the coinid of the first input..
+			MiniData firstcoinid = transaction.getAllInputs().get(0).getCoinID();
+			
+			//Calculate the CoinID.. It's the first output
+			MiniData tokencoinid = transaction.calculateCoinID(firstcoinid, 0);
+			
+			//Get the Public Key
+			String sigpubkey = getParam("signtoken");
+			
+			//Now sign the coinid..
+			Signature sig = walletdb.signData(sigpubkey, tokencoinid);
+			
+			//Get the MiniData version..
+			MiniData sigdata = MiniData.getMiniDataVersion(sig);
+			
+			//Get the Pubkey.. add it to the JSON
+			jsonname.put("signedby", sigpubkey);
+			jsonname.put("signature", sigdata.to0xString());
+		}
+		
+		//Let's create the token..
+		Token createtoken = new Token(Coin.COINID_OUTPUT, 
+										new MiniNumber(scale), 
+										colorminima,
+										new MiniString(jsonname.toString()),
+										new MiniString(script));
 		
 		//Set the Create Token Details..
 		recipient.setToken(createtoken);
@@ -266,8 +307,8 @@ public class tokencreate extends Command {
 		//Do we need to send change..
 		if(change.isMore(MiniNumber.ZERO)) {
 			//Create a new address
-			KeyRow newwalletaddress = MinimaDB.getDB().getWallet().createNewKey();
-			MiniData chgaddress 	= new MiniData(newwalletaddress.getAddress());
+			ScriptRow newwalletaddress = MinimaDB.getDB().getWallet().getDefaultAddress();
+			MiniData chgaddress = new MiniData(newwalletaddress.getAddress());
 			
 			Coin changecoin = new Coin(Coin.COINID_OUTPUT, chgaddress, change, Token.TOKENID_MINIMA);
 			transaction.addOutput(changecoin);
@@ -292,21 +333,38 @@ public class tokencreate extends Command {
 			transaction.addStateVariable(sv);
 		}
 		
+		//Compute the correct CoinID
+		TxPoWGenerator.precomputeTransactionCoinID(transaction);
+		
 		//Calculate the TransactionID..
-		MiniData transid = Crypto.getInstance().hashObject(transaction);
+		transaction.calculateTransactionID();
 		
 		//Now that we have constructed the transaction - lets sign it..
-		for(String priv : reqsigs) {
+		for(String pubkey : reqsigs) {
 
 			//Use the wallet..
-			Signature signature = walletdb.sign(priv, transid);
+			Signature signature = walletdb.signData(pubkey, transaction.getTransactionID());
 			
 			//Add it..
 			witness.addSignature(signature);
 		}
 		
-		//Now create a complete TxPOW
-		TxPoW txpow = TxPoWGenerator.generateTxPoW(transaction, witness);
+		//The final TxPoW
+		TxPoW txpow = null;
+		
+		//Is there a BURN..
+		if(burn.isMore(MiniNumber.ZERO)) {
+			
+			//Create a Burn Transaction
+			TxnRow burntxn = txnutils.createBurnTransaction(addedcoinid,transaction.getTransactionID(),burn);
+
+			//Now create a complete TxPOW
+			txpow = TxPoWGenerator.generateTxPoW(transaction, witness, burntxn.getTransaction(), burntxn.getWitness());
+		
+		}else {
+			//Now create a complete TxPOW
+			txpow = TxPoWGenerator.generateTxPoW(transaction, witness);
+		}
 		
 		//Calculate the size..
 		txpow.calculateTXPOWID();
@@ -315,8 +373,8 @@ public class tokencreate extends Command {
 		ret.put("response", txpow.getTransaction().toJSON());
 				
 		//Send it to the Miner..
-		Main.getInstance().getTxPoWMiner().mineTxPoW(txpow);
-		
+		Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txpow);
+	
 		return ret;
 	}
 

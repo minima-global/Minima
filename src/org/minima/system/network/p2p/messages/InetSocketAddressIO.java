@@ -4,6 +4,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -25,6 +26,16 @@ public class InetSocketAddressIO {
         return array;
     }
 
+    public static JSONArray addressesListToJSONArray(List<InetSocketAddress> peers) {
+        JSONArray array = new JSONArray();
+        if (!peers.isEmpty()) {
+            for (InetSocketAddress address : peers) {
+                array.add(address.getAddress().getHostAddress() + ":" + address.getPort());
+            }
+        }
+        return array;
+    }
+
     public static List<InetSocketAddress> addressesJSONToList(JSONArray jsonArray) {
         ArrayList<InetSocketAddress> peers = new ArrayList<>();
         if (!jsonArray.isEmpty()) {
@@ -35,6 +46,18 @@ public class InetSocketAddressIO {
         }
         return peers;
     }
+
+    public static List<InetSocketAddress> addressesJSONArrayToList(JSONArray jsonArray) {
+        ArrayList<InetSocketAddress> peers = new ArrayList<>();
+        if (!jsonArray.isEmpty()) {
+            for (Object object : jsonArray) {
+                String hostPortString = (String) object;
+                peers.add(new InetSocketAddress((String) hostPortString.split(":")[0], (int) Integer.parseInt(hostPortString.split(":")[1])));
+            }
+        }
+        return peers;
+    }
+
 
     public static int safeReadInt(JSONObject jsonObject, String key){
         int ret = 0;

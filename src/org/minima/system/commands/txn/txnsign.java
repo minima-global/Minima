@@ -6,15 +6,16 @@ import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.database.wallet.KeyRow;
+import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
-import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.Signature;
+import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
-import org.minima.utils.Crypto;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class txnsign extends Command {
@@ -41,11 +42,20 @@ public class txnsign extends Command {
 		Transaction txn = txnrow.getTransaction();
 		Witness wit		= txnrow.getWitness();
 		
+		//Precompute the CoinID
+		TxPoWGenerator.precomputeTransactionCoinID(txn);
+		
 		//Calculate the TransactionID..
-		MiniData transid = Crypto.getInstance().hashObject(txn);
-	
+		txn.calculateTransactionID();
+		
 		//Get the Wallet
 		Wallet walletdb = MinimaDB.getDB().getWallet();
+		
+		JSONArray notfoundkeys 		= new JSONArray();
+		JSONArray foundkeys 		= new JSONArray();
+		JSONArray nonsimplekeys 	= new JSONArray();
+		
+		JSONObject resp = new JSONObject();
 		
 		//Are we auto signing.. if all the coin inputs are simple
 		if(pubk.equals("auto")) {
@@ -53,40 +63,60 @@ public class txnsign extends Command {
 			ArrayList<Coin> inputs = txn.getAllInputs();
 			for(Coin cc : inputs) {
 				
-				KeyRow keyrow = walletdb.getKeysRowFromAddress(cc.getAddress().to0xString()); 
-				if(keyrow == null) {
-					txnrow.clearWitness();
-					throw new CommandException("ERROR : Script not found for address : "+cc.getAddress().to0xString());
-				
-					//Is it a simple row..
-				}else if(keyrow.getPublicKey().equals("")) {
-					txnrow.clearWitness();
-					throw new CommandException("NON-Simple coin found at coin : "+cc.getAddress().to0xString());
+				//Get the Public Key for this address if possible
+				ScriptRow scrow = walletdb.getScriptFromAddress(cc.getAddress().to0xString());
+				if(scrow == null) {
+					notfoundkeys.add(cc.getAddress().to0xString());
+					continue;
+				}else if(!scrow.isSimple()) {
+					nonsimplekeys.add(scrow.getAddress());
+					continue;
 				}
 				
-				//Now sign with that..
-				Signature signature = walletdb.sign(keyrow.getPrivateKey(), transid);
+				//Don't try again if already signed..
+				if(!wit.isSignedBy(scrow.getPublicKey())) {
+					//Add to our list
+					foundkeys.add(scrow.getPublicKey());
 					
-				//Add it..
-				wit.addSignature(signature);
+					//Now sign with that..
+					Signature signature = walletdb.signData(scrow.getPublicKey(), txn.getTransactionID());
+						
+					//Add it..
+					wit.addSignature(signature);
+				}
 			}
 			
 		}else {
-			//Get the Private key..
-			KeyRow pubrow 	= walletdb.getKeysRowFromPublicKey(pubk);
+			//Check we have it
+			KeyRow pubrow = walletdb.getKeyFromPublic(pubk);
 			if(pubrow == null) {
 				throw new CommandException("Public Key not found : "+pubk);
 			}
 			
+			//Add to our list
+			foundkeys.add(pubrow.getPublicKey());
+			
 			//Use the wallet..
-			Signature signature = walletdb.sign(pubrow.getPrivateKey(), transid);
+			Signature signature = walletdb.signData(pubrow.getPublicKey(), txn.getTransactionID());
 				
 			//Add it..
 			wit.addSignature(signature);
 		}
 		
-		JSONObject resp = new JSONObject();
-		ret.put("response", txnrow.toJSON());
+		//The keys that were found and used
+		resp.put("keys", foundkeys);
+	
+		//Did we find any that were not simple
+		if(nonsimplekeys.size()>0) {
+			resp.put("nonsimple", nonsimplekeys);
+		}
+		
+		//Did we not find any
+		if(notfoundkeys.size()>0) {
+			resp.put("notfound", notfoundkeys);
+		}
+		
+		ret.put("response", resp);
 		
 		return ret;
 	}

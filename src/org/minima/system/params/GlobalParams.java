@@ -5,9 +5,11 @@ import org.minima.objects.base.MiniNumber;
 public class GlobalParams {
 
 	/**
-	 * Which Version
+	 * Which Version fo Minima are we running
 	 */
-	public static String MINIMA_VERSION = "0.100.32";
+	public static String MINIMA_BASE_VERSION 	= "0.103";
+	public static String MINIMA_BUILD_NUMBER 	= "10";
+	public static String MINIMA_VERSION 		= MINIMA_BASE_VERSION+"."+MINIMA_BUILD_NUMBER;
 	
 	/**
 	 * Speed in blocks per second.. 
@@ -33,7 +35,7 @@ public class GlobalParams {
 	/**
 	 * Depth before we cascade..
 	 */
-	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(1024);
+	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(2048);
 	
 	/**
 	 * Number of blocks at each cascade level 
@@ -46,16 +48,18 @@ public class GlobalParams {
 	public static int MINIMA_CASCADE_LEVELS  = 32;
 	
 	/**
-	 * Current default HASH_Strength Used. Can be up to 512.
-	 * All the MINING, TxPoW and MMR data ALWAYS uses 512. But addresses, scripts, and public keys..
-	 * can be set to less. This way signatures and addresses are shorter.
-	 */
-	public static int MINIMA_DEFAULT_HASH_STRENGTH = 256;
-	
-	/**
 	 * Max Proof History - how far back to use a proof of coin..
 	 * If there is a re-org of more than this the proof will be invalid 
 	 */
 	public static MiniNumber MINIMA_MMR_PROOF_HISTORY = new MiniNumber(256);
-
+	
+	/**
+	 * The MEDIAN time block is taken from this many blocks back
+	 * When calculating the Difficulty of a block ( both from the tip and the previous block )
+	 * This smooths out the time fluctuations for different blocks and removes incorrect times.
+	 * 
+	 * 64 blocks means the block 1/2 hour ago.
+	 */
+	public static int MEDIAN_BLOCK_CALC = 64; 
+	
 }

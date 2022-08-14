@@ -42,9 +42,21 @@ public class Minima {
 	}
 	
 	/**
+	 * Get ther Main class
+	 */
+	public static Main getMain() {
+		return Main.getInstance();
+	}
+	
+	/**
 	 * Run a command on Minima and return the result
 	 */
+	
 	public String runMinimaCMD(String zInput){
+		return runMinimaCMD(zInput, true);
+	}
+	
+	public String runMinimaCMD(String zInput, boolean zPrettyJSON){
 		//trim it..
 		String input = zInput.trim();
     	
@@ -52,7 +64,16 @@ public class Minima {
     	JSONArray res = Command.runMultiCommand(input);
     	
     	//Get the result.. 
-    	String result = MiniFormat.JSONPretty(res);
+    	String result = null;
+    	if(zPrettyJSON) {
+    		result = MiniFormat.JSONPretty(res);
+    	}else {
+    		if(res.size() == 1) {
+    			result = res.get(0).toString();
+    		}else {
+    			result = res.toJSONString();
+    		}
+    	}
     	
 		return result;
 	}
@@ -65,8 +86,13 @@ public class Minima {
 	public static void main(String[] zArgs) {
 		
 		//Set the main data folder
-		File dataFolder = new File(System.getProperty("user.home"),".minima");
-		GeneralParams.DATA_FOLDER = dataFolder.getAbsolutePath();
+		File dataFolder 	= new File(System.getProperty("user.home"),".minima");
+		
+		//Depends on the VERSION
+		File minimafolder 			= new File(dataFolder,GlobalParams.MINIMA_BASE_VERSION);
+		
+		//Set this globally
+		GeneralParams.DATA_FOLDER 	= minimafolder.getAbsolutePath();
 
 		ParamConfigurer configurer = null;
 		try {
@@ -80,9 +106,19 @@ public class Minima {
 			System.exit(1);
 		}
 
-		boolean daemon = configurer.isDaemon();
-		boolean rpcenable = configurer.isRpcenable();
-
+		//Make sure the main DATA folder exists..
+		File maindata = new File(GeneralParams.DATA_FOLDER);
+		maindata.mkdirs();
+		
+		boolean daemon 			= configurer.isDaemon();
+		boolean rpcenable 		= configurer.isRpcenable();
+		boolean shutdownhook 	= configurer.isShutDownHook();
+		
+		//Set the Ports.. If Minima port has changed
+		GeneralParams.RPC_PORT 			= GeneralParams.MINIMA_PORT+1;
+		GeneralParams.MDSFILE_PORT 		= GeneralParams.MINIMA_PORT+2;
+		GeneralParams.MDSCOMMAND_PORT 	= GeneralParams.MINIMA_PORT+3;
+		
 		//Now lets go..
 		MinimaLogger.log("**********************************************");
 		MinimaLogger.log("*  __  __  ____  _  _  ____  __  __    __    *");
@@ -101,17 +137,19 @@ public class Minima {
 			MinimaDB.getDB().getUserDB().setRPCEnabled(true);
 			main.getNetworkManager().startRPC();
 		}
-
+		
 		//A shutdown hook..
-		Runtime.getRuntime().addShutdownHook(new Thread(){
-			@Override
-			public void run(){
-				MinimaLogger.log("[!] Shutdown Hook..");
-				
-				//Shut down the whole system
-				main.shutdown();
-			}
-		});
+		if(shutdownhook) {
+			Runtime.getRuntime().addShutdownHook(new Thread(){
+				@Override
+				public void run(){
+					MinimaLogger.log("[!] Shutdown Hook..");
+					
+					//Shut down the whole system
+					main.shutdown();
+				}
+			});
+		}
 
 		//Daemon mode has no stdin input
 		if(daemon) {
@@ -124,8 +162,8 @@ public class Minima {
 			
 			MinimaLogger.log("Bye bye..");
 			
-			//All done..
-			System.exit(0);
+			//All done.. The shutdown hook will exit the system..
+			return;
 	    }
 		
 		//Listen for input
@@ -146,8 +184,10 @@ public class Minima {
 	            	//Run it..
 	            	JSONArray res = Command.runMultiCommand(input);
 	            	
-	            	//Print it out 
-	            	System.out.println(MiniFormat.JSONPretty(res));
+	            	//Print it out
+	            	if(!input.equals("quit")) {
+	            		System.out.println(MiniFormat.JSONPretty(res));
+	            	}
 	            	
 	                //Is it quit..
 	            	boolean quit = false;

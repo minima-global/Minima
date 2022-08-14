@@ -58,7 +58,7 @@ public class NIOClient {
 	
 	private ArrayList<MiniData> mMessages;
 	
-	NIOManager mNIOMAnager;
+	NIOManager mNIOManager;
 	
 	String mWelcomeMessage = "";
 	
@@ -75,6 +75,7 @@ public class NIOClient {
 	boolean mP2PGreeting = false;
 	
 	String mMaximaIdent = "";
+	String mMaximaMLS 	= "";
 	
 	/**
 	 * Specify extra info
@@ -86,7 +87,7 @@ public class NIOClient {
 		mHost		= zHost;
 		mPort		= zPort;
 		mIncoming	= false;
-		mNIOMAnager = Main.getInstance().getNetworkManager().getNIOManager();
+		mNIOManager = Main.getInstance().getNetworkManager().getNIOManager();
 	}
 	
 	public NIOClient(boolean zIncoming, String zHost, int zPort, SocketChannel zSocket, SelectionKey zKey) {
@@ -109,7 +110,7 @@ public class NIOClient {
         //Reading
     	mReadData 				= null;
     	
-    	mNIOMAnager = Main.getInstance().getNetworkManager().getNIOManager();
+    	mNIOManager = Main.getInstance().getNetworkManager().getNIOManager();
     	
     	mTimeConnected 		= System.currentTimeMillis();
     	mLastMessageRead 	= mTimeConnected; 
@@ -132,10 +133,8 @@ public class NIOClient {
 		ret.put("connected", new Date(mTimeConnected).toString());
 		ret.put("valid", mValidGreeting);
 		ret.put("sentgreeting", mSentGreeting);
-		
-		if(isMaximaClient()) {
-			ret.put("maxima", mMaximaIdent);
-		}
+		ret.put("maxima", mMaximaIdent);
+		ret.put("maximamls", mMaximaMLS);
 		
 		return ret;
 	}
@@ -156,6 +155,10 @@ public class NIOClient {
 		return mIncoming;
 	}
 	
+	public boolean isOutgoing() {
+		return !mIncoming;
+	}
+	
 	public boolean isMaximaClient() {
 		return !mMaximaIdent.equals("");
 	}
@@ -166,6 +169,18 @@ public class NIOClient {
 	
 	public String getMaximaIdent() {
 		return mMaximaIdent;
+	}
+	
+	public boolean isMaximaMLS() {
+		return !mMaximaMLS.equals("");
+	}
+	
+	public void setMaximaMLS(String zMaximaMLS) {
+		mMaximaMLS = zMaximaMLS;
+	}
+	
+	public String getMaximaMLS() {
+		return mMaximaMLS;	
 	}
 	
 	public void overrideHost(String zHost) {
@@ -294,6 +309,9 @@ public class NIOClient {
  	   		return;
  	   	}
  	   	
+ 	   	//Add to the Traffic Listener..
+ 	   	mNIOManager.getTrafficListener().addReadBytes(readbytes);
+ 	   	
  	   	//Ready to read
 // 	   	mBufferIn.flip();
  	   ((Buffer) mBufferIn).flip();
@@ -342,7 +360,7 @@ public class NIOClient {
 					Message msg = new Message(NIOManager.NIO_INCOMINGMSG);
 					msg.addString("uid", mUID);
 					msg.addObject("data", new MiniData(mReadData));
-					mNIOMAnager.PostMessage(msg);
+					mNIOManager.PostMessage(msg);
 					
 					//New array required..
 					mReadData = null;
@@ -433,6 +451,9 @@ public class NIOClient {
 		if(mTraceON) {
 			MinimaLogger.log("[NIOCLIENT] "+mUID+" wrote : "+write);
 		}
+		
+		//Add to the Traffic Listener..
+ 	   	mNIOManager.getTrafficListener().addWriteBytes(write);
 		
 		//Any left
 		synchronized (mMessages) {

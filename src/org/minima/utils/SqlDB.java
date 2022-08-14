@@ -6,12 +6,18 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniString;
+import org.minima.utils.json.JSONObject;
+import org.minima.utils.json.parser.JSONParser;
+import org.minima.utils.json.parser.ParseException;
+
 public abstract class SqlDB {
 
 	/**
 	 * Main Connection to DB
 	 */
-	protected Connection mSQLCOnnection = null;
+	protected Connection mSQLConnection = null;
 	
 	/**
 	 * The actual File used..
@@ -29,8 +35,9 @@ public abstract class SqlDB {
 	
 	/**
 	 * Specify the location of the DB
+	 * @throws SQLException 
 	 */
-	public void loadDB(File zFile) {
+	public void loadDB(File zFile) throws SQLException {
 		
 		//Make sure the parent files exist
 		zFile.getParentFile().mkdirs();
@@ -41,47 +48,42 @@ public abstract class SqlDB {
 		//Store this
 		mSQLFile = new File(path+".mv.db");
 				
-		try {
-			//The H2 JDBC URL
-			String h2db = "jdbc:h2:"+path+";MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE";
-			
-			//Create the connection
-			mSQLCOnnection = DriverManager.getConnection(h2db, "SA", "");
-			
-			//Save and compact the DB!
-			Statement stmt = mSQLCOnnection.createStatement();
+		//The H2 JDBC URL
+		String h2db = "jdbc:h2:"+path+";MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE";
 		
-			//Shut down.. this saves and closes all the data
-			stmt.execute("SHUTDOWN COMPACT");
-
-			//Close the connection
-			mSQLCOnnection.close();
-			
-			//Now open a NEW Connection..
-			mSQLCOnnection = DriverManager.getConnection(h2db, "SA", "");
-			
-			//Auto commit changes
-			mSQLCOnnection.setAutoCommit(true);
+		//Create the connection
+		mSQLConnection = DriverManager.getConnection(h2db, "SA", "");
+		
+		//Save and compact the DB!
+		Statement stmt = mSQLConnection.createStatement();
 	
-			//Perform Create SQL
-			createSQL();
-			
-		} catch (SQLException e) {
-			MinimaLogger.log(e);
-		}
+		//Shut down.. this saves and closes all the data
+		stmt.execute("SHUTDOWN COMPACT");
+
+		//Close the connection
+		mSQLConnection.close();
+		
+		//Now open a NEW Connection..
+		mSQLConnection = DriverManager.getConnection(h2db, "SA", "");
+		
+		//Auto commit changes
+		mSQLConnection.setAutoCommit(true);
+
+		//Perform Create SQL
+		createSQL();
 	}
 	
 	public void saveDB() {
 		try {
 		
 			//One last statement
-			Statement stmt = mSQLCOnnection.createStatement();
+			Statement stmt = mSQLConnection.createStatement();
 		
 			//Shut down.. this saves and closes all the data
 			stmt.execute("SHUTDOWN COMPACT");
 
 			//Close the connection
-			mSQLCOnnection.close();
+			mSQLConnection.close();
 		
 		} catch (SQLException e) {
 			MinimaLogger.log(e);
@@ -96,7 +98,7 @@ public abstract class SqlDB {
 		}
 		
 		//One last statement
-		Statement stmt = mSQLCOnnection.createStatement();
+		Statement stmt = mSQLConnection.createStatement();
 	
 		//Create the backup Script
 		String backup = String.format("SCRIPT TO '%s'", zBackupFile.getAbsolutePath());
@@ -110,7 +112,7 @@ public abstract class SqlDB {
 	
 	public void restoreFromFile(File zRestoreFile) throws SQLException {
 		//One last statement
-		Statement stmt = mSQLCOnnection.createStatement();
+		Statement stmt = mSQLConnection.createStatement();
 	
 		//First wipe everything..
 		stmt.execute("DROP ALL OBJECTS");
@@ -128,6 +130,30 @@ public abstract class SqlDB {
 	/**
 	 * Perform the Create SQL
 	 */
-	protected abstract void createSQL();
+	protected abstract void createSQL() throws SQLException;
 	
+	/**
+	 * Utility Functions
+	 */
+	public static JSONObject convertDataToJSONObject(MiniData zData) throws ParseException {
+		
+		//First convert the Data back into a String
+		MiniString str = new MiniString(zData.getBytes());
+		
+		//And now convert that String into a JSONOBject
+		JSONObject json = (JSONObject) new JSONParser().parse(str.toString());
+		
+		return json;
+	}
+	
+	public static MiniData convertJSONObjectToData(JSONObject zJSON) {
+		
+		//First convert the Data back into a String
+		MiniString str = new MiniString(zJSON.toString());
+		
+		//And now convert that String into a MiniData
+		MiniData data = new MiniData(str.getData());
+		
+		return data;
+	}
 }

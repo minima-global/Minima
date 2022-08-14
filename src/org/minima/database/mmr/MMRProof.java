@@ -23,17 +23,11 @@ public class MMRProof implements Streamable {
 		MiniByte 	mLeft;
 		MMRData		mMMRData;
 		
-		boolean mHashSum = true;
-		
 		public MMRProofChunk() {}
 		
 		public MMRProofChunk(boolean zIsLeft, MMRData zData) {
 			mLeft 	= new MiniByte(zIsLeft);
 			mMMRData 	= zData;
-		}
-		
-		public void setHashSum(boolean zHashSum) {
-			mHashSum = zHashSum;
 		}
 		
 		public boolean isLeft() {
@@ -54,15 +48,13 @@ public class MMRProof implements Streamable {
 		@Override
 		public void writeDataStream(DataOutputStream zOut) throws IOException {
 			mLeft.writeDataStream(zOut);
-			
-			mMMRData.setHashSum(mHashSum);
 			mMMRData.writeDataStream(zOut);
 		}
 
 		@Override
 		public void readDataStream(DataInputStream zIn) throws IOException {
 			mLeft 		= MiniByte.ReadFromStream(zIn);
-			mMMRData 	= MMRData.ReadFromStream(mHashSum, zIn);
+			mMMRData 	= MMRData.ReadFromStream(zIn);
 		}
 	}
 
@@ -149,42 +141,15 @@ public class MMRProof implements Streamable {
 
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		//Check if this is a ZERO block time and value proof..
-		boolean allzero = true;
-		if(mBlockTime.isEqual(MiniNumber.ZERO)) {
-			
-			//Check all the proof chunks..
-			for(MMRProofChunk pc : mProofChain) {
-				
-				//One non zero and they all need to be written
-				if(!pc.getMMRData().getValue().isEqual(MiniNumber.ZERO)) {
-					allzero = false;
-					break;
-				}
-			}
-		}else {
-			
-			//Block time must also be ZERO
-			allzero = false;
-		}
 		
-		//Are we a hashsum tree
-		boolean hashsum = !allzero;
-		
-		//First byte says if we are a hashsum tree or a hash tree
-		MiniByte.WriteToStream(zOut, hashsum);
-		
-		if(hashsum) {
-			//Write out as normal with full details..
-			mBlockTime.writeDataStream(zOut);
-		}
+		//BlockTime first
+		mBlockTime.writeDataStream(zOut);
 		
 		//No need to add value in the MMRData - just set to ZERO (script and signature proofs)
 		int len = mProofChain.size();
 		MiniNumber.WriteToStream(zOut, len);
 		for(int i=0;i<len;i++) {
 			MMRProofChunk chunk = getProofChunk(i);
-			chunk.setHashSum(hashsum);
 			chunk.writeDataStream(zOut);
 		}
 	}
@@ -192,20 +157,14 @@ public class MMRProof implements Streamable {
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
 		
-		//Is this hash sum..
-		boolean hashsum = MiniByte.ReadFromStream(zIn).isTrue();
-		if(hashsum) {
-			mBlockTime   = MiniNumber.ReadFromStream(zIn);
-		}else {
-			mBlockTime   = MiniNumber.ZERO;
-		}
+		//BlockTime first
+		mBlockTime   = MiniNumber.ReadFromStream(zIn);
 		
 		mProofChain = new ArrayList<>();
 		MiniNumber plen = MiniNumber.ReadFromStream(zIn);
 		int len = plen.getAsInt();
 		for(int i=0;i<len;i++) {
 			MMRProofChunk chunk = new MMRProofChunk();
-			chunk.setHashSum(hashsum);
 			chunk.readDataStream(zIn);
 			addProofChunk(chunk);
 		}
@@ -224,10 +183,8 @@ public class MMRProof implements Streamable {
 		ByteArrayInputStream bais 	= new ByteArrayInputStream(zMMRProof.getBytes());
 		DataInputStream dis 		= new DataInputStream(bais);
 		
-		MMRProof proof = null;
-		
-		//Convert data into a TxPoW
-		proof = MMRProof.ReadFromStream(dis);
+		//read in the proof
+		MMRProof proof = MMRProof.ReadFromStream(dis);
 	
 		dis.close();
 		bais.close();

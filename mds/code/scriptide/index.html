@@ -1,0 +1,172 @@
+<html>
+
+<head>
+	
+	<!--   The MINIMA MiFi Javascript Library -->
+	<script type="text/javascript" src="./js/mds.js"></script>
+	
+	<script type="text/javascript" src="./js/scriptide.js"></script>
+	<script type="text/javascript" src="./js/taboverride.js"></script>
+	
+	<!--  STYLE -->
+	<link rel="stylesheet" type="text/css" href="./css/scriptide.css">
+	
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+		
+	<title>SCRIPT IDE</title>	
+		
+</head>
+
+<body style="background-image: url(./images/tile-body.png);">
+
+<script type="text/javascript">
+	
+	//Wait for the page to load..
+	window.addEventListener("load", function(){
+		//Load cached if available..
+		loadScript();
+		
+		// get a reference to the textarea element
+		var textarea = document.getElementById('scriptarea');
+
+		// enable Tab Override for the textarea
+		tabOverride.set(textarea);
+		tabOverride.tabSize(4);
+	});
+	
+	//Initialise MDS
+	MDS.init(function(event){});
+		
+</script>
+
+<center>
+<div style="width:1000;background-color:#fff;border-radius:20px;">
+
+<br>
+
+<div style="font-size:36px;"><b>Minima Script IDE</b></div>
+
+<table border=0>
+
+<tr>
+	<td colspan=2><br><b>SCRIPT</b> - Lowercase, newlines, tabs and comments using /* .. */ are supported. Removed and cleaned.<br>
+	<textarea style='resize: vertical;width: 950px;height: 360px;' id='scriptarea' spellcheck="false" ></textarea></td>
+</tr>
+
+<tr>
+	<td align=left>
+		<select id="scripts" onchange="loadScript();">
+		  <option value="1">SCRIPT_1</option>
+		  <option value="2">SCRIPT_2</option>
+		  <option value="3">SCRIPT_3</option>
+		  <option value="4">SCRIPT_4</option>
+		  <option value="5">SCRIPT_5</option>
+		  <option value="6">SCRIPT_6</option>
+		  <option value="7">SCRIPT_7</option>
+		  <option value="8">SCRIPT_8</option>
+		</select>
+		<input type="checkbox" id="autosave" name='autosave'> <label for="autosave">AUTOSAVE</label>
+		&nbsp;
+		&nbsp;
+		<button onclick='loadScript();'>LOAD</button>
+		<button onclick='save();'>SAVE</button>
+	</td>
+	
+	<td align=right>
+	    <button onclick='runScript();'>RUN SCRIPT</button>
+	</td>
+</tr>
+
+<tr>
+<td colspan=2>&nbsp;</td>
+</tr>
+
+<tr>
+	<td colspan=2><b>STATE</b> - JSON<br>
+	<textarea placeholder='{"0":"123","1":"0x45FF","2":"[RETURN TRUE]"}' style='resize: none;width: 950px;' rows=1 id='state' spellcheck="false" ></textarea></td>
+</tr>
+
+<tr>
+	<td colspan=2><b>PREVSTATE</b> - JSON<br>
+	<textarea placeholder='{"0":"123","1":"0x45FF","2":"[RETURN TRUE]"}' style='resize: none;width: 950px;' rows=1 id='prevstate' spellcheck="false" ></textarea></td>
+</tr>
+
+<tr>
+	<td colspan=2><b>SIGNATURES</b> - JSONARRAY<br>
+	<textarea placeholder='["0xFFEE44","0xCC54EDAB"]' style='resize: none;width: 950px;' rows=1 id='sigs' spellcheck="false" ></textarea></td>
+</tr>
+
+<tr>
+	<td colspan=2><b>SCRIPTS</b> - JSON of script + proof ( proof can be blank if single script ) .. Use mmrcreate to make proof trees<br>
+	<textarea placeholder='{"RETURN TRUE":""}' style='resize: none;width: 950px;' rows=1 id='mastscripts' spellcheck="false" ></textarea></td>
+</tr>
+
+<tr>
+	<td colspan=2><br><b>GLOBALS</b> - the predefined variables every script has access to. NON-Blank are set<br>
+	<table style='background-color:#CCCCCC;font-size:12px;font-family:monospace;width:950px;'>
+		<tr> 
+			<td align=right>@BLOCK : </td>  <td align=left><input type=text id="@BLOCK" spellcheck="false" value=""></td>
+		    <td align=right>@CREATED : </td>  <td align=left><input type=text id="@CREATED" spellcheck="false" value=""></td>
+		    <td align=right>@INPUT : </td>  <td align=left><input type=text id="@INPUT" spellcheck="false" value=""></td>
+		</tr>
+		<tr> 
+			<td align=right>@ADDRESS : </td>  <td align=left><input readonly type=text id="@ADDRESS" spellcheck="false" value=""></td>
+		    <td align=right>@AMOUNT : </td>  <td align=left><input type=text id="@AMOUNT" spellcheck="false" value=""></td>
+		    <td align=right>@TOKENID : </td>  <td align=left><input type=text id="@TOKENID" spellcheck="false" value=""></td>
+		</tr>
+		<tr> 
+			<td align=right>@COINID : </td>  <td align=left><input type=text id="@COINID" spellcheck="false" value=""></td>
+		    <td align=right>@TOTIN : </td>  <td align=left><input type=text id="@TOTIN" spellcheck="false" value=""></td>
+		    <td align=right>@TOTOUT : </td>  <td align=left><input type=text id="@TOTOUT" spellcheck="false" value=""></td>
+		</tr>
+	</table>
+	</td>
+</tr>
+
+<!--  
+<tr>
+	<td colspan=2><br><b>OUTPUTS</b> - outputs that exist in the transaction<br>
+	
+		<table id="outputtable" style='font-size:12px;font-family:monospace;'>
+			<tr>
+				<th align=left>OUTPUT</th>
+				<th align=left>ADDRESS</th>
+				<th align=left>AMOUNT</th>
+				<th align=left>TOKENID</th>
+				<th>&nbsp;</th>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+				<td><input size=30 type="text" id="output_address" value="0xFF"></td>
+				<td><input size=20 type="number" id="output_amount" value="0"></td>
+				<td><input size=30 type="text" id="output_tokenid" value="0x00"></td>
+				<td><button onclick="addDefault();">ADD</button>&nbsp;<button onclick="deleteOutput();">DELETE</button></td>
+			</tr>
+			
+		</table>
+
+	</td>
+</tr>
+-->
+
+<tr>
+	<td colspan=2><br>RUN RESULT<br><div id='parse' style="resize:vertical;height:200px" class="greybox"></div></td>
+</tr>
+
+<tr>
+	<td colspan=2><br>CLEAN SCRIPT<br><div id='clean' style="resize:vertical;height:80px" class="greybox"></div></td>
+</tr>
+
+<tr>
+	<td colspan=2><br>ADDRESS<br><div id='cleanaddress' style="height:20px" class="greybox"></div></td>
+</tr>
+
+</table>
+<br><br>
+</div>
+
+</center>
+
+</body>
+
+</html>

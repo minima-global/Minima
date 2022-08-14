@@ -1,0 +1,12 @@
+
+.greybox{
+	padding:5;
+	font-size:14px;
+	font-family:monospace;
+	overflow-y: auto;
+	text-align:left;
+	width:940px;
+	height:200px;
+	background-color:#CCCCCC;
+	color:#000000;
+}

@@ -17,12 +17,17 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
+import org.minima.system.network.p2p.P2PFunctions;
+import org.minima.system.network.p2p.params.P2PParams;
+import org.minima.utils.MinimaLogger;
+
 public class ParamConfigurer {
 
     private final Map<ParamKeys, String> paramKeysToArg = new HashMap<>();
     private boolean daemon = false;
     private boolean rpcenable = false;
-
+    private boolean mShutdownhook = true;
+    
     public ParamConfigurer usingConfFile(String[] programArgs) {
         List<String> zArgsList = Arrays.asList(programArgs);
         int confArgKeyIndex = zArgsList.indexOf("-" + ParamKeys.conf);
@@ -63,7 +68,6 @@ public class ParamConfigurer {
                 .entrySet().stream()
                 .filter(e -> toParamKey(e.getKey()).isPresent())
                 .collect(toMap(entry -> toParamKey(entry.getKey()).get(), Map.Entry::getValue)));
-
         return this;
     }
 
@@ -79,6 +83,10 @@ public class ParamConfigurer {
                                 lookAheadToNonParamKeyArg(programArgs, imuCounter).orElse("true")));
                 index++;
             }
+        MinimaLogger.log("Config Parameters");
+        for (Map.Entry<ParamKeys, String> entry : paramKeysToArg.entrySet()) {
+            MinimaLogger.log(entry.getKey() + ":" + entry.getValue());
+        }
         return this;
     }
 
@@ -111,9 +119,32 @@ public class ParamConfigurer {
     public boolean isRpcenable() {
         return rpcenable;
     }
+    
+    public boolean isShutDownHook() {
+        return mShutdownhook;
+    }
 
     enum ParamKeys {
-        host("host", "Specify the host IP", (arg, configurer) -> {
+    	data("data", "Specify the data folder (defaults to .minima/ under user home", (args, configurer) -> {
+    		//Get that folder
+    		File dataFolder 	= new File(args);
+    				
+    		//Depends on the Base Minima Version
+    		File minimafolder 	= new File(dataFolder,GlobalParams.MINIMA_BASE_VERSION);
+    		minimafolder.mkdirs();
+    		
+    		//Set this globally
+    		GeneralParams.DATA_FOLDER 	= minimafolder.getAbsolutePath();
+        }),
+    	basefolder("basefolder", "Specify a default file creation / backup / restore folder", (args, configurer) -> {
+    		//Get that folder
+    		File backupfolder 	= new File(args);
+    		backupfolder.mkdirs();
+    		
+    		//Set this globally
+    		GeneralParams.BASE_FILE_FOLDER = backupfolder.getAbsolutePath();
+        }),
+    	host("host", "Specify the host IP", (arg, configurer) -> {
             GeneralParams.MINIMA_HOST = arg;
             GeneralParams.IS_HOST_SET = true;
         }),
@@ -121,22 +152,44 @@ public class ParamConfigurer {
             GeneralParams.MINIMA_PORT = Integer.parseInt(arg);
         }),
         rpc("rpc", "Specify the RPC port", (arg, configurer) -> {
-            GeneralParams.RPC_PORT = Integer.parseInt(arg);
+//            GeneralParams.RPC_PORT = Integer.parseInt(arg);
+            MinimaLogger.log("-rpc is no longer in use. Your RPC port is: " + GeneralParams.RPC_PORT);
+
+        }),
+        rpcenable("rpcenable", "Enable rpc", (args, configurer) -> {
+            if ("true".equals(args)) {
+                configurer.rpcenable = true;
+            }
+        }),
+        allowallip("allowallip", "Allow all IP for Maxima", (args, configurer) -> {
+            if ("true".equals(args)) {
+            	GeneralParams.ALLOW_ALL_IP = true;
+            }
+        }),
+        mdsenable("mdsenable", "Enable MDS", (args, configurer) -> {
+            if ("true".equals(args)) {
+            	GeneralParams.MDS_ENABLED = true;
+            }
+        }),
+        mdspassword("mdspassword", "Specify the Minima MDS password", (arg, configurer) -> {
+            GeneralParams.MDS_PASSWORD = arg.trim();
+        }),
+        mdsinit("mdsinit", "Specify a folder of MiniDAPPs", (arg, configurer) -> {
+        	//Get that folder
+    		File initFolder 	= new File(arg);
+    		initFolder.mkdirs();
+    		
+        	GeneralParams.MDS_INITFOLDER= initFolder.getAbsolutePath();
+        }),
+        mdswrite("mdswrite", "Make an init MiniDAPP WRITE access", (arg, configurer) -> {
+        	GeneralParams.MDS_WRITE= arg;
         }),
         conf("conf", "Specify a configuration file (absolute)", (args, configurer) -> {
             // do nothing
         }),
-        data("data", "Specify the data folder (absolute) (defaults to .minima/ under user home", (args, configurer) -> {
-            GeneralParams.DATA_FOLDER = args;
-        }),
         daemon("daemon", "Run in daemon mode with no stdin input ( services )", (args, configurer) -> {
             if ("true".equals(args)) {
                 configurer.daemon = true;
-            }
-        }),
-        private1("private", "Use a private network", (args, configurer) -> {
-            if ("true".equals(args)) {
-                GeneralParams.PRIVATE_NETWORK = true;
             }
         }),
         isclient("isclient", "Tells the P2P System that this node can't accept incoming connections", (args, configurer) -> {
@@ -149,13 +202,11 @@ public class ParamConfigurer {
                 GeneralParams.IS_MOBILE = true;
             }
         }),
-        rpcenable("rpcenable", "Enable rpc", (args, configurer) -> {
-            if ("true".equals(args)) {
-                configurer.rpcenable = true;
-            }
-        }),
         nop2p("nop2p", "Disable the automatic P2P system", (args, configurer) -> {
             GeneralParams.P2P_ENABLED = false;
+        }),
+        noshutdownhook("noshutdownhook", "Do not use the shutdown hook (Android)", (args, configurer) -> {
+        	configurer.mShutdownhook = false;
         }),
         noconnect("noconnect", "Stops the P2P system from connecting to other nodes until it's been connected too", (args, configurer) -> {
             if ("true".equals(args)) {
@@ -165,14 +216,20 @@ public class ParamConfigurer {
         p2pnode("p2pnode", "Specify the initial P2P host:port list to connect to", (args, configurer) -> {
             GeneralParams.P2P_ROOTNODE = args;
         }),
-        automine("automine", "Simulate user traffic to construct the blockchain", (args, configurer) -> {
-            if ("true".equals(args)) {
-                GeneralParams.AUTOMINE = true;
-            }
+        p2ploglevelinfo("p2p-log-level-info", "Set the P2P log level to info", (args, configurer) -> {
+            P2PParams.LOG_LEVEL = P2PFunctions.Level.INFO;
         }),
-        noautomine("noautomine", "Do not simulate user traffic to construct the blockchain", (args, configurer) -> {
-            GeneralParams.AUTOMINE = false;
+        p2plogleveldebug("p2p-log-level-debug", "Set the P2P log level to info", (args, configurer) -> {
+            P2PParams.LOG_LEVEL = P2PFunctions.Level.DEBUG;
         }),
+//        automine("automine", "Simulate user traffic to construct the blockchain", (args, configurer) -> {
+//            if ("true".equals(args)) {
+//                GeneralParams.AUTOMINE = true;
+//            }
+//        }),
+//        noautomine("noautomine", "Do not simulate user traffic to construct the blockchain", (args, configurer) -> {
+//            GeneralParams.AUTOMINE = false;
+//        }),
         connect("connect", "Disable the p2p and manually connect to this list of host:port", (args, configurer) -> {
             GeneralParams.P2P_ENABLED = false;
             GeneralParams.CONNECT_LIST = args;
@@ -185,22 +242,23 @@ public class ParamConfigurer {
         genesis("genesis", "Create a genesis block, -clean and -automine", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.CLEAN = true;
-                GeneralParams.PRIVATE_NETWORK = true;
+//                GeneralParams.PRIVATE_NETWORK = true;
                 GeneralParams.GENESIS = true;
-                GeneralParams.AUTOMINE = true;
+//                GeneralParams.AUTOMINE = true;
             }
         }),
-        test("test", "Use test params", (args, configurer) -> {
+        test("test", "Use test params on a private network", (args, configurer) -> {
             if ("true".equals(args)) {
-                GeneralParams.TEST_PARAMS = true;
-                GeneralParams.PRIVATE_NETWORK = true;
+                GeneralParams.TEST_PARAMS 		= true;
+//                GeneralParams.PRIVATE_NETWORK 	= true;
+//                GeneralParams.P2P_ENABLED 		= false;
                 TestParams.setTestParams();
             }
         }),
         help("help", "Print this help", (args, configurer) -> {
             System.out.println("Minima Help");
             stream(values())
-                    .forEach(pk -> System.out.format("%-15s%-15s%n", new Object[] {"-" + pk.key,pk.helpMsg}));
+                    .forEach(pk -> System.out.format("%-20s%-15s%n", new Object[] {"-" + pk.key,pk.helpMsg}));
             System.exit(1);
         });
 

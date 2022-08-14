@@ -9,12 +9,16 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class GenerateKey {
@@ -25,9 +29,11 @@ public class GenerateKey {
 	private static final String SYMETRIC_ALGORITHM_GEN  = "AES";
 	private static final String SYMETRIC_ALGORITHM  	= "AES/CBC/PKCS5Padding";
 	
+	private static final String SYMETRIC_PASSWORD_ALGORITHM  = "PBKDF2WithHmacSHA256";
+	
 	public static KeyPair generateKeyPair() throws Exception {
 
-		SecureRandom random 	= SecureRandom.getInstanceStrong();
+		SecureRandom random 	= new SecureRandom();
 		
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance(ASYMETRIC_ALGORITHM_GEN);
         keyGen.initialize(1024, random);
@@ -69,9 +75,19 @@ public class GenerateKey {
 		return new SecretKeySpec(zSecret, SYMETRIC_ALGORITHM_GEN);
 	}
 	
+	public static SecretKey secretKey(String zPassword, byte[] zSalt) throws Exception {
+    	
+		SecretKeyFactory factory 	= SecretKeyFactory.getInstance(SYMETRIC_PASSWORD_ALGORITHM);
+		KeySpec spec 				= new PBEKeySpec(zPassword.toCharArray(), zSalt, 65536, 128);
+		SecretKey tmp 				= factory.generateSecret(spec);
+		SecretKey secret 			= new SecretKeySpec(tmp.getEncoded(), SYMETRIC_ALGORITHM_GEN);
+    	
+    	return secret;
+    }
+	
 	public static byte[] IvParam() throws Exception {
     	
-		SecureRandom random 	= SecureRandom.getInstanceStrong();
+		SecureRandom random 	= new SecureRandom();
 		byte[] ivBytes 			= new byte[16];
 		random.nextBytes(ivBytes);
     	
@@ -86,4 +102,14 @@ public class GenerateKey {
 		return Cipher.getInstance(SYMETRIC_ALGORITHM);
 	}
 	
+	public static Cipher getCipherSYM(int zCipherMode, byte[] zIvParam, byte[] zSecretKey) throws Exception {
+    	
+    	SecretKey sk 		= GenerateKey.convertSecret(zSecretKey);    	
+    	IvParameterSpec iv 	= new IvParameterSpec(zIvParam);
+    	
+    	Cipher aesCipher 	= GenerateKey.getSymetricCipher();
+		aesCipher.init(zCipherMode, sk, iv);
+		
+    	return aesCipher;
+    }
 }

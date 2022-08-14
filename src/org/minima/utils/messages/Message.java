@@ -137,6 +137,14 @@ public class Message {
 		return ((Boolean)bool).booleanValue();
 	}
 	
+	public boolean getBoolean(String zName, boolean zDefault){
+		if(exists(zName)) {
+			return getBoolean(zName);
+		}
+		
+		return zDefault;
+	}
+	
 	/**
 	 * Get an Integer value
 	 * @param zName

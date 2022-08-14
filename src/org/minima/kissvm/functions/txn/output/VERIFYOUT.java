@@ -35,6 +35,7 @@ public class VERIFYOUT extends MinimaFunction{
 		MiniData address  = new MiniData(zContract.getHexParam(1, this).getRawData());
 		MiniNumber amount = zContract.getNumberParam(2, this).getNumber();
 		MiniData tokenid  = new MiniData(zContract.getHexParam(3, this).getRawData());
+		boolean keepstate = zContract.getBoolParam(4, this).isTrue();
 		
 		//Check an output exists..
 		Transaction trans = zContract.getTransaction();
@@ -47,6 +48,11 @@ public class VERIFYOUT extends MinimaFunction{
 		
 		//Get it..
 		Coin cc = outs.get(output);
+		
+		//Check Keep State
+		if(cc.storeState() != keepstate) {
+			return BooleanValue.FALSE;
+		}
 		
 		//Now Check
 		boolean addr = address.isEqual(cc.getAddress());  
@@ -79,7 +85,7 @@ public class VERIFYOUT extends MinimaFunction{
 	
 	@Override
 	public int requiredParams() {
-		return 4;
+		return 5;
 	}
 	
 	@Override

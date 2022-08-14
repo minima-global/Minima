@@ -1,0 +1,201 @@
+<html>
+
+<head>
+
+	<!-- Set the View Port -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!--   The MINIMA MDS Javascript Library -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!--   MaxSolo -->
+	<script type="text/javascript" src="maxsolo.js"></script>
+	
+	<!--   Utils -->
+	<script type="text/javascript" src="utils.js"></script>
+	
+	<!--  STYLE -->
+	<link rel="stylesheet" type="text/css" href="maxsolo.css">
+	
+	<title>MAXSOLO</title>
+</head>
+
+<body>
+
+<div class="container">
+	
+	<div id="sendmoney" class="sendmoney">
+	
+		<table style="font-size:18; width:100%;height:100%" border=0>
+			<tr><td style="font-size:28;text-align:center;" colspan=2><b>Send Money</b><br><br></td></tr>
+			<tr>
+				<td style="text-align:right;">Token : </td> 
+				<td>
+				<select id="tokens">
+				</select>
+				</td>
+			</tr>
+			
+			<tr>
+				<td style="text-align:right;">Amount : </td>
+				<td><input type="number" id='amountofmoney' maxlength='64'></td>
+			</tr>
+			
+			<tr>
+				<td style="text-align:left;"><br><input class="solobutton" type="submit" value="Cancel" onclick="showDiv('sendmoney',false);"/></td>
+				<td style="text-align:right;"><br><input class="solobutton" type="submit" value="Send" onclick="sendMoney();"/></td>
+			</tr>
+		</table>
+		
+	</div>
+	
+	<div id="allsidebarview">
+	
+		<table class="nosidebartable">
+		
+			<tr>
+				<td class="chatline" id="chatwindowuser">
+					USERNAME
+				</td>
+			</tr>
+		
+			<tr>
+				<td> 
+				
+					<table style="height:100%;width:100%">
+					
+						<tr>
+							<td class="mainview">
+							
+								<div id="chatwindow" class="chatwindow">
+									No Room selected yet..
+								</div>
+							
+							</td>
+						</tr>
+						
+						<tr>
+							<td class="chatline" nowrap>
+															
+								<table width=100% border=0>
+									<tr>
+										<td width=5% nowrap>
+											<input class="solobutton" type=submit value=' $$ ' name='$$' onclick="showDiv('sendmoney',true);">
+											<input type="file" name="uploadfile" id="image-upload" accept="image/*" style="display:none;" onChange="checkImageFile(this);"/>
+											<label class="solobutton" for="image-upload">IMG</label>	
+										</td>
+										<td width=90%><input style='width:100%;' class="chatline" id='chatline' maxlength='255'></td>
+										<td width=5% style='text-align:right;'>
+											<input class="solobutton" type=submit id='sendbutton' value=' Send ' name='Send' onclick='sendMessage();'>
+										</td>
+									</tr>
+								</table>
+								
+							</td>
+						</tr>
+					
+					</table>
+				
+				</td>
+			</tr>
+		
+		</table>
+		
+	</div>
+	
+</div>
+
+
+<script type="text/javascript">
+		
+	//Ask for permission..
+	if (Notification.permission !== "granted") {
+		var permission = Notification.requestPermission();	
+	}
+
+	//Hide the Money
+	showDiv('sendmoney',false);
+	
+	//We are not sahowing the room list
+	ROOMS_SHOWING = false;	
+
+	//Listen for Enter on Chat line..
+	document.getElementById("chatline").addEventListener("keyup", ({key}) => {
+	    if (key === "Enter") {
+	    	sendMessage(); 
+	    }
+	});
+	
+	/*MDS.DEBUG_HOST 			= "127.0.0.1";
+	MDS.DEBUG_PORT		 	= 9003;
+	MDS.DEBUG_MINIDAPPID 	= "0xC39F95FF43B0D6C87AECBADA6FEDCB5D1436521EA0E942A99EDAEFF3F676A9F6";
+	*/
+	
+	//Initialise MiFi
+	MDS.init(function(msg){
+		//MDS.log(JSON.stringify(msg));
+		
+		if(msg.event == "inited"){
+			
+			//All one page
+			RENDER_STYLE = "allsidebar";
+			
+			//Get My name
+			MDS.cmd("maxima",function(result){
+				//Get my name..
+				MY_NAME = result.response.name;
+				MDS.log("User : "+MY_NAME);
+			});
+			
+			//Get My Tokens
+			MDS.cmd("balance",function(result){
+				//Create the select dongle
+				var select = document.getElementById('tokens');
+				while (select.hasChildNodes()) {
+					select.removeChild(select.firstChild);
+				}
+				
+				//Add each contact
+				balance = result.response;
+				
+				//Add the contacts
+				for(var i = 0; i < balance.length; i++) {
+					var opt = document.createElement('option');
+					
+					if(balance[i].tokenid == "0x00"){
+						opt.value  		= balance[i].tokenid;
+					    opt.innerHTML 	= balance[i].token;	
+					}else{
+						opt.value  		= balance[i].tokenid;
+					    opt.innerHTML 	= balance[i].token.name;
+					}
+					
+				    select.appendChild(opt);
+				}
+			});
+			
+			//Get the room..
+			pubkey = MDS.form.getParams("publickey");
+			MDS.log("Chat window public key : "+pubkey);
+			
+			//Set the room name
+			roomname = MDS.form.getParams("roomname");
+			document.getElementById("chatwindowuser").innerHTML = "<b>"+roomname+"</b>";
+			MDS.log("Room Name : "+roomname);
+			
+			//Load the messages..
+			loadMessages(pubkey);
+			
+		}else if(msg.event == "MAXIMA"){
+			
+			//Process this message
+			processMaximaEvent(msg);
+			
+		}
+	});
+	
+</script>
+
+</body>
+
+</html>

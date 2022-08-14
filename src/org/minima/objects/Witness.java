@@ -42,7 +42,14 @@ public class Witness implements Streamable {
 	 * Signature functions
 	 */
 	public void addSignature(Signature zSigProof) {
-		mSignatureProofs.add(zSigProof);
+		if(zSigProof == null) {
+			throw new IllegalArgumentException("Cannot add a NULL Signature");
+		}
+		
+		//Check not already added
+		if(!isSignedBy(zSigProof.getRootPublicKey().to0xString())) {
+			mSignatureProofs.add(zSigProof);
+		}
 	}
 	
 	public ArrayList<Signature> getAllSignatures(){
@@ -57,6 +64,16 @@ public class Witness implements Streamable {
 			pubkeys.add(sigproof.getRootPublicKey());
 		}
 		return pubkeys;
+	}
+	
+	public boolean isSignedBy(String zPublicKey) {
+		ArrayList<MiniData> allkeys = getAllSignatureKeys();
+		for(MiniData key : allkeys) {
+			if(key.to0xString().equals(zPublicKey)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**
