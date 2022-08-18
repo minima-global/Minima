@@ -42,6 +42,7 @@ public class TxPoWTreeNode implements Streamable {
 	 * Children
 	 */
 	ArrayList<TxPoWTreeNode> mChildren;
+	Object mSyncChildren = new Object();
 	
 	/**
 	 * The total weight of this node - GHOST
@@ -330,11 +331,20 @@ public class TxPoWTreeNode implements Streamable {
 		zTxPoWTreeNode.getMMR().setParent(mMMR);
 		
 		//Add to the children
-		mChildren.add(zTxPoWTreeNode);
+		synchronized (mSyncChildren) {
+			mChildren.add(zTxPoWTreeNode);
+		}
 	}
 
 	public ArrayList<TxPoWTreeNode> getChildren() {
-		return mChildren;
+		ArrayList<TxPoWTreeNode> children = new ArrayList<>();
+		synchronized (mSyncChildren) {
+			for(TxPoWTreeNode node : mChildren) {
+				children.add(node);
+			}
+		}
+		
+		return children;
 	}
 
 	public void setParent(TxPoWTreeNode zTxPoWTreeNode) {
