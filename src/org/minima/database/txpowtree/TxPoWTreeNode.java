@@ -42,7 +42,7 @@ public class TxPoWTreeNode implements Streamable {
 	 * Children
 	 */
 	ArrayList<TxPoWTreeNode> mChildren;
-	Object mSyncChildren = new Object();
+	private Object mSyncChildren = new Object();
 	
 	/**
 	 * The total weight of this node - GHOST
