@@ -76,7 +76,7 @@ public class P2PPeersChecker extends MessageProcessor {
 
     @Override
     protected void processMessage(Message zMessage) throws Exception {
-
+   	
         if (zMessage.getMessageType().equals(PEERS_INIT)) {
 
 
@@ -86,12 +86,11 @@ public class P2PPeersChecker extends MessageProcessor {
             InetSocketAddress address = (InetSocketAddress) zMessage.getObject("address");
             Set<String> localAddresses = P2PFunctions.getLocalAddresses();
 
-            if (!localAddresses.contains(address.getHostString()) && !address.getHostString().startsWith("127")) {
+            if (GeneralParams.ALLOW_ALL_IP || (!localAddresses.contains(address.getHostString()) && !address.getHostString().startsWith("127"))) {
                 if (!unverifiedPeers.contains(address) && !verifiedPeers.contains(address)) {
                     unverifiedPeers.add(address);
                     Message msg = new Message(PEERS_CHECKPEERS).addObject("address", address);
                     PostMessage(msg);
-
                 }
             } else {
 				P2PFunctions.log_debug("[-] Prevent node from adding localhost address to peers list");
@@ -206,7 +205,7 @@ public class P2PPeersChecker extends MessageProcessor {
                         // Check the peer is still down in 3 hours time
                         TimerMessage msg = new TimerMessage(1000 * 60 * 60 * 3, PEERS_CHECKPEERS);
                         msg.addObject("address", address);
-                        PostMessage(msg);
+                        PostTimerMessage(msg);
                     } else {
                         unverifiedPeers.remove(address);
                     }
@@ -218,9 +217,9 @@ public class P2PPeersChecker extends MessageProcessor {
             } else {
             	
             	//Check again in 10 seconds
-                TimerMessage tmsg = new TimerMessage(10_000, PEERS_CHECKPEERS);
+                TimerMessage tmsg = new TimerMessage(60_000, PEERS_CHECKPEERS);
                 tmsg.addObject("address", address);
-                PostMessage(tmsg);
+                PostTimerMessage(tmsg);
             }
 
         } else if (zMessage.getMessageType().equals(PEERS_LOOP)) {

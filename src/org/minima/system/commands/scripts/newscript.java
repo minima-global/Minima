@@ -6,7 +6,6 @@ import org.minima.database.wallet.Wallet;
 import org.minima.kissvm.Contract;
 import org.minima.objects.Address;
 import org.minima.system.commands.Command;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class newscript extends Command {

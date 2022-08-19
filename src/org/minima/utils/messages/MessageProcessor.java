@@ -29,8 +29,13 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
 	/**
 	 * LOG messages ?
 	 */
-	protected boolean mTrace 		= false;
-	protected String mTraceFilter 	= "";
+	static private boolean mTrace 		= false;
+	static private String mTraceFilter 	= "";
+	
+	public static void setTrace(boolean zTrace, String zTraceFilter) {
+		mTrace 			= zTrace;
+		mTraceFilter 	= zTraceFilter;
+	}
 	
 	/**
 	 * Processor Name
@@ -60,6 +65,10 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     	return mTrace;
     }
     
+    public String getTraceFilter() {
+    	return mTraceFilter;
+    }
+    
     public boolean isRunning(){
     	return mRunning;
     }
@@ -85,6 +94,10 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     
     public void run() {
     	
+    	if(mTrace) {
+        	MinimaLogger.log("["+mMainThread.getName()+"] (stack:"+getSize()+") START", false);
+        }
+    	
     	//Loop while still running
         while(mRunning){
             //Check for valid mnessage
@@ -107,7 +120,7 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
                     	long timediff = System.currentTimeMillis() - timenow;
                     	String tracemsg = msg.toString();
                 		if(tracemsg.contains(mTraceFilter)) {
-                			MinimaLogger.log("["+mMainThread.getName()+"] (stack:"+getSize()+") time:"+timediff+" \t"+msg);
+                			MinimaLogger.log("["+mMainThread.getName()+"] (stack:"+getSize()+") time:"+timediff+" \t"+msg, false);
                 		}
                     }
                     
@@ -137,6 +150,10 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
 			}
         }
 
+        if(mTrace) {
+        	MinimaLogger.log("["+mMainThread.getName()+"] (stack:"+getSize()+") SHUTDOWN", false);
+        }
+        
         //All done..
         mShutDownComplete = true;
     }
