@@ -598,22 +598,41 @@ public class TxPoWChecker {
 		
 		//Get all the coins..
 		if(!zTxPoW.getTransaction().isEmpty()) {
-			ArrayList<Coin> inputs = zTxPoW.getTransaction().getAllInputs();
-			for(Coin cc : inputs) {
-				if(txpdb.checkMempoolCoins(cc.getCoinID())) {
+			ArrayList<CoinProof> proofs = zTxPoW.getWitness().getAllCoinProofs();
+			for(CoinProof cp : proofs) {
+				if(txpdb.checkMempoolCoins(cp.getCoin().getCoinID())) {
 					return true;
 				}
 			}
 		}
-		
+
 		if(!zTxPoW.getBurnTransaction().isEmpty()) {
-			ArrayList<Coin> inputs = zTxPoW.getBurnTransaction().getAllInputs();
-			for(Coin cc : inputs) {
-				if(txpdb.checkMempoolCoins(cc.getCoinID())) {
+			ArrayList<CoinProof> proofs = zTxPoW.getBurnWitness().getAllCoinProofs();
+			for(CoinProof cp : proofs) {
+				if(txpdb.checkMempoolCoins(cp.getCoin().getCoinID())) {
 					return true;
 				}
 			}
 		}
+			
+//		//Get all the coins..
+//		if(!zTxPoW.getTransaction().isEmpty()) {
+//			ArrayList<Coin> inputs = zTxPoW.getTransaction().getAllInputs();
+//			for(Coin cc : inputs) {
+//				if(txpdb.checkMempoolCoins(cc.getCoinID())) {
+//					return true;
+//				}
+//			}
+//		}
+//		
+//		if(!zTxPoW.getBurnTransaction().isEmpty()) {
+//			ArrayList<Coin> inputs = zTxPoW.getBurnTransaction().getAllInputs();
+//			for(Coin cc : inputs) {
+//				if(txpdb.checkMempoolCoins(cc.getCoinID())) {
+//					return true;
+//				}
+//			}
+//		}
 		
 		return false;
 	}
