@@ -146,6 +146,7 @@ public class RamDB {
 					}
 				}
 				
+				//And BURN Coins
 				proofs = txp.getBurnWitness().getAllCoinProofs();
 				for(CoinProof cp : proofs) {
 					if(cp.getCoin().getCoinID().isEqual(zCoinID)) {

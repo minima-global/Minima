@@ -597,21 +597,18 @@ public class TxPoWChecker {
 		TxPoWDB txpdb = MinimaDB.getDB().getTxPoWDB();
 		
 		//Get all the coins..
-		if(!zTxPoW.getTransaction().isEmpty()) {
-			ArrayList<CoinProof> proofs = zTxPoW.getWitness().getAllCoinProofs();
-			for(CoinProof cp : proofs) {
-				if(txpdb.checkMempoolCoins(cp.getCoin().getCoinID())) {
-					return true;
-				}
+		ArrayList<CoinProof> proofs = zTxPoW.getWitness().getAllCoinProofs();
+		for(CoinProof cp : proofs) {
+			if(txpdb.checkMempoolCoins(cp.getCoin().getCoinID())) {
+				return true;
 			}
 		}
-
-		if(!zTxPoW.getBurnTransaction().isEmpty()) {
-			ArrayList<CoinProof> proofs = zTxPoW.getBurnWitness().getAllCoinProofs();
-			for(CoinProof cp : proofs) {
-				if(txpdb.checkMempoolCoins(cp.getCoin().getCoinID())) {
-					return true;
-				}
+	
+		//And BURN Coins
+		proofs = zTxPoW.getBurnWitness().getAllCoinProofs();
+		for(CoinProof cp : proofs) {
+			if(txpdb.checkMempoolCoins(cp.getCoin().getCoinID())) {
+				return true;
 			}
 		}
 			
