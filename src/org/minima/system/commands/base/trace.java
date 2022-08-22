@@ -1,8 +1,10 @@
 package org.minima.system.commands.base;
 
-import org.minima.system.Main;
 import org.minima.system.commands.Command;
+import org.minima.system.network.minima.NIOClient;
+import org.minima.system.network.minima.NIOServer;
 import org.minima.utils.json.JSONObject;
+import org.minima.utils.messages.MessageProcessor;
 
 public class trace extends Command {
 
@@ -26,7 +28,11 @@ public class trace extends Command {
 	
 		String filter = getParam("filter", "");
 		
-		Main.getInstance().setTrace(on,filter);
+//		Main.getInstance().setTrace(on,filter);
+		MessageProcessor.setTrace(on, filter);
+		
+		NIOClient.mTraceON = on;
+		NIOServer.mTraceON = on;
 		
 		JSONObject tr = new JSONObject();
 		tr.put("enabled", on);

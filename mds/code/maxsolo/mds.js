@@ -46,21 +46,13 @@ var MDS = {
 		var host = window.location.hostname;
 		var port =  Math.floor(window.location.port);
 		
-		if(MDS.logging){
-			MDS.log("Location : "+window.location);
-			MDS.log("Host     : "+host);
-			MDS.log("port     : "+port);	
-		}
-		
-		
 		//Get ther MiniDAPP UID
 		MDS.minidappuid = MDS.form.getParams("uid");
 		
 		//HARD SET if debug mode - running from a file
 		if(MDS.DEBUG_HOST != null){
-			
 			MDS.log("DEBUG Settings Found..");
-			
+		
 			host=MDS.DEBUG_HOST;
 			port=MDS.DEBUG_PORT;	
 		}
@@ -72,10 +64,6 @@ var MDS = {
 		//Is one specified..
 		if(MDS.minidappuid == "0x00"){
 			MDS.log("No MiniDAPP UID specified.. using test value");
-		}
-		
-		if(MDS.logging){
-			MDS.log("MDS UID  : "+MDS.minidappuid);
 		}
 		
 		//The ports..
@@ -117,6 +105,20 @@ var MDS = {
 	sql : function(command, callback){
 		//Send via POST
 		httpPostAsync(MDS.mainhost+"sql?"+"uid="+MDS.minidappuid, command, callback);
+	},
+	
+	/**	
+	 * Network Commands
+	 */
+	net : {
+		
+		/**
+		 * Make a GET request
+		 */
+		GET : function(url, callback){
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"net?"+"uid="+MDS.minidappuid, url, callback);	
+		}
 	},
 	
 	/**

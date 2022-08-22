@@ -1,7 +1,5 @@
 package org.minima.system.commands.base;
 
-import java.util.ArrayList;
-
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
@@ -29,7 +27,7 @@ public class peers extends Command {
 		P2PManager p2PManager = (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();
 		
 		JSONObject resp = new JSONObject();
-		resp.put("peers-list", InetSocketAddressIO.addressesListToJSONArray(new ArrayList<>(p2PManager.getPeers())));
+		resp.put("peers-list", InetSocketAddressIO.addressesListToJSONArray(p2PManager.getPeersCopy()));
 		ret.put("response", resp);
 		
 		return ret;

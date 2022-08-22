@@ -19,6 +19,7 @@ public class CMDcommand {
 		
 		//Default fail result
 		JSONObject statfalse = new JSONObject();
+		statfalse.put("command", mCompleteCommand);
 		statfalse.put("status", false);
 		statfalse.put("pending", false);
 		String result = statfalse.toJSONString();
@@ -36,6 +37,10 @@ public class CMDcommand {
 			
 		}catch(Exception exc) {
 			MinimaLogger.log("ERROR CMDHANDLER : "+mCompleteCommand+" "+exc);
+			
+			//Add the error
+			statfalse.put("error", exc.toString());
+			result = statfalse.toJSONString();
 		}
 		
 		return result;

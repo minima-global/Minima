@@ -175,7 +175,13 @@ public class MDSCompleteHandler implements Runnable {
 					//Create a Command and run it..
 					CMDcommand cmd = new CMDcommand(minidappid, data);
 					result = cmd.runCommand();
-						
+				
+				}else if(command.equals("net")) {
+					
+					//Create a Command and run it..
+					NETcommand net 	= new NETcommand(minidappid, data);
+					result 			= net.runCommand();
+				
 				}else if(command.equals("poll")) {
 					
 					POLLcommand poll = new POLLcommand(mPollStack);

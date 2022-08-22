@@ -1,0 +1,66 @@
+version: '3.7'
+
+networks:
+  minima_testnet:
+    name: minima_testnet
+
+services:
+  minima_one:
+    image: minimaglobal/minima:latest
+    command: -daemon -genesis -noconnect -test -port 9001 -rpc 9002 -rpcenable
+    networks:
+      minima_testnet:
+        aliases:
+          - minima_one
+    ports:
+      - "9001:9001"
+      - "9002:9002"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1000M
+
+  minima_peer:
+    image: minimaglobal/minima:latest
+    command: -daemon -test -port 9121 -p2pnode minima_one:9001
+    networks:
+      minima_testnet:
+        aliases:
+          - minima_peer
+    depends_on:
+      - minima_one
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1000M
+
+  minima_client:
+    image: minimaglobal/minima:latest
+    command: -test -daemon -isclient -p2pnode minima_one:9001
+    networks:
+      minima_testnet:
+        aliases:
+          - minima_client
+    depends_on:
+      - minima_one
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 1000M
+  minima_no_p2p:
+    image: minimaglobal/minima:latest
+    command: -test -daemon -nop2p -connect minima_one:9001
+    networks:
+      minima_testnet:
+        aliases:
+          - minima_client
+    depends_on:
+      - minima_one
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1000M

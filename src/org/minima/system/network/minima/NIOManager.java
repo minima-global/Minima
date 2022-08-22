@@ -483,7 +483,7 @@ public class NIOManager extends MessageProcessor {
 			
 			//Create a handler task
 			NIOMessage niomsg = new NIOMessage(uid, data);
-			niomsg.setTrace(isTrace(), mTraceFilter);
+			niomsg.setTrace(isTrace(), getTraceFilter());
 			
 			//Process it.. in a thread pool..
 			THREAD_POOL.execute(niomsg);

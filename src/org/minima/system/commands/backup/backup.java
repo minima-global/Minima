@@ -17,6 +17,7 @@ import org.minima.system.commands.CommandException;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.encrypt.GenerateKey;
 import org.minima.utils.json.JSONObject;
 
@@ -36,15 +37,21 @@ public class backup extends Command {
 		}
 
 		//Get a password if there is one..
-		String password = getParam("pasword","minima"); 
+		String password = getParam("password","minima"); 
 		if(password.equals("")) {
 			throw new CommandException("Cannot have a blank password");
 		}
 		
 		boolean complete = getBooleanParam("complete", false);
+
+		boolean debug = getBooleanParam("debug", false);
 		
 		//Create the file
 		File backupfile = MiniFile.createBaseFile(file);
+		
+		if(debug) {
+			MinimaLogger.log("Backup file : "+backupfile.getAbsolutePath());
+		}
 		
 		//Wipe if exists..
 		if(backupfile.exists()) {
@@ -54,6 +61,10 @@ public class backup extends Command {
 		///Base folder
 		File backupfolder = new File(GeneralParams.DATA_FOLDER,"backup");
 		backupfolder.mkdirs();
+		
+		if(debug) {
+			MinimaLogger.log("Backup folder : "+backupfolder.getAbsolutePath());
+		}
 		
 		//Lock the DB
 		MinimaDB.getDB().readLock(true);

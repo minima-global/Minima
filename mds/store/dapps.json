@@ -41,7 +41,7 @@
 			"version" : "1.1.1"
 		},
 		{
-			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/maxsolo-1.83.mds.zip",
+			"file":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/files/maxsolo/maxsolo_1.9.mds.zip",
 			"icon":"https://raw.githubusercontent.com/minima-global/Minima/dev-spartacus/mds/store/icons/maxsolo.png",
 			"name":"MaxSolo",
 			"description": "P2P chat app running over Maxima",

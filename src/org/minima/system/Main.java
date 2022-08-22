@@ -443,22 +443,7 @@ public class Main extends MessageProcessor {
 	public SendPollManager getSendPoll() {
 		return mSendPoll;
 	}
-	
-	public void setTrace(boolean zTrace, String zFilter) {
-		setFullLogging(zTrace,zFilter);
 		
-		mTxPoWProcessor.setFullLogging(zTrace,zFilter);
-		mTxPoWMiner.setFullLogging(zTrace,zFilter);
-		
-		mNetwork.getNIOManager().setFullLogging(zTrace,zFilter);
-		mNetwork.getP2PManager().setFullLogging(zTrace,zFilter);
-		
-		mMaxima.setFullLogging(zTrace, zFilter);
-		
-//		NIOClient.mTraceON = zTrace;
-//		NIOServer.mTraceON = zTrace;
-	}
-	
 	private void doGenesis() {
 		
 		//Create a new address - to receive the genesis funds..

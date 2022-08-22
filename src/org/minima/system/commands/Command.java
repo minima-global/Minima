@@ -28,6 +28,7 @@ import org.minima.system.commands.base.debugflag;
 import org.minima.system.commands.base.getaddress;
 import org.minima.system.commands.base.hash;
 import org.minima.system.commands.base.hashtest;
+import org.minima.system.commands.base.healthcheck;
 import org.minima.system.commands.base.incentivecash;
 import org.minima.system.commands.base.missingcmd;
 import org.minima.system.commands.base.mmrcreate;
@@ -51,7 +52,14 @@ import org.minima.system.commands.base.vault;
 import org.minima.system.commands.maxima.maxcontacts;
 import org.minima.system.commands.maxima.maxima;
 import org.minima.system.commands.mds.mds;
-import org.minima.system.commands.network.*;
+import org.minima.system.commands.network.connect;
+import org.minima.system.commands.network.disconnect;
+import org.minima.system.commands.network.message;
+import org.minima.system.commands.network.network;
+import org.minima.system.commands.network.nodecount;
+import org.minima.system.commands.network.ping;
+import org.minima.system.commands.network.rpc;
+import org.minima.system.commands.network.webhooks;
 import org.minima.system.commands.persistent.file;
 import org.minima.system.commands.persistent.sql;
 import org.minima.system.commands.scripts.newscript;
@@ -95,7 +103,7 @@ public abstract class Command {
 			//Removed code..
 //			new sshtunnel(), 
 			
-			new mds(), new sendpoll(),
+			new mds(), new sendpoll(), new healthcheck(),
 			
 			new backupold(), new restoreold(),
 			

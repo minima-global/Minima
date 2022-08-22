@@ -49,7 +49,7 @@ public class TxPowTree implements Streamable {
 	
 	/**
 	 * The PULSE list.. a ready to use list of TxPoWID from tip..
-	 * Updated whenever we recalculste the tree
+	 * Updated whenever we recalculate the tree
 	 */
 	ArrayList<MiniData> mPulseList = new ArrayList<>();
 	
