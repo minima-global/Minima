@@ -1,26 +1,21 @@
 package org.minima.system.commands.network;
 
+import java.io.File;
+import java.io.PrintWriter;
+import java.net.InetSocketAddress;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.minima.objects.Greeting;
-import org.minima.system.Main;
 import org.minima.system.commands.Command;
-import org.minima.system.commands.CommandException;
-import org.minima.system.network.minima.NIOClientInfo;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.p2p.messages.InetSocketAddressIO;
 import org.minima.system.network.p2p.params.P2PParams;
-import org.minima.system.params.GlobalParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
-
-import java.io.File;
-import java.io.PrintWriter;
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public class nodecount extends Command {
 

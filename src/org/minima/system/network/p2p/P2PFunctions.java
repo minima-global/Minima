@@ -17,6 +17,7 @@ import org.minima.system.network.minima.NIOClientInfo;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.network.p2p.params.P2PParams;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -92,7 +93,7 @@ public class P2PFunctions {
         boolean doConnect = true;
         try {
             Set<String> localAddresses = getLocalAddresses();
-            if (localAddresses.contains(zHost) || zHost.startsWith("127")){
+            if (!GeneralParams.ALLOW_ALL_IP && (localAddresses.contains(zHost) || zHost.startsWith("127"))){
                 doConnect = false;
             }
         } catch (Exception e){

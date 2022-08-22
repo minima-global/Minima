@@ -41,7 +41,7 @@ public class TestParams {
 	/**
 	 * Number of blocks at each cascade level 
 	 */
-	public static int MINIMA_CASCADE_LEVEL_NODES  = 2;
+	public static int MINIMA_CASCADE_LEVEL_NODES  = 4;
 	
 	/**
 	 * How Many Cascade Levels

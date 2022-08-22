@@ -24,7 +24,7 @@ import org.minima.utils.messages.Message;
 public class maxima extends Command {
 
 	public maxima() {
-		super("maxima","[action:info|setname|hosts|send|refresh] (name:) (id:)|(to:)|(publickey:) (application:) (data:) (logs:true|false) - Check your Maxima details, send a message / data, enable logs");
+		super("maxima","[action:info|setname|hosts|send|refresh] (name:) (id:)|(to:)|(publickey:) (application:) (data:) (logs:true|false) (poll:true|false) - Check your Maxima details, send a message / data, enable logs");
 	}
 	
 	@Override
@@ -188,51 +188,67 @@ public class maxima extends Command {
 			String tohost 	= sender.getString("tohost");
 			int toport 		= sender.getInteger("toport");
 			
-			//Now construct a complete Maxima Data packet
-			try {
-				//Get some time values..
-				long timenow = System.currentTimeMillis();
-				
-				//Create the packet
-				MiniData maxpacket = MaxMsgHandler.constructMaximaData(sender);
-				if(maxpacket == null) {
-					throw new Exception("Could not build Maxima message in time..");
-				}
-				
-				long creation = System.currentTimeMillis();
-				
-				//And Send it..
-				MiniData validresp = MaxMsgHandler.sendMaxPacket(tohost, toport, maxpacket);
-				long sending = System.currentTimeMillis();
-				
-				boolean valid = true;
-				if(!validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_OK)) {
-					valid = false;
-				}
-				
-				json.put("delivered", valid);
-				json.put("creation", creation-timenow);
-				json.put("sending", sending-creation);
-				
-				if(!valid) {
-					if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_TOOBIG)) {
-						json.put("error", "Maxima Mesasge too big");
-					}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_UNKNOWN)) {
-						json.put("error", "Unkown Address");
-					}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_WRONGHASH)) {
-						json.put("error", "TxPoW Hash wrong");
-					}else {
-						json.put("error", "Not delivered");
-					} 
-				}
-				
-			}catch(Exception exc){
-				//Something wrong
-				json.put("delivered", false);
-				json.put("error", exc.toString());
-			}
+			//Are we polling..
+			boolean pollsend = getBooleanParam("poll", false);
+			json.put("poll", pollsend);
 			
-			ret.put("response", json);
+			if(pollsend) {
+				
+				//Add it to our Polling list of sends..
+				max.PostMessage(sender);
+				
+				json.put("message", "Message added to send stack..");
+				
+				ret.put("response", json);
+				
+			}else {
+				
+				//Now construct a complete Maxima Data packet
+				try {
+					//Get some time values..
+					long timenow = System.currentTimeMillis();
+					
+					//Create the packet
+					MiniData maxpacket = MaxMsgHandler.constructMaximaData(sender);
+					if(maxpacket == null) {
+						throw new Exception("Could not build Maxima message in time..");
+					}
+					
+					long creation = System.currentTimeMillis();
+					
+					//And Send it..
+					MiniData validresp = MaxMsgHandler.sendMaxPacket(tohost, toport, maxpacket);
+					long sending = System.currentTimeMillis();
+					
+					boolean valid = true;
+					if(!validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_OK)) {
+						valid = false;
+					}
+					
+					json.put("delivered", valid);
+					json.put("creation", creation-timenow);
+					json.put("sending", sending-creation);
+					
+					if(!valid) {
+						if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_TOOBIG)) {
+							json.put("error", "Maxima Mesasge too big");
+						}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_UNKNOWN)) {
+							json.put("error", "Unkown Address");
+						}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_WRONGHASH)) {
+							json.put("error", "TxPoW Hash wrong");
+						}else {
+							json.put("error", "Not delivered");
+						} 
+					}
+					
+				}catch(Exception exc){
+					//Something wrong
+					json.put("delivered", false);
+					json.put("error", exc.toString());
+				}
+				
+				ret.put("response", json);
+			}
 		
 		}else {
 			throw new CommandException("Unknown Action : "+func);

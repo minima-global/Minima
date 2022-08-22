@@ -107,13 +107,6 @@ public class Cascade implements Streamable {
 	}
 	
 	/**
-	 * Check the cascade is valid and all parents point back correctly
-	 */
-	public boolean checkCascade() {
-		return true;
-	}
-	
-	/**
 	 * Get a DEEP copy 
 	 */
 	public Cascade deepCopy() throws IOException{

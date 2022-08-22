@@ -21,12 +21,16 @@ public class MinimaLogger {
 	public static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.ENGLISH );
 	
 	public static void log(String zLog){
+		log(zLog, true);
+	}
+	
+	public static void log(String zLog, boolean zNotify){
 		long mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 		String full_log = "Minima @ "+DATEFORMAT.format(new Date())+" ["+MiniFormat.formatSize(mem)+"] : "+zLog;
 		System.out.println(full_log);
 		
 		//Create a Notify Message for the listeners
-		if(Main.getInstance() != null) {
+		if(zNotify && Main.getInstance() != null) {
 			JSONObject data = new JSONObject();
 			data.put("message", full_log);
 			Main.getInstance().PostNotifyEvent("MINIMALOG", data);

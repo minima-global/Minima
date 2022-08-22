@@ -219,7 +219,12 @@ public class NetworkManager {
 		mNIOManager.PostMessage(NIOManager.NIO_SHUTDOWN);
 		
 		//Send a message to the P2P
-		mP2PManager.PostMessage(P2PFunctions.P2P_SHUTDOWN);
+		if(GeneralParams.P2P_ENABLED) {
+			((P2PManager)mP2PManager).shutdown();
+		}else {
+			mP2PManager.stopMessageProcessor();
+		}
+//		mP2PManager.PostMessage(P2PFunctions.P2P_SHUTDOWN);
 		
 		//And the notify Manager
 		mNotifyManager.shutDown();
