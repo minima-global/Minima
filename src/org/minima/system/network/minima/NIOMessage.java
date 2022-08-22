@@ -8,11 +8,13 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.archive.ArchiveManager;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Greeting;
 import org.minima.objects.IBD;
 import org.minima.objects.Pulse;
+import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
@@ -60,6 +62,9 @@ public class NIOMessage implements Runnable {
 	
 	public static final MiniByte MSG_TXBLOCK_REQ 	= new MiniByte(13);
 	public static final MiniByte MSG_TXBLOCK_RESP 	= new MiniByte(14);
+	
+	public static final MiniByte MSG_ARCHIVE_REQ 	= new MiniByte(15);
+	public static final MiniByte MSG_ARCHIVE_DATA 	= new MiniByte(16);
 	
 	/**
 	 * Helper function that converts to String 
@@ -721,7 +726,29 @@ public class NIOMessage implements Runnable {
 					//Send to the Processor
 					Main.getInstance().getTxPoWProcessor().postProcessSyncIBD(syncibd, mClientUID);
 				}
+			
+			}else if(type.isEqual(MSG_ARCHIVE_REQ)) {
 				
+				//What block are we starting from..
+				MiniNumber firstblock 	= MiniNumber.ReadFromStream(dis);
+				
+				MinimaLogger.log("Archive IBD req : "+firstblock);
+				
+				//Get the Data
+				IBD ibd = new IBD();
+				ibd.createArchiveIBD(firstblock);
+				
+				//Send it..
+				NIOManager.sendNetworkMessage(mClientUID, MSG_ARCHIVE_DATA, ibd);
+				
+			}else if(type.isEqual(MSG_ARCHIVE_DATA)) {
+				
+				//It's an IBD structure
+				IBD archibd = IBD.ReadFromStream(dis);
+				
+				//Send this to the main processor
+				Main.getInstance().getTxPoWProcessor().postProcessArchiveIBD(archibd, mClientUID, false);
+								
 			}else {
 				
 				//UNKNOWN MESSAGE..

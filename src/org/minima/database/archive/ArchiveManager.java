@@ -57,6 +57,14 @@ public class ArchiveManager extends SqlDB {
 		mStoreMySQL = true;
 	}
 	
+	public boolean isStoreMySQL() {
+		return mStoreMySQL;
+	}
+	
+	public MySQLConnect getMySQLCOnnect() {
+		return mMySQL;
+	}
+	
 	@Override
 	public void saveDB() {
 		super.saveDB();

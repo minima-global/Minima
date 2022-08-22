@@ -359,6 +359,43 @@ public class Main extends MessageProcessor {
 		}		
 	}
 	
+	public void archiveResetReady() {
+		//Shut down the network
+		mNetwork.shutdownNetwork();
+		
+		//Shut down Maxima
+		mMaxima.shutdown();
+		
+		//ShutDown MDS
+		mMDS.shutdown();
+				
+		//Stop the Miner
+		mTxPoWMiner.stopMessageProcessor();
+		
+		//Stop sendPoll
+		mSendPoll.stopMessageProcessor();
+		
+		//No More timer Messages
+		TimerProcessor.stopTimerProcessor();
+		
+		//Wait for the networking to finish
+		while(!mNetwork.isShutDownComplete()) {
+			try {Thread.sleep(50);} catch (InterruptedException e) {}
+		}
+		
+		//Delete old files.. and reset to new
+		MinimaDB.getDB().getTxPoWDB().getSQLDB().saveDB();
+		MinimaDB.getDB().getTxPoWDB().getSQLDB().getSQLFile().delete();
+		
+		MinimaDB.getDB().getArchive().saveDB();
+		MinimaDB.getDB().getArchive().getSQLFile().delete();
+		
+		MinimaDB.getDB().loadArchiveAndTxPoWDB();
+		
+		//Reset these 
+		MinimaDB.getDB().resetCascadeAndTxPoWTree();
+	}
+	
 	public void restartNIO() {
 		
 		//Not now..

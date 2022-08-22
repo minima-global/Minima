@@ -10,6 +10,7 @@ import java.util.HashSet;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
+import org.minima.database.archive.MySQLConnect;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.cascade.CascadeNode;
 import org.minima.database.txpowtree.TxPoWTreeNode;
@@ -221,6 +222,42 @@ public class IBD implements Streamable {
 		
 		//Unlock..
 		MinimaDB.getDB().readLock(false);
+	}
+	
+	public void createArchiveIBD(MiniNumber zFirstBlock) {
+		
+		//No cascade
+		mCascade = null;
+		
+		//Get the ArchiveManager
+		ArchiveManager arch = MinimaDB.getDB().getArchive();
+		
+		//Are we storing Archive Data
+		if(arch.isStoreMySQL()) {
+		
+			//Lock the DB - cascade and tree tip / root cannot change while doing this..
+			MinimaDB.getDB().readLock(true);
+			
+			try {
+				
+				MiniNumber lastblock = zFirstBlock.add(MiniNumber.THOUSAND);
+				
+				//Get the SQL Connect
+				MySQLConnect mySQLConnect = arch.getMySQLCOnnect();
+				
+				//Load the block range..
+				ArrayList<TxBlock> blocks = mySQLConnect.loadBlockRange(zFirstBlock, lastblock);
+				for(TxBlock block : blocks) {
+					mTxBlocks.add(block);
+				}
+				
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
+			
+			//Unlock..
+			MinimaDB.getDB().readLock(false);
+		}
 	}
 	
 	/**

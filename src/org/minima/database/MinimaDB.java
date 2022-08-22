@@ -34,7 +34,7 @@ public class MinimaDB {
 	ArchiveManager 	mArchive;
 	TxPoWDB 		mTxPoWDB;
 	TxPowTree 		mTxPoWTree;
-	Cascade			mCacscade;
+	Cascade			mCascade;
 	UserDB			mUserDB;
 	TxnDB			mTxnDB;
 	Wallet			mWallet;
@@ -58,7 +58,7 @@ public class MinimaDB {
 		mArchive	= new ArchiveManager();
 		mTxPoWDB	= new TxPoWDB();
 		mTxPoWTree 	= new TxPowTree();
-		mCacscade	= new Cascade();
+		mCascade	= new Cascade();
 		mUserDB		= new UserDB();
 		mWallet		= new Wallet();
 		mMaximaDB	= new MaximaDB();
@@ -102,11 +102,17 @@ public class MinimaDB {
 	}
 	
 	public Cascade getCascade() {
-		return mCacscade;
+		return mCascade;
 	}
 	
 	public void setIBDCascade(Cascade zCascade) {
-		mCacscade = zCascade;
+		mCascade = zCascade;
+	}
+	
+	//Used when doing an archive resync
+	public void resetCascadeAndTxPoWTree() {
+		mCascade 	= new Cascade();
+		mTxPoWTree 	= new TxPowTree();
 	}
 	
 	public long getCascadeFileSize() {
@@ -217,7 +223,7 @@ public class MinimaDB {
 			mTxnDB.loadDB();
 			
 			//Load the Cascade
-			mCacscade.loadDB(new File(basedb,"cascade.db"));
+			mCascade.loadDB(new File(basedb,"cascade.db"));
 			
 			//Load the TxPoWTree
 			mTxPoWTree.loadDB(new File(basedb,"chaintree.db"));
@@ -232,6 +238,42 @@ public class MinimaDB {
 			//At this point.. STOP..
 			Runtime.getRuntime().halt(0);
 //			System.exit(1);
+		}
+		
+		//Release the krakken
+		writeLock(false);
+	}
+	
+	public void loadArchiveAndTxPoWDB() {
+		
+		//We need read lock 
+		writeLock(true);
+		
+		try {
+			
+			//Get the base Database folder
+			File basedb = getBaseDBFolder();
+			
+			//Set the Archive folder
+			File archsqlfolder = new File(basedb,"archivesql");
+			mArchive.loadDB(new File(archsqlfolder,"archive"));
+			
+			//Are we Storing in a MySQL..
+			if(!GeneralParams.MYSQL_HOST.equals("")) {
+				mArchive.setupMySQL(
+						GeneralParams.MYSQL_HOST, 
+						GeneralParams.MYSQL_DB,
+						GeneralParams.MYSQL_USER,
+						GeneralParams.MYSQL_PASSWORD);
+			}
+			
+			//Load the SQL DB
+			File txpowsqlfolder = new File(basedb,"txpowsql");
+			mTxPoWDB.loadSQLDB(new File(txpowsqlfolder,"txpow"));
+			
+		}catch(Exception exc) {
+			MinimaLogger.log("SERIOUS ERROR loadArchiveAndTxPoWDB");
+			MinimaLogger.log(exc);
 		}
 		
 		//Release the krakken
@@ -296,7 +338,7 @@ public class MinimaDB {
 			mP2PDB.saveDB(new File(basedb,"p2p.db"));
 			
 			//Custom
-			mCacscade.saveDB(new File(basedb,"cascade.db"));
+			mCascade.saveDB(new File(basedb,"cascade.db"));
 			mTxPoWTree.saveDB(new File(basedb,"chaintree.db"));
 			
 		}catch(Exception exc) {
