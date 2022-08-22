@@ -11,6 +11,7 @@ import org.minima.database.txpowtree.TxPowTree;
 import org.minima.objects.IBD;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.network.minima.NIOManager;
@@ -344,21 +345,49 @@ public class TxPoWProcessor extends MessageProcessor {
 				//Do we.. ?
 				if(MinimaDB.getDB().getCascade().getTip() == null) {
 					
-					//Process.. Need to LOCK DB
-					MinimaDB.getDB().writeLock(true);
-					
-					//Set this cascade
-					try {
+					//Check is valid for out chain..
+					boolean ignore = false;
+					TxPoWTreeNode root = MinimaDB.getDB().getTxPoWTree().getRoot();
+					if(root != null) {
 						
-						//Set this for us
-						MinimaDB.getDB().setIBDCascade(ibd.getCascade());
+						MiniNumber rootblock = root.getBlockNumber();
+						MiniNumber casctip 	 = ibd.getCascade().getTip().getTxPoW().getBlockNumber();
 						
-					}catch(Exception exc) {
-						MinimaLogger.log(exc);
+						if(!casctip.isEqual(rootblock.decrement())) {
+							
+							ignore = true;
+							MinimaLogger.log("[!] IGNORE IDB - My Tree Root : "+rootblock+" IBD TIP : "+casctip);
+						
+						}else{
+							
+							MiniData rootparent = root.getTxPoW().getParentID();
+							MiniData casctipid	= ibd.getCascade().getTip().getTxPoW().getTxPoWIDData();
+							
+							if(!rootparent.isEqual(casctipid)) {
+								ignore = true;
+								MinimaLogger.log("[!] IGNORE IDB - Invalid Hash for parents");
+							}
+						}
 					}
 					
-					//Unlock..
-					MinimaDB.getDB().writeLock(false);
+					if(!ignore){
+						
+						//Process.. Need to LOCK DB
+						MinimaDB.getDB().writeLock(true);
+						
+						//Set this cascade
+						try {
+							
+							//Set this for us
+							MinimaDB.getDB().setIBDCascade(ibd.getCascade());
+							
+						}catch(Exception exc) {
+							MinimaLogger.log(exc);
+						}
+						
+						//Unlock..
+						MinimaDB.getDB().writeLock(false);
+					}
 					
 				}else {
 					//Received a cascade when we already have one.. ignore..

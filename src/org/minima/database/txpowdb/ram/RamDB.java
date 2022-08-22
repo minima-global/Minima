@@ -5,6 +5,7 @@ import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.minima.objects.Coin;
+import org.minima.objects.CoinProof;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.system.params.GeneralParams;
@@ -115,7 +116,7 @@ public class RamDB {
 	}
 
 	/**
-	 * Once a TxPoW goes past the root fo the tree into the cascade - it cannot be added again
+	 * Once a TxPoW goes past the root of the tree into the cascade - it cannot be added again
 	 */
 	public void setInCascade(String zTxPoWID) {
 		RamData curr = mTxPoWDB.get(zTxPoWID);
@@ -138,14 +139,29 @@ public class RamDB {
 				TxPoW txp = ram.getTxPoW();
 				
 				//Get all the input coins..
-				ArrayList<Coin> inputs = txp.getTransaction().getAllInputs();
-				for(Coin cc : inputs) {
-					
-					//Check it..
-					if(cc.getCoinID().isEqual(zCoinID)) {
+				ArrayList<CoinProof> proofs = txp.getWitness().getAllCoinProofs();
+				for(CoinProof cp : proofs) {
+					if(cp.getCoin().getCoinID().isEqual(zCoinID)) {
 						return true;
 					}
 				}
+				
+				//And BURN Coins
+				proofs = txp.getBurnWitness().getAllCoinProofs();
+				for(CoinProof cp : proofs) {
+					if(cp.getCoin().getCoinID().isEqual(zCoinID)) {
+						return true;
+					}
+				}
+				
+//				ArrayList<Coin> inputs = txp.getTransaction().getAllInputs();
+//				for(Coin cc : inputs) {
+//					
+//					//Check it..
+//					if(cc.getCoinID().isEqual(zCoinID)) {
+//						return true;
+//					}
+//				}
 			}
 		}
 

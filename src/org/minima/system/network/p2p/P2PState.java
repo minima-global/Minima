@@ -82,12 +82,15 @@ public class P2PState {
         // Creates a new empty state
     }
 
-
-    public Set<InetSocketAddress> getKnownPeers() {
+    public synchronized Set<InetSocketAddress> getKnownPeers() {
         return knownPeers;
     }
+    
+    public synchronized ArrayList<InetSocketAddress> getKnownPeersCopy() {
+        return new ArrayList<>(knownPeers);
+    }
 
-    public void setKnownPeers(Set<InetSocketAddress> knownPeers) {
+    public synchronized void setKnownPeers(Set<InetSocketAddress> knownPeers) {
         this.knownPeers = knownPeers;
     }
 

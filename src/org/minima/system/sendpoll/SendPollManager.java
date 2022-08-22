@@ -2,7 +2,6 @@ package org.minima.system.sendpoll;
 
 import java.util.ArrayList;
 
-import org.minima.system.commands.base.status;
 import org.minima.system.mds.handler.CMDcommand;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;

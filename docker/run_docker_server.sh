@@ -19,4 +19,4 @@ chmod 700 ~/minidocker
 sudo docker rm minima
 
 #Start her up in interactive mode
-sudo docker run -it -e minima_server=true -e minima_mdspassword=123 -p 9001-9004:9001-9004 -d --restart unless-stopped --user $baseuser:$basegroup -v ~/minidocker:/home/minima/data --name minima minimaglobal/minima:latest
+sudo docker run -e minima_server=true -e minima_mdspassword=123 -p 9001-9004:9001-9004 -d --restart unless-stopped --user $baseuser:$basegroup -v ~/minidocker:/home/minima/data --name minima minimaglobal/minima:latest
