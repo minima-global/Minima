@@ -24,6 +24,7 @@ import org.minima.system.commands.network.connect;
 import org.minima.system.network.minima.NIOClientInfo;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
+import org.minima.utils.BIP39;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -52,16 +53,29 @@ public class archive extends Command {
 			int port 	= connectdata.getInteger("port");
 			
 			//Are we resetting the wallet too ?
-			boolean seedphrase = false;
-			MiniData seed = null;
+			boolean seedphrase 	= false;
+			MiniData seed 		= null;
 			String phrase = getParam("phrase","");
 			if(!phrase.equals("")) {
 				
+				//This can take soem time..
+				MinimaLogger.log("Reseeting all wallet private keys..");
+				
+				//Convert that into a seed..
+				seed = BIP39.convertStringToSeed(phrase);
+				
+				//Set it..
+				MinimaDB.getDB().getUserDB().setBasePrivatePhrase(phrase);
+				MinimaDB.getDB().getUserDB().setBasePrivateSeed(seed.to0xString());
+				MinimaDB.getDB().getWallet().initBaseSeed(seed);
+				
+				//Now cycle through all the default wallet keys..
+				
+				
 			}
 			
-			
 			//reset ALL the default data
-			Main.getInstance().archiveResetReady();
+			Main.getInstance().archiveResetReady(seedphrase);
 			
 			//Now cycle through the chain..
 			MiniNumber startblock 	= MiniNumber.ZERO;
@@ -85,7 +99,7 @@ public class archive extends Command {
 				}
 			
 				//Post it..
-				Main.getInstance().getTxPoWProcessor().postProcessArchiveIBD(ibd, "0x00",true);
+				Main.getInstance().getTxPoWProcessor().postProcessArchiveIBD(ibd, "0x00");
 				
 				//Do we have enough to ask again.. 
 				if(size<32) {

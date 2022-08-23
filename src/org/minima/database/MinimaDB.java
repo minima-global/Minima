@@ -244,7 +244,7 @@ public class MinimaDB {
 		writeLock(false);
 	}
 	
-	public void loadArchiveAndTxPoWDB() {
+	public void loadArchiveAndTxPoWDB(boolean zResetWallet) {
 		
 		//We need read lock 
 		writeLock(true);
@@ -270,6 +270,12 @@ public class MinimaDB {
 			//Load the SQL DB
 			File txpowsqlfolder = new File(basedb,"txpowsql");
 			mTxPoWDB.loadSQLDB(new File(txpowsqlfolder,"txpow"));
+			
+			//Wallet
+			if(zResetWallet) {
+				File walletsqlfolder = new File(basedb,"walletsql");
+				mWallet.loadDB(new File(walletsqlfolder,"wallet"));
+			}
 			
 		}catch(Exception exc) {
 			MinimaLogger.log("SERIOUS ERROR loadArchiveAndTxPoWDB");

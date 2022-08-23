@@ -747,7 +747,7 @@ public class NIOMessage implements Runnable {
 				IBD archibd = IBD.ReadFromStream(dis);
 				
 				//Send this to the main processor
-				Main.getInstance().getTxPoWProcessor().postProcessArchiveIBD(archibd, mClientUID, false);
+				Main.getInstance().getTxPoWProcessor().postProcessArchiveIBD(archibd, mClientUID);
 								
 			}else {
 				

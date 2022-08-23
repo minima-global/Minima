@@ -374,7 +374,10 @@ public class Main extends MessageProcessor {
 		}		
 	}
 	
-	public void archiveResetReady() {
+	public void archiveResetReady(boolean zResetWallet) {
+		//we are about to restore..
+		mRestoring = true;
+				
 		//Shut down the network
 		mNetwork.shutdownNetwork();
 		
@@ -405,7 +408,14 @@ public class Main extends MessageProcessor {
 		MinimaDB.getDB().getArchive().saveDB();
 		MinimaDB.getDB().getArchive().getSQLFile().delete();
 		
-		MinimaDB.getDB().loadArchiveAndTxPoWDB();
+		//Are we deleting the wallet..
+		if(zResetWallet) {
+			MinimaDB.getDB().getWallet().saveDB();
+			MinimaDB.getDB().getWallet().getSQLFile().delete();
+		}
+		
+		//Reload the SQL dbs
+		MinimaDB.getDB().loadArchiveAndTxPoWDB(zResetWallet);
 		
 		//Reset these 
 		MinimaDB.getDB().resetCascadeAndTxPoWTree();

@@ -63,9 +63,9 @@ public class TxPoWProcessor extends MessageProcessor {
 	/**
 	 * Main Entry point for Archive IBD messages
 	 */
-	public void postProcessArchiveIBD(IBD zIBD, String zClientUID, boolean zShutDown) {
+	public void postProcessArchiveIBD(IBD zIBD, String zClientUID) {
 		//Post a message on the single threaded stack
-		PostMessage(new Message(TXPOWPROCESSOR_PROCESS_ARCHIVEIBD).addObject("ibd", zIBD).addString("uid", zClientUID).addBoolean("shutdown", zShutDown));
+		PostMessage(new Message(TXPOWPROCESSOR_PROCESS_ARCHIVEIBD).addObject("ibd", zIBD).addString("uid", zClientUID));
 	}
 	
 	/**
@@ -522,7 +522,6 @@ public class TxPoWProcessor extends MessageProcessor {
 			//Get the IBD archive data
 			IBD arch 			= (IBD) zMessage.getObject("ibd");
 			String uid 			= zMessage.getString("uid");
-			boolean shutdown 	= zMessage.getBoolean("shutdown");
 			
 			//How many blocks have we added
 			int additions = 0;
@@ -559,15 +558,6 @@ public class TxPoWProcessor extends MessageProcessor {
 			
 			//And now recalculate tree
 			recalculateTree();
-			
-//			//Are we shutting down..
-//			if(shutdown) {
-//				MinimaLogger.log("Shutdown after Archive IBD");
-//				Main.getInstance().PostMessage(Main.MAIN_SHUTDOWN);
-//			}
-			
-			//Ask to sync the TxBlocks
-//			askToSyncTxBlocks(uid);
 		}
 	}
 	
