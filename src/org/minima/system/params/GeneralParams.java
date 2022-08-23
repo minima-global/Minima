@@ -113,6 +113,11 @@ public class GeneralParams {
 	public static String CONNECT_LIST = "";
 	
 	/**
+	 * Show the startup parameters
+	 */
+	public static boolean SHOW_PARAMS = false;
+	
+	/**
 	 * MySQL Archive Settings
 	 */
 	public static String MYSQL_HOST 	= "";

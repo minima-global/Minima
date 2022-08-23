@@ -71,7 +71,7 @@ public class ParamConfigurer {
         return this;
     }
 
-    public ParamConfigurer usingProgramArgs(String[] programArgs) {
+	public ParamConfigurer usingProgramArgs(String[] programArgs) {
 
         int arglen = programArgs.length;
         int index = 0;
@@ -83,15 +83,21 @@ public class ParamConfigurer {
                                 lookAheadToNonParamKeyArg(programArgs, imuCounter).orElse("true")));
                 index++;
             }
-        MinimaLogger.log("Config Parameters");
-        for (Map.Entry<ParamKeys, String> entry : paramKeysToArg.entrySet()) {
-            MinimaLogger.log(entry.getKey() + ":" + entry.getValue());
-        }
+        
         return this;
     }
 
     public ParamConfigurer configure() {
         paramKeysToArg.forEach((key, value) -> key.consumer.accept(value, this));
+       
+        //Display the params
+		  if(GeneralParams.SHOW_PARAMS) {
+		        MinimaLogger.log("Config Parameters");
+		        for (Map.Entry<ParamKeys, String> entry : paramKeysToArg.entrySet()) {
+		        	MinimaLogger.log(entry.getKey() + ":" + entry.getValue());
+		        }
+		  }
+
         return this;
     }
 
@@ -211,6 +217,11 @@ public class ParamConfigurer {
         mobile("mobile", "Sets this device to a mobile device - used for metrics only", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.IS_MOBILE = true;
+            }
+        }),
+        showparams("showparams", "Show startup params on launch", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.SHOW_PARAMS = true;
             }
         }),
         nop2p("nop2p", "Disable the automatic P2P system", (args, configurer) -> {
