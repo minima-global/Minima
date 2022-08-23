@@ -75,7 +75,7 @@ public class archive extends Command {
 				
 				//Now cycle through all the default wallet keys..
 				int tot = Wallet.NUMBER_GETADDRESS_KEYS * 2;
-				MinimaLogger.log("Creating a total of "+tot+" keys..");
+				MinimaLogger.log("Creating a total of "+tot+" keys / addresses..");
 				for(int i=0;i<tot;i++) {
 					MinimaLogger.log("Creating key "+i);
 					
