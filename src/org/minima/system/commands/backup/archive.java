@@ -35,7 +35,7 @@ public class archive extends Command {
 	public static final MiniNumber ARCHIVE_DATA_SIZE = new MiniNumber(1024);
 	
 	public archive() {
-		super("archive","[action:resync] (host:) - Resync your chain with an archive node");
+		super("archive","[action:resync] (host:) (phrase:)- Resync your chain with seed phrase if necessary (otherwise wallet remains the same)");
 	}
 	
 	@Override
@@ -75,7 +75,7 @@ public class archive extends Command {
 				
 				//Now cycle through all the default wallet keys..
 				int tot = Wallet.NUMBER_GETADDRESS_KEYS * 2;
-				MinimaLogger.log("Creating a total of "+tot+" key..");
+				MinimaLogger.log("Creating a total of "+tot+" keys..");
 				for(int i=0;i<tot;i++) {
 					MinimaLogger.log("Creating key "+i);
 					
