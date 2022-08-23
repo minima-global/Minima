@@ -1,7 +1,6 @@
 package org.minima.utils;
 
 import java.security.SecureRandom;
-import java.util.Arrays;
 
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
@@ -19,29 +18,35 @@ public class BIP39 {
 			//Get a random word.. 
 			int word = secrand.nextInt(listlen);
 			
-			words[i] = new String(WORD_LIST[word]);
+			words[i] = new String(WORD_LIST[word]).toUpperCase().trim();
 		}
 		
 		return words;
 	}
 	
-	public static MiniData convertWordList(String[] zWords) {
-		
+	public static String convertWordListToString(String[] zWords) {
 		String allwords = new String();
 		for(int i=0;i<zWords.length;i++) {
 			if(i==0) {
-				allwords += zWords[i].toUpperCase().trim();
+				allwords += zWords[i].trim();
 			}else {
-				allwords += " "+zWords[i].toUpperCase().trim();
+				allwords += " "+zWords[i].trim();
 			}
 		}
 		
 		//Trim final
-		allwords = allwords.trim();
+		return allwords.trim();
+	}
+	
+	public static MiniData convertWordList(String[] zWords) {
 		
-		System.out.println(allwords);
+		//Get the complete word list
+		String allwords = convertWordListToString(zWords);
+		
+		//Convert to a MiniString
 		MiniString ministr = new MiniString(allwords);
 		
+		//Hash that data
 		MiniData hash = new MiniData(Crypto.getInstance().hashData(ministr.getData()));
 		
 		return hash;
@@ -51,6 +56,8 @@ public class BIP39 {
 		
 		//Get the list
 		String[] words = getNewWordList();
+		
+		System.out.println(convertWordListToString(words));
 		
 		//Get the base seed
 		MiniData privseed = convertWordList(words);
