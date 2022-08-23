@@ -63,7 +63,7 @@ public class archive extends Command {
 				Main.getInstance().archiveResetReady(true);
 				
 				//This can take soem time..
-				MinimaLogger.log("Reseeting all wallet private keys..");
+				MinimaLogger.log("Resetting all wallet private keys..");
 				
 				//Convert that into a seed..
 				seed = BIP39.convertStringToSeed(phrase);
