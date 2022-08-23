@@ -24,6 +24,7 @@ import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.system.sendpoll.SendPollManager;
+import org.minima.utils.BIP39;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.RPCClient;
@@ -192,8 +193,18 @@ public class Main extends MessageProcessor {
 		if(MinimaDB.getDB().getUserDB().getBasePrivateSeed().equals("")) {
 			MinimaLogger.log("Generating Base Private Seed Key");
 			
+			//Get a BIP39 phrase
+			String[] words = BIP39.getNewWordList();
+			
+			//Convert to a string
+			String phrase = BIP39.convertWordListToString(words);
+			
+			//Convert that into a seed..
+			MiniData seed = BIP39.convertStringToSeed(phrase);
+			
 			//Not set yet..
-			MinimaDB.getDB().getUserDB().setBasePrivateSeed(MiniData.getRandomData(32).to0xString());
+			MinimaDB.getDB().getUserDB().setBasePrivatePhrase(phrase);
+			MinimaDB.getDB().getUserDB().setBasePrivateSeed(seed.to0xString());
 		}
 		
 		//Get the base private seed..
@@ -210,7 +221,11 @@ public class Main extends MessageProcessor {
 		MinimaLogger.log("Calculate device hash rate : "+hashrate.div(MiniNumber.MILLION).setSignificantDigits(4)+" MHs");
 		
 		//Create the Initial Key Set
-		mInitKeysCreated = MinimaDB.getDB().getWallet().initDefaultKeys(2);
+		try {
+			mInitKeysCreated = MinimaDB.getDB().getWallet().initDefaultKeys(2);
+		}catch(Exception exc) {
+			MinimaLogger.log(exc.toString());
+		}
 		
 		//Start the engine..
 		mTxPoWProcessor = new TxPoWProcessor();

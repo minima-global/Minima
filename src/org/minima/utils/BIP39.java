@@ -38,7 +38,7 @@ public class BIP39 {
 		return allwords.trim();
 	}
 	
-	public static MiniData convertWordList(String[] zWords) {
+	public static MiniData convertWordListToSeed(String[] zWords) {
 		
 		//Get the complete word list
 		String allwords = convertWordListToString(zWords);
@@ -52,6 +52,13 @@ public class BIP39 {
 		return hash;
 	}
 	
+	public static MiniData convertStringToSeed(String zPhrase) {
+		
+		MiniString phrase = new MiniString(zPhrase);
+		
+		return new MiniData(Crypto.getInstance().hashData(phrase.getData()));
+	}
+	
 	public static void main(String[] zArgs) {
 		
 		//Get the list
@@ -60,7 +67,7 @@ public class BIP39 {
 		System.out.println(convertWordListToString(words));
 		
 		//Get the base seed
-		MiniData privseed = convertWordList(words);
+		MiniData privseed = convertWordListToSeed(words);
 		
 		System.out.println("Seed : "+privseed.to0xString());
 	}

@@ -533,8 +533,6 @@ public class TxPoWProcessor extends MessageProcessor {
 				
 				try {
 					
-					MinimaLogger.log("Process Archive IBD : "+block.getTxPoW().getBlockNumber());
-					
 					//Process it..
 					processSyncBlock(block);	
 					additions++;
@@ -562,11 +560,11 @@ public class TxPoWProcessor extends MessageProcessor {
 			//And now recalculate tree
 			recalculateTree();
 			
-			//Are we shutting down..
-			if(shutdown) {
-				MinimaLogger.log("Shutdown after Archive IBD");
-				Main.getInstance().PostMessage(Main.MAIN_SHUTDOWN);
-			}
+//			//Are we shutting down..
+//			if(shutdown) {
+//				MinimaLogger.log("Shutdown after Archive IBD");
+//				Main.getInstance().PostMessage(Main.MAIN_SHUTDOWN);
+//			}
 			
 			//Ask to sync the TxBlocks
 //			askToSyncTxBlocks(uid);

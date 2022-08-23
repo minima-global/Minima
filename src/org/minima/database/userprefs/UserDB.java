@@ -26,6 +26,14 @@ public class UserDB extends JsonDB{
 		setString("baseprivateseed", zBaseSeed);
 	}
 	
+	public void setBasePrivatePhrase(String zBasePhrase) {
+		setString("baseprivatephrase", zBasePhrase);
+	}
+	
+	public String getBasePrivatePhrase() {
+		return getString("baseprivatephrase", "");
+	}
+	
 	/**
 	 * Set your Welcome message
 	 */

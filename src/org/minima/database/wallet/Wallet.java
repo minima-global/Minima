@@ -287,7 +287,7 @@ public class Wallet extends SqlDB {
 		
 		//Check we can create new keys
 		if(!isBaseSeedAvailable()) {
-			throw new IllegalArgumentException("KeysDB LOCKED. Base SEED missing..");
+			throw new IllegalArgumentException("KeysDB LOCKED. No More Keys Allowed. Base SEED missing..");
 		}
 		
 		//Create a random modifier..

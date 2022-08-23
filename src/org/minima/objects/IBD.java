@@ -18,6 +18,7 @@ import org.minima.database.txpowtree.TxPowTree;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.commands.backup.archive;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
@@ -240,7 +241,7 @@ public class IBD implements Streamable {
 			
 			try {
 				
-				MiniNumber lastblock = zFirstBlock.add(MiniNumber.THOUSAND);
+				MiniNumber lastblock = zFirstBlock.add(archive.ARCHIVE_DATA_SIZE);
 				
 				//Get the SQL Connect
 				MySQLConnect mySQLConnect = arch.getMySQLCOnnect();

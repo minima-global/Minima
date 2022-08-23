@@ -55,6 +55,15 @@ public class TestParams {
 	public static MiniNumber MINIMA_MMR_PROOF_HISTORY = new MiniNumber(8);
 
 	/**
+	 * The MEDIAN time block is taken from this many blocks back
+	 * When calculating the Difficulty of a block ( both from the tip and the previous block )
+	 * This smooths out the time fluctuations for different blocks and removes incorrect times.
+	 * 
+	 * 64 blocks means the block 1/2 hour ago.
+	 */
+	public static int MEDIAN_BLOCK_CALC = 8;
+	
+	/**
 	 * Set these as the GlobalParams..
 	 */
 	public static void setTestParams() {
@@ -67,6 +76,6 @@ public class TestParams {
 		GlobalParams.MINIMA_CONFIRM_DEPTH			= TestParams.MINIMA_CONFIRM_DEPTH;
 		GlobalParams.MINIMA_MMR_PROOF_HISTORY		= TestParams.MINIMA_MMR_PROOF_HISTORY;
 		GlobalParams.MINIMA_VERSION					= TestParams.MINIMA_VERSION;
-	}
-	
+		GlobalParams.MEDIAN_BLOCK_CALC				= TestParams.MEDIAN_BLOCK_CALC;
+	}	
 }

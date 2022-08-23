@@ -97,7 +97,7 @@ public class MySQLConnect {
 			//Do it.
 			SQL_INSERT_SYNCBLOCK.execute();
 			
-			MinimaLogger.log("MYSQL stored synvblock "+zBlock.getTxPoW().getBlockNumber());
+//			MinimaLogger.log("MYSQL stored synvblock "+zBlock.getTxPoW().getBlockNumber());
 			
 			return true;
 			

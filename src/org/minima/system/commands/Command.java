@@ -12,6 +12,7 @@ import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
+import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.backup;
 import org.minima.system.commands.backup.backupold;
 import org.minima.system.commands.backup.restore;
@@ -104,6 +105,8 @@ public abstract class Command {
 //			new sshtunnel(), 
 			
 			new mds(), new sendpoll(), new healthcheck(),
+			
+			new archive(),
 			
 			new backupold(), new restoreold(),
 			
