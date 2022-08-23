@@ -255,7 +255,8 @@ public class MinimaDB {
 			File basedb = getBaseDBFolder();
 			
 			//Set the Archive folder
-			File archsqlfolder = new File(basedb,"archivesql");
+			mArchive			= new ArchiveManager();
+			File archsqlfolder 	= new File(basedb,"archivesql");
 			mArchive.loadDB(new File(archsqlfolder,"archive"));
 			
 			//Are we Storing in a MySQL..
@@ -268,12 +269,14 @@ public class MinimaDB {
 			}
 			
 			//Load the SQL DB
+			mTxPoWDB			= new TxPoWDB();
 			File txpowsqlfolder = new File(basedb,"txpowsql");
 			mTxPoWDB.loadSQLDB(new File(txpowsqlfolder,"txpow"));
 			
 			//Wallet
 			if(zResetWallet) {
-				File walletsqlfolder = new File(basedb,"walletsql");
+				mWallet					= new Wallet();
+				File walletsqlfolder 	= new File(basedb,"walletsql");
 				mWallet.loadDB(new File(walletsqlfolder,"wallet"));
 			}
 			

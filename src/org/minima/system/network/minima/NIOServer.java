@@ -277,7 +277,7 @@ public class NIOServer implements Runnable {
 		}
 		
 		//Not running anymore..
-		MinimaLogger.log("[NIOServer] SHUTDOWN");
+		//MinimaLogger.log("[NIOServer] SHUTDOWN");
 		mIsRunning = false;
 	}
 

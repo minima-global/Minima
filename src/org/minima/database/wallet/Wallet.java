@@ -1,5 +1,6 @@
 package org.minima.database.wallet;
 
+import java.math.BigInteger;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -291,7 +292,11 @@ public class Wallet extends SqlDB {
 		}
 		
 		//Create a random modifier..
-		MiniData modifier 	= MiniData.getRandomData(32);
+		int numkeys 		= mAllKeys.size();
+		MiniData modifier 	= new MiniData(new BigInteger(Integer.toString(numkeys)));
+//		MiniData modifier 	= MiniData.getRandomData(32);
+		
+//		MinimaLogger.log("Creatge new Key : "+mMainPrivateSeed.to0xString()+" "+modifier.to0xString());
 		
 		//Now create a random private seed using the modifier
 		MiniData privseed 	= Crypto.getInstance().hashObjects(mMainPrivateSeed, modifier);

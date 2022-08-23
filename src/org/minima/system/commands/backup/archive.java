@@ -11,6 +11,7 @@ import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
+import org.minima.database.wallet.Wallet;
 import org.minima.objects.Greeting;
 import org.minima.objects.IBD;
 import org.minima.objects.TxBlock;
@@ -57,6 +58,9 @@ public class archive extends Command {
 			MiniData seed 		= null;
 			String phrase = getParam("phrase","");
 			if(!phrase.equals("")) {
+			
+				//reset ALL the default data
+				Main.getInstance().archiveResetReady(true);
 				
 				//This can take soem time..
 				MinimaLogger.log("Reseeting all wallet private keys..");
@@ -70,12 +74,20 @@ public class archive extends Command {
 				MinimaDB.getDB().getWallet().initBaseSeed(seed);
 				
 				//Now cycle through all the default wallet keys..
+				int tot = Wallet.NUMBER_GETADDRESS_KEYS * 2;
+				MinimaLogger.log("Creating a total of "+tot+" key..");
+				for(int i=0;i<tot;i++) {
+					MinimaLogger.log("Creating key "+i);
+					
+					//Create a new key..
+					MinimaDB.getDB().getWallet().createNewSimpleAddress(true);
+				}
+				MinimaLogger.log("All keys created..");
 				
-				
+			}else {
+				//reset ALL the default data
+				Main.getInstance().archiveResetReady(false);
 			}
-			
-			//reset ALL the default data
-			Main.getInstance().archiveResetReady(seedphrase);
 			
 			//Now cycle through the chain..
 			MiniNumber startblock 	= MiniNumber.ZERO;
