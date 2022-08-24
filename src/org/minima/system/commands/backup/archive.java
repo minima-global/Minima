@@ -86,6 +86,11 @@ public class archive extends Command {
 						parentnum  	= block.getTxPoW().getBlockNumber();
 						lastlog 	= parentnum;
 						
+						if(!parentnum.isEqual(MiniNumber.ONE)) {
+							MinimaLogger.log("ArchiveDB does not start at Genesis!");
+							errorsfound++;
+						}
+						
 					}else {
 						
 						//Check correct number
