@@ -118,6 +118,8 @@ public class archive extends Command {
 			
 			if(errorsfound>0) {
 				resp.put("recommend", "There are errors in your Archive DB - you should wipe then resync with a valid host");
+			}else {
+				resp.put("recommend", "Your ArchiveDB is correct and has no errors!");
 			}
 			
 			ret.put("response", resp);
