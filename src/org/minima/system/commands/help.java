@@ -113,8 +113,6 @@ public class help extends Command {
 		addCommand(details, new sign());
 		addCommand(details, new verify());
 		
-		addCommand(details, new archive());
-		
 		addCommand(details, new txnlist());
 		addCommand(details, new txncreate());
 		addCommand(details, new txnbasics());
@@ -144,11 +142,12 @@ public class help extends Command {
 		
 		addCommand(details, new backup());
 		addCommand(details, new restore());
+		addCommand(details, new archive());
 		addCommand(details, new vault());
-		addCommand(details, new restore());
+		
 		addCommand(details, new incentivecash());
 
-		addCommand(details, new nodecount());
+		//addCommand(details, new nodecount());
 		addCommand(details, new quit());
 		
 		ret.put("response", details);
