@@ -36,7 +36,7 @@ public class archive extends Command {
 	public static final MiniNumber ARCHIVE_DATA_SIZE = new MiniNumber(1024);
 	
 	public archive() {
-		super("archive","[action:resync] (host:) (phrase:) (keyuses:) - Resync your chain with seed phrase if necessary (otherwise wallet remains the same)");
+		super("archive","[action:resync] [host:] (phrase:) (keys:) (keyuses:) - Resync your chain with seed phrase if necessary (otherwise wallet remains the same)");
 	}
 	
 	@Override
@@ -53,6 +53,9 @@ public class archive extends Command {
 			
 			String host = connectdata.getString("host");
 			int port 	= connectdata.getInteger("port");
+			
+			//How many Keys do we need to generate
+			int keys = getNumberParam("keys", new MiniNumber(Wallet.NUMBER_GETADDRESS_KEYS * 2)).getAsInt();
 			
 			//Set the key uses to this..
 			int keyuses = getNumberParam("keyuses", new MiniNumber(10000)).getAsInt();
@@ -81,9 +84,8 @@ public class archive extends Command {
 				Wallet wallet = MinimaDB.getDB().getWallet();
 				
 				//Now cycle through all the default wallet keys..
-				int tot = Wallet.NUMBER_GETADDRESS_KEYS * 2;
-				MinimaLogger.log("Creating a total of "+tot+" keys / addresses..");
-				for(int i=0;i<tot;i++) {
+				MinimaLogger.log("Creating a total of "+keys+" keys / addresses..");
+				for(int i=0;i<keys;i++) {
 					MinimaLogger.log("Creating key "+i);
 					
 					//Create a new key..
