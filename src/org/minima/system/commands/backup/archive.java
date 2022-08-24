@@ -21,6 +21,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.base.newaddress;
 import org.minima.system.commands.network.connect;
 import org.minima.system.network.minima.NIOClientInfo;
 import org.minima.system.network.minima.NIOManager;
@@ -35,7 +36,7 @@ public class archive extends Command {
 	public static final MiniNumber ARCHIVE_DATA_SIZE = new MiniNumber(1024);
 	
 	public archive() {
-		super("archive","[action:resync] (host:) (phrase:)- Resync your chain with seed phrase if necessary (otherwise wallet remains the same)");
+		super("archive","[action:resync] (host:) (phrase:) (keyuses:) - Resync your chain with seed phrase if necessary (otherwise wallet remains the same)");
 	}
 	
 	@Override
@@ -52,6 +53,9 @@ public class archive extends Command {
 			
 			String host = connectdata.getString("host");
 			int port 	= connectdata.getInteger("port");
+			
+			//Set the key uses to this..
+			int keyuses = getNumberParam("keyuses", new MiniNumber(10000)).getAsInt();
 			
 			//Are we resetting the wallet too ?
 			boolean seedphrase 	= false;
@@ -73,6 +77,9 @@ public class archive extends Command {
 				MinimaDB.getDB().getUserDB().setBasePrivateSeed(seed.to0xString());
 				MinimaDB.getDB().getWallet().initBaseSeed(seed);
 				
+				//Get the Wallet
+				Wallet wallet = MinimaDB.getDB().getWallet();
+				
 				//Now cycle through all the default wallet keys..
 				int tot = Wallet.NUMBER_GETADDRESS_KEYS * 2;
 				MinimaLogger.log("Creating a total of "+tot+" keys / addresses..");
@@ -80,9 +87,12 @@ public class archive extends Command {
 					MinimaLogger.log("Creating key "+i);
 					
 					//Create a new key..
-					MinimaDB.getDB().getWallet().createNewSimpleAddress(true);
+					wallet.createNewSimpleAddress(true);
 				}
 				MinimaLogger.log("All keys created..");
+				
+				//Now Update the USES - since they may have been used before - we don;t know.. 
+				wallet.updateAllKeyUses(keyuses);
 				
 			}else {
 				//reset ALL the default data
