@@ -63,8 +63,9 @@ public class NIOMessage implements Runnable {
 	public static final MiniByte MSG_TXBLOCK_REQ 	= new MiniByte(13);
 	public static final MiniByte MSG_TXBLOCK_RESP 	= new MiniByte(14);
 	
-	public static final MiniByte MSG_ARCHIVE_REQ 	= new MiniByte(15);
-	public static final MiniByte MSG_ARCHIVE_DATA 	= new MiniByte(16);
+	public static final MiniByte MSG_ARCHIVE_REQ 		= new MiniByte(15);
+	public static final MiniByte MSG_ARCHIVE_DATA 		= new MiniByte(16);
+	public static final MiniByte MSG_ARCHIVE_SINGLE_REQ = new MiniByte(17);
 	
 	/**
 	 * Helper function that converts to String 
@@ -729,10 +730,16 @@ public class NIOMessage implements Runnable {
 			
 			}else if(type.isEqual(MSG_ARCHIVE_REQ)) {
 				
+				//Do we support archive data
+				if(!MinimaDB.getDB().getArchive().isStoreMySQL()) {
+					MinimaLogger.log("Archive IBD request we do not saupport.. from "+mClientUID);
+					return;
+				}
+				
 				//What block are we starting from..
 				MiniNumber firstblock 	= MiniNumber.ReadFromStream(dis);
 				
-				MinimaLogger.log("Archive IBD req : "+firstblock);
+				MinimaLogger.log("Archive IBD request start @ "+firstblock);
 				
 				//Get the Data
 				IBD ibd = new IBD();
@@ -740,14 +747,35 @@ public class NIOMessage implements Runnable {
 				
 				//Send it..
 				NIOManager.sendNetworkMessage(mClientUID, MSG_ARCHIVE_DATA, ibd);
+			
+			}else if(type.isEqual(MSG_ARCHIVE_SINGLE_REQ)) {
+				
+				//Do we support archive data
+				if(!MinimaDB.getDB().getArchive().isStoreMySQL()) {
+					MinimaLogger.log("Archive single request we do not saupport.. from "+mClientUID);
+					return;
+				}
+				
+				//What block do they want
+				MiniNumber blocknum 	= MiniNumber.ReadFromStream(dis);
+				
+				//Get that block
+				TxBlock block = MinimaDB.getDB().getArchive().getMySQLCOnnect().loadBlockFromNum(blocknum.getAsLong());
+				if(block != null) {
+					//Send it to them..
+					NIOManager.sendNetworkMessage(mClientUID, MSG_ARCHIVE_DATA, block);
+				}
 				
 			}else if(type.isEqual(MSG_ARCHIVE_DATA)) {
+			
+				//Messages are handled in the archive command - not here yet
+				MinimaLogger.log("Received MSG_ARCHIVE_DATA msg.. ignoring.. from "+mClientUID);
 				
-				//It's an IBD structure
-				IBD archibd = IBD.ReadFromStream(dis);
-				
-				//Send this to the main processor
-				Main.getInstance().getTxPoWProcessor().postProcessArchiveIBD(archibd, mClientUID);
+//				//It's an IBD structure
+//				IBD archibd = IBD.ReadFromStream(dis);
+//				
+//				//Send this to the main processor
+//				Main.getInstance().getTxPoWProcessor().postProcessArchiveIBD(archibd, mClientUID);
 								
 			}else {
 				

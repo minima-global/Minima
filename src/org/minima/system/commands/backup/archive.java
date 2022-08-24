@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.archive.MySQLConnect;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Greeting;
@@ -36,7 +37,7 @@ public class archive extends Command {
 	public static final MiniNumber ARCHIVE_DATA_SIZE = new MiniNumber(1024);
 	
 	public archive() {
-		super("archive","[action:resync] [host:] (phrase:) (keys:) (keyuses:) - Resync your chain with seed phrase if necessary (otherwise wallet remains the same)");
+		super("archive","[action:resync|integrity] [host:] (phrase:) (keys:) (keyuses:) - Resync your chain with seed phrase if necessary (otherwise wallet remains the same)");
 	}
 	
 	@Override
@@ -45,7 +46,83 @@ public class archive extends Command {
 	
 		String action = getParam("action");
 		
-		if(action.equals("resync")) {
+		
+		if(action.equals("integrity")) {
+			
+			if(!MinimaDB.getDB().getArchive().isStoreMySQL()) {
+				throw new CommandException("You are not running an Archive noide.. ");
+			}
+			
+			//Scan through the entire DB.. checking.. 
+			MinimaLogger.log("Checking Archive DB.. this will take some time..");
+			
+			//Get the MySQL Connect DB
+			MySQLConnect mysql = MinimaDB.getDB().getArchive().getMySQLCOnnect();
+			
+			//Get t the initial 1000
+			MiniNumber lastlog 		= MiniNumber.ZERO;
+			MiniNumber start 		= MiniNumber.ZERO;
+			MiniData parenthash 	= null;
+			MiniNumber parentnum 	= null;
+			int errorsfound 		= 0;
+			int total = 0;
+			while(true) {
+				
+				//Do we log a message
+				if(lastlog.isLess(start.sub(new MiniNumber(2000)))) {
+					MinimaLogger.log("Now checking from  "+start);
+					lastlog = start;
+				}
+				
+				//Get some blocks
+				ArrayList<TxBlock> blocks = mysql.loadBlockRange(start, start.add(MiniNumber.THOUSAND)); 
+				for(TxBlock block : blocks) {
+					total++;
+					
+					//Start Checking..
+					if(parenthash == null) {
+						MinimaLogger.log("Chain starts @ "+block.getTxPoW().getBlockNumber());
+						parenthash 	= block.getTxPoW().getTxPoWIDData();
+						parentnum  	= block.getTxPoW().getBlockNumber();
+						lastlog 	= parentnum;
+						
+					}else {
+						
+						//Check correct number
+						if(!block.getTxPoW().getBlockNumber().isEqual(parentnum.increment())) {
+							MinimaLogger.log("Incorrect child block @ "+block.getTxPoW().getBlockNumber()+" parent:"+parentnum);
+							errorsfound++;
+						}else if(!block.getTxPoW().getParentID().isEqual(parenthash)) {
+							MinimaLogger.log("Parent hash incorrect @ "+block.getTxPoW().getBlockNumber());
+							errorsfound++;
+						}
+						
+						parenthash 	= block.getTxPoW().getTxPoWIDData();
+						parentnum 	= block.getTxPoW().getBlockNumber();
+					}
+				}
+				
+				//Have we checked them all..
+				if(blocks.size() < 10) {
+					break;
+				}
+				
+				//Now recycle..
+				start = parentnum.increment();
+			}
+			
+			JSONObject resp = new JSONObject();
+			resp.put("message", "Archive integrity check completed");
+			resp.put("blocks", total);
+			resp.put("errors", errorsfound);
+			
+			if(errorsfound>0) {
+				resp.put("recommend", "There are errors in your Archive DB - you should wipe you MySQL and resync with a valid host");
+			}
+			
+			ret.put("response", resp);
+			
+		}else if(action.equals("resync")) {
 			
 			//Get the host
 			String fullhost = getParam("host");
