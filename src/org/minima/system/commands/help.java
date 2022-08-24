@@ -1,5 +1,6 @@
 package org.minima.system.commands;
 
+import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.backup;
 import org.minima.system.commands.backup.restore;
 import org.minima.system.commands.base.balance;
@@ -111,6 +112,8 @@ public class help extends Command {
 		
 		addCommand(details, new sign());
 		addCommand(details, new verify());
+		
+		addCommand(details, new archive());
 		
 		addCommand(details, new txnlist());
 		addCommand(details, new txncreate());
