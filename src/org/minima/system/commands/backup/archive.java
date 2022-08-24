@@ -117,7 +117,7 @@ public class archive extends Command {
 			resp.put("errors", errorsfound);
 			
 			if(errorsfound>0) {
-				resp.put("recommend", "There are errors in your Archive DB - you should wipe you MySQL and resync with a valid host");
+				resp.put("recommend", "There are errors in your Archive DB - you should wipe then resync with a valid host");
 			}
 			
 			ret.put("response", resp);
