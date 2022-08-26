@@ -8,9 +8,11 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Date;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.MySQLConnect;
+import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Greeting;
@@ -59,6 +61,9 @@ public class archive extends Command {
 			//Get the MySQL Connect DB
 			MySQLConnect mysql = MinimaDB.getDB().getArchive().getMySQLCOnnect();
 			
+			//Get the cascade
+			Cascade dbcasc = mysql.loadCascade(); 
+			
 			//Get t the initial 1000
 			MiniNumber lastlog 		= MiniNumber.ZERO;
 			MiniNumber start 		= MiniNumber.ZERO;
@@ -81,14 +86,19 @@ public class archive extends Command {
 					
 					//Start Checking..
 					if(parenthash == null) {
-						MinimaLogger.log("Chain starts @ "+block.getTxPoW().getBlockNumber());
 						parenthash 	= block.getTxPoW().getTxPoWIDData();
 						parentnum  	= block.getTxPoW().getBlockNumber();
 						lastlog 	= parentnum;
 						
-						if(!parentnum.isEqual(MiniNumber.ONE)) {
-							MinimaLogger.log("ArchiveDB does not start at Genesis!");
-							errorsfound++;
+						MinimaLogger.log("ArchiveDB blocks start at block "+parentnum+" @ "+new Date(block.getTxPoW().getTimeMilli().getAsLong()));
+						if(dbcasc != null) {
+							MiniNumber tip = dbcasc.getTip().getTxPoW().getBlockNumber();
+							MinimaLogger.log("ArchiveDB Cascade tip at "+tip);
+							
+							if(!parentnum.isEqual(tip.increment())) {
+								MinimaLogger.log("ArchiveDB start does not match Cascade!");
+								errorsfound++;
+							}	
 						}
 						
 					}else {
@@ -119,12 +129,13 @@ public class archive extends Command {
 			JSONObject resp = new JSONObject();
 			resp.put("message", "Archive integrity check completed");
 			resp.put("blocks", total);
+			resp.put("cascade", (dbcasc!=null));
 			resp.put("errors", errorsfound);
 			
 			if(errorsfound>0) {
 				resp.put("recommend", "There are errors in your Archive DB - you should wipe then resync with a valid host");
 			}else {
-				resp.put("recommend", "Your ArchiveDB is correct and has no errors!");
+				resp.put("recommend", "Your ArchiveDB is correct and has no errors.");
 			}
 			
 			ret.put("response", resp);
@@ -200,6 +211,12 @@ public class archive extends Command {
 				//Send him a message..
 				IBD ibd = sendArchiveReq(host, port, startblock);
 			
+				//Is there a cascade..
+				if(startblock.isEqual(MiniNumber.ZERO) && ibd.hasCascade()) {
+					MinimaLogger.log("Cascade Received.. "+ibd.getCascade().getTip().getTxPoW().getBlockNumber());
+					MinimaDB.getDB().setIBDCascade(ibd.getCascade());
+				}
+				
 				int size = ibd.getTxBlocks().size();
 				
 				if(size > 0) {

@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import org.minima.database.cascade.Cascade;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
@@ -59,6 +60,20 @@ public class ArchiveManager extends SqlDB {
 	
 	public boolean isStoreMySQL() {
 		return mStoreMySQL;
+	}
+	
+	public void checkCascadeRequired(Cascade zCascade) throws SQLException {
+		
+		if(isStoreMySQL() && zCascade.getLength()>0) {
+			//Do we have a cascade yet
+			Cascade casc = mMySQL.loadCascade();
+			
+			//if not.. store our one..
+			if(casc == null) {
+				MinimaLogger.log("Saving Cascade in ARCHIVEDB.. tip : "+zCascade.getTip().getTxPoW().getBlockNumber());
+				mMySQL.saveCascade(zCascade);
+			}
+		}
 	}
 	
 	public MySQLConnect getMySQLCOnnect() {

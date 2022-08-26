@@ -231,6 +231,9 @@ public class MinimaDB {
 			//And finally..
 			mP2PDB.loadDB(new File(basedb,"p2p.db"));
 			
+			//Do we need to store the cascade in the ArchiveDB
+			getArchive().checkCascadeRequired(getCascade());
+			
 		}catch(Exception exc) {
 			MinimaLogger.log("SERIOUS ERROR loadAllDB ");
 			MinimaLogger.log(exc);

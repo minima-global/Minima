@@ -132,9 +132,9 @@ public class ArchiveServer extends HTTPServer {
 					
 					System.out.println("Archive Server Help");
 					System.out.println(" -mysqlhost      : The MySQL Host server");
-					System.out.println(" -mysqldb        : The MySQL Host server");
-					System.out.println(" -mysqluser      : The MySQL Host server");
-					System.out.println(" -mysqlpassword  : The MySQL Host server");
+					System.out.println(" -mysqldb        : The MySQL Database");
+					System.out.println(" -mysqluser      : The MySQL User");
+					System.out.println(" -mysqlpassword  : The MySQL password");
 					System.out.println(" -help           : Print this help");
 					
 					System.exit(1);

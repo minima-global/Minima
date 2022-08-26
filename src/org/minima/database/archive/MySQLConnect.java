@@ -64,13 +64,6 @@ public class MySQLConnect {
 		//Run it..
 		stmt.execute(create);
 		
-		//Create some prepared statements..
-		String insert 			= "INSERT IGNORE INTO syncblock ( txpowid, block, timemilli, syncdata ) VALUES ( ?, ? ,? ,? )";
-		SQL_INSERT_SYNCBLOCK 	= mConnection.prepareStatement(insert);
-		SQL_FIND_SYNCBLOCK_ID 	= mConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE txpowid=?");
-		SQL_FIND_SYNCBLOCK_NUM 	= mConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block=?");
-		SQL_SELECT_RANGE		= mConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block>=? AND block<? ORDER BY block ASC LIMIT 1000");
-	
 		//Create the cascade table
 		String cascade = "CREATE TABLE IF NOT EXISTS `cascadedata` ("
 						+ "		`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
@@ -81,6 +74,16 @@ public class MySQLConnect {
 		//Run it..
 		stmt.execute(cascade);
 		
+		//All done..
+		stmt.close();
+		
+		//Create some prepared statements..
+		String insert 			= "INSERT IGNORE INTO syncblock ( txpowid, block, timemilli, syncdata ) VALUES ( ?, ? ,? ,? )";
+		SQL_INSERT_SYNCBLOCK 	= mConnection.prepareStatement(insert);
+		SQL_FIND_SYNCBLOCK_ID 	= mConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE txpowid=?");
+		SQL_FIND_SYNCBLOCK_NUM 	= mConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block=?");
+		SQL_SELECT_RANGE		= mConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block>=? AND block<? ORDER BY block ASC LIMIT 1000");
+				
 		SAVE_CASCADE = mConnection.prepareStatement("INSERT IGNORE INTO cascadedata ( cascadetip, fulldata ) VALUES ( ?, ? )");
 		LOAD_CASCADE = mConnection.prepareStatement("SELECT fulldata FROM cascadedata ORDER BY cascadetip ASC LIMIT 1");
 	}
@@ -93,9 +96,14 @@ public class MySQLConnect {
 		}
 	}
 	
-	public boolean saveCascade(Cascade zCascade) {
-		
-		try {
+	public void wipeAll() throws SQLException {
+		Statement stmt = mConnection.createStatement();
+		stmt.execute("DROP syncblock");
+		stmt.execute("DROP cascadedata");
+		stmt.close();
+	}
+	
+	public boolean saveCascade(Cascade zCascade) throws SQLException {
 			
 			//get the MiniData version..
 			MiniData cascdata = MiniData.getMiniDataVersion(zCascade);
@@ -115,41 +123,28 @@ public class MySQLConnect {
 			MinimaLogger.log("MYSQL stored cascade");
 			
 			return true;
-			
-		} catch (SQLException e) {
-			MinimaLogger.log(e);
-		}
-		
-		return false;
-		
 	}
 	
 	
-	public Cascade loadCascade(long zMinBlock) {
+	public Cascade loadCascade() throws SQLException {
+			
+		LOAD_CASCADE.clearParameters();
 		
-		try {
+		ResultSet rs = LOAD_CASCADE.executeQuery();
+		
+		//Is there a valid result.. ?
+		if(rs.next()) {
 			
-			LOAD_CASCADE.clearParameters();
+			//Get the details..
+			byte[] syncdata 	= rs.getBytes("fulldata");
 			
-			ResultSet rs = LOAD_CASCADE.executeQuery();
+			//Create MiniData version
+			MiniData minisync = new MiniData(syncdata);
 			
-			//Is there a valid result.. ?
-			if(rs.next()) {
-				
-				//Get the details..
-				byte[] syncdata 	= rs.getBytes("cascadedata");
-				
-				//Create MiniData version
-				MiniData minisync = new MiniData(syncdata);
-				
-				//Convert
-				Cascade casc = Cascade.convertMiniDataVersion(minisync);
-				
-				return casc;
-			}
+			//Convert
+			Cascade casc = Cascade.convertMiniDataVersion(minisync);
 			
-		}catch(SQLException exc) {
-			MinimaLogger.log(exc);
+			return casc;
 		}
 		
 		return null;
