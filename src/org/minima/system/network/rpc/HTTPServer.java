@@ -16,8 +16,15 @@ public abstract class HTTPServer implements Runnable{
 	boolean mRunning = true;
 	
 	public HTTPServer(int zPort) {
+		this(zPort, true);
+	}
+	
+	public HTTPServer(int zPort, boolean zAutoStart) {
 		mPort = zPort;
-		start();
+		
+		if(zAutoStart) {
+			start();
+		}
 	}
 	
 	public int getPort() {

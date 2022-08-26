@@ -699,7 +699,7 @@ public class NIOManager extends MessageProcessor {
 			Socket sock = new Socket();
 
 			//3 seconds to connect
-			sock.connect(new InetSocketAddress(zHost, zPort), 3000);
+			sock.connect(new InetSocketAddress(zHost, zPort), 10000);
 			
 			//10 seconds to read
 			sock.setSoTimeout(10000);

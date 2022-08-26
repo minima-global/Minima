@@ -144,6 +144,12 @@ public class archive extends Command {
 			//Set the key uses to this..
 			int keyuses = getNumberParam("keyuses", new MiniNumber(10000)).getAsInt();
 			
+			//Before we start deleting - check connection..
+			IBD ibdtest = sendArchiveReq(host, port, MiniNumber.ZERO);
+			if(ibdtest == null) {
+				throw new CommandException("Could Not connect to Archive host!");
+			}
+			
 			//Are we resetting the wallet too ?
 			boolean seedphrase 	= false;
 			MiniData seed 		= null;
@@ -215,6 +221,8 @@ public class archive extends Command {
 				}
 			}
 			
+			MinimaLogger.log("All Archive data received.. pls wait"); 
+			
 			//Now wait until all blocks have been processed
 			TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 			while(foundsome && tip == null) {
@@ -226,7 +234,7 @@ public class archive extends Command {
 			while(foundsome) {
 				if(!tip.getBlockNumber().isEqual(endblock)) {
 					MinimaLogger.log("Waiting for chain to catch up.. please wait");
-					Thread.sleep(1000);
+					Thread.sleep(5000);
 				}else {
 					break;
 				}
@@ -280,7 +288,7 @@ public class archive extends Command {
 			Socket sock = new Socket();
 
 			//3 seconds to connect
-			sock.connect(new InetSocketAddress(zHost, zPort), 3000);
+			sock.connect(new InetSocketAddress(zHost, zPort), 10000);
 			
 			//10 seconds to read
 			sock.setSoTimeout(10000);

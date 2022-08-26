@@ -528,6 +528,10 @@ public class TxPoWProcessor extends MessageProcessor {
 			
 			//Cycle and add..
 			ArrayList<TxBlock> blocks = arch.getTxBlocks();
+			if(blocks.size() > 0) {
+				MinimaLogger.log("Processing Archive IBD length:"+blocks.size()+" start:"+blocks.get(0).getTxPoW().getBlockNumber());	
+			}
+			
 			for(TxBlock block : blocks) {
 				
 				try {
