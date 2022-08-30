@@ -73,7 +73,7 @@ public class BIP39 {
 	}
 	
 	
-	 private final static String[] WORD_LIST = new String[]{
+	 public final static String[] WORD_LIST = new String[]{
 	            "abandon",
 	            "ability",
 	            "able",
