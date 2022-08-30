@@ -93,7 +93,7 @@ public class archive extends Command {
 						MinimaLogger.log("ArchiveDB blocks start at block "+parentnum+" @ "+new Date(block.getTxPoW().getTimeMilli().getAsLong()));
 						if(dbcasc != null) {
 							MiniNumber tip = dbcasc.getTip().getTxPoW().getBlockNumber();
-							MinimaLogger.log("ArchiveDB Cascade tip at "+tip);
+							MinimaLogger.log("ArchiveDB Cascade tip at block "+tip);
 							
 							if(!parentnum.isEqual(tip.increment())) {
 								MinimaLogger.log("ArchiveDB start does not match Cascade!");

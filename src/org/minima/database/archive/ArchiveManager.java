@@ -65,7 +65,16 @@ public class ArchiveManager extends SqlDB {
 	public void checkCascadeRequired(Cascade zCascade) throws SQLException {
 		
 		if(isStoreMySQL() && zCascade.getLength()>0) {
-			//Do we have a cascade yet
+			//Where does our archive start
+			TxBlock gen = mMySQL.loadBlockFromNum(1);
+			
+			//Do we have it..
+			if(gen!=null) {
+				//we have it.. no cascade required..
+				return;
+			}
+			
+			//Do we actually have a cascade yet
 			Cascade casc = mMySQL.loadCascade();
 			
 			//if not.. store our one..
