@@ -641,57 +641,19 @@ public abstract class Command {
 	/**
 	 * Which Commands are allowed..
 	 */
-	public static final String[] ALL_WRITE_COMMANDS = 
+	private static final String[] ALL_WRITE_COMMANDS = 
 		{"send","sendpoll","tokencreate","consolidate","cointrack","sign","txnsign","mds","backup","restore","vault","archive"};
 	
-	public static final ArrayList<String> ALL_WRITE_COMMANDS_ARRAY = new ArrayList<String>(Arrays.asList(ALL_WRITE_COMMANDS));
+	private static final ArrayList<String> ALL_WRITE_COMMANDS_ARRAY = new ArrayList<String>(Arrays.asList(ALL_WRITE_COMMANDS));
 	
 	public static boolean isCommandAllowed(String zCommand) {
 		
 		//Is it a simple READ command
-		if(ALL_WRITE_COMMANDS_ARRAY.contains(zCommand)) {
+		if(ALL_WRITE_COMMANDS_ARRAY.contains(zCommand.trim())) {
 			return false;
 		}
 		
 		return true;
 	}
 	
-//	public static String[] splitterQuotedPattern(String zInput) {
-//		ArrayList<String> token = new ArrayList<>();
-//		String ss = zInput.trim();
-//		
-//		String regex = "\"([^\"]*)\"|(\\S+)";
-//		
-//		Matcher m = Pattern.compile(regex).matcher(ss);
-//	    while (m.find()) {
-//	        if (m.group(1) != null) {
-//	        	token.add(m.group(1));
-//	        } else {
-//	        	token.add(m.group(2));
-//	        }
-//	    }
-//	   
-//		return token.toArray(new String[0]);
-//	}
-	
-	public static void main(String[] zArgs) {
-		
-//		String tester2 = "connect host:128.0.0.1:9009";
-//		String tester2 = "runscript script:\"RETURN TRUE\" state:{\"0\":\"123\"}";
-		String tester2 = "runscript script:\"RETURN TRUE\" data:0x00 application:\"max solo yolo\"";
-//		String tester2 = "maxcontacts action:add contacts:Mx223423:9001:90 hh:oo";
-
-		System.out.println("\nOLD WAY\n");
-		String [] split = splitStringJSON(true, tester2);
-		for(int i=0;i<split.length;i++) {
-			System.out.println(i+") "+split[i]);
-		}
-		
-		System.out.println("\nNEW WAY\n");
-		
-		split = splitStringJSON(false, tester2);
-		for(int i=0;i<split.length;i++) {
-			System.out.println(i+") "+split[i]);
-		}
-	}
 }
