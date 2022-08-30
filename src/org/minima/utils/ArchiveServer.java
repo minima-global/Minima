@@ -60,12 +60,25 @@ public class ArchiveServer extends HTTPServer {
 				//Get the IBD
 				IBD ibd = new IBD();
 				
-				ArrayList<TxBlock> ibdblocks = ibd.getTxBlocks(); 
-				
-				//Load the block range..
-				ArrayList<TxBlock> blocks = mMySQL.loadBlockRange(firstblock, lastblock);
-				for(TxBlock block : blocks) {
-					ibdblocks.add(block);
+				//Is this the initial
+				if(firstblock.isEqual(MiniNumber.MINUSONE)) {
+					//Testing the connection
+					//Don't add anything..
+				}else {
+					
+					//Do we have a cascade - only check on first call..
+					if(firstblock.isEqual(MiniNumber.ONE)) {
+						ibd.setCascade(mMySQL.loadCascade());
+					}
+					
+					//Get the blocks
+					ArrayList<TxBlock> ibdblocks = ibd.getTxBlocks(); 
+					
+					//Load the block range..
+					ArrayList<TxBlock> blocks = mMySQL.loadBlockRange(firstblock, lastblock);
+					for(TxBlock block : blocks) {
+						ibdblocks.add(block);
+					}
 				}
 				
 				//Create the network message
@@ -81,7 +94,7 @@ public class ArchiveServer extends HTTPServer {
 				dis.close();
 				dos.close();
 				
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}

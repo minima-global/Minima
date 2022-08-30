@@ -739,14 +739,22 @@ public class NIOMessage implements Runnable {
 				//What block are we starting from..
 				MiniNumber firstblock 	= MiniNumber.ReadFromStream(dis);
 				
-				MinimaLogger.log("Archive IBD request start @ "+firstblock);
-				
-				//Get the Data
 				IBD ibd = new IBD();
-				ibd.createArchiveIBD(firstblock);
 				
-				//Send it..
-				NIOManager.sendNetworkMessage(mClientUID, MSG_ARCHIVE_DATA, ibd);
+				//Is this a test connect
+				if(firstblock.isEqual(MiniNumber.MINUSONE)) {
+					MinimaLogger.log("Archive IBD connection test..");
+					
+					//Send it.. empty just testing the connection
+					NIOManager.sendNetworkMessage(mClientUID, MSG_ARCHIVE_DATA, ibd);
+					
+				}else {
+					MinimaLogger.log("Archive IBD request start @ "+firstblock);
+					ibd.createArchiveIBD(firstblock);
+					
+					//Send it..
+					NIOManager.sendNetworkMessage(mClientUID, MSG_ARCHIVE_DATA, ibd);
+				}
 			
 			}else if(type.isEqual(MSG_ARCHIVE_SINGLE_REQ)) {
 				

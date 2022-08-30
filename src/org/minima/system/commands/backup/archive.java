@@ -156,7 +156,7 @@ public class archive extends Command {
 			int keyuses = getNumberParam("keyuses", new MiniNumber(10000)).getAsInt();
 			
 			//Before we start deleting - check connection..
-			IBD ibdtest = sendArchiveReq(host, port, MiniNumber.ZERO);
+			IBD ibdtest = sendArchiveReq(host, port, MiniNumber.MINUSONE);
 			if(ibdtest == null) {
 				throw new CommandException("Could Not connect to Archive host!");
 			}
