@@ -15,7 +15,6 @@ import org.minima.database.archive.MySQLConnect;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.wallet.Wallet;
-import org.minima.objects.Greeting;
 import org.minima.objects.IBD;
 import org.minima.objects.TxBlock;
 import org.minima.objects.base.MiniByte;
@@ -24,9 +23,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
-import org.minima.system.commands.base.newaddress;
 import org.minima.system.commands.network.connect;
-import org.minima.system.network.minima.NIOClientInfo;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
 import org.minima.utils.BIP39;
@@ -205,7 +202,8 @@ public class archive extends Command {
 			//Now cycle through the chain..
 			MiniNumber startblock 	= MiniNumber.ZERO;
 			MiniNumber endblock 	= MiniNumber.ZERO;
-			boolean foundsome = false;
+			boolean foundsome 		= false;
+			
 			while(true) {
 				
 				//Send him a message..
@@ -231,16 +229,35 @@ public class archive extends Command {
 			
 				//Post it..
 				Main.getInstance().getTxPoWProcessor().postProcessArchiveIBD(ibd, "0x00");
+			
+				//Now wait until processed
+				TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+				while(foundsome && tip == null) {
+					Thread.sleep(500);
+					tip = MinimaDB.getDB().getTxPoWTree().getTip();
+				}
+				
+				//Now wait to catch up..
+				while(foundsome) {
+					if(!tip.getBlockNumber().isEqual(endblock)) {
+						MinimaLogger.log("Waiting for chain to catch up.. please wait");
+						Thread.sleep(500);
+					}else {
+						break;
+					}
+					
+					tip = MinimaDB.getDB().getTxPoWTree().getTip();
+				}
 				
 				//Do we have enough to ask again.. 
-				if(size<32) {
+				if(size<30) {
 					break;
 				}
 			}
 			
-			MinimaLogger.log("All Archive data received.. pls wait"); 
+			MinimaLogger.log("All Archive data received and processed.. shutting down.."); 
 			
-			//Now wait until all blocks have been processed
+			//DOUBLE CHECK
 			TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 			while(foundsome && tip == null) {
 				Thread.sleep(1000);
