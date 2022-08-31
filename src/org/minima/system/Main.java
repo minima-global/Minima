@@ -706,7 +706,7 @@ public class Main extends MessageProcessor {
 	}
 	
 	/**
-	 * Post a network message to the webhook / Android listeners
+	 * Post a network message to the webhook / MDS / Android listeners
 	 */
 	public void PostNotifyEvent(String zEvent, JSONObject zData) {
 		
