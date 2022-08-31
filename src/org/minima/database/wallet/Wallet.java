@@ -298,7 +298,7 @@ public class Wallet extends SqlDB {
 		MiniData modifier 	= new MiniData(new BigInteger(Integer.toString(numkeys)));
 
 //		MiniData modifier 	= MiniData.getRandomData(32);
-//		MinimaLogger.log("Creatge new Key : "+mMainPrivateSeed.to0xString()+" "+modifier.to0xString());
+//		MinimaLogger.log("Create new Key : "+mMainPrivateSeed.to0xString()+" "+modifier.to0xString());
 		
 		//Now create a random private seed using the modifier
 		MiniData privseed 	= Crypto.getInstance().hashObjects(mMainPrivateSeed, modifier);
