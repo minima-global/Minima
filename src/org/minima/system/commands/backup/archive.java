@@ -26,14 +26,17 @@ import org.minima.system.commands.CommandException;
 import org.minima.system.commands.network.connect;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
+import org.minima.system.network.webhooks.NotifyManager;
 import org.minima.utils.BIP39;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.MessageListener;
+import org.minima.utils.messages.MessageProcessor;
 
 public class archive extends Command {
 
-	public static final MiniNumber ARCHIVE_DATA_SIZE = new MiniNumber(1024);
+	public static final MiniNumber ARCHIVE_DATA_SIZE = new MiniNumber(32);
 	
 	public archive() {
 		super("archive","[action:resync|integrity] (host:) (phrase:) (keys:) (keyuses:) - Resync your chain with seed phrase if necessary (otherwise wallet remains the same)");
@@ -204,6 +207,9 @@ public class archive extends Command {
 			MiniNumber endblock 	= MiniNumber.ZERO;
 			boolean foundsome 		= false;
 			
+			//Get the Minima Listener..
+			MessageListener minimalistener = Main.getInstance().getMinimaListener();
+			
 			while(true) {
 				
 				//Send him a message..
@@ -225,6 +231,9 @@ public class archive extends Command {
 					startblock 		= endblock.increment();
 					
 					MinimaLogger.log("Archive IBD received start : "+start.getTxPoW().getBlockNumber()+" end : "+endblock);
+				
+					//Notify the Android Listener
+					NotifyListener(minimalistener, start.getTxPoW().getBlockNumber(), size);
 				}
 			
 				//Post it..
@@ -233,15 +242,15 @@ public class archive extends Command {
 				//Now wait until processed
 				TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 				while(foundsome && tip == null) {
-					Thread.sleep(500);
+					Thread.sleep(250);
 					tip = MinimaDB.getDB().getTxPoWTree().getTip();
 				}
 				
 				//Now wait to catch up..
+				MinimaLogger.log("Waiting for chain to catch up.. please wait");
 				while(foundsome) {
 					if(!tip.getBlockNumber().isEqual(endblock)) {
-						MinimaLogger.log("Waiting for chain to catch up.. please wait");
-						Thread.sleep(500);
+						Thread.sleep(100);
 					}else {
 						break;
 					}
@@ -299,6 +308,28 @@ public class archive extends Command {
 		}
 		
 		return ret;
+	}
+	
+	public void NotifyListener(MessageListener zListener, MiniNumber zStartBlock, int zLength) {
+		//Notify
+		if(zListener != null) {
+			
+			//Details..
+			JSONObject data = new JSONObject();
+			data.put("startblock", zStartBlock);
+			data.put("length", zLength);
+			
+			//Create the JSON Message
+			JSONObject notify = new JSONObject();
+			notify.put("event", "ARCHIVEUPDATE");
+			notify.put("data", data);
+			
+			Message msg = new Message(NotifyManager.NOTIFY_POST);
+			msg.addObject("notify", notify);
+			
+			//Notify them that something is happening..
+			zListener.processMessage(msg);
+		}
 	}
 	
 	@Override
