@@ -9,6 +9,7 @@ import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
+import org.minima.kissvm.Contract;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
 import org.minima.objects.ScriptProof;
@@ -91,6 +92,9 @@ public class tokencreate extends Command {
 		String script = "RETURN TRUE";
 		if(getParams().containsKey("script")) {
 			script	= (String)getParams().get("script");
+			
+			//Clean the script
+			script = Contract.cleanScript(script);
 		}
 		
 		//Now construct the txn..
