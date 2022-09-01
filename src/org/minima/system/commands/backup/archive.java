@@ -36,7 +36,7 @@ import org.minima.utils.messages.MessageProcessor;
 
 public class archive extends Command {
 
-	public static final MiniNumber ARCHIVE_DATA_SIZE = new MiniNumber(32);
+	public static final MiniNumber ARCHIVE_DATA_SIZE = new MiniNumber(1000);
 	
 	public archive() {
 		super("archive","[action:resync|integrity] (host:) (phrase:) (keys:) (keyuses:) - Resync your chain with seed phrase if necessary (otherwise wallet remains the same)");
