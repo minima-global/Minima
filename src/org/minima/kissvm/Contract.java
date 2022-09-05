@@ -529,6 +529,10 @@ public class Contract {
 	 * @return The Converted Script
 	 */
 	public static String cleanScript(String zScript) {
+		return cleanScript(zScript, false);
+	}
+	
+	public static String cleanScript(String zScript, boolean zLog) {
 		
 		//The final result
 		StringBuffer ret = new StringBuffer();
@@ -543,9 +547,15 @@ public class Contract {
 			ArrayList<ScriptToken> tokens = tokz.tokenize();
 		
 			//Now add them correctly..
-			boolean first = true;
-			boolean whites = true;
+			boolean first 		= true;
+			boolean whites 		= true;
+			String prevtok 		= null;
 			for(ScriptToken tok : tokens) {
+				
+				if(zLog) {
+					MinimaLogger.log(tok.toString());
+				}
+				
 				if(tok.getTokenType() == ScriptToken.TOKEN_COMMAND) {
 					String command = tok.getToken();
 					if(first) {
@@ -576,19 +586,29 @@ public class Contract {
 				}else {
 					String strtok = tok.getToken();
 					
+					boolean islastclosebracket = prevtok!=null && (prevtok.endsWith(")") || prevtok.endsWith("]"));
+					
 					//Is it an end of word or whitespace..
-					if(ScriptTokenizer.isWhiteSpace(strtok) || ScriptTokenizer.mAllEOW.contains(strtok)) {
-						ret.append(tok.getToken());
+					if(islastclosebracket && !ScriptTokenizer.mAllAFTER.contains(strtok)) {
+						
+						ret.append(" "+strtok);
+						whites = true;
+						
+					}else if(ScriptTokenizer.isWhiteSpace(strtok) || ScriptTokenizer.mAllEOW.contains(strtok)) {
+						ret.append(strtok);
 						whites = true;
 					}else {
 						if(whites) {
-							ret.append(tok.getToken());
+							ret.append(strtok);
 						}else {
-							ret.append(" "+tok.getToken());
+							ret.append(" "+strtok);
 						}
 						whites = false;
 					}
 				}
+				
+				//Keep the last letter of the previous token
+				prevtok = tok.getToken();
 			}
 		
 		} catch (MinimaParseException e) {
@@ -601,10 +621,11 @@ public class Contract {
 	
 	public static void main(String[] zArgs) {
 		
-//		String scr = new String("let (a 1 0xFF )  = 4 + -2  let t = concat( 0x00 0x34   0x45  )");
-		String scr = new String("let x = $1");
+		String scr = new String("let (a 1 0xFF )  = 4 + -2  let t = concat( 0x00 0x34   0x45  )");
+//		String scr = new String("ASSERT VERIFYOUT(INC(@INPUT * 7) buyer (amount/price) @toKENID (TRUE) INc(33))");
+//		String scr = new String("ASSERT ( [hello][dd](ff) [sdsd](f) *[jjj]) LET f=   (  0  ) ");
 		
-		String clean = Contract.cleanScript(scr);
+		String clean = Contract.cleanScript(scr,true);
 		
 		MinimaLogger.log(scr);
 		MinimaLogger.log(clean);
