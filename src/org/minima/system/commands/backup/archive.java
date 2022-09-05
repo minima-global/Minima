@@ -232,7 +232,10 @@ public class archive extends Command {
 					MinimaLogger.log("Archive IBD received start : "+start.getTxPoW().getBlockNumber()+" end : "+endblock);
 				
 					//Notify the Android Listener
-					NotifyListener(minimalistener, start.getTxPoW().getBlockNumber(), size);
+					NotifyListener(minimalistener, 
+							start.getTxPoW().getBlockNumber(), 
+							size, 
+							new Date(start.getTxPoW().getTimeMilli().getAsLong()).toString());
 				}
 			
 				//Post it..
@@ -258,7 +261,7 @@ public class archive extends Command {
 				}
 				
 				//Do we have enough to ask again.. 
-				if(size<30) {
+				if(size<2) {
 					break;
 				}
 			}
@@ -309,7 +312,7 @@ public class archive extends Command {
 		return ret;
 	}
 	
-	public void NotifyListener(MessageListener zListener, MiniNumber zStartBlock, int zLength) {
+	public void NotifyListener(MessageListener zListener, MiniNumber zStartBlock, int zLength, String zDate) {
 		//Notify
 		if(zListener != null) {
 			
@@ -317,6 +320,7 @@ public class archive extends Command {
 			JSONObject data = new JSONObject();
 			data.put("startblock", zStartBlock);
 			data.put("length", zLength);
+			data.put("date", zDate);
 			
 			//Create the JSON Message
 			JSONObject notify = new JSONObject();
