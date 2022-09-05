@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
