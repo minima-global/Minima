@@ -112,12 +112,28 @@ public class balance extends Command {
 			}
 			
 			//Are we adding to the sendable pile..
-			if(isconfirmed && walletdb.isAddressSimple(coin.getAddress().to0xString())) {
-				total = sendable.get(tokenid); 
-				if(total == null) {
-					sendable.put(tokenid, amount);
-				}else {
-					sendable.put(tokenid, total.add(amount));
+			if(tokenid.equals("0x00")) {
+				if(isconfirmed && walletdb.isAddressSimple(coin.getAddress().to0xString())) {
+					total = sendable.get(tokenid); 
+					if(total == null) {
+						sendable.put(tokenid, amount);
+					}else {
+						sendable.put(tokenid, total.add(amount));
+					}
+				}
+			}else {
+				
+				//Check tokenscript..
+				String script = coin.getToken().getTokenScript().toString();
+				if(script.equals("RETURN TRUE")) {
+					if(isconfirmed && walletdb.isAddressSimple(coin.getAddress().to0xString())) {
+						total = sendable.get(tokenid); 
+						if(total == null) {
+							sendable.put(tokenid, amount);
+						}else {
+							sendable.put(tokenid, total.add(amount));
+						}
+					}
 				}
 			}
 		}
