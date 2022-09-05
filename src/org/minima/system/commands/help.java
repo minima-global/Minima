@@ -13,6 +13,7 @@ import org.minima.system.commands.base.getaddress;
 import org.minima.system.commands.base.hash;
 import org.minima.system.commands.base.hashtest;
 import org.minima.system.commands.base.incentivecash;
+import org.minima.system.commands.base.logs;
 import org.minima.system.commands.base.mmrcreate;
 import org.minima.system.commands.base.mmrproof;
 import org.minima.system.commands.base.newaddress;
@@ -74,6 +75,7 @@ public class help extends Command {
 		addCommand(details, new printtree());
 		addCommand(details, new burn());
 		addCommand(details, new trace());
+		addCommand(details, new logs());
 //		addCommand(details, new automine());
 		addCommand(details, new hashtest());
 //		addCommand(details, new debugflag());

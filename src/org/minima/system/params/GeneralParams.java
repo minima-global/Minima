@@ -151,4 +151,8 @@ public class GeneralParams {
 	public static boolean DEBUGFLAG = false;
 	public static String DEBUGVAR 	= "";
 	
+	/**
+	 * Enable Full logs for script errors
+	 */
+	public static boolean SCRIPTLOGS = false;
 }

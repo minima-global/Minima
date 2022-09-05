@@ -50,9 +50,10 @@ public class VERIFYOUT extends MinimaFunction{
 		Coin cc = outs.get(output);
 		
 		//Check Keep State
-		if(cc.storeState() != keepstate) {
-			return BooleanValue.FALSE;
-		}
+		boolean samestate = cc.storeState() == keepstate;
+//		if(cc.storeState() != keepstate) {
+//			return BooleanValue.FALSE;
+//		}
 		
 		//Now Check
 		boolean addr = address.isEqual(cc.getAddress());  
@@ -77,7 +78,13 @@ public class VERIFYOUT extends MinimaFunction{
 		boolean amt  = outamt.isEqual(amount);
 		
 		//If all equal..
-		boolean ver = addr && amt && tok;
+		boolean ver = addr && amt && tok && samestate;
+		
+		//Log the error
+		if(!ver) {
+			zContract.traceLog("VERIFYOUT failed : found (address:"+cc.getAddress().to0xString()+" amount:"+outamt+" tokenid:"+cc.getTokenID().to0xString()+" keepstate:"+cc.storeState()+" ) "
+								+"expected (address:"+address.to0xString()+" amount:"+amount+" tokenid:"+tokenid.to0xString()+" keepstate:"+keepstate+")");
+		}
 		
 		//Return if all true
 		return new BooleanValue( ver );

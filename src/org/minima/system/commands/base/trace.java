@@ -9,7 +9,7 @@ import org.minima.utils.messages.MessageProcessor;
 public class trace extends Command {
 
 	public trace() {
-		super("trace","[enable:true|false] (filter:) - Show the message stacks of the internal Minima Engine with optional filter string");
+		super("trace","[enable:true|false] (filter:) - Show the message stacks of the internal Minima Engine with optional filter string. Only works on terminal.");
 	}
 	
 	@Override

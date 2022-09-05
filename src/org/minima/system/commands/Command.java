@@ -31,6 +31,7 @@ import org.minima.system.commands.base.hash;
 import org.minima.system.commands.base.hashtest;
 import org.minima.system.commands.base.healthcheck;
 import org.minima.system.commands.base.incentivecash;
+import org.minima.system.commands.base.logs;
 import org.minima.system.commands.base.missingcmd;
 import org.minima.system.commands.base.mmrcreate;
 import org.minima.system.commands.base.mmrproof;
@@ -106,7 +107,7 @@ public abstract class Command {
 			
 			new mds(), new sendpoll(), new healthcheck(),
 			
-			new archive(),
+			new archive(), new logs(),
 			
 			new backupold(), new restoreold(),
 			
