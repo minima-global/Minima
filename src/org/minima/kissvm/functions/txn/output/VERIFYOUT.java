@@ -82,7 +82,7 @@ public class VERIFYOUT extends MinimaFunction{
 		
 		//Log the error
 		if(!ver) {
-			zContract.traceLog("VERIFYOUT failed : found (address:"+cc.getAddress().to0xString()+" amount:"+outamt+" tokenid:"+cc.getTokenID().to0xString()+" keepstate:"+cc.storeState()+" ) "
+			zContract.traceLog("VERIFYOUT failed @ ouptut "+output+" found (address:"+cc.getAddress().to0xString()+" amount:"+outamt+" tokenid:"+cc.getTokenID().to0xString()+" keepstate:"+cc.storeState()+" ) "
 								+"expected (address:"+address.to0xString()+" amount:"+amount+" tokenid:"+tokenid.to0xString()+" keepstate:"+keepstate+")");
 		}
 		
