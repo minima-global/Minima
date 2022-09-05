@@ -92,9 +92,6 @@ public class tokencreate extends Command {
 		String script = "RETURN TRUE";
 		if(getParams().containsKey("script")) {
 			script	= (String)getParams().get("script");
-			
-			//Clean the script
-			script = Contract.cleanScript(script);
 		}
 		
 		//Now construct the txn..
