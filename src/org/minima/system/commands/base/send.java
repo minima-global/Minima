@@ -170,6 +170,17 @@ public class send extends Command {
 			}
 		}
 		
+		//Check the token script
+		if(token != null) {
+			String script = token.getTokenScript().toString();
+			if(!script.equals("RETURN TRUE")) {
+				//Not enough funds..
+				ret.put("status", false);
+				ret.put("message", "Token script is not simple : "+script);
+				return ret;
+			}
+		}
+		
 		//Did we add enough
 		if(currentamount.isLess(sendamount)) {
 			//Not enough funds..
