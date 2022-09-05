@@ -45,6 +45,13 @@ public class ScriptTokenizer {
 	public static final List<String> mAllEOW  = Arrays.asList(TOKENS_ENDOFWORD);
 	
 	/**
+	 * No space if this after a close bracket 
+	 */
+	public static final String[] TOKENS_AFTERBRACKET   = 
+		{"+","-","/","*","%","&","|","^","=","<",">","<<",">>",")"};
+	public static final List<String> mAllAFTER  = Arrays.asList(TOKENS_AFTERBRACKET);
+	
+	/**
 	 * The script we are tokenizing
 	 */
 	StringBuffer mScript;
