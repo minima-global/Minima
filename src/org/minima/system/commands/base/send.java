@@ -3,6 +3,8 @@ package org.minima.system.commands.base;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.StringTokenizer;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRProof;
@@ -11,6 +13,7 @@ import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
+import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
 import org.minima.objects.ScriptProof;
@@ -31,24 +34,87 @@ import org.minima.system.commands.CommandException;
 import org.minima.system.commands.txn.txnutils;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class send extends Command {
 
+	public class AddressAmount {
+		
+		MiniData 	mAddress;
+		MiniNumber 	mAmount;
+		
+		public AddressAmount(MiniData zAddress, MiniNumber zAmount) {
+			mAddress 	= zAddress;
+			mAmount		= zAmount;
+		}
+		
+		public MiniData getAddress(){
+			return mAddress;
+		}
+		
+		public MiniNumber getAmount() {
+			return mAmount;
+		}
+	}
 	
 	public send() {
-		super("send","[address:Mx..|0x..] [amount:] (tokenid:) (state:{}) (burn:) (split:) - Send Minima or Tokens to an address");
+		super("send","(address:Mx..|0x..) (amount:) (multi:[address:amount,..]) (tokenid:) (state:{}) (burn:) (split:) - Send Minima or Tokens to an address");
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
-		//Get the address
-		MiniData sendaddress	= new MiniData(getAddressParam("address"));
+		//Who are we sending to
+		ArrayList<AddressAmount> recipients = new ArrayList<>();
 		
-		//How much to send
-		MiniNumber sendamount 	= getNumberParam("amount");
+		//What is the toal amount we are sending..
+		MiniNumber totalamount = MiniNumber.ZERO;
+		
+		//Is it a MULTI send..
+		if(existsParam("multi")) {
+			
+			//Convert the list..
+			JSONArray allrecips = getJSONArrayParam("multi");
+			Iterator<String> it = allrecips.iterator(); 
+			while(it.hasNext()) {
+				String sendto = it.next();
+				
+				StringTokenizer strtok = new StringTokenizer(sendto,":");
+				
+				//Get the address
+				String address 	= strtok.nextToken();
+				MiniData addr 	= null; 
+				if(address.toLowerCase().startsWith("mx")) {
+					//Convert back to normal hex..
+					try {
+						addr = Address.convertMinimaAddress(address);
+					}catch(IllegalArgumentException exc) {
+						throw new CommandException(exc.toString());
+					}
+				}else {
+					addr = new MiniData(address);
+				}
+				
+				//Get the amount
+				MiniNumber amount 	= new MiniNumber(strtok.nextToken());
+				totalamount 		= totalamount.add(amount);
+				
+				//Add to our List
+				recipients.add(new AddressAmount(addr, amount));
+			}
+			
+		}else {
+			//Get the address
+			MiniData sendaddress	= new MiniData(getAddressParam("address"));
+			
+			//How much to send
+			MiniNumber sendamount 	= getNumberParam("amount");
+			totalamount = sendamount;
+			
+			recipients.add(new AddressAmount(sendaddress, sendamount));
+		}
 		
 		//What is the Token
 		String tokenid = getParam("tokenid", "0x00");
@@ -102,10 +168,10 @@ public class send extends Command {
 		}
 		
 		//Lets select the correct coins..
-		MiniNumber findamount = sendamount;
-		if(!tokenid.equals("0x00")) {
-			findamount 	= relcoins.get(0).getToken().getScaledMinimaAmount(sendamount);
-		}
+//		MiniNumber findamount = totalamount;
+//		if(!tokenid.equals("0x00")) {
+//			findamount 	= relcoins.get(0).getToken().getScaledMinimaAmount(totalamount);
+//		}
 		
 		//Now search for the best coin selection.. leave for Now!..
 //		relcoins = selectCoins(relcoins, findamount, debug);
@@ -165,7 +231,7 @@ public class send extends Command {
 			}
 			
 			//Do we have enough..
-			if(currentamount.isMoreEqual(sendamount)) {
+			if(currentamount.isMoreEqual(totalamount)) {
 				break;
 			}
 		}
@@ -182,7 +248,7 @@ public class send extends Command {
 		}
 		
 		//Did we add enough
-		if(currentamount.isLess(sendamount)) {
+		if(currentamount.isLess(totalamount)) {
 			//Not enough funds..
 			ret.put("status", false);
 			ret.put("message", "Insufficient funds.. you only have "+currentamount);
@@ -190,7 +256,7 @@ public class send extends Command {
 		}
 		
 		//What is the change..
-		MiniNumber change = currentamount.sub(sendamount); 
+		MiniNumber change = currentamount.sub(totalamount); 
 		
 		//Lets construct a txn..
 		Transaction transaction 	= new Transaction();
@@ -271,37 +337,44 @@ public class send extends Command {
 		if(!tokenid.equals("0x00")) {
 			
 			//Convert back and forward to make sure is a valid amount
-			MiniNumber tokenamount 	= token.getScaledMinimaAmount(sendamount); 
+			MiniNumber tokenamount 	= token.getScaledMinimaAmount(totalamount); 
 			MiniNumber prectest 	= token.getScaledTokenAmount(tokenamount);
 			
-			if(!prectest.isEqual(sendamount)) {
-				throw new CommandException("Invalid Token amount to send.. "+sendamount);
+			if(!prectest.isEqual(totalamount)) {
+				throw new CommandException("Invalid Token amount to send.. "+totalamount);
 			}
 			
-			sendamount = tokenamount;
+			totalamount = tokenamount;
 					
 		}else {
 			//Check valid - for Minima..
-			if(!sendamount.isValidMinimaValue()) {
-				throw new CommandException("Invalid Minima amount to send.. "+sendamount);
+			if(!totalamount.isValidMinimaValue()) {
+				throw new CommandException("Invalid Minima amount to send.. "+totalamount);
 			}
 		}
 		
 		//Are we splitting the outputs
-		int isplit 				= split.getAsInt();
-		MiniNumber splitamount 	= sendamount.div(split);
-		for(int i=0;i<isplit;i++) {
-			//Create the output
-			Coin recipient = new Coin(Coin.COINID_OUTPUT, sendaddress, splitamount, Token.TOKENID_MINIMA, true);
+		int isplit = split.getAsInt();
+		
+		//Cycle through all the recipients
+		for(AddressAmount user : recipients) {
 			
-			//Do we need to add the Token..
-			if(!tokenid.equals("0x00")) {
-				recipient.resetTokenID(new MiniData(tokenid));
-				recipient.setToken(token);
+			MiniNumber splitamount 	= user.getAmount().div(split);
+			MiniData address 		= user.getAddress();
+			
+			for(int i=0;i<isplit;i++) {
+				//Create the output
+				Coin recipient = new Coin(Coin.COINID_OUTPUT, address, splitamount, Token.TOKENID_MINIMA, true);
+				
+				//Do we need to add the Token..
+				if(!tokenid.equals("0x00")) {
+					recipient.resetTokenID(new MiniData(tokenid));
+					recipient.setToken(token);
+				}
+				
+				//Add to the Transaction
+				transaction.addOutput(recipient);
 			}
-			
-			//Add to the Transaction
-			transaction.addOutput(recipient);
 		}
 		
 		//Do we need to send change..
