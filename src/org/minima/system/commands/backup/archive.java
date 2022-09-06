@@ -141,6 +141,9 @@ public class archive extends Command {
 			
 		}else if(action.equals("resync")) {
 			
+			//Get the Minima Listener..
+			MessageListener minimalistener = Main.getInstance().getMinimaListener();
+			
 			//Get the host
 			String fullhost = getParam("host");
 			Message connectdata = connect.createConnectMessage(fullhost);
@@ -186,6 +189,7 @@ public class archive extends Command {
 				//Now cycle through all the default wallet keys..
 				MinimaLogger.log("Creating a total of "+keys+" keys / addresses..");
 				for(int i=0;i<keys;i++) {
+					NotifyListener(minimalistener,"Creating key "+i);
 					MinimaLogger.log("Creating key "+i);
 					
 					//Create a new key..
@@ -206,8 +210,6 @@ public class archive extends Command {
 			MiniNumber endblock 	= MiniNumber.ZERO;
 			boolean foundsome 		= false;
 			
-			//Get the Minima Listener..
-			MessageListener minimalistener = Main.getInstance().getMinimaListener();
 			
 			while(true) {
 				
@@ -232,10 +234,7 @@ public class archive extends Command {
 					MinimaLogger.log("Archive IBD received start : "+start.getTxPoW().getBlockNumber()+" end : "+endblock);
 				
 					//Notify the Android Listener
-					NotifyListener(minimalistener, 
-							start.getTxPoW().getBlockNumber(), 
-							size, 
-							new Date(start.getTxPoW().getTimeMilli().getAsLong()).toString());
+					NotifyListener(minimalistener,"Loading "+start.getTxPoW().getBlockNumber()+" @ "+new Date(start.getTxPoW().getTimeMilli().getAsLong()).toString());
 				}
 			
 				//Post it..
@@ -266,6 +265,8 @@ public class archive extends Command {
 				}
 			}
 			
+			//Notify the Android Listener
+			NotifyListener(minimalistener,"All blocks loaded.. pls wait");
 			MinimaLogger.log("All Archive data received and processed.. shutting down.."); 
 			
 			//DOUBLE CHECK
@@ -312,15 +313,13 @@ public class archive extends Command {
 		return ret;
 	}
 	
-	public void NotifyListener(MessageListener zListener, MiniNumber zStartBlock, int zLength, String zDate) {
+	public void NotifyListener(MessageListener zListener, String zMessage) {
 		//Notify
 		if(zListener != null) {
 			
 			//Details..
 			JSONObject data = new JSONObject();
-			data.put("startblock", zStartBlock);
-			data.put("length", zLength);
-			data.put("date", zDate);
+			data.put("message", zMessage);
 			
 			//Create the JSON Message
 			JSONObject notify = new JSONObject();
