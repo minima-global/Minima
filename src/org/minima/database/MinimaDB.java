@@ -313,7 +313,7 @@ public class MinimaDB {
 			mMDSDB.saveDB();
 			
 		}catch(Exception exc) {
-			MinimaLogger.log("ERROR saveSQL "+exc);
+			MinimaLogger.log(exc);
 		}
 		
 		//Release the krakken
@@ -328,7 +328,7 @@ public class MinimaDB {
 			mWallet.saveDB();
 			
 		}catch(Exception exc) {
-			MinimaLogger.log("ERROR saveWalletSQL "+exc);
+			MinimaLogger.log(exc);
 		}
 		
 		//Release the krakken
@@ -354,7 +354,7 @@ public class MinimaDB {
 			mTxPoWTree.saveDB(new File(basedb,"chaintree.db"));
 			
 		}catch(Exception exc) {
-			MinimaLogger.log("ERROR saving state "+exc);
+			MinimaLogger.log(exc);
 		}
 		
 		//Release the krakken
@@ -374,7 +374,7 @@ public class MinimaDB {
 			mUserDB.saveDB(new File(basedb,"userprefs.db"));
 			
 		}catch(Exception exc) {
-			MinimaLogger.log("ERROR saving userDB "+exc);
+			MinimaLogger.log(exc);
 		}
 		
 		//Release the krakken
