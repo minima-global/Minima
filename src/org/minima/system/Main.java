@@ -66,7 +66,7 @@ public class Main extends MessageProcessor {
 	 * Main loop messages
 	 */
 	public static final String MAIN_TXPOWMINED 	= "MAIN_TXPOWMINED";
-	public static final String MAIN_AUTOMINE 	= "MAIN_CHECKAUTOMINE";
+//	public static final String MAIN_AUTOMINE 	= "MAIN_CHECKAUTOMINE";
 	public static final String MAIN_CLEANDB 	= "MAIN_CLEANDB";
 	public static final String MAIN_PULSE 		= "MAIN_PULSE";
 	
@@ -154,7 +154,7 @@ public class Main extends MessageProcessor {
 	/**
 	 * Timer for the automine message
 	 */
-	long AUTOMINE_TIMER = 1000 * 50;
+	public long AUTOMINE_TIMER = 1000 * 50;
 	
 	/**
 	 * Have all the default keys been created..
@@ -216,7 +216,8 @@ public class Main extends MessageProcessor {
 		
 		//Now do the actual check..
 		MiniNumber hashcheck = new MiniNumber("250000");
-		MiniNumber hashrate = TxPoWMiner.calculateHashRate(hashcheck);
+		MiniNumber hashrate_old = TxPoWMiner.calculateHashRate(hashcheck);
+		MiniNumber hashrate = TxPoWMiner.calculateHashSpeed(hashcheck);
 		MinimaDB.getDB().getUserDB().setHashRate(hashrate);
 		MinimaLogger.log("Calculate device hash rate : "+hashrate.div(MiniNumber.MILLION).setSignificantDigits(4)+" MHs");
 		
@@ -249,9 +250,9 @@ public class Main extends MessageProcessor {
 		//New Send POll Manager
 		mSendPoll = new SendPollManager();
 		
-		//Simulate traffic message ( only if auto mine is set )
+		//Simulate traffic message
 		AUTOMINE_TIMER = MiniNumber.THOUSAND.div(GlobalParams.MINIMA_BLOCK_SPEED).getAsLong();
-		PostTimerMessage(new TimerMessage(AUTOMINE_TIMER, MAIN_AUTOMINE));
+		mTxPoWMiner.PostTimerMessage(new TimerMessage(AUTOMINE_TIMER, TxPoWMiner.TXPOWMINER_MINEPULSE));
 		
 		//Set the PULSE message timer.
 		PostTimerMessage(new TimerMessage(GeneralParams.USER_PULSE_FREQ, MAIN_PULSE));
@@ -562,28 +563,6 @@ public class Main extends MessageProcessor {
 
 			//Post to the NIOManager - which will check it and forward if correct
 			getNetworkManager().getNIOManager().PostMessage(newniomsg);
-		
-		}else if(zMessage.getMessageType().equals(MAIN_AUTOMINE)) {
-			
-			//Create a TxPoW
-			mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_MINEPULSE);
-			
-			//TESTNET - has a small random delay as block speed faster - so no constant overlap
-			if(GeneralParams.TEST_PARAMS) {
-				//Next Attempt +/- 5 secs, minimum 5 secs
-				long minerdelay = AUTOMINE_TIMER + ( 2500L - (long)new Random().nextInt(5000));
-				if(minerdelay < 5000) {
-					minerdelay = 5000;
-				}
-				
-				//Post the Next AUTOMINE message
-				PostTimerMessage(new TimerMessage(minerdelay, MAIN_AUTOMINE));
-			
-			}else {
-				
-				//Post the Next AUTOMINE message
-				PostTimerMessage(new TimerMessage(AUTOMINE_TIMER, MAIN_AUTOMINE));
-			}
 			
 		}else if(zMessage.getMessageType().equals(MAIN_CLEANDB)) {
 			
@@ -609,9 +588,6 @@ public class Main extends MessageProcessor {
 		
 			//And send it to all your peers..
 			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_PULSE, pulse);
-		
-//			//Mine a TxPoW
-//			mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_MINEPULSE);
 			
 			//And then wait again..
 			PostTimerMessage(new TimerMessage(GeneralParams.USER_PULSE_FREQ, MAIN_PULSE));
