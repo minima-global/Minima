@@ -14,19 +14,33 @@ public class logs extends Command {
 	public JSONObject runCommand() throws Exception{
 		JSONObject ret = getJSONReply();
 
-		String scripts = getParam("scripts", "false");
+		//Are we logging script errors
+		if(existsParam("scripts")) {
+			String scripts = getParam("scripts", "false");
+			if(scripts.equals("true")) {
+				//Accept txpow messages
+				GeneralParams.SCRIPTLOGS = true;
+			}else {
+				//Don't accept txpow messages - pulse does that
+				GeneralParams.SCRIPTLOGS= false;
+			}
+		}
 		
-		//For now - stop accepting 
-		if(scripts.equals("true")) {
-			//Accept txpow messages
-			GeneralParams.SCRIPTLOGS = true;
-		}else {
-			//Don't accept txpow messages - pulse does that
-			GeneralParams.SCRIPTLOGS= false;
+		//Are we logging all mining
+		if(existsParam("mining")) {
+			String mining = getParam("mining", "false");
+			if(mining.equals("true")) {
+				//Accept txpow messages
+				GeneralParams.MINING_LOGS = true;
+			}else {
+				//Don't accept txpow messages - pulse does that
+				GeneralParams.MINING_LOGS= false;
+			}
 		}
 		
 		JSONObject resp = new JSONObject();
 		resp.put("scripts", GeneralParams.SCRIPTLOGS);
+		resp.put("mining", GeneralParams.MINING_LOGS);
 		
 		//Add balance..
 		ret.put("response", resp);
