@@ -7,7 +7,7 @@ import org.minima.utils.json.JSONObject;
 public class logs extends Command {
 
 	public logs() {
-		super("logs","(scripts:true|false) - Enable full logs for various parts of Minima");
+		super("logs","(scripts:true|false) (mining:true|false) - Enable full logs for various parts of Minima");
 	}
 	
 	@Override
