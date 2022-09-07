@@ -155,4 +155,10 @@ public class GeneralParams {
 	 * Enable Full logs for script errors
 	 */
 	public static boolean SCRIPTLOGS = false;
+	
+	/**
+	 * Enable full logs for mining..
+	 */
+	public static boolean MINING_LOGS = false;
+	
 }
