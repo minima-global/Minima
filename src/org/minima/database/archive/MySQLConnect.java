@@ -284,6 +284,9 @@ public class MySQLConnect {
 		return blocks;
 	}
 	
+	/**
+	 * Non Synchronized version of LoadBlockRange
+	 */
 	public ArrayList<TxBlock> loadBlockRangeNoSync(MiniNumber zStartBlock, MiniNumber zEndBlock) {
 		
 		ArrayList<TxBlock> blocks = new ArrayList<>();
