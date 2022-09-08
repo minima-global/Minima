@@ -28,9 +28,9 @@ public class NIOClient {
 	public static final int MAX_NIO_BUFFERS = 8 * 1024;
 
 	/**
-	 * The Maximum size of a single message 32MB
+	 * The Maximum size of a single message 256MB
 	 */
-	public static final int MAX_MESSAGE 	= 32 * 1024 * 1024;
+	public static final int MAX_MESSAGE 	= 256 * 1024 * 1024;
 	
 	String mUID;
 	

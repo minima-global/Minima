@@ -361,7 +361,7 @@ public class NIOMessage implements Runnable {
 				//NONE of these should fail
 				if(!txpow.getChainID().isEqual(TxPoWChecker.CURRENT_NETWORK)) {
 					//Check ChainID
-					MinimaLogger.log("Wrong Block ChainID! "+txpow.getChainID()+" "+txpow.getTxPoWID());
+					MinimaLogger.log("Wrong Block ChainID! from "+mClientUID+" "+txpow.getChainID()+" "+txpow.getTxPoWID());
 					disconnectpeer = true;
 				
 				}else if(!TxPoWChecker.checkTxPoWBasic(txpow)) {
@@ -423,7 +423,7 @@ public class NIOMessage implements Runnable {
 				//Check for mempool coins..
 				if(TxPoWChecker.checkMemPoolCoins(txpow)) {
 					//Same coins in different transaction - could have been requested by us from branch
-					MinimaLogger.log("TxPoW with existing mempoolcoins "+txpow.getTxPoWID());
+					MinimaLogger.log("TxPoW with existing mempoolcoins from client : "+mClientUID+" "+txpow.getTxPoWID());
 					fullyvalid = false;
 				}
 				

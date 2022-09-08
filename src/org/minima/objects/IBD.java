@@ -103,7 +103,7 @@ public class IBD implements Streamable {
 					//Did we find a block..
 					if(!found.isEqual(MiniNumber.MINUSONE)) {
 						
-						//And the whole tree first
+						//Add the whole tree first
 						while(tip != null) {
 							mTxBlocks.add(0,tip.getTxBlock());
 							tip = tip.getParent();
