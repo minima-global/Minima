@@ -1,4 +1,4 @@
-package org.minima.utils;
+package org.minima.utils.archivenode;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -20,6 +20,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.network.rpc.HTTPServer;
+import org.minima.utils.MinimaLogger;
 
 public class ArchiveServer extends HTTPServer {
 
@@ -74,7 +75,7 @@ public class ArchiveServer extends HTTPServer {
 					ArrayList<TxBlock> ibdblocks = ibd.getTxBlocks(); 
 					
 					//Load the block range..
-					ArrayList<TxBlock> blocks = mMySQL.loadBlockRange(firstblock, lastblock);
+					ArrayList<TxBlock> blocks = mMySQL.loadBlockRangeNoSync(firstblock, lastblock);
 					for(TxBlock block : blocks) {
 						ibdblocks.add(block);
 					}
