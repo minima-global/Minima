@@ -122,57 +122,57 @@ public class P2PPeersChecker extends MessageProcessor {
                     }
                 }
                 
-                //Check they are on the right chain..
-                if(validversion) {
-                	
-                	//Get the extra data..
-                	JSONObject extra = greet.getExtraData();
-                	
-                	//Get the block 50 back..
-                	String block 	 = extra.getString("50block","");
-                	String blockhash = extra.getString("50hash","");
-                	
-                	//Need both
-                	if(!block.equals("") && !blockhash.equals("")) {
-                	
-                		//What is our tip
-                		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
-                		
-                		//check it..
-                		if(tip != null) {
-                			
-                			//Get that node..
-                			TxPoWTreeNode checknode = tip.getPastNode(new MiniNumber(block));
-                			if(checknode != null) {
-                			
-	                			if(!checknode.getTxBlock().getTxPoW().getTxPoWID().equals(blockhash)) {
-	                			
-	                				MinimaLogger.log("PEERS CHECKER incorrect chain! @ "+block+" "+address.toString()+" ");
-	                				
-	                				//Wrong chain.. !
-	                				validversion = false;
-	                			}
-	                			
-                			}else {
-                				MinimaLogger.log("PEERS CHECKER incorrect chain! ( null checknode ) @ "+block+" "+address.toString()+" ");
-                				
-                				//Wrong chain.. !
-                				validversion = false;
-                			}
-                		} else {
-                            MinimaLogger.log("[-] Can't check peer as we have no block data");
-                        }
-                	}else {
-                		MinimaLogger.log("PEERS CHECKER no block data @ "+address.toString());
-                		
-                		//Wrong chain.. !
-        				validversion = false;
-                	}
-                	
-                	if(validversion) {
-//                		MinimaLogger.log("PEERS CHECKER VALID CHAIN "+address.toString());
-                	}
-                }
+//                //Check they are on the right chain..
+//                if(validversion) {
+//                	
+//                	//Get the extra data..
+//                	JSONObject extra = greet.getExtraData();
+//                	
+//                	//Get the block 50 back..
+//                	String block 	 = extra.getString("50block","");
+//                	String blockhash = extra.getString("50hash","");
+//                	
+//                	//Need both
+//                	if(!block.equals("") && !blockhash.equals("")) {
+//                	
+//                		//What is our tip
+//                		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+//                		
+//                		//check it..
+//                		if(tip != null) {
+//                			
+//                			//Get that node..
+//                			TxPoWTreeNode checknode = tip.getPastNode(new MiniNumber(block));
+//                			if(checknode != null) {
+//                			
+//	                			if(!checknode.getTxBlock().getTxPoW().getTxPoWID().equals(blockhash)) {
+//	                			
+//	                				MinimaLogger.log("PEERS CHECKER incorrect chain! @ "+block+" "+address.toString()+" ");
+//	                				
+//	                				//Wrong chain.. !
+//	                				validversion = false;
+//	                			}
+//	                			
+//                			}else {
+//                				MinimaLogger.log("PEERS CHECKER incorrect chain! ( null checknode ) @ "+block+" "+address.toString()+" ");
+//                				
+//                				//Wrong chain.. !
+//                				validversion = false;
+//                			}
+//                		} else {
+//                            MinimaLogger.log("[-] Can't check peer as we have no block data");
+//                        }
+//                	}else {
+//                		MinimaLogger.log("PEERS CHECKER no block data @ "+address.toString());
+//                		
+//                		//Wrong chain.. !
+//        				validversion = false;
+//                	}
+//                	
+//                	if(validversion) {
+////                		MinimaLogger.log("PEERS CHECKER VALID CHAIN "+address.toString());
+//                	}
+//                }
                 
                 //What to do now..
                 if (validversion) {
