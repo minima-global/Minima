@@ -84,6 +84,7 @@ public class TxPoWMiner extends MessageProcessor {
 			//Post a message.. Mining Started
 			Message mining = new Message(Main.MAIN_MINING);
 			mining.addBoolean("starting", true);
+			mining.addBoolean("automine", automine);
 			mining.addObject("txpow", txpow);
 			Main.getInstance().PostMessage(mining);
 			
@@ -139,6 +140,7 @@ public class TxPoWMiner extends MessageProcessor {
 			//Post a message.. Mining Finished
 			Message miningend = new Message(Main.MAIN_MINING);
 			miningend.addBoolean("starting", false);
+			mining.addBoolean("automine", automine);
 			miningend.addObject("txpow", txpow);
 			Main.getInstance().PostMessage(miningend);
 			
