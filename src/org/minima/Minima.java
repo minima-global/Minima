@@ -113,6 +113,15 @@ public class Minima {
 		boolean daemon 			= configurer.isDaemon();
 		boolean rpcenable 		= configurer.isRpcenable();
 		boolean shutdownhook 	= configurer.isShutDownHook();
+
+		//Are we integrating MySQL
+		if(configurer.isMySQLRequired()) {
+			try {
+				Class.forName("com.mysql.cj.jdbc.Driver");
+			} catch (ClassNotFoundException e1) {
+				e1.printStackTrace();
+			}
+		}
 		
 		//Set the Ports.. If Minima port has changed
 		GeneralParams.RPC_PORT 			= GeneralParams.MINIMA_PORT+1;

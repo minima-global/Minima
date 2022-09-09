@@ -27,6 +27,7 @@ public class ParamConfigurer {
     private boolean daemon = false;
     private boolean rpcenable = false;
     private boolean mShutdownhook = true;
+    private boolean mUseMySQL= false;
     
     public ParamConfigurer usingConfFile(String[] programArgs) {
         List<String> zArgsList = Arrays.asList(programArgs);
@@ -128,6 +129,10 @@ public class ParamConfigurer {
     
     public boolean isShutDownHook() {
         return mShutdownhook;
+    }
+    
+    public boolean isMySQLRequired() {
+    	return mUseMySQL;
     }
 
     enum ParamKeys {
@@ -263,15 +268,19 @@ public class ParamConfigurer {
         }),
         mysqlhost("mysqlhost", "Store all archive data in a MySQL DB", (args, configurer) -> {
             GeneralParams.MYSQL_HOST = args;
+            configurer.mUseMySQL = true;
         }),
         mysqldb("mysqldb", "The MySQL Database", (args, configurer) -> {
         	GeneralParams.MYSQL_DB = args;
+        	configurer.mUseMySQL = true;
         }),
         mysqluser("mysqluser", "The MySQL User", (args, configurer) -> {
         	GeneralParams.MYSQL_USER = args;
+        	configurer.mUseMySQL = true;
         }),
         mysqlpassword("mysqlpassword", "The MySQL Password", (args, configurer) -> {
         	GeneralParams.MYSQL_PASSWORD = args;
+        	configurer.mUseMySQL = true;
         }),
         genesis("genesis", "Create a genesis block, -clean and -automine", (args, configurer) -> {
             if ("true".equals(args)) {

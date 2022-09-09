@@ -48,6 +48,8 @@ public class ArchiveManager extends SqlDB {
 	
 	public void setupMySQL(String zHost, String zDB, String zUser, String zPassword) throws SQLException {
 		
+		MinimaLogger.log("MySQL integration for Archive node activated..");
+		
 		//New MySQL
 		mMySQL = new MySQLConnect(zHost, zDB, zUser, zPassword);
 		
@@ -81,6 +83,8 @@ public class ArchiveManager extends SqlDB {
 			if(casc == null) {
 				MinimaLogger.log("Saving Cascade in ARCHIVEDB.. tip : "+zCascade.getTip().getTxPoW().getBlockNumber());
 				mMySQL.saveCascade(zCascade);
+			}else {
+				MinimaLogger.log("Cascade in ARCHIVEDB.. tip : "+casc.getTip().getTxPoW().getBlockNumber());
 			}
 		}
 	}

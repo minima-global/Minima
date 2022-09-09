@@ -251,11 +251,8 @@ public class IBD implements Streamable {
 					startcount = mCascade.getTip().getTxPoW().getBlockNumber();
 				}
 				
-				//Last block to load ?
-				MiniNumber lastblock = startcount.add(archive.ARCHIVE_DATA_SIZE);
-				
 				//Load the block range..
-				ArrayList<TxBlock> blocks = mySQLConnect.loadBlockRange(zFirstBlock, lastblock);
+				ArrayList<TxBlock> blocks = mySQLConnect.loadBlockRange(zFirstBlock);
 				for(TxBlock block : blocks) {
 					mTxBlocks.add(block);
 				}

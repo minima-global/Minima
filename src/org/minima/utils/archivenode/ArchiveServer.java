@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import org.minima.database.archive.MySQLConnect;
+import org.minima.database.cascade.Cascade;
 import org.minima.objects.IBD;
 import org.minima.objects.TxBlock;
 import org.minima.objects.base.MiniByte;
@@ -53,9 +54,8 @@ public class ArchiveServer extends HTTPServer {
 				
 				//What block are we starting from..
 				MiniNumber firstblock 	= MiniNumber.ReadFromStream(dis);
-				MiniNumber lastblock 	= firstblock.add(MiniNumber.THOUSAND);
 				
-				MinimaLogger.log("Received request first block : "+firstblock+" - "+lastblock, false);
+				MinimaLogger.log("Received request first block : "+firstblock, false);
 		
 				//Get the IBD
 				IBD ibd = new IBD();
@@ -67,7 +67,8 @@ public class ArchiveServer extends HTTPServer {
 				}else {
 					
 					//Do we have a cascade - only check on first call..
-					if(firstblock.isEqual(MiniNumber.ONE)) {
+					if(firstblock.isEqual(MiniNumber.ZERO)) {
+						MinimaLogger.log("Adding cascade..");
 						ibd.setCascade(mMySQL.loadCascade());
 					}
 					
@@ -75,7 +76,7 @@ public class ArchiveServer extends HTTPServer {
 					ArrayList<TxBlock> ibdblocks = ibd.getTxBlocks(); 
 					
 					//Load the block range..
-					ArrayList<TxBlock> blocks = mMySQL.loadBlockRangeNoSync(firstblock, lastblock);
+					ArrayList<TxBlock> blocks = mMySQL.loadBlockRangeNoSync(firstblock);
 					for(TxBlock block : blocks) {
 						ibdblocks.add(block);
 					}
@@ -103,9 +104,16 @@ public class ArchiveServer extends HTTPServer {
 	public ArchiveServer(int zPort, String zServer, String zDB, String zUser, String zPassowrd) throws SQLException {
 		super(zPort,false);
 		
-//		mMySQL = new MySQLConnect("127.0.0.1:3306","mydatabase","myuser","myuser");
 		mMySQL = new MySQLConnect(zServer,zDB,zUser,zPassowrd);
 		mMySQL.init();
+		
+		//Do some checks
+		Cascade casc = mMySQL.loadCascade();
+		if(casc == null) {
+			MinimaLogger.log("No Cascade found..");
+		}else {
+			MinimaLogger.log("Cascade found.. tip:"+casc.getTip().getTxPoW().getBlockNumber());
+		}
 		
 		start();
 	}
@@ -117,10 +125,19 @@ public class ArchiveServer extends HTTPServer {
 	
 	public static void main(String[] zArgs) throws SQLException {
 		
+		//Load the MySQL driver
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+			System.exit(0);
+		}
+		
 		String mysqlhost 	 = null;
 		String mysqldb	 	 = null;
 		String mysqluser 	 = null;
 		String mysqlpassword = null;
+		int port 			 = 8080;
 		
 		int arglen 	= zArgs.length;
 		if(arglen > 0) {
@@ -132,6 +149,9 @@ public class ArchiveServer extends HTTPServer {
 				if(arg.equals("-mysqlhost")) {
 					mysqlhost = zArgs[counter++];
 					
+				}else if(arg.equals("-port")) {
+					port = Integer.parseInt(zArgs[counter++]);
+				
 				}else if(arg.equals("-mysqldb")) {
 					mysqldb   = zArgs[counter++];
 				
@@ -160,7 +180,7 @@ public class ArchiveServer extends HTTPServer {
 		}
 		
 		
-		ArchiveServer server 	= new ArchiveServer(8080, mysqlhost, mysqldb, mysqluser, mysqlpassword);
+		ArchiveServer server 	= new ArchiveServer(port, mysqlhost, mysqldb, mysqluser, mysqlpassword);
 		
 		//Listen for input
 		InputStreamReader is    = new InputStreamReader(System.in, Charset.forName("UTF-8"));
