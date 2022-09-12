@@ -14,9 +14,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.backup;
-import org.minima.system.commands.backup.backupold;
 import org.minima.system.commands.backup.restore;
-import org.minima.system.commands.backup.restoreold;
 import org.minima.system.commands.base.automine;
 import org.minima.system.commands.base.balance;
 import org.minima.system.commands.base.burn;
@@ -108,8 +106,6 @@ public abstract class Command {
 			new mds(), new sendpoll(), new healthcheck(),
 			
 			new archive(), new logs(),
-			
-			new backupold(), new restoreold(),
 			
 			new ping(), new random(),
 			new sql(),new file(),
