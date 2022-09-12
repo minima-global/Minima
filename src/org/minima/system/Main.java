@@ -79,6 +79,9 @@ public class Main extends MessageProcessor {
 	 * Network Restart
 	 */
 	public static final String MAIN_NETRESTART 	= "MAIN_NETRESTART";
+	public static final String MAIN_NETRESET 	= "MAIN_NETRESET";
+	long NETRESET_TIMER = 1000 * 60 * 60 * 24;
+	
 	
 	/**
 	 * Debug Function
@@ -270,6 +273,9 @@ public class Main extends MessageProcessor {
 		//Debug Checker
 		PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
 		
+		//Reset Network stats every 24 hours
+		PostTimerMessage(new TimerMessage(NETRESET_TIMER, MAIN_NETRESET));
+				
 		//Quick Clean up..
 		System.gc();
 	}
@@ -643,7 +649,15 @@ public class Main extends MessageProcessor {
 			
 			//Restart the Networking..
 			restartNIO();
-		
+
+		}else if(zMessage.getMessageType().equals(MAIN_NETRESET)) {
+			
+			//Reset the networking stats
+			Main.getInstance().getNIOManager().getTrafficListener().reset();
+			
+			//Reset Network stats every 24 hours
+			PostTimerMessage(new TimerMessage(NETRESET_TIMER, MAIN_NETRESET));
+			
 		}else if(zMessage.getMessageType().equals(MAIN_SHUTDOWN)) {
 			
 			shutdown();
