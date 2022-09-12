@@ -55,7 +55,13 @@ public class ArchiveServer extends HTTPServer {
 //				MinimaLogger.log("Type : "+type, false);
 				
 				//What block are we starting from..
-				MiniNumber firstblock 	= MiniNumber.ReadFromStream(dis);
+				MiniNumber firstblock = null;
+				try {
+					firstblock 	= MiniNumber.ReadFromStream(dis);
+				}catch(Exception exc) {
+					//Not a Minima connection - just random internet traffic
+					return;
+				}
 				
 				MinimaLogger.log("Received request first block : "+firstblock, false);
 		
@@ -92,6 +98,9 @@ public class ArchiveServer extends HTTPServer {
 				
 				//Flush
 				dos.flush();
+				
+				//Wait a few seconds for the download to be processed
+				Thread.sleep(10000);
 				
 				//Close the streams
 				dis.close();
