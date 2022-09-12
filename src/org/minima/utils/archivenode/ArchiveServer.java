@@ -27,6 +27,8 @@ public class ArchiveServer extends HTTPServer {
 
 	public MySQLConnect mMySQL = null;
 	
+	public Cascade mCascade = null;
+	
 	public class ArchiveHandler implements Runnable{
 
 		Socket mSocket;
@@ -67,9 +69,9 @@ public class ArchiveServer extends HTTPServer {
 				}else {
 					
 					//Do we have a cascade - only check on first call..
-					if(firstblock.isEqual(MiniNumber.ZERO)) {
+					if(firstblock.isEqual(MiniNumber.ZERO) && mCascade!=null) {
 						MinimaLogger.log("Adding cascade..");
-						ibd.setCascade(mMySQL.loadCascade());
+						ibd.setCascade(mCascade);
 					}
 					
 					//Get the blocks
@@ -108,11 +110,11 @@ public class ArchiveServer extends HTTPServer {
 		mMySQL.init();
 		
 		//Do some checks
-		Cascade casc = mMySQL.loadCascade();
-		if(casc == null) {
+		mCascade = mMySQL.loadCascade();
+		if(mCascade == null) {
 			MinimaLogger.log("No Cascade found..");
 		}else {
-			MinimaLogger.log("Cascade found.. tip:"+casc.getTip().getTxPoW().getBlockNumber());
+			MinimaLogger.log("Cascade found.. tip:"+mCascade.getTip().getTxPoW().getBlockNumber());
 		}
 		
 		start();

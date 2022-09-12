@@ -20,6 +20,8 @@ import org.minima.utils.MinimaLogger;
 
 public class MySQLConnect {
 
+	public static final int MAX_SYNCBLOCKS = 1000; 
+	
 	String mMySQLHost;
 	
 	String mDatabase;
@@ -88,7 +90,7 @@ public class MySQLConnect {
 		SQL_INSERT_SYNCBLOCK 	= mConnection.prepareStatement(insert);
 		SQL_FIND_SYNCBLOCK_ID 	= mConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE txpowid=?");
 		SQL_FIND_SYNCBLOCK_NUM 	= mConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block=?");
-		SQL_SELECT_RANGE		= mConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block>=? ORDER BY block ASC LIMIT 1000");
+		SQL_SELECT_RANGE		= mConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block>=? ORDER BY block ASC LIMIT "+MAX_SYNCBLOCKS);
 				
 		SAVE_CASCADE = mConnection.prepareStatement("INSERT INTO cascadedata ( cascadetip, fulldata ) VALUES ( ?, ? )");
 		LOAD_CASCADE = mConnection.prepareStatement("SELECT fulldata FROM cascadedata ORDER BY cascadetip ASC LIMIT 1");

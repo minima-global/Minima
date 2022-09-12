@@ -115,7 +115,7 @@ public class archive extends Command {
 				}
 				
 				//Have we checked them all..
-				if(blocks.size() < 10) {
+				if(blocks.size() < 2) {
 					break;
 				}
 				
@@ -233,6 +233,8 @@ public class archive extends Command {
 				
 					//Notify the Android Listener
 					NotifyListener(minimalistener,"Loading "+start.getTxPoW().getBlockNumber()+" @ "+new Date(start.getTxPoW().getTimeMilli().getAsLong()).toString());
+				}else {
+					MinimaLogger.log("No Archive TxBlocks left..");
 				}
 			
 				//Post it..
