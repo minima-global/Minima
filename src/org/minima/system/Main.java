@@ -516,7 +516,7 @@ public class Main extends MessageProcessor {
 	private void doGenesis() {
 		
 		//Create a new address - to receive the genesis funds..
-		ScriptRow scrow = MinimaDB.getDB().getWallet().createNewSimpleAddress(false);
+		ScriptRow scrow = MinimaDB.getDB().getWallet().createNewSimpleAddress(true);
 		
 		//Create the Genesis TxPoW..
 		GenesisTxPoW genesis = new GenesisTxPoW(scrow.getAddress());
