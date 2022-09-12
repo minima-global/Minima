@@ -33,7 +33,7 @@ public class backup extends Command {
 		
 		String file = getParam("file","");
 		if(file.equals("")) {
-			file = "minima-backup-"+System.currentTimeMillis()+".bak.gz";
+			file = "minima-backup-"+System.currentTimeMillis()+".bak";
 		}
 
 		//Get a password if there is one..
@@ -112,8 +112,7 @@ public class backup extends Command {
 			
 			//Now create the streams to save these
 			FileOutputStream fos 	= new FileOutputStream(backupfile);
-			GZIPOutputStream gzos	= new GZIPOutputStream(fos);
-			DataOutputStream dos 	= new DataOutputStream(gzos);
+			DataOutputStream dos 	= new DataOutputStream(fos);
 			
 			//Now create a CipherStream.. first need an IVParam
 			MiniData ivparam = new MiniData(GenerateKey.IvParam());
@@ -133,7 +132,8 @@ public class backup extends Command {
 			//Create the cipher..
 			Cipher ciph = GenerateKey.getCipherSYM(Cipher.ENCRYPT_MODE, ivparam.getBytes(), secret);
 			CipherOutputStream cos 		= new CipherOutputStream(dos, ciph);
-			DataOutputStream ciphdos 	= new DataOutputStream(cos);
+			GZIPOutputStream gzos		= new GZIPOutputStream(cos);
+			DataOutputStream ciphdos 	= new DataOutputStream(gzos);
 			
 			//Is it Complete
 			MiniByte.WriteToStream(ciphdos, complete);
