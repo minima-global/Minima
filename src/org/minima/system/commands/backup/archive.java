@@ -150,7 +150,7 @@ public class archive extends Command {
 			int port 	= connectdata.getInteger("port");
 			
 			//How many Keys do we need to generate
-			int keys = getNumberParam("keys", new MiniNumber(Wallet.NUMBER_GETADDRESS_KEYS * 2)).getAsInt();
+			int keys = getNumberParam("keys", new MiniNumber(Wallet.NUMBER_GETADDRESS_KEYS + 10)).getAsInt();
 			
 			//Set the key uses to this..
 			int keyuses = getNumberParam("keyuses", new MiniNumber(10000)).getAsInt();
