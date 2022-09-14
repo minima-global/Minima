@@ -341,6 +341,8 @@ public class Main extends MessageProcessor {
 				try {Thread.sleep(50);} catch (InterruptedException e) {}
 			}
 		
+			MinimaLogger.log("Shut down completed OK..");
+			
 		}catch(Exception exc) {
 			MinimaLogger.log("ERROR Shutting down..");
 			MinimaLogger.log(exc);
