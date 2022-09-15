@@ -3,6 +3,6 @@
 # Then run this line.. on windows / mac 
 
 # WINDOWS
-docker run -d -e minima_desktop=true -e minima_mdspassword=123 -v $HOME/minidocker:/home/minima/data -p 9001-9004:9001-9004 --restart unless-stopped --name minima minimaglobal/minima:latest
+docker run -d -e minima_desktop=true -e minima_mdspassword=123 -e minima_daemon=true -v $HOME/minidocker:/home/minima/data -p 9001-9004:9001-9004 --restart unless-stopped --name minima minimaglobal/minima:latest
 
 #MAC
