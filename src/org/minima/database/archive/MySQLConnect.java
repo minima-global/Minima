@@ -98,7 +98,9 @@ public class MySQLConnect {
 	
 	public void shutdown() {
 		try {
-			mConnection.close();
+			if(!mConnection.isClosed()) {
+				mConnection.close();
+			}
 		} catch (SQLException e) {
 			MinimaLogger.log(e);
 		}
