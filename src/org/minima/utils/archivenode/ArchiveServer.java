@@ -173,7 +173,7 @@ public class ArchiveServer extends HTTPServer {
 				
 				}else if(arg.equals("-help")) {
 					
-					System.out.println("Minima Archive Server Help");
+					System.out.println("Minima Archive Server v0.8 Help");
 					System.out.println(" -mysqlhost      : The MySQL Host server");
 					System.out.println(" -mysqldb        : The MySQL Database");
 					System.out.println(" -mysqluser      : The MySQL User");

@@ -162,14 +162,12 @@ public class Minima {
 
 		//Daemon mode has no stdin input
 		if(daemon) {
-	    	MinimaLogger.log("Daemon Started..");
+	    	MinimaLogger.log("Daemon mode started..");
 			
 			//Loop while running..
 			while (!main.isShutdownComplete()) {
                 try {Thread.sleep(250);} catch (InterruptedException e) {}
             }
-			
-			MinimaLogger.log("Bye bye..");
 			
 			//All done.. The shutdown hook will exit the system..
 			return;
@@ -226,7 +224,5 @@ public class Minima {
 	    } catch (IOException ex) {
 	    	MinimaLogger.log(""+ex);
 	    }
-	    
-	    MinimaLogger.log("Bye bye..");
 	}
 }
