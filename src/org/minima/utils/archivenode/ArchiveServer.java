@@ -52,7 +52,6 @@ public class ArchiveServer extends HTTPServer {
 				
 				//What Type..
 				MiniByte type = MiniByte.ReadFromStream(dis);
-//				MinimaLogger.log("Type : "+type, false);
 				
 				//What block are we starting from..
 				MiniNumber firstblock = null;
@@ -174,7 +173,7 @@ public class ArchiveServer extends HTTPServer {
 				
 				}else if(arg.equals("-help")) {
 					
-					System.out.println("Archive Server Help");
+					System.out.println("Minima Archive Server Help");
 					System.out.println(" -mysqlhost      : The MySQL Host server");
 					System.out.println(" -mysqldb        : The MySQL Database");
 					System.out.println(" -mysqluser      : The MySQL User");
