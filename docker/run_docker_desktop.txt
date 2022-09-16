@@ -1,9 +1,5 @@
-# You MUST first make a folder called 'minidocker' in your HOME folder - to give it the right permissions..
-
-# Then run this line.. on windows / mac 
-
 # WINDOWS
 docker run -d -e minima_desktop=true -e minima_mdspassword=123 -e minima_daemon=true -v $HOME/minidocker:/home/minima/data -p 9001-9004:9001-9004 --restart unless-stopped --name minima minimaglobal/minima:latest
 
 # WATCHTOWER - update minima docker when new image pushed
-docker run -d --name watchtower -e WATCHTOWER_CLEANUP=true -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower
+docker run -d --name watchtower -e WATCHTOWER_CLEANUP=true -e WATCHTOWER_TIMEOUT=60s -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower minima
