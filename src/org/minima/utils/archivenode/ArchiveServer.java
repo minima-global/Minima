@@ -44,7 +44,13 @@ public class ArchiveServer extends HTTPServer {
 				DataOutputStream dos	= new DataOutputStream(mSocket.getOutputStream());
 				
 				//First read in the complete MiniData package
-				MiniData data = MiniData.ReadFromStream(maindis);
+				MiniData data = null;
+				try {
+					data = MiniData.ReadFromStream(maindis);
+				}catch(Exception exc) {
+					//Not a Minima connection - just random internet traffic
+					return;
+				}
 				
 				//Convert..
 				ByteArrayInputStream bais 	= new ByteArrayInputStream(data.getBytes());
