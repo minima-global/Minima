@@ -41,7 +41,7 @@ public class AesUtil {
     public String decrypt(String salt, String iv, String passphrase, String ciphertext) {
         try {
             SecretKey key = generateKey(salt, passphrase);
-            byte[] decrypted = doFinal(Cipher.DECRYPT_MODE, key, iv, base64(ciphertext));
+            byte[] decrypted = doFinal(Cipher.DECRYPT_MODE, key, iv, base64Decode(ciphertext));
             return new String(decrypted, "UTF-8");
         }
         catch (UnsupportedEncodingException e) {
@@ -55,13 +55,8 @@ public class AesUtil {
         try {
             SecretKey key = generateKey(salt, passphrase);
             byte[] decrypted = doFinal(Cipher.ENCRYPT_MODE, key, iv, plaintext.getBytes());
-            
-            
-            
-            return new String(decrypted, "UTF-8");
-        }
-        catch (UnsupportedEncodingException e) {
-            return null;
+            return base64Encode(decrypted);
+        
         }catch (Exception e){
             return null;
         }
@@ -92,8 +87,12 @@ public class AesUtil {
         }
     }
 
-    public static byte[] base64(String str) {
+    public static byte[] base64Decode(String str) {
         return Base64.getDecoder().decode(str);
+    }
+    
+    public static String base64Encode(byte[] data) {
+        return Base64.getEncoder().encodeToString(data);
     }
     
     public static byte[] hex(String str) {
@@ -112,20 +111,23 @@ public class AesUtil {
 
     public static void main(String[] zArgs) {
     	
+    	String text 	= "helloyou!";
+    	String password = "apasswordblabla";
+    	
     	AesUtil aesUtil = new AesUtil(128, 1000);
     	
     	String ciper = aesUtil.encrypt( "4452150bad3b58e9d2c043ad24db2b1d", 
 										"0d93cefd0147ecb48a379b5be0da7e8a", 
-										"apasswordblabla", 
-										"helloyou!");
+										password, 
+										text);
     	    	
     	System.out.println(ciper);
 
     	
     	String plain = aesUtil.decrypt(	"4452150bad3b58e9d2c043ad24db2b1d", 
     									"0d93cefd0147ecb48a379b5be0da7e8a", 
-    									"apasswordblabla", 
-    									"TUEUg15Q5yEtyBIK++aDJw==");
+    									password, 
+    									ciper);
     	
     	
     	System.out.println(plain);

@@ -27,8 +27,6 @@ console.log('decrypt ', decrypt);
 	//var hash = CryptoJS.MD5("Message");
 	//document.write(hash);
 
-	var password 	  = "apasswordblabla";
-	var message 	  = "helloyou!";
 	
 	//var encrypteddata = "U2FsdGVkX1+fRWD4wng3xoh9W8B05VOoJVYtNkCm2jocEG3jWIzsjMYVu6Ke3K/F";
 	
@@ -41,19 +39,22 @@ console.log('decrypt ', decrypt);
 	//var decrypted = CryptoJS.AES.decrypt(encrypted, "Secret Passphrase").toString(CryptoJS.enc.Utf8);
 	//console.log(decrypted);
 
-		var iv 			= CryptoJS.lib.WordArray.random(128/8).toString(CryptoJS.enc.Hex);
-		console.log("IV:"+iv);
-		
-		var salt 		= CryptoJS.lib.WordArray.random(128/8).toString(CryptoJS.enc.Hex);
-		console.log("SALT:"+salt);
-		
-        var aesUtil 	= new AesUtil(128, 1000);
-        var ciphertext 	= aesUtil.encrypt(salt, iv, password , message );
+	var password 	  = "apasswordblabla";
+	var text 		  = "helloyou!";
+	
+	var iv 			= CryptoJS.lib.WordArray.random(128/8).toString(CryptoJS.enc.Hex);
+	console.log("IV:"+iv);
+	
+	var salt 		= CryptoJS.lib.WordArray.random(128/8).toString(CryptoJS.enc.Hex);
+	console.log("SALT:"+salt);
+	
+    var aesUtil 	= new AesUtil(128, 1000);
+    var ciphertext 	= aesUtil.encrypt(salt, iv, password , text );
 
-        console.log("CIPHER:"+ciphertext);
-        
-        var plaintext 	= aesUtil.decrypt(salt, iv, password , ciphertext );
-        console.log("PLAIN:"+plaintext);
+    console.log("CIPHER:"+ciphertext);
+    
+    var plaintext 	= aesUtil.decrypt(salt, iv, password , ciphertext );
+    console.log("PLAIN:"+plaintext);
         
         
         /*var aesPassword = (iv + "::" + salt + "::" + ciphertext);
