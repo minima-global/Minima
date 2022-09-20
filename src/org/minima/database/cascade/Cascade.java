@@ -10,9 +10,11 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 
 import org.minima.objects.TxPoW;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MiniFile;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
 public class Cascade implements Streamable {
@@ -219,5 +221,34 @@ public class Cascade implements Streamable {
 		
 		//And calculate weights..
 		cascadeChain();
+	}
+	
+	/**
+	 * Convert a MiniData version into a Cascade
+	 */
+	public static Cascade convertMiniDataVersion(MiniData zCascData) {
+		ByteArrayInputStream bais 	= new ByteArrayInputStream(zCascData.getBytes());
+		DataInputStream dis 		= new DataInputStream(bais);
+		
+		Cascade cascade = null;
+		
+		try {
+			//Convert data
+			cascade = Cascade.ReadFromStream(dis);
+		
+			dis.close();
+			bais.close();
+			
+		} catch (IOException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return cascade;
+	}
+	
+	public static Cascade ReadFromStream(DataInputStream zIn) throws IOException {
+		Cascade cascade = new Cascade();
+		cascade.readDataStream(zIn);
+		return cascade;
 	}
 }

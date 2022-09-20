@@ -60,8 +60,7 @@ public class restore extends Command {
 		
 		//Now start reading in the sections..
 		ByteArrayInputStream bais 	= new ByteArrayInputStream(restoredata);
-		GZIPInputStream gzin 		= new GZIPInputStream(bais);
-		DataInputStream dis 		= new DataInputStream(gzin);
+		DataInputStream dis 		= new DataInputStream(bais);
 		
 		//Read in the SALT and IVParam
 		MiniData salt 		= MiniData.ReadFromStream(dis);
@@ -73,7 +72,8 @@ public class restore extends Command {
 		//Create the cipher..
 		Cipher ciph = GenerateKey.getCipherSYM(Cipher.DECRYPT_MODE, ivparam.getBytes(), secret);
 		CipherInputStream cis 	= new CipherInputStream(dis, ciph);
-		DataInputStream disciph = new DataInputStream(cis);
+		GZIPInputStream gzin 	= new GZIPInputStream(cis);
+		DataInputStream disciph = new DataInputStream(gzin);
 		
 		//Is this a complete backup..
 		boolean complete = MiniByte.ReadFromStream(disciph).isTrue();

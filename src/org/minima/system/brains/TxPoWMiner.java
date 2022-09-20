@@ -12,10 +12,13 @@ import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
+import org.minima.system.commands.base.automine;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
+import org.minima.utils.messages.TimerMessage;
 
 public class TxPoWMiner extends MessageProcessor {
 
@@ -47,13 +50,27 @@ public class TxPoWMiner extends MessageProcessor {
 		zTxPoW.setHeaderBodyHash();
 		
 		//Now post a Mining message
-		PostMessage(new Message(TXPOWMINER_MINETXPOW).addObject("txpow", zTxPoW));
+		PostMessage(new Message(TXPOWMINER_MINETXPOW).addObject("txpow", zTxPoW).addBoolean("automine", false));
 	}
 	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
 		if(zMessage.isMessageType(TXPOWMINER_MINETXPOW)) {
+			
+			//Start time
+			long timenow = System.currentTimeMillis();
+			
+			//Is this an automine..
+			boolean automine = false;
+			if(zMessage.exists("automine")) {
+				automine = zMessage.getBoolean("automine");
+			}
+			
+			//Are we logging..
+			if(GeneralParams.MINING_LOGS) {
+				MinimaLogger.log("MINING TXPOW START auto:"+automine);
+			}
 			
 			//Get the TxPoW
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
@@ -67,6 +84,7 @@ public class TxPoWMiner extends MessageProcessor {
 			//Post a message.. Mining Started
 			Message mining = new Message(Main.MAIN_MINING);
 			mining.addBoolean("starting", true);
+			mining.addBoolean("automine", automine);
 			mining.addObject("txpow", txpow);
 			Main.getInstance().PostMessage(mining);
 			
@@ -122,6 +140,7 @@ public class TxPoWMiner extends MessageProcessor {
 			//Post a message.. Mining Finished
 			Message miningend = new Message(Main.MAIN_MINING);
 			miningend.addBoolean("starting", false);
+			mining.addBoolean("automine", automine);
 			miningend.addObject("txpow", txpow);
 			Main.getInstance().PostMessage(miningend);
 			
@@ -130,6 +149,20 @@ public class TxPoWMiner extends MessageProcessor {
 		
 			//Remove the coins from our mining list
 			removeMiningCoins(txpow);
+			
+			//Was this an AUTOMINE message
+			if(automine) {
+				//Post another mine message
+				PostTimerMessage(new TimerMessage(Main.getInstance().AUTOMINE_TIMER, TXPOWMINER_MINEPULSE));
+			}
+			
+			//Are we logging..
+			if(GeneralParams.MINING_LOGS) {
+				//Time diff..
+				long timediff = System.currentTimeMillis() - timenow;
+				
+				MinimaLogger.log("MINING TXPOW FINISHED time:"+timediff);
+			}
 			
 		}else if(zMessage.isMessageType(TXPOWMINER_MINEPULSE)) {
 			
@@ -141,6 +174,10 @@ public class TxPoWMiner extends MessageProcessor {
 				
 				//Mine a TxPow..
 				PostMessage(new Message(TXPOWMINER_MINETXPOW).addObject("txpow", txpow).addBoolean("automine", true));
+			}else {
+				
+				//Check again in 30 secs
+				PostTimerMessage(new TimerMessage(30000, TXPOWMINER_MINEPULSE));
 			}
 		}
 	}
@@ -195,33 +232,17 @@ public class TxPoWMiner extends MessageProcessor {
 	}
 	
 	/**
-	 * Calculate the Hash rate of this node...
-	 */
-	public static MiniNumber calculateHashRate(MiniNumber zHashes) {
-		
-		int ihashes = zHashes.getAsInt();
-		
-		long timestart = System.currentTimeMillis();
-		MiniData data = MiniData.getRandomData(512);
-		for(int i=0;i<ihashes;i++) {
-			data = Crypto.getInstance().hashObject(data);
-		}
-		long timediff = System.currentTimeMillis() - timestart;
-		
-		
-		MiniNumber timesecs = new MiniNumber(timediff).div(MiniNumber.THOUSAND);
-		
-		MiniNumber spd 		= zHashes.div(timesecs);
-		
-//		MinimaLogger.log("Did "+ihashes+" in "+timesecs+ " speed:"+spd);
-		
-		return spd;
-	}
-	
-	/**
 	 * Mine a TxPoW - Used to Mine Maxima Messages
 	 */
 	public boolean MineMaxTxPoW(TxPoW zTxPoW, long zTimeLimit) {
+		
+		//What is the time..
+		long timenow = System.currentTimeMillis();
+				
+		//Are we logging..
+		if(GeneralParams.MINING_LOGS) {
+			MinimaLogger.log("MINING MAXIMA START");
+		}
 		
 		//Hard set the Header Body hash - now we are mining it can never change
 		zTxPoW.setHeaderBodyHash();
@@ -232,8 +253,6 @@ public class TxPoWMiner extends MessageProcessor {
 		//Get the byte data
 		byte[] data = MiniData.getMiniDataVersion(zTxPoW.getTxHeader()).getBytes();
 		
-		//What is the time..
-		long timenow = System.currentTimeMillis();
 		
 		//Cycle until done..
 		MiniNumber finalnonce 	= MiniNumber.ZERO;
@@ -297,7 +316,107 @@ public class TxPoWMiner extends MessageProcessor {
 		//Remove the coins from our mining list
 		removeMiningCoins(zTxPoW);
 		
+		//Are we logging..
+		if(GeneralParams.MINING_LOGS) {
+			//Time diff..
+			long timediff = System.currentTimeMillis() - timenow;
+			
+			MinimaLogger.log("MINING MAXIMA FINISHED : "+timediff);
+		}
+		
 		//Found it..
 		return true;
+	}
+	
+	/**
+	 * Calculate the Hash rate of this node...
+	 */
+	public static MiniNumber calculateHashRate(MiniNumber zHashes) {
+		
+		int ihashes = zHashes.getAsInt();
+		
+		long timestart = System.currentTimeMillis();
+		MiniData data = MiniData.getRandomData(512);
+		for(int i=0;i<ihashes;i++) {
+			data = Crypto.getInstance().hashObject(data);
+		}
+		long timediff = System.currentTimeMillis() - timestart;
+		
+		
+		MiniNumber timesecs = new MiniNumber(timediff).div(MiniNumber.THOUSAND);
+		
+		MiniNumber spd 		= zHashes.div(timesecs);
+		
+//		MinimaLogger.log("OLD Method) Did "+ihashes+" in "+timesecs+ " speed:"+spd);
+		
+		return spd;
+	}
+	
+	/**
+	 * How fast can you hash a TxPoW
+	 * @param zHashes
+	 * @return
+	 */
+	public static MiniNumber calculateHashSpeed(MiniNumber zHashes) {
+		
+		//How many hashes to attempt
+		int ihashes = zHashes.getAsInt();
+		
+		//What is the time..
+		long timenow = System.currentTimeMillis();
+		
+		TxPoW txp = new TxPoW();
+		
+		//Hard set the Header Body hash - now we are mining it can never change
+		txp.setHeaderBodyHash();
+		
+		//Set the nonce.. we make it a large size in bytes then edit those - no reserialisation
+		txp.setNonce(START_NONCE_BYTES);
+		
+		//Get the byte data
+		byte[] data = MiniData.getMiniDataVersion(txp.getTxHeader()).getBytes();
+		
+		//Cycle until done..
+		MiniNumber finalnonce 	= MiniNumber.ZERO;
+		BigInteger newnonce 	= BigInteger.ZERO;
+		int counter				= 0;
+		for(int i=0;i<ihashes;i++) {
+			
+			//Get a nonce to write over the data
+			byte[] noncebytes = newnonce.toByteArray();
+			newnonce 		  = newnonce.add(BigInteger.ONE);
+			
+			//Copy these into the byte array of the TxHeader 
+			//start 2 numbers in so leading zero is not changed
+			System.arraycopy(noncebytes, 0, data, 4, noncebytes.length);
+			
+			//Hash the data array
+			byte[] hashedbytes = Crypto.getInstance().hashData(data);
+			
+			//Make into a MiniData structure
+			MiniData hash = new MiniData(hashedbytes);
+		}
+		
+		//Time diff..
+		long timediff = System.currentTimeMillis() - timenow;
+		
+		MiniNumber timesecs = new MiniNumber(timediff).div(MiniNumber.THOUSAND);
+		
+		MiniNumber spd 		= zHashes.div(timesecs);
+		
+//		MinimaLogger.log("NEW Method) Did "+ihashes+" in "+timesecs+ " speed:"+spd);
+		
+		return spd;
+	}
+	
+	public static void main(String[] zArgs) {
+		
+		calculateHashRate(new MiniNumber(10000));
+		
+		//First method..
+		calculateHashRate(MiniNumber.MILLION);
+		
+		calculateHashSpeed(MiniNumber.MILLION);
+		
 	}
 }

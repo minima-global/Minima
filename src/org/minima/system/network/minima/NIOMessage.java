@@ -13,6 +13,7 @@ import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Greeting;
 import org.minima.objects.IBD;
 import org.minima.objects.Pulse;
+import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
@@ -60,6 +61,10 @@ public class NIOMessage implements Runnable {
 	
 	public static final MiniByte MSG_TXBLOCK_REQ 	= new MiniByte(13);
 	public static final MiniByte MSG_TXBLOCK_RESP 	= new MiniByte(14);
+	
+	public static final MiniByte MSG_ARCHIVE_REQ 		= new MiniByte(15);
+	public static final MiniByte MSG_ARCHIVE_DATA 		= new MiniByte(16);
+	public static final MiniByte MSG_ARCHIVE_SINGLE_REQ = new MiniByte(17);
 	
 	/**
 	 * Helper function that converts to String 
@@ -356,7 +361,7 @@ public class NIOMessage implements Runnable {
 				//NONE of these should fail
 				if(!txpow.getChainID().isEqual(TxPoWChecker.CURRENT_NETWORK)) {
 					//Check ChainID
-					MinimaLogger.log("Wrong Block ChainID! "+txpow.getChainID()+" "+txpow.getTxPoWID());
+					MinimaLogger.log("Wrong Block ChainID! from "+mClientUID+" "+txpow.getChainID()+" "+txpow.getTxPoWID());
 					disconnectpeer = true;
 				
 				}else if(!TxPoWChecker.checkTxPoWBasic(txpow)) {
@@ -418,7 +423,7 @@ public class NIOMessage implements Runnable {
 				//Check for mempool coins..
 				if(TxPoWChecker.checkMemPoolCoins(txpow)) {
 					//Same coins in different transaction - could have been requested by us from branch
-					MinimaLogger.log("TxPoW with existing mempoolcoins "+txpow.getTxPoWID());
+					MinimaLogger.log("TxPoW with existing mempoolcoins from client : "+mClientUID+" "+txpow.getTxPoWID());
 					fullyvalid = false;
 				}
 				
@@ -721,7 +726,64 @@ public class NIOMessage implements Runnable {
 					//Send to the Processor
 					Main.getInstance().getTxPoWProcessor().postProcessSyncIBD(syncibd, mClientUID);
 				}
+			
+			}else if(type.isEqual(MSG_ARCHIVE_REQ)) {
 				
+				//Do we support archive data
+				if(!MinimaDB.getDB().getArchive().isStoreMySQL()) {
+					MinimaLogger.log("Archive IBD request we do not saupport.. from "+mClientUID);
+					return;
+				}
+				
+				//What block are we starting from..
+				MiniNumber firstblock 	= MiniNumber.ReadFromStream(dis);
+				
+				IBD ibd = new IBD();
+				
+				//Is this a test connect
+				if(firstblock.isEqual(MiniNumber.MINUSONE)) {
+					MinimaLogger.log("Archive IBD connection test..");
+					
+					//Send it.. empty just testing the connection
+					NIOManager.sendNetworkMessage(mClientUID, MSG_ARCHIVE_DATA, ibd);
+					
+				}else {
+					MinimaLogger.log("Archive IBD request start @ "+firstblock);
+					ibd.createArchiveIBD(firstblock);
+					
+					//Send it..
+					NIOManager.sendNetworkMessage(mClientUID, MSG_ARCHIVE_DATA, ibd);
+				}
+			
+			}else if(type.isEqual(MSG_ARCHIVE_SINGLE_REQ)) {
+				
+				//Do we support archive data
+				if(!MinimaDB.getDB().getArchive().isStoreMySQL()) {
+					MinimaLogger.log("Archive single request we do not saupport.. from "+mClientUID);
+					return;
+				}
+				
+				//What block do they want
+				MiniNumber blocknum 	= MiniNumber.ReadFromStream(dis);
+				
+				//Get that block
+				TxBlock block = MinimaDB.getDB().getArchive().getMySQLCOnnect().loadBlockFromNum(blocknum.getAsLong());
+				if(block != null) {
+					//Send it to them..
+					NIOManager.sendNetworkMessage(mClientUID, MSG_ARCHIVE_DATA, block);
+				}
+				
+			}else if(type.isEqual(MSG_ARCHIVE_DATA)) {
+			
+				//Messages are handled in the archive command - not here yet
+				MinimaLogger.log("Received MSG_ARCHIVE_DATA msg.. ignoring.. from "+mClientUID);
+				
+//				//It's an IBD structure
+//				IBD archibd = IBD.ReadFromStream(dis);
+//				
+//				//Send this to the main processor
+//				Main.getInstance().getTxPoWProcessor().postProcessArchiveIBD(archibd, mClientUID);
+								
 			}else {
 				
 				//UNKNOWN MESSAGE..

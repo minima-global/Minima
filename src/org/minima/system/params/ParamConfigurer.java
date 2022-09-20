@@ -27,6 +27,7 @@ public class ParamConfigurer {
     private boolean daemon = false;
     private boolean rpcenable = false;
     private boolean mShutdownhook = true;
+    private boolean mUseMySQL= false;
     
     public ParamConfigurer usingConfFile(String[] programArgs) {
         List<String> zArgsList = Arrays.asList(programArgs);
@@ -71,7 +72,7 @@ public class ParamConfigurer {
         return this;
     }
 
-    public ParamConfigurer usingProgramArgs(String[] programArgs) {
+	public ParamConfigurer usingProgramArgs(String[] programArgs) {
 
         int arglen = programArgs.length;
         int index = 0;
@@ -83,15 +84,21 @@ public class ParamConfigurer {
                                 lookAheadToNonParamKeyArg(programArgs, imuCounter).orElse("true")));
                 index++;
             }
-        MinimaLogger.log("Config Parameters");
-        for (Map.Entry<ParamKeys, String> entry : paramKeysToArg.entrySet()) {
-            MinimaLogger.log(entry.getKey() + ":" + entry.getValue());
-        }
+        
         return this;
     }
 
     public ParamConfigurer configure() {
         paramKeysToArg.forEach((key, value) -> key.consumer.accept(value, this));
+       
+        //Display the params
+		  if(GeneralParams.SHOW_PARAMS) {
+		        MinimaLogger.log("Config Parameters");
+		        for (Map.Entry<ParamKeys, String> entry : paramKeysToArg.entrySet()) {
+		        	MinimaLogger.log(entry.getKey() + ":" + entry.getValue());
+		        }
+		  }
+
         return this;
     }
 
@@ -122,6 +129,10 @@ public class ParamConfigurer {
     
     public boolean isShutDownHook() {
         return mShutdownhook;
+    }
+    
+    public boolean isMySQLRequired() {
+    	return mUseMySQL;
     }
 
     enum ParamKeys {
@@ -213,6 +224,11 @@ public class ParamConfigurer {
                 GeneralParams.IS_MOBILE = true;
             }
         }),
+        showparams("showparams", "Show startup params on launch", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.SHOW_PARAMS = true;
+            }
+        }),
         nop2p("nop2p", "Disable the automatic P2P system", (args, configurer) -> {
             GeneralParams.P2P_ENABLED = false;
         }),
@@ -252,15 +268,19 @@ public class ParamConfigurer {
         }),
         mysqlhost("mysqlhost", "Store all archive data in a MySQL DB", (args, configurer) -> {
             GeneralParams.MYSQL_HOST = args;
+            configurer.mUseMySQL = true;
         }),
         mysqldb("mysqldb", "The MySQL Database", (args, configurer) -> {
         	GeneralParams.MYSQL_DB = args;
+        	configurer.mUseMySQL = true;
         }),
         mysqluser("mysqluser", "The MySQL User", (args, configurer) -> {
         	GeneralParams.MYSQL_USER = args;
+        	configurer.mUseMySQL = true;
         }),
         mysqlpassword("mysqlpassword", "The MySQL Password", (args, configurer) -> {
         	GeneralParams.MYSQL_PASSWORD = args;
+        	configurer.mUseMySQL = true;
         }),
         genesis("genesis", "Create a genesis block, -clean and -automine", (args, configurer) -> {
             if ("true".equals(args)) {

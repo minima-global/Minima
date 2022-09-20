@@ -24,6 +24,7 @@ import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.system.sendpoll.SendPollManager;
+import org.minima.utils.BIP39;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.RPCClient;
@@ -65,7 +66,7 @@ public class Main extends MessageProcessor {
 	 * Main loop messages
 	 */
 	public static final String MAIN_TXPOWMINED 	= "MAIN_TXPOWMINED";
-	public static final String MAIN_AUTOMINE 	= "MAIN_CHECKAUTOMINE";
+//	public static final String MAIN_AUTOMINE 	= "MAIN_CHECKAUTOMINE";
 	public static final String MAIN_CLEANDB 	= "MAIN_CLEANDB";
 	public static final String MAIN_PULSE 		= "MAIN_PULSE";
 	
@@ -78,6 +79,9 @@ public class Main extends MessageProcessor {
 	 * Network Restart
 	 */
 	public static final String MAIN_NETRESTART 	= "MAIN_NETRESTART";
+	public static final String MAIN_NETRESET 	= "MAIN_NETRESET";
+	long NETRESET_TIMER = 1000 * 60 * 60 * 24;
+	
 	
 	/**
 	 * Debug Function
@@ -153,7 +157,7 @@ public class Main extends MessageProcessor {
 	/**
 	 * Timer for the automine message
 	 */
-	long AUTOMINE_TIMER = 1000 * 50;
+	public long AUTOMINE_TIMER = 1000 * 50;
 	
 	/**
 	 * Have all the default keys been created..
@@ -192,8 +196,18 @@ public class Main extends MessageProcessor {
 		if(MinimaDB.getDB().getUserDB().getBasePrivateSeed().equals("")) {
 			MinimaLogger.log("Generating Base Private Seed Key");
 			
+			//Get a BIP39 phrase
+			String[] words = BIP39.getNewWordList();
+			
+			//Convert to a string
+			String phrase = BIP39.convertWordListToString(words);
+			
+			//Convert that into a seed..
+			MiniData seed = BIP39.convertStringToSeed(phrase);
+			
 			//Not set yet..
-			MinimaDB.getDB().getUserDB().setBasePrivateSeed(MiniData.getRandomData(32).to0xString());
+			MinimaDB.getDB().getUserDB().setBasePrivatePhrase(phrase);
+			MinimaDB.getDB().getUserDB().setBasePrivateSeed(seed.to0xString());
 		}
 		
 		//Get the base private seed..
@@ -205,12 +219,17 @@ public class Main extends MessageProcessor {
 		
 		//Now do the actual check..
 		MiniNumber hashcheck = new MiniNumber("250000");
-		MiniNumber hashrate = TxPoWMiner.calculateHashRate(hashcheck);
+		MiniNumber hashrate_old = TxPoWMiner.calculateHashRate(hashcheck);
+		MiniNumber hashrate = TxPoWMiner.calculateHashSpeed(hashcheck);
 		MinimaDB.getDB().getUserDB().setHashRate(hashrate);
 		MinimaLogger.log("Calculate device hash rate : "+hashrate.div(MiniNumber.MILLION).setSignificantDigits(4)+" MHs");
 		
 		//Create the Initial Key Set
-		mInitKeysCreated = MinimaDB.getDB().getWallet().initDefaultKeys(2);
+		try {
+			mInitKeysCreated = MinimaDB.getDB().getWallet().initDefaultKeys(2);
+		}catch(Exception exc) {
+			MinimaLogger.log(exc.toString());
+		}
 		
 		//Start the engine..
 		mTxPoWProcessor = new TxPoWProcessor();
@@ -234,9 +253,9 @@ public class Main extends MessageProcessor {
 		//New Send POll Manager
 		mSendPoll = new SendPollManager();
 		
-		//Simulate traffic message ( only if auto mine is set )
+		//Simulate traffic message
 		AUTOMINE_TIMER = MiniNumber.THOUSAND.div(GlobalParams.MINIMA_BLOCK_SPEED).getAsLong();
-		PostTimerMessage(new TimerMessage(AUTOMINE_TIMER, MAIN_AUTOMINE));
+		mTxPoWMiner.PostTimerMessage(new TimerMessage(AUTOMINE_TIMER, TxPoWMiner.TXPOWMINER_MINEPULSE));
 		
 		//Set the PULSE message timer.
 		PostTimerMessage(new TimerMessage(GeneralParams.USER_PULSE_FREQ, MAIN_PULSE));
@@ -254,6 +273,9 @@ public class Main extends MessageProcessor {
 		//Debug Checker
 		PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
 		
+		//Reset Network stats every 24 hours
+		PostTimerMessage(new TimerMessage(NETRESET_TIMER, MAIN_NETRESET));
+				
 		//Quick Clean up..
 		System.gc();
 	}
@@ -319,6 +341,8 @@ public class Main extends MessageProcessor {
 				try {Thread.sleep(50);} catch (InterruptedException e) {}
 			}
 		
+			MinimaLogger.log("Shut down completed OK..");
+			
 		}catch(Exception exc) {
 			MinimaLogger.log("ERROR Shutting down..");
 			MinimaLogger.log(exc);
@@ -357,6 +381,53 @@ public class Main extends MessageProcessor {
 		while(!mNetwork.isShutDownComplete()) {
 			try {Thread.sleep(50);} catch (InterruptedException e) {}
 		}		
+	}
+	
+	public void archiveResetReady(boolean zResetWallet) {
+		//we are about to restore..
+		mRestoring = true;
+				
+		//Shut down the network
+		mNetwork.shutdownNetwork();
+		
+		//Shut down Maxima
+		mMaxima.shutdown();
+		
+		//ShutDown MDS
+		mMDS.shutdown();
+				
+		//Stop the Miner
+		mTxPoWMiner.stopMessageProcessor();
+		
+		//Stop sendPoll
+		mSendPoll.stopMessageProcessor();
+		
+		//No More timer Messages
+		TimerProcessor.stopTimerProcessor();
+		
+		//Wait for the networking to finish
+		while(!mNetwork.isShutDownComplete()) {
+			try {Thread.sleep(50);} catch (InterruptedException e) {}
+		}
+		
+		//Delete old files.. and reset to new
+		MinimaDB.getDB().getTxPoWDB().getSQLDB().saveDB();
+		MinimaDB.getDB().getTxPoWDB().getSQLDB().getSQLFile().delete();
+		
+		MinimaDB.getDB().getArchive().saveDB();
+		MinimaDB.getDB().getArchive().getSQLFile().delete();
+		
+		//Are we deleting the wallet..
+		if(zResetWallet) {
+			MinimaDB.getDB().getWallet().saveDB();
+			MinimaDB.getDB().getWallet().getSQLFile().delete();
+		}
+		
+		//Reload the SQL dbs
+		MinimaDB.getDB().loadArchiveAndTxPoWDB(zResetWallet);
+		
+		//Reset these 
+		MinimaDB.getDB().resetCascadeAndTxPoWTree();
 	}
 	
 	public void restartNIO() {
@@ -447,7 +518,7 @@ public class Main extends MessageProcessor {
 	private void doGenesis() {
 		
 		//Create a new address - to receive the genesis funds..
-		ScriptRow scrow = MinimaDB.getDB().getWallet().createNewSimpleAddress(false);
+		ScriptRow scrow = MinimaDB.getDB().getWallet().createNewSimpleAddress(true);
 		
 		//Create the Genesis TxPoW..
 		GenesisTxPoW genesis = new GenesisTxPoW(scrow.getAddress());
@@ -500,28 +571,6 @@ public class Main extends MessageProcessor {
 
 			//Post to the NIOManager - which will check it and forward if correct
 			getNetworkManager().getNIOManager().PostMessage(newniomsg);
-		
-		}else if(zMessage.getMessageType().equals(MAIN_AUTOMINE)) {
-			
-			//Create a TxPoW
-			mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_MINEPULSE);
-			
-			//TESTNET - has a small random delay as block speed faster - so no constant overlap
-			if(GeneralParams.TEST_PARAMS) {
-				//Next Attempt +/- 5 secs, minimum 5 secs
-				long minerdelay = AUTOMINE_TIMER + ( 2500L - (long)new Random().nextInt(5000));
-				if(minerdelay < 5000) {
-					minerdelay = 5000;
-				}
-				
-				//Post the Next AUTOMINE message
-				PostTimerMessage(new TimerMessage(minerdelay, MAIN_AUTOMINE));
-			
-			}else {
-				
-				//Post the Next AUTOMINE message
-				PostTimerMessage(new TimerMessage(AUTOMINE_TIMER, MAIN_AUTOMINE));
-			}
 			
 		}else if(zMessage.getMessageType().equals(MAIN_CLEANDB)) {
 			
@@ -547,9 +596,6 @@ public class Main extends MessageProcessor {
 		
 			//And send it to all your peers..
 			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_PULSE, pulse);
-		
-//			//Mine a TxPoW
-//			mTxPoWMiner.PostMessage(TxPoWMiner.TXPOWMINER_MINEPULSE);
 			
 			//And then wait again..
 			PostTimerMessage(new TimerMessage(GeneralParams.USER_PULSE_FREQ, MAIN_PULSE));
@@ -605,7 +651,15 @@ public class Main extends MessageProcessor {
 			
 			//Restart the Networking..
 			restartNIO();
-		
+
+		}else if(zMessage.getMessageType().equals(MAIN_NETRESET)) {
+			
+			//Reset the networking stats
+			Main.getInstance().getNIOManager().getTrafficListener().reset();
+			
+			//Reset Network stats every 24 hours
+			PostTimerMessage(new TimerMessage(NETRESET_TIMER, MAIN_NETRESET));
+			
 		}else if(zMessage.getMessageType().equals(MAIN_SHUTDOWN)) {
 			
 			shutdown();
@@ -644,7 +698,7 @@ public class Main extends MessageProcessor {
 	}
 	
 	/**
-	 * Post a network message to the webhook / Android listeners
+	 * Post a network message to the webhook / MDS / Android listeners
 	 */
 	public void PostNotifyEvent(String zEvent, JSONObject zData) {
 		

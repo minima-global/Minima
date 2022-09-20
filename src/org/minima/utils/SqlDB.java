@@ -49,7 +49,8 @@ public abstract class SqlDB {
 		mSQLFile = new File(path+".mv.db");
 				
 		//The H2 JDBC URL
-		String h2db = "jdbc:h2:"+path+";MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE";
+//		String h2db = "jdbc:h2:"+path+";MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE";
+		String h2db = "jdbc:h2:"+path+";MODE=MySQL";
 		
 		//Create the connection
 		mSQLConnection = DriverManager.getConnection(h2db, "SA", "");
@@ -76,11 +77,16 @@ public abstract class SqlDB {
 	public void saveDB() {
 		try {
 		
+			//Are we already closed..
+			if(mSQLConnection.isClosed()) {
+				return;
+			}
+			
 			//One last statement
 			Statement stmt = mSQLConnection.createStatement();
 		
 			//Shut down.. this saves and closes all the data
-			stmt.execute("SHUTDOWN COMPACT");
+			stmt.execute("SHUTDOWN");
 
 			//Close the connection
 			mSQLConnection.close();

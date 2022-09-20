@@ -564,6 +564,8 @@ public class MaximaManager extends MessageProcessor {
 				if(!reconnect) {
 					maxdb.deleteHost(nioc.getFullAddress());
 				}
+				
+				NotifyMaximaHostsChanged(nioc.getFullAddress(), false);
 			}
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_CTRLMESSAGE)) {
@@ -791,6 +793,8 @@ public class MaximaManager extends MessageProcessor {
 					mxhost.setConnected(1);
 					maxdb.updateHost(mxhost);
 					
+					NotifyMaximaHostsChanged(nioc.getFullAddress(), true);
+					
 					//OK.. add to our list
 					if(nioc.isMaximaMLS()) {
 						if(mMLSService.newMLSNode(nioc.getMaximaMLS())) {
@@ -969,5 +973,16 @@ public class MaximaManager extends MessageProcessor {
 			}
 			mHaveContacts = false;
 		}
+	}
+	
+	/**
+	 * When your hosts change send a notify message
+	 */
+	public void NotifyMaximaHostsChanged(String zFullAddress, boolean zConnected) {
+		//Post a Notify Message
+		JSONObject data = new JSONObject();
+		data.put("host", zFullAddress);
+		data.put("connected", zConnected);
+		Main.getInstance().PostNotifyEvent("MAXIMAHOSTS", data);
 	}
 }

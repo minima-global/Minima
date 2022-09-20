@@ -113,6 +113,15 @@ public class Minima {
 		boolean daemon 			= configurer.isDaemon();
 		boolean rpcenable 		= configurer.isRpcenable();
 		boolean shutdownhook 	= configurer.isShutDownHook();
+
+		//Are we integrating MySQL
+		if(configurer.isMySQLRequired()) {
+			try {
+				Class.forName("com.mysql.cj.jdbc.Driver");
+			} catch (ClassNotFoundException e1) {
+				e1.printStackTrace();
+			}
+		}
 		
 		//Set the Ports.. If Minima port has changed
 		GeneralParams.RPC_PORT 			= GeneralParams.MINIMA_PORT+1;
@@ -153,14 +162,12 @@ public class Minima {
 
 		//Daemon mode has no stdin input
 		if(daemon) {
-	    	MinimaLogger.log("Daemon Started..");
+	    	MinimaLogger.log("Daemon mode started..");
 			
 			//Loop while running..
 			while (!main.isShutdownComplete()) {
                 try {Thread.sleep(250);} catch (InterruptedException e) {}
             }
-			
-			MinimaLogger.log("Bye bye..");
 			
 			//All done.. The shutdown hook will exit the system..
 			return;
@@ -217,7 +224,5 @@ public class Minima {
 	    } catch (IOException ex) {
 	    	MinimaLogger.log(""+ex);
 	    }
-	    
-	    MinimaLogger.log("Bye bye..");
 	}
 }

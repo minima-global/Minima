@@ -16,7 +16,7 @@ import org.minima.utils.json.JSONObject;
  */
 public class MinimaLogger {
 	
-	public static final String MINIMA_LOG = "MINIMA_LOG";
+	public static final String MINIMA_LOG = "MINIMALOG";
 	
 	public static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.ENGLISH );
 	
@@ -33,7 +33,7 @@ public class MinimaLogger {
 		if(zNotify && Main.getInstance() != null) {
 			JSONObject data = new JSONObject();
 			data.put("message", full_log);
-			Main.getInstance().PostNotifyEvent("MINIMALOG", data);
+			Main.getInstance().PostNotifyEvent(MINIMA_LOG, data);
 		}
 	}
 	

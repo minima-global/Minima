@@ -16,7 +16,7 @@ import org.minima.utils.json.JSONObject;
 public class coinimport extends Command {
 
 	public coinimport() {
-		super("coinimport","[data:] (track:false) - Import a coin, and keep tracking it");
+		super("coinimport","[data:] (track:true|false) - Import a coin, and keep tracking it");
 	}
 	
 	@Override

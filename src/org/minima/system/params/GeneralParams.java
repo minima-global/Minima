@@ -113,6 +113,11 @@ public class GeneralParams {
 	public static String CONNECT_LIST = "";
 	
 	/**
+	 * Show the startup parameters
+	 */
+	public static boolean SHOW_PARAMS = false;
+	
+	/**
 	 * MySQL Archive Settings
 	 */
 	public static String MYSQL_HOST 	= "";
@@ -145,5 +150,15 @@ public class GeneralParams {
 	 */
 	public static boolean DEBUGFLAG = false;
 	public static String DEBUGVAR 	= "";
+	
+	/**
+	 * Enable Full logs for script errors
+	 */
+	public static boolean SCRIPTLOGS = false;
+	
+	/**
+	 * Enable full logs for mining..
+	 */
+	public static boolean MINING_LOGS = false;
 	
 }
