@@ -40,8 +40,6 @@ public class MySQLConnect {
 	PreparedStatement SQL_FIND_SYNCBLOCK_NUM 	= null;
 	PreparedStatement SQL_SELECT_RANGE			= null;
 	
-	private static String CASCADE_FILE = "archivecascade.casc";
-	
 	PreparedStatement SAVE_CASCADE				= null;
 	PreparedStatement LOAD_CASCADE				= null;
 	
@@ -54,7 +52,7 @@ public class MySQLConnect {
 	
 	public void init() throws SQLException {
 		//MYSQL JDBC connection
-		String mysqldb = "jdbc:mysql://"+mMySQLHost+"/"+mDatabase;
+		String mysqldb = "jdbc:mysql://"+mMySQLHost+"/"+mDatabase+"?autoReconnect=true";
 				
 		mConnection = DriverManager.getConnection(mysqldb,mUsername,mPassword);
 	

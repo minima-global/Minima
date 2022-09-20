@@ -141,6 +141,8 @@ public class ArchiveServer extends HTTPServer {
 	
 	public static void main(String[] zArgs) throws SQLException {
 		
+		MinimaLogger.log("Starting Archive Server v1.1");
+		
 		//Load the MySQL driver
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
