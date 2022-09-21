@@ -11,6 +11,8 @@ import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import javax.naming.CommunicationException;
+
 import org.minima.database.archive.MySQLConnect;
 import org.minima.database.cascade.Cascade;
 import org.minima.objects.IBD;
@@ -35,6 +37,23 @@ public class ArchiveServer extends HTTPServer {
 		
 		public ArchiveHandler(Socket zSocket) {
 			mSocket = zSocket;
+		}
+		
+		public synchronized ArrayList<TxBlock> reconnectLoadTxBlocks(MiniNumber zFirstBlock) {
+			//Load the block range..
+			try {
+				
+				return mMySQL.loadBlockRangeNoSync(zFirstBlock);
+				
+			}catch(Exception zExc) {
+				MinimaLogger.log("Connection timeout : "+zExc);
+
+				//Wait a sec..
+				try {Thread.sleep(1000);} catch (InterruptedException e) {}
+				
+				//Try again
+				return mMySQL.loadBlockRangeNoSync(zFirstBlock);
+			}
 		}
 		
 		@Override
@@ -89,7 +108,8 @@ public class ArchiveServer extends HTTPServer {
 					ArrayList<TxBlock> ibdblocks = ibd.getTxBlocks(); 
 					
 					//Load the block range..
-					ArrayList<TxBlock> blocks = mMySQL.loadBlockRangeNoSync(firstblock);
+					//ArrayList<TxBlock> blocks = mMySQL.loadBlockRangeNoSync(firstblock);
+					ArrayList<TxBlock> blocks = reconnectLoadTxBlocks(firstblock);
 					for(TxBlock block : blocks) {
 						ibdblocks.add(block);
 					}
@@ -141,7 +161,7 @@ public class ArchiveServer extends HTTPServer {
 	
 	public static void main(String[] zArgs) throws SQLException {
 		
-		MinimaLogger.log("Starting Archive Server v1.1");
+		MinimaLogger.log("Starting Archive Server v1.2");
 		
 		//Load the MySQL driver
 		try {
