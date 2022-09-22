@@ -110,6 +110,12 @@ public class ArchiveServer extends HTTPServer {
 					//Load the block range..
 					//ArrayList<TxBlock> blocks = mMySQL.loadBlockRangeNoSync(firstblock);
 					ArrayList<TxBlock> blocks = reconnectLoadTxBlocks(firstblock);
+					if(blocks == null) {
+						MinimaLogger.log("Retrieved null blocks");
+					}else {
+						MinimaLogger.log("Retrieved "+blocks.size()+" blocks");
+					}
+					
 					for(TxBlock block : blocks) {
 						ibdblocks.add(block);
 					}
@@ -132,7 +138,7 @@ public class ArchiveServer extends HTTPServer {
 				dos.close();
 				
 			} catch (Exception e) {
-				e.printStackTrace();
+				MinimaLogger.log(e);
 			}
 		}
 	}
@@ -161,7 +167,7 @@ public class ArchiveServer extends HTTPServer {
 	
 	public static void main(String[] zArgs) throws SQLException {
 		
-		MinimaLogger.log("Starting Archive Server v1.2");
+		MinimaLogger.log("Starting Archive Server v1.3");
 		
 		//Load the MySQL driver
 		try {
