@@ -276,7 +276,11 @@ public class Contract {
 	}
 	
 	public void incrementInstructions() throws ExecutionException {
-		mNumInstructions++;
+		incrementInstructions(1);
+	}
+	
+	public void incrementInstructions(int zNum) throws ExecutionException {
+		mNumInstructions+=zNum;
 		if(mNumInstructions > MAX_INSTRUCTIONS) {
 			throw new ExecutionException("MAX instruction number reached! "+mNumInstructions);
 		}
