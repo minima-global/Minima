@@ -46,7 +46,7 @@ public class MDSManager extends MessageProcessor {
 	/**
 	 * Timer Message senty every 10 seconds to MDS apps - frontend / backend
 	 */
-	public static final String MDS_TIMER_20SECONDS		= "MDS_TIMER_30SECONDS"; 
+	public static final String MDS_TIMER_20SECONDS		= "MDS_TIMER_20SECONDS"; 
 	
 	//The Main File and Command server
 	HTTPSServer mMDSFileServer;
