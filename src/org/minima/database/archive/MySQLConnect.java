@@ -329,38 +329,33 @@ public class MySQLConnect {
 	
 	/**
 	 * Non Synchronized version of LoadBlockRange
+	 * @throws SQLException 
 	 */
-	public ArrayList<TxBlock> loadBlockRangeNoSync(MiniNumber zStartBlock) {
+	public ArrayList<TxBlock> loadBlockRangeNoSync(MiniNumber zStartBlock) throws SQLException {
 		
 		ArrayList<TxBlock> blocks = new ArrayList<>();
 		
-		try {
+		//Set Search params
+		SQL_SELECT_RANGE.clearParameters();
+		SQL_SELECT_RANGE.setLong(1,zStartBlock.getAsLong());
+		
+		//Run the query
+		ResultSet rs = SQL_SELECT_RANGE.executeQuery();
+		
+		//Multiple results
+		while(rs.next()) {
 			
-			//Set Search params
-			SQL_SELECT_RANGE.clearParameters();
-			SQL_SELECT_RANGE.setLong(1,zStartBlock.getAsLong());
+			//Get the details..
+			byte[] syncdata 	= rs.getBytes("syncdata");
 			
-			//Run the query
-			ResultSet rs = SQL_SELECT_RANGE.executeQuery();
+			//Create MiniData version
+			MiniData minisync = new MiniData(syncdata);
 			
-			//Multiple results
-			while(rs.next()) {
-				
-				//Get the details..
-				byte[] syncdata 	= rs.getBytes("syncdata");
-				
-				//Create MiniData version
-				MiniData minisync = new MiniData(syncdata);
-				
-				//Convert
-				TxBlock sb = TxBlock.convertMiniDataVersion(minisync);
-				
-				//Add to our list
-				blocks.add(sb);
-			}
+			//Convert
+			TxBlock sb = TxBlock.convertMiniDataVersion(minisync);
 			
-		} catch (SQLException e) {
-			MinimaLogger.log(e);
+			//Add to our list
+			blocks.add(sb);
 		}
 		
 		return blocks;

@@ -46,14 +46,23 @@ public class ArchiveServer extends HTTPServer {
 				return mMySQL.loadBlockRangeNoSync(zFirstBlock);
 				
 			}catch(Exception zExc) {
-				MinimaLogger.log("Connection timeout : "+zExc);
+				MinimaLogger.log("Connection failed.. reconnecting.. : "+zExc);
 
 				//Wait a sec..
 				try {Thread.sleep(1000);} catch (InterruptedException e) {}
 				
 				//Try again
-				return mMySQL.loadBlockRangeNoSync(zFirstBlock);
+				try {
+					
+					return mMySQL.loadBlockRangeNoSync(zFirstBlock);
+					
+				} catch (SQLException e) {
+					MinimaLogger.log("ReConnection failed : "+e);
+					MinimaLogger.log(e);
+				}
 			}
+			
+			return null;
 		}
 		
 		@Override
@@ -108,16 +117,18 @@ public class ArchiveServer extends HTTPServer {
 					ArrayList<TxBlock> ibdblocks = ibd.getTxBlocks(); 
 					
 					//Load the block range..
-					//ArrayList<TxBlock> blocks = mMySQL.loadBlockRangeNoSync(firstblock);
 					ArrayList<TxBlock> blocks = reconnectLoadTxBlocks(firstblock);
-					if(blocks == null) {
-						MinimaLogger.log("Retrieved null blocks");
+					if(blocks != null) {
+						for(TxBlock block : blocks) {
+							ibdblocks.add(block);
+						}
 					}else {
-						MinimaLogger.log("Retrieved "+blocks.size()+" blocks");
-					}
-					
-					for(TxBlock block : blocks) {
-						ibdblocks.add(block);
+						
+						//Close the streams
+						dis.close();
+						dos.close();
+						
+						return;
 					}
 				}
 				
