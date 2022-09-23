@@ -44,9 +44,9 @@ public class MDSManager extends MessageProcessor {
 	public static final String MDS_MINIDAPPS_UNINSTALLED 	= "MDS_MINIDAPPS_UNINSTALLED";
 	
 	/**
-	 * Timer Message senty every 20 seconds to MDS apps - frontend / backend
+	 * Timer Message sent every 10 seconds to MDS apps - frontend / backend
 	 */
-	public static final String MDS_TIMER_20SECONDS		= "MDS_TIMER_20SECONDS"; 
+	public static final String MDS_TIMER_10SECONDS		= "MDS_TIMER_10SECONDS"; 
 	
 	//The Main File and Command server
 	HTTPSServer mMDSFileServer;
@@ -335,15 +335,15 @@ public class MDSManager extends MessageProcessor {
 			PostMessage(MDS_MINIDAPPS_RESETALL);
 		
 			//Post another Message
-			PostTimerMessage(new TimerMessage(20000, MDS_TIMER_20SECONDS));
+			PostTimerMessage(new TimerMessage(10000, MDS_TIMER_10SECONDS));
 			
-		}else if(zMessage.getMessageType().equals(MDS_TIMER_20SECONDS)) {
+		}else if(zMessage.getMessageType().equals(MDS_TIMER_10SECONDS)) {
 
 			//Send a POLL message.. 
-			Main.getInstance().PostNotifyEvent(MDS_TIMER_20SECONDS, new JSONObject());
+			Main.getInstance().PostNotifyEvent(MDS_TIMER_10SECONDS, new JSONObject());
 			
 			//Post another Message
-			PostTimerMessage(new TimerMessage(20000, MDS_TIMER_20SECONDS));
+			PostTimerMessage(new TimerMessage(10000, MDS_TIMER_10SECONDS));
 			
 		}else if(zMessage.getMessageType().equals(MDS_POLLMESSAGE)) {
 
