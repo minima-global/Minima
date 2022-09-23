@@ -29,6 +29,7 @@ import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
+import org.minima.utils.messages.TimerMessage;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
@@ -41,6 +42,11 @@ public class MDSManager extends MessageProcessor {
 	
 	public static final String MDS_MINIDAPPS_INSTALLED 		= "MDS_MINIDAPPS_INSTALLED";
 	public static final String MDS_MINIDAPPS_UNINSTALLED 	= "MDS_MINIDAPPS_UNINSTALLED";
+	
+	/**
+	 * Timer Message senty every 10 seconds to MDS apps - frontend / backend
+	 */
+	public static final String MDS_TIMER_20SECONDS		= "MDS_TIMER_30SECONDS"; 
 	
 	//The Main File and Command server
 	HTTPSServer mMDSFileServer;
@@ -327,6 +333,17 @@ public class MDSManager extends MessageProcessor {
 			
 			//Scan for MiniDApps
 			PostMessage(MDS_MINIDAPPS_RESETALL);
+		
+			//Post another Message
+			PostTimerMessage(new TimerMessage(20000, MDS_TIMER_20SECONDS));
+			
+		}else if(zMessage.getMessageType().equals(MDS_TIMER_20SECONDS)) {
+
+			//Send a POLL message.. 
+			Main.getInstance().PostNotifyEvent(MDS_TIMER_20SECONDS, new JSONObject());
+			
+			//Post another Message
+			PostTimerMessage(new TimerMessage(20000, MDS_TIMER_20SECONDS));
 			
 		}else if(zMessage.getMessageType().equals(MDS_POLLMESSAGE)) {
 
@@ -415,7 +432,7 @@ public class MDSManager extends MessageProcessor {
 				//Load it into the servcei runner..
 				Context ctx = Context.enter();
 				ctx.setOptimizationLevel(-1);
-				ctx.setLanguageVersion(Context.VERSION_1_7);
+				ctx.setLanguageVersion(Context.VERSION_1_8);
 				
 				//Create the Scope
 				Scriptable scope = ctx.initStandardObjects();
