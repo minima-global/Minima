@@ -44,7 +44,7 @@ public class MDSManager extends MessageProcessor {
 	public static final String MDS_MINIDAPPS_UNINSTALLED 	= "MDS_MINIDAPPS_UNINSTALLED";
 	
 	/**
-	 * Timer Message senty every 10 seconds to MDS apps - frontend / backend
+	 * Timer Message senty every 20 seconds to MDS apps - frontend / backend
 	 */
 	public static final String MDS_TIMER_20SECONDS		= "MDS_TIMER_20SECONDS"; 
 	
