@@ -130,7 +130,7 @@ var MDS = {
 		getParams : function(parameterName){
 			    var result = null,
 		        tmp = [];
-			    var items = location.search.substr(1).split("&");
+			    var items = window.location.search.substr(1).split("&");
 			    for (var index = 0; index < items.length; index++) {
 			        tmp = items[index].split("=");
 			        //console.log("TMP:"+tmp);
@@ -157,8 +157,8 @@ var PollSeries  = 0;
 function PollListener(){
 	
 	//The POLL host
-	pollhost = MDS.mainhost+"poll?"+"uid="+MDS.minidappuid;
-	polldata = "series="+PollSeries+"&counter="+PollCounter;
+	var pollhost = MDS.mainhost+"poll?"+"uid="+MDS.minidappuid;
+	var polldata = "series="+PollSeries+"&counter="+PollCounter;
 	
 	httpPostAsyncPoll(pollhost,polldata,function(msg){
 		
