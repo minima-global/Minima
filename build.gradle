@@ -123,19 +123,8 @@ publishing {
     }
 }
 
-/*docker {
-    name 'minimaglobal/minima:latest'
-    buildx true
-    //push true
-    platform 'linux/amd64,linux/arm64,linux/arm/v7'
-    files tasks.shadowJar, "$rootDir/dapps/"
-    copySpec.from("$buildDir/lib/minima-all.jar",).into(".")
-    copySpec.from("dapps/*").into(".")
-    copySpec.from("minima.config").into(".")
-}*/
-
 docker {
-    name 'minimaglobal/minima:testarm'
+    name 'minimaglobal/minima:latest'
     dockerfile project.file('docker/build/Dockerfile')
     buildx true
     push true

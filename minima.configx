@@ -1,6 +1,0 @@
-data=/home/minima/data/.minima/
-daemon=true
-mdsenable=true
-mdsinit=/home/minima/dapps
-mdswrite=Terminal
-basefolder=/home/minima/data/
