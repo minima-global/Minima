@@ -32,6 +32,7 @@ done
 apt update
 apt install openjdk-11-jre-headless curl jq -y
 
+
 if [ ! $(getent group minima) ]; then
   echo "[+] Adding minima group"
   groupadd -g 9001 minima
