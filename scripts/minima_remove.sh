@@ -26,7 +26,7 @@ echo "Disabling minima service"
 systemctl disable minima_$PORT
 
 echo "Removing /etc/cron.daily/minima_$PORT"
-rm /etc/cron.weekly/minima_$PORT
+rm /etc/cron.daily/minima_$PORT
 rm /etc/systemd/system/minima_$PORT.service
 systemctl daemon-reload
 systemctl reset-failed
