@@ -625,12 +625,12 @@ public class Contract {
 	
 	public static void main(String[] zArgs) {
 		
-//		String scr = new String("let (a 1 0xFF )  = 4 + -2  let t = concat( 0x00 0x34   0x45  )");
+		String scr = new String("let a  = (1+3) EQ 4");
 
-		String scr = new String("LET safehouse = [ LET pkcold = coldkey LET pkhot = HOT_KEY\r\n"
-				+ "                  IF SIGNEDBY ( pkcold ) THEN RETURN TRUE ENDIF\r\n"
-				+ "                  IF SIGNEDBY ( pkhot ) THEN IF @BLKDIFF GT 20 THEN\r\n"
-				+ "                  RETURN VERIFYOUT ( @INPUT PREVSTATE ( 21 ) @AMOUNT @TOKENID TRUE ) ENDIF ENDIF ]");
+//		String scr = new String("LET safehouse = [ LET pkcold = coldkey LET pkhot = HOT_KEY\r\n"
+//				+ "                  IF SIGNEDBY ( pkcold ) THEN RETURN TRUE ENDIF\r\n"
+//				+ "                  IF SIGNEDBY ( pkhot ) THEN IF @BLKDIFF GT 20 THEN\r\n"
+//				+ "                  RETURN VERIFYOUT ( @INPUT PREVSTATE ( 21 ) @AMOUNT @TOKENID TRUE ) ENDIF ENDIF ]");
 //		String scr = new String("ASSERT VERIFYOUT(INC(@INPUT * 7) buyer (amount/price) @toKENID (TRUE) INc(33))");
 //		String scr = new String("ASSERT ( [hello][dd](ff) [sdsd](f) *[jjj]) LET f=   (  0  ) ");
 		
