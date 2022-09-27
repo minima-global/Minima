@@ -1,5 +1,11 @@
 # WINDOWS
-docker run -d -e minima_desktop=true -e minima_mdspassword=123 -e minima_daemon=true -v $HOME/minidocker:/home/minima/data -p 9001-9004:9001-9004 --restart unless-stopped --name minima minimaglobal/minima:latest
+docker run -d -e minima_desktop=true -e minima_mdspassword=123 -e -v $HOME/minidocker:/home/minima/data -p 9001-9004:9001-9004 --restart unless-stopped --name minima minimaglobal/minima:latest
+
+# MAC
+docker run -d -e minima_desktop=true -e minima_mdspassword=123 -e -v ~/minidocker:/home/minima/data -p 9001-9004:9001-9004 --restart unless-stopped --name minima minimaglobal/minima:latest
+
+# LINUX
+
 
 # WATCHTOWER - update minima docker when new image pushed
-docker run -d --name watchtower -e WATCHTOWER_CLEANUP=true -e WATCHTOWER_TIMEOUT=60s -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower minima
+docker run -d --restart unless-stopped --name watchtower -e WATCHTOWER_CLEANUP=true -e WATCHTOWER_TIMEOUT=60s -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower

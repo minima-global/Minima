@@ -25,7 +25,7 @@ plugins {
     // Plugin to publish artifacts to github and maven
     id 'maven-publish'
 
-    id 'com.palantir.docker' version '0.28.0'
+    id 'com.palantir.docker' version '0.34.0'
 }
 
 sourceCompatibility = JavaVersion.VERSION_11
@@ -125,6 +125,9 @@ publishing {
 
 docker {
     name 'minimaglobal/minima:latest'
+    buildx true
+    //push true
+    platform 'linux/amd64,linux/arm64,linux/arm/v7'
     files tasks.shadowJar, "$rootDir/dapps/"
     copySpec.from("$buildDir/lib/minima-all.jar",).into(".")
     copySpec.from("dapps/*").into(".")
