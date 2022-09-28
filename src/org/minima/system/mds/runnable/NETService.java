@@ -27,6 +27,9 @@ public class NETService {
 		mScope 			= zScope;
 	}
 	
+	/**
+	 * Make a GET request
+	 */
 	public void GET(String zURL) {
 		GET(zURL,null);
 	}
@@ -35,6 +38,31 @@ public class NETService {
 		
 		//Create a Command and run it..
 		NETcommand net 	= new NETcommand(mMiniDAPPID, zURL);
+		String result 	= net.runCommand();
+		
+		//Send Info Back
+		if(zCallback == null) {
+			return;
+		}
+		
+		//The arguments
+		Object[] args = { NativeJSON.parse(mContext, mScope, result, new NullCallable()) };
+		
+		//Call the main MDS Function in JS
+		zCallback.call(mContext, mScope, mScope, args);
+	}
+	
+	/**
+	 * Make a POST request
+	 */
+	public void POST(String zURL, String zData) {
+		POST(zURL,zData,null);
+	}
+	
+	public void POST(String zURL, String zData, Function zCallback) {
+		
+		//Create a Command and run it..
+		NETcommand net 	= new NETcommand(mMiniDAPPID, zURL, zData);
 		String result 	= net.runCommand();
 		
 		//Send Info Back

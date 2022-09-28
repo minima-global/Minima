@@ -13,14 +13,14 @@ MDS.init(function(msg){
 		MDS.log("MyTest inited");
 					
 		//Run this..
-		MDS.net.GET("https://www.google.com",function(msg){
-			MDS.log("NET GET! "+JSON.stringify(msg));
+		MDS.net.POST("http://127.0.0.1:9002", "status", function(msg){
+			MDS.log("NET service POST! "+JSON.stringify(msg));
 		});
 	
 	//Only interested in Maxima
 	}else{
 		
-		MDS.log("service.js : "+msg.event);
+		//MDS.log("service.js : "+msg.event);
 		
 	}
 	
