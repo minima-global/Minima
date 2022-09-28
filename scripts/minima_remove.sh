@@ -33,8 +33,7 @@ systemctl reset-failed
 
 echo "Removing $HOME/minima_service.sh"
 rm $HOME"/minima_service.sh"
-echo "Removing $HOME/minima.jar"
-rm $HOME"/minima.jar"
+
 
 if [ $CLEAN_FLAG ]; then
  echo "Removing data directory $HOME/.minima_$PORT"
