@@ -48,6 +48,7 @@ if ! id -u 9001 > /dev/null 2>&1; then
 fi
 
 
+
 if [ ! $PORT ]; then
     PORT='9001'
 fi
@@ -85,7 +86,7 @@ fi
 
 echo "[+] Creating service minima_$PORT"
 
-MINIMA_PARAMS="-daemon -rpcenable -port $PORT -data $HOME/.minima_102_$PORT"
+MINIMA_PARAMS="-daemon -rpcenable -mdsenable -port $PORT -data $HOME/.minima_$PORT"
 if [ $CLEAN_FLAG ]; then
   MINIMA_PARAMS="$MINIMA_PARAMS -clean"
 fi
@@ -105,7 +106,7 @@ Description=minima_$PORT
 [Service]
 User=minima
 Type=simple
-ExecStart=/usr/bin/java -Xmx1G -jar $HOME/$MINIMA_JAR_NAME $MINIMA_PARAMS
+ExecStart=/usr/bin/java -jar $HOME/$MINIMA_JAR_NAME $MINIMA_PARAMS
 Restart=always
 RestartSec=100
 [Install]
