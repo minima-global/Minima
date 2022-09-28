@@ -106,8 +106,8 @@ public class MySQLConnect {
 	
 	public void wipeAll() throws SQLException {
 		Statement stmt = mConnection.createStatement();
-		stmt.execute("DROP syncblock");
-		stmt.execute("DROP cascadedata");
+		stmt.execute("DROP TABLE syncblock");
+		stmt.execute("DROP TABLE cascadedata");
 		stmt.close();
 	}
 	
@@ -143,8 +143,6 @@ public class MySQLConnect {
 			
 			//Do it.
 			SAVE_CASCADE.execute();
-			
-			MinimaLogger.log("MYSQL stored cascade");
 			
 			return true;
 	}

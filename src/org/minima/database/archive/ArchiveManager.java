@@ -163,8 +163,8 @@ public class ArchiveManager extends SqlDB {
 		return -1;
 	}
 	
-	public synchronized boolean saveBlock(TxBlock zBlock) {
-		try {
+	public synchronized boolean saveBlock(TxBlock zBlock) throws SQLException {
+//		try {
 			
 			//get the MiniData version..
 			MiniData syncdata = MiniData.getMiniDataVersion(zBlock);
@@ -190,11 +190,11 @@ public class ArchiveManager extends SqlDB {
 			
 			return true;
 			
-		} catch (SQLException e) {
-			MinimaLogger.log(e);
-		}
-		
-		return false;
+//		} catch (SQLException e) {
+//			MinimaLogger.log(e);
+//		}
+//		
+//		return false;
 	}
 	
 	public synchronized TxBlock loadBlock(String zTxPoWID) {

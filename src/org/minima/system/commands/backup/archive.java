@@ -208,6 +208,13 @@ public class archive extends Command {
 			MiniNumber endblock 	= MiniNumber.ZERO;
 			boolean foundsome 		= false;
 			
+			//Are we wiping previous archive
+			if(MinimaDB.getDB().getArchive().isStoreMySQL()) {
+				MySQLConnect mysql = MinimaDB.getDB().getArchive().getMySQLCOnnect();
+				mysql.wipeAll();
+				mysql.shutdown();
+				mysql.init();
+			}
 			
 			while(true) {
 				
@@ -218,6 +225,9 @@ public class archive extends Command {
 				if(startblock.isEqual(MiniNumber.ZERO) && ibd.hasCascade()) {
 					MinimaLogger.log("Cascade Received.. "+ibd.getCascade().getTip().getTxPoW().getBlockNumber());
 					MinimaDB.getDB().setIBDCascade(ibd.getCascade());
+					
+					//Do we need to sdave this..
+					MinimaDB.getDB().getArchive().checkCascadeRequired(ibd.getCascade());
 				}
 				
 				int size = ibd.getTxBlocks().size();
