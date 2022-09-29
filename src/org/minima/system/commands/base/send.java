@@ -111,7 +111,7 @@ public class send extends Command {
 			
 			//How much to send
 			MiniNumber sendamount 	= getNumberParam("amount");
-			totalamount = sendamount;
+			totalamount 			= sendamount;
 			
 			recipients.add(new AddressAmount(sendaddress, sendamount));
 		}
@@ -361,6 +361,11 @@ public class send extends Command {
 			
 			MiniNumber splitamount 	= user.getAmount().div(split);
 			MiniData address 		= user.getAddress();
+			
+			if(!tokenid.equals("0x00")) {
+				//Use the token object we previously found
+				splitamount = token.getScaledMinimaAmount(splitamount);
+			}
 			
 			for(int i=0;i<isplit;i++) {
 				//Create the output
