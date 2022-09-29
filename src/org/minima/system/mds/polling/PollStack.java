@@ -7,7 +7,7 @@ import org.minima.utils.json.JSONObject;
 
 public class PollStack {
 
-	public static final int MAX_MESSAGES = 50;
+	public static final int MAX_MESSAGES = 256;
 	
 	String mSeries;
 	
@@ -29,10 +29,10 @@ public class PollStack {
 		return mSeries;
 	}
 	
-	public synchronized void addMessage(JSONObject zMessage) {
+	public synchronized void addMessage(JSONObject zMessage, String zMiniDAPPID) {
 		
 		//Create a new Poll Message
-		PollMessage msg = new PollMessage(mCounter, zMessage);
+		PollMessage msg = new PollMessage(mCounter, zMessage, zMiniDAPPID);
 		mCounter++;
 		
 		//Add it to our stack..
@@ -48,7 +48,7 @@ public class PollStack {
 		}
 	}
 	
-	public synchronized PollMessage getMessage(int zMessageCounter){		
+	public synchronized PollMessage getMessage(int zMessageCounter, String zMiniDAPPID){		
 		
 		//Are there any messages
 		if(mCounter>zMessageCounter) {
@@ -56,10 +56,12 @@ public class PollStack {
 			//Cycle through and add them..
 			for(PollMessage pmsg : mMessages) {
 				
+				//Who is it for..
+				String zTo	= pmsg.getTo();
+				
 				//Check the counter
-				if(pmsg.getCounter()>=zMessageCounter) {
-					
-					//Add to the return stack
+				if(pmsg.getCounter()>=zMessageCounter && (zTo.equals("*") || zTo.equals(zMiniDAPPID))) {
+					//Return this message
 					return pmsg;
 				}
 			}

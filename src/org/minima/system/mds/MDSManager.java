@@ -349,13 +349,23 @@ public class MDSManager extends MessageProcessor {
 
 			// Add a message to the POll..
 			JSONObject poll = (JSONObject) zMessage.getObject("poll");
+			String to 		= zMessage.getString("to");
 			
 			//Send message to the runnables first..
 			for(MDSJS mds : mRunnables) {
 				try {
 				
-					//Send to the runnable
-					mds.callMainCallback(poll);
+					if(to.equals("*")) {
+						//Send to the runnable
+						mds.callMainCallback(poll);
+					}else {
+						
+						//Check the MiniDAPPID
+						if(mds.getMiniDAPPID().equals(to)) {
+							//Send to the runnable
+							mds.callMainCallback(poll);
+						}
+					}
 					
 				}catch(Exception exc) {
 					MinimaLogger.log(exc);
@@ -363,7 +373,7 @@ public class MDSManager extends MessageProcessor {
 			}
 			
 			//Add then to the Poll Stack - web minidapps
-			mPollStack.addMessage(poll);
+			mPollStack.addMessage(poll,to);
 		
 		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_RESETALL)) {
 			
