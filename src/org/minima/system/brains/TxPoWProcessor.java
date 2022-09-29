@@ -165,6 +165,11 @@ public class TxPoWProcessor extends MessageProcessor {
 	
 	private boolean processSyncBlock(TxBlock zTxBlock) throws Exception {
 		
+		//Are we shutting down..
+		if(Main.getInstance().isShuttingDown()) {
+			return false;
+		}
+		
 		Cascade cascdb		= MinimaDB.getDB().getDB().getCascade();
 		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
 		TxPowTree txptree 	= MinimaDB.getDB().getTxPoWTree();
@@ -226,6 +231,11 @@ public class TxPoWProcessor extends MessageProcessor {
 	
 	
 	private void recalculateTree() {
+		
+		//Are we shutting down..
+		if(Main.getInstance().isShuttingDown()) {
+			return;
+		}
 		
 		//Required DBs
 		TxPoWDB txpdb		= MinimaDB.getDB().getTxPoWDB();
@@ -327,6 +337,11 @@ public class TxPoWProcessor extends MessageProcessor {
 	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
+		
+		//Are we shutting down..
+		if(Main.getInstance().isShuttingDown()) {
+			return;
+		}
 		
 		if(zMessage.isMessageType(TXPOWPROCESSOR_PROCESSTXPOW)) {
 			//Get the TxPoW

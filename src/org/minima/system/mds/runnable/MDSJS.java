@@ -4,23 +4,12 @@ import org.minima.system.mds.MDSManager;
 import org.minima.system.mds.handler.CMDcommand;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
-import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.NativeJSON;
 import org.mozilla.javascript.Scriptable;
 
 public class MDSJS {
-
-	/**
-	 * Required to create the Native JSON
-	 */
-	private class NullCallable implements Callable{
-	    @Override
-	    public Object call(Context context, Scriptable scope, Scriptable holdable, Object[] objects){
-	        return objects[1];
-	    }
-	}
 	
 	/**
 	 * Which MiniDAPP does this Contect apply to
@@ -44,12 +33,18 @@ public class MDSJS {
 	 */
 	MDSManager mMDS;
 	
+	/**
+	 * The NET Functions
+	 */
+	public NETService net;
+	
 	public MDSJS(MDSManager zMDS, String zMiniDAPPID, String zMiniName,  Context zContext, Scriptable zScope) {
 		mMDS			= zMDS;
 		mMiniDAPPID		= zMiniDAPPID;
 		mMiniDAPPName	= zMiniName;
 		mContext 		= zContext;
 		mScope 			= zScope;
+		net 			= new NETService(zMiniDAPPID, zMiniName, zContext, zScope);
 	}
 	
 	public String getMiniDAPPID() {
@@ -77,7 +72,7 @@ public class MDSJS {
 	 * Simple Log
 	 */
 	public void log(String zMessage) {
-		MinimaLogger.log("MDS_"+mMiniDAPPName+"_"+mMiniDAPPID+" > "+zMessage);
+		MinimaLogger.log("MDS_"+mMiniDAPPName+"_"+mMiniDAPPID+" > "+zMessage, false);
 	}
 	
 	/**

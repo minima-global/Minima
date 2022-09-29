@@ -1,0 +1,68 @@
+version: '3.7'
+
+networks:
+  minima_testnet:
+    name: minima_testnet
+  outside_minima_testnet:
+    name: outside_minima_testnet
+
+services:
+  minima_one:
+    image: minima:latest
+    command: -daemon -clean -nop2p -rpcenable -connect 35.246.45.106:9001
+    networks:
+      minima_testnet:
+        aliases:
+          - minima_one
+    #ports:
+      #- "9001:9001"
+      #- "12000-12100:9002"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 100M
+
+#  minima_peer:
+#    image: minima:latest
+#    command: -daemon -clean -nop2p -connect 35.246.45.106:9001
+#    networks:
+#      minima_testnet:
+#        aliases:
+#          - minima_peer
+#    depends_on:
+#      - minima_one
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '0.25'
+#          memory: 100M
+
+#  minima_client:
+#    image: minima:latest
+#    command: -test -daemon -isclient -p2pnode minima_one:9001
+#    networks:
+#      minima_testnet:
+#        aliases:
+#          - minima_client
+#    depends_on:
+#      - minima_one
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '0.5'
+#          memory: 500M
+#  minima_no_p2p:
+#    image: minima:latest
+#    command: -test -daemon -nop2p -connect minima_one:9001
+#    networks:
+#      minima_testnet:
+#        aliases:
+#          - minima_client
+#    depends_on:
+#      - minima_one
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '0.5'
+#          memory: 500M

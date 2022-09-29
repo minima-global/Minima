@@ -287,6 +287,10 @@ public class Main extends MessageProcessor {
 		mShuttingdown = true;
 	}
 	
+	public boolean isShuttingDown() {
+		return mShuttingdown;
+	}
+	
 	public void shutdown() {
 		//Are we already shutting down..
 		if(mShuttingdown) {

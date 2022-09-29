@@ -11,6 +11,8 @@ import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import javax.naming.CommunicationException;
+
 import org.minima.database.archive.MySQLConnect;
 import org.minima.database.cascade.Cascade;
 import org.minima.objects.IBD;
@@ -35,6 +37,32 @@ public class ArchiveServer extends HTTPServer {
 		
 		public ArchiveHandler(Socket zSocket) {
 			mSocket = zSocket;
+		}
+		
+		public synchronized ArrayList<TxBlock> reconnectLoadTxBlocks(MiniNumber zFirstBlock) {
+			//Load the block range..
+			try {
+				
+				return mMySQL.loadBlockRangeNoSync(zFirstBlock);
+				
+			}catch(Exception zExc) {
+				MinimaLogger.log("Connection failed.. reconnecting.. : "+zExc);
+
+				//Wait a sec..
+				try {Thread.sleep(1000);} catch (InterruptedException e) {}
+				
+				//Try again
+				try {
+					
+					return mMySQL.loadBlockRangeNoSync(zFirstBlock);
+					
+				} catch (SQLException e) {
+					MinimaLogger.log("ReConnection failed : "+e);
+					MinimaLogger.log(e);
+				}
+			}
+			
+			return null;
 		}
 		
 		@Override
@@ -89,9 +117,18 @@ public class ArchiveServer extends HTTPServer {
 					ArrayList<TxBlock> ibdblocks = ibd.getTxBlocks(); 
 					
 					//Load the block range..
-					ArrayList<TxBlock> blocks = mMySQL.loadBlockRangeNoSync(firstblock);
-					for(TxBlock block : blocks) {
-						ibdblocks.add(block);
+					ArrayList<TxBlock> blocks = reconnectLoadTxBlocks(firstblock);
+					if(blocks != null) {
+						for(TxBlock block : blocks) {
+							ibdblocks.add(block);
+						}
+					}else {
+						
+						//Close the streams
+						dis.close();
+						dos.close();
+						
+						return;
 					}
 				}
 				
@@ -112,7 +149,7 @@ public class ArchiveServer extends HTTPServer {
 				dos.close();
 				
 			} catch (Exception e) {
-				e.printStackTrace();
+				MinimaLogger.log(e);
 			}
 		}
 	}
@@ -141,7 +178,7 @@ public class ArchiveServer extends HTTPServer {
 	
 	public static void main(String[] zArgs) throws SQLException {
 		
-		MinimaLogger.log("Starting Archive Server v1.1");
+		MinimaLogger.log("Starting Archive Server v1.3");
 		
 		//Load the MySQL driver
 		try {

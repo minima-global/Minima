@@ -23,6 +23,9 @@ public class CHECKSIG extends MinimaFunction {
 	public Value runFunction(Contract zContract) throws ExecutionException {
 		checkExactParamNumber(requiredParams());
 		
+		//This function is special and requires more CPU cycles.. 32 in all (1+31)
+		zContract.incrementInstructions(31);
+		
 		//Get the Pbkey
 		HexValue pubkey = zContract.getHexParam(0, this);
 		
