@@ -134,6 +134,37 @@ var MDS = {
 		
 	},
 	
+	/**	
+	 * COMMS - send a message to ALL minidapps or JUST your own service.js
+	 */
+	comms : {
+		
+		/**
+		 * PUBLIC message broadcast to ALL (callback is optional)
+		 */
+		broadcast : function(msg, callback){
+			
+			//Create the single line
+			var commsline = "public&"+msg;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"comms?"+"uid="+MDS.minidappuid, commsline, callback);	
+		},
+		
+		/**
+		 * PRIVATE message send just to this MiniDAPP (callback is optional)
+		 */
+		solo : function(msg, callback){
+			
+			//Create the single line
+			var commsline = "private&"+msg;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"comms?"+"uid="+MDS.minidappuid, commsline, callback);	
+		}
+		
+	},
+	
 	/**
 	 * Form GET / POST parameters..
 	 */

@@ -38,6 +38,11 @@ public class MDSJS {
 	 */
 	public NETService net;
 	
+	/**
+	 * The COMMS service 
+	 */
+	public COMMSService comms;
+	
 	public MDSJS(MDSManager zMDS, String zMiniDAPPID, String zMiniName,  Context zContext, Scriptable zScope) {
 		mMDS			= zMDS;
 		mMiniDAPPID		= zMiniDAPPID;
@@ -45,6 +50,7 @@ public class MDSJS {
 		mContext 		= zContext;
 		mScope 			= zScope;
 		net 			= new NETService(zMiniDAPPID, zMiniName, zContext, zScope);
+		comms			= new COMMSService(mMDS, zMiniDAPPID, zMiniName, zContext, zScope);
 	}
 	
 	public String getMiniDAPPID() {

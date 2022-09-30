@@ -154,6 +154,10 @@ public class MDSManager extends MessageProcessor {
 		return mMiniHUBPassword.equals(zPassword.trim());
 	}
 	
+	public MiniDAPP getMiniDAPP(String zMiniDAPPID) {
+		return MinimaDB.getDB().getMDSDB().getMiniDAPP(zMiniDAPPID);
+	}
+	
 	/**
 	 * Return the MINIDAPPID for a given SESSIONID
 	 */
