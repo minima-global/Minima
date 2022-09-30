@@ -42,7 +42,7 @@ systemctl daemon-reload
 systemctl reset-failed
 
 echo "Removing $HOME/minima_service.sh"
-rm $HOME"/minima_service.sh"
+rm -f $HOME"/minima_service.sh"
 
 
 if [ $CLEAN_FLAG ]; then
