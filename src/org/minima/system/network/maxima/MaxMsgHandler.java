@@ -137,10 +137,10 @@ public class MaxMsgHandler extends MessageProcessor {
 		//Open the socket..
 		Socket sock = new Socket();
 
-		//3 seconds to connect
-		sock.connect(new InetSocketAddress(zHost, zPort), 5000);
+		//20 seconds to connect
+		sock.connect(new InetSocketAddress(zHost, zPort), 20000);
 		
-		//10 seconds to read
+		//20 seconds to read
 		sock.setSoTimeout(20000);
 		
 		//Create the streams..
@@ -159,7 +159,7 @@ public class MaxMsgHandler extends MessageProcessor {
 		
 		//Now get a response.. should be ONE_ID.. give it 10 second max.. ( might get a block..)
 		MiniData valid = MaximaManager.MAXIMA_RESPONSE_FAIL;
-		long maxtime = System.currentTimeMillis() + 10000;
+		long maxtime = System.currentTimeMillis() + 20000;
 		while(System.currentTimeMillis() < maxtime) {
 			
 			//Read the data
