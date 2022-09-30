@@ -25,8 +25,14 @@ systemctl stop minima_$PORT
 echo "Disabling minima service"
 systemctl disable minima_$PORT
 
-echo "Removing /etc/cron.daily/minima_$PORT"
-rm /etc/cron.daily/minima_$PORT
+
+
+daily_file = "/etc/cron.daily/minima_$PORT"
+if [ -f "$daily_file" ] ; then
+    echo "Removing /etc/cron.daily/minima_$PORT"
+    rm "$daily_file"
+fi
+
 
 weekly_file = "/etc/cron.weekly/minima_$PORT"
 if [ -f "$weekly_file" ] ; then
