@@ -37,7 +37,7 @@ public class POLLcommand {
 			PollMessage msg = null;
 			while(msg == null && clocksecs<60) {
 				//Get the message..
-				msg = mPollStack.getMessage(counter);
+				msg = mPollStack.getMessage(counter, zMiniDAPPID);
 				if(msg !=null) {
 					break;
 				}

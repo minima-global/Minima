@@ -720,6 +720,7 @@ public class Main extends MessageProcessor {
 		if(getMDSManager() != null) {
 			Message poll = new Message(MDSManager.MDS_POLLMESSAGE);
 			poll.addObject("poll", notify);
+			poll.addObject("to", "*");
 			
 			getMDSManager().PostMessage(poll);
 		}
