@@ -5,6 +5,7 @@ PATH=/sbin:/bin:/usr/bin
 CLEAN_FLAG=''
 PORT=''
 HOST=''
+MDSPWD=''
 HOME="/home/minima"
 CONNECTION_HOST=''
 CONNECTION_PORT=''
@@ -25,6 +26,7 @@ while getopts ':xsc::p:r:d:h:' flag; do
     p) PORT="${OPTARG}";;
     d) HOME="${OPTARG}";;
     h) HOST="${OPTARG}";;
+    w) MDSPWD="${OPTARG}";;
     *) print_usage
        exit 1 ;;
   esac
@@ -89,6 +91,10 @@ echo "[+] Creating service minima_$PORT"
 MINIMA_PARAMS="-daemon -rpcenable -mdsenable -port $PORT -data $HOME/.minima_$PORT"
 if [ $CLEAN_FLAG ]; then
   MINIMA_PARAMS="$MINIMA_PARAMS -clean"
+fi
+
+if [ -z "$MDSPWD" ]; then
+  MINIMA_PARAMS="$MINIMA_PARAMS -mdspassword $MDSPWD"
 fi
 
 
