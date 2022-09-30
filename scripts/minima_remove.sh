@@ -27,6 +27,14 @@ systemctl disable minima_$PORT
 
 echo "Removing /etc/cron.daily/minima_$PORT"
 rm /etc/cron.daily/minima_$PORT
+
+weekly_file = "/etc/cron.weekly/minima_$PORT"
+if [ -f "$weekly_file" ] ; then
+    echo "Removing /etc/cron.weekly/minima_$PORT"
+    rm "$weekly_file"
+fi
+
+
 rm /etc/systemd/system/minima_$PORT.service
 systemctl daemon-reload
 systemctl reset-failed
