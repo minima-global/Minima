@@ -382,6 +382,7 @@ public class MaximaManager extends MessageProcessor {
 				invalidip 	= 	fullhost.startsWith("127.") || 
 								fullhost.startsWith("10.")  || 
 								fullhost.startsWith("100.") ||
+								fullhost.startsWith("0.") 	||
 								fullhost.startsWith("169.") ||
 								fullhost.startsWith("172.") ||
 								fullhost.startsWith("198.") ||

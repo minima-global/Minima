@@ -266,6 +266,11 @@ public class ParamConfigurer {
                 GeneralParams.CLEAN = true;
             }
         }),
+        nosyncibd("nosyncibd", "Do not sync IBD (for testing)", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.NO_SYNC_IBD = true;
+            }
+        }),
         mysqlhost("mysqlhost", "Store all archive data in a MySQL DB", (args, configurer) -> {
             GeneralParams.MYSQL_HOST = args;
             configurer.mUseMySQL = true;

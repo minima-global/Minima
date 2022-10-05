@@ -118,6 +118,11 @@ public class GeneralParams {
 	public static boolean SHOW_PARAMS = false;
 	
 	/**
+	 * Don't download sync IBD
+	 */
+	public static boolean NO_SYNC_IBD = false;
+	
+	/**
 	 * MySQL Archive Settings
 	 */
 	public static String MYSQL_HOST 	= "";

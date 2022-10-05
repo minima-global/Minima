@@ -85,21 +85,23 @@ public class P2PPeersChecker extends MessageProcessor {
             // or unverified peers list. If it is not, add to the unverified list and request a check if it's contactable
             InetSocketAddress address = (InetSocketAddress) zMessage.getObject("address");
             Set<String> localAddresses = P2PFunctions.getLocalAddresses();
-
-            if (GeneralParams.ALLOW_ALL_IP || (!localAddresses.contains(address.getHostString()) && !address.getHostString().startsWith("127"))) {
+            
+            boolean islocal = P2PFunctions.isIPLocal(address.getHostString());
+            //if (GeneralParams.ALLOW_ALL_IP || (!localAddresses.contains(address.getHostString()) && !address.getHostString().startsWith("127"))) {
+            if (GeneralParams.ALLOW_ALL_IP || !islocal) {
                 if (!unverifiedPeers.contains(address) && !verifiedPeers.contains(address)) {
                     unverifiedPeers.add(address);
                     Message msg = new Message(PEERS_CHECKPEERS).addObject("address", address);
                     PostMessage(msg);
                 }
             } else {
-				P2PFunctions.log_debug("[-] Prevent node from adding localhost address to peers list");
+				P2PFunctions.log_debug("[-] Prevent node from adding localhost address to peers list "+address.getHostString());
 			}
 
         } else if (zMessage.getMessageType().equals(PEERS_CHECKPEERS)) {
 
             InetSocketAddress address = (InetSocketAddress) zMessage.getObject("address");
-            if (P2PFunctions.getAllConnectedConnections().size() > 0) {
+            if (P2PFunctions.isNetAvailable() && P2PFunctions.getAllConnectedConnections().size() > 0) {
                 
             	//Get a Greeting if possible
             	Greeting greet = NIOManager.sendPingMessage(address.getHostString(), address.getPort(), true);
@@ -216,7 +218,9 @@ public class P2PPeersChecker extends MessageProcessor {
                 
             } else {
             	
-            	//Check again in 10 seconds
+//              	P2PFunctions.log_debug("[!] P2P not connected to internet - try again in 60 seconds");
+                
+            	//Check again in 60 seconds
                 TimerMessage tmsg = new TimerMessage(60_000, PEERS_CHECKPEERS);
                 tmsg.addObject("address", address);
                 PostTimerMessage(tmsg);
