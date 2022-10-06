@@ -587,12 +587,20 @@ public class Contract {
 					
 					whites = false;
 					
-				}else if(tok.getToken().startsWith("(")) {
+				}else if(tok.getToken().startsWith("(") || tok.getToken().startsWith("[")) {
 					
 					String strtok = tok.getToken();
 					
 					if(whites) {
-						ret.append(strtok);
+						boolean isspacerequired = prevtok!=null 
+								&& (prevtok.getToken().endsWith(")") || prevtok.getToken().endsWith("]"));
+						
+						if(isspacerequired) {
+							ret.append(" "+strtok);
+						}else {
+							ret.append(strtok);
+						}
+						
 					}else {
 					
 						boolean isspacerequired = prevtok!=null 
@@ -655,8 +663,8 @@ public class Contract {
 //				+ "                  IF SIGNEDBY ( pkhot ) THEN IF @BLKDIFF GT 20 THEN\r\n"
 //				+ "                  RETURN VERIFYOUT ( @INPUT PREVSTATE ( 21 ) @AMOUNT @TOKENID TRUE ) ENDIF ENDIF ]");
 //		String scr = new String("[as]+(sd)buyer (amount/price) buyer (amount/price)buyer");
-//		String scr = new String("((sd+1*(12) (23)))buyer ");
-		String scr = new String("ASSERT VERIFYOUT(INC(@INPUT * 7) buyer (amount/price) @toKENID (TRUE) INc(33))");
+		String scr = new String("((sd+1*(12) (23)))buyer ");
+//		String scr = new String("INC((asas) (2323))");
 //		String scr = new String("ASSERT ( [hello][dd](ff) [sdsd](f) *[jjj]) LET f=   (  0  ) ");
 
 		MinimaLogger.log(scr);
