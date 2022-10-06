@@ -101,7 +101,7 @@ public class P2PPeersChecker extends MessageProcessor {
         } else if (zMessage.getMessageType().equals(PEERS_CHECKPEERS)) {
 
             InetSocketAddress address = (InetSocketAddress) zMessage.getObject("address");
-            if (P2PFunctions.isNetAvailable() && P2PFunctions.getAllConnectedConnections().size() > 0) {
+            if (P2PFunctions.getAllConnectedConnections().size() > 0) {
                 
             	//Get a Greeting if possible
             	Greeting greet = NIOManager.sendPingMessage(address.getHostString(), address.getPort(), true);
@@ -227,12 +227,16 @@ public class P2PPeersChecker extends MessageProcessor {
             }
 
         } else if (zMessage.getMessageType().equals(PEERS_LOOP)) {
-            // Check all the verified Peers again
-            for (InetSocketAddress address : verifiedPeers) {
-                Message msg = new Message(PEERS_CHECKPEERS).addObject("address", address);
-                PostMessage(msg);
-            }
-
+        	
+        	//Check we have a net connection
+        	if(P2PFunctions.isNetAvailable()) {
+        		// Check all the verified Peers again
+                for (InetSocketAddress address : verifiedPeers) {
+                    Message msg = new Message(PEERS_CHECKPEERS).addObject("address", address);
+                    PostMessage(msg);
+                }
+        	}
+        	
             //Do it again ..
             PostTimerMessage(new TimerMessage(PEERS_LOOP_TIMER, PEERS_LOOP));
         }

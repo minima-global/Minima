@@ -93,11 +93,10 @@ public class P2PFunctions {
             conn.connect();
             conn.getInputStream().close();
             return true;
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            return false;
+        } catch (Exception e) {
+            //Could not connect 
         }
+        return false;
     }
     
     /**
