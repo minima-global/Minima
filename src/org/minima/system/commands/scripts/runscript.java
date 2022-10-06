@@ -20,7 +20,7 @@ import org.minima.utils.json.JSONObject;
 public class runscript extends Command {
 
 	public runscript() {
-		super("runscript","[script:] (clean:true|false) (state:{}) (prevstate:{}) (globals:{}) (signatures:[]) (extrascripts:{}) - Run a script with the defined parameters");
+		super("runscript","[script:] (clean:false|true) (state:{}) (prevstate:{}) (globals:{}) (signatures:[]) (extrascripts:{}) - Run a script with the defined parameters");
 	}
 	
 	@Override
@@ -30,7 +30,7 @@ public class runscript extends Command {
 		//Get the script..
 		String script = getParam("script","");
 		
-		boolean clean = getBooleanParam("clean",true);
+		boolean clean = getBooleanParam("clean",false);
 		if(clean) {
 			script = Contract.cleanScript(script);
 		}

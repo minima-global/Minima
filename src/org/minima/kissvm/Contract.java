@@ -553,7 +553,7 @@ public class Contract {
 			//Now add them correctly..
 			boolean first 		= true;
 			boolean whites 		= true;
-			String prevtok 		= null;
+			ScriptToken prevtok = null;
 			for(ScriptToken tok : tokens) {
 				
 				if(zLog) {
@@ -587,16 +587,36 @@ public class Contract {
 					
 					whites = false;
 					
+				}else if(tok.getToken().startsWith("(")) {
+					
+					String strtok = tok.getToken();
+					
+					if(whites) {
+						ret.append(strtok);
+					}else {
+					
+						boolean isspacerequired = prevtok!=null 
+								&& (ScriptTokenizer.mAllEOW.contains(prevtok.getToken()));
+						
+						if(isspacerequired) {
+							ret.append(" "+strtok);
+						}else {
+							ret.append(strtok);
+						}
+					}
+					
+					whites=true;
+				
 				}else {
 					String strtok = tok.getToken();
 					
-					boolean islastclosebracket = prevtok!=null && (prevtok.endsWith(")") || prevtok.endsWith("]"));
+					boolean islastclosebracket = prevtok!=null && (prevtok.getToken().endsWith(")") || prevtok.getToken().endsWith("]"));
 					
 					//Is it an end of word or whitespace..
 					if(islastclosebracket && !ScriptTokenizer.mAllAFTER.contains(strtok)) {
 						
 						ret.append(" "+strtok);
-						whites = true;
+						whites = false;
 						
 					}else if(ScriptTokenizer.isWhiteSpace(strtok) || ScriptTokenizer.mAllEOW.contains(strtok)) {
 						ret.append(strtok);
@@ -612,7 +632,7 @@ public class Contract {
 				}
 				
 				//Keep the last letter of the previous token
-				prevtok = tok.getToken();
+				prevtok = tok;
 			}
 		
 		} catch (MinimaParseException e) {
@@ -625,18 +645,25 @@ public class Contract {
 	
 	public static void main(String[] zArgs) {
 		
-		String scr = new String("let a  = (1+3) EQ 4");
+//		String scr = new String("VERIFYOUT(@INPUT @AMOUNT PREVSTATE(2) @TOKENID FALSE)");
+//		String scr = new String("PREVSTATE(2) @GLOB FALSE");
+//		String scr = new String("@GLOB FALSE");
+//		String scr = new String("let g  = (1 * 3 + (45)+2)");
 
 //		String scr = new String("LET safehouse = [ LET pkcold = coldkey LET pkhot = HOT_KEY\r\n"
 //				+ "                  IF SIGNEDBY ( pkcold ) THEN RETURN TRUE ENDIF\r\n"
 //				+ "                  IF SIGNEDBY ( pkhot ) THEN IF @BLKDIFF GT 20 THEN\r\n"
 //				+ "                  RETURN VERIFYOUT ( @INPUT PREVSTATE ( 21 ) @AMOUNT @TOKENID TRUE ) ENDIF ENDIF ]");
-//		String scr = new String("ASSERT VERIFYOUT(INC(@INPUT * 7) buyer (amount/price) @toKENID (TRUE) INc(33))");
+//		String scr = new String("[as]+(sd)buyer (amount/price) buyer (amount/price)buyer");
+//		String scr = new String("((sd+1*(12) (23)))buyer ");
+		String scr = new String("ASSERT VERIFYOUT(INC(@INPUT * 7) buyer (amount/price) @toKENID (TRUE) INc(33))");
 //		String scr = new String("ASSERT ( [hello][dd](ff) [sdsd](f) *[jjj]) LET f=   (  0  ) ");
+
+		MinimaLogger.log(scr);
 		
 		String clean = Contract.cleanScript(scr,true);
 		
-		MinimaLogger.log(scr);
+		MinimaLogger.log("");
 		MinimaLogger.log(clean);
 		
 	}
