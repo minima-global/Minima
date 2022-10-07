@@ -663,7 +663,7 @@ public class Contract {
 //				+ "                  IF SIGNEDBY ( pkhot ) THEN IF @BLKDIFF GT 20 THEN\r\n"
 //				+ "                  RETURN VERIFYOUT ( @INPUT PREVSTATE ( 21 ) @AMOUNT @TOKENID TRUE ) ENDIF ENDIF ]");
 //		String scr = new String("[as]+(sd)buyer (amount/price) buyer (amount/price)buyer");
-		String scr = new String("((sd+1*(12) (23)))buyer ");
+		String scr = new String("let a  = ((sd+1*(12) (23)))buyer ");
 //		String scr = new String("INC((asas) (2323))");
 //		String scr = new String("ASSERT ( [hello][dd](ff) [sdsd](f) *[jjj]) LET f=   (  0  ) ");
 
