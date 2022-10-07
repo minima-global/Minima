@@ -172,7 +172,7 @@ public class ParamConfigurer {
                 configurer.rpcenable = true;
             }
         }),
-        allowallip("allowallip", "Allow all IP for Maxima", (args, configurer) -> {
+        allowallip("allowallip", "Allow all IP for Maxima / Networking", (args, configurer) -> {
             if ("true".equals(args)) {
             	GeneralParams.ALLOW_ALL_IP = true;
             }
