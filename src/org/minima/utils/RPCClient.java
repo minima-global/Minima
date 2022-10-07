@@ -8,8 +8,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 
 import org.minima.objects.base.MiniString;
+import org.minima.system.commands.Command;
+import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
+import org.minima.utils.json.parser.JSONParser;
 
 public class RPCClient {
 
@@ -129,37 +134,26 @@ public class RPCClient {
 	
 	public static void main(String[] zArgs) throws IOException {		
 
-	    
-//		String host = "127.0.0.1";
-//		int port    = 9005;
-//		String request = "status";
-//		
-//		try {			
-//			JSONObject msg = new JSONObject();
-//			msg.put("from", "Paddy@127.0.0.1:9005");
-//			msg.put("to", "SPartacus@127.0.0.1:7005");
-//			msg.put("msg", "Hello You!!");
-//			msg.put("signature", "0x73465873658347568345");
-//			
-//			//Encode..
-//			String enc = URLEncoder.encode(new String(msg.toString()),"UTF-8").trim();
-//			
-//			//Now try a POST
-//			String res = sendPOST("http://127.0.0.1:9005/", enc);
-//			
-//			System.out.println("POST : " + res);
-//			
-//			
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+	    String totalline = "";
+		for(String arg : zArgs) {
+//			System.out.println("ARG : " + arg);
+			totalline += arg+" ";
+		}
 		
-		//String url = "https://incentivedb.minima.global/items/directus_users?filter={ \"email\": { \"_eq\": \"'+this.username.value+'\" }}'";
-		String url = "https://127.0.0.1:2305/hello";
+		totalline = URLEncoder.encode(totalline, MiniString.MINIMA_CHARSET);
 		
-		String ret = sendGET(url);
-		
-		System.out.println(ret);
+		try {
+			//Now run this function..
+			String result = sendGET("http://127.0.0.1:9002/"+totalline);
+			
+			//Create a JSON
+			JSONObject json = (JSONObject) new JSONParser().parse(result);
+			
+			//Output the result..
+			System.out.println(MiniFormat.JSONPretty(json));
+			
+		}catch(Exception exc) {
+			MinimaLogger.log("ERROR CMDHANDLER : "+totalline+" "+exc);
+		}
 	}
 }

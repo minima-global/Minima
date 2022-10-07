@@ -117,6 +117,8 @@ public class CMDHandler implements Runnable {
 			statfalse.put("status", false);
 			String result = statfalse.toJSONString();
 			try {
+				//MinimaLogger.log("RPC : "+fileRequested);
+				
 				//Now run this function..
 				JSONArray res = Command.runMultiCommand(fileRequested);
 		    	
