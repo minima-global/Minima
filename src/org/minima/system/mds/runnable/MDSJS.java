@@ -58,6 +58,7 @@ public class MDSJS {
 	}
 	
 	public void shutdown() {
+		//And now shut it down..
 		mContext.exit();
 	}
 	
@@ -95,6 +96,28 @@ public class MDSJS {
 	
 		//Send to the Runnable
 		callMainCallback(init);
+		
+		/**
+		 * FOR NOW -ADD A SCEOND CALL!
+		 */
+		//Create the init message
+		JSONObject initnew = new JSONObject();
+		initnew.put("event", "MDSINIT");
+	
+		//Send to the Runnable
+		callMainCallback(initnew);
+	}
+	
+	/**
+	 * Send a SHUTDOWN message
+	 */
+	public void sendshutdown() {
+		//Create the init message
+		JSONObject shutd = new JSONObject();
+		shutd.put("event", "MDSSHUTDOWN");
+	
+		//Send to the Runnable
+		callMainCallback(shutd);
 	}
 	
 	/**

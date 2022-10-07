@@ -152,6 +152,12 @@ public class Minima {
 			Runtime.getRuntime().addShutdownHook(new Thread(){
 				@Override
 				public void run(){
+					//Are we already shutting down..
+					if(main.isShuttingDown()) {
+						return;
+					}
+					
+					//Shutdowen hook called..
 					MinimaLogger.log("[!] Shutdown Hook..");
 					
 					//Shut down the whole system
