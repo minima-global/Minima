@@ -172,7 +172,7 @@ public class ParamConfigurer {
                 configurer.rpcenable = true;
             }
         }),
-        allowallip("allowallip", "Allow all IP for Maxima", (args, configurer) -> {
+        allowallip("allowallip", "Allow all IP for Maxima / Networking", (args, configurer) -> {
             if ("true".equals(args)) {
             	GeneralParams.ALLOW_ALL_IP = true;
             }
@@ -264,6 +264,11 @@ public class ParamConfigurer {
         clean("clean", "Wipe data folder at startup", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.CLEAN = true;
+            }
+        }),
+        nosyncibd("nosyncibd", "Do not sync IBD (for testing)", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.NO_SYNC_IBD = true;
             }
         }),
         mysqlhost("mysqlhost", "Store all archive data in a MySQL DB", (args, configurer) -> {

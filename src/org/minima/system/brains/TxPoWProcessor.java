@@ -584,8 +584,10 @@ public class TxPoWProcessor extends MessageProcessor {
 	 * Send a SYNC TxBlock message
 	 */
 	public void askToSyncTxBlocks(String zClientID) {
-		Message synctxblock = new Message(NIOManager.NIO_SYNCTXBLOCK);
-		synctxblock.addString("client", zClientID);
-		Main.getInstance().getNetworkManager().getNIOManager().PostMessage(synctxblock);
+		if(!GeneralParams.NO_SYNC_IBD) {
+			Message synctxblock = new Message(NIOManager.NIO_SYNCTXBLOCK);
+			synctxblock.addString("client", zClientID);
+			Main.getInstance().getNetworkManager().getNIOManager().PostMessage(synctxblock);
+		}
 	}
 }

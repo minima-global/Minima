@@ -124,9 +124,9 @@ public class Minima {
 		}
 		
 		//Set the Ports.. If Minima port has changed
-		GeneralParams.RPC_PORT 			= GeneralParams.MINIMA_PORT+1;
 		GeneralParams.MDSFILE_PORT 		= GeneralParams.MINIMA_PORT+2;
 		GeneralParams.MDSCOMMAND_PORT 	= GeneralParams.MINIMA_PORT+3;
+		GeneralParams.RPC_PORT 			= GeneralParams.MINIMA_PORT+4;
 		
 		//Now lets go..
 		MinimaLogger.log("**********************************************");
@@ -152,6 +152,12 @@ public class Minima {
 			Runtime.getRuntime().addShutdownHook(new Thread(){
 				@Override
 				public void run(){
+					//Are we already shutting down..
+					if(main.isShuttingDown()) {
+						return;
+					}
+					
+					//Shutdowen hook called..
 					MinimaLogger.log("[!] Shutdown Hook..");
 					
 					//Shut down the whole system
