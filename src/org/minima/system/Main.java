@@ -297,6 +297,8 @@ public class Main extends MessageProcessor {
 			return;
 		}
 		
+		MinimaLogger.log("Shut down started..");
+		
 		//we are shutting down
 		mShuttingdown = true;
 		
