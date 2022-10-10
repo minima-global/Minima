@@ -128,7 +128,7 @@ docker {
     dockerfile project.file('docker/Dockerfile')
     
     buildx true
-    push true
+    //push true
     platform 'linux/amd64,linux/arm64,linux/arm/v7'
     
     files tasks.shadowJar, "$rootDir/docker/dapps"
