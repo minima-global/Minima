@@ -1,5 +1,6 @@
 package org.minima.system.commands;
 
+import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.backup;
 import org.minima.system.commands.backup.restore;
 import org.minima.system.commands.base.balance;
@@ -12,6 +13,7 @@ import org.minima.system.commands.base.getaddress;
 import org.minima.system.commands.base.hash;
 import org.minima.system.commands.base.hashtest;
 import org.minima.system.commands.base.incentivecash;
+import org.minima.system.commands.base.logs;
 import org.minima.system.commands.base.mmrcreate;
 import org.minima.system.commands.base.mmrproof;
 import org.minima.system.commands.base.newaddress;
@@ -29,7 +31,12 @@ import org.minima.system.commands.base.vault;
 import org.minima.system.commands.maxima.maxcontacts;
 import org.minima.system.commands.maxima.maxima;
 import org.minima.system.commands.mds.mds;
-import org.minima.system.commands.network.*;
+import org.minima.system.commands.network.connect;
+import org.minima.system.commands.network.disconnect;
+import org.minima.system.commands.network.message;
+import org.minima.system.commands.network.network;
+import org.minima.system.commands.network.rpc;
+import org.minima.system.commands.network.webhooks;
 import org.minima.system.commands.scripts.newscript;
 import org.minima.system.commands.scripts.runscript;
 import org.minima.system.commands.scripts.scripts;
@@ -73,6 +80,7 @@ public class help extends Command {
 		addCommand(details, new printtree());
 		addCommand(details, new burn());
 		addCommand(details, new trace());
+		addCommand(details, new logs());
 //		addCommand(details, new automine());
 		addCommand(details, new hashtest());
 //		addCommand(details, new debugflag());
@@ -135,17 +143,17 @@ public class help extends Command {
 		addCommand(details, new disconnect());
 		addCommand(details, new rpc());
 		addCommand(details, new webhooks());
-//		addCommand(details, new sshtunnel());
 		
 		addCommand(details, new mds());
 		
 		addCommand(details, new backup());
 		addCommand(details, new restore());
+		addCommand(details, new archive());
 		addCommand(details, new vault());
-		addCommand(details, new restore());
+		
 		addCommand(details, new incentivecash());
 
-		addCommand(details, new nodecount());
+		//addCommand(details, new nodecount());
 		addCommand(details, new quit());
 		
 		ret.put("response", details);

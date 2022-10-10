@@ -48,11 +48,6 @@ public class GeneralParams {
 	public static int MINIMA_PORT = 9001;
 	
 	/**
-	 * The Minima RPC port
-	 */
-	public static int RPC_PORT = MINIMA_PORT+1;
-	
-	/**
 	 * The MDS webserver
 	 */
 	public static int MDSFILE_PORT = MINIMA_PORT+2;
@@ -61,6 +56,11 @@ public class GeneralParams {
 	 * The MDS Command Server
 	 */
 	public static int MDSCOMMAND_PORT = MINIMA_PORT+3;
+	
+	/**
+	 * The Minima RPC port
+	 */
+	public static int RPC_PORT = MINIMA_PORT+4;
 	
 	/**
 	 * The MDS Password - blank will set automagically
@@ -113,6 +113,16 @@ public class GeneralParams {
 	public static String CONNECT_LIST = "";
 	
 	/**
+	 * Show the startup parameters
+	 */
+	public static boolean SHOW_PARAMS = false;
+	
+	/**
+	 * Don't download sync IBD
+	 */
+	public static boolean NO_SYNC_IBD = false;
+	
+	/**
 	 * MySQL Archive Settings
 	 */
 	public static String MYSQL_HOST 	= "";
@@ -145,5 +155,15 @@ public class GeneralParams {
 	 */
 	public static boolean DEBUGFLAG = false;
 	public static String DEBUGVAR 	= "";
+	
+	/**
+	 * Enable Full logs for script errors
+	 */
+	public static boolean SCRIPTLOGS = false;
+	
+	/**
+	 * Enable full logs for mining..
+	 */
+	public static boolean MINING_LOGS = false;
 	
 }

@@ -4,6 +4,9 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.security.SecureRandom;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.zip.GZIPOutputStream;
 
 import javax.crypto.Cipher;
@@ -23,6 +26,8 @@ import org.minima.utils.json.JSONObject;
 
 public class backup extends Command {
 
+	public static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat("dd_MM_yyyy_HHmmss", Locale.ENGLISH );
+	
 	public backup() {
 		super("backup","(password:) (file:) (complete:false|true) - Backup the system. Uses a timestamped name by default");
 	}
@@ -33,7 +38,8 @@ public class backup extends Command {
 		
 		String file = getParam("file","");
 		if(file.equals("")) {
-			file = "minima-backup-"+System.currentTimeMillis()+".bak.gz";
+			file = "minima-backup-"+System.currentTimeMillis()+".bak";
+			//file = "minima_backup_"+DATEFORMAT.format(new Date())+".bak";
 		}
 
 		//Get a password if there is one..
@@ -112,8 +118,7 @@ public class backup extends Command {
 			
 			//Now create the streams to save these
 			FileOutputStream fos 	= new FileOutputStream(backupfile);
-			GZIPOutputStream gzos	= new GZIPOutputStream(fos);
-			DataOutputStream dos 	= new DataOutputStream(gzos);
+			DataOutputStream dos 	= new DataOutputStream(fos);
 			
 			//Now create a CipherStream.. first need an IVParam
 			MiniData ivparam = new MiniData(GenerateKey.IvParam());
@@ -133,7 +138,8 @@ public class backup extends Command {
 			//Create the cipher..
 			Cipher ciph = GenerateKey.getCipherSYM(Cipher.ENCRYPT_MODE, ivparam.getBytes(), secret);
 			CipherOutputStream cos 		= new CipherOutputStream(dos, ciph);
-			DataOutputStream ciphdos 	= new DataOutputStream(cos);
+			GZIPOutputStream gzos		= new GZIPOutputStream(cos);
+			DataOutputStream ciphdos 	= new DataOutputStream(gzos);
 			
 			//Is it Complete
 			MiniByte.WriteToStream(ciphdos, complete);

@@ -27,6 +27,7 @@ public class TxPoWProcessor extends MessageProcessor {
 	private static final String TXPOWPROCESSOR_PROCESSTXPOW 		= "TXP_PROCESSTXPOW";
 	private static final String TXPOWPROCESSOR_PROCESS_IBD 			= "TXP_PROCESS_IBD";
 	private static final String TXPOWPROCESSOR_PROCESS_SYNCIBD 		= "TXP_PROCESS_SYNCIBD";
+	private static final String TXPOWPROCESSOR_PROCESS_ARCHIVEIBD 	= "TXP_PROCESS_ARCHIVEIBD";
 	
 	public TxPoWProcessor() {
 		super("TXPOWPROCESSOR");
@@ -57,6 +58,14 @@ public class TxPoWProcessor extends MessageProcessor {
 	public void postProcessSyncIBD(IBD zIBD, String zClientUID) {
 		//Post a message on the single threaded stack
 		PostMessage(new Message(TXPOWPROCESSOR_PROCESS_SYNCIBD).addObject("ibd", zIBD).addString("uid", zClientUID));
+	}
+	
+	/**
+	 * Main Entry point for Archive IBD messages
+	 */
+	public void postProcessArchiveIBD(IBD zIBD, String zClientUID) {
+		//Post a message on the single threaded stack
+		PostMessage(new Message(TXPOWPROCESSOR_PROCESS_ARCHIVEIBD).addObject("ibd", zIBD).addString("uid", zClientUID));
 	}
 	
 	/**
@@ -156,6 +165,11 @@ public class TxPoWProcessor extends MessageProcessor {
 	
 	private boolean processSyncBlock(TxBlock zTxBlock) throws Exception {
 		
+		//Are we shutting down..
+//		if(Main.getInstance().isShuttingDown()) {
+//			return false;
+//		}
+		
 		Cascade cascdb		= MinimaDB.getDB().getDB().getCascade();
 		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
 		TxPowTree txptree 	= MinimaDB.getDB().getTxPoWTree();
@@ -217,6 +231,11 @@ public class TxPoWProcessor extends MessageProcessor {
 	
 	
 	private void recalculateTree() {
+		
+		//Are we shutting down..
+//		if(Main.getInstance().isShuttingDown()) {
+//			return;
+//		}
 		
 		//Required DBs
 		TxPoWDB txpdb		= MinimaDB.getDB().getTxPoWDB();
@@ -318,6 +337,11 @@ public class TxPoWProcessor extends MessageProcessor {
 	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
+		
+		//Are we shutting down..
+		if(Main.getInstance().isShuttingDown()) {
+			return;
+		}
 		
 		if(zMessage.isMessageType(TXPOWPROCESSOR_PROCESSTXPOW)) {
 			//Get the TxPoW
@@ -507,6 +531,52 @@ public class TxPoWProcessor extends MessageProcessor {
 			
 			//Ask to sync the TxBlocks
 			askToSyncTxBlocks(uid);
+		
+		}else if(zMessage.isMessageType(TXPOWPROCESSOR_PROCESS_ARCHIVEIBD)) {
+			
+			//Get the IBD archive data
+			IBD arch 			= (IBD) zMessage.getObject("ibd");
+			String uid 			= zMessage.getString("uid");
+			
+			//How many blocks have we added
+			int additions = 0;
+			
+			//Cycle and add..
+			ArrayList<TxBlock> blocks = arch.getTxBlocks();
+			if(blocks.size() > 0) {
+				MinimaLogger.log("Processing Archive IBD length:"+blocks.size()+" start:"+blocks.get(0).getTxPoW().getBlockNumber());	
+			}
+			
+			for(TxBlock block : blocks) {
+				
+				try {
+					
+					//Process it..
+					processSyncBlock(block);	
+					additions++;
+				
+					//If we've added a lot of blocks..
+					if(additions > 1000) {
+						
+						//recalculate the Tree..
+						recalculateTree();
+						
+						//Reset these
+						additions = 0;
+					}
+					
+				}catch(Exception exc) {
+					MinimaLogger.log(exc.toString());
+					
+					//Something funny going on.. disconnect
+					Main.getInstance().getNIOManager().disconnect(uid);
+					
+					break;
+				}
+			}
+			
+			//And now recalculate tree
+			recalculateTree();
 		}
 	}
 	
@@ -514,8 +584,10 @@ public class TxPoWProcessor extends MessageProcessor {
 	 * Send a SYNC TxBlock message
 	 */
 	public void askToSyncTxBlocks(String zClientID) {
-		Message synctxblock = new Message(NIOManager.NIO_SYNCTXBLOCK);
-		synctxblock.addString("client", zClientID);
-		Main.getInstance().getNetworkManager().getNIOManager().PostMessage(synctxblock);
+		if(!GeneralParams.NO_SYNC_IBD) {
+			Message synctxblock = new Message(NIOManager.NIO_SYNCTXBLOCK);
+			synctxblock.addString("client", zClientID);
+			Main.getInstance().getNetworkManager().getNIOManager().PostMessage(synctxblock);
+		}
 	}
 }

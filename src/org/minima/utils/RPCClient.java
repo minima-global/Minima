@@ -8,8 +8,15 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.util.Iterator;
 
 import org.minima.objects.base.MiniString;
+import org.minima.system.commands.Command;
+import org.minima.system.params.GlobalParams;
+import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
+import org.minima.utils.json.parser.JSONParser;
 
 public class RPCClient {
 
@@ -91,6 +98,7 @@ public class RPCClient {
 		URL obj = new URL(zHost);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 		con.setConnectTimeout(10000);
+		con.setInstanceFollowRedirects(true);
 		con.setRequestMethod("POST");
 		con.setRequestProperty("User-Agent", USER_AGENT);
 		con.setRequestProperty("Connection", "close");
@@ -129,37 +137,90 @@ public class RPCClient {
 	
 	public static void main(String[] zArgs) throws IOException {		
 
-	    
-//		String host = "127.0.0.1";
-//		int port    = 9005;
-//		String request = "status";
+//	    String totalline = "";
+//		for(String arg : zArgs) {
+//			totalline += arg+" ";
+//		}
 //		
-//		try {			
-//			JSONObject msg = new JSONObject();
-//			msg.put("from", "Paddy@127.0.0.1:9005");
-//			msg.put("to", "SPartacus@127.0.0.1:7005");
-//			msg.put("msg", "Hello You!!");
-//			msg.put("signature", "0x73465873658347568345");
+//		totalline = URLEncoder.encode(totalline.trim(), MiniString.MINIMA_CHARSET);
+		
+//		try {
+//			//Now run this function..
+//			String result = sendGET("http://127.0.0.1:9002/"+totalline);
 //			
-//			//Encode..
-//			String enc = URLEncoder.encode(new String(msg.toString()),"UTF-8").trim();
+//			//Create a JSON
+//			JSONObject json = (JSONObject) new JSONParser().parse(result);
 //			
-//			//Now try a POST
-//			String res = sendPOST("http://127.0.0.1:9005/", enc);
+//			//Output the result..
+//			System.out.println(MiniFormat.JSONPretty(json));
 //			
-//			System.out.println("POST : " + res);
-//			
-//			
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
+//		}catch(Exception exc) {
+//			MinimaLogger.log("ERROR CMDHANDLER : "+totalline+" "+exc);
 //		}
 		
-		//String url = "https://incentivedb.minima.global/items/directus_users?filter={ \"email\": { \"_eq\": \"'+this.username.value+'\" }}'";
-		String url = "https://127.0.0.1:2305/hello";
+		//Are there any Params..
+		String host = "127.0.0.1:9002";
+		if(zArgs.length>0) {
+			host = zArgs[0];
+		}
 		
-		String ret = sendGET(url);
+		//Now lets go..
+		MinimaLogger.log("**********************************************");
+		MinimaLogger.log("*  __  __  ____  _  _  ____  __  __    __    *");
+		MinimaLogger.log("* (  \\/  )(_  _)( \\( )(_  _)(  \\/  )  /__\\   *");
+		MinimaLogger.log("*  )    (  _)(_  )  (  _)(_  )    (  /(__)\\  *");
+		MinimaLogger.log("* (_/\\/\\_)(____)(_)\\_)(____)(_/\\/\\_)(__)(__) *");
+		MinimaLogger.log("*                                            *");
+		MinimaLogger.log("**********************************************");
+		MinimaLogger.log("Welcome to the Minima RPCClient - for assistance type help. Then press enter.");
+		MinimaLogger.log("To 'exit' this app use 'exit'. 'quit' will shutdown Minima");
 		
-		System.out.println(ret);
+		//Listen for input
+		InputStreamReader is    = new InputStreamReader(System.in, MiniString.MINIMA_CHARSET);
+	    BufferedReader bis      = new BufferedReader(is);
+	    
+	    //Loop until finished..
+	    while(true){
+	        try {
+	            //Get a line of input
+	            String input = bis.readLine();
+	            
+	            //Check valid..
+	            if(input!=null && !input.equals("")) {
+	            	//trim it..
+	            	input = input.trim();
+	            	if(input.equals("exit")) {
+	        			break;
+	            	}
+	            	
+	            	//URLEncode..
+	            	input = URLEncoder.encode(input, MiniString.MINIMA_CHARSET);
+	            	
+	            	//Now run this function..
+	    			String result = sendGET("http://127.0.0.1:9005/"+input);
+	    			
+	    			//Create a JSON
+	    			JSONObject json = (JSONObject) new JSONParser().parse(result);
+	    			
+	    			//Output the result..
+	    			System.out.println(MiniFormat.JSONPretty(json));
+	    			
+	            	if(input.equals("quit")) {
+	        			break;
+	            	}
+	            }
+	            
+	        } catch (Exception ex) {
+	            MinimaLogger.log(ex);
+	        }
+	    }
+	    
+	    //Cross the streams..
+	    try {
+	        bis.close();
+	        is.close();
+	    } catch (IOException ex) {
+	    	MinimaLogger.log(""+ex);
+	    }
 	}
 }

@@ -19,6 +19,7 @@ import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Coin;
 import org.minima.objects.StateVariable;
+import org.minima.objects.Token;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
@@ -208,7 +209,15 @@ public class Contract {
 		
 		setGlobalVariable("@INPUT", new NumberValue(zInput));
 		setGlobalVariable("@COINID", new HexValue(cc.getCoinID()));
-		setGlobalVariable("@AMOUNT", new NumberValue(cc.getAmount()));
+		
+		//AMOUNT is the amount of Minima or Token(Scaled)..
+		MiniNumber amt = cc.getAmount();
+		if(!cc.getTokenID().isEqual(Token.TOKENID_MINIMA)) {
+			//Scale the amount
+			amt = cc.getToken().getScaledTokenAmount(amt);
+		}
+		setGlobalVariable("@AMOUNT", new NumberValue(amt));
+		
 		setGlobalVariable("@ADDRESS", new HexValue(cc.getAddress()));
 		setGlobalVariable("@TOKENID", new HexValue(cc.getTokenID()));
 		setGlobalVariable("@SCRIPT", new StringValue(zScript));
@@ -276,7 +285,11 @@ public class Contract {
 	}
 	
 	public void incrementInstructions() throws ExecutionException {
-		mNumInstructions++;
+		incrementInstructions(1);
+	}
+	
+	public void incrementInstructions(int zNum) throws ExecutionException {
+		mNumInstructions+=zNum;
 		if(mNumInstructions > MAX_INSTRUCTIONS) {
 			throw new ExecutionException("MAX instruction number reached! "+mNumInstructions);
 		}
@@ -529,6 +542,10 @@ public class Contract {
 	 * @return The Converted Script
 	 */
 	public static String cleanScript(String zScript) {
+		return cleanScript(zScript, false);
+	}
+	
+	public static String cleanScript(String zScript, boolean zLog) {
 		
 		//The final result
 		StringBuffer ret = new StringBuffer();
@@ -543,9 +560,15 @@ public class Contract {
 			ArrayList<ScriptToken> tokens = tokz.tokenize();
 		
 			//Now add them correctly..
-			boolean first = true;
-			boolean whites = true;
+			boolean first 		= true;
+			boolean whites 		= true;
+			ScriptToken prevtok = null;
 			for(ScriptToken tok : tokens) {
+				
+				if(zLog) {
+					MinimaLogger.log(tok.toString());
+				}
+				
 				if(tok.getTokenType() == ScriptToken.TOKEN_COMMAND) {
 					String command = tok.getToken();
 					if(first) {
@@ -573,22 +596,60 @@ public class Contract {
 					
 					whites = false;
 					
+				}else if(tok.getToken().startsWith("(") || tok.getToken().startsWith("[")) {
+					
+					String strtok = tok.getToken();
+					
+					if(whites) {
+						boolean isspacerequired = prevtok!=null 
+								&& (prevtok.getToken().endsWith(")") || prevtok.getToken().endsWith("]"));
+						
+						if(isspacerequired) {
+							ret.append(" "+strtok);
+						}else {
+							ret.append(strtok);
+						}
+						
+					}else {
+					
+						boolean isspacerequired = prevtok!=null 
+								&& (ScriptTokenizer.mAllEOW.contains(prevtok.getToken()));
+						
+						if(isspacerequired) {
+							ret.append(" "+strtok);
+						}else {
+							ret.append(strtok);
+						}
+					}
+					
+					whites=true;
+				
 				}else {
 					String strtok = tok.getToken();
 					
+					boolean islastclosebracket = prevtok!=null && (prevtok.getToken().endsWith(")") || prevtok.getToken().endsWith("]"));
+					
 					//Is it an end of word or whitespace..
-					if(ScriptTokenizer.isWhiteSpace(strtok) || ScriptTokenizer.mAllEOW.contains(strtok)) {
-						ret.append(tok.getToken());
+					if(islastclosebracket && !ScriptTokenizer.mAllAFTER.contains(strtok)) {
+						
+						ret.append(" "+strtok);
+						whites = false;
+						
+					}else if(ScriptTokenizer.isWhiteSpace(strtok) || ScriptTokenizer.mAllEOW.contains(strtok)) {
+						ret.append(strtok);
 						whites = true;
 					}else {
 						if(whites) {
-							ret.append(tok.getToken());
+							ret.append(strtok);
 						}else {
-							ret.append(" "+tok.getToken());
+							ret.append(" "+strtok);
 						}
 						whites = false;
 					}
 				}
+				
+				//Keep the last letter of the previous token
+				prevtok = tok;
 			}
 		
 		} catch (MinimaParseException e) {
@@ -601,12 +662,25 @@ public class Contract {
 	
 	public static void main(String[] zArgs) {
 		
-//		String scr = new String("let (a 1 0xFF )  = 4 + -2  let t = concat( 0x00 0x34   0x45  )");
-		String scr = new String("let x = $1");
-		
-		String clean = Contract.cleanScript(scr);
-		
+//		String scr = new String("VERIFYOUT(@INPUT @AMOUNT PREVSTATE(2) @TOKENID FALSE)");
+//		String scr = new String("PREVSTATE(2) @GLOB FALSE");
+//		String scr = new String("@GLOB FALSE");
+//		String scr = new String("let g  = (1 * 3 + (45)+2)");
+
+//		String scr = new String("LET safehouse = [ LET pkcold = coldkey LET pkhot = HOT_KEY\r\n"
+//				+ "                  IF SIGNEDBY ( pkcold ) THEN RETURN TRUE ENDIF\r\n"
+//				+ "                  IF SIGNEDBY ( pkhot ) THEN IF @BLKDIFF GT 20 THEN\r\n"
+//				+ "                  RETURN VERIFYOUT ( @INPUT PREVSTATE ( 21 ) @AMOUNT @TOKENID TRUE ) ENDIF ENDIF ]");
+//		String scr = new String("[as]+(sd)buyer (amount/price) buyer (amount/price)buyer");
+		String scr = new String("let a  = ((sd+1*(12) (23)))buyer ");
+//		String scr = new String("INC((asas) (2323))");
+//		String scr = new String("ASSERT ( [hello][dd](ff) [sdsd](f) *[jjj]) LET f=   (  0  ) ");
+
 		MinimaLogger.log(scr);
+		
+		String clean = Contract.cleanScript(scr,true);
+		
+		MinimaLogger.log("");
 		MinimaLogger.log(clean);
 		
 	}

@@ -210,7 +210,7 @@ public class maxcontacts extends Command {
 			details.put("contact", chosen.toJSON());
 			
 		}else {
-			throw new CommandException("Unknonw action : "+func);
+			throw new CommandException("Unknown action : "+func);
 		}
 		
 		ret.put("response", details);

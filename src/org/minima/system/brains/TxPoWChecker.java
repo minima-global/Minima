@@ -24,6 +24,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.Signature;
 import org.minima.objects.keys.TreeKey;
+import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
 
@@ -464,8 +465,12 @@ public class TxPoWChecker {
 			
 			//Was it a success..
 			if(!contract.isSuccess()) {
-//				MinimaLogger.log("Script FAIL input:"+i+" "+contract.getCompleteTraceLog());
-				MinimaLogger.log("Script FAIL input:"+i+" "+script);
+				if(GeneralParams.SCRIPTLOGS) {
+					MinimaLogger.log("Script FAIL input:"+i+" "+contract.getCompleteTraceLog());
+				}else {
+					MinimaLogger.log("Script FAIL input:"+i+" "+script);
+				}
+
 				return false;
 			}
 			
@@ -500,8 +505,12 @@ public class TxPoWChecker {
 					}
 					
 					if(!tokcontract.isSuccess()) {
-//						MinimaLogger.log("Token Script FAIL input:"+i+" "+tokcontract.getCompleteTraceLog());
-						MinimaLogger.log("Token Script FAIL input:"+i+" "+tokscript);
+						if(GeneralParams.SCRIPTLOGS) {
+							MinimaLogger.log("Token Script FAIL input:"+i+" "+tokcontract.getCompleteTraceLog());
+						}else {
+							MinimaLogger.log("Token Script FAIL input:"+i+" "+tokscript);
+						}
+						
 						return false;
 					}
 				}

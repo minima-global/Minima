@@ -4,12 +4,13 @@ import org.minima.database.MinimaDB;
 import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.utils.BIP39;
 import org.minima.utils.json.JSONObject;
 
 public class vault extends Command {
 
 	public vault() {
-		super("vault","[action:seed|lock|unlock] (seed:) - BE CAREFUL. Wipe / Restore your private keys");
+		super("vault","[action:seed|lock|unlock] (seed:) (phrase:) - BE CAREFUL. Wipe / Restore your private keys");
 	}
 	
 	@Override
@@ -19,11 +20,13 @@ public class vault extends Command {
 		String action = getParam("action", "seed");
 			
 		//Display the base seed..
-		MiniData baseseed = MinimaDB.getDB().getWallet().getBaseSeed();
+		MiniData baseseed 	= MinimaDB.getDB().getWallet().getBaseSeed();
+		String phrase 		= MinimaDB.getDB().getUserDB().getBasePrivatePhrase();
 		
 		if(action.equals("seed")) {
 			
 			JSONObject json = new JSONObject();
+			json.put("phrase", phrase);
 			json.put("seed", baseseed.to0xString());
 			json.put("locked", baseseed.isEqual(MiniData.ZERO_TXPOWID));
 			
@@ -41,14 +44,18 @@ public class vault extends Command {
 			MinimaDB.getDB().getWallet().wipeBaseSeed();
 			
 			//And reset in the UserDB
+			MinimaDB.getDB().getUserDB().setBasePrivatePhrase("");
 			MinimaDB.getDB().getUserDB().setBasePrivateSeed(MiniData.ZERO_TXPOWID.to0xString());
 			
 			ret.put("response", "All private keys wiped!");
 		
 		}else if(action.equals("unlock")) {
 			
-			//Get the unlock seed
-			MiniData seed = getDataParam("seed");
+			//Check for one or the other..
+			String initphrase = getParam("phrase");
+			
+			//Convert to a data hash
+			MiniData seed = BIP39.convertStringToSeed(initphrase);
 			
 			//And now recreate the private keys
 			boolean ok = MinimaDB.getDB().getWallet().resetBaseSeed(seed);
@@ -58,6 +65,7 @@ public class vault extends Command {
 			}
 
 			//And set the key in the UserDB
+			MinimaDB.getDB().getUserDB().setBasePrivatePhrase(initphrase);
 			MinimaDB.getDB().getUserDB().setBasePrivateSeed(seed.to0xString());
 			
 			ret.put("response", "All private keys restored!");

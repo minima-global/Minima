@@ -55,15 +55,18 @@ public class MiniDAPPDB extends SqlDB {
 						String column = rsmd.getColumnName(i);
 						Object obj    = resset.getObject(i);
 						
-						//Treat some type special
-						if(rsmd.getColumnClassName(i).equals("java.sql.Clob")) {
-							java.sql.Clob clob = (java.sql.Clob)obj;
-                        	String strvalue = clob.getSubString(1, (int) clob.length());
-                        	row.put(column, strvalue);
-						
-						}else {
-							row.put(column, obj.toString());
-						}					
+						//Make sure NOT NULL - or Omit.. 
+						if(obj!=null) {
+							//Treat some type special
+							if(rsmd.getColumnClassName(i).equals("java.sql.Clob")) {
+								java.sql.Clob clob = (java.sql.Clob)obj;
+	                        	String strvalue = clob.getSubString(1, (int) clob.length());
+	                        	row.put(column, strvalue);
+							
+							}else {
+								row.put(column, obj.toString());
+							}
+						}
 					}
 					allrows.add(row);
 				}

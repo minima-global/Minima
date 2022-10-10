@@ -1,5 +1,6 @@
 package org.minima.database.wallet;
 
+import java.math.BigInteger;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -36,6 +37,7 @@ public class Wallet extends SqlDB {
 	PreparedStatement SQL_GET_KEY 						= null;
 	PreparedStatement SQL_GET_ALL_KEYS 					= null;
 	PreparedStatement SQL_UPDATE_KEY_USES 				= null;
+	PreparedStatement SQL_UPDATE_ALL_KEY_USES 			= null;
 	
 	PreparedStatement SQL_WIPE_PRIVATE_KEYS 			= null;
 	PreparedStatement SQL_UPDATE_PRIVATE_KEYS 			= null;
@@ -122,6 +124,7 @@ public class Wallet extends SqlDB {
 		SQL_GET_ALL_KEYS				= mSQLConnection.prepareStatement("SELECT * FROM keys");
 		SQL_GET_KEY						= mSQLConnection.prepareStatement("SELECT * FROM keys WHERE publickey=?");
 		SQL_UPDATE_KEY_USES				= mSQLConnection.prepareStatement("UPDATE keys SET uses=? WHERE publickey=?");
+		SQL_UPDATE_ALL_KEY_USES			= mSQLConnection.prepareStatement("UPDATE keys SET uses=?");
 		
 		//Base Seed functions
 		SQL_WIPE_PRIVATE_KEYS			= mSQLConnection.prepareStatement("UPDATE keys SET privatekey='0x00' WHERE privatekey!='0x00'");
@@ -287,11 +290,15 @@ public class Wallet extends SqlDB {
 		
 		//Check we can create new keys
 		if(!isBaseSeedAvailable()) {
-			throw new IllegalArgumentException("KeysDB LOCKED. Base SEED missing..");
+			throw new IllegalArgumentException("KeysDB LOCKED. No More Keys Allowed. Base SEED missing..");
 		}
 		
 		//Create a random modifier..
-		MiniData modifier 	= MiniData.getRandomData(32);
+		int numkeys 		= mAllKeys.size();
+		MiniData modifier 	= new MiniData(new BigInteger(Integer.toString(numkeys)));
+
+//		MiniData modifier 	= MiniData.getRandomData(32);
+//		MinimaLogger.log("Create new Key : "+mMainPrivateSeed.to0xString()+" "+modifier.to0xString());
 		
 		//Now create a random private seed using the modifier
 		MiniData privseed 	= Crypto.getInstance().hashObjects(mMainPrivateSeed, modifier);
@@ -623,5 +630,20 @@ public class Wallet extends SqlDB {
 		
 		//Run the query
 		SQL_UPDATE_KEY_USES.execute();
+	}
+	
+	/**
+	 * After an Archive resync..
+	 */
+	public void updateAllKeyUses(int zUses) throws SQLException {		
+
+		//Get the Query ready
+		SQL_UPDATE_ALL_KEY_USES.clearParameters();
+	
+		//Set main params
+		SQL_UPDATE_ALL_KEY_USES.setInt(1, zUses);
+		
+		//Run the query
+		SQL_UPDATE_ALL_KEY_USES.execute();
 	}
 }

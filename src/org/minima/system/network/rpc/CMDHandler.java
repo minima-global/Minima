@@ -11,6 +11,7 @@ import java.util.StringTokenizer;
 
 import org.minima.objects.base.MiniString;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.base.quit;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -42,7 +43,8 @@ public class CMDHandler implements Runnable {
 		// we manage our particular client connection
 		BufferedReader in 	 		 	= null; 
 		PrintWriter out 	 			= null; 
-		String firstline = "no first line..";
+		String firstline 				= "no first line..";
+		boolean quit 					= false;
 		
 		try {
 			// Input Stream
@@ -117,6 +119,12 @@ public class CMDHandler implements Runnable {
 			statfalse.put("status", false);
 			String result = statfalse.toJSONString();
 			try {
+				if(fileRequested.equals("quit")) {
+					quit=true;
+				}
+				
+//				MinimaLogger.log("RPC : "+fileRequested);
+				
 				//Now run this function..
 				JSONArray res = Command.runMultiCommand(fileRequested);
 		    	
@@ -126,6 +134,8 @@ public class CMDHandler implements Runnable {
 				}else {
 					result = res.toString();
 				}
+				
+//				MinimaLogger.log("RPC RESULT : "+result);
 				
 			}catch(Exception exc) {
 				MinimaLogger.log("ERROR CMDHANDLER : "+fileRequested+" "+exc);
@@ -160,5 +170,10 @@ public class CMDHandler implements Runnable {
 				MinimaLogger.log(e);
 			} 	
 		}	
+		
+		//Are we shutting down
+		if(quit) {
+			Runtime.getRuntime().halt(0);
+		}
 	}
 }

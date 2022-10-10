@@ -10,6 +10,7 @@ import java.util.HashSet;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
+import org.minima.database.archive.MySQLConnect;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.cascade.CascadeNode;
 import org.minima.database.txpowtree.TxPoWTreeNode;
@@ -17,6 +18,7 @@ import org.minima.database.txpowtree.TxPowTree;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.commands.backup.archive;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
@@ -101,7 +103,7 @@ public class IBD implements Streamable {
 					//Did we find a block..
 					if(!found.isEqual(MiniNumber.MINUSONE)) {
 						
-						//And the whole tree first
+						//Add the whole tree first
 						while(tip != null) {
 							mTxBlocks.add(0,tip.getTxBlock());
 							tip = tip.getParent();
@@ -221,6 +223,47 @@ public class IBD implements Streamable {
 		
 		//Unlock..
 		MinimaDB.getDB().readLock(false);
+	}
+	
+	public void createArchiveIBD(MiniNumber zFirstBlock) {
+		
+		//Get the ArchiveManager
+		ArchiveManager arch = MinimaDB.getDB().getArchive();
+				
+		//Are we storing Archive Data
+		if(arch.isStoreMySQL()) {
+			
+			//Get the SQL Connect
+			MySQLConnect mySQLConnect = arch.getMySQLCOnnect();
+			
+			//Lock the DB - cascade and tree tip / root cannot change while doing this..
+			MinimaDB.getDB().readLock(true);
+			
+			try {
+				if(zFirstBlock.isEqual(MiniNumber.ZERO)) {
+					//Load cascade if there is one
+					mCascade = mySQLConnect.loadCascade();
+				}
+				
+				//Was therea cascade
+				MiniNumber startcount = zFirstBlock;
+				if(mCascade != null) {
+					startcount = mCascade.getTip().getTxPoW().getBlockNumber();
+				}
+				
+				//Load the block range..
+				ArrayList<TxBlock> blocks = mySQLConnect.loadBlockRange(zFirstBlock);
+				for(TxBlock block : blocks) {
+					mTxBlocks.add(block);
+				}
+				
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
+			
+			//Unlock..
+			MinimaDB.getDB().readLock(false);
+		}
 	}
 	
 	/**

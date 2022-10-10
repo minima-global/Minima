@@ -1,5 +1,7 @@
 package org.minima.database.archive;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -8,13 +10,18 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import org.minima.database.MinimaDB;
+import org.minima.database.cascade.Cascade;
 import org.minima.objects.TxBlock;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 
 public class MySQLConnect {
 
+	public static final int MAX_SYNCBLOCKS = 1000; 
+	
 	String mMySQLHost;
 	
 	String mDatabase;
@@ -33,6 +40,8 @@ public class MySQLConnect {
 	PreparedStatement SQL_FIND_SYNCBLOCK_NUM 	= null;
 	PreparedStatement SQL_SELECT_RANGE			= null;
 	
+	PreparedStatement SAVE_CASCADE				= null;
+	PreparedStatement LOAD_CASCADE				= null;
 	
 	public MySQLConnect(String zHost, String zDatabase, String zUsername, String zPassword) {
 		mMySQLHost 	= zHost;
@@ -43,7 +52,7 @@ public class MySQLConnect {
 	
 	public void init() throws SQLException {
 		//MYSQL JDBC connection
-		String mysqldb = "jdbc:mysql://"+mMySQLHost+"/"+mDatabase;
+		String mysqldb = "jdbc:mysql://"+mMySQLHost+"/"+mDatabase+"?autoReconnect=true";
 				
 		mConnection = DriverManager.getConnection(mysqldb,mUsername,mPassword);
 	
@@ -55,29 +64,135 @@ public class MySQLConnect {
 						+ "  `txpowid` varchar(80) NOT NULL UNIQUE,"
 						+ "  `block` bigint NOT NULL UNIQUE,"
 						+ "  `timemilli` bigint NOT NULL,"
-						+ "  `syncdata` blob NOT NULL"
+						+ "  `syncdata` mediumblob NOT NULL"
 						+ ")";
 		
 		//Run it..
 		stmt.execute(create);
+		
+		//Create the cascade table
+		String cascade = "CREATE TABLE IF NOT EXISTS `cascadedata` ("
+						+ "		`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
+						+ "		`cascadetip` BIGINT NOT NULL,"
+						+ "		`fulldata` mediumblob NOT NULL"
+						+ ")";
+		
+		//Run it..
+		stmt.execute(cascade);
+		
+		//All done..
+		stmt.close();
 		
 		//Create some prepared statements..
 		String insert 			= "INSERT IGNORE INTO syncblock ( txpowid, block, timemilli, syncdata ) VALUES ( ?, ? ,? ,? )";
 		SQL_INSERT_SYNCBLOCK 	= mConnection.prepareStatement(insert);
 		SQL_FIND_SYNCBLOCK_ID 	= mConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE txpowid=?");
 		SQL_FIND_SYNCBLOCK_NUM 	= mConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block=?");
-		SQL_SELECT_RANGE		= mConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block>? AND block<? ORDER BY block DESC");
+		SQL_SELECT_RANGE		= mConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block>=? ORDER BY block ASC LIMIT "+MAX_SYNCBLOCKS);
+				
+		SAVE_CASCADE = mConnection.prepareStatement("INSERT INTO cascadedata ( cascadetip, fulldata ) VALUES ( ?, ? )");
+		LOAD_CASCADE = mConnection.prepareStatement("SELECT fulldata FROM cascadedata ORDER BY cascadetip ASC LIMIT 1");
 	}
 	
 	public void shutdown() {
 		try {
-			mConnection.close();
+			if(!mConnection.isClosed()) {
+				mConnection.close();
+			}
 		} catch (SQLException e) {
 			MinimaLogger.log(e);
 		}
 	}
 	
-	public boolean saveBlock(TxBlock zBlock) {
+	public void wipeAll() throws SQLException {
+		Statement stmt = mConnection.createStatement();
+		stmt.execute("DROP TABLE syncblock");
+		stmt.execute("DROP TABLE cascadedata");
+		stmt.close();
+	}
+	
+	public boolean saveCascade(Cascade zCascade) throws SQLException {
+		
+//			//Store as a file..
+//			File root 			= MinimaDB.getDB().getBaseDBFolder();
+//			File cascadefile 	= new File(root,CASCADE_FILE); 
+//
+//			//Does it exist..
+//			if(cascadefile.exists()) {
+//				cascadefile.delete();
+//			}
+//			
+//			//Write the file out..
+//			try {
+//				MiniFile.writeObjectToFile(cascadefile, zCascade);
+//			} catch (IOException e) {
+//				throw new SQLException(e);
+//			}
+			
+			//get the MiniData version..
+			MiniData cascdata = MiniData.getMiniDataVersion(zCascade);
+			
+			//Get the Query ready
+			SAVE_CASCADE.clearParameters();
+		
+			//Set main params
+			SAVE_CASCADE.setLong(1, zCascade.getTip().getTxPoW().getBlockNumber().getAsLong());
+			
+			//And finally the actual bytes
+			SAVE_CASCADE.setBytes(2, cascdata.getBytes());
+			
+			//Do it.
+			SAVE_CASCADE.execute();
+			
+			return true;
+	}
+	
+	
+	public Cascade loadCascade() throws SQLException {
+		
+//		//Store as a file..
+//		File root 			= MinimaDB.getDB().getBaseDBFolder();
+//		File cascadefile 	= new File(root,CASCADE_FILE); 
+//
+//		if(cascadefile.exists()) {
+//			
+//			//Read it in..
+//			byte[] data = null;
+//			try {
+//				data = MiniFile.readCompleteFile(cascadefile);
+//			} catch (IOException e) {
+//				throw new SQLException(e);
+//			}
+//			
+//			//Convert
+//			return Cascade.convertMiniDataVersion(new MiniData(data));
+//		}
+//		
+//		return null;
+		
+		LOAD_CASCADE.clearParameters();
+		
+		ResultSet rs = LOAD_CASCADE.executeQuery();
+		
+		//Is there a valid result.. ?
+		if(rs.next()) {
+			
+			//Get the details..
+			byte[] syncdata 	= rs.getBytes("fulldata");
+			
+			//Create MiniData version
+			MiniData minisync = new MiniData(syncdata);
+			
+			//Convert
+			Cascade casc = Cascade.convertMiniDataVersion(minisync);
+			
+			return casc;
+		}
+		
+		return null;
+	}
+	
+	public synchronized boolean saveBlock(TxBlock zBlock) {
 		try {
 			
 			//get the MiniData version..
@@ -97,7 +212,7 @@ public class MySQLConnect {
 			//Do it.
 			SQL_INSERT_SYNCBLOCK.execute();
 			
-			MinimaLogger.log("MYSQL stored synvblock "+zBlock.getTxPoW().getBlockNumber());
+//			MinimaLogger.log("MYSQL stored synvblock "+zBlock.getTxPoW().getBlockNumber());
 			
 			return true;
 			
@@ -174,7 +289,7 @@ public class MySQLConnect {
 		return null;
 	}
 
-	public synchronized ArrayList<TxBlock> loadBlockRange(MiniNumber zStartBlock, MiniNumber zEndBlock) {
+	public synchronized ArrayList<TxBlock> loadBlockRange(MiniNumber zStartBlock) {
 		
 		ArrayList<TxBlock> blocks = new ArrayList<>();
 		
@@ -183,7 +298,6 @@ public class MySQLConnect {
 			//Set Search params
 			SQL_SELECT_RANGE.clearParameters();
 			SQL_SELECT_RANGE.setLong(1,zStartBlock.getAsLong());
-			SQL_SELECT_RANGE.setLong(2,zEndBlock.getAsLong());
 			
 			//Run the query
 			ResultSet rs = SQL_SELECT_RANGE.executeQuery();
@@ -211,6 +325,40 @@ public class MySQLConnect {
 		return blocks;
 	}
 	
+	/**
+	 * Non Synchronized version of LoadBlockRange
+	 * @throws SQLException 
+	 */
+	public ArrayList<TxBlock> loadBlockRangeNoSync(MiniNumber zStartBlock) throws SQLException {
+		
+		ArrayList<TxBlock> blocks = new ArrayList<>();
+		
+		//Set Search params
+		SQL_SELECT_RANGE.clearParameters();
+		SQL_SELECT_RANGE.setLong(1,zStartBlock.getAsLong());
+		
+		//Run the query
+		ResultSet rs = SQL_SELECT_RANGE.executeQuery();
+		
+		//Multiple results
+		while(rs.next()) {
+			
+			//Get the details..
+			byte[] syncdata 	= rs.getBytes("syncdata");
+			
+			//Create MiniData version
+			MiniData minisync = new MiniData(syncdata);
+			
+			//Convert
+			TxBlock sb = TxBlock.convertMiniDataVersion(minisync);
+			
+			//Add to our list
+			blocks.add(sb);
+		}
+		
+		return blocks;
+	}
+	
 	public static void main(String[] zArgs) throws SQLException {
 		
 		
@@ -225,7 +373,7 @@ public class MySQLConnect {
 //		MinimaLogger.log(block.getTxPoW().toJSON().toString());
 		
 		
-		ArrayList<TxBlock> blocks = mysql.loadBlockRange(MiniNumber.ZERO, MiniNumber.EIGHT);
+		ArrayList<TxBlock> blocks = mysql.loadBlockRange(MiniNumber.ZERO);
 		MinimaLogger.log("FOUND : "+blocks.size());
 		for(TxBlock block : blocks) {
 			MinimaLogger.log(block.getTxPoW().getBlockNumber().toString());

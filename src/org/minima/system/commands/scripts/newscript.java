@@ -11,7 +11,7 @@ import org.minima.utils.json.JSONObject;
 public class newscript extends Command {
 
 	public newscript() {
-		super("newscript","[script:] [trackall:false|true] - Add a new custom script. Track ALL addresses or just ones with relevant state variables.");
+		super("newscript","[script:] [trackall:false|true] (clean:false|true) - Add a new custom script. Track ALL addresses or just ones with relevant state variables.");
 	}
 	
 	@Override
@@ -24,9 +24,12 @@ public class newscript extends Command {
 		//Get the script
 		String script = getParam("script");
 		boolean track = getBooleanParam("trackall");
+		boolean clean = getBooleanParam("clean",false);
 		
 		//Clean the script
-		script = Contract.cleanScript(script);
+		if(clean) {
+			script = Contract.cleanScript(script);
+		}
 		
 		//Do we have this script already..
 		Address addr = new Address(script);

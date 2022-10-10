@@ -22,13 +22,21 @@ public class network extends Command {
 		String action = getParam("action", "list");
 		
 		if(action.equals("list")) {
+			
+			String uid = getParam("uid", "");
+			
 			//Get the NIO Details
 			ArrayList<NIOClientInfo> clients = Main.getInstance().getNetworkManager().getNIOManager().getAllConnectionInfo();
 			
 			//Create a JSONArray
 			JSONArray clarr = new JSONArray();
 			for(NIOClientInfo info : clients) {
-				clarr.add(info.toJSON());
+				if(uid.equals("")) {
+					clarr.add(info.toJSON());
+				}else if(uid.equals(info.getUID())){
+					clarr.add(info.toJSON());
+					break;
+				}
 			}
 			
 			//Add to the response
@@ -41,7 +49,7 @@ public class network extends Command {
 			
 		}else if(action.equals("restart")) {
 			
-			//Send tyhe message to restart the network
+			//Send the message to restart the network
 			Main.getInstance().PostMessage(Main.MAIN_NETRESTART);
 			
 			//Add to the response

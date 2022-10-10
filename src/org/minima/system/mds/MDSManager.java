@@ -18,6 +18,7 @@ import org.minima.system.mds.handler.MDSCompleteHandler;
 import org.minima.system.mds.pending.PendingCommand;
 import org.minima.system.mds.polling.PollStack;
 import org.minima.system.mds.runnable.MDSJS;
+import org.minima.system.mds.runnable.shutter.SandboxContextFactory;
 import org.minima.system.mds.sql.MiniDAPPDB;
 import org.minima.system.network.rpc.HTTPSServer;
 import org.minima.system.params.GeneralParams;
@@ -29,18 +30,27 @@ import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
+import org.minima.utils.messages.TimerMessage;
+import org.mozilla.javascript.ClassShutter;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.ContextFactory;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
 public class MDSManager extends MessageProcessor {
 
 	public static final String MDS_INIT 				= "MDS_INIT";
+	public static final String MDS_SHUTDOWN 			= "MDS_SHUTDOWN";
 	public static final String MDS_POLLMESSAGE 			= "MDS_POLLMESSAGE";
 	public static final String MDS_MINIDAPPS_RESETALL 	= "MDS_MINIDAPPS_RESETALL";
 	
 	public static final String MDS_MINIDAPPS_INSTALLED 		= "MDS_MINIDAPPS_INSTALLED";
 	public static final String MDS_MINIDAPPS_UNINSTALLED 	= "MDS_MINIDAPPS_UNINSTALLED";
+	
+	/**
+	 * Timer Message sent every 10 seconds to MDS apps - frontend / backend
+	 */
+	public static final String MDS_TIMER_10SECONDS		= "MDS_TIMER_10SECONDS"; 
 	
 	//The Main File and Command server
 	HTTPSServer mMDSFileServer;
@@ -100,20 +110,19 @@ public class MDSManager extends MessageProcessor {
 	}
 	
 	public void shutdown() {
-		
-		//Shut down the server
-		if(GeneralParams.MDS_ENABLED) {
-			mMDSFileServer.shutdown();
-			mMDSCommand.shutdown();
+		//Is it even enabled
+		if(!GeneralParams.MDS_ENABLED) {
+			stopMessageProcessor();
+			return;
 		}
 		
-		//Save all the DBs
-		Enumeration<MiniDAPPDB> dbs = mSqlDB.elements();
-		while(dbs.hasMoreElements()) {
-			dbs.nextElement().saveDB();
-		}
+		//Otherwise post a shutdown message
+		PostMessage(MDS_SHUTDOWN);
 		
-		stopMessageProcessor();
+		//Waiting for shutdown..
+		while(!isShutdownComplete()) {
+			try {Thread.sleep(50);} catch (InterruptedException e) {}
+		}
 	}
 	
 	public File getRootMDSFolder() {
@@ -146,6 +155,10 @@ public class MDSManager extends MessageProcessor {
 		}
 		
 		return mMiniHUBPassword.equals(zPassword.trim());
+	}
+	
+	public MiniDAPP getMiniDAPP(String zMiniDAPPID) {
+		return MinimaDB.getDB().getMDSDB().getMiniDAPP(zMiniDAPPID);
 	}
 	
 	/**
@@ -325,20 +338,78 @@ public class MDSManager extends MessageProcessor {
 				MinimaDB.getDB().saveUserDB();
 			}
 			
+			//Set up the RHINOJS ContextFactory
+			ContextFactory.initGlobal(new SandboxContextFactory());
+			
 			//Scan for MiniDApps
 			PostMessage(MDS_MINIDAPPS_RESETALL);
+		
+			//Post another Message
+			PostTimerMessage(new TimerMessage(10000, MDS_TIMER_10SECONDS));
+			
+		}else if(zMessage.getMessageType().equals(MDS_SHUTDOWN)) {
+
+			//Shutdown the Runnables
+			for(MDSJS mds : mRunnables) {
+				try {
+					mds.sendshutdown();
+				}catch(Exception exc) {
+					MinimaLogger.log(exc);
+				}
+			}
+			
+			//Shutdown the Runnables
+			for(MDSJS mds : mRunnables) {
+				try {
+					mds.shutdown();
+				}catch(Exception exc) {
+					MinimaLogger.log(exc);
+				}
+			}
+			
+			//Shut down the servers
+			if(GeneralParams.MDS_ENABLED) {
+				mMDSFileServer.shutdown();
+				mMDSCommand.shutdown();
+			}
+			
+			//Save all the DBs
+			Enumeration<MiniDAPPDB> dbs = mSqlDB.elements();
+			while(dbs.hasMoreElements()) {
+				dbs.nextElement().saveDB();
+			}
+			
+			stopMessageProcessor();
+			
+		}else if(zMessage.getMessageType().equals(MDS_TIMER_10SECONDS)) {
+
+			//Send a POLL message.. 
+			Main.getInstance().PostNotifyEvent(MDS_TIMER_10SECONDS, new JSONObject());
+			
+			//Post another Message
+			PostTimerMessage(new TimerMessage(10000, MDS_TIMER_10SECONDS));
 			
 		}else if(zMessage.getMessageType().equals(MDS_POLLMESSAGE)) {
 
 			// Add a message to the POll..
 			JSONObject poll = (JSONObject) zMessage.getObject("poll");
+			String to 		= zMessage.getString("to");
 			
 			//Send message to the runnables first..
 			for(MDSJS mds : mRunnables) {
 				try {
 				
-					//Send to the runnable
-					mds.callMainCallback(poll);
+					if(to.equals("*")) {
+						//Send to the runnable
+						mds.callMainCallback(poll);
+					}else {
+						
+						//Check the MiniDAPPID
+						if(mds.getMiniDAPPID().equals(to)) {
+							//Send to the runnable
+							mds.callMainCallback(poll);
+						}
+					}
 					
 				}catch(Exception exc) {
 					MinimaLogger.log(exc);
@@ -346,7 +417,7 @@ public class MDSManager extends MessageProcessor {
 			}
 			
 			//Add then to the Poll Stack - web minidapps
-			mPollStack.addMessage(poll);
+			mPollStack.addMessage(poll,to);
 		
 		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_RESETALL)) {
 			
@@ -415,7 +486,30 @@ public class MDSManager extends MessageProcessor {
 				//Load it into the servcei runner..
 				Context ctx = Context.enter();
 				ctx.setOptimizationLevel(-1);
-				ctx.setLanguageVersion(Context.VERSION_1_7);
+				ctx.setLanguageVersion(Context.VERSION_1_8);
+				
+				//Stop JAVA classes from being run..
+				try {
+					ctx.setClassShutter(new ClassShutter() {
+						public boolean visibleToScripts(String className) {					
+							
+							//ONLY MDSJS can be called form JS
+							if(className.startsWith("org.minima.system.mds.runnable.MDSJS")) {
+								return true;
+							}
+								
+							//MinimaLogger.log("RHINOJS JAVA CLASS DENIED ACCESS : "+className);
+							
+							return false;
+						}
+					});
+				}catch(SecurityException sec) {
+					if(sec.getMessage().equals("Cannot overwrite existing ClassShutter object")) {
+						//we already set it..
+					}else {
+						MinimaLogger.log(sec);
+					}
+				}
 				
 				//Create the Scope
 				Scriptable scope = ctx.initStandardObjects();

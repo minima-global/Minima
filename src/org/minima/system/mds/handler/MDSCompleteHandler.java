@@ -12,6 +12,7 @@ import java.util.StringTokenizer;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 
+import org.minima.database.minidapps.MiniDAPP;
 import org.minima.objects.base.MiniString;
 import org.minima.system.mds.MDSManager;
 import org.minima.system.mds.polling.PollStack;
@@ -182,6 +183,36 @@ public class MDSCompleteHandler implements Runnable {
 					NETcommand net 	= new NETcommand(minidappid, data);
 					result 			= net.runCommand();
 				
+				}else if(command.equals("netpost")) {
+					
+					//Get the URL and the post data..
+					int dataindex 	= data.indexOf("&");
+					String url 		= data.substring(0, dataindex);
+					String postdata = data.substring(dataindex+1);
+					
+					//Create a Command and run it..
+					NETcommand net 	= new NETcommand(minidappid,url, postdata);
+					result 			= net.runCommand();
+				
+				}else if(command.equals("comms")) {
+					
+					//Is it public or private
+					int dataindex 	= data.indexOf("&");
+					String pubpriv 	= data.substring(0, dataindex);
+					String msg 		= data.substring(dataindex+1);
+					
+					//Get the Name of the MiniDAPP..
+					MiniDAPP md = mMDS.getMiniDAPP(minidappid);
+					
+					//Create a Command and run it..
+					if(pubpriv.equals("public")) {
+						COMMSCommand comms = new COMMSCommand(mMDS, "*", md.getName(),  msg);
+						result = comms.runCommand();
+					}else {
+						COMMSCommand comms = new COMMSCommand(mMDS, minidappid, md.getName(), msg);
+						result = comms.runCommand();
+					}
+					
 				}else if(command.equals("poll")) {
 					
 					POLLcommand poll = new POLLcommand(mPollStack);

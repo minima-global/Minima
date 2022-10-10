@@ -50,21 +50,22 @@ public abstract class SqlDB {
 				
 		//The H2 JDBC URL
 		String h2db = "jdbc:h2:"+path+";MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE";
+//		String h2db = "jdbc:h2:"+path+";MODE=MySQL";
 		
 		//Create the connection
 		mSQLConnection = DriverManager.getConnection(h2db, "SA", "");
 		
-		//Save and compact the DB!
-		Statement stmt = mSQLConnection.createStatement();
-	
-		//Shut down.. this saves and closes all the data
-		stmt.execute("SHUTDOWN COMPACT");
-
-		//Close the connection
-		mSQLConnection.close();
-		
-		//Now open a NEW Connection..
-		mSQLConnection = DriverManager.getConnection(h2db, "SA", "");
+//		//Save and compact the DB!
+//		Statement stmt = mSQLConnection.createStatement();
+//	
+//		//Shut down.. this saves and closes all the data
+//		stmt.execute("SHUTDOWN COMPACT");
+//
+//		//Close the connection
+//		mSQLConnection.close();
+//		
+//		//Now open a NEW Connection..
+//		mSQLConnection = DriverManager.getConnection(h2db, "SA", "");
 		
 		//Auto commit changes
 		mSQLConnection.setAutoCommit(true);
@@ -76,11 +77,16 @@ public abstract class SqlDB {
 	public void saveDB() {
 		try {
 		
+			//Are we already closed..
+			if(mSQLConnection.isClosed()) {
+				return;
+			}
+			
 			//One last statement
 			Statement stmt = mSQLConnection.createStatement();
 		
 			//Shut down.. this saves and closes all the data
-			stmt.execute("SHUTDOWN COMPACT");
+			stmt.execute("SHUTDOWN");
 
 			//Close the connection
 			mSQLConnection.close();

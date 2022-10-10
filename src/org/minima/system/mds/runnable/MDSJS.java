@@ -4,23 +4,12 @@ import org.minima.system.mds.MDSManager;
 import org.minima.system.mds.handler.CMDcommand;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
-import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.NativeJSON;
 import org.mozilla.javascript.Scriptable;
 
 public class MDSJS {
-
-	/**
-	 * Required to create the Native JSON
-	 */
-	private class NullCallable implements Callable{
-	    @Override
-	    public Object call(Context context, Scriptable scope, Scriptable holdable, Object[] objects){
-	        return objects[1];
-	    }
-	}
 	
 	/**
 	 * Which MiniDAPP does this Contect apply to
@@ -44,12 +33,24 @@ public class MDSJS {
 	 */
 	MDSManager mMDS;
 	
+	/**
+	 * The NET Functions
+	 */
+	public NETService net;
+	
+	/**
+	 * The COMMS service 
+	 */
+	public COMMSService comms;
+	
 	public MDSJS(MDSManager zMDS, String zMiniDAPPID, String zMiniName,  Context zContext, Scriptable zScope) {
 		mMDS			= zMDS;
 		mMiniDAPPID		= zMiniDAPPID;
 		mMiniDAPPName	= zMiniName;
 		mContext 		= zContext;
 		mScope 			= zScope;
+		net 			= new NETService(zMiniDAPPID, zMiniName, zContext, zScope);
+		comms			= new COMMSService(mMDS, zMiniDAPPID, zMiniName, zContext, zScope);
 	}
 	
 	public String getMiniDAPPID() {
@@ -57,6 +58,7 @@ public class MDSJS {
 	}
 	
 	public void shutdown() {
+		//And now shut it down..
 		mContext.exit();
 	}
 	
@@ -77,7 +79,7 @@ public class MDSJS {
 	 * Simple Log
 	 */
 	public void log(String zMessage) {
-		MinimaLogger.log("MDS_"+mMiniDAPPName+"_"+mMiniDAPPID+" > "+zMessage);
+		MinimaLogger.log("MDS_"+mMiniDAPPName+"_"+mMiniDAPPID+" > "+zMessage, false);
 	}
 	
 	/**
@@ -94,6 +96,28 @@ public class MDSJS {
 	
 		//Send to the Runnable
 		callMainCallback(init);
+		
+		/**
+		 * FOR NOW -ADD A SCEOND CALL!
+		 */
+		//Create the init message
+		JSONObject initnew = new JSONObject();
+		initnew.put("event", "MDSINIT");
+	
+		//Send to the Runnable
+		callMainCallback(initnew);
+	}
+	
+	/**
+	 * Send a SHUTDOWN message
+	 */
+	public void sendshutdown() {
+		//Create the init message
+		JSONObject shutd = new JSONObject();
+		shutd.put("event", "MDSSHUTDOWN");
+	
+		//Send to the Runnable
+		callMainCallback(shutd);
 	}
 	
 	/**

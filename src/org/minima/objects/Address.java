@@ -187,7 +187,7 @@ public class Address implements Streamable{
 			bais.close();
 		    
 	    } catch (IOException e) {
-	    	throw new IllegalArgumentException("Invalid MxAddress - "+e.toString());
+	    	throw new IllegalArgumentException("Invalid MxAddress : "+zMinimAddress+" "+e.toString());
 		}
 		
 		//Now check the hash

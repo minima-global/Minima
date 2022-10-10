@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import org.minima.database.cascade.Cascade;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
@@ -47,6 +48,8 @@ public class ArchiveManager extends SqlDB {
 	
 	public void setupMySQL(String zHost, String zDB, String zUser, String zPassword) throws SQLException {
 		
+		MinimaLogger.log("MySQL integration for Archive node activated..");
+		
 		//New MySQL
 		mMySQL = new MySQLConnect(zHost, zDB, zUser, zPassword);
 		
@@ -55,6 +58,39 @@ public class ArchiveManager extends SqlDB {
 		
 		//We are storing in MySQL
 		mStoreMySQL = true;
+	}
+	
+	public boolean isStoreMySQL() {
+		return mStoreMySQL;
+	}
+	
+	public void checkCascadeRequired(Cascade zCascade) throws SQLException {
+		
+		if(isStoreMySQL() && zCascade.getLength()>0) {
+			//Where does our archive start
+			TxBlock gen = mMySQL.loadBlockFromNum(1);
+			
+			//Do we have it..
+			if(gen!=null) {
+				//we have it.. no cascade required..
+				return;
+			}
+			
+			//Do we actually have a cascade yet
+			Cascade casc = mMySQL.loadCascade();
+			
+			//if not.. store our one..
+			if(casc == null) {
+				MinimaLogger.log("Saving Cascade in ARCHIVEDB.. tip : "+zCascade.getTip().getTxPoW().getBlockNumber());
+				mMySQL.saveCascade(zCascade);
+			}else {
+				MinimaLogger.log("Cascade in ARCHIVEDB.. tip : "+casc.getTip().getTxPoW().getBlockNumber());
+			}
+		}
+	}
+	
+	public MySQLConnect getMySQLCOnnect() {
+		return mMySQL;
 	}
 	
 	@Override
@@ -127,8 +163,8 @@ public class ArchiveManager extends SqlDB {
 		return -1;
 	}
 	
-	public synchronized boolean saveBlock(TxBlock zBlock) {
-		try {
+	public synchronized boolean saveBlock(TxBlock zBlock) throws SQLException {
+//		try {
 			
 			//get the MiniData version..
 			MiniData syncdata = MiniData.getMiniDataVersion(zBlock);
@@ -154,11 +190,11 @@ public class ArchiveManager extends SqlDB {
 			
 			return true;
 			
-		} catch (SQLException e) {
-			MinimaLogger.log(e);
-		}
-		
-		return false;
+//		} catch (SQLException e) {
+//			MinimaLogger.log(e);
+//		}
+//		
+//		return false;
 	}
 	
 	public synchronized TxBlock loadBlock(String zTxPoWID) {
