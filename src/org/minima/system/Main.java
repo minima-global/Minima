@@ -14,6 +14,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWProcessor;
+import org.minima.system.commands.Command;
 import org.minima.system.genesis.GenesisMMR;
 import org.minima.system.genesis.GenesisTxPoW;
 import org.minima.system.mds.MDSManager;
@@ -28,6 +29,7 @@ import org.minima.utils.BIP39;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.RPCClient;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageListener;
@@ -66,9 +68,14 @@ public class Main extends MessageProcessor {
 	 * Main loop messages
 	 */
 	public static final String MAIN_TXPOWMINED 	= "MAIN_TXPOWMINED";
-//	public static final String MAIN_AUTOMINE 	= "MAIN_CHECKAUTOMINE";
 	public static final String MAIN_CLEANDB 	= "MAIN_CLEANDB";
 	public static final String MAIN_PULSE 		= "MAIN_PULSE";
+	
+	/**
+	 * Auto backup every 24 hrs..
+	 */
+	public static final String MAIN_AUTOBACKUP 	= "MAIN_AUTOBACKUP";
+	long AUTOBACKUP_TIMER = 1000 * 60 * 60 * 24;
 	
 	/**
 	 * Aync Shutdown call
@@ -275,7 +282,10 @@ public class Main extends MessageProcessor {
 		
 		//Reset Network stats every 24 hours
 		PostTimerMessage(new TimerMessage(NETRESET_TIMER, MAIN_NETRESET));
-				
+		
+		//AutoBackup
+		PostTimerMessage(new TimerMessage(AUTOBACKUP_TIMER, MAIN_AUTOBACKUP));
+		
 		//Quick Clean up..
 		System.gc();
 	}
@@ -658,6 +668,22 @@ public class Main extends MessageProcessor {
 			//Restart the Networking..
 			restartNIO();
 
+		}else if(zMessage.getMessageType().equals(MAIN_AUTOBACKUP)) {
+			
+			//Are we backing up..
+			if(MinimaDB.getDB().getUserDB().isAutoBackup()) {
+			
+				//Create a backup command..
+				JSONArray res = Command.runMultiCommand("backup");
+				
+				//Output
+				MinimaLogger.log("AUTOBACKUP : "+res.toString());
+			
+			}
+			
+			//And Again..
+			PostTimerMessage(new TimerMessage(AUTOBACKUP_TIMER, MAIN_AUTOBACKUP));
+			
 		}else if(zMessage.getMessageType().equals(MAIN_NETRESET)) {
 			
 			//Reset the networking stats
