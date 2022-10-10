@@ -124,9 +124,9 @@ public class Minima {
 		}
 		
 		//Set the Ports.. If Minima port has changed
-		GeneralParams.RPC_PORT 			= GeneralParams.MINIMA_PORT+1;
 		GeneralParams.MDSFILE_PORT 		= GeneralParams.MINIMA_PORT+2;
 		GeneralParams.MDSCOMMAND_PORT 	= GeneralParams.MINIMA_PORT+3;
+		GeneralParams.RPC_PORT 			= GeneralParams.MINIMA_PORT+4;
 		
 		//Now lets go..
 		MinimaLogger.log("**********************************************");

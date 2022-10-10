@@ -48,11 +48,6 @@ public class GeneralParams {
 	public static int MINIMA_PORT = 9001;
 	
 	/**
-	 * The Minima RPC port
-	 */
-	public static int RPC_PORT = MINIMA_PORT+1;
-	
-	/**
 	 * The MDS webserver
 	 */
 	public static int MDSFILE_PORT = MINIMA_PORT+2;
@@ -61,6 +56,11 @@ public class GeneralParams {
 	 * The MDS Command Server
 	 */
 	public static int MDSCOMMAND_PORT = MINIMA_PORT+3;
+	
+	/**
+	 * The Minima RPC port
+	 */
+	public static int RPC_PORT = MINIMA_PORT+4;
 	
 	/**
 	 * The MDS Password - blank will set automagically
