@@ -19,6 +19,7 @@ import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Coin;
 import org.minima.objects.StateVariable;
+import org.minima.objects.Token;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
@@ -208,7 +209,15 @@ public class Contract {
 		
 		setGlobalVariable("@INPUT", new NumberValue(zInput));
 		setGlobalVariable("@COINID", new HexValue(cc.getCoinID()));
-		setGlobalVariable("@AMOUNT", new NumberValue(cc.getAmount()));
+		
+		//AMOUNT is the amount of Minima or Token(Scaled)..
+		MiniNumber amt = cc.getAmount();
+		if(!cc.getTokenID().isEqual(Token.TOKENID_MINIMA)) {
+			//Scale the amount
+			amt = cc.getToken().getScaledTokenAmount(amt);
+		}
+		setGlobalVariable("@AMOUNT", new NumberValue(amt));
+		
 		setGlobalVariable("@ADDRESS", new HexValue(cc.getAddress()));
 		setGlobalVariable("@TOKENID", new HexValue(cc.getTokenID()));
 		setGlobalVariable("@SCRIPT", new StringValue(zScript));
