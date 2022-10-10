@@ -110,6 +110,13 @@ public class MDSManager extends MessageProcessor {
 	}
 	
 	public void shutdown() {
+		//Is it even enabled
+		if(!GeneralParams.MDS_ENABLED) {
+			stopMessageProcessor();
+			return;
+		}
+		
+		//Otherwise post a shutdown message
 		PostMessage(MDS_SHUTDOWN);
 		
 		//Waiting for shutdown..
