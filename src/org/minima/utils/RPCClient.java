@@ -9,9 +9,11 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Iterator;
 
 import org.minima.objects.base.MiniString;
 import org.minima.system.commands.Command;
+import org.minima.system.params.GlobalParams;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
@@ -96,6 +98,7 @@ public class RPCClient {
 		URL obj = new URL(zHost);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 		con.setConnectTimeout(10000);
+		con.setInstanceFollowRedirects(true);
 		con.setRequestMethod("POST");
 		con.setRequestProperty("User-Agent", USER_AGENT);
 		con.setRequestProperty("Connection", "close");
@@ -134,26 +137,90 @@ public class RPCClient {
 	
 	public static void main(String[] zArgs) throws IOException {		
 
-	    String totalline = "";
-		for(String arg : zArgs) {
-//			System.out.println("ARG : " + arg);
-			totalline += arg+" ";
+//	    String totalline = "";
+//		for(String arg : zArgs) {
+//			totalline += arg+" ";
+//		}
+//		
+//		totalline = URLEncoder.encode(totalline.trim(), MiniString.MINIMA_CHARSET);
+		
+//		try {
+//			//Now run this function..
+//			String result = sendGET("http://127.0.0.1:9002/"+totalline);
+//			
+//			//Create a JSON
+//			JSONObject json = (JSONObject) new JSONParser().parse(result);
+//			
+//			//Output the result..
+//			System.out.println(MiniFormat.JSONPretty(json));
+//			
+//		}catch(Exception exc) {
+//			MinimaLogger.log("ERROR CMDHANDLER : "+totalline+" "+exc);
+//		}
+		
+		//Are there any Params..
+		String host = "127.0.0.1:9002";
+		if(zArgs.length>0) {
+			host = zArgs[0];
 		}
 		
-		totalline = URLEncoder.encode(totalline, MiniString.MINIMA_CHARSET);
+		//Now lets go..
+		MinimaLogger.log("**********************************************");
+		MinimaLogger.log("*  __  __  ____  _  _  ____  __  __    __    *");
+		MinimaLogger.log("* (  \\/  )(_  _)( \\( )(_  _)(  \\/  )  /__\\   *");
+		MinimaLogger.log("*  )    (  _)(_  )  (  _)(_  )    (  /(__)\\  *");
+		MinimaLogger.log("* (_/\\/\\_)(____)(_)\\_)(____)(_/\\/\\_)(__)(__) *");
+		MinimaLogger.log("*                                            *");
+		MinimaLogger.log("**********************************************");
+		MinimaLogger.log("Welcome to the Minima RPCClient - for assistance type help. Then press enter.");
+		MinimaLogger.log("To 'exit' this app use 'exit'. 'quit' will shutdown Minima");
 		
-		try {
-			//Now run this function..
-			String result = sendGET("http://127.0.0.1:9002/"+totalline);
-			
-			//Create a JSON
-			JSONObject json = (JSONObject) new JSONParser().parse(result);
-			
-			//Output the result..
-			System.out.println(MiniFormat.JSONPretty(json));
-			
-		}catch(Exception exc) {
-			MinimaLogger.log("ERROR CMDHANDLER : "+totalline+" "+exc);
-		}
+		//Listen for input
+		InputStreamReader is    = new InputStreamReader(System.in, MiniString.MINIMA_CHARSET);
+	    BufferedReader bis      = new BufferedReader(is);
+	    
+	    //Loop until finished..
+	    while(true){
+	        try {
+	            //Get a line of input
+	            String input = bis.readLine();
+	            
+	            //Check valid..
+	            if(input!=null && !input.equals("")) {
+	            	//trim it..
+	            	input = input.trim();
+	            	if(input.equals("exit")) {
+	        			break;
+	            	}
+	            	
+	            	//URLEncode..
+	            	input = URLEncoder.encode(input, MiniString.MINIMA_CHARSET);
+	            	
+	            	//Now run this function..
+	    			String result = sendGET("http://127.0.0.1:9002/"+input);
+	    			
+	    			//Create a JSON
+	    			JSONObject json = (JSONObject) new JSONParser().parse(result);
+	    			
+	    			//Output the result..
+	    			System.out.println(MiniFormat.JSONPretty(json));
+	    			
+	            	if(input.equals("quit")) {
+	        			break;
+	            	}
+	            }
+	            
+	        } catch (Exception ex) {
+	            MinimaLogger.log(ex);
+	        }
+	    }
+	    
+	    //Cross the streams..
+	    try {
+	        bis.close();
+	        is.close();
+	    } catch (IOException ex) {
+	    	MinimaLogger.log(""+ex);
+	    }
 	}
 }
