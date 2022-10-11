@@ -10,6 +10,11 @@
 
 <body>
 
+<img src="news.png">
+<br><br>
+
+
+
 <script type="text/javascript">
 
 //Main message handler..
@@ -19,20 +24,28 @@ MDS.init(function(msg){
 	if(msg.event == "inited"){
 			
 		MDS.log("MyTest HTML inited");
-					
-		//Run this..
-		//MDS.net.POST("http://127.0.0.1:9002", "status", function(msg){
-	//		MDS.log("NET POST! "+JSON.stringify(msg));
-		//});
 		
-		MDS.comms.broadcast("My Public Message!", function(msg){
-			MDS.log("COMMS public : "+JSON.stringify(msg));
+		MDS.file.list("/",function(msg){
+			MDS.log("FILE LIST "+JSON.stringify(msg));
 		});
 		
-		MDS.comms.solo("My Private Message!", function(msg){
-			MDS.log("COMMS private : "+JSON.stringify(msg));
+		MDS.file.save("/test.txt","hello",function(msg){
+			MDS.log("FILE SAVE "+JSON.stringify(msg));
+			
+			MDS.file.load("/test.txt",function(msg){
+				MDS.log("FILE LOAD "+JSON.stringify(msg));
+			});
 		});
-	
+		
+		MDS.file.save("/somefolder/newtest.txt","hello2",function(msg){
+			MDS.log("FILE SAVE "+JSON.stringify(msg));
+			
+			MDS.file.list("/somefolder",function(msg){
+				MDS.log("FILE LIST "+JSON.stringify(msg));
+			});
+		});
+		
+		
 	//Only interested in Maxima
 	}else if(msg.event == "MDSCOMMS"){
 		MDS.log("REC : "+JSON.stringify(msg));
