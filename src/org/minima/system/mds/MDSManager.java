@@ -492,7 +492,7 @@ public class MDSManager extends MessageProcessor {
 						public boolean visibleToScripts(String className) {					
 							
 							//ONLY MDSJS can be called form JS
-							if(className.startsWith("org.minima.system.mds.runnable.MDSJS")) {
+							if(className.startsWith("org.minima.system.mds.runnable")) {
 								return true;
 							}
 								
