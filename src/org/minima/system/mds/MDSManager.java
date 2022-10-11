@@ -120,9 +120,7 @@ public class MDSManager extends MessageProcessor {
 		PostMessage(MDS_SHUTDOWN);
 		
 		//Waiting for shutdown..
-		while(!isShutdownComplete()) {
-			try {Thread.sleep(50);} catch (InterruptedException e) {}
-		}
+		waitToShutDown(true);
 	}
 	
 	public File getRootMDSFolder() {

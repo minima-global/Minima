@@ -337,13 +337,17 @@ public class Main extends MessageProcessor {
 			
 			//Stop the main TxPoW processor
 			mTxPoWProcessor.stopMessageProcessor();
-			while(!mTxPoWProcessor.isShutdownComplete()) {
-				try {Thread.sleep(50);} catch (InterruptedException e) {}
-			}
+			mTxPoWProcessor.waitToShutDown(false);
 			
 			//Wait for the networking to finish
+			long timewaited=0;
 			while(!mNetwork.isShutDownComplete()) {
-				try {Thread.sleep(50);} catch (InterruptedException e) {}
+				try {Thread.sleep(100);} catch (InterruptedException e) {}
+				timewaited+=100;
+				if(timewaited>5000) {
+					MinimaLogger.log("Network shutdown took too long..");
+					break;
+				}
 			}
 			
 			//Now backup the  databases
@@ -353,9 +357,7 @@ public class Main extends MessageProcessor {
 			stopMessageProcessor();
 			
 			//Wait for it..
-			while(!isShutdownComplete()) {
-				try {Thread.sleep(50);} catch (InterruptedException e) {}
-			}
+			waitToShutDown(true);
 		
 			MinimaLogger.log("Shut down completed OK..");
 			
