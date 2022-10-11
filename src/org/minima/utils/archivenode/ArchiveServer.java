@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Map;
 
 import javax.naming.CommunicationException;
 
@@ -192,8 +193,27 @@ public class ArchiveServer extends HTTPServer {
 		String mysqldb	 	 = null;
 		String mysqluser 	 = null;
 		String mysqlpassword = null;
-		int port 			 = 8080;
+		int port 			 = 8888;
 		
+		//Check the Environment variables..
+		Map<String,String> env = System.getenv();
+		if(env.get("MYSQL_HOST")!=null) {
+			mysqlhost = env.get("MYSQL_HOST");
+		}
+		if(env.get("MYSQL_DB")!=null) {
+			mysqldb = env.get("MYSQL_DB");
+		}
+		if(env.get("MYSQL_USER")!=null) {
+			mysqluser = env.get("MYSQL_USER");
+		}
+		if(env.get("MYSQL_PASSWORD")!=null) {
+			mysqlpassword = env.get("MYSQL_PASSWORD");
+		}
+		if(env.get("ARCHIVE_PORT")!=null) {
+			port = Integer.parseInt(env.get("ARCHIVE_PORT"));
+		}
+		
+		//Now check the command line..
 		int arglen 	= zArgs.length;
 		if(arglen > 0) {
 			int counter	=	0;
