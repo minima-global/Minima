@@ -12,16 +12,6 @@ WORKDIR $LOCAL
 # Copy in startup script, minima and dapps
 COPY minima-all.jar minima/minima.jar
 
-# Get other permissions right, too
-RUN mkdir -p $HOME/data
-RUN mkdir -p $HOME/dapps
-
-# Copy over the MiniDAPPs
-COPY *.mds.zip $HOME/dapps/
-
-# Copy the Config
-COPY minima.config $HOME/minima.config
-
 #Copy the minima script
 COPY minima /usr/bin/minima
 RUN chmod +x /usr/bin/minima
@@ -36,7 +26,7 @@ RUN chmod +x /usr/bin/minima
 RUN ln -sf /bin/bash /bin/sh
 
 # Minima ports
-EXPOSE 9001 9002 9003 9004
+EXPOSE 8888
 
 # Start her up 
-ENTRYPOINT ["java", "-jar", "minima/minima.jar", "-conf", "/home/minima/minima.config"]
+ENTRYPOINT ["java", "-cp", "minima/minima.jar", "org.minima.utils.archivenode.ArchiveServer"]
