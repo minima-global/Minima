@@ -57,14 +57,8 @@ public class consolidate extends Command {
 			debug = true;
 		}
 		
-		//Get the DBs
-		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
-		TxPoWMiner txminer 	= Main.getInstance().getTxPoWMiner();
-		Wallet walletdb 	= MinimaDB.getDB().getWallet();
+		//Get the tip of the tree
 		TxPoWTreeNode tip 	= MinimaDB.getDB().getTxPoWTree().getTip();
-		
-		//Current block
-		MiniNumber tipblock = tip.getBlockNumber();
 		
 		//Lets build a transaction..
 		ArrayList<Coin> relcoins 	= TxPoWSearcher.getRelevantUnspentCoins(tip,tokenid,true);
@@ -133,7 +127,7 @@ public class consolidate extends Command {
 		MiniData myaddress 			= new MiniData(newwalletaddress.getAddress());
 		
 		//Construct the command
-		String command = "send dryrun:"+dryrun+" debug:"+debug+" burn:"+burn.toString()
+		String command = "send split:2 dryrun:"+dryrun+" debug:"+debug+" burn:"+burn.toString()
 				+" amount:"+totalamount.toString()+" address:"+myaddress.to0xString()+" tokenid:"+tokenid;
 		
 		if(debug) {
