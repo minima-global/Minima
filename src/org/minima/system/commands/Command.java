@@ -30,6 +30,7 @@ import org.minima.system.commands.base.hashtest;
 import org.minima.system.commands.base.healthcheck;
 import org.minima.system.commands.base.incentivecash;
 import org.minima.system.commands.base.logs;
+import org.minima.system.commands.base.mempool;
 import org.minima.system.commands.base.missingcmd;
 import org.minima.system.commands.base.mmrcreate;
 import org.minima.system.commands.base.mmrproof;
@@ -103,7 +104,7 @@ public abstract class Command {
 			//Removed code..
 //			new sshtunnel(), 
 			
-			new mds(), new sendpoll(), new healthcheck(),
+			new mds(), new sendpoll(), new healthcheck(), new mempool(),
 			
 			new archive(), new logs(),
 			
