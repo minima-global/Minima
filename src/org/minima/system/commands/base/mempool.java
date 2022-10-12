@@ -27,9 +27,10 @@ public class mempool extends Command {
 		JSONArray txpows = new JSONArray();
 		
 		ConcurrentHashMap<String, RamData> mempool = txpdb.getCompleteMemPool();
-		int size = mempool.size();
-		int txnnum = 0;
-		int blknum = 0;
+		int size 		= 0;
+		int cascade 	= 0;
+		int txnnum 		= 0;
+		int blknum 		= 0;
 		
 		Enumeration<RamData> alldata = mempool.elements();
 		while(alldata.hasMoreElements()) {
@@ -37,6 +38,8 @@ public class mempool extends Command {
 			
 			if(!ram.isInCascade()) {
 				TxPoW txp = ram.getTxPoW();
+				
+				size++;
 				
 				JSONObject txpow = new JSONObject();
 				txpow.put("txpowid", txp.getTxPoWID());
@@ -51,12 +54,16 @@ public class mempool extends Command {
 				if(txp.isBlock()) {
 					blknum++;
 				}
+			}else {
+				cascade++;
 			}
 		}
 		
 		JSONObject resp = new JSONObject();
 		resp.put("txpow", txpows);
-		resp.put("size", size);
+		resp.put("total", mempool.size());
+		resp.put("onchain", size);
+		resp.put("cascade", cascade);
 		resp.put("transactions", txnnum);
 		resp.put("blocks", blknum);
 		
