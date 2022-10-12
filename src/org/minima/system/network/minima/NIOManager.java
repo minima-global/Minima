@@ -77,6 +77,11 @@ public class NIOManager extends MessageProcessor {
 	long NIO_HEALTHCHECK_TIMER 	= 1000 * 60 * 20;
 	
 	/**
+	 * SYNC Back max time
+	 */
+	long SYNC_MAX_TIME = 1000 * 60 * 60 * 24 * 60;
+	
+	/**
 	 * How long before a reconnect attempt
 	 */
 	static final long RECONNECT_TIMER = 30000;
@@ -524,6 +529,14 @@ public class NIOManager extends MessageProcessor {
 				lastpow = MinimaDB.getDB().getTxPoWTree().getRoot().getTxPoW();
 			}else {
 				lastpow = lastblock.getTxPoW();
+			}
+			
+			//Check is within acceptable time..
+			long timenow = System.currentTimeMillis();
+			long maxtime = timenow - SYNC_MAX_TIME;
+			if(lastpow.getTimeMilli().getAsLong() < maxtime) {
+				//we have enough..
+				return;
 			}
 			
 			//Send a message asking for a sync
