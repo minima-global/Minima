@@ -16,12 +16,6 @@ COPY minima-all.jar minima/minima.jar
 COPY minima /usr/bin/minima
 RUN chmod +x /usr/bin/minima
 
-#Install curl
-#RUN apt-get update
-#RUN apt-get -y install curl jq vim
-#RUN apt-get clean
-#RUN rm -rf /var/lib/apt/lists/*
-
 #Make BASH the defult
 RUN ln -sf /bin/bash /bin/sh
 
