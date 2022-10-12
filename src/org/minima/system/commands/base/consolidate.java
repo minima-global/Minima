@@ -44,9 +44,6 @@ public class consolidate extends Command {
 		//The tokenid
 		String tokenid = getParam("tokenid");
 		
-		//How old must the coins
-		MiniNumber coinage = getNumberParam("coinage", GlobalParams.MINIMA_CONFIRM_DEPTH);
-		
 		//Is there a burn
 		MiniNumber burn = getNumberParam("burn", MiniNumber.ZERO);
 		
@@ -60,16 +57,40 @@ public class consolidate extends Command {
 		//Get the tip of the tree
 		TxPoWTreeNode tip 	= MinimaDB.getDB().getTxPoWTree().getTip();
 		
+		//Get the parent deep enough for valid confirmed coins
+		int confdepth = GlobalParams.MINIMA_CONFIRM_DEPTH.getAsInt();
+		for(int i=0;i<confdepth;i++) {
+			tip = tip.getParent();
+			if(tip == null) {
+				//Insufficient blocks
+				ret.put("status", false);
+				ret.put("message", "Insufficient blocks..");
+				return ret;
+			}
+		}
+		
+		//How old do the coins need to be..
+		MiniNumber coinage = getNumberParam("coinage", MiniNumber.ZERO);
+				
 		//Lets build a transaction..
-		ArrayList<Coin> relcoins 	= TxPoWSearcher.getRelevantUnspentCoins(tip,tokenid,true);
+		ArrayList<Coin> foundcoins	= TxPoWSearcher.getRelevantUnspentCoins(tip,tokenid,true);
+		ArrayList<Coin> relcoins 	= new ArrayList<>();
+		
+		//Now make sure they are old enough
+		MiniNumber mincoinblock = tip.getBlockNumber().sub(coinage);
+		for(Coin relc : foundcoins) {
+			if(relc.getBlockCreated().isLessEqual(mincoinblock)) {
+				relcoins.add(relc);
+			}
+		}
 		
 		//Sort coins via same address - since they require the same signature
 		relcoins = send.orderCoins(relcoins);
 		
 		//How many coins are there
-		int COIN_SIZE = relcoins.size();
-		if(COIN_SIZE<3) {
-			throw new CommandException("Not enough coins ("+COIN_SIZE+") to consolidate");
+		int totcoins = relcoins.size();
+		if(totcoins<3) {
+			throw new CommandException("Not enough coins ("+totcoins+") to consolidate");
 		}
 		
 		//Maximum number of coins and signatures
@@ -114,7 +135,7 @@ public class consolidate extends Command {
 			totalcoins++;
 			
 			if(debug) {
-				MinimaLogger.log("Consolidate - add coin "+coinamount+" totalcoins:"+totalcoins+"  totalsigs:"+totalsigs);
+				MinimaLogger.log("Consolidate - add coin "+coinamount+" totalcoins:"+totalcoins+"  totalsigs:"+totalsigs+" coinid:"+cc.getCoinID().to0xString());
 			}
 			
 			//Do checks..
@@ -131,7 +152,7 @@ public class consolidate extends Command {
 		MiniData myaddress 			= new MiniData(newwalletaddress.getAddress());
 		
 		//Construct the command
-		String command = "send split:2 dryrun:"+dryrun+" debug:"+debug+" burn:"+burn.toString()
+		String command = "send coinage:"+coinage.toString()+" split:2 dryrun:"+dryrun+" debug:"+debug+" burn:"+burn.toString()
 				+" amount:"+totalamount.toString()+" address:"+myaddress.to0xString()+" tokenid:"+tokenid;
 		
 		if(debug) {
@@ -143,12 +164,13 @@ public class consolidate extends Command {
 		if((boolean) sendresult.get("status")) {
 			ret.put("response", sendresult.get("response"));
 		}else {
+			ret.put("status", false);
 			if(sendresult.get("message") != null) {
-				ret.put("response", sendresult.get("message"));
+				ret.put("message", sendresult.get("message"));
 			}else if(sendresult.get("error") != null) {
-				ret.put("response", sendresult.get("error"));
+				ret.put("message", sendresult.get("error"));
 			}else {
-				ret.put("response", "Error occurred..");
+				ret.put("message", sendresult);
 			}
 		}
 		

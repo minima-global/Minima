@@ -163,8 +163,20 @@ public class send extends Command {
 		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
 		TxPoWMiner txminer 	= Main.getInstance().getTxPoWMiner();
 		
+		//How old do the coins need to be.. used by consolidate
+		MiniNumber coinage = getNumberParam("coinage", MiniNumber.ZERO);
+				
 		//Lets build a transaction..
-		ArrayList<Coin> relcoins = TxPoWSearcher.getRelevantUnspentCoins(tip,tokenid,true);
+		ArrayList<Coin> foundcoins	= TxPoWSearcher.getRelevantUnspentCoins(tip,tokenid,true);
+		ArrayList<Coin> relcoins 	= new ArrayList<>();
+		
+		//Now make sure they are old enough
+		MiniNumber mincoinblock = tip.getBlockNumber().sub(coinage);
+		for(Coin relc : foundcoins) {
+			if(relc.getBlockCreated().isLessEqual(mincoinblock)) {
+				relcoins.add(relc);
+			}
+		}
 		
 		//Are there any coins at all..
 		if(relcoins.size()<1) {
