@@ -96,7 +96,9 @@ public class consolidate extends Command {
 				
 				//Are we at the limit
 				if(totalsigs+1>MAX_SIGS) {
-					MinimaLogger.log("Consolidate - max sigs reached "+totalsigs);
+					if(debug) {
+						MinimaLogger.log("Consolidate - max sigs reached "+totalsigs);
+					}
 					break;
 				}
 				
@@ -117,7 +119,9 @@ public class consolidate extends Command {
 			
 			//Do checks..
 			if(totalcoins>=MAX_COINS) {
-				MinimaLogger.log("Consolidate - max coins reached "+totalcoins);
+				if(debug) {
+					MinimaLogger.log("Consolidate - max coins reached "+totalcoins);
+				}
 				break;
 			}
 		}
