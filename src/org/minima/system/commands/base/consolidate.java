@@ -68,7 +68,7 @@ public class consolidate extends Command {
 		
 		//How many coins are there
 		int COIN_SIZE = relcoins.size();
-		if(COIN_SIZE<2) {
+		if(COIN_SIZE<3) {
 			throw new CommandException("Not enough coins ("+COIN_SIZE+") to consolidate");
 		}
 		
