@@ -138,8 +138,9 @@ public class NIOMessage implements Runnable {
 			MiniByte type = MiniByte.ReadFromStream(dis);
 			
 			//Output some info
-			if(mTrace && "NIOMessage".contains(mFilter)) {
-				MinimaLogger.log("[NIOMessage] uid:"+mClientUID+" type:"+convertMessageType(type)+" size:"+MiniFormat.formatSize(data.length));
+			String tracemsg = "[NIOMessage] uid:"+mClientUID+" type:"+convertMessageType(type)+" size:"+MiniFormat.formatSize(data.length);
+			if(mTrace && tracemsg.contains(mFilter)) {
+				MinimaLogger.log(tracemsg,false);
 			}
 			
 			//Now find the right message
@@ -701,6 +702,9 @@ public class NIOMessage implements Runnable {
 				
 				//Get the Hash of the Block
 				TxPoW lastblock = TxPoW.ReadFromStream(dis);
+				
+				//And post this on..
+				MinimaLogger.log("[+] Received Sync IBD Request from "+mClientUID+" @ "+lastblock.getBlockNumber());
 				
 				//Create an IBD of the blocks we hjave before this one..
 				IBD syncibd = new IBD();

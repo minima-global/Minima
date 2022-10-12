@@ -245,6 +245,11 @@ public class NIOManager extends MessageProcessor {
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
+		//Don't process messages after shutdown
+		if(Main.getInstance().isShuttingDown() && !zMessage.getMessageType().equals(NIO_SHUTDOWN)) {
+			return;
+		}
+		
 		if(zMessage.getMessageType().equals(NIO_SERVERSTARTED)) {
 			
 			//The NIOServer has started you can now start up the P2P and pre-connect list

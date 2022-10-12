@@ -202,10 +202,22 @@ public class status extends Command {
 		//Add detailsl about the number of TxPoW we are tracking
 		database = new JSONObject();
 		database.put("mempool", txpdb.getAllUnusedTxns().size());
+		if(debug) {
+			MinimaLogger.log("Mempool done..");
+		}
 		database.put("ramdb", txpdb.getRamSize());
+		if(debug) {
+			MinimaLogger.log("RamDB done..");
+		}
 		database.put("txpowdb", txpdb.getSqlSize());
+		if(debug) {
+			MinimaLogger.log("txpowdb done..");
+		}
 		database.put("archivedb", arch.getSize());
-
+		if(debug) {
+			MinimaLogger.log("archivedb done..");
+		}
+		
 		//Add ther adatabse
 		details.put("txpow", database);
 		

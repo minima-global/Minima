@@ -246,7 +246,7 @@ public class NIOServer implements Runnable {
 	
 	                    //Small Log..
 	                    if(mTraceON) {
-	                    	MinimaLogger.log("[NIOSERVER] NIOClient:"+client.getUID()+" "+e+" total:"+mClients.size());
+	                    	MinimaLogger.log("[NIOSERVER] NIOClient:"+client.getUID()+" "+e+" total:"+mClients.size(), false);
 	                    }
 	                    
 	                    //Tell the Network Manager
@@ -313,7 +313,7 @@ public class NIOServer implements Runnable {
         
         //log..
         if(mTraceON) {
-        	MinimaLogger.log("[NIOSERVER] NEW NIOClient:"+nioc.getUID()+" total:"+mClients.size());
+        	MinimaLogger.log("[NIOSERVER] NEW NIOClient:"+nioc.getUID()+" total:"+mClients.size(), false);
         }
         
         //Post about it..

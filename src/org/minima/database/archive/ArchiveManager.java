@@ -12,6 +12,7 @@ import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.Main;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SqlDB;
@@ -96,7 +97,7 @@ public class ArchiveManager extends SqlDB {
 	@Override
 	public void saveDB() {
 		super.saveDB();
-		
+			
 		if(mStoreMySQL) {
 			mMySQL.shutdown();
 		}
@@ -140,7 +141,7 @@ public class ArchiveManager extends SqlDB {
 		SQL_SELECT_RANGE		= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block>? AND block<? ORDER BY block DESC");
 		SQL_DELETE_TXBLOCKS		= mSQLConnection.prepareStatement("DELETE FROM syncblock WHERE timemilli < ?");
 		SQL_SELECT_LAST			= mSQLConnection.prepareStatement("SELECT * FROM syncblock ORDER BY block ASC LIMIT 1");
-		SQL_SELECT_SYNC_LIST	= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block<? ORDER BY block DESC LIMIT 1000");
+		SQL_SELECT_SYNC_LIST	= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block<? ORDER BY block DESC LIMIT 250");
 	}
 	
 	public synchronized int getSize() {
@@ -199,6 +200,11 @@ public class ArchiveManager extends SqlDB {
 	
 	public synchronized TxBlock loadBlock(String zTxPoWID) {
 		
+		//Are we shutting down..
+		if(Main.getInstance().isShuttingDown()) {
+			return new TxBlock(new TxPoW());
+		}
+		
 		try {
 			
 			//Set search params
@@ -231,6 +237,11 @@ public class ArchiveManager extends SqlDB {
 	}
 	
 	public synchronized TxBlock loadLastBlock() {
+		
+		//Are we shutting down..
+		if(Main.getInstance().isShuttingDown()) {
+			return new TxBlock(new TxPoW());
+		}
 		
 		try {
 			
@@ -278,8 +289,13 @@ public class ArchiveManager extends SqlDB {
 			//Multiple results
 			while(rs.next()) {
 				
+				//Are we shutting down..
+				if(Main.getInstance().isShuttingDown()) {
+					break;
+				}
+				
 				//Get the details..
-				byte[] syncdata 	= rs.getBytes("syncdata");
+				byte[] syncdata = rs.getBytes("syncdata");
 				
 				//Create MiniData version
 				MiniData minisync = new MiniData(syncdata);

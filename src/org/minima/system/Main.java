@@ -318,10 +318,7 @@ public class Main extends MessageProcessor {
 		try {
 			
 			//Tell the wallet - in case we are creating default keys
-			MinimaDB.getDB().getWallet().shuttiongDown();
-			
-			//Shut down the network
-			mNetwork.shutdownNetwork();
+			MinimaDB.getDB().getWallet().shuttingDown();
 			
 			//Shut down Maxima
 			mMaxima.shutdown();
@@ -336,8 +333,17 @@ public class Main extends MessageProcessor {
 			mSendPoll.stopMessageProcessor();
 			
 			//Stop the main TxPoW processor
+			MinimaLogger.log("Waiting for TxPoWProcessor shutdown");
 			mTxPoWProcessor.stopMessageProcessor();
 			mTxPoWProcessor.waitToShutDown(false);
+			
+			//Now backup the  databases
+			MinimaLogger.log("Saving all db");
+			MinimaDB.getDB().saveAllDB();
+
+			//Shut down the network
+			MinimaLogger.log("Waiting for Network shutdown");
+			mNetwork.shutdownNetwork();
 			
 			//Wait for the networking to finish
 			long timewaited=0;
@@ -349,17 +355,18 @@ public class Main extends MessageProcessor {
 					break;
 				}
 			}
-			
-			//Now backup the  databases
-			MinimaDB.getDB().saveAllDB();
 					
 			//Stop this..
 			stopMessageProcessor();
 			
 			//Wait for it..
+			MinimaLogger.log("Waiting for Main thread shutdown");
 			waitToShutDown(true);
 		
 			MinimaLogger.log("Shut down completed OK..");
+			
+			//At this point.. STOP..
+			Runtime.getRuntime().halt(0);
 			
 		}catch(Exception exc) {
 			MinimaLogger.log("ERROR Shutting down..");
