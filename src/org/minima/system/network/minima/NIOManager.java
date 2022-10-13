@@ -248,7 +248,7 @@ public class NIOManager extends MessageProcessor {
 	protected void processMessage(Message zMessage) throws Exception {
 		
 		//Don't process messages after shutdown
-		if(Main.getInstance().isShuttingDown() && !zMessage.getMessageType().equals(NIO_SHUTDOWN)) {
+		if((Main.getInstance().isShuttingDown() ||  Main.getInstance().isRestoring()) && !zMessage.getMessageType().equals(NIO_SHUTDOWN)) {
 			return;
 		}
 		

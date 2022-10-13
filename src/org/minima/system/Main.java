@@ -301,6 +301,10 @@ public class Main extends MessageProcessor {
 		return mShuttingdown;
 	}
 	
+	public boolean isRestoring() {
+		return mRestoring;
+	}
+	
 	public void shutdown() {
 		//Are we already shutting down..
 		if(mShuttingdown) {
@@ -401,8 +405,14 @@ public class Main extends MessageProcessor {
 		TimerProcessor.stopTimerProcessor();
 		
 		//Wait for the networking to finish
+		long timewaited=0;
 		while(!mNetwork.isShutDownComplete()) {
 			try {Thread.sleep(250);} catch (InterruptedException e) {}
+			timewaited+=250;
+			if(timewaited>10000) {
+				MinimaLogger.log("Network shutdown took too long..");
+				break;
+			}
 		}		
 	}
 	
@@ -429,8 +439,14 @@ public class Main extends MessageProcessor {
 		TimerProcessor.stopTimerProcessor();
 		
 		//Wait for the networking to finish
+		long timewaited=0;
 		while(!mNetwork.isShutDownComplete()) {
 			try {Thread.sleep(250);} catch (InterruptedException e) {}
+			timewaited+=250;
+			if(timewaited>10000) {
+				MinimaLogger.log("Network shutdown took too long..");
+				break;
+			}
 		}
 		
 		//Delete old files.. and reset to new
