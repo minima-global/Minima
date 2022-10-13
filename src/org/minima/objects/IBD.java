@@ -201,8 +201,6 @@ public class IBD implements Streamable {
 	
 	public void createSyncIBD(TxPoW zLastBlock) {
 		
-		MinimaLogger.log("START CREATE SYNCBLOCK");
-		
 		//No cascade
 		mCascade = null;
 		
@@ -211,8 +209,6 @@ public class IBD implements Streamable {
 		
 		//Lock the DB - cascade and tree tip / root cannot change while doing this..
 		MinimaDB.getDB().readLock(true);
-		
-		MinimaLogger.log("START CREATE SYNCBLOCK - READBLOCK");
 		
 		try {
 		
@@ -233,8 +229,6 @@ public class IBD implements Streamable {
 		
 		//Unlock..
 		MinimaDB.getDB().readLock(false);
-		
-		MinimaLogger.log("END CREATE SYNCBLOCK");
 		
 	}
 	

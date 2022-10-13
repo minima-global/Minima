@@ -307,12 +307,15 @@ public class MinimaDB {
 		
 		try {
 			//Clean shutdown of SQL DBs
+			MinimaLogger.log("TxPowDB shutdown..");
 			mTxPoWDB.saveDB();
-			MinimaLogger.log("Started Archive shutdown..");
+			MinimaLogger.log("ArchiveDB shutdown..");
 			mArchive.saveDB();
-			MinimaLogger.log("Finished Archive shutdown..");
+			MinimaLogger.log("Wallet shutdown..");
 			mWallet.saveDB();
+			MinimaLogger.log("Maxima shutdown..");
 			mMaximaDB.saveDB();
+			MinimaLogger.log("MDSDB shutdown..");
 			mMDSDB.saveDB();
 			
 		}catch(Exception exc) {

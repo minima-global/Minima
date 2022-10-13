@@ -11,6 +11,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.StringTokenizer;
@@ -79,7 +80,7 @@ public class NIOManager extends MessageProcessor {
 	/**
 	 * SYNC Back max time
 	 */
-	long SYNC_MAX_TIME = 1000 * 60 * 60 * 24 * 60;
+	long SYNC_MAX_TIME = 1000 * 60 * 60 * 24 * GeneralParams.NUMBER_DAYS_ARCHIVE;
 	
 	/**
 	 * How long before a reconnect attempt
@@ -420,6 +421,9 @@ public class NIOManager extends MessageProcessor {
 			//Which nioclient
 			NIOClient nioc = (NIOClient)zMessage.getObject("client");
 			
+			//Remove from the last sync list
+			NIOMessage.mlastSyncReq.remove(nioc.getUID());
+			
 			//Do we reconnect
 			boolean reconnect = false;
 			if(zMessage.exists("reconnect")) {
@@ -541,6 +545,7 @@ public class NIOManager extends MessageProcessor {
 			long maxtime = timenow - SYNC_MAX_TIME;
 			if(lastpow.getTimeMilli().getAsLong() < maxtime) {
 				//we have enough..
+				MinimaLogger.log("We have enough archive blocks.. lastblock "+new Date(lastpow.getTimeMilli().getAsLong()));
 				return;
 			}
 			
