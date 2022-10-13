@@ -80,11 +80,11 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     public void waitToShutDown(boolean zUseLimit) {
     	long timewaited = 0;
     	while(!isShutdownComplete()) {
-			try {Thread.sleep(100);} catch (InterruptedException e) {}
-			timewaited +=100;
-			if(timewaited>5000) {
+			try {Thread.sleep(250);} catch (InterruptedException e) {}
+			timewaited +=250;
+			if(timewaited>10000) {
 				timewaited = 0;
-				MinimaLogger.log("Failed to shutdown in 5 secs for "+mName);
+				MinimaLogger.log("Failed to shutdown in 10 secs for "+mName);
 				if(zUseLimit) {
 					break;
 				}

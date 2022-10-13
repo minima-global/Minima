@@ -348,9 +348,9 @@ public class Main extends MessageProcessor {
 			//Wait for the networking to finish
 			long timewaited=0;
 			while(!mNetwork.isShutDownComplete()) {
-				try {Thread.sleep(100);} catch (InterruptedException e) {}
-				timewaited+=100;
-				if(timewaited>5000) {
+				try {Thread.sleep(250);} catch (InterruptedException e) {}
+				timewaited+=250;
+				if(timewaited>10000) {
 					MinimaLogger.log("Network shutdown took too long..");
 					break;
 				}
@@ -395,16 +395,14 @@ public class Main extends MessageProcessor {
 		
 		//Stop the main TxPoW processor
 		mTxPoWProcessor.stopMessageProcessor();
-		while(!mTxPoWProcessor.isShutdownComplete()) {
-			try {Thread.sleep(50);} catch (InterruptedException e) {}
-		}
+		mTxPoWProcessor.waitToShutDown(false);
 		
 		//No More timer Messages
 		TimerProcessor.stopTimerProcessor();
 		
 		//Wait for the networking to finish
 		while(!mNetwork.isShutDownComplete()) {
-			try {Thread.sleep(50);} catch (InterruptedException e) {}
+			try {Thread.sleep(250);} catch (InterruptedException e) {}
 		}		
 	}
 	
@@ -432,7 +430,7 @@ public class Main extends MessageProcessor {
 		
 		//Wait for the networking to finish
 		while(!mNetwork.isShutDownComplete()) {
-			try {Thread.sleep(50);} catch (InterruptedException e) {}
+			try {Thread.sleep(250);} catch (InterruptedException e) {}
 		}
 		
 		//Delete old files.. and reset to new

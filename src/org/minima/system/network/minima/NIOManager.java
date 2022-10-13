@@ -18,6 +18,7 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
@@ -282,7 +283,8 @@ public class NIOManager extends MessageProcessor {
 		}else if(zMessage.getMessageType().equals(NIO_SHUTDOWN)) {
 			
 			//Stop the Thread pool
-			THREAD_POOL.shutdownNow();
+			THREAD_POOL.shutdown();
+			THREAD_POOL.awaitTermination(5000, TimeUnit.MILLISECONDS);
 			
 			//Shut down the NIO
 			mNIOServer.shutdown();
