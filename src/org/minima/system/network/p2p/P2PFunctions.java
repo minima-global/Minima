@@ -76,13 +76,14 @@ public class P2PFunctions {
     }
     
     public static boolean isIPLocal(String fullhost) {
-    	return 	fullhost.startsWith("127.") || 
-				fullhost.startsWith("10.")  || 
-				fullhost.startsWith("100.") ||
-				fullhost.startsWith("0.") 	||
-				fullhost.startsWith("169.") ||
-				fullhost.startsWith("172.") ||
-				fullhost.startsWith("198.") ||
+    	return 	fullhost.startsWith("127.")  ||
+    			fullhost.startsWith("localhost") ||
+				fullhost.startsWith("10.")   || 
+				fullhost.startsWith("100.")  ||
+				fullhost.startsWith("0.") 	 ||
+				fullhost.startsWith("169.")  ||
+				fullhost.startsWith("172.")  ||
+				fullhost.startsWith("198.")  ||
 				fullhost.startsWith("192.");
     }
     
