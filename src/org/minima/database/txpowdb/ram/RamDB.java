@@ -38,6 +38,10 @@ public class RamDB {
 		return true;
 	}
 	
+	public ConcurrentHashMap<String, RamData> getCompleteMemPool(){
+		return mTxPoWDB;
+	}
+	
 	public boolean exists(String zTxPoWID) {
 		return mTxPoWDB.containsKey(zTxPoWID);
 	}
@@ -152,15 +156,6 @@ public class RamDB {
 						return true;
 					}
 				}
-				
-//				ArrayList<Coin> inputs = txp.getTransaction().getAllInputs();
-//				for(Coin cc : inputs) {
-//					
-//					//Check it..
-//					if(cc.getCoinID().isEqual(zCoinID)) {
-//						return true;
-//					}
-//				}
 			}
 		}
 

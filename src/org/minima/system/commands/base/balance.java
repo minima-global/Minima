@@ -13,13 +13,14 @@ import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.params.GlobalParams;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class balance extends Command {
 
 	public balance() {
-		super("balance","(address:) (confirmations:) - Show your total balance of Minima and tokens");
+		super("balance","(address:) (tokenid:) (confirmations:) - Show your total balance of Minima and tokens");
 	}
 	
 	@Override
@@ -29,6 +30,11 @@ public class balance extends Command {
 		//Is there a specified address
 		String address 				= getParam("address","");
 		MiniNumber confirmations 	= getNumberParam("confirmations", GlobalParams.MINIMA_CONFIRM_DEPTH);
+		
+		//Are we in debug mode
+		boolean debug = getBooleanParam("debug", false);
+		
+		String onlytokenid = getParam("tokenid", "");
 		
 		//Get all the coins you own..
 		TxPowTree txptree = MinimaDB.getDB().getTxPoWTree();
@@ -63,6 +69,9 @@ public class balance extends Command {
 		alltokens.add(Token.TOKENID_MINIMA.to0xString());
 		totalcoins.put(Token.TOKENID_MINIMA.to0xString(), MiniNumber.ZERO);
 		
+		if(debug) {
+			MinimaLogger.log("List of found relevant coins");
+		}
 		//Add them to out balance..
 		for(Coin coin : coins) {
 			
@@ -71,6 +80,16 @@ public class balance extends Command {
 				if(!coin.getAddress().to0xString().equals(address)) {
 					continue;
 				}
+			}
+			
+			if(!onlytokenid.equals("")) {
+				if(!coin.getTokenID().to0xString().equals(onlytokenid)) {
+					continue;
+				}
+			}
+			
+			if(debug) {
+				MinimaLogger.log("Coin : "+coin.toJSON().toString());
 			}
 			
 			//The Value..
@@ -112,6 +131,15 @@ public class balance extends Command {
 			}
 			
 			//Are we adding to the sendable pile..
+			if(debug) {
+				boolean simple = walletdb.isAddressSimple(coin.getAddress().to0xString());
+				if(!simple) {
+					MinimaLogger.log("NON-SENDABLE : "+coin.toJSON().toString());
+				}else {
+					MinimaLogger.log("SENDABLE : "+coin.toJSON().toString());
+				}
+			}
+			
 			if(tokenid.equals("0x00")) {
 				if(isconfirmed && walletdb.isAddressSimple(coin.getAddress().to0xString())) {
 					total = sendable.get(tokenid); 
@@ -161,14 +189,19 @@ public class balance extends Command {
 			JSONObject tokbal = new JSONObject();
 			
 			if(token.equals("0x00")) {
-				//It's Minima
-				tokbal.put("token", "Minima");
-				tokbal.put("tokenid", token);
-				tokbal.put("confirmed", conf.toString());
-				tokbal.put("unconfirmed", unconf.toString());
-				tokbal.put("sendable", send.toString());
-				tokbal.put("coins", totcoins.toString());
-				tokbal.put("total", "1000000000");
+				if((onlytokenid.equals("") || onlytokenid.equals("0x00"))) {
+					//It's Minima
+					tokbal.put("token", "Minima");
+					tokbal.put("tokenid", token);
+					tokbal.put("confirmed", conf.toString());
+					tokbal.put("unconfirmed", unconf.toString());
+					tokbal.put("sendable", send.toString());
+					tokbal.put("coins", totcoins.toString());
+					tokbal.put("total", "1000000000");
+					
+					//And add to the total..
+					balance.add(tokbal);
+				}
 			}else {
 				//Get the token
 				Token tok = tokens.get(token);
@@ -190,10 +223,10 @@ public class balance extends Command {
 				tokbal.put("sendable", tok.getScaledTokenAmount(send).toString());
 				tokbal.put("coins", totcoins.toString());
 				tokbal.put("total", tok.getTotalTokens().toString());
+				
+				//And add to the total..
+				balance.add(tokbal);
 			}
-			
-			//And add to the total..
-			balance.add(tokbal);
 		}
 		
 		//Add balance..

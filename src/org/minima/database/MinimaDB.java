@@ -301,15 +301,21 @@ public class MinimaDB {
 	}
 	
 	public void saveSQL() {
-		//We need read lock 
-		readLock(true);
+		
+		//We need lock 
+		writeLock(true);
 		
 		try {
 			//Clean shutdown of SQL DBs
+			MinimaLogger.log("TxPowDB shutdown..");
 			mTxPoWDB.saveDB();
+			MinimaLogger.log("ArchiveDB shutdown..");
 			mArchive.saveDB();
+			MinimaLogger.log("Wallet shutdown..");
 			mWallet.saveDB();
+			MinimaLogger.log("Maxima shutdown..");
 			mMaximaDB.saveDB();
+			MinimaLogger.log("MDSDB shutdown..");
 			mMDSDB.saveDB();
 			
 		}catch(Exception exc) {
@@ -317,12 +323,13 @@ public class MinimaDB {
 		}
 		
 		//Release the krakken
-		readLock(false);
+		writeLock(false);
 	}
 	
 	public void saveWalletSQL() {
-		//We need read lock 
-		readLock(true);
+		
+		//We need lock 
+		writeLock(true);
 		
 		try {
 			mWallet.saveDB();
@@ -332,7 +339,7 @@ public class MinimaDB {
 		}
 		
 		//Release the krakken
-		readLock(false);
+		writeLock(false);
 	}
 	
 	public void saveState() {

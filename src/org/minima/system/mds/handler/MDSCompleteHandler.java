@@ -194,6 +194,41 @@ public class MDSCompleteHandler implements Runnable {
 					NETcommand net 	= new NETcommand(minidappid,url, postdata);
 					result 			= net.runCommand();
 				
+				}else if(command.equals("file")) {
+					
+					//Get the URL and the post data..
+					int dataindex 	= data.indexOf("&");
+					String action 	= data.substring(0, dataindex);
+					String filedata = data.substring(dataindex+1);
+					
+					//What was the data
+					FILEcommand fc = null;
+					if(action.equals("list")) {
+						fc = new FILEcommand(mMDS, minidappid, FILEcommand.FILECOMMAND_LIST, 
+								filedata, "");
+					
+					}else if(action.equals("save")) {
+						dataindex 			= filedata.indexOf("&");
+						String file 		= filedata.substring(0, dataindex);
+						String actualedata 	= filedata.substring(dataindex+1);
+						fc = new FILEcommand(mMDS, minidappid, FILEcommand.FILECOMMAND_SAVE, 
+								file, actualedata);
+					
+					}else if(action.equals("load")) {
+						fc = new FILEcommand(mMDS, minidappid, FILEcommand.FILECOMMAND_LOAD, 
+								filedata, "");
+					
+					}else if(action.equals("delete")) {
+						fc = new FILEcommand(mMDS, minidappid, FILEcommand.FILECOMMAND_DELETE, 
+								filedata, "");
+					
+					}else {
+						throw new IllegalArgumentException("Invalid function");
+					}
+					
+					//Create a Command and run it..
+					result = fc.runCommand();
+				
 				}else if(command.equals("comms")) {
 					
 					//Is it public or private

@@ -33,7 +33,7 @@ RUN chmod +x /usr/bin/minima
 #RUN rm -rf /var/lib/apt/lists/*
 
 #Make BASH the defult
-RUN ln -sf /usr/bin/minima /bin/sh
+RUN ln -sf /bin/bash /bin/sh
 
 # Minima ports
 EXPOSE 9001 9002 9003 9004

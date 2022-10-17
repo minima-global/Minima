@@ -6,22 +6,27 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 
 import org.minima.database.cascade.Cascade;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.Main;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SqlDB;
+import org.minima.utils.json.JSONObject;
 
 public class ArchiveManager extends SqlDB {
 
 	/**
-	 * How long does data remains in the Archive DB
+	 * How long does data remains in the Archive DB (~200 blocks per day)
 	 */
-	public long MAX_SQL_MILLI = 1000 * 60 * 60 * 24 * GeneralParams.NUMBER_DAYS_ARCHIVE;
+	public long MAX_KEEP_BLOCKS = 2000 * GeneralParams.NUMBER_DAYS_ARCHIVE;
 	
 	/**
 	 * PreparedStatements
@@ -34,6 +39,7 @@ public class ArchiveManager extends SqlDB {
 	PreparedStatement SQL_DELETE_TXBLOCKS		= null;
 	
 	PreparedStatement SQL_SELECT_LAST			= null;
+	PreparedStatement SQL_SELECT_FIRST			= null;
 	PreparedStatement SQL_SELECT_SYNC_LIST		= null;
 	
 	/**
@@ -96,7 +102,7 @@ public class ArchiveManager extends SqlDB {
 	@Override
 	public void saveDB() {
 		super.saveDB();
-		
+			
 		if(mStoreMySQL) {
 			mMySQL.shutdown();
 		}
@@ -137,10 +143,18 @@ public class ArchiveManager extends SqlDB {
 		SQL_FIND_SYNCBLOCK 		= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE txpowid=?");
 		SQL_EXISTS_SYNCBLOCK	= mSQLConnection.prepareStatement("SELECT block FROM syncblock WHERE txpowid=?");
 		SQL_TOTAL_COUNT			= mSQLConnection.prepareStatement("SELECT COUNT(*) as tot FROM syncblock");
-		SQL_SELECT_RANGE		= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block>? AND block<? ORDER BY block DESC");
-		SQL_DELETE_TXBLOCKS		= mSQLConnection.prepareStatement("DELETE FROM syncblock WHERE timemilli < ?");
+
+//		SQL_SELECT_RANGE		= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block>? AND block<? ORDER BY block DESC");
+		SQL_SELECT_RANGE		= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block>? AND block<?");
+		
+		//SQL_DELETE_TXBLOCKS		= mSQLConnection.prepareStatement("DELETE FROM syncblock WHERE timemilli < ?");
+		SQL_DELETE_TXBLOCKS		= mSQLConnection.prepareStatement("DELETE FROM syncblock WHERE block < ?");
+		
 		SQL_SELECT_LAST			= mSQLConnection.prepareStatement("SELECT * FROM syncblock ORDER BY block ASC LIMIT 1");
-		SQL_SELECT_SYNC_LIST	= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block<? ORDER BY block DESC LIMIT 1000");
+		SQL_SELECT_FIRST		= mSQLConnection.prepareStatement("SELECT * FROM syncblock ORDER BY block DESC LIMIT 1");
+		
+//		SQL_SELECT_SYNC_LIST	= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block<? ORDER BY block DESC LIMIT 100");
+		SQL_SELECT_SYNC_LIST	= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block<? AND block>=?");
 	}
 	
 	public synchronized int getSize() {
@@ -199,6 +213,11 @@ public class ArchiveManager extends SqlDB {
 	
 	public synchronized TxBlock loadBlock(String zTxPoWID) {
 		
+		//Are we shutting down..
+		if(Main.getInstance().isShuttingDown()) {
+			return new TxBlock(new TxPoW());
+		}
+		
 		try {
 			
 			//Set search params
@@ -232,6 +251,11 @@ public class ArchiveManager extends SqlDB {
 	
 	public synchronized TxBlock loadLastBlock() {
 		
+		//Are we shutting down..
+		if(Main.getInstance().isShuttingDown()) {
+			return new TxBlock(new TxPoW());
+		}
+		
 		try {
 			
 			//Set search params
@@ -262,6 +286,45 @@ public class ArchiveManager extends SqlDB {
 		return null;
 	}
 	
+	public synchronized JSONObject loadLastBlockJSON() {
+		
+		//Are we shutting down..
+		if(Main.getInstance().isShuttingDown()) {
+			return new JSONObject();
+		}
+		
+		JSONObject ret = new JSONObject();
+		
+		try {
+			
+			//Set search params
+			SQL_SELECT_LAST.clearParameters();
+			
+			//Run the query
+			ResultSet rs = SQL_SELECT_LAST.executeQuery();
+			
+			//Is there a valid result.. ?
+			if(rs.next()) {
+				
+				ret.put("txpowid", rs.getString("txpowid"));
+				ret.put("block", rs.getBigDecimal("block").toString());
+				ret.put("timemilli", rs.getBigDecimal("timemilli").toString());
+				
+				//Get the details..
+				byte[] syncdata 	= rs.getBytes("syncdata");
+				
+				ret.put("bytes", syncdata.length);
+				
+				return ret;
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return ret;
+	}
+	
 	public synchronized ArrayList<TxBlock> loadSyncBlockRange(MiniNumber zStartBlock) {
 		
 		ArrayList<TxBlock> blocks = new ArrayList<>();
@@ -272,14 +335,26 @@ public class ArchiveManager extends SqlDB {
 			SQL_SELECT_SYNC_LIST.clearParameters();
 			SQL_SELECT_SYNC_LIST.setLong(1,zStartBlock.getAsLong());
 			
+			//The end block
+			MiniNumber endblock = zStartBlock.sub(MiniNumber.TWOFIVESIX);
+			if(endblock.isLessEqual(MiniNumber.ONE)) {
+				endblock = MiniNumber.ONE;
+			}
+			SQL_SELECT_SYNC_LIST.setLong(2,endblock.getAsLong());
+			
 			//Run the query
 			ResultSet rs = SQL_SELECT_SYNC_LIST.executeQuery();
 			
 			//Multiple results
 			while(rs.next()) {
 				
+				//Are we shutting down..
+				if(Main.getInstance().isShuttingDown()) {
+					break;
+				}
+				
 				//Get the details..
-				byte[] syncdata 	= rs.getBytes("syncdata");
+				byte[] syncdata = rs.getBytes("syncdata");
 				
 				//Create MiniData version
 				MiniData minisync = new MiniData(syncdata);
@@ -294,6 +369,14 @@ public class ArchiveManager extends SqlDB {
 		} catch (SQLException e) {
 			MinimaLogger.log(e);
 		}
+		
+		//Now do the ordering.. MUCH FASTER than the SQL way..
+		Collections.sort(blocks, new Comparator<TxBlock>() {
+			@Override
+			public int compare(TxBlock zBlk1, TxBlock zBlk2) {
+				return zBlk2.getTxPoW().getBlockNumber().compareTo(zBlk1.getTxPoW().getBlockNumber());
+			}
+		});
 		
 		return blocks;
 	}
@@ -358,19 +441,82 @@ public class ArchiveManager extends SqlDB {
 			MinimaLogger.log(e);
 		}
 		
+		//Now do the ordering.. MUCH FASTER than the SQL way..
+		Collections.sort(blocks, new Comparator<TxBlock>() {
+			@Override
+			public int compare(TxBlock zBlk1, TxBlock zBlk2) {
+				return zBlk2.getTxPoW().getBlockNumber().compareTo(zBlk1.getTxPoW().getBlockNumber());
+			}
+		});
+		
 		return blocks;
 	}
 	
+	public synchronized TxBlock loadFirstBlock() {
+		
+		try {
+			
+			//Set search params
+			SQL_SELECT_FIRST.clearParameters();
+			
+			//Run the query
+			ResultSet rs = SQL_SELECT_FIRST.executeQuery();
+			
+			//Is there a valid result.. ?
+			if(rs.next()) {
+				
+				//Get the details..
+				byte[] syncdata 	= rs.getBytes("syncdata");
+				
+				//Create MiniData version
+				MiniData minisync = new MiniData(syncdata);
+				
+				//Convert
+				TxBlock sb = TxBlock.convertMiniDataVersion(minisync);
+				
+				return sb;
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return null;
+	}
+
 	public synchronized int cleanDB() {
 		try {
-			//Current MAX time..
-			long maxtime = System.currentTimeMillis() - MAX_SQL_MILLI;
+			//Set search params
+			SQL_SELECT_FIRST.clearParameters();
+			
+			//Run the query
+			ResultSet rs = SQL_SELECT_FIRST.executeQuery();
+			
+			//Is there a valid result.. ?
+			TxBlock fb = null;
+			if(rs.next()) {
+				
+				//Get the details..
+				byte[] syncdata 	= rs.getBytes("syncdata");
+				
+				//Create MiniData version
+				MiniData minisync = new MiniData(syncdata);
+				
+				//Convert
+				fb = TxBlock.convertMiniDataVersion(minisync);
+				
+			}else {
+				return 0;
+			}
+			
+			//Last block to keep
+			MiniNumber cutoff = fb.getTxPoW().getBlockNumber().sub(new MiniNumber(MAX_KEEP_BLOCKS));
 			
 			//Set the parameters
 			SQL_DELETE_TXBLOCKS.clearParameters();
 			
 			//Set the time milli
-			SQL_DELETE_TXBLOCKS.setLong(1, maxtime);
+			SQL_DELETE_TXBLOCKS.setLong(1, cutoff.getAsLong());
 			
 			//Run the query
 			return SQL_DELETE_TXBLOCKS.executeUpdate();
@@ -384,41 +530,48 @@ public class ArchiveManager extends SqlDB {
 	
 	public static void main(String[] zArgs) throws SQLException {
 		
-		File testdbfolder 	= new File(System.getProperty("user.home"),"testfolder");
-		File testdb 		= new File(testdbfolder,"sqlsync");
-		
 		ArchiveManager arch = new ArchiveManager();
-		arch.loadDB(testdb);
 		
-		//test insert..
-		TxPoW txp = new TxPoW();
-		txp.setBlockNumber(MiniNumber.ONE);
-		txp.setTimeMilli();
-		txp.calculateTXPOWID();
-		txp.setSuperParent(0, new MiniData("0xFFEEFF"));
+//		long timenow = System.currentTimeMillis();
+//		System.out.println(new Date(timenow));
+//		long timethen = timenow - arch.MAX_SQL_MILLI;
+//		System.out.println(new Date(1662646695127L));
 		
-		//Create a SyncBlock
-		TxBlock sb = new TxBlock(txp);
-		
-		arch.saveBlock(sb);
-		arch.saveBlock(sb);
-		
-		int rows = arch.getSize();
-		
-		System.out.println("DB Size : "+rows);
-		
-		String txpid = sb.getTxPoW().getTxPoWID();
-		
-		TxBlock lsb = arch.loadBlock(txpid);
-		
-		System.out.println("Sync Loaded : "+lsb.getTxPoW().toString());
-		
-		//Load a range..
-		ArrayList<TxBlock> blocks = arch.loadBlockRange(MiniNumber.ZERO, MiniNumber.ONE);
-		System.out.println("Sync Range : "+blocks.size());
-		
-		//Shut down
-		arch.saveDB();
+//		File testdbfolder 	= new File(System.getProperty("user.home"),"testfolder");
+//		File testdb 		= new File(testdbfolder,"sqlsync");
+//		
+//		ArchiveManager arch = new ArchiveManager();
+//		arch.loadDB(testdb);
+//		
+//		//test insert..
+//		TxPoW txp = new TxPoW();
+//		txp.setBlockNumber(MiniNumber.ONE);
+//		txp.setTimeMilli();
+//		txp.calculateTXPOWID();
+//		txp.setSuperParent(0, new MiniData("0xFFEEFF"));
+//		
+//		//Create a SyncBlock
+//		TxBlock sb = new TxBlock(txp);
+//		
+//		arch.saveBlock(sb);
+//		arch.saveBlock(sb);
+//		
+//		int rows = arch.getSize();
+//		
+//		System.out.println("DB Size : "+rows);
+//		
+//		String txpid = sb.getTxPoW().getTxPoWID();
+//		
+//		TxBlock lsb = arch.loadBlock(txpid);
+//		
+//		System.out.println("Sync Loaded : "+lsb.getTxPoW().toString());
+//		
+//		//Load a range..
+//		ArrayList<TxBlock> blocks = arch.loadBlockRange(MiniNumber.ZERO, MiniNumber.ONE);
+//		System.out.println("Sync Range : "+blocks.size());
+//		
+//		//Shut down
+//		arch.saveDB();
 	}
 
 

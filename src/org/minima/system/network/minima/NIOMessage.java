@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Hashtable;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowdb.TxPoWDB;
@@ -40,6 +41,11 @@ import org.minima.utils.messages.TimerMessage;
 
 public class NIOMessage implements Runnable {
 
+	/**
+	 * What was the last sync block requested..
+	 */
+	public static Hashtable<String, MiniNumber> mlastSyncReq = new Hashtable<>(); 
+	
 	/**
 	 * Base Message types sent over the network
 	 */
@@ -138,8 +144,9 @@ public class NIOMessage implements Runnable {
 			MiniByte type = MiniByte.ReadFromStream(dis);
 			
 			//Output some info
-			if(mTrace && "NIOMessage".contains(mFilter)) {
-				MinimaLogger.log("[NIOMessage] uid:"+mClientUID+" type:"+convertMessageType(type)+" size:"+MiniFormat.formatSize(data.length));
+			String tracemsg = "[NIOMessage] uid:"+mClientUID+" type:"+convertMessageType(type)+" size:"+MiniFormat.formatSize(data.length);
+			if(mTrace && tracemsg.contains(mFilter)) {
+				MinimaLogger.log(tracemsg,false);
 			}
 			
 			//Now find the right message
@@ -702,6 +709,19 @@ public class NIOMessage implements Runnable {
 				//Get the Hash of the Block
 				TxPoW lastblock = TxPoW.ReadFromStream(dis);
 				
+				//And post this on..
+				//MinimaLogger.log("[+] Received Sync IBD Request from "+mClientUID+" @ "+lastblock.getBlockNumber());
+				
+				//What was the last request from this user
+				MiniNumber lastreq = mlastSyncReq.get(mClientUID);
+				if(lastreq != null) {
+					if(lastreq.isEqual(lastblock.getBlockNumber())) {
+						MinimaLogger.log("[+] Received SAME Sync IBD Request from "+mClientUID+" @ "+lastblock.getBlockNumber()+" IGNORING");
+						return;
+					}
+				}
+				mlastSyncReq.put(mClientUID, lastblock.getBlockNumber());
+				
 				//Create an IBD of the blocks we hjave before this one..
 				IBD syncibd = new IBD();
 				syncibd.createSyncIBD(lastblock);
@@ -731,7 +751,7 @@ public class NIOMessage implements Runnable {
 				
 				//Do we support archive data
 				if(!MinimaDB.getDB().getArchive().isStoreMySQL()) {
-					MinimaLogger.log("Archive IBD request we do not saupport.. from "+mClientUID);
+					MinimaLogger.log("Archive IBD request we do not support.. from "+mClientUID);
 					return;
 				}
 				

@@ -28,7 +28,6 @@ public class trace extends Command {
 	
 		String filter = getParam("filter", "");
 		
-//		Main.getInstance().setTrace(on,filter);
 		MessageProcessor.setTrace(on, filter);
 		
 		NIOClient.mTraceON = on;

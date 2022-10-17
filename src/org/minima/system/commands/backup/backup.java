@@ -29,13 +29,35 @@ public class backup extends Command {
 	public static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat("dd_MM_yyyy_HHmmss", Locale.ENGLISH );
 	
 	public backup() {
-		super("backup","(password:) (file:) (complete:false|true) - Backup the system. Uses a timestamped name by default");
+		super("backup","(password:) (file:) (auto:) (complete:false|true) - Backup the system. Uses a timestamped name by default");
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
+		//Is this an AUTO backup initiate..
+		if(existsParam("auto")) {
+			boolean setauto = getBooleanParam("auto");
+			if(setauto) {
+				//Start an auto backup feature
+				MinimaDB.getDB().getUserDB().setAutoBackup(true);
+				
+			}else {
+				//Stop the auto feature
+				MinimaDB.getDB().getUserDB().setAutoBackup(false);
+			}
+			
+			if(!setauto) {
+				JSONObject resp = new JSONObject();
+				resp.put("autobackup", setauto);
+				ret.put("backup", resp);
+				
+				return ret;
+			}
+		}
+		
+		//Get the file
 		String file = getParam("file","");
 		if(file.equals("")) {
 			file = "minima-backup-"+System.currentTimeMillis()+".bak";
@@ -196,6 +218,7 @@ public class backup extends Command {
 			resp.put("uncompressed", MiniFormat.formatSize(total));
 			resp.put("file", backupfile.getAbsolutePath());
 			resp.put("size", MiniFormat.formatSize(backupfile.length()));
+			resp.put("auto", MinimaDB.getDB().getUserDB().isAutoBackup());
 			ret.put("backup", resp);
 			
 			//And now clean up..

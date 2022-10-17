@@ -73,7 +73,7 @@ public class Wallet extends SqlDB {
 		}
 	}
 	
-	public void shuttiongDown() {
+	public void shuttingDown() {
 		mShuttingdown = true;
 	}
 	

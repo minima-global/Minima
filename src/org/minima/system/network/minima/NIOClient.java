@@ -301,7 +301,7 @@ public class NIOClient {
  	   
  	   	//Debug
  		if(mTraceON) {
- 			MinimaLogger.log("[NIOCLIENT] "+mUID+" read "+readbytes);
+ 			MinimaLogger.log("[NIOCLIENT] "+mUID+" read "+readbytes, false);
  		}
  		
  	   	//Nothing..
@@ -449,7 +449,7 @@ public class NIOClient {
 		//Write
 		int write = mSocket.write(mBufferOut);
 		if(mTraceON) {
-			MinimaLogger.log("[NIOCLIENT] "+mUID+" wrote : "+write);
+			MinimaLogger.log("[NIOCLIENT] "+mUID+" wrote : "+write, false);
 		}
 		
 		//Add to the Traffic Listener..

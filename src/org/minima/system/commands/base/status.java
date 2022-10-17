@@ -26,6 +26,7 @@ import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class status extends Command {
@@ -43,6 +44,9 @@ public class status extends Command {
 			System.gc();
 		}
 
+		//Are we verbose output
+		boolean debug = getBooleanParam("debug",false);
+		
 		//The Database
 		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
 		TxPowTree txptree 	= MinimaDB.getDB().getTxPoWTree();
@@ -100,6 +104,10 @@ public class status extends Command {
 		details.put("coins", coins.toString());
 		
 		details.put("data", GeneralParams.DATA_FOLDER);
+
+		if(debug) {
+			MinimaLogger.log("Main Settings Done..");
+		}
 		
 		JSONObject files = new JSONObject();
 
@@ -124,6 +132,10 @@ public class status extends Command {
 		files.put("files", database);
 
 		details.put("memory", files);
+		
+		if(debug) {
+			MinimaLogger.log("Memory Done..");
+		}
 		
 		//The main Chain
 		JSONObject tree = new JSONObject();
@@ -169,6 +181,10 @@ public class status extends Command {
 			tree.put("root", "0x00");
 		}
 		
+		if(debug) {
+			MinimaLogger.log("Chain Tree done..");
+		}
+		
 		//The Cascade
 		JSONObject casc = new JSONObject();
 		if(cascade.getTip() != null) {
@@ -186,17 +202,37 @@ public class status extends Command {
 		//Add detailsl about the number of TxPoW we are tracking
 		database = new JSONObject();
 		database.put("mempool", txpdb.getAllUnusedTxns().size());
+		if(debug) {
+			MinimaLogger.log("Mempool done..");
+		}
 		database.put("ramdb", txpdb.getRamSize());
+		if(debug) {
+			MinimaLogger.log("RamDB done..");
+		}
 		database.put("txpowdb", txpdb.getSqlSize());
+		if(debug) {
+			MinimaLogger.log("txpowdb done..");
+		}
 		database.put("archivedb", arch.getSize());
-
+		if(debug) {
+			MinimaLogger.log("archivedb done..");
+		}
+		
 		//Add ther adatabse
 		details.put("txpow", database);
+		
+		if(debug) {
+			MinimaLogger.log("Database done..");
+		}
 		
 		//Network..
 		NetworkManager netmanager = Main.getInstance().getNetworkManager();
 		if(netmanager!=null) {
 			details.put("network", netmanager.getStatus());
+		}
+		
+		if(debug) {
+			MinimaLogger.log("Network done..");
 		}
 		
 		//Add all the details

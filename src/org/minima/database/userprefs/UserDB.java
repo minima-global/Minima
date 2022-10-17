@@ -159,4 +159,16 @@ public class UserDB extends JsonDB{
 	public void setMDSINIT(boolean zInit) {
 		setBoolean("mdsinitdapps", zInit);
 	}
+	
+	/**
+	 * Is AUTO backup enabled..
+	 */
+	public boolean isAutoBackup() {
+		return getBoolean("autobackup", false);
+	}
+	
+	public void setAutoBackup(boolean zAuto) {
+		setBoolean("autobackup", zAuto);
+	}
+	
 }

@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.minima.objects.base.MiniData;
 import org.minima.system.params.GeneralParams;
@@ -261,5 +263,13 @@ public class MiniFile {
 		}
 		
 		return "text/plain";
+	}
+	
+	//Check if childCandidate is child of path
+	public static boolean isChild(File zParent, File zChild) {
+		Path pparent  	= Paths.get(zParent.getAbsolutePath()).normalize();
+		Path pfile 		= Paths.get(zChild.getAbsolutePath()).normalize();
+		
+		return pfile.toFile().getAbsolutePath().startsWith(pparent.toFile().getAbsolutePath());
 	}
 }

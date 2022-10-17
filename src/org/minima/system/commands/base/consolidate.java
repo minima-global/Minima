@@ -28,12 +28,13 @@ import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class consolidate extends Command {
 
 	public consolidate() {
-		super("consolidate","[tokenid:] (coinage:) - Consolidate coins by sending them back to yourself");
+		super("consolidate","[tokenid:] (coinage:) (maxcoins:) (maxsigs:) (burn:) (debug:) (dryrun:) - Consolidate coins by sending them back to yourself");
 	}
 	
 	@Override
@@ -43,225 +44,135 @@ public class consolidate extends Command {
 		//The tokenid
 		String tokenid = getParam("tokenid");
 		
-		//How old must the coins
-		MiniNumber coinage = getNumberParam("coinage", GlobalParams.MINIMA_CONFIRM_DEPTH);
+		//Is there a burn
+		MiniNumber burn = getNumberParam("burn", MiniNumber.ZERO);
 		
-		//Get the DBs
-		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
-		TxPoWMiner txminer 	= Main.getInstance().getTxPoWMiner();
-		Wallet walletdb 	= MinimaDB.getDB().getWallet();
+		//Is this a dry run
+		boolean debug 	= getBooleanParam("debug", false);
+		boolean dryrun 	= getBooleanParam("dryrun", false);
+		if(dryrun) {
+			debug = true;
+		}
+		
+		//Get the tip of the tree
 		TxPoWTreeNode tip 	= MinimaDB.getDB().getTxPoWTree().getTip();
 		
-		//Current block
-		MiniNumber tipblock = tip.getBlockNumber();
+		//Get the parent deep enough for valid confirmed coins
+		int confdepth = GlobalParams.MINIMA_CONFIRM_DEPTH.getAsInt();
+		for(int i=0;i<confdepth;i++) {
+			tip = tip.getParent();
+			if(tip == null) {
+				//Insufficient blocks
+				ret.put("status", false);
+				ret.put("message", "Insufficient blocks..");
+				return ret;
+			}
+		}
 		
+		//How old do the coins need to be..
+		MiniNumber coinage = getNumberParam("coinage", MiniNumber.ZERO);
+				
 		//Lets build a transaction..
-		ArrayList<Coin> relcoins 	= TxPoWSearcher.getRelevantUnspentCoins(tip,tokenid,true);
+		ArrayList<Coin> foundcoins	= TxPoWSearcher.getRelevantUnspentCoins(tip,tokenid,true);
+		ArrayList<Coin> relcoins 	= new ArrayList<>();
+		
+		//Now make sure they are old enough
+		MiniNumber mincoinblock = tip.getBlockNumber().sub(coinage);
+		for(Coin relc : foundcoins) {
+			if(relc.getBlockCreated().isLessEqual(mincoinblock)) {
+				relcoins.add(relc);
+			}
+		}
 		
 		//Sort coins via same address - since they require the same signature
-		Collections.sort(relcoins, new Comparator<Coin>() {
-			@Override
-			public int compare(Coin zCoin1, Coin zCoin2) {
-				return zCoin1.getAddress().getDataValue().compareTo(zCoin2.getAddress().getDataValue());
-			}
-		});
+		relcoins = send.orderCoins(relcoins);
 		
-		int COIN_SIZE = relcoins.size();
-		if(COIN_SIZE<2) {
-			throw new CommandException("Not enough coins ("+COIN_SIZE+") to consolidate");
+		//How many coins are there
+		int totcoins = relcoins.size();
+		if(totcoins<3) {
+			throw new CommandException("Not enough coins ("+totcoins+") to consolidate");
 		}
 		
-		int MAX_COINS = 5;
+		//Maximum number of coins and signatures
+		int MAX_SIGS 	= getNumberParam("maxsigs", new MiniNumber(5)).getAsInt();
+		int MAX_COINS 	= getNumberParam("maxcoins", new MiniNumber(20)).getAsInt();
 		
-		TxPoW txpow 			= null;
-		
-		//Keep building a bigger and bigger transaction..
-		int coincounter				= 0;
-		MiniNumber currentamount 	= MiniNumber.ZERO;
-		Token token 				= null;
-		
-		int loopcounter=0;
-		while(loopcounter<10) {
-			//The current total
-			ArrayList<Coin> currentcoins 	= new ArrayList<>();
-			currentamount 					= MiniNumber.ZERO;
-			token 							= null;
-			coincounter						= 0;
+		String 		currentaddress 	= "";
+		MiniNumber 	totalamount 	= MiniNumber.ZERO;
+		int 		totalsigs 		= 0;
+		int 		totalcoins 		= 0;
+		for(Coin cc : relcoins) {
 			
-			//Now cycle through..
-			for(Coin coin : relcoins) {
+			//This coins address
+			String coinaddress = cc.getAddress().to0xString();
+			
+			//The Amount
+			MiniNumber coinamount = cc.getAmount();
+			if(!cc.getTokenID().to0xString().equals("0x00")) {
+				coinamount = cc.getToken().getScaledTokenAmount(cc.getAmount());
+			}
+			
+			//Is it a new address
+			if(!currentaddress.equals(coinaddress)) {
 				
-				String coinidstr = coin.getCoinID().to0xString();
-				
-				//Check if we are already using thewm in another Transaction that is being mined
-				if(txminer.checkForMiningCoin(coinidstr)) {
-					continue;
-				}
-				
-				//Check if in mempool..
-				if(txpdb.checkMempoolCoins(coin.getCoinID())) {
-					continue;
-				}
-				
-				//Check the Coin Age is enough
-				if(tipblock.sub(coin.getBlockCreated()).isLess(coinage)) {
-					continue;
-				}
-				
-				//Add this coin..
-				currentcoins.add(coin);
-				
-				//Get the actual ammount..
-				currentamount = currentamount.add(coin.getAmount());
-				coincounter++;
-				
-				//Store the token
-				if(!tokenid.equals("0x00") && token==null) {
-					token = coin.getToken();		
-				}
-				
-				//Do we have enough..
-				if(coincounter>=MAX_COINS) {
+				//Are we at the limit
+				if(totalsigs+1>MAX_SIGS) {
+					if(debug) {
+						MinimaLogger.log("Consolidate - max sigs reached "+totalsigs);
+					}
 					break;
 				}
+				
+				//New address = new signature
+				currentaddress = coinaddress;
+				totalsigs++;
 			}
 			
-			//Any coins..
-			if(coincounter == 0) {
-				throw new CommandException("No coins found of that age..");
+			//Add to the total..
+			totalamount = totalamount.add(coinamount);
+			
+			//One more coin
+			totalcoins++;
+			
+			if(debug) {
+				MinimaLogger.log("Consolidate - add coin "+coinamount+" totalcoins:"+totalcoins+"  totalsigs:"+totalsigs+" coinid:"+cc.getCoinID().to0xString());
 			}
 			
-			//Lets construct a txn..
-			Transaction transaction 	= new Transaction();
-			Witness witness 			= new Witness();
-			
-			//Min depth of a coin
-			MiniNumber minblock = MiniNumber.ZERO;
-					
-			//Add the inputs..
-			for(Coin inputs : currentcoins) {
-				
-				//Add this input to our transaction
-				transaction.addInput(inputs);
-				
-				//How deep
-				if(inputs.getBlockCreated().isMore(minblock)) {
-					minblock = inputs.getBlockCreated();
+			//Do checks..
+			if(totalcoins>=MAX_COINS) {
+				if(debug) {
+					MinimaLogger.log("Consolidate - max coins reached "+totalcoins);
 				}
-			}
-			
-			//Get the block..
-			MiniNumber currentblock = tip.getBlockNumber();
-			MiniNumber blockdiff 	= currentblock.sub(minblock);
-			if(blockdiff.isMore(GlobalParams.MINIMA_MMR_PROOF_HISTORY)) {
-				blockdiff = GlobalParams.MINIMA_MMR_PROOF_HISTORY;
-			}
-			
-			//Now get that Block
-			TxPoWTreeNode mmrnode = tip.getPastNode(tip.getBlockNumber().sub(blockdiff));
-			if(mmrnode == null) {
-				//Not enough blocks..
-				throw new CommandException("Not enough blocks in chain to make valid MMR Proofs..");
-			}
-			
-			//Create a list of the required signatures
-			ArrayList<String> reqsigs = new ArrayList<>();
-			
-			//Add the MMR proofs for the coins..
-			for(Coin input : currentcoins) {
-				
-				//Get the proof..
-				MMRProof proof = mmrnode.getMMR().getProofToPeak(input.getMMREntryNumber());
-				
-				//Create the CoinProof..
-				CoinProof cp = new CoinProof(input, proof);
-				
-				//Add it to the witness data
-				witness.addCoinProof(cp);
-				
-				//Add the script proofs
-				String scraddress 	= input.getAddress().to0xString();
-				ScriptRow srow 		= walletdb.getScriptFromAddress(scraddress);
-				if(srow == null) {
-					throw new CommandException("SERIOUS ERROR script missing for simple address : "+scraddress);
-				}
-				ScriptProof pscr = new ScriptProof(srow.getScript());
-				witness.addScript(pscr);
-				
-				//Add this address to the list we need to sign as..
-				String pubkey = srow.getPublicKey();
-				if(!reqsigs.contains(pubkey)) {
-					reqsigs.add(pubkey);
-				}
-			}
-			
-			//Create a new address to collect all the money
-			ScriptRow newwalletaddress = MinimaDB.getDB().getWallet().getDefaultAddress();
-			MiniData myaddress = new MiniData(newwalletaddress.getAddress());
-			
-			//Change coin does not keep the state
-			Coin returnaddress = new Coin(Coin.COINID_OUTPUT, myaddress, currentamount, new MiniData(tokenid), false);
-			if(!tokenid.equals("0x00")) {
-				returnaddress.resetTokenID(new MiniData(tokenid));
-				returnaddress.setToken(token);
-			}
-			
-			//And finally.. add the change output
-			transaction.addOutput(returnaddress);
-			
-			//Compute the correct CoinID
-			TxPoWGenerator.precomputeTransactionCoinID(transaction);
-			
-			//Calculate the TransactionID..
-			transaction.calculateTransactionID();
-			
-			//Now that we have constructed the transaction - lets sign it..
-			for(String pubk : reqsigs) {
-	
-				//Use the wallet..
-				Signature signature = walletdb.signData(pubk, transaction.getTransactionID());
-				
-				//Add it..
-				witness.addSignature(signature);
-			}
-	
-			//The final TxPoW
-			txpow = TxPoWGenerator.generateTxPoW(transaction, witness);
-			
-			//Calculate the txpowid / size..
-			txpow.calculateTXPOWID();
-		
-			//How large is the transaction..
-			long size = txpow.getSizeinBytes();
-			if(size>40000 || coincounter>=COIN_SIZE || COIN_SIZE>=MAX_COINS) {
-				MinimaLogger.log("Consolidate coins.. txpow size:"+size+" coins:"+coincounter+"/"+COIN_SIZE);
 				break;
 			}
-			
-			//Run again
-			MinimaLogger.log("TxPoW built with "+coincounter+"/"+COIN_SIZE+" coins, size "+size+".. attempt to add more coins..");
-			MAX_COINS++;
-			loopcounter++;
 		}
 		
-		JSONObject resp = new JSONObject();
-		resp.put("tokenid", tokenid);
-		resp.put("allcoins", COIN_SIZE);
-		resp.put("consolidated", coincounter);
+		//Get one of your addresses
+		ScriptRow newwalletaddress 	= MinimaDB.getDB().getWallet().getDefaultAddress();
+		MiniData myaddress 			= new MiniData(newwalletaddress.getAddress());
 		
-		MiniNumber sendamount = currentamount;
-		if(token!=null) {
-			sendamount = token.getScaledTokenAmount(currentamount);
+		//Construct the command
+		String command = "send coinage:"+coinage.toString()+" split:2 dryrun:"+dryrun+" debug:"+debug+" burn:"+burn.toString()
+				+" amount:"+totalamount.toString()+" address:"+myaddress.to0xString()+" tokenid:"+tokenid;
+		
+		if(debug) {
+			MinimaLogger.log("Consolidate command : "+command);
 		}
 		
-		resp.put("amount", sendamount.toString());
-		resp.put("size", txpow.getSizeinBytes());
-		
-		//All good..
-		ret.put("response", resp);
-				
-		//Send it to the Miner..
-		Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txpow);
+		JSONArray result 		= Command.runMultiCommand(command);
+		JSONObject sendresult 	= (JSONObject) result.get(0); 
+		if((boolean) sendresult.get("status")) {
+			ret.put("response", sendresult.get("response"));
+		}else {
+			ret.put("status", false);
+			if(sendresult.get("message") != null) {
+				ret.put("message", sendresult.get("message"));
+			}else if(sendresult.get("error") != null) {
+				ret.put("message", sendresult.get("error"));
+			}else {
+				ret.put("message", sendresult);
+			}
+		}
 		
 		return ret;
 	}
