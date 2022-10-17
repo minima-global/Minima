@@ -316,25 +316,13 @@ public class Main extends MessageProcessor {
 		//we are shutting down
 		mShuttingdown = true;
 		
-		//No More timer Messages
-		TimerProcessor.stopTimerProcessor();
-		
 		try {
 			
 			//Tell the wallet - in case we are creating default keys
 			MinimaDB.getDB().getWallet().shuttingDown();
 			
-			//Shut down Maxima
-			mMaxima.shutdown();
-			
-			//ShutDown MDS
-			mMDS.shutdown();
-			
-			//Stop the Miner
-			mTxPoWMiner.stopMessageProcessor();
-			
-			//Stop sendPoll
-			mSendPoll.stopMessageProcessor();
+			//Shut down the network
+			shutdownGenProcs();
 			
 			//Stop the main TxPoW processor
 			MinimaLogger.log("Waiting for TxPoWProcessor shutdown");
@@ -344,21 +332,6 @@ public class Main extends MessageProcessor {
 			//Now backup the  databases
 			MinimaLogger.log("Saving all db");
 			MinimaDB.getDB().saveAllDB();
-
-			//Shut down the network
-			MinimaLogger.log("Waiting for Network shutdown");
-			mNetwork.shutdownNetwork();
-			
-			//Wait for the networking to finish
-			long timewaited=0;
-			while(!mNetwork.isShutDownComplete()) {
-				try {Thread.sleep(250);} catch (InterruptedException e) {}
-				timewaited+=250;
-				if(timewaited>10000) {
-					MinimaLogger.log("Network shutdown took too long..");
-					break;
-				}
-			}
 					
 			//Stop this..
 			stopMessageProcessor();
@@ -368,9 +341,6 @@ public class Main extends MessageProcessor {
 			waitToShutDown(true);
 		
 			MinimaLogger.log("Shut down completed OK..");
-			
-			//At this point.. STOP..
-			Runtime.getRuntime().halt(0);
 			
 		}catch(Exception exc) {
 			MinimaLogger.log("ERROR Shutting down..");
@@ -383,71 +353,19 @@ public class Main extends MessageProcessor {
 		mRestoring = true;
 		
 		//Shut down the network
-		mNetwork.shutdownNetwork();
-		
-		//Shut down Maxima
-		mMaxima.shutdown();
-		
-		//ShutDown MDS
-		mMDS.shutdown();
-				
-		//Stop the Miner
-		mTxPoWMiner.stopMessageProcessor();
-		
-		//Stop sendPoll
-		mSendPoll.stopMessageProcessor();
+		shutdownGenProcs();
 		
 		//Stop the main TxPoW processor
 		mTxPoWProcessor.stopMessageProcessor();
-		mTxPoWProcessor.waitToShutDown(false);
-		
-		//No More timer Messages
-		TimerProcessor.stopTimerProcessor();
-		
-		//Wait for the networking to finish
-		long timewaited=0;
-		while(!mNetwork.isShutDownComplete()) {
-			try {Thread.sleep(250);} catch (InterruptedException e) {}
-			timewaited+=250;
-			if(timewaited>10000) {
-				MinimaLogger.log("Network shutdown took too long..");
-				break;
-			}
-		}		
+		mTxPoWProcessor.waitToShutDown(false);	
 	}
 	
 	public void archiveResetReady(boolean zResetWallet) {
 		//we are about to restore..
 		mRestoring = true;
 				
-		//Shut down the network
-		mNetwork.shutdownNetwork();
-		
-		//Shut down Maxima
-		mMaxima.shutdown();
-		
-		//ShutDown MDS
-		mMDS.shutdown();
-				
-		//Stop the Miner
-		mTxPoWMiner.stopMessageProcessor();
-		
-		//Stop sendPoll
-		mSendPoll.stopMessageProcessor();
-		
-		//No More timer Messages
-		TimerProcessor.stopTimerProcessor();
-		
-		//Wait for the networking to finish
-		long timewaited=0;
-		while(!mNetwork.isShutDownComplete()) {
-			try {Thread.sleep(250);} catch (InterruptedException e) {}
-			timewaited+=250;
-			if(timewaited>10000) {
-				MinimaLogger.log("Network shutdown took too long..");
-				break;
-			}
-		}
+		//Shut most of the processors down
+		shutdownGenProcs();
 		
 		//Delete old files.. and reset to new
 		MinimaDB.getDB().getTxPoWDB().getSQLDB().saveDB();
@@ -467,6 +385,38 @@ public class Main extends MessageProcessor {
 		
 		//Reset these 
 		MinimaDB.getDB().resetCascadeAndTxPoWTree();
+	}
+	
+	private void shutdownGenProcs() {
+		
+		//No More timer Messages
+		TimerProcessor.stopTimerProcessor();
+				
+		//Shut down the network
+		mNetwork.shutdownNetwork();
+		
+		//Shut down Maxima
+		mMaxima.shutdown();
+		
+		//ShutDown MDS
+		mMDS.shutdown();
+				
+		//Stop the Miner
+		mTxPoWMiner.stopMessageProcessor();
+		
+		//Stop sendPoll
+		mSendPoll.stopMessageProcessor();
+		
+		//Wait for the networking to finish
+		long timewaited=0;
+		while(!mNetwork.isShutDownComplete()) {
+			try {Thread.sleep(250);} catch (InterruptedException e) {}
+			timewaited+=250;
+			if(timewaited>10000) {
+				MinimaLogger.log("Network shutdown took too long..");
+				break;
+			}
+		}
 	}
 	
 	public void restartNIO() {

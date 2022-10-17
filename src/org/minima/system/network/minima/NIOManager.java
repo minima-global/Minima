@@ -284,7 +284,7 @@ public class NIOManager extends MessageProcessor {
 			
 			//Stop the Thread pool
 			THREAD_POOL.shutdown();
-			THREAD_POOL.awaitTermination(5000, TimeUnit.MILLISECONDS);
+			THREAD_POOL.awaitTermination(8000, TimeUnit.MILLISECONDS);
 			
 			//Shut down the NIO
 			mNIOServer.shutdown();
