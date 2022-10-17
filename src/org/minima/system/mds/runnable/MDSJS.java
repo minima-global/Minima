@@ -43,6 +43,20 @@ public class MDSJS {
 	 */
 	public COMMSService comms;
 	
+	/**
+	 * The FILE service
+	 */
+	public FILEService file;
+	
+	/**
+	 * Main Constructor
+	 * 
+	 * @param zMDS
+	 * @param zMiniDAPPID
+	 * @param zMiniName
+	 * @param zContext
+	 * @param zScope
+	 */
 	public MDSJS(MDSManager zMDS, String zMiniDAPPID, String zMiniName,  Context zContext, Scriptable zScope) {
 		mMDS			= zMDS;
 		mMiniDAPPID		= zMiniDAPPID;
@@ -51,6 +65,7 @@ public class MDSJS {
 		mScope 			= zScope;
 		net 			= new NETService(zMiniDAPPID, zMiniName, zContext, zScope);
 		comms			= new COMMSService(mMDS, zMiniDAPPID, zMiniName, zContext, zScope);
+		file			= new FILEService(mMDS, zMiniDAPPID, zMiniName, zContext, zScope);
 	}
 	
 	public String getMiniDAPPID() {

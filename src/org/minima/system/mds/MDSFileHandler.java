@@ -10,6 +10,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.URLDecoder;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.StringTokenizer;
 
 import javax.net.ssl.SSLException;
@@ -308,8 +310,11 @@ public class MDSFileHandler implements Runnable {
 				
 				//Now get the file..
 				File webfile = new File(mRoot, fileRequested);
-	
-				if(!webfile.exists()) {
+				
+				//Check is valid child of parent..
+				boolean ischild = MiniFile.isChild(mRoot, webfile);
+				
+				if(!webfile.exists() || !ischild || webfile.isDirectory()) {
 		    		
 		    		//MinimaLogger.log("HTTP : unknown file requested "+fileRequested+" "+webfile.getAbsolutePath());
 		    		

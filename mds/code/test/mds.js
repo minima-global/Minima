@@ -166,7 +166,61 @@ var MDS = {
 	},
 	
 	/**
-	 * Form GET / POST parameters..
+	 * File access
+	 */
+	file : {
+		/**
+		 * List file in a folder .. start at /
+		 */
+		list : function(folder, callback){
+			
+			//Create the single line
+			var commsline = "list&"+folder;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		},
+		
+		/**
+		 * Save text - can be text, a JSON in string format or hex encoded data
+		 */
+		save : function(filename, text, callback){
+			
+			//Create the single line
+			var commsline = "save&"+filename+"&"+text;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		},
+		
+		/**
+		 * Load text - can be text, a JSON in string format or hex encoded data
+		 */
+		load : function(filename, callback){
+			
+			//Create the single line
+			var commsline = "load&"+filename;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		},
+		
+		/**
+		 * Delete a file
+		 */
+		delete : function(filename, callback){
+			
+			//Create the single line
+			var commsline = "delete&"+filename;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		}
+		
+	}, 
+	
+	/**
+	 * Utility function for GET parameters..
 	 */
 	form : {
 		

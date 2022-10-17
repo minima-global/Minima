@@ -120,9 +120,7 @@ public class MDSManager extends MessageProcessor {
 		PostMessage(MDS_SHUTDOWN);
 		
 		//Waiting for shutdown..
-		while(!isShutdownComplete()) {
-			try {Thread.sleep(50);} catch (InterruptedException e) {}
-		}
+		waitToShutDown(true);
 	}
 	
 	public File getRootMDSFolder() {
@@ -143,6 +141,14 @@ public class MDSManager extends MessageProcessor {
 	
 	public File getMiniDAPPDataFolder(String zUID) {
 		return new File(getDataFolder(), zUID);
+	}
+	
+	public File getMiniDAPPFileFolder(String zUID) {
+		return new File(getMiniDAPPDataFolder(zUID), "file");
+	}
+	
+	public File getMiniDAPPSQLFolder(String zUID) {
+		return new File(getMiniDAPPDataFolder(zUID), "sql");
 	}
 	
 	public String getMiniHUBPasword() {
@@ -233,8 +239,7 @@ public class MDSManager extends MessageProcessor {
 				db = new MiniDAPPDB();
 				
 				//The location
-				File dbfolder2 = getMiniDAPPDataFolder(minidappid);
-				File dbfolder3 = new File(dbfolder2,"sql");
+				File dbfolder3 = getMiniDAPPSQLFolder(minidappid);
 				if(!dbfolder3.exists()) {
 					dbfolder3.mkdirs();
 				}
@@ -294,7 +299,7 @@ public class MDSManager extends MessageProcessor {
 				
 				@Override
 				public Runnable getSocketHandler(SSLSocket zSocket) {
-					return new MDSFileHandler( new File(mMDSRootFile,"web") , zSocket, MDSManager.this);
+					return new MDSFileHandler( getWebFolder() , zSocket, MDSManager.this);
 				}
 			};
 			
@@ -494,7 +499,7 @@ public class MDSManager extends MessageProcessor {
 						public boolean visibleToScripts(String className) {					
 							
 							//ONLY MDSJS can be called form JS
-							if(className.startsWith("org.minima.system.mds.runnable.MDSJS")) {
+							if(className.startsWith("org.minima.system.mds.runnable")) {
 								return true;
 							}
 								

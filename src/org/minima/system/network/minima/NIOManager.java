@@ -11,12 +11,14 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
@@ -75,6 +77,11 @@ public class NIOManager extends MessageProcessor {
 	 */
 	public static final String NIO_HEALTHCHECK 	= "NIO_HEALTHCHECK";
 	long NIO_HEALTHCHECK_TIMER 	= 1000 * 60 * 20;
+	
+	/**
+	 * SYNC Back max time
+	 */
+	long SYNC_MAX_TIME = 1000 * 60 * 60 * 24 * GeneralParams.NUMBER_DAYS_ARCHIVE;
 	
 	/**
 	 * How long before a reconnect attempt
@@ -240,6 +247,11 @@ public class NIOManager extends MessageProcessor {
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
+		//Don't process messages after shutdown
+		if((Main.getInstance().isShuttingDown() ||  Main.getInstance().isRestoring()) && !zMessage.getMessageType().equals(NIO_SHUTDOWN)) {
+			return;
+		}
+		
 		if(zMessage.getMessageType().equals(NIO_SERVERSTARTED)) {
 			
 			//The NIOServer has started you can now start up the P2P and pre-connect list
@@ -271,7 +283,8 @@ public class NIOManager extends MessageProcessor {
 		}else if(zMessage.getMessageType().equals(NIO_SHUTDOWN)) {
 			
 			//Stop the Thread pool
-			THREAD_POOL.shutdownNow();
+			THREAD_POOL.shutdown();
+			THREAD_POOL.awaitTermination(8000, TimeUnit.MILLISECONDS);
 			
 			//Shut down the NIO
 			mNIOServer.shutdown();
@@ -410,6 +423,9 @@ public class NIOManager extends MessageProcessor {
 			//Which nioclient
 			NIOClient nioc = (NIOClient)zMessage.getObject("client");
 			
+			//Remove from the last sync list
+			NIOMessage.mlastSyncReq.remove(nioc.getUID());
+			
 			//Do we reconnect
 			boolean reconnect = false;
 			if(zMessage.exists("reconnect")) {
@@ -524,6 +540,15 @@ public class NIOManager extends MessageProcessor {
 				lastpow = MinimaDB.getDB().getTxPoWTree().getRoot().getTxPoW();
 			}else {
 				lastpow = lastblock.getTxPoW();
+			}
+			
+			//Check is within acceptable time..
+			long timenow = System.currentTimeMillis();
+			long maxtime = timenow - SYNC_MAX_TIME;
+			if(lastpow.getTimeMilli().getAsLong() < maxtime) {
+				//we have enough..
+				MinimaLogger.log("We have enough archive blocks.. lastblock "+new Date(lastpow.getTimeMilli().getAsLong()));
+				return;
 			}
 			
 			//Send a message asking for a sync

@@ -136,6 +136,7 @@ public class MDSHub {
 						+ "                    <div class=list-item-right>\r\n"
 						+ "                        <div class=\"app-title\">"+dapp.getName()+"</div>\r\n"
 						+ "                        <div>"+dapp.getDescription()+"</div>\r\n"
+						+ "                        <div>"+dapp.getVersion()+"</div>\r\n"
 						+ "                    </div>\r\n"
 						+ "                </a>\r\n"
 						+ "            </li>";

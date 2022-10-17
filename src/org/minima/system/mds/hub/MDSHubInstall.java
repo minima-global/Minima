@@ -120,6 +120,7 @@ public class MDSHubInstall {
 				+ "                    <div class=list-item-right>\r\n"
 				+ "                        <div class=\"app-title\">"+zDAPP.getName()+"</div>\r\n"
 				+ "                        <div>"+zDAPP.getDescription()+"</div>\r\n"
+				+ "                        <div>"+zDAPP.getVersion()+"</div>\r\n"
 				+ "                    </div>\r\n"
 				+ "                </div>\r\n"
 				+ "            </li>"

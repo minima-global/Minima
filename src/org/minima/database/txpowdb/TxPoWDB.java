@@ -3,8 +3,10 @@ package org.minima.database.txpowdb;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.minima.database.txpowdb.ram.RamDB;
+import org.minima.database.txpowdb.ram.RamData;
 import org.minima.database.txpowdb.sql.TxPoWSqlDB;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
@@ -204,5 +206,9 @@ public class TxPoWDB {
 	 */
 	public boolean checkMempoolCoins(MiniData zCoinID) {
 		return mRamDB.checkForCoinID(zCoinID);
+	}
+	
+	public ConcurrentHashMap<String, RamData> getCompleteMemPool(){
+		return mRamDB.getCompleteMemPool();
 	}
 }

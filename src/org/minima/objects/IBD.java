@@ -18,6 +18,7 @@ import org.minima.database.txpowtree.TxPowTree;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.Main;
 import org.minima.system.commands.backup.archive;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
@@ -210,6 +211,11 @@ public class IBD implements Streamable {
 		MinimaDB.getDB().readLock(true);
 		
 		try {
+		
+			//Are we shutting down..
+			if(Main.getInstance().isShuttingDown()) {
+				return;
+			}
 			
 			//Load the block range..
 			ArrayList<TxBlock> blocks = arch.loadSyncBlockRange(zLastBlock.getBlockNumber());
@@ -223,6 +229,7 @@ public class IBD implements Streamable {
 		
 		//Unlock..
 		MinimaDB.getDB().readLock(false);
+		
 	}
 	
 	public void createArchiveIBD(MiniNumber zFirstBlock) {
