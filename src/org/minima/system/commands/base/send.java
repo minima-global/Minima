@@ -138,6 +138,11 @@ public class send extends Command {
 			throw new CommandException("Split outputs from 1 to 20");
 		}
 		
+		//Are we doing a Minima burn
+		if(tokenid.equals("0x00")) {
+			totalamount = totalamount.add(burn);
+		}
+		
 		//Get the State
 		JSONObject state = new JSONObject();
 		if(existsParam("state")) {
@@ -267,7 +272,7 @@ public class send extends Command {
 		if(currentamount.isLess(totalamount)) {
 			//Not enough funds..
 			ret.put("status", false);
-			ret.put("message", "Insufficient funds.. you only have "+currentamount);
+			ret.put("message", "Insufficient funds.. you only have "+currentamount+" require:"+totalamount);
 			return ret;
 		}
 		
@@ -480,7 +485,7 @@ public class send extends Command {
 		TxPoW txpow = null;
 		
 		//Is there a BURN..
-		if(burn.isMore(MiniNumber.ZERO)) {
+		if(!tokenid.equals("0x00") && burn.isMore(MiniNumber.ZERO)) {
 			
 			//Create a Burn Transaction
 			TxnRow burntxn = txnutils.createBurnTransaction(addedcoinid,transaction.getTransactionID(),burn);
@@ -497,11 +502,8 @@ public class send extends Command {
 		txpow.calculateTXPOWID();
 		
 		//All good..
-		if(!dryrun) {
-			ret.put("response", txpow.toJSON());
-		}else {
-			ret.put("response", "DRY RUN");
-		}
+		ret.put("dryrun", dryrun);
+		ret.put("response", txpow.toJSON());
 		
 		if(!dryrun) {
 			//Send it to the Miner..
