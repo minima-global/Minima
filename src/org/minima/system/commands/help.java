@@ -74,87 +74,105 @@ public class help extends Command {
 		
 		JSONObject details = new JSONObject();
 		
-		addCommand(details, new help());
+		String function = getParam("function", "");
 		
-		addCommand(details, new status());
-		addCommand(details, new printtree());
-		addCommand(details, new burn());
-		addCommand(details, new trace());
-		addCommand(details, new logs());
-//		addCommand(details, new automine());
-		addCommand(details, new hashtest());
-//		addCommand(details, new debugflag());
-		
-		addCommand(details, new txpow());
-		addCommand(details, new coins());
-		addCommand(details, new tokens());
-		addCommand(details, new keys());
-		
-		addCommand(details, new getaddress());
-		addCommand(details, new newaddress());
-		addCommand(details, new send());
-		addCommand(details, new sendpoll());
-		addCommand(details, new balance());
-		addCommand(details, new tokencreate());
-		addCommand(details, new tokenvalidate());
-		addCommand(details, new consolidate());
-		
-		addCommand(details, new hash());
-		addCommand(details, new random());
-		
-//		addCommand(details, new file());
-//		addCommand(details, new sql());
-		
-		addCommand(details, new scripts());
-		addCommand(details, new newscript());
-		addCommand(details, new runscript());
-		addCommand(details, new tutorial());
-		
-		addCommand(details, new mmrcreate());
-		addCommand(details, new mmrproof());
-		
-		addCommand(details, new coinimport());
-		addCommand(details, new coinexport());
-		addCommand(details, new cointrack());
-		
-		addCommand(details, new sign());
-		addCommand(details, new verify());
-		
-		addCommand(details, new txnlist());
-		addCommand(details, new txncreate());
-		addCommand(details, new txnbasics());
-		addCommand(details, new txndelete());
-		addCommand(details, new txncheck());
-		addCommand(details, new txninput());
-		addCommand(details, new txnoutput());
-		addCommand(details, new txnstate());
-		addCommand(details, new txnscript());
-		addCommand(details, new txnsign());
-		addCommand(details, new txnclear());
-		addCommand(details, new txnpost());
-		addCommand(details, new txnimport());
-		addCommand(details, new txnexport());
-		
-		addCommand(details, new network());
-		addCommand(details, new maxima());
-		addCommand(details, new maxcontacts());
-		addCommand(details, new message());
-		addCommand(details, new connect());
-		addCommand(details, new disconnect());
-		addCommand(details, new rpc());
-		addCommand(details, new webhooks());
-		
-		addCommand(details, new mds());
-		
-		addCommand(details, new backup());
-		addCommand(details, new restore());
-		addCommand(details, new archive());
-		addCommand(details, new vault());
-		
-		addCommand(details, new incentivecash());
-
-		//addCommand(details, new nodecount());
-		addCommand(details, new quit());
+		if(!function.equals("")) {
+			
+			details.put("command", function);
+			
+			//Get the function..
+			Command comm = Command.findCommand(function);
+			if(comm == null) {
+				details.put("found", false);
+			}else {
+				details.put("found", true);
+				details.put("details", comm.getFullHelp());
+			}
+			
+		}else {
+			//Add ALL the functions
+			addCommand(details, new help());
+			
+			addCommand(details, new status());
+			addCommand(details, new printtree());
+			addCommand(details, new burn());
+			addCommand(details, new trace());
+			addCommand(details, new logs());
+	//		addCommand(details, new automine());
+			addCommand(details, new hashtest());
+	//		addCommand(details, new debugflag());
+			
+			addCommand(details, new txpow());
+			addCommand(details, new coins());
+			addCommand(details, new tokens());
+			addCommand(details, new keys());
+			
+			addCommand(details, new getaddress());
+			addCommand(details, new newaddress());
+			addCommand(details, new send());
+			addCommand(details, new sendpoll());
+			addCommand(details, new balance());
+			addCommand(details, new tokencreate());
+			addCommand(details, new tokenvalidate());
+			addCommand(details, new consolidate());
+			
+			addCommand(details, new hash());
+			addCommand(details, new random());
+			
+	//		addCommand(details, new file());
+	//		addCommand(details, new sql());
+			
+			addCommand(details, new scripts());
+			addCommand(details, new newscript());
+			addCommand(details, new runscript());
+			addCommand(details, new tutorial());
+			
+			addCommand(details, new mmrcreate());
+			addCommand(details, new mmrproof());
+			
+			addCommand(details, new coinimport());
+			addCommand(details, new coinexport());
+			addCommand(details, new cointrack());
+			
+			addCommand(details, new sign());
+			addCommand(details, new verify());
+			
+			addCommand(details, new txnlist());
+			addCommand(details, new txncreate());
+			addCommand(details, new txnbasics());
+			addCommand(details, new txndelete());
+			addCommand(details, new txncheck());
+			addCommand(details, new txninput());
+			addCommand(details, new txnoutput());
+			addCommand(details, new txnstate());
+			addCommand(details, new txnscript());
+			addCommand(details, new txnsign());
+			addCommand(details, new txnclear());
+			addCommand(details, new txnpost());
+			addCommand(details, new txnimport());
+			addCommand(details, new txnexport());
+			
+			addCommand(details, new network());
+			addCommand(details, new maxima());
+			addCommand(details, new maxcontacts());
+			addCommand(details, new message());
+			addCommand(details, new connect());
+			addCommand(details, new disconnect());
+			addCommand(details, new rpc());
+			addCommand(details, new webhooks());
+			
+			addCommand(details, new mds());
+			
+			addCommand(details, new backup());
+			addCommand(details, new restore());
+			addCommand(details, new archive());
+			addCommand(details, new vault());
+			
+			addCommand(details, new incentivecash());
+	
+			//addCommand(details, new nodecount());
+			addCommand(details, new quit());
+		}
 		
 		ret.put("response", details);
 		

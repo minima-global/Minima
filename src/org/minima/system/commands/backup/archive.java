@@ -37,6 +37,16 @@ public class archive extends Command {
 
 	public archive() {
 		super("archive","[action:resync|integrity] (host:) (phrase:) (keys:) (keyuses:) - Resync your chain with seed phrase if necessary (otherwise wallet remains the same)");
+	
+		setFullHelp("\nThe 'archive' function allows you to resync your chain with an archive node.\n\n"
+				+ "You can use your seed phrase (get it from 'vault') and this will recreate all your public and private keys.\n\n"
+				+ "If you do no use your seed phrase (the preferred option) you keep your current wallet and just resync the chain.\n\n"
+				+ "PARAMS: \n"
+				+ "  [action:resync|integrity]  - Are you testing the integrity of YOUR archive node or resyncing\n"
+				+ "  (host)    - The archive node address as ip:port\n"
+				+ "  (phrase)  - Yout seed phrase\n"
+				+ "  (keys)    - How may keys to create, defaults to 74\n"
+				+ "  (keyuses) - How many times have you used your keys, defaults to 5000");
 	}
 	
 	@Override
@@ -153,7 +163,7 @@ public class archive extends Command {
 			int keys = getNumberParam("keys", new MiniNumber(Wallet.NUMBER_GETADDRESS_KEYS + 10)).getAsInt();
 			
 			//Set the key uses to this..
-			int keyuses = getNumberParam("keyuses", new MiniNumber(10000)).getAsInt();
+			int keyuses = getNumberParam("keyuses", new MiniNumber(5000)).getAsInt();
 			
 			//Before we start deleting - check connection..
 			IBD ibdtest = sendArchiveReq(host, port, MiniNumber.MINUSONE);

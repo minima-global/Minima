@@ -130,6 +130,7 @@ public abstract class Command {
 	
 	String mName;
 	String mHelp;
+	String mFullHelp;
 	
 	JSONObject mParams = new JSONObject();
 	
@@ -138,6 +139,7 @@ public abstract class Command {
 	public Command(String zName, String zHelp) {
 		mName = zName;
 		mHelp = zHelp;
+		mFullHelp = mHelp;
 	}
 	
 	public void setCompleteCommand(String zCommand) {
@@ -153,7 +155,15 @@ public abstract class Command {
 	}
 	
 	public String getFullHelp() {
-		return mHelp;
+		return mFullHelp;
+	}
+	
+	public void setFullHelp(String zFullHelp) {
+		mFullHelp = zFullHelp;
+	}
+	
+	public String[] getValidParams() {
+		return new String[0];
 	}
 	
 	public JSONObject getJSONReply() {
@@ -383,6 +393,17 @@ public abstract class Command {
 		}
 		
 		return res;
+	}
+	
+	public static Command findCommand(String zCommand) {
+		
+		for(Command comm : ALL_COMMANDS) {
+			if(comm.getName().equals(zCommand)) {
+				return comm;
+			}
+		}
+
+		return null;
 	}
 	
 	public static Command getCommand(String zCommand) {
