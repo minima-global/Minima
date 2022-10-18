@@ -3,6 +3,7 @@ package org.minima.system.commands.base;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.system.commands.Command;
 import org.minima.utils.Crypto;
@@ -52,7 +53,7 @@ public class mmrproof extends Command {
 		MMRProof prf = MMRProof.convertMiniDataVersion(proof);
 		
 		//And calculate the final root value..
-		MiniData prfcalc = prf.calculateProof(new MMRData(hash)).getData();
+		MiniData prfcalc = prf.calculateProof(new MMRData(hash, MiniNumber.ZERO)).getData();
 		
 		JSONObject resp = new JSONObject();
 		resp.put("data", strdata);

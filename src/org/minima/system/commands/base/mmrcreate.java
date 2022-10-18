@@ -7,6 +7,7 @@ import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntryNumber;
 import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.system.commands.Command;
 import org.minima.utils.Crypto;
@@ -75,7 +76,7 @@ public class mmrcreate extends Command {
 			counter++;
 			
 			//Add to thew MMR
-			mmrtree.addEntry(new MMRData(hash));
+			mmrtree.addEntry(new MMRData(hash, MiniNumber.ZERO));
 		}
 		
 		//Get the root..

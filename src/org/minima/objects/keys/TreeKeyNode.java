@@ -53,7 +53,7 @@ public class TreeKeyNode {
 			MiniData pubkey = wots.getPublicKey();
 			
 			//Add this to the MMR..
-			mTree.addEntry(new MMRData(pubkey));
+			mTree.addEntry(new MMRData(pubkey, MiniNumber.ZERO));
 			
 			//Keep this in an array - for quick retrieval
 			mKeys[i] = wots;

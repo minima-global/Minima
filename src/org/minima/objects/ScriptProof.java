@@ -9,6 +9,7 @@ import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
@@ -47,7 +48,7 @@ public class ScriptProof implements Streamable {
 		MMR mmr = new MMR();
 		
 		//Create a new piece of data to add
-		MMRData scriptdata = new MMRData(hash);
+		MMRData scriptdata = new MMRData(hash, MiniNumber.ZERO);
 		
 		//Add to the MMR
 		MMREntry entry = mmr.addEntry(scriptdata);
@@ -80,7 +81,7 @@ public class ScriptProof implements Streamable {
 		MiniData hash = Crypto.getInstance().hashObject(mScript);
 		
 		//And calulate the finsl root..
-		MMRData root = mProof.calculateProof(new MMRData(hash));
+		MMRData root = mProof.calculateProof(new MMRData(hash, MiniNumber.ZERO));
 				
 		//The address is the final hash
 		mAddress = new Address(root.getData()); 

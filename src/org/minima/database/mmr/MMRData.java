@@ -23,9 +23,9 @@ public class MMRData implements Streamable{
 	
 	private MMRData() {}
 	
-	public MMRData(MiniData zHash) {
-		this(zHash, MiniNumber.ZERO); 
-	}
+//	public MMRData(MiniData zHash) {
+//		this(zHash, MiniNumber.ZERO); 
+//	}
 	
 	public MMRData(MiniData zHash, MiniNumber zValue) {
 		mData = zHash;
