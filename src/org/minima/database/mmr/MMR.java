@@ -606,19 +606,21 @@ public class MMR implements Streamable {
 	 * @return
 	 */
 	private MMRData getParentMMRData(MMREntry zLeftChild, MMREntry zRightChild) {
-		//Combine the Values..
-		MiniNumber sumvalue   = zLeftChild.getMMRData().getValue().add(zRightChild.getMMRData().getValue());
+//		//Combine the Values..
+//		MiniNumber sumvalue   = zLeftChild.getMMRData().getValue().add(zRightChild.getMMRData().getValue());
+//		
+//		//Make the unique MMRData Hash
+//		MiniData combined = Crypto.getInstance().hashAllObjects( zLeftChild.getMMRData().getData(),
+//																zRightChild.getMMRData().getData(),
+//																sumvalue);
+//		
+//		//New MMRData
+//		MMRData parent = new MMRData(combined, sumvalue);
+//		
+//		//Create a new data proof
+//		return parent;
 		
-		//Make the unique MMRData Hash
-		MiniData combined = Crypto.getInstance().hashAllObjects( zLeftChild.getMMRData().getData(),
-																zRightChild.getMMRData().getData(),
-																sumvalue);
-		
-		//New MMRData
-		MMRData parent = new MMRData(combined, sumvalue);
-		
-		//Create a new data proof
-		return parent;
+		return MMRProof.getParentMMRData(zLeftChild.getMMRData(), zRightChild.getMMRData());
 	}
 	
 	/**
