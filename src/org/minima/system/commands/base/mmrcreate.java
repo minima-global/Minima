@@ -21,7 +21,7 @@ public class mmrcreate extends Command {
 		public int mEntry;
 		public String mInput;
 		public String mData;
-		public MiniData mHash;
+//		public MiniData mHash;
 		
 		public mmrleafnode() {}
 	}
@@ -59,15 +59,18 @@ public class mmrcreate extends Command {
 				mdata = new MiniData( new MiniString(strdata).getData() );
 			}
 			
+			//Create MMRData
+			MMRData leaf = MMRData.CreateMMRDataLeafNode(mdata, MiniNumber.ZERO);
+			
 			//Hash it..
-			MiniData hash = Crypto.getInstance().hashObject(mdata);
+//			MiniData hash = Crypto.getInstance().hashObject(mdata);
 			
 			//Create leafnode
 			mmrleafnode leafnode = new mmrleafnode();
 			leafnode.mEntry = counter;
 			leafnode.mInput = strdata;
 			leafnode.mData  = mdata.to0xString();
-			leafnode.mHash 	= hash;
+//			leafnode.mHash 	= hash;
 			
 			//Add them to our list
 			leafnodes.add(leafnode);
@@ -76,7 +79,7 @@ public class mmrcreate extends Command {
 			counter++;
 			
 			//Add to thew MMR
-			mmrtree.addEntry(new MMRData(hash, MiniNumber.ZERO));
+			mmrtree.addEntry(leaf);
 		}
 		
 		//Get the root..

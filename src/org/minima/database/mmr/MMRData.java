@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
@@ -21,13 +22,36 @@ public class MMRData implements Streamable{
 	 */
 	private MiniNumber mValue;
 	
+	public static MMRData CreateMMRDataLeafNode(Streamable zData, MiniNumber zSumValue) {
+		//Hash it..
+		MiniData hash = Crypto.getInstance().hashObject(zData);
+				
+		//Create a new piece of data to add
+		return new MMRData(true, hash, zSumValue);
+//		return new MMRData(hash, zSumValue);
+	}
+	
+	public static MMRData CreateParentMMRData( MMRData zLeft, MMRData zRight) {
+		
+		//Combine the Values..
+		MiniNumber sumvalue   = zLeft.getValue().add(zRight.getValue());
+				
+		//Make the unique MMRData Hash
+		MiniData combinedhash = Crypto.getInstance().hashAllObjects(zLeft.getData(),
+																	zRight.getData(),
+																	sumvalue);
+				
+		return new MMRData(true, combinedhash, sumvalue);
+	}
+	
 	private MMRData() {}
 	
 //	public MMRData(MiniData zHash) {
 //		this(zHash, MiniNumber.ZERO); 
 //	}
 	
-	public MMRData(MiniData zHash, MiniNumber zValue) {
+//	public MMRData(MiniData zHash, MiniNumber zValue) {
+	public MMRData(boolean zRaw, MiniData zHash, MiniNumber zValue) {
 		mData = zHash;
 		mValue = zValue; 
 	}

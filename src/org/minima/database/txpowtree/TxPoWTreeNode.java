@@ -131,11 +131,14 @@ public class TxPoWTreeNode implements Streamable {
 			Coin spentcoin = input.getCoin().deepCopy();
 			spentcoin.setSpent(true);
 
-			//Get the Hash of this 
-			MiniData hashspent = Crypto.getInstance().hashObject(spentcoin);
+			//Create the MMRData
+			MMRData mmrdata = MMRData.CreateMMRDataLeafNode(spentcoin, MiniNumber.ZERO);
 			
-			//And create a new MMRData structure - with ZERO value as it is now spent
-			MMRData mmrdata = new MMRData(hashspent, MiniNumber.ZERO);
+//			//Get the Hash of this 
+//			MiniData hashspent = Crypto.getInstance().hashObject(spentcoin);
+//			
+//			//And create a new MMRData structure - with ZERO value as it is now spent
+//			MMRData mmrdata = new MMRData(hashspent, MiniNumber.ZERO);
 			
 			//Update the MMR
 			mMMR.updateEntry(entrynumber, input.getMMRProof(), mmrdata);
@@ -166,11 +169,14 @@ public class TxPoWTreeNode implements Streamable {
 			newcoin.setBlockCreated(block);
 			newcoin.setSpent(false);
 			
-			//Get the Hash of this 
-			MiniData hashunspent = Crypto.getInstance().hashObject(newcoin);
+			//Create the MMRData
+			MMRData mmrdata = MMRData.CreateMMRDataLeafNode(newcoin, output.getAmount());
 			
-			//And create a new MMRData with the correct amount
-			MMRData mmrdata = new MMRData(hashunspent, output.getAmount());
+//			//Get the Hash of this 
+//			MiniData hashunspent = Crypto.getInstance().hashObject(newcoin);
+//			
+//			//And create a new MMRData with the correct amount
+//			MMRData mmrdata = new MMRData(hashunspent, output.getAmount());
 			
 			//And add to the MMR
 			mMMR.addEntry(mmrdata);	

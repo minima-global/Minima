@@ -40,7 +40,11 @@ public class SignatureProof implements Streamable {
 	}
 	
 	public MiniData getRootPublicKey(){
-		return mProof.calculateProof(new MMRData(mPublicKey, MiniNumber.ZERO)).getData();
+		//Create the MMR data aentry
+		MMRData pubentry = MMRData.CreateMMRDataLeafNode(mPublicKey, MiniNumber.ZERO);
+		
+//		return mProof.calculateProof(new MMRData(mPublicKey, MiniNumber.ZERO)).getData();
+		return mProof.calculateProof(pubentry).getData();
 	}
 	
 	public JSONObject toJSON() {

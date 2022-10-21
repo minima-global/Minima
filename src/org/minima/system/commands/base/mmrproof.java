@@ -45,7 +45,10 @@ public class mmrproof extends Command {
 			mdata = new MiniData( new MiniString(strdata).getData() );
 		}
 		
-		MiniData hash 	= Crypto.getInstance().hashObject(mdata);
+		//Create the MMRdata
+		MMRData mmrdata = MMRData.CreateMMRDataLeafNode(mdata, MiniNumber.ZERO);
+		
+//		MiniData hash 	= Crypto.getInstance().hashObject(mdata);
 		MiniData root 	= new MiniData(rootstr);
 		MiniData proof 	= new MiniData(proofstr);
 		
@@ -53,7 +56,7 @@ public class mmrproof extends Command {
 		MMRProof prf = MMRProof.convertMiniDataVersion(proof);
 		
 		//And calculate the final root value..
-		MiniData prfcalc = prf.calculateProof(new MMRData(hash, MiniNumber.ZERO)).getData();
+		MiniData prfcalc = prf.calculateProof(mmrdata).getData();
 		
 		JSONObject resp = new JSONObject();
 		resp.put("data", strdata);

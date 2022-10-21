@@ -108,13 +108,10 @@ public class MMRProof implements Streamable {
 			
 			//Get the Parent
 			if(proofchunk.isLeft()) {
-				cmmrdata = getParentMMRData(proofchunk.getMMRData(), cmmrdata);
-				//cdata = Crypto.getInstance().hashAllObjects(proofchunk.getMMRData().getData(), cdata, cvalue);
+				cmmrdata = MMRData.CreateParentMMRData(proofchunk.getMMRData(), cmmrdata);
 			}else {
-				cmmrdata = getParentMMRData(cmmrdata, proofchunk.getMMRData());
-				//cdata = Crypto.getInstance().hashAllObjects(cdata, proofchunk.getMMRData().getData(), cvalue);
+				cmmrdata = MMRData.CreateParentMMRData(cmmrdata, proofchunk.getMMRData());
 			}
-			
 			
 //			//Add to the value..
 //			cvalue = cvalue.add(proofchunk.getMMRData().getValue());
@@ -132,18 +129,18 @@ public class MMRProof implements Streamable {
 	}
 	
 	
-	public static MMRData getParentMMRData( MMRData zLeft, MMRData zRight) {
-		
-		//Combine the Values..
-		MiniNumber sumvalue   = zLeft.getValue().add(zRight.getValue());
-				
-		//Make the unique MMRData Hash
-		MiniData combinedhash = Crypto.getInstance().hashAllObjects(zLeft.getData(),
-																	zRight.getData(),
-																	sumvalue);
-				
-		return new MMRData(combinedhash, sumvalue);
-	}
+//	public static MMRData getParentMMRData( MMRData zLeft, MMRData zRight) {
+//		
+//		//Combine the Values..
+//		MiniNumber sumvalue   = zLeft.getValue().add(zRight.getValue());
+//				
+//		//Make the unique MMRData Hash
+//		MiniData combinedhash = Crypto.getInstance().hashAllObjects(zLeft.getData(),
+//																	zRight.getData(),
+//																	sumvalue);
+//				
+//		return new MMRData(combinedhash, sumvalue);
+//	}
 	
 	
 	public JSONObject toJSON() {

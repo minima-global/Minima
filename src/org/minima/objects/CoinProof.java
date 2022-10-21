@@ -43,13 +43,14 @@ public class CoinProof implements Streamable {
 	
 	public MMRData getMMRData() {
 		
-		//Get the Hash of this 
-		MiniData hash 		= Crypto.getInstance().hashObject(getCoin());
+//		//Get the Hash of this 
+//		MiniData hash 		= Crypto.getInstance().hashObject(getCoin());
+//		
+//		//The Value
+//		MiniNumber value 	= getCoin().getAmount();
 		
-		//The Value
-		MiniNumber value 	= getCoin().getAmount();
-		
-		return new MMRData(hash, value);
+//		return new MMRData(hash, value);
+		return MMRData.CreateMMRDataLeafNode(getCoin(), getCoin().getAmount());
 	}
 	
 	public JSONObject toJSON() {

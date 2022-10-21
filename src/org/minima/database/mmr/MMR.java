@@ -565,7 +565,7 @@ public class MMR implements Streamable {
 			
 			//Add all the peaks to it..
 			for(MMREntry peak : peaks) {
-				MMRData newpeak = new MMRData(peak.getMMRData().getData(),peak.getMMRData().getValue());
+				MMRData newpeak = new MMRData(true, peak.getMMRData().getData(),peak.getMMRData().getValue());
 				newmmr.addEntry(newpeak);	
 			}
 			
@@ -620,7 +620,7 @@ public class MMR implements Streamable {
 //		//Create a new data proof
 //		return parent;
 		
-		return MMRProof.getParentMMRData(zLeftChild.getMMRData(), zRightChild.getMMRData());
+		return MMRData.CreateParentMMRData(zLeftChild.getMMRData(), zRightChild.getMMRData());
 	}
 	
 	/**
@@ -754,35 +754,35 @@ public class MMR implements Streamable {
 	 */
 	public static void main(String[] zArgs) {
 	
-		System.out.println("** MMR Tree Prune POC **");
-		
-		MMR mmr = new MMR();
-		
-		//First bit of data
-		MMRData zero 	= new MMRData(new MiniData("0x00"), new MiniNumber(0));
-		MMRData one 	= new MMRData(new MiniData("0x01"), new MiniNumber(1));
-		
-		//Add 16 entries..
-		for(int loop=0;loop<16;loop++) {
-			mmr.addEntry(one);
-		}
-		printmmrtree(mmr);
-		
-		//Set random values to Zero..
-		for(int zz=0;zz<24;zz++) {
-			int rand 				= new Random().nextInt(16);
-			MMREntryNumber entry 	= new MMREntryNumber(rand);
-			MMREntry ent = mmr.getEntry(0, entry);
-			if(ent.isEmpty() || ent.getMMRData().getValue().isEqual(MiniNumber.ZERO)) {
-				continue;
-			}
-			
-			System.out.println("\nSet entry "+rand+" to 0");
-			MMRProof proof 	= mmr.getProofToPeak(entry);
-			mmr.updateEntry(entry, proof, zero);
-			mmr.pruneTree();
-			printmmrtree(mmr);
-		}
+//		System.out.println("** MMR Tree Prune POC **");
+//		
+//		MMR mmr = new MMR();
+//		
+//		//First bit of data
+//		MMRData zero 	= new MMRData(new MiniData("0x00"), new MiniNumber(0));
+//		MMRData one 	= new MMRData(new MiniData("0x01"), new MiniNumber(1));
+//		
+//		//Add 16 entries..
+//		for(int loop=0;loop<16;loop++) {
+//			mmr.addEntry(one);
+//		}
+//		printmmrtree(mmr);
+//		
+//		//Set random values to Zero..
+//		for(int zz=0;zz<24;zz++) {
+//			int rand 				= new Random().nextInt(16);
+//			MMREntryNumber entry 	= new MMREntryNumber(rand);
+//			MMREntry ent = mmr.getEntry(0, entry);
+//			if(ent.isEmpty() || ent.getMMRData().getValue().isEqual(MiniNumber.ZERO)) {
+//				continue;
+//			}
+//			
+//			System.out.println("\nSet entry "+rand+" to 0");
+//			MMRProof proof 	= mmr.getProofToPeak(entry);
+//			mmr.updateEntry(entry, proof, zero);
+//			mmr.pruneTree();
+//			printmmrtree(mmr);
+//		}
 	}
 	
 	public static void printinfo(MMR zTree) {

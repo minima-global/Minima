@@ -41,14 +41,11 @@ public class ScriptProof implements Streamable {
 		//Store the script
 		mScript = new MiniString(zScript);
 		
-		//Hash it..
-		MiniData hash = Crypto.getInstance().hashObject(mScript);
-		
 		//Create an MMR proof..
 		MMR mmr = new MMR();
 		
 		//Create a new piece of data to add
-		MMRData scriptdata = new MMRData(hash, MiniNumber.ZERO);
+		MMRData scriptdata = MMRData.CreateMMRDataLeafNode(mScript, MiniNumber.ZERO);
 		
 		//Add to the MMR
 		MMREntry entry = mmr.addEntry(scriptdata);
@@ -78,10 +75,10 @@ public class ScriptProof implements Streamable {
 	private void calculateAddress() {
 		
 		//Hash it..
-		MiniData hash = Crypto.getInstance().hashObject(mScript);
+		MMRData scriptdata = MMRData.CreateMMRDataLeafNode(mScript, MiniNumber.ZERO);
 		
 		//And calulate the finsl root..
-		MMRData root = mProof.calculateProof(new MMRData(hash, MiniNumber.ZERO));
+		MMRData root = mProof.calculateProof(scriptdata);
 				
 		//The address is the final hash
 		mAddress = new Address(root.getData()); 
