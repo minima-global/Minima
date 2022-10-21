@@ -86,7 +86,8 @@ public abstract class SqlDB {
 			Statement stmt = mSQLConnection.createStatement();
 		
 			//Shut down.. this saves and closes all the data
-			stmt.execute("SHUTDOWN COMPACT");
+//			stmt.execute("SHUTDOWN COMPACT");
+			stmt.execute("SHUTDOWN");
 
 			//Close the connection
 			mSQLConnection.close();
