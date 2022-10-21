@@ -467,7 +467,7 @@ public class MMR implements Streamable {
 	 * 
 	 * Can point to ROOT or to a PEAK
 	 */
-	public boolean checkProof(MMRData zMMRData, MMRProof zProof) {
+	private boolean checkProof(MMRData zMMRData, MMRProof zProof) {
 		//Calculate the final data unit
 		MMRData root = zProof.calculateProof(zMMRData);
 		

@@ -42,7 +42,16 @@ public class coinimport extends Command {
 		//Do we already have it..
 		MMRProof checkproof = tip.getMMR().getProofToPeak(newcoin.getMMREntryNumber());
 		CoinProof currentproof 	= new CoinProof(newcoin, checkproof);
-		boolean currentvalid 	= tip.getMMR().checkProofTimeValid(newcoin.getMMREntryNumber(), currentproof.getMMRData(), currentproof.getMMRProof());
+		
+		//Get the Coin..
+		Coin txcoin = currentproof.getCoin();
+		
+		//Create the MMRData Leaf Node..
+		MMRData mmrcoin = MMRData.CreateMMRDataLeafNode(txcoin, txcoin.getAmount());
+		
+		boolean currentvalid 	= tip.getMMR().checkProofTimeValid(	newcoin.getMMREntryNumber(), 
+																	mmrcoin, 
+																	currentproof.getMMRProof());
 		if(currentvalid) {
 			
 			//Get the Tree Node..
@@ -62,8 +71,16 @@ public class coinimport extends Command {
 			return ret;
 		}
 		
+		//Get the Coin..
+		txcoin = newcoinproof.getCoin();
+		
+		//Create the MMRData Leaf Node..
+		mmrcoin = MMRData.CreateMMRDataLeafNode(txcoin, txcoin.getAmount());
+		
 		//Now check that newcoinproof is valid..
-		boolean valid = tip.getMMR().checkProofTimeValid(newcoin.getMMREntryNumber(), newcoinproof.getMMRData(), newcoinproof.getMMRProof());
+		boolean valid = tip.getMMR().checkProofTimeValid(newcoin.getMMREntryNumber(), 
+														 mmrcoin, 
+														 newcoinproof.getMMRProof());
 		if(!valid) {
 			throw new CommandException("Invalid MMR Proof");
 		}
