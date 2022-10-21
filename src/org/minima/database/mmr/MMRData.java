@@ -30,7 +30,7 @@ public class MMRData implements Streamable{
 		return new MMRData(hash, zSumValue);
 	}
 	
-	public static MMRData CreateParentMMRData(MMRData zLeft, MMRData zRight) {
+	public static MMRData CreateMMRDataParentNode(MMRData zLeft, MMRData zRight) {
 		
 		//Combine the Values..
 		MiniNumber sumvalue   = zLeft.getValue().add(zRight.getValue());

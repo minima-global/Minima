@@ -106,9 +106,9 @@ public class MMRProof implements Streamable {
 			
 			//Get the Parent
 			if(proofchunk.isLeft()) {
-				cmmrdata = MMRData.CreateParentMMRData(proofchunk.getMMRData(), cmmrdata);
+				cmmrdata = MMRData.CreateMMRDataParentNode(proofchunk.getMMRData(), cmmrdata);
 			}else {
-				cmmrdata = MMRData.CreateParentMMRData(cmmrdata, proofchunk.getMMRData());
+				cmmrdata = MMRData.CreateMMRDataParentNode(cmmrdata, proofchunk.getMMRData());
 			}
 		}
 		

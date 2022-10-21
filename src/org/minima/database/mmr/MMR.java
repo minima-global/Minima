@@ -312,7 +312,8 @@ public class MMR implements Streamable {
 			MMREntry sibling = getEntry(entry.getRow(), entry.getSibling());
 			
 			//Create the new row - hash LEFT + RIGHT
-			MMRData parentdata = getParentMMRData(sibling, entry);
+			MMRData parentdata = MMRData.CreateMMRDataParentNode(sibling.getMMRData(), entry.getMMRData());
+//			MMRData parentdata = getParentMMRData(sibling, entry);
 						
 			//Set the Parent Entry
 			entry = setEntry(entry.getParentRow(),entry.getParentEntry(),parentdata);
@@ -357,9 +358,11 @@ public class MMR implements Streamable {
 			
 			//Calculate the parent
 			if(entry.isLeft()) {
-				parentdata = getParentMMRData(entry, sibling);
+				parentdata = MMRData.CreateMMRDataParentNode(entry.getMMRData(), sibling.getMMRData());
+//				parentdata = getParentMMRData(entry, sibling);
 			}else {
-				parentdata = getParentMMRData(sibling, entry);
+				parentdata = MMRData.CreateMMRDataParentNode(sibling.getMMRData(), entry.getMMRData());
+//				parentdata = getParentMMRData(sibling, entry);
 			}
 			
 			//Make the entry the parent..
@@ -597,30 +600,6 @@ public class MMR implements Streamable {
 		}
 
 		return null;
-	}
-	
-	/**
-	 * Return the Parent of 2 sibling children
-	 * @param zLeftChild
-	 * @param zRightChild
-	 * @return
-	 */
-	private MMRData getParentMMRData(MMREntry zLeftChild, MMREntry zRightChild) {
-//		//Combine the Values..
-//		MiniNumber sumvalue   = zLeftChild.getMMRData().getValue().add(zRightChild.getMMRData().getValue());
-//		
-//		//Make the unique MMRData Hash
-//		MiniData combined = Crypto.getInstance().hashAllObjects( zLeftChild.getMMRData().getData(),
-//																zRightChild.getMMRData().getData(),
-//																sumvalue);
-//		
-//		//New MMRData
-//		MMRData parent = new MMRData(combined, sumvalue);
-//		
-//		//Create a new data proof
-//		return parent;
-		
-		return MMRData.CreateParentMMRData(zLeftChild.getMMRData(), zRightChild.getMMRData());
 	}
 	
 	/**
