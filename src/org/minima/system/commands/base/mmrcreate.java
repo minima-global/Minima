@@ -90,8 +90,8 @@ public class mmrcreate extends Command {
 		for(mmrleafnode leaf : leafnodes) {
 			
 			JSONObject jobj = new JSONObject();
-//			jobj.put("entry", leaf.mEntry);
-//			jobj.put("input", leaf.mInput);
+			jobj.put("entry", leaf.mEntry);
+			jobj.put("input", leaf.mInput);
 			jobj.put("data", leaf.mData);	
 //			jobj.put("hash", leaf.mHash);
 			

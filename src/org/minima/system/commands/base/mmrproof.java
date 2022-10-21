@@ -59,7 +59,8 @@ public class mmrproof extends Command {
 		MiniData prfcalc = prf.calculateProof(mmrdata).getData();
 		
 		JSONObject resp = new JSONObject();
-		resp.put("data", strdata);
+		resp.put("input", strdata);
+		resp.put("data", mdata.to0xString());
 //		resp.put("hash", hash);
 		resp.put("finaldata", prfcalc.to0xString());
 		resp.put("valid", prfcalc.isEqual(root));
