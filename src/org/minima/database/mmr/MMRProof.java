@@ -98,8 +98,8 @@ public class MMRProof implements Streamable {
 	
 	public MMRData calculateProof(MMRData zData) {
 		//Get the Final Hash of the Data
-		MiniData cdata  	= zData.getData();
-		MiniNumber cvalue 	= zData.getValue();
+//		MiniData cdata  	= zData.getData();
+//		MiniNumber cvalue 	= zData.getValue();
 		
 		MMRData cmmrdata 	= zData;
 		

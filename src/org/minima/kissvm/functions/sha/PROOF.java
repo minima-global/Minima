@@ -54,7 +54,7 @@ public class PROOF extends MinimaFunction {
 		HexValue chain = zContract.getHexParam(1, this);
 		
 		//The root of the tree
-		MMRData mmrroot = new MMRData(true, zContract.getHexParam(2, this).getMiniData(), MiniNumber.ZERO);
+		MMRData mmrroot = new MMRData(zContract.getHexParam(2, this).getMiniData(), MiniNumber.ZERO);
 		
 		//Create into the MMRProof..
 		MMRProof proof = null;

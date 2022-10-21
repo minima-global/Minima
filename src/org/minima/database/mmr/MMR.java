@@ -565,7 +565,7 @@ public class MMR implements Streamable {
 			
 			//Add all the peaks to it..
 			for(MMREntry peak : peaks) {
-				MMRData newpeak = new MMRData(true, peak.getMMRData().getData(),peak.getMMRData().getValue());
+				MMRData newpeak = new MMRData(peak.getMMRData().getData(),peak.getMMRData().getValue());
 				newmmr.addEntry(newpeak);	
 			}
 			

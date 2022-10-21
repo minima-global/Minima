@@ -23,7 +23,7 @@ public class Wallet extends SqlDB {
 	/**
 	 * How many default keys to create 
 	 */
-	public static int NUMBER_GETADDRESS_KEYS = 64;
+	public static int NUMBER_GETADDRESS_KEYS = 1;
 	
 	/**
 	 * The MAIN Private seed from which all others are derived..

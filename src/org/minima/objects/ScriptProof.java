@@ -96,6 +96,10 @@ public class ScriptProof implements Streamable {
 		return mAddress;
 	}
 	
+	public MiniData getAddressData() {
+		return mAddress.getAddressData();
+	}
+	
 	public JSONObject toJSON() {
 		JSONObject json = new JSONObject();
 		json.put("script", mScript.toString());

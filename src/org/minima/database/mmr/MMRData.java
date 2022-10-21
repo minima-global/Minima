@@ -23,35 +23,30 @@ public class MMRData implements Streamable{
 	private MiniNumber mValue;
 	
 	public static MMRData CreateMMRDataLeafNode(Streamable zData, MiniNumber zSumValue) {
-		//Hash it..
-		MiniData hash = Crypto.getInstance().hashObject(zData);
+		//Hash it.. USE 0 at start..
+		MiniData hash = Crypto.getInstance().hashAllObjects(MiniNumber.ZERO, zData, zSumValue);
 				
 		//Create a new piece of data to add
-		return new MMRData(true, hash, zSumValue);
-//		return new MMRData(hash, zSumValue);
+		return new MMRData(hash, zSumValue);
 	}
 	
-	public static MMRData CreateParentMMRData( MMRData zLeft, MMRData zRight) {
+	public static MMRData CreateParentMMRData(MMRData zLeft, MMRData zRight) {
 		
 		//Combine the Values..
 		MiniNumber sumvalue   = zLeft.getValue().add(zRight.getValue());
 				
-		//Make the unique MMRData Hash
-		MiniData combinedhash = Crypto.getInstance().hashAllObjects(zLeft.getData(),
+		//Make the unique MMRData Hash - USE 1 at start
+		MiniData combinedhash = Crypto.getInstance().hashAllObjects(MiniNumber.ONE,
+																	zLeft.getData(),
 																	zRight.getData(),
 																	sumvalue);
 				
-		return new MMRData(true, combinedhash, sumvalue);
+		return new MMRData(combinedhash, sumvalue);
 	}
 	
 	private MMRData() {}
 	
-//	public MMRData(MiniData zHash) {
-//		this(zHash, MiniNumber.ZERO); 
-//	}
-	
-//	public MMRData(MiniData zHash, MiniNumber zValue) {
-	public MMRData(boolean zRaw, MiniData zHash, MiniNumber zValue) {
+	public MMRData(MiniData zHash, MiniNumber zValue) {
 		mData = zHash;
 		mValue = zValue; 
 	}
