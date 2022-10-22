@@ -131,6 +131,12 @@ public class MaximaManager extends MessageProcessor {
 	public boolean mMaximaLogs 	= false;
 
 	/**
+	 * Are you a static Maxima ID
+	 */
+	boolean mStaticMaxima  = false;
+	String mStaticMaximaID = "";
+	
+	/**
 	 * The Contacts Manager
 	 */
 	MaximaContactManager mMaxContacts;
@@ -221,6 +227,11 @@ public class MaximaManager extends MessageProcessor {
 	
 	public String getRandomMaximaAddress() {
 
+		//Are we a static address..
+		if(mStaticMaxima) {
+			return mMaximaMLSAddress+"@"+mStaticMaximaID;
+		}
+		
 		//Who are we connected to
 		ArrayList<MaximaHost> connctedhosts = getAllConnectedHosts();
 		
@@ -232,6 +243,10 @@ public class MaximaManager extends MessageProcessor {
 		return connctedhosts.get(new Random().nextInt(connctedhosts.size())).getMaximaAddress();
 	}
 
+	public void setStaticAddress(boolean zStatic, String zAddress) {
+		mStaticMaxima 	= zStatic;
+		mStaticMaximaID = zAddress;
+	}
 	
 	public MaximaMessage createMaximaMessage(String zTo, String zApplication, MiniData zData) {
 		MaximaMessage maxima 	= new MaximaMessage();
