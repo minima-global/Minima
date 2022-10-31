@@ -74,6 +74,22 @@ public abstract class SqlDB {
 		createSQL();
 	}
 	
+	public void hardCloseDB() {
+		try {
+		
+			//Are we already closed..
+			if(mSQLConnection.isClosed()) {
+				return;
+			}
+			
+			//Close the connection
+			mSQLConnection.close();
+		
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+	}
+	
 	public void saveDB() {
 		try {
 		

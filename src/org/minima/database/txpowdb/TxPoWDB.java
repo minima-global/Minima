@@ -39,6 +39,10 @@ public class TxPoWDB {
 		mSqlDB.loadDB(zFile);
 	}
 	
+	public void hardCloseSQLDB() {
+		mSqlDB.hardCloseDB();
+	}
+	
 	public void saveDB() {
 		//Shut down the SQL DB cleanly
 		mSqlDB.saveDB();
