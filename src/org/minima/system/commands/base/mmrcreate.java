@@ -20,8 +20,7 @@ public class mmrcreate extends Command {
 		public int mEntry;
 		public String mInput;
 		public String mData;
-//		public MiniData mHash;
-		
+		public MMRData mLeafData;
 		public mmrleafnode() {}
 	}
 	
@@ -48,10 +47,23 @@ public class mmrcreate extends Command {
 		for(Object data : mmrdata) {
 			
 			//The String sig
-			String strdata = (String)data;
+			String fulldata = (String)data;
+			
+			//The data and SUM value..
+			String strdata 	= null;
+			MiniData mdata 	= null;
+			MiniNumber mnum	= MiniNumber.ZERO;
+			
+			//Is there a sumvalue..
+			int index = fulldata.indexOf(":");
+			if(index!=-1) {
+				strdata = fulldata.substring(0, index);
+				mnum	= new MiniNumber(fulldata.substring(index+1));
+			}else {
+				strdata = fulldata;
+			}
 			
 			//Is it HEX
-			MiniData mdata = null;
 			if(strdata.startsWith("0x")) {
 				mdata = new MiniData(strdata);
 			}else {
@@ -59,17 +71,14 @@ public class mmrcreate extends Command {
 			}
 			
 			//Create MMRData
-			MMRData leaf = MMRData.CreateMMRDataLeafNode(mdata, MiniNumber.ZERO);
-			
-			//Hash it..
-//			MiniData hash = Crypto.getInstance().hashObject(mdata);
-			
+			MMRData leaf = MMRData.CreateMMRDataLeafNode(mdata, mnum);
+						
 			//Create leafnode
 			mmrleafnode leafnode = new mmrleafnode();
-			leafnode.mEntry = counter;
-			leafnode.mInput = strdata;
-			leafnode.mData  = mdata.to0xString();
-//			leafnode.mHash 	= hash;
+			leafnode.mEntry 	= counter;
+			leafnode.mInput 	= strdata;
+			leafnode.mData  	= mdata.to0xString();
+			leafnode.mLeafData 	= leaf;
 			
 			//Add them to our list
 			leafnodes.add(leafnode);
@@ -82,7 +91,7 @@ public class mmrcreate extends Command {
 		}
 		
 		//Get the root..
-		MiniData root = mmrtree.getRoot().getData();
+		MMRData root = mmrtree.getRoot();
 		
 		//Now create the output
 		JSONArray leafdata = new JSONArray();
@@ -92,7 +101,7 @@ public class mmrcreate extends Command {
 			jobj.put("entry", leaf.mEntry);
 			jobj.put("input", leaf.mInput);
 			jobj.put("data", leaf.mData);	
-//			jobj.put("hash", leaf.mHash);
+			jobj.put("leaf", leaf.mLeafData.toJSON());	
 			
 			//Get the proof..
 			MMRProof proof = mmrtree.getProof(new MMREntryNumber(leaf.mEntry));
@@ -110,7 +119,7 @@ public class mmrcreate extends Command {
 		JSONObject jsonmmr = new JSONObject();
 		jsonmmr.put("nodes", leafdata);
 		jsonmmr.put("total", leafnodes.size());
-		jsonmmr.put("root", root.to0xString());
+		jsonmmr.put("root", root.toJSON());
 		
 		//Add balance..
 		ret.put("response", jsonmmr);

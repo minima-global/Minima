@@ -6,6 +6,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.system.commands.Command;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class mmrproof extends Command {
@@ -32,8 +33,24 @@ public class mmrproof extends Command {
 		}
 		
 		//Get the details
-		String strdata 	= getParam("data");
-		String rootstr 	= getParam("root");
+		String checkdata 	= getParam("data");
+		MiniNumber mnum = MiniNumber.ZERO;
+		String strdata 	= checkdata;
+		int index = checkdata.indexOf(":");
+		if(index!=-1) {
+			strdata = checkdata.substring(0, index).trim();
+			mnum	= new MiniNumber(checkdata.substring(index+1).trim());
+		}
+		
+		String fullrootstr 	= getParam("root");
+		MiniNumber rootnum = MiniNumber.ZERO;
+		String rootstr 	= fullrootstr;
+		index = fullrootstr.indexOf(":");
+		if(index!=-1) {
+			rootstr = fullrootstr.substring(0, index).trim();
+			rootnum	= new MiniNumber(fullrootstr.substring(index+1).trim());
+		}
+		
 		String proofstr = getParam("proof");
 		
 		//Is it HEX
@@ -45,23 +62,21 @@ public class mmrproof extends Command {
 		}
 		
 		//Create the MMRdata
-		MMRData mmrdata = MMRData.CreateMMRDataLeafNode(mdata, MiniNumber.ZERO);
-		
-//		MiniData hash 	= Crypto.getInstance().hashObject(mdata);
-		MiniData root 	= new MiniData(rootstr);
+		MMRData mmrdata = MMRData.CreateMMRDataLeafNode(mdata, mnum);
+		MMRData root 	= new MMRData( new MiniData(rootstr), rootnum);
 		MiniData proof 	= new MiniData(proofstr);
 		
 		//Create an MMR Proof..
 		MMRProof prf = MMRProof.convertMiniDataVersion(proof);
 		
 		//And calculate the final root value..
-		MiniData prfcalc = prf.calculateProof(mmrdata).getData();
+		MMRData prfcalc = prf.calculateProof(mmrdata);
 		
 		JSONObject resp = new JSONObject();
 		resp.put("input", strdata);
 		resp.put("data", mdata.to0xString());
-//		resp.put("hash", hash);
-		resp.put("finaldata", prfcalc.to0xString());
+		resp.put("leaf", mmrdata.toJSON());
+		resp.put("finaldata", prfcalc.toJSON());
 		resp.put("valid", prfcalc.isEqual(root));
 		
 		//Add balance..
