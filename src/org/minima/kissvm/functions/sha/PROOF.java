@@ -41,19 +41,15 @@ public class PROOF extends MinimaFunction {
 		}
 		
 		//Create the MMRData
-		MMRData mmrdata = MMRData.CreateMMRDataLeafNode(data, MiniNumber.ZERO);
-		
-//		//Hash the data
-//		MiniData hash 	= Crypto.getInstance().hashObject(data);
-//		
-//		//Create an MMRData object - 0 value..
-//		MMRData mmrdata = new MMRData(hash, MiniNumber.ZERO);
+		MMRData mmrdata = MMRData.CreateMMRDataLeafNode(data, 
+														zContract.getNumberParam(1, this).getNumber());
 		
 		//Get the proof chain 
-		HexValue chain = zContract.getHexParam(1, this);
+		HexValue chain = zContract.getHexParam(2, this);
 		
 		//The root of the tree
-		MMRData mmrroot = new MMRData(zContract.getHexParam(2, this).getMiniData(), MiniNumber.ZERO);
+		MMRData mmrroot = new MMRData(zContract.getHexParam(3, this).getMiniData(), 
+									  zContract.getNumberParam(4, this).getNumber());
 		
 		//Create into the MMRProof..
 		MMRProof proof = null;
@@ -76,7 +72,7 @@ public class PROOF extends MinimaFunction {
 	
 	@Override
 	public int requiredParams() {
-		return 3;
+		return 5;
 	}
 	
 	@Override
