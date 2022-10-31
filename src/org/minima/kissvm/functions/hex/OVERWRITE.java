@@ -8,7 +8,7 @@ import org.minima.kissvm.values.Value;
 import org.minima.objects.base.MiniData;
 
 /**
- * Works on Scripts and HEX
+ * Works on HEX
  * @author spartacusrex
  *
  */
