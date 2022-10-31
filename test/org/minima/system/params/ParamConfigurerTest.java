@@ -39,7 +39,7 @@ public class ParamConfigurerTest {
                 "-rpcenable",
                 "-daemon",
                 "-host", "124.0.1.10",
-                "-data", "mydaatafolder",
+                //"-data", "mydaatafolder",
                 "-p2pnode", "124.0.1.9",
                 "-genesis",
                 "-nop2p",
