@@ -13,7 +13,6 @@ import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.utils.Crypto;
 
 public class PROOF extends MinimaFunction {
 

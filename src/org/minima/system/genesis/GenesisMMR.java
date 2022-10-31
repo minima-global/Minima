@@ -3,9 +3,7 @@ package org.minima.system.genesis;
 import org.minima.database.mmr.MMR;
 import org.minima.database.mmr.MMRData;
 import org.minima.objects.Coin;
-import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.utils.Crypto;
 
 public class GenesisMMR extends MMR {
 
