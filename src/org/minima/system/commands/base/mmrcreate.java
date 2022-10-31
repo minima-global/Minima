@@ -7,6 +7,7 @@ import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntryNumber;
 import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.system.commands.Command;
 import org.minima.utils.Crypto;
@@ -20,7 +21,7 @@ public class mmrcreate extends Command {
 		public int mEntry;
 		public String mInput;
 		public String mData;
-		public MiniData mHash;
+//		public MiniData mHash;
 		
 		public mmrleafnode() {}
 	}
@@ -58,15 +59,18 @@ public class mmrcreate extends Command {
 				mdata = new MiniData( new MiniString(strdata).getData() );
 			}
 			
+			//Create MMRData
+			MMRData leaf = MMRData.CreateMMRDataLeafNode(mdata, MiniNumber.ZERO);
+			
 			//Hash it..
-			MiniData hash = Crypto.getInstance().hashObject(mdata);
+//			MiniData hash = Crypto.getInstance().hashObject(mdata);
 			
 			//Create leafnode
 			mmrleafnode leafnode = new mmrleafnode();
 			leafnode.mEntry = counter;
 			leafnode.mInput = strdata;
 			leafnode.mData  = mdata.to0xString();
-			leafnode.mHash 	= hash;
+//			leafnode.mHash 	= hash;
 			
 			//Add them to our list
 			leafnodes.add(leafnode);
@@ -75,7 +79,7 @@ public class mmrcreate extends Command {
 			counter++;
 			
 			//Add to thew MMR
-			mmrtree.addEntry(new MMRData(hash));
+			mmrtree.addEntry(leaf);
 		}
 		
 		//Get the root..
@@ -86,8 +90,8 @@ public class mmrcreate extends Command {
 		for(mmrleafnode leaf : leafnodes) {
 			
 			JSONObject jobj = new JSONObject();
-//			jobj.put("entry", leaf.mEntry);
-//			jobj.put("input", leaf.mInput);
+			jobj.put("entry", leaf.mEntry);
+			jobj.put("input", leaf.mInput);
 			jobj.put("data", leaf.mData);	
 //			jobj.put("hash", leaf.mHash);
 			

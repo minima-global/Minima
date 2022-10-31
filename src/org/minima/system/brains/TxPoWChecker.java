@@ -549,8 +549,18 @@ public class TxPoWChecker {
 			//Get the Coin Proof
 			CoinProof cproof = mmrproofs.get(i);
 			
-			//Check the MMR
-			boolean validmmr = zTipMMR.checkProofTimeValid(cproof.getCoin().getMMREntryNumber(), cproof.getMMRData(), cproof.getMMRProof());
+			//Get the Coin..
+			Coin txcoin = cproof.getCoin();
+			
+			//Create the MMRData Leaf Node..
+			MMRData mmrcoin = MMRData.CreateMMRDataLeafNode(txcoin, txcoin.getAmount());
+			
+			//Is it valid..
+//			boolean validmmr = zTipMMR.checkProofTimeValid(cproof.getCoin().getMMREntryNumber(), cproof.getMMRData(), cproof.getMMRProof());
+			boolean validmmr = zTipMMR.checkProofTimeValid(	cproof.getCoin().getMMREntryNumber(), 
+															mmrcoin, 
+															cproof.getMMRProof());
+			
 			if(!validmmr) {
 				MinimaLogger.log("Invalid MMR Proof!");
 				return false;

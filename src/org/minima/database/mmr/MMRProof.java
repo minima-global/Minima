@@ -97,25 +97,22 @@ public class MMRProof implements Streamable {
 	}
 	
 	public MMRData calculateProof(MMRData zData) {
+		
 		//Get the Final Hash of the Data
-		MiniData cdata  	= zData.getData();
-		MiniNumber cvalue 	= zData.getValue();
+		MMRData cmmrdata 	= zData;
 		
 		//Cycle through the whole proof..
 		for(MMRProofChunk proofchunk : mProofChain) {
 			
-			//Add to the value..
-			cvalue = cvalue.add(proofchunk.getMMRData().getValue());
-			
-			//Hash the children..
+			//Get the Parent
 			if(proofchunk.isLeft()) {
-				cdata = Crypto.getInstance().hashAllObjects(proofchunk.getMMRData().getData(), cdata, cvalue);
+				cmmrdata = MMRData.CreateMMRDataParentNode(proofchunk.getMMRData(), cmmrdata);
 			}else {
-				cdata = Crypto.getInstance().hashAllObjects(cdata, proofchunk.getMMRData().getData(), cvalue);
+				cmmrdata = MMRData.CreateMMRDataParentNode(cmmrdata, proofchunk.getMMRData());
 			}
 		}
 		
-		return new MMRData(cdata, cvalue);
+		return cmmrdata;
 	}
 	
 	public JSONObject toJSON() {

@@ -12,6 +12,7 @@ import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
 
 public class PROOF extends MinimaFunction {
@@ -40,17 +41,20 @@ public class PROOF extends MinimaFunction {
 			data 			= new MiniData(scr.getBytes());
 		}
 		
-		//Hash the data
-		MiniData hash 	= Crypto.getInstance().hashObject(data);
+		//Create the MMRData
+		MMRData mmrdata = MMRData.CreateMMRDataLeafNode(data, MiniNumber.ZERO);
 		
-		//Create an MMRData object - 0 value..
-		MMRData mmrdata = new MMRData(hash);
+//		//Hash the data
+//		MiniData hash 	= Crypto.getInstance().hashObject(data);
+//		
+//		//Create an MMRData object - 0 value..
+//		MMRData mmrdata = new MMRData(hash, MiniNumber.ZERO);
 		
 		//Get the proof chain 
 		HexValue chain = zContract.getHexParam(1, this);
 		
 		//The root of the tree
-		MMRData mmrroot = new MMRData(zContract.getHexParam(2, this).getMiniData());
+		MMRData mmrroot = new MMRData(zContract.getHexParam(2, this).getMiniData(), MiniNumber.ZERO);
 		
 		//Create into the MMRProof..
 		MMRProof proof = null;

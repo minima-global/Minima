@@ -18,11 +18,14 @@ public class GenesisMMR extends MMR {
 		//Add 1 entry.. the genesis coin..
 		Coin gencoin = new GenesisCoin();
 		
-		//Get the Hash of this 
-		MiniData hashunspent = Crypto.getInstance().hashObject(new GenesisCoin());
+		//Create the MMRdata
+		MMRData mmrdata = MMRData.CreateMMRDataLeafNode(gencoin, gencoin.getAmount());
 		
-		//And create a new MMRData with the correct amount
-		MMRData mmrdata = new MMRData(hashunspent, gencoin.getAmount());
+//		//Get the Hash of this 
+//		MiniData hashunspent = Crypto.getInstance().hashObject(new GenesisCoin());
+//		
+//		//And create a new MMRData with the correct amount
+//		MMRData mmrdata = new MMRData(hashunspent, gencoin.getAmount());
 		
 		//And add to the MMR
 		addEntry(mmrdata);

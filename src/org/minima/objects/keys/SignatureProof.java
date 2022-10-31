@@ -7,6 +7,7 @@ import java.io.IOException;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
@@ -39,7 +40,11 @@ public class SignatureProof implements Streamable {
 	}
 	
 	public MiniData getRootPublicKey(){
-		return mProof.calculateProof(new MMRData(mPublicKey)).getData();
+		//Create the MMR data aentry
+		MMRData pubentry = MMRData.CreateMMRDataLeafNode(mPublicKey, MiniNumber.ZERO);
+		
+//		return mProof.calculateProof(new MMRData(mPublicKey, MiniNumber.ZERO)).getData();
+		return mProof.calculateProof(pubentry).getData();
 	}
 	
 	public JSONObject toJSON() {
