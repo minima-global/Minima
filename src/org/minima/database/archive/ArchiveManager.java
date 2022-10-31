@@ -114,7 +114,7 @@ public class ArchiveManager extends SqlDB {
 		
 		//Create main table
 		String create = "CREATE TABLE IF NOT EXISTS `syncblock` ("
-						+ "  `id` IDENTITY PRIMARY KEY,"
+						+ "  `id` INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,"
 						+ "  `txpowid` varchar(80) NOT NULL UNIQUE,"
 						+ "  `block` bigint NOT NULL UNIQUE,"
 						+ "  `timemilli` bigint NOT NULL,"

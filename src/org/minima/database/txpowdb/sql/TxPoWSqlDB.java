@@ -47,7 +47,7 @@ public class TxPoWSqlDB extends SqlDB {
 			
 			//Create main table
 			String create = "CREATE TABLE IF NOT EXISTS `txpow` ("
-							+ "  `id` IDENTITY PRIMARY KEY,"
+							+ "  `id` INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,"
 							+ "  `txpowid` varchar(80) NOT NULL UNIQUE,"
 							+ "  `isblock` tinyint NOT NULL,"
 							+ "  `istransaction` tinyint NOT NULL,"
