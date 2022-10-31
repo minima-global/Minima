@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.zip.GZIPOutputStream;
 
@@ -12,6 +13,8 @@ import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.txpowdb.sql.TxPoWList;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;
@@ -122,6 +125,11 @@ public class backup extends Command {
 			MinimaDB.getDB().getP2PDB().saveDB(p2pdb);
 			MiniData p2pdata = new MiniData(MiniFile.readCompleteFile(p2pdb));
 			
+			//Store the relevant TxPoWs..
+			ArrayList<TxPoW> txps 	= MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant();
+			TxPoWList txplist 	 	= new TxPoWList(txps);
+			MiniData txplistdata 	= MiniData.getMiniDataVersion(txplist);
+			
 			//For Complete..
 			File txpowdb 	= new File(backupfolder,"txpowdb.sql");
 			File archivedb 	= new File(backupfolder,"archive.sql");
@@ -171,6 +179,7 @@ public class backup extends Command {
 			chaindata.writeDataStream(ciphdos);
 			userdata.writeDataStream(ciphdos);
 			p2pdata.writeDataStream(ciphdos);
+			txplistdata.writeDataStream(ciphdos);
 			
 			if(complete) {
 				txpowdata.writeDataStream(ciphdos);
@@ -189,7 +198,8 @@ public class backup extends Command {
 							cascade.length()+
 							chain.length()+
 							userdb.length()+
-							p2pdb.length();
+							p2pdb.length()+
+							txplistdata.getLength();
 			
 			if(complete) {
 				total += 	txpowdb.length()+
@@ -209,6 +219,7 @@ public class backup extends Command {
 			files.put("chain", MiniFormat.formatSize(chain.length()));
 			files.put("user", MiniFormat.formatSize(userdb.length()));
 			files.put("p2p", MiniFormat.formatSize(p2pdb.length()));
+			files.put("txpow", MiniFormat.formatSize(txplistdata.getLength()));
 			
 			//And send data
 			JSONObject resp = new JSONObject();

@@ -41,6 +41,7 @@ import org.minima.system.commands.scripts.newscript;
 import org.minima.system.commands.scripts.runscript;
 import org.minima.system.commands.scripts.scripts;
 import org.minima.system.commands.search.coins;
+import org.minima.system.commands.search.history;
 import org.minima.system.commands.search.keys;
 import org.minima.system.commands.search.tokens;
 import org.minima.system.commands.search.txpow;
@@ -85,6 +86,7 @@ public class help extends Command {
 		addCommand(details, new hashtest());
 //		addCommand(details, new debugflag());
 		
+		addCommand(details, new history());
 		addCommand(details, new txpow());
 		addCommand(details, new coins());
 		addCommand(details, new tokens());

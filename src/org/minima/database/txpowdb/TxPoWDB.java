@@ -5,11 +5,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.minima.database.MinimaDB;
 import org.minima.database.txpowdb.ram.RamDB;
 import org.minima.database.txpowdb.ram.RamData;
 import org.minima.database.txpowdb.sql.TxPoWSqlDB;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
+import org.minima.system.brains.TxPoWSearcher;
 
 /**
  * The Main TxPoW store for the whole app
@@ -59,8 +61,12 @@ public class TxPoWDB {
 		if(!mRamDB.exists(txpid)) {
 			//Is it in the SQL
 			if(!mSqlDB.exists(txpid)) {
+				
+				//Is this TxPoW relevant
+				boolean relevant = TxPoWSearcher.checkTxPoWRelevant(zTxPoW, MinimaDB.getDB().getWallet());
+				
 				//Add it to the SQL..
-				mSqlDB.addTxPoW(zTxPoW);
+				mSqlDB.addTxPoW(zTxPoW, relevant);
 			}
 			
 			//Add it to the RAM
@@ -74,8 +80,12 @@ public class TxPoWDB {
 		
 		//Is it in the SQL
 		if(!mSqlDB.exists(txpid)) {
+			
+			//Is this TxPoW relevant
+			boolean relevant = TxPoWSearcher.checkTxPoWRelevant(zTxPoW, MinimaDB.getDB().getWallet());
+			
 			//Add it to the SQL..
-			mSqlDB.addTxPoW(zTxPoW);
+			mSqlDB.addTxPoW(zTxPoW,relevant);
 		}
 	}
 	

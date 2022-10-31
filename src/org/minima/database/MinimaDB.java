@@ -187,14 +187,16 @@ public class MinimaDB {
 			//Get the base Database folder
 			File basedb = getBaseDBFolder();
 			
+			//Load the wallet
+			File walletsqlfolder = new File(basedb,"walletsql");
+			mWallet.loadDB(new File(walletsqlfolder,"wallet"));
+			
 			//Set the Archive folder
 			File archsqlfolder = new File(basedb,"archivesql");
 			try {
 				
 				//Try and load the Archive DB
 				mArchive.loadDB(new File(archsqlfolder,"archive"));
-				
-//				throw new Exception("TEST CRASH ARCHIVEDB!");
 				
 			}catch(Exception exc) {
 				
@@ -231,8 +233,6 @@ public class MinimaDB {
 				//Try and load the Archive DB
 				mTxPoWDB.loadSQLDB(new File(txpowsqlfolder,"txpow"));
 				
-//				throw new Exception("TEST CRASH TXPOWDB!");
-				
 			}catch(Exception exc) {
 				
 				//Log the complete error
@@ -251,10 +251,6 @@ public class MinimaDB {
 				mTxPoWDB	= new TxPoWDB();
 				mTxPoWDB.loadSQLDB(new File(txpowsqlfolder,"txpow"));
 			}
-			
-			//Load the wallet
-			File walletsqlfolder = new File(basedb,"walletsql");
-			mWallet.loadDB(new File(walletsqlfolder,"wallet"));
 			
 			//Load the MaximaDB
 			File maxsqlfolder = new File(basedb,"maximasql");
@@ -306,6 +302,13 @@ public class MinimaDB {
 			//Get the base Database folder
 			File basedb = getBaseDBFolder();
 			
+			//Wallet
+			if(zResetWallet) {
+				mWallet					= new Wallet();
+				File walletsqlfolder 	= new File(basedb,"walletsql");
+				mWallet.loadDB(new File(walletsqlfolder,"wallet"));
+			}
+			
 			//Set the Archive folder
 			mArchive			= new ArchiveManager();
 			File archsqlfolder 	= new File(basedb,"archivesql");
@@ -324,13 +327,6 @@ public class MinimaDB {
 			mTxPoWDB			= new TxPoWDB();
 			File txpowsqlfolder = new File(basedb,"txpowsql");
 			mTxPoWDB.loadSQLDB(new File(txpowsqlfolder,"txpow"));
-			
-			//Wallet
-			if(zResetWallet) {
-				mWallet					= new Wallet();
-				File walletsqlfolder 	= new File(basedb,"walletsql");
-				mWallet.loadDB(new File(walletsqlfolder,"wallet"));
-			}
 			
 		}catch(Exception exc) {
 			MinimaLogger.log("SERIOUS ERROR loadArchiveAndTxPoWDB");
@@ -375,7 +371,7 @@ public class MinimaDB {
 		writeLock(false);
 	}
 	
-	public void saveWalletSQL() {
+	/*public void saveWalletSQL() {
 		
 		//We need lock 
 		writeLock(true);
@@ -389,7 +385,7 @@ public class MinimaDB {
 		
 		//Release the krakken
 		writeLock(false);
-	}
+	}*/
 	
 	public void saveState() {
 		

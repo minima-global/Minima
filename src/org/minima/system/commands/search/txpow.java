@@ -34,6 +34,17 @@ public class txpow extends Command {
 		
 			ret.put("response", txpow.toJSON());
 			
+		}else if(existsParam("relevant")) {
+			
+			ArrayList<TxPoW> txps = MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant();
+			
+			JSONArray txns = new JSONArray();
+			for(TxPoW txp : txps) {
+				txns.add(txp.toJSON());
+			}
+			
+			ret.put("response", txns);
+			
 		}else if(existsParam("block")) {
 			
 			MiniNumber block = getNumberParam("block");

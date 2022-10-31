@@ -67,6 +67,7 @@ import org.minima.system.commands.scripts.newscript;
 import org.minima.system.commands.scripts.runscript;
 import org.minima.system.commands.scripts.scripts;
 import org.minima.system.commands.search.coins;
+import org.minima.system.commands.search.history;
 import org.minima.system.commands.search.keys;
 import org.minima.system.commands.search.tokens;
 import org.minima.system.commands.search.txpow;
@@ -106,7 +107,7 @@ public abstract class Command {
 			
 			new mds(), new sendpoll(), new healthcheck(), new mempool(),
 			
-			new archive(), new logs(),
+			new archive(), new logs(), new history(),
 			
 			new ping(), new random(),
 			new sql(),new file(),
