@@ -77,13 +77,13 @@ public class MMRData implements Streamable{
 
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		mData.writeDataStream(zOut);
+		mData.writeHashToStream(zOut);
 		mValue.writeDataStream(zOut);
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mData 	= MiniData.ReadFromStream(zIn);
+		mData 	= MiniData.ReadHashFromStream(zIn);
 		mValue	= MiniNumber.ReadFromStream(zIn);
 	}
 	
