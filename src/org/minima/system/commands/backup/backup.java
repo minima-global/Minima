@@ -212,7 +212,7 @@ public class backup extends Command {
 			
 			if(complete) {
 				files.put("txpowdb", MiniFormat.formatSize(txpowdb.length()));
-				files.put("archive", MiniFormat.formatSize(archivedb.length()));
+				files.put("archivedb", MiniFormat.formatSize(archivedb.length()));
 			}
 			
 			files.put("cascade", MiniFormat.formatSize(cascade.length()));
