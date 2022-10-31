@@ -38,6 +38,7 @@ import org.minima.kissvm.functions.number.POW;
 import org.minima.kissvm.functions.number.SIGDIG;
 import org.minima.kissvm.functions.sha.KECCAK;
 import org.minima.kissvm.functions.sha.PROOF;
+import org.minima.kissvm.functions.sha.PROOFSUM;
 import org.minima.kissvm.functions.sha.SHA2;
 import org.minima.kissvm.functions.sha.SHA3;
 import org.minima.kissvm.functions.sigs.CHECKSIG;
@@ -80,7 +81,7 @@ public abstract class MinimaFunction {
 				new SIGDIG(), new POW(), new FUNCTION(),
 				new SUMINPUTS(),new SUMOUTPUTS(), new CLEAN(), 
 				new REPLACE(), new SUBSTR(), new OVERWRITE(), 
-				new KECCAK(), new SHA2(), new SHA3(), new PROOF(), 
+				new KECCAK(), new SHA2(), new SHA3(), new PROOF(), new PROOFSUM(),
 				new BITSET(), new BITGET(), new BITCOUNT(),
 				new SIGNEDBY(), new MULTISIG(), new CHECKSIG(),
 				new GETINADDR(), new GETINAMT(), new GETINID(), new GETINTOK(),new VERIFYIN(),
