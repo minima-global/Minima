@@ -22,6 +22,10 @@ public class StringValue extends Value {
 		return mScript.getData();
 	}
 	
+	public MiniString getMiniString() {
+		return mScript;
+	}
+	
 	@Override
 	public int getValueType() {
 		return VALUE_SCRIPT;

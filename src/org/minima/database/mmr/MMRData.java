@@ -65,7 +65,7 @@ public class MMRData implements Streamable{
 	
 	public JSONObject toJSON() {
 		JSONObject obj = new JSONObject();
-		obj.put("hash", mData.to0xString());
+		obj.put("data", mData.to0xString());
 		obj.put("value", mValue.toString());
 		return obj;
 	}

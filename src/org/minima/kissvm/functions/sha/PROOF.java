@@ -9,6 +9,7 @@ import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.HexValue;
+import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.base.MiniData;
@@ -28,28 +29,28 @@ public class PROOF extends MinimaFunction {
 		Value vv = getParameter(0).getValue(zContract);
 		checkIsOfType(vv, Value.VALUE_HEX | Value.VALUE_SCRIPT);
 		
-		MiniData data = null;
+		//Get the Sum value..
+		NumberValue sumval = zContract.getNumberParam(1, this);
+		
+		MMRData mmrdata = null;
 		if(vv.getValueType() == Value.VALUE_HEX) {
 			//HEX
-			HexValue hex = (HexValue)vv;
-			data 		 = hex.getMiniData();
-			
+			HexValue hex 	= (HexValue)vv;
+			mmrdata 		= MMRData.CreateMMRDataLeafNode(hex.getMiniData(),sumval.getNumber());
+
 		}else {
+			
 			//Script..
 			StringValue scr = (StringValue)vv;
-			data 			= new MiniData(scr.getBytes());
+			mmrdata 		= MMRData.CreateMMRDataLeafNode(scr.getMiniString(),sumval.getNumber());
 		}
 		
-		//Create the MMRData
-		MMRData mmrdata = MMRData.CreateMMRDataLeafNode(data, 
-														zContract.getNumberParam(1, this).getNumber());
-		
-		//Get the proof chain 
-		HexValue chain = zContract.getHexParam(2, this);
-		
 		//The root of the tree
-		MMRData mmrroot = new MMRData(zContract.getHexParam(3, this).getMiniData(), 
-									  zContract.getNumberParam(4, this).getNumber());
+		MMRData mmrroot = new MMRData(zContract.getHexParam(2, this).getMiniData(), 
+									  zContract.getNumberParam(3, this).getNumber());
+				
+		//Get the proof chain 
+		HexValue chain = zContract.getHexParam(4, this);
 		
 		//Create into the MMRProof..
 		MMRProof proof = null;

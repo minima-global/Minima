@@ -65,10 +65,7 @@ public class Address implements Streamable{
 				
 		//The address is the final hash
 		mAddressData = root.getData();
-		
-		//Set the Address..
-//		mAddressData = Crypto.getInstance().hashObject(mScript);
-		
+				
 		//The Minima address as short as can be..
 		mMinimaAddress = makeMinimaAddress(mAddressData);
 	}

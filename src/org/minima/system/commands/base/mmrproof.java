@@ -53,15 +53,14 @@ public class mmrproof extends Command {
 		String proofstr = getParam("proof");
 		
 		//Is it HEX
-		MiniData mdata = null;
+		MMRData mmrdata = null;
 		if(strdata.startsWith("0x")) {
-			mdata = new MiniData(strdata);
+			mmrdata = MMRData.CreateMMRDataLeafNode(new MiniData(strdata), mnum);
 		}else {
-			mdata = new MiniData( new MiniString(strdata).getData() );
+			mmrdata = MMRData.CreateMMRDataLeafNode(new MiniString(strdata), mnum);
 		}
 		
 		//Create the MMRdata
-		MMRData mmrdata = MMRData.CreateMMRDataLeafNode(mdata, mnum);
 		MMRData root 	= new MMRData( new MiniData(rootstr), rootnum);
 		MiniData proof 	= new MiniData(proofstr);
 		
@@ -73,7 +72,6 @@ public class mmrproof extends Command {
 		
 		JSONObject resp = new JSONObject();
 		resp.put("input", strdata);
-		resp.put("data", mdata.to0xString());
 		resp.put("leaf", mmrdata.toJSON());
 		resp.put("finaldata", prfcalc.toJSON());
 		resp.put("valid", prfcalc.isEqual(root));

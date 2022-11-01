@@ -51,7 +51,6 @@ public class mmrcreate extends Command {
 			
 			//The data and SUM value..
 			String strdata 	= null;
-			MiniData mdata 	= null;
 			MiniNumber mnum	= MiniNumber.ZERO;
 			
 			//Is there a sumvalue..
@@ -63,21 +62,19 @@ public class mmrcreate extends Command {
 				strdata = fulldata;
 			}
 			
+			MMRData leaf = null;
+			
 			//Is it HEX
 			if(strdata.startsWith("0x")) {
-				mdata = new MiniData(strdata);
+				leaf = MMRData.CreateMMRDataLeafNode(new MiniData(strdata), mnum);
 			}else {
-				mdata = new MiniData( new MiniString(strdata).getData() );
+				leaf = MMRData.CreateMMRDataLeafNode(new MiniString(strdata), mnum);
 			}
-			
-			//Create MMRData
-			MMRData leaf = MMRData.CreateMMRDataLeafNode(mdata, mnum);
 						
 			//Create leafnode
 			mmrleafnode leafnode = new mmrleafnode();
 			leafnode.mEntry 	= counter;
 			leafnode.mInput 	= strdata;
-			leafnode.mData  	= mdata.to0xString();
 			leafnode.mLeafData 	= leaf;
 			
 			//Add them to our list
@@ -100,7 +97,6 @@ public class mmrcreate extends Command {
 			JSONObject jobj = new JSONObject();
 			jobj.put("entry", leaf.mEntry);
 			jobj.put("input", leaf.mInput);
-			jobj.put("data", leaf.mData);	
 			jobj.put("leaf", leaf.mLeafData.toJSON());	
 			
 			//Get the proof..
