@@ -49,7 +49,7 @@ public class TxPoWSqlDB extends SqlDB {
 			
 			//Create main table
 			String create = "CREATE TABLE IF NOT EXISTS `txpow` ("
-							+ "  `id` INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,"
+							+ "  `id` bigint auto_increment,"
 							+ "  `txpowid` varchar(80) NOT NULL UNIQUE,"
 							+ "  `isblock` tinyint NOT NULL,"
 							+ "  `istransaction` tinyint NOT NULL,"
@@ -94,7 +94,7 @@ public class TxPoWSqlDB extends SqlDB {
 		
 		//Create main table
 		String create = "CREATE TABLE IF NOT EXISTS `txpow` ("
-						+ "  `id` INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,"
+						+ "  `id` bigint auto_increment,"
 						+ "  `txpowid` varchar(80) NOT NULL UNIQUE,"
 						+ "  `isblock` tinyint NOT NULL,"
 						+ "  `istransaction` tinyint NOT NULL,"

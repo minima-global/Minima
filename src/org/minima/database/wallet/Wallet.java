@@ -89,7 +89,7 @@ public class Wallet extends SqlDB {
 		
 		//Create keys table
 		String createkeys = "CREATE TABLE IF NOT EXISTS `keys` ("
-						+ "  `id` INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,"
+						+ "  `id` bigint auto_increment,"
 						+ "  `size` int NOT NULL,"
 						+ "  `depth` int NOT NULL,"
 						+ "  `uses` bigint NOT NULL,"
@@ -104,7 +104,7 @@ public class Wallet extends SqlDB {
 		
 		//Create scripts table
 		String scriptsdb = "CREATE TABLE IF NOT EXISTS `scripts` ("
-						 + "  `id` INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,"
+						 + "  `id` bigint auto_increment,"
 						 + "  `script` varchar(8192) NOT NULL,"
 						 + "  `address` varchar(80) NOT NULL,"
 						 + "  `simple` int NOT NULL,"
