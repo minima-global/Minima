@@ -25,8 +25,13 @@ public class POW extends MinimaFunction {
 			throw new ExecutionException("POW must be to a whole Number");
 		}
 		
+		//Check within limits..
+		if(actnum.abs().isMoreEqual(MiniNumber.MILLION)) {
+			throw new ExecutionException("ABS POW exponent must be less than 1 million");
+		}
+		
 		//Only works for WHOLE numbers..
-		return new NumberValue(number.getNumber().pow(exp.getNumber().getAsInt()));
+		return new NumberValue(number.getNumber().pow(actnum.getAsInt()));
 	}
 	
 	@Override
