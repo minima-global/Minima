@@ -5,7 +5,6 @@ import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.Value;
-import org.minima.objects.base.MiniNumber;
 
 public class SQRT extends MinimaFunction {
 

@@ -12,8 +12,6 @@ import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
-import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniNumber;
 
 public class PROOF extends MinimaFunction {
 
