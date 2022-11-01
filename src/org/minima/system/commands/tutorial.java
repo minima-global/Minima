@@ -1,6 +1,5 @@
-package org.minima.system.commands.base;
+package org.minima.system.commands;
 
-import org.minima.system.commands.Command;
 import org.minima.utils.json.JSONObject;
 
 public class tutorial extends Command {
@@ -53,7 +52,7 @@ public class tutorial extends Command {
 				  + "FUNC        ::= CONCAT | LEN | REV | SUBSET | GET | EXISTS | OVERWRITE |\n"
 				  + "                CLEAN | REPLACE | SUBSTR | ADDRESS |\n"
 				  + "                BOOL | HEX | NUMBER | STRING | UTF8 | ASCII |\n"
-				  + "                ABS | CEIL | FLOOR | MIN | MAX | INC | DEC | SIGDIG | POW |\n"
+				  + "                ABS | CEIL | FLOOR | MIN | MAX | INC | DEC | SIGDIG | POW | SQRT |\n"
 				  + "                BITSET | BITGET | BITCOUNT | PROOF | KECCAK | SHA2 | SHA3 |\n"
 				  + "                SIGNEDBY | MULTISIG | CHECKSIG |\n"
 				  + "                FUNCTION | SUMINPUT | SUMOUTPUT |\n"
@@ -150,7 +149,10 @@ public class tutorial extends Command {
 				  + "Decrement a number\n"
 				  + "\n"
 				  + "POW ( NUMBER NUMBER )\n"
-				  + "Returns the power of N of a number. N must be a whole number\n"
+				  + "Returns the power of N of a number. N must be a whole number asb(n) < 1 million\n"
+				  + "\n"
+				  + "SQRT ( NUMBER )\n"
+				  + "Returns the square root\n"
 				  + "\n"
 				  + "SIGDIG ( NUMBER NUMBER )\n"
 				  + "Set the significant digits of the number\n"
