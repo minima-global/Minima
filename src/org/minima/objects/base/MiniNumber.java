@@ -202,6 +202,10 @@ public class MiniNumber implements Streamable, Comparable<MiniNumber> {
 		return new MiniNumber( mNumber.pow(zNumber,MATH_CONTEXT) );
 	}
 	
+	public MiniNumber sqrt() {
+		return new MiniNumber( mNumber.sqrt(MATH_CONTEXT) );
+	}
+	
 	public MiniNumber modulo(MiniNumber zNumber) {
 		return new MiniNumber( mNumber.remainder(zNumber.getAsBigDecimal(),MATH_CONTEXT) );
 	}

@@ -36,6 +36,7 @@ import org.minima.kissvm.functions.number.MAX;
 import org.minima.kissvm.functions.number.MIN;
 import org.minima.kissvm.functions.number.POW;
 import org.minima.kissvm.functions.number.SIGDIG;
+import org.minima.kissvm.functions.number.SQRT;
 import org.minima.kissvm.functions.sha.KECCAK;
 import org.minima.kissvm.functions.sha.PROOF;
 import org.minima.kissvm.functions.sha.SHA2;
@@ -77,7 +78,7 @@ public abstract class MinimaFunction {
 				new CONCAT(), new LEN(), new REV(),new SUBSET(), new GET(), new EXISTS(), new ADDRESS(),
 				new BOOL(), new HEX(), new NUMBER(), new STRING(),new ASCII(),new UTF8(),
 				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(), 
-				new SIGDIG(), new POW(), new FUNCTION(),
+				new SIGDIG(), new POW(), new SQRT(), new FUNCTION(),
 				new SUMINPUTS(),new SUMOUTPUTS(), new CLEAN(), 
 				new REPLACE(), new SUBSTR(), new OVERWRITE(), 
 				new KECCAK(), new SHA2(), new SHA3(), new PROOF(),
