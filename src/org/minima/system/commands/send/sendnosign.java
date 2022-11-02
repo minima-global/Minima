@@ -2,8 +2,6 @@ package org.minima.system.commands.send;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
@@ -25,7 +23,6 @@ import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.keys.Signature;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.brains.TxPoWMiner;
@@ -61,7 +58,7 @@ public class sendnosign extends Command {
 	}
 	
 	public sendnosign() {
-		super("sendnosign","(address:Mx..|0x..) (amount:) (multi:[address:amount,..]) (tokenid:) (state:{}) (burn:) (split:) (debug:) (dryrun:) - Send Minima or Tokens to an address");
+		super("sendnosign","(address:Mx..|0x..) (amount:) (multi:[address:amount,..]) (tokenid:) (state:{}) (burn:) (split:) (debug:) - Create a txn but don't sign it");
 	}
 	
 	@Override
@@ -123,10 +120,6 @@ public class sendnosign extends Command {
 		
 		//Show extra info..
 		boolean debug 	= getBooleanParam("debug", false);
-		boolean dryrun 	= getBooleanParam("dryrun", false);
-		if(dryrun) {
-			debug = true;
-		}
 		
 		//Is there a burn..
 		MiniNumber burn  = getNumberParam("burn",MiniNumber.ZERO);

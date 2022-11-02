@@ -43,7 +43,10 @@ import org.minima.system.commands.search.keys;
 import org.minima.system.commands.search.tokens;
 import org.minima.system.commands.search.txpow;
 import org.minima.system.commands.send.send;
+import org.minima.system.commands.send.sendnosign;
 import org.minima.system.commands.send.sendpoll;
+import org.minima.system.commands.send.sendpost;
+import org.minima.system.commands.send.sendsign;
 import org.minima.system.commands.signatures.sign;
 import org.minima.system.commands.signatures.verify;
 import org.minima.system.commands.txn.txnbasics;
@@ -95,6 +98,11 @@ public class help extends Command {
 		addCommand(details, new newaddress());
 		addCommand(details, new send());
 		addCommand(details, new sendpoll());
+		
+		addCommand(details, new sendnosign());
+		addCommand(details, new sendsign());
+		addCommand(details, new sendpost());
+		
 		addCommand(details, new balance());
 		addCommand(details, new tokencreate());
 		addCommand(details, new tokenvalidate());
