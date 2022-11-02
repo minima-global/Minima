@@ -171,8 +171,14 @@ public class txnutils {
 		zWitness.addScript(pscr);
 	}
 	
-	public static TxnRow createBurnTransaction(ArrayList<String> zExcludeCoins, MiniData zLinkTransactionID, MiniNumber zAmount) throws CommandException {
-	
+	public static TxnRow createBurnTransaction(ArrayList<String> zExcludeCoins, 
+			MiniData zLinkTransactionID, MiniNumber zAmount) throws CommandException {
+		return createBurnTransaction(zExcludeCoins, zLinkTransactionID, zAmount, true);
+	}
+		
+	public static TxnRow createBurnTransaction(ArrayList<String> zExcludeCoins, 
+			MiniData zLinkTransactionID, MiniNumber zAmount, boolean zSign) throws CommandException {
+		
 		//The Full Txn..
 		TxnRow txnrow = new TxnRow("temp", new Transaction(), new Witness());
 		
@@ -328,13 +334,17 @@ public class txnutils {
 		transaction.calculateTransactionID();
 		
 		//Now that we have constructed the transaction - lets sign it..
-		for(String pubk : reqsigs) {
-
-			//Use the wallet..
-			Signature signature = walletdb.signData(pubk, transaction.getTransactionID());
+		if(zSign) {
 			
-			//Add it..
-			witness.addSignature(signature);
+			//Run through the sigs
+			for(String pubk : reqsigs) {
+	
+				//Use the wallet..
+				Signature signature = walletdb.signData(pubk, transaction.getTransactionID());
+				
+				//Add it..
+				witness.addSignature(signature);
+			}
 		}
 		
 		return txnrow;

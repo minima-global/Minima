@@ -1,4 +1,4 @@
-package org.minima.system.commands.base;
+package org.minima.system.commands.send;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -528,11 +528,11 @@ public class send extends Command {
 	 * Expects all the coins to be of the same tokenid
 	 */
 	
-	private static ArrayList<Coin> selectCoins(ArrayList<Coin> zAllCoins, MiniNumber zAmountRequired){
+	public static ArrayList<Coin> selectCoins(ArrayList<Coin> zAllCoins, MiniNumber zAmountRequired){
 		return selectCoins(zAllCoins, zAmountRequired, false);
 	}
 	
-	private static ArrayList<Coin> selectCoins(ArrayList<Coin> zAllCoins, MiniNumber zAmountRequired, boolean zDebug){
+	public static ArrayList<Coin> selectCoins(ArrayList<Coin> zAllCoins, MiniNumber zAmountRequired, boolean zDebug){
 		ArrayList<Coin> ret = new ArrayList<>();
 		
 		//Get the TxPoWDB
@@ -541,14 +541,6 @@ public class send extends Command {
 		
 		//First sort the coins by size and address..
 		ArrayList<Coin> coinlist = orderCoins(zAllCoins);
-//		Collections.sort(zAllCoins, new Comparator<Coin>() {
-//			@Override
-//			public int compare(Coin zCoin1, Coin zCoin2) {
-//				MiniNumber amt1 = zCoin1.getAmount();
-//				MiniNumber amt2 = zCoin2.getAmount();
-//				return amt2.compareTo(amt1);
-//			}
-//		});
 
 		//Are we debugging..
 		if(zDebug) {

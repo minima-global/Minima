@@ -41,8 +41,6 @@ import org.minima.system.commands.base.printmmr;
 import org.minima.system.commands.base.printtree;
 import org.minima.system.commands.base.quit;
 import org.minima.system.commands.base.random;
-import org.minima.system.commands.base.send;
-import org.minima.system.commands.base.sendpoll;
 import org.minima.system.commands.base.status;
 import org.minima.system.commands.base.test;
 import org.minima.system.commands.base.tokencreate;
@@ -70,6 +68,11 @@ import org.minima.system.commands.search.history;
 import org.minima.system.commands.search.keys;
 import org.minima.system.commands.search.tokens;
 import org.minima.system.commands.search.txpow;
+import org.minima.system.commands.send.send;
+import org.minima.system.commands.send.sendnosign;
+import org.minima.system.commands.send.sendpoll;
+import org.minima.system.commands.send.sendpost;
+import org.minima.system.commands.send.sendsign;
 import org.minima.system.commands.signatures.sign;
 import org.minima.system.commands.signatures.verify;
 import org.minima.system.commands.txn.txnauto;
@@ -106,7 +109,7 @@ public abstract class Command {
 			
 			new mds(), new sendpoll(), new healthcheck(), new mempool(),
 			
-			new whitepaper(),
+			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(),
 			
 			new archive(), new logs(), new history(),
 			
