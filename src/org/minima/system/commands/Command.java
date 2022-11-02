@@ -106,6 +106,8 @@ public abstract class Command {
 			
 			new mds(), new sendpoll(), new healthcheck(), new mempool(),
 			
+			new whitepaper(),
+			
 			new archive(), new logs(), new history(),
 			
 			new ping(), new random(),
