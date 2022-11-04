@@ -89,6 +89,21 @@ public class maxima extends Command {
 			//Refresh
 			max.PostMessage(MaximaManager.MAXIMA_REFRESH);
 			
+		}else if(func.equals("statichost")) {
+			
+			String id = getParam("host");
+			if(id.equals("random")) {
+				details.put("static", false);
+				max.setStaticAddress(false, "");
+			}else {
+				details.put("static", true);
+				max.setStaticAddress(true, id);
+			}
+		
+			details.put("contact", max.getRandomMaximaAddress());
+			
+			ret.put("response", details);
+			
 		}else if(func.equals("hosts")) {
 			
 			//Add ALL Hosts
