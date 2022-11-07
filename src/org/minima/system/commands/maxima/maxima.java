@@ -67,12 +67,26 @@ public class maxima extends Command {
 			details.put("logs", max.mMaximaLogs);
 			details.put("name", MinimaDB.getDB().getUserDB().getMaximaName());
 			details.put("publickey", max.getPublicKey().to0xString());
+			details.put("staticmls", max.isStaticMLS());
 			details.put("mls", max.getMLSHost());
 			details.put("localidentity", max.getLocalMaximaAddress());
 			details.put("contact", max.getRandomMaximaAddress());
 			
 			ret.put("response", details);
 		
+		}else if(func.equals("setmls")) {
+		
+			String host = getParam("host");
+			if(host.equals("clear")) {
+				max.setStaticMLS(false, "");
+			}else {
+				max.setStaticMLS(true, host);
+			}
+			
+			details.put("staticmls", max.isStaticMLS());
+			details.put("mls", max.getMLSHost());
+			ret.put("response", details);
+			
 		}else if(func.equals("setname")) {
 			
 			String name = getParam("name");
