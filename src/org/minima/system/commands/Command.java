@@ -52,6 +52,8 @@ import org.minima.system.commands.base.tutorial;
 import org.minima.system.commands.base.vault;
 import org.minima.system.commands.maxima.maxcontacts;
 import org.minima.system.commands.maxima.maxima;
+import org.minima.system.commands.maxima.maxsign;
+import org.minima.system.commands.maxima.maxverify;
 import org.minima.system.commands.mds.mds;
 import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.disconnect;
@@ -106,6 +108,7 @@ public abstract class Command {
 			
 			new mds(), new sendpoll(), new healthcheck(), new mempool(),
 			
+			new maxsign(), new maxverify(),
 			new archive(), new logs(),
 			
 			new ping(), new random(),

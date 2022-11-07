@@ -224,6 +224,10 @@ public class Wallet extends SqlDB {
 	}
 	
 	public boolean initDefaultKeys(int zMaxNum) {
+		return initDefaultKeys(zMaxNum, false);
+	}
+	
+	public boolean initDefaultKeys(int zMaxNum, boolean zLog) {
 		
 		//Get all the keys..
 		ArrayList<ScriptRow> allscripts = getAllDefaultAddresses();
@@ -243,6 +247,10 @@ public class Wallet extends SqlDB {
 			for(int i=0;i<diff;i++) {
 				if(!isShuttingDown()) {
 					createNewSimpleAddress(true);
+					
+					if(zLog) {
+						MinimaLogger.log("Default key created.. total:"+(numkeys+i+1));
+					}
 				}
 			}
 			
