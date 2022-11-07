@@ -74,7 +74,7 @@ public class maxima extends Command {
 			
 			ret.put("response", details);
 		
-		}else if(func.equals("setmls")) {
+		}else if(func.equals("staticmls")) {
 		
 			String host = getParam("host");
 			if(host.equals("clear")) {
