@@ -527,6 +527,12 @@ public class NIOManager extends MessageProcessor {
 		
 		}else if(zMessage.getMessageType().equals(NIO_SYNCTXBLOCK)) {
 			
+			//Check we have a chain..
+			if(MinimaDB.getDB().getTxPoWTree().getRoot() == null) {
+				MinimaLogger.log("No TxPoWTree yet.. requited for NIO_SYNCTXBLOCK");
+				return;
+			}
+			
 			//Which client..
 			String clientid = zMessage.getString("client");
 
