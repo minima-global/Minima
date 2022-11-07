@@ -45,8 +45,11 @@ public class maxcontacts extends Command {
 		
 		//Get the Tree tip - to check the contacts
 		TxPoWTreeNode tip 	= MinimaDB.getDB().getTxPoWTree().getTip();
-		MiniNumber topblock = tip.getBlockNumber(); 
-		
+		MiniNumber topblock = MiniNumber.ZERO;
+		if(tip != null) {
+			topblock = tip.getBlockNumber();
+		}
+		 
 		JSONObject details = new JSONObject();
 		
 		if(func.equals("list")) {

@@ -74,6 +74,27 @@ public abstract class SqlDB {
 		createSQL();
 	}
 	
+	public void hardCloseDB() {
+		try {
+		
+			//Check not NULL
+			if(mSQLConnection==null) {
+				return;
+			}
+			
+			//Are we already closed..
+			if(mSQLConnection.isClosed()) {
+				return;
+			}
+			
+			//Close the connection
+			mSQLConnection.close();
+		
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+	}
+	
 	public void saveDB() {
 		try {
 		
@@ -86,7 +107,8 @@ public abstract class SqlDB {
 			Statement stmt = mSQLConnection.createStatement();
 		
 			//Shut down.. this saves and closes all the data
-			stmt.execute("SHUTDOWN COMPACT");
+//			stmt.execute("SHUTDOWN COMPACT");
+			stmt.execute("SHUTDOWN");
 
 			//Close the connection
 			mSQLConnection.close();
