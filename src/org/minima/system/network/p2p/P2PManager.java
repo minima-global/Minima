@@ -76,6 +76,10 @@ public class P2PManager extends MessageProcessor {
         PostTimerMessage(new TimerMessage(P2PParams.SAVE_DATA_DELAY, P2P_SAVE_DATA));
     }
     
+    public P2PPeersChecker getPeersChecker() {
+    	return mPeersChecker;
+    }
+    
     public ArrayList<InetSocketAddress> getPeersCopy(){
         return state.getKnownPeersCopy();
     }
@@ -145,7 +149,14 @@ public class P2PManager extends MessageProcessor {
 
 
     private void doDiscoveryPing(){
-        while (state.isDoingDiscoveryConnection() && isRunning()){
+        
+    	//Check how many nodes there are..
+    	if(P2PParams.DEFAULT_NODE_LIST.size()==0) {
+    		MinimaLogger.log("There are NO DEFAULT PEERS - please use command 'peers' to add a valid peer..");
+    		return;
+    	}
+    	
+    	while (state.isDoingDiscoveryConnection() && isRunning()){
             InetSocketAddress address = P2PParams.DEFAULT_NODE_LIST.get(rand.nextInt(P2PParams.DEFAULT_NODE_LIST.size()));
             Greeting greet = NIOManager.sendPingMessage(address.getHostString(), address.getPort(), true);
             if (greet != null) {

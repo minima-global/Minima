@@ -1,4 +1,4 @@
-package org.minima.system.commands.base;
+package org.minima.system.commands.network;
 
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
