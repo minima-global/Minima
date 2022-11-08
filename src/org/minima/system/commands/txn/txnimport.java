@@ -1,6 +1,8 @@
 package org.minima.system.commands.txn;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.txndb.TxnDB;
@@ -15,6 +17,11 @@ public class txnimport extends Command {
 
 	public txnimport() {
 		super("txnimport","(id:) (file:) (data:) - Import a transaction as a file or HEX data. Optionally specify the ID");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"id","file","data"}));
 	}
 	
 	@Override
