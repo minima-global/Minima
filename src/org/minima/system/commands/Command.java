@@ -327,37 +327,35 @@ public abstract class Command {
 			//The final result
 			JSONObject result = null;
 			
-			//Check the Parameters - for now only check if is specified (0 length ignores)!
-			ArrayList<String> validparams = cmd.getValidParams();
-			if(validparams.size()>0) {
-				JSONObject allparams =  cmd.getParams();
-				Set<String> keys = allparams.keySet(); 
-				
-				boolean validp=true;
-				for(String key : keys) {
-					if(!validparams.contains(key)) {
-						
-						//Invalid Param
-						result=  new JSONObject();
-						result.put("command", command);
-						result.put("params", allparams);
-						result.put("status", false);
-						result.put("pending", false);
-						result.put("error", "Invalid parameter : "+key);
-						
-						//Add to the List..
-						res.add(result);
-						
-						//And that's all folks..
-						validp=false;
-						break;
-					}
-				}
-				
-				//Are we valid..
-				if(!validp) {
+			//Check the Parameters
+			ArrayList<String> validparams 	= cmd.getValidParams();
+			JSONObject allparams 			=  cmd.getParams();
+			Set<String> keys 				= allparams.keySet(); 
+			
+			boolean validp=true;
+			for(String key : keys) {
+				if(!validparams.contains(key)) {
+					
+					//Invalid Param
+					result=  new JSONObject();
+					result.put("command", command);
+					result.put("params", allparams);
+					result.put("status", false);
+					result.put("pending", false);
+					result.put("error", "Invalid parameter : "+key);
+					
+					//Add to the List..
+					res.add(result);
+					
+					//And that's all folks..
+					validp=false;
 					break;
 				}
+			}
+			
+			//Are we valid..
+			if(!validp) {
+				break;
 			}
 			
 			//Is this a MiniDAPP..
