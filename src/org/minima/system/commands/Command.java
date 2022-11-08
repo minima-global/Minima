@@ -35,8 +35,6 @@ import org.minima.system.commands.base.missingcmd;
 import org.minima.system.commands.base.mmrcreate;
 import org.minima.system.commands.base.mmrproof;
 import org.minima.system.commands.base.newaddress;
-import org.minima.system.commands.base.p2pstate;
-import org.minima.system.commands.base.peers;
 import org.minima.system.commands.base.printmmr;
 import org.minima.system.commands.base.printtree;
 import org.minima.system.commands.base.quit;
@@ -49,12 +47,16 @@ import org.minima.system.commands.base.trace;
 import org.minima.system.commands.base.vault;
 import org.minima.system.commands.maxima.maxcontacts;
 import org.minima.system.commands.maxima.maxima;
+import org.minima.system.commands.maxima.maxsign;
+import org.minima.system.commands.maxima.maxverify;
 import org.minima.system.commands.mds.mds;
 import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.disconnect;
 import org.minima.system.commands.network.message;
 import org.minima.system.commands.network.network;
 import org.minima.system.commands.network.nodecount;
+import org.minima.system.commands.network.p2pstate;
+import org.minima.system.commands.network.peers;
 import org.minima.system.commands.network.ping;
 import org.minima.system.commands.network.rpc;
 import org.minima.system.commands.network.webhooks;
@@ -104,14 +106,12 @@ public abstract class Command {
 			new send(), new balance(), new tokencreate(), new tokenvalidate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
 			new incentivecash(), new webhooks(), new peers(), new p2pstate(), new nodecount(),
 
-			//Removed code..
-//			new sshtunnel(), 
-			
 			new mds(), new sendpoll(), new healthcheck(), new mempool(),
 			
 			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(),
 			
 			new archive(), new logs(), new history(),
+			new maxsign(), new maxverify(),
 			
 			new ping(), new random(),
 			new sql(),new file(),

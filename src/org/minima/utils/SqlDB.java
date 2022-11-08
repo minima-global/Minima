@@ -77,6 +77,11 @@ public abstract class SqlDB {
 	public void hardCloseDB() {
 		try {
 		
+			//Check not NULL
+			if(mSQLConnection==null) {
+				return;
+			}
+			
 			//Are we already closed..
 			if(mSQLConnection.isClosed()) {
 				return;

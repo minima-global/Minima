@@ -562,6 +562,9 @@ public class Main extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(MAIN_CLEANDB)) {
 			
+			//Clean up the RAM Memory
+			System.gc();
+			
 			//Do some house keeping on the DB
 			MinimaDB.getDB().getTxPoWDB().cleanDB();
 			
@@ -570,9 +573,6 @@ public class Main extends MessageProcessor {
 			
 			//Now save the state - in case system crashed..
 			MinimaDB.getDB().saveState();
-			
-			//Clean up the RAM Memory
-			System.gc();
 			
 			//Do it again..
 			PostTimerMessage(new TimerMessage(CLEANDB_TIMER, MAIN_CLEANDB));

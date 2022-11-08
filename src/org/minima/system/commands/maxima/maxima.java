@@ -67,12 +67,26 @@ public class maxima extends Command {
 			details.put("logs", max.mMaximaLogs);
 			details.put("name", MinimaDB.getDB().getUserDB().getMaximaName());
 			details.put("publickey", max.getPublicKey().to0xString());
+			details.put("staticmls", max.isStaticMLS());
 			details.put("mls", max.getMLSHost());
 			details.put("localidentity", max.getLocalMaximaAddress());
 			details.put("contact", max.getRandomMaximaAddress());
 			
 			ret.put("response", details);
 		
+		}else if(func.equals("staticmls")) {
+		
+			String host = getParam("host");
+			if(host.equals("clear")) {
+				max.setStaticMLS(false, "");
+			}else {
+				max.setStaticMLS(true, host);
+			}
+			
+			details.put("staticmls", max.isStaticMLS());
+			details.put("mls", max.getMLSHost());
+			ret.put("response", details);
+			
 		}else if(func.equals("setname")) {
 			
 			String name = getParam("name");
@@ -88,6 +102,21 @@ public class maxima extends Command {
 			
 			//Refresh
 			max.PostMessage(MaximaManager.MAXIMA_REFRESH);
+			
+		}else if(func.equals("statichost")) {
+			
+			String id = getParam("host");
+			if(id.equals("random")) {
+				details.put("static", false);
+				max.setStaticAddress(false, "");
+			}else {
+				details.put("static", true);
+				max.setStaticAddress(true, id);
+			}
+		
+			details.put("contact", max.getRandomMaximaAddress());
+			
+			ret.put("response", details);
 			
 		}else if(func.equals("hosts")) {
 			
