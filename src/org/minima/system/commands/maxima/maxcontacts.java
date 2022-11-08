@@ -1,6 +1,7 @@
 package org.minima.system.commands.maxima;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.maxima.MaximaContact;
@@ -24,6 +25,11 @@ public class maxcontacts extends Command {
 
 	public maxcontacts() {
 		super("maxcontacts","[action:list|mls|add|remove|search] (contact:) (id:) (publickey:) - Manage your Maxima contacts");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"action","contact","id","publickey"}));
 	}
 	
 	@Override

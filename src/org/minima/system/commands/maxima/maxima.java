@@ -1,6 +1,7 @@
 package org.minima.system.commands.maxima;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.maxima.MaximaContact;
@@ -30,6 +31,12 @@ public class maxima extends Command {
 	@Override
 	public String getFullHelp() {
 		return "Maxima is an information transport layer running ontop of Minima";
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"action","name","id","to",
+				"publickey","application","data","logs","poll"}));
 	}
 	
 	@Override

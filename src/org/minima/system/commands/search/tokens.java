@@ -1,6 +1,7 @@
 package org.minima.system.commands.search;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.objects.Token;
 import org.minima.objects.base.MiniData;
@@ -15,6 +16,11 @@ public class tokens extends Command {
 
 	public tokens() {
 		super("tokens","(tokenid:) (action:import|export) (data:) - List, import or export tokens on the chain");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"tokenid","action","data"}));
 	}
 	
 	@Override

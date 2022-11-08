@@ -1,6 +1,7 @@
 package org.minima.system.commands.search;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.wallet.KeyRow;
@@ -14,6 +15,11 @@ public class keys extends Command {
 
 	public keys() {
 		super("keys","(action:list|new) - Get a list of all your public keys or create a new key");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"action"}));
 	}
 	
 	@Override

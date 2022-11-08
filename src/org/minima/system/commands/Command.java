@@ -25,6 +25,7 @@ import org.minima.system.commands.base.coinimport;
 import org.minima.system.commands.base.cointrack;
 import org.minima.system.commands.base.consolidate;
 import org.minima.system.commands.base.debugflag;
+import org.minima.system.commands.base.file;
 import org.minima.system.commands.base.getaddress;
 import org.minima.system.commands.base.hash;
 import org.minima.system.commands.base.hashtest;
@@ -64,8 +65,6 @@ import org.minima.system.commands.network.peers;
 import org.minima.system.commands.network.ping;
 import org.minima.system.commands.network.rpc;
 import org.minima.system.commands.network.webhooks;
-import org.minima.system.commands.persistent.file;
-import org.minima.system.commands.persistent.sql;
 import org.minima.system.commands.scripts.newscript;
 import org.minima.system.commands.scripts.runscript;
 import org.minima.system.commands.scripts.scripts;
@@ -112,8 +111,8 @@ public abstract class Command {
 			new maxsign(), new maxverify(),
 			new archive(), new logs(),
 			
-			new ping(), new random(),
-			new sql(),new file(),
+			new ping(), new random(),new file(),
+			
 			new vault(), new consolidate(),
 			new backup(), new restore(), new test(), 
 			new runscript(), new tutorial(),new keys(),

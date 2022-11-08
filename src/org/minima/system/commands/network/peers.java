@@ -1,6 +1,8 @@
 package org.minima.system.commands.network;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.system.Main;
@@ -18,7 +20,12 @@ import org.minima.utils.messages.Message;
 public class peers extends Command {
 
 	public peers() {
-		super("peers","prints the peers list this node has");
+		super("peers","(action:list|addpeers) (peerslist:[]) - Prints the peers list this node has");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"action","peerslist"}));
 	}
 	
 	@Override
