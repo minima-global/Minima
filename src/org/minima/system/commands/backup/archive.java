@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 import org.minima.database.MinimaDB;
@@ -37,6 +38,11 @@ public class archive extends Command {
 
 	public archive() {
 		super("archive","[action:resync|integrity] (host:) (phrase:) (keys:) (keyuses:) - Resync your chain with seed phrase if necessary (otherwise wallet remains the same)");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"action","host","phrase","keys","keyuses"}));
 	}
 	
 	@Override

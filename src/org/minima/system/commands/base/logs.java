@@ -1,5 +1,8 @@
 package org.minima.system.commands.base;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.system.commands.Command;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.json.JSONObject;
@@ -8,6 +11,11 @@ public class logs extends Command {
 
 	public logs() {
 		super("logs","(scripts:true|false) (mining:true|false) - Enable full logs for various parts of Minima");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"scripts","mining"}));
 	}
 	
 	@Override

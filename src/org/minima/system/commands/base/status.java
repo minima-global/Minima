@@ -4,6 +4,8 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 import org.minima.database.MinimaDB;
@@ -33,6 +35,11 @@ public class status extends Command {
 
 	public status() {
 		super("status","(clean:true) - Show general status for Minima and clean RAM");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"clean"}));
 	}
 	
 	@Override
