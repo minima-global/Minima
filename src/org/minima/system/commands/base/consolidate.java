@@ -1,6 +1,7 @@
 package org.minima.system.commands.base;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -35,6 +36,12 @@ public class consolidate extends Command {
 
 	public consolidate() {
 		super("consolidate","[tokenid:] (coinage:) (maxcoins:) (maxsigs:) (burn:) (debug:) (dryrun:) - Consolidate coins by sending them back to yourself");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"tokenid","coinage","maxcoins",
+				"maxsigs","burn","debug","dryrun"}));
 	}
 	
 	@Override

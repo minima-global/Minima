@@ -1,6 +1,7 @@
 package org.minima.system.commands.base;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.database.mmr.MMR;
 import org.minima.database.mmr.MMRData;
@@ -27,6 +28,11 @@ public class mmrcreate extends Command {
 	
 	public mmrcreate() {
 		super("mmrcreate","[nodes:[]] - Create an MMR Tree of data. Nodes can be STRING / HEX");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"nodes"}));
 	}
 	
 	@Override

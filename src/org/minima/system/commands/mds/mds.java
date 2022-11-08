@@ -3,6 +3,7 @@ package org.minima.system.commands.mds;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.minidapps.MDSDB;
@@ -27,6 +28,11 @@ public class mds extends Command {
 
 	public mds() {
 		super("mds","(action:list|install|update|uninstall|pending|accept|deny|permission) (file:) (uid:) (trust:read|write)- MiniDAPP System management");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"action","file","uid","trust"}));
 	}
 	
 	@Override

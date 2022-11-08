@@ -1,5 +1,8 @@
 package org.minima.system.commands.signatures;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.Signature;
 import org.minima.objects.keys.TreeKey;
@@ -11,6 +14,11 @@ public class verify extends Command {
 
 	public verify() {
 		super("verify","[publickey:] [data:] [signature:] - Verify a signature");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"publickey","data","signature"}));
 	}
 	
 	@Override

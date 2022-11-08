@@ -1,5 +1,8 @@
 package org.minima.system.commands.maxima;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
@@ -11,6 +14,11 @@ public class maxverify extends Command {
 
 	public maxverify() {
 		super("maxverify","[data:] [publickey:] [signature:] - Verify data with a Maxima Public key");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"data","publickey","signature"}));
 	}
 	
 	@Override

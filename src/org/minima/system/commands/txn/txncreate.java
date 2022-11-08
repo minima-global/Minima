@@ -1,5 +1,8 @@
 package org.minima.system.commands.txn;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.system.commands.Command;
@@ -10,6 +13,11 @@ public class txncreate extends Command {
 
 	public txncreate() {
 		super("txncreate","[id:] - Create a transaction");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"id"}));
 	}
 	
 	@Override

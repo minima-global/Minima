@@ -1,5 +1,8 @@
 package org.minima.system.commands.txn;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
@@ -17,6 +20,12 @@ public class txninput extends Command {
 
 	public txninput() {
 		super("txninput","[id:] (coinid:) (coindata:) (floating:) (address:) (amount:) (tokenid:) (sciptmmr:true)- Add a coin as an input to a transaction");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"id","coinid",
+				"coindata","floating","address","amount","tokenid","scriptmmr"}));
 	}
 	
 	@Override

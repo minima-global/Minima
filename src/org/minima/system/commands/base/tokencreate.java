@@ -1,6 +1,7 @@
 package org.minima.system.commands.base;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRProof;
@@ -35,6 +36,12 @@ public class tokencreate extends Command {
 
 	public tokencreate() {
 		super("tokencreate","[name:] [amount:] (decimals:) (script:) (state:{}) (signtoken:) (webvalidate:) (burn:) - Create a token. 'name' can be a JSON Object");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"name","amount","decimals","script",
+				"state","signtoken","webvalidate","burn"}));
 	}
 	
 	@Override

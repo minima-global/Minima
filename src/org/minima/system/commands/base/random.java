@@ -1,5 +1,8 @@
 package org.minima.system.commands.base;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.commands.Command;
@@ -9,6 +12,11 @@ public class random extends Command {
 
 	public random() {
 		super("random","(size:) - Generate a random hash value, defaults to 32 bytes");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"size"}));
 	}
 	
 	@Override

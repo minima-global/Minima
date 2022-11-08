@@ -1,5 +1,8 @@
 package org.minima.system.commands.base;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.database.MinimaDB;
 import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
@@ -11,6 +14,11 @@ public class getaddress extends Command {
 
 	public getaddress() {
 		super("getaddress","[createall:true] Get one of your default Minima addresses");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"createall"}));
 	}
 	
 	@Override

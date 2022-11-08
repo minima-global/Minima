@@ -1,5 +1,8 @@
 package org.minima.system.commands.base;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.database.MinimaDB;
 import org.minima.system.commands.Command;
 import org.minima.utils.json.JSONObject;
@@ -8,6 +11,11 @@ public class printtree extends Command {
 
 	public printtree() {
 		super("printtree", "(depth:) (cascade:true|false) - Print a tree representation of the blockchain. Depth default 32, Cascade false.");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"depth","cascade"}));
 	}
 	
 	@Override

@@ -1,5 +1,8 @@
 package org.minima.system.commands.maxima;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
@@ -11,6 +14,11 @@ public class maxsign extends Command {
 
 	public maxsign() {
 		super("maxsign","[data:] - Sign a piece of data with your Maxima ID");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"data"}));
 	}
 	
 	@Override

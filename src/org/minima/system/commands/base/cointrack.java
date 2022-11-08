@@ -1,5 +1,8 @@
 package org.minima.system.commands.base;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Coin;
 import org.minima.objects.base.MiniData;
@@ -12,6 +15,11 @@ public class cointrack extends Command {
 
 	public cointrack() {
 		super("cointrack","[enable:true|false] [coinid:] - Track or untrack a coin");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"file","password"}));
 	}
 	
 	@Override

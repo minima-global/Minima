@@ -1,5 +1,8 @@
 package org.minima.system.commands.base;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniData;
@@ -21,6 +24,11 @@ public class mmrproof extends Command {
 	
 	public mmrproof() {
 		super("mmrproof","[data:] [proof:] [root:] - Check an MMR proof");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"data","proof","root"}));
 	}
 	
 	@Override
