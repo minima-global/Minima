@@ -102,6 +102,15 @@ public class help extends Command {
 			
 		}else{
 
+			addCommand(details, new help());
+			
+			addCommand(details, new status());
+			addCommand(details, new printtree());
+			addCommand(details, new burn());
+			addCommand(details, new trace());
+			addCommand(details, new logs());
+			addCommand(details, new hashtest());
+			
 			addCommand(details, new history());
 			addCommand(details, new txpow());
 			addCommand(details, new coins());
@@ -126,7 +135,6 @@ public class help extends Command {
 			addCommand(details, new random());
 			
 	//		addCommand(details, new file());
-	//		addCommand(details, new sql());
 			
 			addCommand(details, new scripts());
 			addCommand(details, new newscript());
