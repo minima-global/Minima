@@ -339,7 +339,6 @@ public abstract class Command {
 			
 			//Check the Parameters
 			ArrayList<String> validparams 	= cmd.getValidParams();
-			MinimaLogger.log("VP:"+validparams.toString());
 			
 			JSONObject allparams 			=  cmd.getParams();
 			Set<String> keys 				= allparams.keySet(); 
