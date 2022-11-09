@@ -1,12 +1,7 @@
 package org.minima.system.commands.base;
 
 import java.util.ArrayList;
-<<<<<<< HEAD
-=======
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
->>>>>>> refs/heads/dev-spartacus
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
