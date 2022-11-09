@@ -423,6 +423,20 @@ public abstract class Command {
 		return res;
 	}
 	
+	public static Command getCommandOnly(String zCommandName) {
+		int commandlen = ALL_COMMANDS.length;
+		
+		Command comms = null;
+		for(int i=0;i<commandlen;i++) {
+			if(ALL_COMMANDS[i].getName().equals(zCommandName)) {
+				comms = ALL_COMMANDS[i].getFunction();
+				break;
+			}
+		}
+	
+		return comms;
+	}
+	
 	public static Command getCommand(String zCommand) {
 		int commandlen = ALL_COMMANDS.length;
 		
