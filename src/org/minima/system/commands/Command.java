@@ -260,8 +260,8 @@ public abstract class Command {
 	}
 	
 	public String getAddressParam(String zParamName, String zDefault) throws CommandException {
-		if(!existsParam(zParamName)) {
-			throw new CommandException("param not specified : "+zParamName);
+		if(existsParam(zParamName)) {
+			return getAddressParam(zParamName);
 		}
 		
 		return zDefault;
