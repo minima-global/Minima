@@ -35,6 +35,33 @@ public class backup extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nbackup\n"
+				+ "\n"
+				+ "Backup your node. Uses a timestamped name by default.\n"
+				+ "\n"
+				+ "password: (optional)\n"
+				+ "    Set a password using uppercase, lowercase characters and numbers only \n"
+				+ "\n"
+				+ "file: (optional)\n"
+				+ "    Specify a filename or local path for the backup\n"
+				+ "\n"
+				+ "auto: (optional)\n"
+				+ "    true or false, true will schedule a default, non-password protected, not complete backup every 24 hours\n"
+				+ "\n"
+				+ "complete: (optional)\n"
+				+ "    true or false, true will include the archive and txpow databases\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "backup password:Longsecurepassword456\n"
+				+ "\n"
+				+ "backup password:Longsecurepassword456 file:my-full-backup-01-Jan-22 complete:true\n"
+				+ "\n"
+				+ "backup auto:true\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"password","file","auto","complete"}));
 	}
