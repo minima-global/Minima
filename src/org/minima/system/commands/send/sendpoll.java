@@ -1,6 +1,7 @@
 package org.minima.system.commands.send;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
@@ -13,6 +14,12 @@ public class sendpoll extends Command {
 
 	public sendpoll() {
 		super("sendpoll","(action:add|list|remove) (uid:) - Send function that is added to a list and polls until complete");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"action","uid",
+				"address","amount","multi","tokenid","state","burn","split","debug","dryrun"}));
 	}
 	
 	@Override

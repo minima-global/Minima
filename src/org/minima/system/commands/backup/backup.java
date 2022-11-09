@@ -16,7 +16,6 @@ import javax.crypto.CipherOutputStream;
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowdb.sql.TxPoWList;
 import org.minima.objects.TxPoW;
-import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
@@ -32,12 +31,12 @@ public class backup extends Command {
 	public static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat("dd_MM_yyyy_HHmmss", Locale.ENGLISH );
 	
 	public backup() {
-		super("backup","(password:) (file:) (auto:) (complete:false|true) - Backup the system. Uses a timestamped name by default");
+		super("backup","(password:) (file:) (auto:) - Backup the system. Uses a timestamped name by default");
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"password","file","auto","complete"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"password","file","auto"}));
 	}
 	
 	@Override
@@ -136,21 +135,6 @@ public class backup extends Command {
 			TxPoWList txplist 	 	= new TxPoWList(txps);
 			MiniData txplistdata 	= MiniData.getMiniDataVersion(txplist);
 			
-			//For Complete..
-			File txpowdb 	= new File(backupfolder,"txpowdb.sql");
-			File archivedb 	= new File(backupfolder,"archive.sql");
-			
-			MiniData txpowdata 		= null;
-			MiniData archivedata 	= null;
-			
-			if(complete) {
-				MinimaDB.getDB().getTxPoWDB().getSQLDB().backupToFile(txpowdb);
-				txpowdata	= new MiniData(MiniFile.readCompleteFile(txpowdb));
-				
-				MinimaDB.getDB().getArchive().backupToFile(archivedb);
-				archivedata = new MiniData(MiniFile.readCompleteFile(archivedb));
-			}
-			
 			//Now create the streams to save these
 			FileOutputStream fos 	= new FileOutputStream(backupfile);
 			DataOutputStream dos 	= new DataOutputStream(fos);
@@ -176,9 +160,6 @@ public class backup extends Command {
 			GZIPOutputStream gzos		= new GZIPOutputStream(cos);
 			DataOutputStream ciphdos 	= new DataOutputStream(gzos);
 			
-			//Is it Complete
-			MiniByte.WriteToStream(ciphdos, complete);
-			
 			//And now put ALL of those files into a single file..
 			walletata.writeDataStream(ciphdos);
 			cascadedata.writeDataStream(ciphdos);
@@ -186,11 +167,6 @@ public class backup extends Command {
 			userdata.writeDataStream(ciphdos);
 			p2pdata.writeDataStream(ciphdos);
 			txplistdata.writeDataStream(ciphdos);
-			
-			if(complete) {
-				txpowdata.writeDataStream(ciphdos);
-				archivedata.writeDataStream(ciphdos);
-			}
 			
 			//All done..
 			ciphdos.close();
@@ -207,19 +183,9 @@ public class backup extends Command {
 							p2pdb.length()+
 							txplistdata.getLength();
 			
-			if(complete) {
-				total += 	txpowdb.length()+
-							cascade.length();
-			}
-			
 			//Get all the individual File sizes..
 			JSONObject files = new JSONObject();
 			files.put("wallet", MiniFormat.formatSize(walletfile.length()));
-			
-			if(complete) {
-				files.put("txpowdb", MiniFormat.formatSize(txpowdb.length()));
-				files.put("archivedb", MiniFormat.formatSize(archivedb.length()));
-			}
 			
 			files.put("cascade", MiniFormat.formatSize(cascade.length()));
 			files.put("chain", MiniFormat.formatSize(chain.length()));

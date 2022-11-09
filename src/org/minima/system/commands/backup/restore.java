@@ -15,14 +15,12 @@ import org.minima.database.MinimaDB;
 import org.minima.database.txpowdb.sql.TxPoWList;
 import org.minima.database.txpowdb.sql.TxPoWSqlDB;
 import org.minima.objects.TxPoW;
-import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.encrypt.GenerateKey;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.ssl.SSLManager;
@@ -86,9 +84,6 @@ public class restore extends Command {
 		GZIPInputStream gzin 	= new GZIPInputStream(cis);
 		DataInputStream disciph = new DataInputStream(gzin);
 		
-		//Is this a complete backup..
-		boolean complete = MiniByte.ReadFromStream(disciph).isTrue();
-		
 		//The total size of files..
 		long total = 1;
 		
@@ -115,33 +110,13 @@ public class restore extends Command {
 		//Now load the sql
 		MinimaDB.getDB().getWallet().restoreFromFile(new File(restorefolder,"wallet.sql"));
 	
-		//Complete
-		if(complete) {
-			total += readNextBackup(new File(restorefolder,"txpowdb.sql"), disciph);
-			total += readNextBackup(new File(restorefolder,"archive.sql"), disciph);
+		//Close
+		MinimaDB.getDB().getTxPoWDB().getSQLDB().saveDB();
 		
-			MinimaDB.getDB().getTxPoWDB().getSQLDB().restoreFromFile(new File(restorefolder,"txpowdb.sql"));
-			MinimaDB.getDB().getArchive().restoreFromFile(new File(restorefolder,"archive.sql"));
-		
-			int size = MinimaDB.getDB().getTxPoWDB().getSQLDB().getSize();
-			MinimaLogger.log("NEW TxPoWDB size : "+size);
-			
-			size = MinimaDB.getDB().getArchive().getSize();
-			MinimaLogger.log("NEW ArchiveDB size : "+size);
-			
-		}else {
+		//Wipe ArchiveDB	
+		MinimaDB.getDB().getArchive().saveDB();
+		MinimaDB.getDB().getArchive().getSQLFile().delete();
 	
-			int size = MinimaDB.getDB().getTxPoWDB().getSQLDB().getSize();
-			MinimaLogger.log("Relevant TxPoWDB size : "+size);
-			
-			//Close
-			MinimaDB.getDB().getTxPoWDB().getSQLDB().saveDB();
-			
-			//Wipe ArchiveDB	
-			MinimaDB.getDB().getArchive().saveDB();
-			MinimaDB.getDB().getArchive().getSQLFile().delete();
-		}
-		
 		//Close up shop..
 		disciph.close();
 		cis.close();
