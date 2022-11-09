@@ -38,6 +38,35 @@ public class burn extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\narchive\n"
+				+ "\n"
+				+ "Resync your node using an archive node. You need to set the host.\n"
+				+ "\n"
+				+ "Optionally you can set the seed phrase and this will wipe your wallet and reset it with the data.\n"
+				+ "\n"
+				+ "action:\n"
+				+ "    resync : do a resync\n"
+				+ "    integrity : check the integrity of your Archive DB if you are running an archive node yourself. No host required.\n"
+				+ "\n"
+				+ "host:\n"
+				+ "    ip:port of the archive node\n"
+				+ "\n"
+				+ "phrase:\n"
+				+ "    Your seed phrase. This will wipe your wallet. You do NOT have to do this. Just resync and you get on the correct chain.\n"
+				+ "\n"
+				+ "keys:\n"
+				+ "    Number of keys to create, if you seed phrase sync. Defaults to the 64 you normally have + 16 extra incase you used newaddress\n"
+				+ "\n"
+				+ "keyuses:\n"
+				+ "    How many times at most did you use your keys.. Every time you resync with seed phrase this needs to be higher as Minima Signatures are stateful. Defaults to 1000 - the max is 262144 for normal keys\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "archive action:resync host:89.98.89.98:8888\n";
+	}
+	
+	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
