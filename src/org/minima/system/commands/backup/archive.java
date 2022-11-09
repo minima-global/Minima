@@ -45,6 +45,7 @@ public class archive extends Command {
 		return new ArrayList<>(Arrays.asList(new String[]{"action","host","phrase","keys","keyuses"}));
 	}
 	
+	@Override
 	public String getFullHelp() {
 		return "\narchive\n"
 				+ "\n"
