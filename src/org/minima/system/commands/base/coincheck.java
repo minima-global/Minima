@@ -1,5 +1,8 @@
 package org.minima.system.commands.base;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.txpowtree.TxPoWTreeNode;
@@ -14,6 +17,11 @@ public class coincheck extends Command {
 
 	public coincheck() {
 		super("coincheck","[data:] - Check a coin exists");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"data"}));
 	}
 	
 	@Override

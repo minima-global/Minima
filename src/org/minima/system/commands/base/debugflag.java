@@ -1,5 +1,8 @@
 package org.minima.system.commands.base;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.system.commands.Command;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.json.JSONObject;
@@ -8,6 +11,11 @@ public class debugflag extends Command {
 
 	public debugflag() {
 		super("debugflag","(activate:true|false) (var:) - Set DEBUG flag for testing code..");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"activate","var"}));
 	}
 	
 	@Override

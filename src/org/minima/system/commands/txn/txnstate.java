@@ -1,5 +1,8 @@
 package org.minima.system.commands.txn;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
@@ -13,6 +16,11 @@ public class txnstate extends Command {
 
 	public txnstate() {
 		super("txnstate","[id:] [port:] [value:] - Add a state variable");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"id","port","value"}));
 	}
 	
 	@Override

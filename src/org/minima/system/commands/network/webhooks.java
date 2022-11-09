@@ -1,6 +1,7 @@
 package org.minima.system.commands.network;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
@@ -12,6 +13,11 @@ public class webhooks extends Command {
 
 	public webhooks() {
 		super("webhooks","(action:list|add|remove|clear) (hook:url) - Add a web hook that is called with Minima events as they happen");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"action","hook"}));
 	}
 	
 	@Override

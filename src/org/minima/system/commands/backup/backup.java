@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.zip.GZIPOutputStream;
 
@@ -32,6 +33,11 @@ public class backup extends Command {
 	
 	public backup() {
 		super("backup","(password:) (file:) (auto:) (complete:false|true) - Backup the system. Uses a timestamped name by default");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"password","file","auto","complete"}));
 	}
 	
 	@Override

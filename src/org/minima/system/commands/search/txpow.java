@@ -1,6 +1,7 @@
 package org.minima.system.commands.search;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.objects.TxPoW;
@@ -16,6 +17,11 @@ public class txpow extends Command {
 
 	public txpow() {
 		super("txpow","(txpowid:txpowid) (block:) (address:) - Search for a specific TxPoW");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"txpowid","block","address"}));
 	}
 	
 	@Override

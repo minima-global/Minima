@@ -1,5 +1,8 @@
 package org.minima.system.commands.txn;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.userprefs.txndb.TxnDB;
@@ -15,6 +18,11 @@ public class txnscript extends Command {
 
 	public txnscript() {
 		super("txnscript","[id:] [scripts:{}] - Add scripts to a txn");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"id","scripts"}));
 	}
 	
 	@Override

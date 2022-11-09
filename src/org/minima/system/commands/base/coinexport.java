@@ -1,5 +1,8 @@
 package org.minima.system.commands.base;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.txpowtree.TxPoWTreeNode;
@@ -17,6 +20,11 @@ public class coinexport extends Command {
 
 	public coinexport() {
 		super("coinexport","[coinid:] - Export a coin");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"coinid"}));
 	}
 	
 	@Override

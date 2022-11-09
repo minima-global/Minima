@@ -1,5 +1,8 @@
 package org.minima.system.commands.base;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.commands.Command;
@@ -11,6 +14,11 @@ public class hash extends Command {
 
 	public hash() {
 		super("hash","[data:] (type:keccak|sha2|sha3)- Hash the data - default KECCAK");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"data"}));
 	}
 	
 	@Override

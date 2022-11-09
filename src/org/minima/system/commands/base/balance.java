@@ -1,6 +1,7 @@
 package org.minima.system.commands.base;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 
 import org.minima.database.MinimaDB;
@@ -22,13 +23,18 @@ public class balance extends Command {
 	public balance() {
 		super("balance","(address:) (tokenid:) (confirmations:) - Show your total balance of Minima and tokens");
 	}
+
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"address","tokenid","confirmations"}));
+	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception{
 		JSONObject ret = getJSONReply();
 		
 		//Is there a specified address
-		String address 				= getParam("address","");
+		String address 				= getAddressParam("address","");
 		MiniNumber confirmations 	= getNumberParam("confirmations", GlobalParams.MINIMA_CONFIRM_DEPTH);
 		
 		//Are we in debug mode

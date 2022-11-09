@@ -3,6 +3,8 @@ package org.minima.system.commands.network;
 import java.io.File;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,6 +23,11 @@ public class nodecount extends Command {
 
 	public nodecount() {
 		super("nodecount","(file:) (complete:false|true) - Enumerate the network to count all participating nodes");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"file","complete"}));
 	}
 	
 	@Override

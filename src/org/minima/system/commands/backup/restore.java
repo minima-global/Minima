@@ -4,6 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.zip.GZIPInputStream;
 
 import javax.crypto.Cipher;
@@ -29,6 +31,11 @@ public class restore extends Command {
 
 	public restore() {
 		super("restore","[file:] (password:) - Restore the entire system.");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"file","password"}));
 	}
 	
 	@Override

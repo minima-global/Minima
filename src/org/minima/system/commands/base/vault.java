@@ -1,5 +1,8 @@
 package org.minima.system.commands.base;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.database.MinimaDB;
 import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;
@@ -11,6 +14,11 @@ public class vault extends Command {
 
 	public vault() {
 		super("vault","[action:seed|lock|unlock] (seed:) (phrase:) - BE CAREFUL. Wipe / Restore your private keys");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"action","seed","phrase"}));
 	}
 	
 	@Override

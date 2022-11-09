@@ -1,5 +1,8 @@
 package org.minima.system.commands.base;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.database.MinimaDB;
 import org.minima.system.commands.Command;
 import org.minima.system.params.GlobalParams;
@@ -11,6 +14,11 @@ public class incentivecash extends Command {
 
 	public incentivecash() {
 		super("incentivecash","(uid:) - Show your rewards or specify your UserID for the Incentive Cash program");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"uid"}));
 	}
 	
 	@Override

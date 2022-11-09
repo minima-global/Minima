@@ -1,5 +1,8 @@
 package org.minima.system.commands.base;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.system.commands.Command;
 import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOServer;
@@ -10,6 +13,11 @@ public class trace extends Command {
 
 	public trace() {
 		super("trace","[enable:true|false] (filter:) - Show the message stacks of the internal Minima Engine with optional filter string. Only works on terminal.");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"enable","filter"}));
 	}
 	
 	@Override

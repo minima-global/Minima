@@ -1,5 +1,8 @@
 package org.minima.system.commands.base;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMRProof;
@@ -17,6 +20,11 @@ public class coinimport extends Command {
 
 	public coinimport() {
 		super("coinimport","[data:] (track:true|false) - Import a coin, and keep tracking it");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"data","track"}));
 	}
 	
 	@Override
