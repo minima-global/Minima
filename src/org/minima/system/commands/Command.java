@@ -259,6 +259,14 @@ public abstract class Command {
 		return (JSONArray) mParams.get(zParamName);
 	}
 	
+	public String getAddressParam(String zParamName, String zDefault) throws CommandException {
+		if(!existsParam(zParamName)) {
+			throw new CommandException("param not specified : "+zParamName);
+		}
+		
+		return zDefault;
+	}
+	
 	public String getAddressParam(String zParamName) throws CommandException {
 		if(!existsParam(zParamName)) {
 			throw new CommandException("param not specified : "+zParamName);

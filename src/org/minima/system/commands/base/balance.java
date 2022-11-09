@@ -34,7 +34,7 @@ public class balance extends Command {
 		JSONObject ret = getJSONReply();
 		
 		//Is there a specified address
-		String address 				= getParam("address","");
+		String address 				= getAddressParam("address","");
 		MiniNumber confirmations 	= getNumberParam("confirmations", GlobalParams.MINIMA_CONFIRM_DEPTH);
 		
 		//Are we in debug mode
