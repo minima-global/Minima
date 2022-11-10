@@ -171,4 +171,15 @@ public class UserDB extends JsonDB{
 		setBoolean("autobackup", zAuto);
 	}
 	
+	/**
+	 * Desired Magic Numbers
+	 */
+	public MiniNumber getMagicDesiredKISSVM() {
+		return getNumber("magic_kissvm", new MiniNumber(1024));
+	}
+	
+	public void setMagicDesiredKISSVM(MiniNumber zKISSVM) {
+		setNumber("magic_kissvm", zKISSVM);
+	}
+	
 }

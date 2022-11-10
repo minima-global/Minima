@@ -83,7 +83,7 @@ public class Magic implements Streamable {
 		mDesiredMaxTxnPerBlock        	= DEFAULT_TXPOW_TXNS;
 		mDesiredMinTxPoWWork			= MIN_TXPOW_WORK;
 	}
-
+	
 	public JSONObject toJSON() {
 		JSONObject magic = new JSONObject();
 		
@@ -126,6 +126,13 @@ public class Magic implements Streamable {
 	
 	public MiniData getMinTxPowWork() {
 		return mCurrentMinTxPoWWork;
+	}
+	
+	/**
+	 * Set the desired values..
+	 */
+	public void setDesiredKISSVM(MiniNumber zKISSVM) {
+		mDesiredMaxKISSVMOps = zKISSVM;
 	}
 	
 	/**

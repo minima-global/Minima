@@ -11,6 +11,7 @@ import java.util.Date;
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.txpowtree.TxPoWTreeNode;
+import org.minima.database.userprefs.UserDB;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
 import org.minima.objects.Magic;
@@ -84,7 +85,11 @@ public class TxPoWGenerator {
 		}
 		
 		//Set the correct Magic Numbers..
+		UserDB udb = MinimaDB.getDB().getUserDB();
+		
 		Magic txpowmagic = tip.getTxPoW().getMagic().calculateNewCurrent();
+		txpowmagic.setDesiredKISSVM(udb.getMagicDesiredKISSVM());
+		
 		txpow.setMagic(txpowmagic);
 		
 		//Set the parents..
