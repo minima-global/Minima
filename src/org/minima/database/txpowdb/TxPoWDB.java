@@ -69,11 +69,8 @@ public class TxPoWDB {
 	}
 	
 	public void addSQLTxPoW(TxPoW zTxPoW) {
-		//Get the ID
-		String txpid = zTxPoW.getTxPoWID();
-		
 		//Is it in the SQL
-		if(!mSqlDB.exists(txpid)) {
+		if(!mSqlDB.exists(zTxPoW.getTxPoWID())) {
 			//Add it to the SQL..
 			mSqlDB.addTxPoW(zTxPoW);
 		}
@@ -90,12 +87,6 @@ public class TxPoWDB {
 		if(txp == null) {
 			//Check the SQL..
 			txp = mSqlDB.getTxPoW(zTxPoWID);
-			
-			//If found add to RamDB
-			if(txp != null) {
-				//For fast access next time
-				mRamDB.addTxPoW(txp);
-			}
 		}
 		
 		//Could still be null
