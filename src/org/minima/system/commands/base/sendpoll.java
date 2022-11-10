@@ -15,7 +15,7 @@ public class sendpoll extends Command {
 	public sendpoll() {
 		super("sendpoll","(action:add|list|remove) (uid:) - Send function that is added to a list and polls until complete");
 	}
-
+	
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"action","uid",

@@ -1,9 +1,8 @@
-package org.minima.system.commands.base;
+package org.minima.system.commands.send;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
@@ -25,20 +24,21 @@ import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.keys.Signature;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.base.send;
 import org.minima.system.commands.txn.txnutils;
 import org.minima.system.params.GlobalParams;
+import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
-public class send extends Command {
+public class sendnosign extends Command {
 
 	public class AddressAmount {
 		
@@ -59,8 +59,8 @@ public class send extends Command {
 		}
 	}
 	
-	public send() {
-		super("send","(address:Mx..|0x..) (amount:) (multi:[address:amount,..]) (tokenid:) (state:{}) (burn:) (split:) (debug:) (dryrun:) - Send Minima or Tokens to an address");
+	public sendnosign() {
+		super("sendnosign","(address:Mx..|0x..) (amount:) (multi:[address:amount,..]) (tokenid:) (state:{}) (burn:) (split:) (debug:) - Create a txn but don't sign it");
 	}
 	
 	@Override
@@ -128,10 +128,6 @@ public class send extends Command {
 		
 		//Show extra info..
 		boolean debug 	= getBooleanParam("debug", false);
-		boolean dryrun 	= getBooleanParam("dryrun", false);
-		if(dryrun) {
-			debug = true;
-		}
 		
 		//Is there a burn..
 		MiniNumber burn  = getNumberParam("burn",MiniNumber.ZERO);
@@ -202,7 +198,7 @@ public class send extends Command {
 		}
 		
 		//Now search for the best coin selection.. leave for Now!..
-		relcoins = selectCoins(relcoins, findamount, debug);
+		relcoins = send.selectCoins(relcoins, findamount, debug);
 		
 		//The current total
 		MiniNumber currentamount 		= MiniNumber.ZERO;
@@ -472,30 +468,14 @@ public class send extends Command {
 			MinimaLogger.log("Total signatures required : "+reqsigs.size());
 		}
 		
-		for(String pubkey : reqsigs) {
-			if(debug) {
-				MinimaLogger.log("Signing transction with : "+pubkey);
-			}
-			
-			if(!dryrun) {
-				//Use the wallet..
-				Signature signature = walletdb.signData(pubkey, transaction.getTransactionID());
-				
-				//Add it..
-				witness.addSignature(signature);
-			}else {
-				MinimaLogger.log("DRY RUN - not signing");
-			}
-		}
-		
 		//The final TxPoW
 		TxPoW txpow = null;
 		
 		//Is there a BURN..
 		if(!tokenid.equals("0x00") && burn.isMore(MiniNumber.ZERO)) {
 			
-			//Create a Burn Transaction
-			TxnRow burntxn = txnutils.createBurnTransaction(addedcoinid,transaction.getTransactionID(),burn);
+			//Create a Burn Transaction - but NO Signatures
+			TxnRow burntxn = txnutils.createBurnTransaction(addedcoinid,transaction.getTransactionID(),burn, false);
 
 			//Now create a complete TxPOW
 			txpow = TxPoWGenerator.generateTxPoW(transaction, witness, burntxn.getTransaction(), burntxn.getWitness());
@@ -505,177 +485,23 @@ public class send extends Command {
 			txpow = TxPoWGenerator.generateTxPoW(transaction, witness);
 		}
 		
-		//Calculate the txpowid / size..
-		txpow.calculateTXPOWID();
+		//Create the file..
+		File txnfile = MiniFile.createBaseFile("unsignedtransaction-"+System.currentTimeMillis()+".txn");
+				
+		//Write it to a file..
+		MiniFile.writeObjectToFile(txnfile, txpow);
+				
+		JSONObject resp = new JSONObject();
+		resp.put("txpow", txnfile.getAbsolutePath());
 		
 		//All good..
-		ret.put("dryrun", dryrun);
-		ret.put("response", txpow.toJSON());
-		
-		if(!dryrun) {
-			//Send it to the Miner..
-			Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txpow);
-		}else {
-			MinimaLogger.log("DRY RUN - not sending");
-		}
+		ret.put("response", resp);
 		
 		return ret;
 	}
 
 	@Override
 	public Command getFunction() {
-		return new send();
-	}
-
-	
-	/**
-	 * Coin Selection Algorithm..
-	 * 
-	 * Which coins to use when sending a transaction
-	 * Expects all the coins to be of the same tokenid
-	 */
-	
-	public static ArrayList<Coin> selectCoins(ArrayList<Coin> zAllCoins, MiniNumber zAmountRequired){
-		return selectCoins(zAllCoins, zAmountRequired, false);
-	}
-	
-	public static ArrayList<Coin> selectCoins(ArrayList<Coin> zAllCoins, MiniNumber zAmountRequired, boolean zDebug){
-		ArrayList<Coin> ret = new ArrayList<>();
-		
-		//Get the TxPoWDB
-		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
-		TxPoWMiner txminer 	= Main.getInstance().getTxPoWMiner();
-		
-		//First sort the coins by size and address..
-		ArrayList<Coin> coinlist = orderCoins(zAllCoins);
-
-		//Are we debugging..
-		if(zDebug) {
-			MinimaLogger.log("All Selection coins");
-			for(Coin coin : coinlist) {
-				MinimaLogger.log("Coin found : "+coin.getAmount()+" "+coin.getCoinID().to0xString()+" @ "+coin.getAddress().to0xString());
-			}
-			
-			MinimaLogger.log("Now checking coins");
-		}
-		
-		//Now go through and pick a coin big enough.. but keep looking for smaller coins  
-		boolean found    = false;
-		Coin currentcoin = null;
-		for(Coin coin : coinlist) {
-			
-			//Check if we are already using thewm in another Transaction that is being mined
-			if(txminer.checkForMiningCoin(coin.getCoinID().to0xString())) {
-				if(zDebug) {
-					MinimaLogger.log("Coin being mined : "+coin.getAmount()+" "+coin.getCoinID().to0xString());
-				}
-				continue;
-			}
-			
-			//Check if in mempool..
-			if(txpdb.checkMempoolCoins(coin.getCoinID())) {
-				if(zDebug) {
-					MinimaLogger.log("Coin in mempool : "+coin.getAmount()+" "+coin.getCoinID().to0xString());
-				}
-				continue;
-			}
-			
-			if(coin.getAmount().isMoreEqual(zAmountRequired)) {
-			
-				if(zDebug) {
-					MinimaLogger.log("Valid Coin found : "+coin.getAmount()+" "+coin.getCoinID().to0xString());
-				}
-				found 		= true;
-				currentcoin = coin;
-			}else {
-				
-				//Not big enough - all others will be smaller..
-				if(zDebug) {
-					MinimaLogger.log("Coin too small - no more checking : "+coin.getAmount()+" "+coin.getCoinID().to0xString());
-				}
-				
-				break;
-			}
-		}
-		
-		//Did we find one..
-		if(found) {
-			//Add the single coin to the list
-			ret.add(currentcoin);
-		
-			if(zDebug) {
-				MinimaLogger.log("Single coin returned : "+currentcoin.getAmount()+" "+currentcoin.getCoinID().to0xString());
-			}
-			
-		}else {
-
-			//Did not find a single coin that satisfies the amount..
-			if(zDebug) {
-				MinimaLogger.log("Returning all coins..");
-			}
-			
-			//Return them all..
-			return coinlist;
-		}
-		
-		//Return what we have..
-		return ret;
-	}
-	
-	/**
-	 * Order coins by amount and address
-	 */
-	public static ArrayList<Coin> orderCoins(ArrayList<Coin> zCoins){
-		
-		ArrayList<Coin> ret = new ArrayList<>();
-		
-		//First Sort by amount
-		Collections.sort(zCoins, new Comparator<Coin>() {
-			@Override
-			public int compare(Coin zCoin1, Coin zCoin2) {
-				MiniNumber amt1 = zCoin1.getAmount();
-				MiniNumber amt2 = zCoin2.getAmount();
-				return amt2.compareTo(amt1);
-			}
-		});
-		
-		//Now cycle through and get the different addresses
-		ArrayList<String> addresses = new ArrayList<>();
-		String currentaddress = "";
-		for(Coin cc : zCoins) {
-			String addr = cc.getAddress().to0xString();
-			if(!addresses.contains(addr)) {
-				addresses.add(addr);
-			}
-		}
-		
-		//And now order by address..
-		for(String address : addresses) {
-			for(Coin cc : zCoins) {
-				String caddress = cc.getAddress().to0xString();
-				if(caddress.equals(address)) {
-					ret.add(cc);
-				}
-			}
-		}
-		
-		return ret;
-	}
-	
-	public static void main(String[] zArgs) {
-		
-		ArrayList<Coin> allcoins = new ArrayList<>();
-		allcoins.add(new Coin(new MiniData("0xFF"), MiniNumber.ONE, MiniData.ZERO_TXPOWID));
-		allcoins.add(new Coin(new MiniData("0xEE"), MiniNumber.TWO, MiniData.ZERO_TXPOWID));
-		allcoins.add(new Coin(new MiniData("0xDD"), MiniNumber.TEN, MiniData.ZERO_TXPOWID));
-		allcoins.add(new Coin(new MiniData("0xDD"), MiniNumber.ONE, MiniData.ZERO_TXPOWID));
-		allcoins.add(new Coin(new MiniData("0xEE"), new MiniNumber("0.5"), MiniData.ZERO_TXPOWID));
-		allcoins.add(new Coin(new MiniData("0xEE"), new MiniNumber("0.2"), MiniData.ZERO_TXPOWID));
-
-		ArrayList<Coin> sortedcoins = orderCoins(allcoins);
-				
-		for(Coin cc : sortedcoins) {
-			System.out.println(cc.toJSON().toString());
-		}
+		return new sendnosign();
 	}
 }
