@@ -112,7 +112,7 @@ public class MaxTxPoW implements Streamable {
 		txpow.setTxDifficulty(minhash);
 		
 		//Now Mine it..
-		boolean valid = Main.getInstance().getTxPoWMiner().MineMaxTxPoW(txpow,mMaxTimeMilli);
+		boolean valid = Main.getInstance().getTxPoWMiner().MineMaxTxPoW(true, txpow, mMaxTimeMilli);
 		if(!valid) {
 			return null;
 		}

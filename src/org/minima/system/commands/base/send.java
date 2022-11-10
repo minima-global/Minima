@@ -60,13 +60,13 @@ public class send extends Command {
 	}
 	
 	public send() {
-		super("send","(address:Mx..|0x..) (amount:) (multi:[address:amount,..]) (tokenid:) (state:{}) (burn:) (split:) (debug:) (dryrun:) - Send Minima or Tokens to an address");
+		super("send","(address:Mx..|0x..) (amount:) (multi:[address:amount,..]) (tokenid:) (state:{}) (burn:) (split:) (mine:) (debug:) (dryrun:) - Send Minima or Tokens to an address");
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"address","amount","multi",
-				"tokenid","state","burn","split","debug","dryrun"}));
+				"tokenid","state","burn","split","debug","dryrun","mine"}));
 	}
 	
 	@Override
@@ -155,6 +155,9 @@ public class send extends Command {
 		if(existsParam("state")) {
 			state = getJSONObjectParam("state");
 		}
+		
+		//Are we Mining synchronously
+		boolean minesync = getBooleanParam("mine", false);
 		
 		//get the tip..
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
@@ -508,16 +511,27 @@ public class send extends Command {
 		//Calculate the txpowid / size..
 		txpow.calculateTXPOWID();
 		
-		//All good..
-		ret.put("dryrun", dryrun);
-		ret.put("response", txpow.toJSON());
-		
 		if(!dryrun) {
-			//Send it to the Miner..
-			Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txpow);
+			
+			//Sync or Asyn mining..
+			if(minesync) {
+				boolean success = Main.getInstance().getTxPoWMiner().MineMaxTxPoW(false, txpow, 120000);
+				
+				if(!success) {
+					throw new CommandException("FAILED TO MINE txn in 120 seconds !?");
+				}
+				
+			}else {
+				Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txpow);
+			}
+			
 		}else {
 			MinimaLogger.log("DRY RUN - not sending");
 		}
+		
+		//All good..
+		ret.put("dryrun", dryrun);
+		ret.put("response", txpow.toJSON());
 		
 		return ret;
 	}
