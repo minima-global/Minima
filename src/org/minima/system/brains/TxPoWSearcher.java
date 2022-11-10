@@ -253,6 +253,11 @@ public class TxPoWSearcher {
 			//The Block
 			TxPoW txblock = tip.getTxPoW();
 			
+			//Is this block the txn
+			if(txblock.getTxPoWIDData().isEqual(zTxPoWID)) {
+				return txblock;
+			}
+			
 			//Check all the transactions..
 			ArrayList<MiniData> txns = txblock.getBlockTransactions();
 			for(MiniData txn : txns) {
