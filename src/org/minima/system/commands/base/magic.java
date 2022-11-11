@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.UserDB;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.commands.Command;
@@ -13,12 +14,12 @@ import org.minima.utils.json.JSONObject;
 public class magic extends Command {
 
 	public magic() {
-		super("magic","");
+		super("magic","(kissvm:) (txpowsize:) (txnsperblock:) - Set the Magic numbers that define the Minima network overall capacity");
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"kissvm"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"kissvm","txpowsize","txnsperblock"}));
 	}
 	
 	@Override
@@ -29,17 +30,30 @@ public class magic extends Command {
 		
 		UserDB udb = MinimaDB.getDB().getUserDB();
 		
-		
 		if(existsParam("kissvm")) {
-			
-			MiniNumber num = getNumberParam("kissvm");
-			
 			//Set this as your KISSVM opcodes..
-			udb.setMagicDesiredKISSVM(num);
+			udb.setMagicDesiredKISSVM(getNumberParam("kissvm"));
 		}
 		
+		if(existsParam("txpowsize")) {
+			//Set this as your KISSVM opcodes..
+			udb.setMagicMaxTxPoWSize(getNumberParam("txpowsize"));
+		}
 		
-		resp.put("desired_kissvm", udb.getMagicDesiredKISSVM());
+		if(existsParam("txnsperblock")) {
+			//Set this as your KISSVM opcodes..
+			udb.setMagicMaxTxns(getNumberParam("txnsperblock"));
+		}
+		
+		//Get the Tip..
+		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+		resp.put("lastblock", tip.getTxPoW().getMagic().toJSON());
+		
+		JSONObject desired = new JSONObject();
+		desired.put("kissvm", udb.getMagicDesiredKISSVM());
+		desired.put("txpowsize", udb.getMagicMaxTxPoWSize());
+		desired.put("txnsperblock", udb.getMagicMaxTxns());
+		resp.put("desired", desired);
 		
 		//Add balance..
 		ret.put("response", resp);

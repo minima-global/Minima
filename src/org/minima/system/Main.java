@@ -550,11 +550,6 @@ public class Main extends MessageProcessor {
 				MinimaLogger.log("You found a block! "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
 			}
 			
-			//MAGIC..
-			if(txpow.isBlock()) {
-				MinimaLogger.log("MAGIC KISSVM @ "+txpow.getBlockNumber()+" "+txpow.getMagic().getMaxKISSOps());
-			}
-			
 			//Create an NIO Message - so the message goes through the same checks as any other message
 			MiniData niodata = NIOManager.createNIOMessage(NIOMessage.MSG_TXPOW, txpow);
 

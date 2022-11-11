@@ -89,7 +89,8 @@ public class TxPoWGenerator {
 		
 		Magic txpowmagic = tip.getTxPoW().getMagic().calculateNewCurrent();
 		txpowmagic.setDesiredKISSVM(udb.getMagicDesiredKISSVM());
-		
+		txpowmagic.setDesiredMaxTxPoWSize(udb.getMagicMaxTxPoWSize());
+		txpowmagic.setDesiredMaxTxns(udb.getMagicMaxTxns());
 		txpow.setMagic(txpowmagic);
 		
 		//Set the parents..
