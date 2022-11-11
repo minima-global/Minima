@@ -2,6 +2,7 @@ package org.minima.system.commands.base;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.cascade.Cascade;
+import org.minima.database.cascade.CascadeNode;
 import org.minima.database.maxima.MaximaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.base.MiniNumber;
@@ -42,17 +43,23 @@ public class healthcheck extends Command {
 		
 		//Now check the cascade
 		Cascade casc = MinimaDB.getDB().getCascade();
-		MiniNumber casctip = casc.getTip().getTxPoW().getBlockNumber();
+		CascadeNode ctip = casc.getTip();
+		if(ctip != null) {
+			MiniNumber casctip = casc.getTip().getTxPoW().getBlockNumber();
+			
+			JSONObject cascade = new JSONObject();
+			cascade.put("tip", casctip.toString());
+			
+			boolean correctstart = casctip.isEqual(treeroot.decrement());
+			cascade.put("tipcorrect", correctstart);
+			
+			cascade.put("cascadelength", casc.getLength());
+			
+			resp.put("cascade", cascade);
+		}else {
+			resp.put("cascade", "nocacade");
+		}
 		
-		JSONObject cascade = new JSONObject();
-		cascade.put("tip", casctip.toString());
-		
-		boolean correctstart = casctip.isEqual(treeroot.decrement());
-		cascade.put("tipcorrect", correctstart);
-		
-		cascade.put("cascadelength", casc.getLength());
-		
-		resp.put("cascade", cascade);
 		
 		//Now check Maxima..
 		MaximaDB maxdb = MinimaDB.getDB().getMaximaDB();
