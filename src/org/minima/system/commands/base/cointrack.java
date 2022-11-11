@@ -18,6 +18,25 @@ public class cointrack extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\ncointrack\n"
+				+ "\n"
+				+ "Track or untrack a coin.\n"
+				+ "\n"
+				+ "Track a coin to keep its MMR proof up-to-date and know when it becomes spent. Stop tracking to remove it from your relevant coins list.\n"
+				+ "\n"
+				+ "enable:\n"
+				+ "    true or false, true will add the coin to your relevant coins, false will remove it from your relevant coins.\n"
+				+ "\n"
+				+ "coinid:\n"
+				+ "    The id of a coin. Can be found using the 'coins' command.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "cointrack enable:true coinid:0x4781880C5CF7AE50CE99F7713456F1245D583ED5D6037CCEE8987D3B54A7FD65\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"file","password"}));
 	}

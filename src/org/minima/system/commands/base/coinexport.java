@@ -23,6 +23,23 @@ public class coinexport extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\ncoinexport\n"
+				+ "\n"
+				+ "Export a coin including its MMR proof.\n"
+				+ "\n"
+				+ "A coin can then be imported and tracked on another node using the 'coinimport' command.\n"
+				+ "\n"
+				+ "coinid:\n"
+				+ "    The id of a coin. Can be found using the 'coins' command.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "coinexport coinid:0x4781880C5CF7AE50CE99F7713456F1245D583ED5D6037CCEE8987D3B54A7FD65\n";
+	}
+	
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"coinid"}));
 	}

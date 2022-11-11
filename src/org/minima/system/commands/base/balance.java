@@ -41,7 +41,9 @@ public class balance extends Command {
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
-				+ "balance tokenid:0x00 confirmations:10\n"
+				+ "balance"
+				+ "\n"
+				+ "balance tokenid:0x1914727BAF21B89F17EA5A1C084D2BC28F2AE99EC296BE9B8771228C59B36F01 confirmations:10\n"
 				+ "\n"
 				+ "balance address:0x1164E55C916266D7F75368FFD20F4E643EC3EADEE1389F98FCE82ECEE88E7761\n";
 	}
