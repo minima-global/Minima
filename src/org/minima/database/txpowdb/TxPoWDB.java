@@ -165,8 +165,11 @@ public class TxPoWDB {
 	 * When you access a txpow it's record is updated 
 	 * and will not be deleted for another time period 
 	 */
-	public void cleanDB() {
+	public void cleanDBRAM() {
 		mRamDB.cleanDB();
+	}
+	
+	public void cleanDBSQL() {
 		mSqlDB.cleanDB();
 	}
 	
