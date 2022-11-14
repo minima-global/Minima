@@ -17,6 +17,27 @@ public class hash extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nhash\n"
+				+ "\n"
+				+ "Returns the hash of the data provided using the algorithm specified, default is KECCAK.\n"
+				+ "\n"
+				+ "data:\n"
+				+ "    The data to hash. Can be HEX (0x) or a string in quotes.\n"
+				+ "    String data will return the the byte representation of the string.\n"
+				+ "\n"
+				+ "type: (optional)\n"
+				+ "    keccak, sha2 or sha3. The hashing algorithm to use, default is KECCAK.\n"
+				+ "    BTC and ETH support sha2 or sha3.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "hash data:0x1C8AFF950685C2ED4BC3174F3472287B56D9517B9C948127319A09A7A36DEAC8\n"
+				+ "\n"
+				+ "hash data:\"this is my secret\" type:sha2\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"data"}));
 	}

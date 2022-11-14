@@ -16,6 +16,23 @@ public class healthcheck extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nhealthcheck\n"
+				+ "\n"
+				+ "Return information about your chain, cascade and maxima.\n"
+				+ "\n"
+				+ "Chain - tip:current chain tip block, root:current chain root block, chainlength:number of blocks in the heaviest chain.\n"
+				+ "\n"
+				+ "Cascade - tip:current cascade tip block, tipcorrect:returns true if the cascade tip meets the root of the txpow tree.\n"
+				+ "\n"
+				+ "Maxima - hosts:number of maxima hosts, contacts:number of maxima contacts.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "healthcheck\n";
+	}
+	
+	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		

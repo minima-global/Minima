@@ -41,7 +41,11 @@ public class burn extends Command {
 	public String getFullHelp() {
 		return "\nburn\n"
 				+ "\n"
-				+ "View number of burn txns and max/median/avg/min burn metrics for last 1, 10 and 50 blocks\n";
+				+ "View number of burn txns and max/median/avg/min burn metrics for last 1, 10 and 50 blocks\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "burn\n";
 	}
 	
 	@Override

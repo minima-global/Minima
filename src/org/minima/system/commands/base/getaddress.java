@@ -13,7 +13,27 @@ import org.minima.utils.json.JSONObject;
 public class getaddress extends Command {
 
 	public getaddress() {
-		super("getaddress","[createall:true] Get one of your default Minima addresses");
+		super("getaddress","(createall:true) Get one of your default Minima addresses");
+	}
+	
+	@Override
+	public String getFullHelp() {
+		return "\ngetaddress\n"
+				+ "\n"
+				+ "Returns an existing default Minima address to receive funds, use as a change address etc.\n"
+				+ "\n"
+				+ "Each address can be used securely 262144 (64^3) times.\n"
+				+ "\n"
+				+ "To get a brand new address for one time use, use 'newaddress' instead.\n"
+				+ "\n"
+				+ "createall: (optional)\n"
+				+ "    true only. To create all 64 default keys.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "getaddress\n"
+				+ "\n"
+				+ "getaddress createall:true\n";
 	}
 	
 	@Override
