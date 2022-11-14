@@ -36,7 +36,7 @@ public class maxima extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"action","name","id","to",
-				"publickey","application","data","logs","poll"}));
+				"publickey","application","data","logs","poll","host"}));
 	}
 	
 	@Override
