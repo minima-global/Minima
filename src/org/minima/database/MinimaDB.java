@@ -189,7 +189,8 @@ public class MinimaDB {
 			
 			//Load the wallet
 			File walletsqlfolder = new File(basedb,"walletsql");
-			mWallet.loadDB(new File(walletsqlfolder,"wallet"));
+//			mWallet.loadDB(new File(walletsqlfolder,"wallet"));
+			mWallet.loadEncryptedDB(new File(walletsqlfolder,"wallet"),"password");
 			
 			//Set the Archive folder
 			File archsqlfolder = new File(basedb,"archivesql");

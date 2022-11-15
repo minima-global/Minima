@@ -53,6 +53,13 @@ public class Wallet extends SqlDB {
 	PreparedStatement SQL_GET_SCRIPT 			= null;
 	
 	/**
+	 * Seed functions
+	 */
+	PreparedStatement SQL_SELECT_SEED 			= null;
+	PreparedStatement SQL_INSERT_SEED 			= null;
+	
+	
+	/**
 	 * Cached Lists of Data for fast O(1) checking..
 	 */
 	HashSet<String> mAllKeys 			= new HashSet<>();
@@ -116,6 +123,16 @@ public class Wallet extends SqlDB {
 		//Run it..
 		stmt.execute(scriptsdb);
 		
+		//Create the base seed table..
+		String seeddb = "CREATE TABLE IF NOT EXISTS `seed` ("
+						 + "  `id` int NOT NULL UNIQUE,"
+						 + "  `phrase` varchar(8192) NOT NULL,"
+						 + "  `seed` varchar(80) NOT NULL"
+						 + ")";
+
+		//Run it..
+		stmt.execute(seeddb);
+		
 		//All done..
 		stmt.close();
 		
@@ -138,6 +155,10 @@ public class Wallet extends SqlDB {
 		SQL_LIST_DEFAULT_SCRIPTS	= mSQLConnection.prepareStatement("SELECT * FROM scripts WHERE defaultaddress<>0");
 		SQL_GET_SCRIPT				= mSQLConnection.prepareStatement("SELECT * FROM scripts WHERE address=?");
 		
+		//Seed DB
+		SQL_SELECT_SEED				= mSQLConnection.prepareStatement("SELECT * FROM seed");
+		SQL_INSERT_SEED				= mSQLConnection.prepareStatement("INSERT INTO seed ( id, phrase, seed ) VALUES ( 1 , ? , ? )");				
+		
 		//Now load up the caches..
 		ArrayList<KeyRow> allkeys = getAllKeys();
 		for(KeyRow key : allkeys) {
@@ -154,6 +175,11 @@ public class Wallet extends SqlDB {
 				mAllSimpleAddress.add(address);
 			}
 		}
+		
+	}
+	
+	private void initBaseSeed() {
+		
 		
 	}
 	

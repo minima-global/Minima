@@ -65,6 +65,33 @@ public abstract class SqlDB {
 		createSQL();
 	}
 	
+	public void loadEncryptedDB(File zFile, String zPassword) throws SQLException {
+		
+		//Store this for open checks
+		mSQLDBNoMV = zFile;
+		
+		//Make sure the parent files exist
+		zFile.getParentFile().mkdirs();
+		
+		//Get the full db path
+		String path = zFile.getAbsolutePath();
+		
+		//Store this
+		mSQLFile = new File(path+".mv.db");
+				
+		//The H2 JDBC URL
+		String h2db = "jdbc:h2:"+path+";MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE;CIPHER=AES";
+		
+		//Create the connection
+		mSQLConnection = DriverManager.getConnection(h2db, "SA", zPassword+" userpasswd");
+		
+		//Auto commit changes
+		mSQLConnection.setAutoCommit(true);
+
+		//Perform Create SQL
+		createSQL();
+	}
+	
 	public boolean checkOpen() throws SQLException {
 		
 		//Check not NULL
