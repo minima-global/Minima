@@ -1,5 +1,6 @@
 package org.minima.database.archive;
 
+import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,6 +16,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.params.GeneralParams;
+import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SqlDB;
 import org.minima.utils.json.JSONObject;
@@ -158,6 +160,9 @@ public class ArchiveManager extends SqlDB {
 	public synchronized int getSize() {
 		try {
 		
+			//Make sure..
+			checkOpen();
+			
 			//Run the query
 			ResultSet rs = SQL_TOTAL_COUNT.executeQuery();
 			
@@ -176,48 +181,42 @@ public class ArchiveManager extends SqlDB {
 	}
 	
 	public synchronized boolean saveBlock(TxBlock zBlock) throws SQLException {
-//		try {
-			
-			//get the MiniData version..
-			MiniData syncdata = MiniData.getMiniDataVersion(zBlock);
-			
-			//Get the Query ready
-			SQL_INSERT_SYNCBLOCK.clearParameters();
 		
-			//Set main params
-			SQL_INSERT_SYNCBLOCK.setString(1, zBlock.getTxPoW().getTxPoWID());
-			SQL_INSERT_SYNCBLOCK.setLong(2, zBlock.getTxPoW().getBlockNumber().getAsLong());
-			SQL_INSERT_SYNCBLOCK.setLong(3, System.currentTimeMillis());
-			
-			//And finally the actual bytes
-			SQL_INSERT_SYNCBLOCK.setBytes(4, syncdata.getBytes());
-			
-			//Do it.
-			SQL_INSERT_SYNCBLOCK.execute();
+		//Make sure..
+		checkOpen();
+	
+		//get the MiniData version..
+		MiniData syncdata = MiniData.getMiniDataVersion(zBlock);
 		
-			//Do we MySQL
-			if(mStoreMySQL) {
-				mMySQL.saveBlock(zBlock);
-			}
-			
-			return true;
-			
-//		} catch (SQLException e) {
-//			MinimaLogger.log(e);
-//		}
-//		
-//		return false;
+		//Get the Query ready
+		SQL_INSERT_SYNCBLOCK.clearParameters();
+	
+		//Set main params
+		SQL_INSERT_SYNCBLOCK.setString(1, zBlock.getTxPoW().getTxPoWID());
+		SQL_INSERT_SYNCBLOCK.setLong(2, zBlock.getTxPoW().getBlockNumber().getAsLong());
+		SQL_INSERT_SYNCBLOCK.setLong(3, System.currentTimeMillis());
+		
+		//And finally the actual bytes
+		SQL_INSERT_SYNCBLOCK.setBytes(4, syncdata.getBytes());
+		
+		//Do it.
+		SQL_INSERT_SYNCBLOCK.execute();
+	
+		//Do we MySQL
+		if(mStoreMySQL) {
+			mMySQL.saveBlock(zBlock);
+		}
+		
+		return true;		
 	}
 	
 	public synchronized TxBlock loadBlock(String zTxPoWID) {
 		
-		//Are we shutting down..
-		if(Main.getInstance().isShuttingDown()) {
-			return new TxBlock(new TxPoW());
-		}
-		
 		try {
 			
+			//Make sure..
+			checkOpen();
+		
 			//Set search params
 			SQL_FIND_SYNCBLOCK.clearParameters();
 			SQL_FIND_SYNCBLOCK.setString(1, zTxPoWID);
@@ -249,13 +248,11 @@ public class ArchiveManager extends SqlDB {
 	
 	public synchronized TxBlock loadLastBlock() {
 		
-		//Are we shutting down..
-		if(Main.getInstance().isShuttingDown()) {
-			return new TxBlock(new TxPoW());
-		}
-		
 		try {
 			
+			//Make sure..
+			checkOpen();
+		
 			//Set search params
 			SQL_SELECT_LAST.clearParameters();
 			
@@ -286,15 +283,13 @@ public class ArchiveManager extends SqlDB {
 	
 	public synchronized JSONObject loadLastBlockJSON() {
 		
-		//Are we shutting down..
-		if(Main.getInstance().isShuttingDown()) {
-			return new JSONObject();
-		}
-		
 		JSONObject ret = new JSONObject();
 		
 		try {
 			
+			//Make sure..
+			checkOpen();
+		
 			//Set search params
 			SQL_SELECT_LAST.clearParameters();
 			
@@ -329,6 +324,9 @@ public class ArchiveManager extends SqlDB {
 		
 		try {
 			
+			//Make sure..
+			checkOpen();
+		
 			//Set Search params
 			SQL_SELECT_SYNC_LIST.clearParameters();
 			SQL_SELECT_SYNC_LIST.setLong(1,zStartBlock.getAsLong());
@@ -382,6 +380,8 @@ public class ArchiveManager extends SqlDB {
 	public synchronized MiniNumber exists(String zTxPoWID) {
 		
 		try {
+			//Make sure..
+			checkOpen();
 			
 			//Set search params
 			SQL_EXISTS_SYNCBLOCK.clearParameters();
@@ -411,6 +411,9 @@ public class ArchiveManager extends SqlDB {
 		
 		try {
 			
+			//Make sure..
+			checkOpen();
+		
 			//Set Search params
 			SQL_SELECT_RANGE.clearParameters();
 			SQL_SELECT_RANGE.setLong(1,zStartBlock.getAsLong());
@@ -454,6 +457,9 @@ public class ArchiveManager extends SqlDB {
 		
 		try {
 			
+			//Make sure..
+			checkOpen();
+		
 			//Set search params
 			SQL_SELECT_FIRST.clearParameters();
 			
@@ -484,6 +490,9 @@ public class ArchiveManager extends SqlDB {
 
 	public synchronized int cleanDB() {
 		try {
+			//Make sure..
+			checkOpen();
+		
 			//Set search params
 			SQL_SELECT_FIRST.clearParameters();
 			
@@ -526,50 +535,57 @@ public class ArchiveManager extends SqlDB {
 		return 0;
 	}
 	
+	public void hackShut() throws SQLException {
+		mSQLConnection.close();
+	}
+	
 	public static void main(String[] zArgs) throws SQLException {
 		
+		File testdbfolder 	= new File(System.getProperty("user.home"),"testfolder");
+		File testdb 		= new File(testdbfolder,"sqlsync");
+		
+		//Wipe the old..
+		MiniFile.deleteFileOrFolder(testdbfolder.getAbsolutePath(), testdbfolder);
+		
 		ArchiveManager arch = new ArchiveManager();
+		arch.loadDB(testdb);
 		
-//		long timenow = System.currentTimeMillis();
-//		System.out.println(new Date(timenow));
-//		long timethen = timenow - arch.MAX_SQL_MILLI;
-//		System.out.println(new Date(1662646695127L));
+		//test insert..
+		TxPoW txp = new TxPoW();
+		txp.setBlockNumber(MiniNumber.ONE);
+		txp.setTimeMilli();
+		txp.calculateTXPOWID();
+		txp.setSuperParent(0, new MiniData("0xFFEEFF"));
 		
-//		File testdbfolder 	= new File(System.getProperty("user.home"),"testfolder");
-//		File testdb 		= new File(testdbfolder,"sqlsync");
-//		
-//		ArchiveManager arch = new ArchiveManager();
-//		arch.loadDB(testdb);
-//		
-//		//test insert..
-//		TxPoW txp = new TxPoW();
-//		txp.setBlockNumber(MiniNumber.ONE);
-//		txp.setTimeMilli();
-//		txp.calculateTXPOWID();
-//		txp.setSuperParent(0, new MiniData("0xFFEEFF"));
-//		
-//		//Create a SyncBlock
-//		TxBlock sb = new TxBlock(txp);
-//		
-//		arch.saveBlock(sb);
-//		arch.saveBlock(sb);
-//		
-//		int rows = arch.getSize();
-//		
-//		System.out.println("DB Size : "+rows);
-//		
-//		String txpid = sb.getTxPoW().getTxPoWID();
-//		
-//		TxBlock lsb = arch.loadBlock(txpid);
-//		
-//		System.out.println("Sync Loaded : "+lsb.getTxPoW().toString());
-//		
-//		//Load a range..
-//		ArrayList<TxBlock> blocks = arch.loadBlockRange(MiniNumber.ZERO, MiniNumber.ONE);
-//		System.out.println("Sync Range : "+blocks.size());
-//		
-//		//Shut down
-//		arch.saveDB();
+		arch.hackShut();
+		
+		//Create a SyncBlock
+		TxBlock sb = new TxBlock(txp);
+		
+		arch.saveBlock(sb);
+		
+		arch.hackShut();
+		
+		int rows = arch.getSize();
+		
+		System.out.println("DB Size : "+rows);
+		
+		arch.hackShut();
+		
+		String txpid = sb.getTxPoW().getTxPoWID();
+		
+		TxBlock lsb = arch.loadBlock(txpid);
+		
+		arch.hackShut();
+		
+		System.out.println("Sync Loaded : "+lsb.getTxPoW().toString());
+		
+		//Load a range..
+		ArrayList<TxBlock> blocks = arch.loadBlockRange(MiniNumber.ZERO, MiniNumber.ONE);
+		System.out.println("Sync Range : "+blocks.size());
+		
+		//Shut down
+		arch.saveDB();
 	}
 
 

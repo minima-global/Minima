@@ -164,9 +164,6 @@ public class MDSFileHandler implements Runnable {
 				//Get the password..
 				String pass = getPasswordFromPost(data);
 				
-				//PAUSE - this prevents fast checking of passwords
-				Thread.sleep(1000);
-				
 				//Check this is the correct password..
 				String webpage = null;
 				if(!mMDS.checkMiniHUBPasword(pass)) {

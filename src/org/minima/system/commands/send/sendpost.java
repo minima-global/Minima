@@ -1,5 +1,8 @@
 package org.minima.system.commands.send;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
@@ -11,6 +14,11 @@ public class sendpost extends Command {
 
 	public sendpost() {
 		super("sendpost","[file:] - Post a signed txn");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"file"}));
 	}
 	
 	@Override

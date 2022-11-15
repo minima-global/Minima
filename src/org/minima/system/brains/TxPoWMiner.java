@@ -133,7 +133,7 @@ public class TxPoWMiner extends MessageProcessor {
 			
 			//Make a log..
 			if(txpow.isTransaction()) {
-				MinimaLogger.log("Transaction Mined : "+txpow.getTxPoWID());
+				MinimaLogger.log("ASYNC Transaction Mined : "+txpow.getTxPoWID());
 			}
 			
 			//Post a message.. Mining Finished
@@ -233,13 +233,16 @@ public class TxPoWMiner extends MessageProcessor {
 	/**
 	 * Mine a TxPoW - Used to Mine Maxima Messages
 	 */
-	public boolean MineMaxTxPoW(TxPoW zTxPoW, long zTimeLimit) {
+	public boolean MineMaxTxPoW(boolean zMaxima, TxPoW zTxPoW, long zTimeLimit) {
 		
 		//What is the time..
 		long timenow = System.currentTimeMillis();
-				
+		
+		//Add these coins to our Mining list
+		addMiningCoins(zTxPoW);
+		
 		//Are we logging..
-		if(GeneralParams.MINING_LOGS) {
+		if(GeneralParams.MINING_LOGS && zMaxima) {
 			MinimaLogger.log("MINING MAXIMA START");
 		}
 		
@@ -309,6 +312,11 @@ public class TxPoWMiner extends MessageProcessor {
 		//Calculate TxPoWID
 		zTxPoW.calculateTXPOWID();
 		
+		//Make a log..
+		if(zTxPoW.isTransaction()) {
+			MinimaLogger.log("SYNC Transaction Mined : "+zTxPoW.getTxPoWID());
+		}
+		
 		//Post it on..
 		Main.getInstance().PostMessage(new Message(Main.MAIN_TXPOWMINED).addObject("txpow", zTxPoW));
 
@@ -316,7 +324,7 @@ public class TxPoWMiner extends MessageProcessor {
 		removeMiningCoins(zTxPoW);
 		
 		//Are we logging..
-		if(GeneralParams.MINING_LOGS) {
+		if(GeneralParams.MINING_LOGS && zMaxima) {
 			//Time diff..
 			long timediff = System.currentTimeMillis() - timenow;
 			

@@ -2,6 +2,7 @@ package org.minima.system.commands.send;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
@@ -60,6 +61,12 @@ public class sendnosign extends Command {
 	
 	public sendnosign() {
 		super("sendnosign","(address:Mx..|0x..) (amount:) (multi:[address:amount,..]) (tokenid:) (state:{}) (burn:) (split:) (debug:) - Create a txn but don't sign it");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"address","amount","multi",
+				"tokenid","state","burn","split","debug","dryrun"}));
 	}
 	
 	@Override

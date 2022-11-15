@@ -67,8 +67,16 @@ public class Main extends MessageProcessor {
 	 * Main loop messages
 	 */
 	public static final String MAIN_TXPOWMINED 	= "MAIN_TXPOWMINED";
-	public static final String MAIN_CLEANDB 	= "MAIN_CLEANDB";
 	public static final String MAIN_PULSE 		= "MAIN_PULSE";
+
+	/**
+	 * Clean DB - RamDB every 30 mins.. the TxPoW and Archive every 12 hours
+	 */
+	public static final String MAIN_CLEANDB_RAM 	= "MAIN_CLEANDB_RAM";
+	long CLEANDB_RAM_TIMER	= 1000 * 60 * 30;
+	
+	public static final String MAIN_CLEANDB_SQL 	= "MAIN_CLEANDB_SQL";
+	long CLEANDB_SQL_TIMER	= 1000 * 60 * 60 * 12;
 	
 	/**
 	 * Auto backup every 24 hrs..
@@ -154,11 +162,6 @@ public class Main extends MessageProcessor {
 	 * Are we restoring..
 	 */
 	boolean mRestoring = false;
-	
-	/**
-	 * Timer delay for CleanDB messages - every 30 mins
-	 */
-	long CLEANDB_TIMER	= 1000 * 60 * 30;
 	
 	/**
 	 * Timer for the automine message
@@ -268,10 +271,12 @@ public class Main extends MessageProcessor {
 		
 		//Clean the DB (delete old records)
 		if(GeneralParams.GENESIS) {
-			PostTimerMessage(new TimerMessage(5 * 1000, MAIN_CLEANDB));
+			//Do sooner as stores the genesis Txn..
+			PostTimerMessage(new TimerMessage(10 * 1000, MAIN_CLEANDB_RAM));
 		}else {
-			PostTimerMessage(new TimerMessage(60 * 1000, MAIN_CLEANDB));
+			PostTimerMessage(new TimerMessage(60 * 1000, MAIN_CLEANDB_RAM));
 		}
+		PostTimerMessage(new TimerMessage(60 * 1000, MAIN_CLEANDB_SQL));
 		
 		//Store the IC User - do fast first time - 30 seconds in.. then every 8 hours
 		PostTimerMessage(new TimerMessage(1000*30, MAIN_INCENTIVE));
@@ -560,23 +565,31 @@ public class Main extends MessageProcessor {
 			//Post to the NIOManager - which will check it and forward if correct
 			getNetworkManager().getNIOManager().PostMessage(newniomsg);
 			
-		}else if(zMessage.getMessageType().equals(MAIN_CLEANDB)) {
+		}else if(zMessage.getMessageType().equals(MAIN_CLEANDB_RAM)) {
 			
 			//Clean up the RAM Memory
 			System.gc();
 			
 			//Do some house keeping on the DB
-			MinimaDB.getDB().getTxPoWDB().cleanDB();
-			
-			//Same with the ArchiveDB
-			MinimaDB.getDB().getArchive().cleanDB();
+			MinimaDB.getDB().getTxPoWDB().cleanDBRAM();
 			
 			//Now save the state - in case system crashed..
 			MinimaDB.getDB().saveState();
 			
 			//Do it again..
-			PostTimerMessage(new TimerMessage(CLEANDB_TIMER, MAIN_CLEANDB));
+			PostTimerMessage(new TimerMessage(CLEANDB_RAM_TIMER, MAIN_CLEANDB_RAM));
 		
+		}else if(zMessage.getMessageType().equals(MAIN_CLEANDB_SQL)) {
+			
+			//Do some house keeping on the DB
+			MinimaDB.getDB().getTxPoWDB().cleanDBSQL();
+			
+			//Same with the ArchiveDB
+			MinimaDB.getDB().getArchive().cleanDB();
+			
+			//Do it again..
+			PostTimerMessage(new TimerMessage(CLEANDB_SQL_TIMER, MAIN_CLEANDB_SQL));
+			
 		}else if(zMessage.getMessageType().equals(MAIN_PULSE)) {
 			
 			//Create Pulse Message

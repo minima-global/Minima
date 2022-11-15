@@ -3,6 +3,7 @@ package org.minima.system.commands.send;
 import java.io.File;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.wallet.ScriptRow;
@@ -23,6 +24,11 @@ public class sendsign extends Command {
 
 	public sendsign() {
 		super("sendsign","[file:] - Sign a previously created txn");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"file"}));
 	}
 	
 	@Override
