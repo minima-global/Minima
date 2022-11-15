@@ -13,6 +13,7 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.network.connect;
 import org.minima.system.network.maxima.MaxMsgHandler;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaximaMessage;
@@ -84,6 +85,13 @@ public class maxima extends Command {
 		}else if(func.equals("staticmls")) {
 		
 			String host = getParam("host");
+			
+			//Check is valid..
+			Message conn = connect.createConnectMessage(host);
+			if(conn == null) {
+				throw new CommandException("Invalid host.. must be host:port : "+host);
+			}
+			
 			if(host.equals("clear")) {
 				max.setStaticMLS(false, "");
 			}else {
