@@ -31,6 +31,26 @@ public class mmrcreate extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nmmrcreate\n"
+				+ "\n"
+				+ "Create an MMR Tree of data. Can be used in MAST contracts.\n"
+				+ "\n"
+				+ "Must specify a JSON array of string/HEX data for the leaf nodes.\n"
+				+ "\n"
+				+ "Returns the MMR data and proof for each leaf node and the MMR root hash.\n"
+				+ "\n"
+				+ "nodes:\n"
+				+ "    JSON array of string/HEX data for the leaf nodes.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "mmrcreate nodes:[\"RETURN TRUE\",\"RETURN FALSE\"]\n"
+				+ "\n"
+				+ "mmrcreate nodes:[\"0xD4A3972148BE80A473E78794DB90F9AC2010467CDE9B3F1BEBB4238E62423166\",\"0xD4A3972148BE80A473E78794DB90F9AC2010467CDE9B3F1BEBB4238E62423166\"] \n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"nodes"}));
 	}
@@ -80,7 +100,7 @@ public class mmrcreate extends Command {
 			//Increment
 			counter++;
 			
-			//Add to thew MMR
+			//Add to the MMR
 			mmrtree.addEntry(new MMRData(hash));
 		}
 		
