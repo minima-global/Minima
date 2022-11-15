@@ -6,9 +6,7 @@ import java.util.Arrays;
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.UserDB;
-import org.minima.objects.base.MiniNumber;
 import org.minima.system.commands.Command;
-import org.minima.system.params.GeneralParams;
 import org.minima.utils.json.JSONObject;
 
 public class magic extends Command {
