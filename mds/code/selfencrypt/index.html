@@ -1,0 +1,83 @@
+
+<html>
+
+<head>
+    <title>Decrypt AES</title>
+    
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script type="text/javascript" src="AesUtil.js"></script>
+    
+</head>
+
+<script type="text/javascript">
+
+/*var encryptedInfo = "5jo90pB0Sat8ftkSwS4s5cZQj2bM55kbikGKLxw/2bvk57gBPEnolPiMy3C2wr3x";
+
+var password =  "my_secret_non_encrypted_password";
+password = CryptoJS.enc.Utf8.parse(password)
+
+var decrypt = CryptoJS.AES.decrypt(encryptedInfo.toString(), password, {
+    mode: CryptoJS.mode.ECB,
+    padding: CryptoJS.pad.Pkcs7
+}).toString(CryptoJS.enc.Base64);
+
+console.log('decrypt ', decrypt);
+*/
+
+	//var hash = CryptoJS.MD5("Message");
+	//document.write(hash);
+
+	
+	//var encrypteddata = "U2FsdGVkX1+fRWD4wng3xoh9W8B05VOoJVYtNkCm2jocEG3jWIzsjMYVu6Ke3K/F";
+	
+	//console.log(CryptoJS.AES.decrypt(encrypteddata, password).toString(CryptoJS.enc.Utf8));
+
+	//var enc = CryptoJS.AES.encrypt("The Message", password).toString(CryptoJS.enc.Utf8);
+	//console.log(enc);
+
+	//var encrypted = CryptoJS.AES.encrypt("The Message", "Secret Passphrase");
+	//var decrypted = CryptoJS.AES.decrypt(encrypted, "Secret Passphrase").toString(CryptoJS.enc.Utf8);
+	//console.log(decrypted);
+
+	var password 	  = "apasswordblabla";
+	var text 		  = "helloyou!";
+	
+	var iv 			= CryptoJS.lib.WordArray.random(128/8).toString(CryptoJS.enc.Hex);
+	console.log("IV:"+iv);
+	
+	var salt 		= CryptoJS.lib.WordArray.random(128/8).toString(CryptoJS.enc.Hex);
+	console.log("SALT:"+salt);
+	
+    var aesUtil 	= new AesUtil(128, 1000);
+    var ciphertext 	= aesUtil.encrypt(salt, iv, password , text );
+
+    console.log("CIPHER:"+ciphertext);
+    
+    var plaintext 	= aesUtil.decrypt(salt, iv, password , ciphertext );
+    console.log("PLAIN:"+plaintext);
+        
+        
+        /*var aesPassword = (iv + "::" + salt + "::" + ciphertext);
+        var password = btoa(aesPassword);
+        var data = {
+            userName: $scope.userName,
+            password: password
+        }*/
+        
+</script>
+
+<body>
+    <br><br>
+    <center>
+    
+    Please enter encrypted data..<br><br>
+    
+    <textarea rows="10" cols="50" id="encrypteddata"></textarea>
+    
+    <button>DECRYPT</button>
+    
+    </center>
+    
+</body>
+
+</html>

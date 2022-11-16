@@ -14,7 +14,7 @@ import org.minima.utils.messages.MessageListener;
 
 public class BalanceTest {
 
-    public String command = "";
+    public static String command = "";
     public Minima minima;
 
     public BalanceTest() {
@@ -110,21 +110,8 @@ public class BalanceTest {
 
     public String runCommand(){
            
-            String balance = minima.runMinimaCMD("balance",false);
-            
-            //Make a JSON
-            //JSONObject jsonbalance = (JSONObject) new JSONParser().parse(balance);
-            
-            //CHECK STUFF
-            
-            //Re convert back to string..
-            //String prettyjson = MiniFormat.JSONPretty(jsonbalance);
+            String balance = minima.runMinimaCMD(command, false);
 
             return balance.toString();
-    }
-
-    public String getCommandOutput(){
-        return "";
-    }
-    
+    }    
 }

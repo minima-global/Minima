@@ -1,0 +1,3 @@
+#!/bin/bash
+
+java -cp /usr/local/minima/minima.jar org.minima.utils.MinimaRPCClient

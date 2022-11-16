@@ -1,0 +1,30 @@
+---------------------
+RUN MINIMA ON DESKTOP
+---------------------
+
+#FIRST INSTALL DOCKER
+
+#ON DESKTOP - INSTALL DOCKER DESKTOP
+https://docs.docker.com/get-docker/
+
+#ON SERVER - INSTALL DOCKER 
+curl -fsSL https://get.docker.com/ -o get-docker.sh
+chmod +x ./get-docker.sh
+sudo ./get-docker.sh
+sudo usermod -aG docker $USER
+(logout / login)
+
+#THEN - Run this command in terminal
+#You MUST set a new password at the bit that says 'minima_mdspassword=123' - change that to whatever you want
+#Your files, backups etc will be stored in a folder named 'MinimaDocker' in your HOME directory
+
+# DESKTOP - WINDOWS / MAC /LINUX
+docker run -d -e minima_mdspassword=123 -e minima_desktop=true -v ~/MinimaDocker:/home/minima/data -p 9001-9004:9001-9004 --restart unless-stopped --name minima minimaglobal/minima:latest
+
+# SERVER - LINUX
+docker run -d -e minima_mdspassword=123 -e minima_server=true -v ~/MinimaDocker:/home/minima/data -p 9001-9004:9001-9004 --restart unless-stopped --name minima minimaglobal/minima:latest
+
+#THEN - BOTH DESKTOP AND SERVER - Run this command in terminal so that you are automatically updated when a new version is released
+
+# WATCHTOWER - update minima docker when new image pushed
+docker run -d --restart unless-stopped --name watchtower -e WATCHTOWER_CLEANUP=true -e WATCHTOWER_TIMEOUT=60s -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower minima

@@ -1,0 +1,63 @@
+
+<html>
+
+<head>
+    <title>MDS HUB</title>
+    
+    <script type="text/javascript" src="mds.js"></script>
+    
+</head>
+
+<body>
+
+<img src="news.png">
+<br><br>
+
+
+
+<script type="text/javascript">
+
+//Main message handler..
+MDS.init(function(msg){
+	
+	//Do initialisation
+	if(msg.event == "inited"){
+			
+		MDS.log("MyTest HTML inited");
+		
+		MDS.file.list("/",function(msg){
+			MDS.log("FILE LIST "+JSON.stringify(msg));
+		});
+		
+		MDS.file.save("/test.txt","hello",function(msg){
+			MDS.log("FILE SAVE "+JSON.stringify(msg));
+			
+			MDS.file.load("/test.txt",function(msg){
+				MDS.log("FILE LOAD "+JSON.stringify(msg));
+			});
+		});
+		
+		MDS.file.save("/somefolder/newtest.txt","hello2",function(msg){
+			MDS.log("FILE SAVE "+JSON.stringify(msg));
+			
+			MDS.file.list("/somefolder",function(msg){
+				MDS.log("FILE LIST "+JSON.stringify(msg));
+			});
+		});
+		
+		
+	//Only interested in Maxima
+	}else if(msg.event == "MDSCOMMS"){
+		MDS.log("REC : "+JSON.stringify(msg));
+	}
+	
+});
+
+
+
+</script>
+
+
+</body>
+
+</html>
