@@ -23,6 +23,11 @@ public class GeneralParams {
 	public static boolean CLEAN = false;
 	
 	/**
+	 * The Wallet AES Password
+	 */
+	public static String MAIN_PASSWORD = "minima"; 
+	
+	/**
 	 * Where are the database files stored. This is set at startup.
 	 */
 	public static String DATA_FOLDER = "";

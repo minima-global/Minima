@@ -147,6 +147,9 @@ public class ParamConfigurer {
     		//Set this globally
     		GeneralParams.DATA_FOLDER 	= minimafolder.getAbsolutePath();
         }),
+    	password("password", "Main Wallet AES password - MUST be specified on first launch", (args, configurer) -> {
+            GeneralParams.MAIN_PASSWORD = args;
+        }),
     	basefolder("basefolder", "Specify a default file creation / backup / restore folder", (args, configurer) -> {
     		//Get that folder
     		File backupfolder 	= new File(args);
@@ -249,14 +252,6 @@ public class ParamConfigurer {
         p2plogleveldebug("p2p-log-level-debug", "Set the P2P log level to info", (args, configurer) -> {
             P2PParams.LOG_LEVEL = P2PFunctions.Level.DEBUG;
         }),
-//        automine("automine", "Simulate user traffic to construct the blockchain", (args, configurer) -> {
-//            if ("true".equals(args)) {
-//                GeneralParams.AUTOMINE = true;
-//            }
-//        }),
-//        noautomine("noautomine", "Do not simulate user traffic to construct the blockchain", (args, configurer) -> {
-//            GeneralParams.AUTOMINE = false;
-//        }),
         connect("connect", "Disable the p2p and manually connect to this list of host:port", (args, configurer) -> {
             GeneralParams.P2P_ENABLED = false;
             GeneralParams.CONNECT_LIST = args;
