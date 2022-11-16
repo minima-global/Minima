@@ -212,13 +212,15 @@ public class archive extends Command {
 				//Convert that into a seed..
 				seed = BIP39.convertStringToSeed(phrase);
 				
-				//Set it..
-				MinimaDB.getDB().getUserDB().setBasePrivatePhrase(phrase);
-				MinimaDB.getDB().getUserDB().setBasePrivateSeed(seed.to0xString());
-				MinimaDB.getDB().getWallet().initBaseSeed(seed);
-				
 				//Get the Wallet
 				Wallet wallet = MinimaDB.getDB().getWallet();
+				
+				//Set it..
+				wallet.updateSeedRow(phrase, seed.to0xString());
+				
+//				MinimaDB.getDB().getUserDB().setBasePrivatePhrase(phrase);
+//				MinimaDB.getDB().getUserDB().setBasePrivateSeed(seed.to0xString());
+//				MinimaDB.getDB().getWallet().initBaseSeed(seed);
 				
 				//Now cycle through all the default wallet keys..
 				MinimaLogger.log("Creating a total of "+keys+" keys / addresses..");

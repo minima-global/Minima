@@ -201,27 +201,27 @@ public class Main extends MessageProcessor {
 		//Create the SSL Keystore..
 		SSLManager.makeKeyFile();
 		
-		//Set the Base Private seed if needed..
-		if(MinimaDB.getDB().getUserDB().getBasePrivateSeed().equals("")) {
-			MinimaLogger.log("Generating Base Private Seed Key");
-			
-			//Get a BIP39 phrase
-			String[] words = BIP39.getNewWordList();
-			
-			//Convert to a string
-			String phrase = BIP39.convertWordListToString(words);
-			
-			//Convert that into a seed..
-			MiniData seed = BIP39.convertStringToSeed(phrase);
-			
-			//Not set yet..
-			MinimaDB.getDB().getUserDB().setBasePrivatePhrase(phrase);
-			MinimaDB.getDB().getUserDB().setBasePrivateSeed(seed.to0xString());
-		}
+//		//Set the Base Private seed if needed..
+//		if(MinimaDB.getDB().getUserDB().getBasePrivateSeed().equals("")) {
+//			MinimaLogger.log("Generating Base Private Seed Key");
+//			
+//			//Get a BIP39 phrase
+//			String[] words = BIP39.getNewWordList();
+//			
+//			//Convert to a string
+//			String phrase = BIP39.convertWordListToString(words);
+//			
+//			//Convert that into a seed..
+//			MiniData seed = BIP39.convertStringToSeed(phrase);
+//			
+//			//Not set yet..
+//			MinimaDB.getDB().getUserDB().setBasePrivatePhrase(phrase);
+//			MinimaDB.getDB().getUserDB().setBasePrivateSeed(seed.to0xString());
+//		}
 		
-		//Get the base private seed..
-		String basepriv = MinimaDB.getDB().getUserDB().getBasePrivateSeed();
-		MinimaDB.getDB().getWallet().initBaseSeed(new MiniData(basepriv));
+//		//Get the base private seed..
+//		String basepriv = MinimaDB.getDB().getUserDB().getBasePrivateSeed();
+//		MinimaDB.getDB().getWallet().initBaseSeed(new MiniData(basepriv));
 		
 		//Calculate the User hashrate.. start her up as seems to make a difference.. initialises..
 		TxPoWMiner.calculateHashRate(new MiniNumber(10000));

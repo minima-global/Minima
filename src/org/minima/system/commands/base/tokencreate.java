@@ -292,6 +292,7 @@ public class tokencreate extends Command {
 			MiniData sigdata = MiniData.getMiniDataVersion(sig);
 			
 			//Get the Pubkey.. add it to the JSON
+			jsonname.put("signtype", "minima");
 			jsonname.put("signedby", sigpubkey);
 			jsonname.put("signature", sigdata.to0xString());
 		}

@@ -54,7 +54,7 @@ public class BIP39 {
 	
 	public static MiniData convertStringToSeed(String zPhrase) {
 		
-		MiniString phrase = new MiniString(zPhrase);
+		MiniString phrase = new MiniString(zPhrase.trim());
 		
 		return new MiniData(Crypto.getInstance().hashData(phrase.getData()));
 	}

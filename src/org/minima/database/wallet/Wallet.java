@@ -14,6 +14,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.Signature;
 import org.minima.objects.keys.TreeKey;
 import org.minima.system.params.GeneralParams;
+import org.minima.utils.BIP39;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SqlDB;
@@ -28,7 +29,8 @@ public class Wallet extends SqlDB {
 	/**
 	 * The MAIN Private seed from which all others are derived..
 	 */
-	private MiniData mMainPrivateSeed = MiniData.ZERO_TXPOWID; 
+//	private MiniData mMainPrivateSeed = MiniData.ZERO_TXPOWID; 
+	private SeedRow mBaseSeed = null;
 	
 	/**
 	 * Key SQL
@@ -57,7 +59,7 @@ public class Wallet extends SqlDB {
 	 */
 	PreparedStatement SQL_SELECT_SEED 			= null;
 	PreparedStatement SQL_INSERT_SEED 			= null;
-	
+	PreparedStatement SQL_UPDATE_SEED 			= null;
 	
 	/**
 	 * Cached Lists of Data for fast O(1) checking..
@@ -156,8 +158,9 @@ public class Wallet extends SqlDB {
 		SQL_GET_SCRIPT				= mSQLConnection.prepareStatement("SELECT * FROM scripts WHERE address=?");
 		
 		//Seed DB
-		SQL_SELECT_SEED				= mSQLConnection.prepareStatement("SELECT * FROM seed");
+		SQL_SELECT_SEED				= mSQLConnection.prepareStatement("SELECT * FROM seed WHERE id=1");
 		SQL_INSERT_SEED				= mSQLConnection.prepareStatement("INSERT INTO seed ( id, phrase, seed ) VALUES ( 1 , ? , ? )");				
+		SQL_UPDATE_SEED				= mSQLConnection.prepareStatement("UPDATE seed SET phrase=?, seed=? WHERE id=1");				
 		
 		//Now load up the caches..
 		ArrayList<KeyRow> allkeys = getAllKeys();
@@ -176,55 +179,106 @@ public class Wallet extends SqlDB {
 			}
 		}
 		
+		//The seed phrase
+		initBaseSeed();
 	}
 	
-	private void initBaseSeed() {
+	private void initBaseSeed() throws SQLException {
 		
+		//Run the query
+		ResultSet rs = SQL_SELECT_SEED.executeQuery();
 		
+		//Could be multiple results
+		if(rs.next()) {
+			
+			//Store
+			mBaseSeed = new SeedRow(rs);
+
+			if(isBaseSeedAvailable()) {
+				MinimaLogger.log("Base Private Seed Keys found");
+			}else {
+				MinimaLogger.log("Base Private Seed LOCKED");
+			}
+			
+			return;
+		}
+		
+		//Create a base row..
+		MinimaLogger.log("Generating Base Private Seed Key");
+		
+		//Get a BIP39 phrase
+		String[] words = BIP39.getNewWordList();
+		
+		//Convert to a string
+		String phrase = BIP39.convertWordListToString(words);
+		
+		//Convert that into a seed..
+		MiniData seed = BIP39.convertStringToSeed(phrase);
+		
+		//Now insert this..
+		SQL_INSERT_SEED.clearParameters();
+		SQL_INSERT_SEED.setString(1, phrase);
+		SQL_INSERT_SEED.setString(2, seed.to0xString());
+		
+		//Run the query
+		SQL_INSERT_SEED.execute();
+		
+		//And store..
+		mBaseSeed = new SeedRow(phrase, seed.to0xString());
 	}
 	
-	/**
-	 * The BASE seed is used to generate all the keys..
-	 */
-	
-	public MiniData getBaseSeed() {
-		return mMainPrivateSeed;
+	public void updateSeedRow(String zPhrase, String zSeed) throws SQLException {
+		
+		//Update
+		SQL_UPDATE_SEED.clearParameters();
+		SQL_UPDATE_SEED.setString(1, zPhrase);
+		SQL_UPDATE_SEED.setString(2, zSeed);
+		SQL_UPDATE_SEED.executeUpdate();
+		
+		//And Store..
+		mBaseSeed = new SeedRow(zPhrase, zSeed);
 	}
 	
-	public MiniData initBaseSeed(MiniData zBaseSeed) {
-		return mMainPrivateSeed = zBaseSeed;
+	public SeedRow getBaseSeed() {
+		return mBaseSeed;
 	}
 	
 	public boolean isBaseSeedAvailable() {
-		return !mMainPrivateSeed.isEqual(MiniData.ZERO_TXPOWID);
+		return !mBaseSeed.getSeed().equals("0x00");
 	}
 	
-	public void wipeBaseSeed() throws SQLException {
+	public void wipeBaseSeedRow() throws SQLException {
 		//Wipe the DB
 		SQL_WIPE_PRIVATE_KEYS.execute();
 		
 		//reset the base seed
-		mMainPrivateSeed = MiniData.ZERO_TXPOWID;
+		updateSeedRow("","0x00");
+		
+		//And Store..
+		mBaseSeed = new SeedRow("", "0x00");
 	}
 	
-	public boolean resetBaseSeed(MiniData zBaseSeed) {
+	public boolean resetBaseSeedPrivKeys(String zPhrase, String zSeed) throws SQLException {
 		
 		//reset the base seed
-		mMainPrivateSeed = zBaseSeed;
+		updateSeedRow(zPhrase, zSeed);
 						
 		//Get all the keys..
 		ArrayList<KeyRow> keys = getAllKeys();
 		
 		try {
 			
+			//The seed
+			MiniData seed = new MiniData(zSeed);
+			
 			//Now cycle through..
 			for(KeyRow key : keys) {
 				
 				//Get the modifier..
 				MiniData modifier = new MiniData(key.getModifier());
-			
+				
 				//Now create a random private seed using the modifier
-				MiniData privseed 	= Crypto.getInstance().hashObjects(zBaseSeed, modifier);
+				MiniData privseed 	= Crypto.getInstance().hashObjects(seed, modifier);
 				
 				//And now update the DB..
 				SQL_UPDATE_PRIVATE_KEYS.clearParameters();
@@ -331,11 +385,8 @@ public class Wallet extends SqlDB {
 		int numkeys 		= mAllKeys.size();
 		MiniData modifier 	= new MiniData(new BigInteger(Integer.toString(numkeys)));
 
-//		MiniData modifier 	= MiniData.getRandomData(32);
-//		MinimaLogger.log("Create new Key : "+mMainPrivateSeed.to0xString()+" "+modifier.to0xString());
-		
 		//Now create a random private seed using the modifier
-		MiniData privseed 	= Crypto.getInstance().hashObjects(mMainPrivateSeed, modifier);
+		MiniData privseed 	= Crypto.getInstance().hashObjects(new MiniData(mBaseSeed.getSeed()), modifier);
 		
 		//Make the TreeKey
 		TreeKey treekey 	= TreeKey.createDefault(privseed);
@@ -605,6 +656,11 @@ public class Wallet extends SqlDB {
 	 * Sign a piece of data with a specific public key
 	 */
 	public Signature signData(String zPublicKey, MiniData zData) {
+		
+		//Check we can create new keys
+		if(!isBaseSeedAvailable()) {
+			throw new IllegalArgumentException("KeysDB LOCKED. No Private Keys..");
+		}
 		
 		try {
 			

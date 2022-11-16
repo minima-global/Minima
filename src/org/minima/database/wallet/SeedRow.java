@@ -15,6 +15,11 @@ public class SeedRow {
 		mSeed 		= zResults.getString("seed");
 	}
 	
+	public SeedRow(String zPhrase, String zSeed) throws SQLException {
+		mPhrase 	= zPhrase;
+		mSeed 		= zSeed;
+	}
+	
 	public String getPhrase() {
 		return mPhrase;
 	}
