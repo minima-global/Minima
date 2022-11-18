@@ -12,9 +12,16 @@ import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageListener;
 
+import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
+
+import org.minima.system.params.*;
+import org.minima.objects.base.MiniNumber;
+
+
 public class MinimaTestNode {
 
-    public static String command = "";
+    static String command = "";
     public Minima minima;
 
     public MinimaTestNode() {
@@ -67,7 +74,8 @@ public class MinimaTestNode {
         //Auto connect
         //vars.add("-connect");
         //vars.add("127.0.0.1:9001");
-        
+        TestParams.MINIMA_BLOCK_SPEED = new MiniNumber("0.2"); //faster blockspeed for testing
+
         minima.mainStarter(vars.toArray(new String[0]));
 
         //Catch error..
@@ -110,4 +118,31 @@ public class MinimaTestNode {
             String output = minima.runMinimaCMD(command, false);
             return output.toString();
     }    
+
+    public String runCommand(String command) throws Exception{
+        this.setCommand(command);
+        String output = this.runCommand();
+        return output;
+    }
+
+    public boolean waitForMinimaBlockConfirmation() throws Exception {
+
+        long balance = 0;
+        int attempts = 0;
+        while(balance == 0 && attempts <= 250){
+            Thread.sleep(1000);
+
+            this.setCommand("balance");
+            String balanceOutput = this.runCommand();
+
+            var jsonObject =  (JSONObject) new JSONParser().parse(balanceOutput.toString());
+            JSONArray innerJson = (JSONArray) jsonObject.get("response");
+            JSONObject innerJsonObj = (JSONObject) innerJson.get(0);
+
+            balance = Long.valueOf(innerJsonObj.get("confirmed").toString()).longValue();
+            attempts++;
+        } 
+        return attempts != 250;
+    }
+
 }
