@@ -123,11 +123,11 @@ public class backup extends Command {
 			MiniData chaindata = new MiniData(MiniFile.readCompleteFile(chain));
 			
 			File userdb = new File(backupfolder,"userdb.bak");
-			MinimaDB.getDB().getUserDB().saveDB(userdb);
+			MinimaDB.getDB().getUserDB().saveDB(GeneralParams.MAIN_PASSWORD, userdb);
 			MiniData userdata = new MiniData(MiniFile.readCompleteFile(userdb));
 			
 			File p2pdb = new File(backupfolder,"p2p.bak");
-			MinimaDB.getDB().getP2PDB().saveDB(p2pdb);
+			MinimaDB.getDB().getP2PDB().saveDB(GeneralParams.MAIN_PASSWORD, p2pdb);
 			MiniData p2pdata = new MiniData(MiniFile.readCompleteFile(p2pdb));
 			
 			//Store the relevant TxPoWs..
