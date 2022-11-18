@@ -65,8 +65,8 @@ public class send extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"address","amount","multi",
-				"tokenid","state","burn","split","debug","dryrun","mine"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","uid",
+				"address","amount","multi","tokenid","state","burn","split","debug","dryrun","mine"}));
 	}
 	
 	@Override
@@ -159,34 +159,18 @@ public class send extends Command {
 		//Are we Mining synchronously
 		boolean minesync = getBooleanParam("mine", false);
 		
-		//get the tip..
-		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
-		if(debug) {
-			MinimaLogger.log("Current tip : "+tip.getTxPoW().getBlockNumber());
-		}
-		
-		//Get the parent deep enough for valid confirmed coins
-		int confdepth = GlobalParams.MINIMA_CONFIRM_DEPTH.getAsInt();
-		for(int i=0;i<confdepth;i++) {
-			tip = tip.getParent();
-			if(tip == null) {
-				//Insufficient blocks
-				ret.put("status", false);
-				ret.put("message", "Insufficient blocks..");
-				return ret;
-			}
-		}
-		
-		if(debug) {
-			MinimaLogger.log("Check From : "+tip.getTxPoW().getBlockNumber());
-		}
-		
 		//Get the TxPoWDB
 		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
 		TxPoWMiner txminer 	= Main.getInstance().getTxPoWMiner();
 		
+		//Get the tip of the tree
+		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+		
 		//How old do the coins need to be.. used by consolidate
-		MiniNumber coinage = getNumberParam("coinage", MiniNumber.ZERO);
+		MiniNumber coinage = getNumberParam("coinage", GlobalParams.MINIMA_CONFIRM_DEPTH);
+		if(coinage.isLess(GlobalParams.MINIMA_CONFIRM_DEPTH)) {
+			throw new CommandException("Coinage MUST be >= "+GlobalParams.MINIMA_CONFIRM_DEPTH);
+		}
 				
 		//Lets build a transaction..
 		ArrayList<Coin> foundcoins	= TxPoWSearcher.getRelevantUnspentCoins(tip,tokenid,true);

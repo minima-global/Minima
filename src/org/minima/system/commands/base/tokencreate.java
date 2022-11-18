@@ -131,21 +131,23 @@ public class tokencreate extends Command {
 		
 		//get the tip..
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+				
+		//Lets build a transaction..
+		ArrayList<Coin> foundcoins	= TxPoWSearcher.getRelevantUnspentCoins(tip,"0x00",true);
+		ArrayList<Coin> relcoins 	= new ArrayList<>();
 		
-		//Get the parent deep enough for valid confirmed coins
-		int confdepth = GlobalParams.MINIMA_CONFIRM_DEPTH.getAsInt();
-		for(int i=0;i<confdepth;i++) {
-			tip = tip.getParent();
-			if(tip == null) {
-				//Insufficient blocks
-				ret.put("status", false);
-				ret.put("message", "Insufficient blocks..");
-				return ret;
+		//Now make sure they are old enough
+		MiniNumber mincoinblock = tip.getBlockNumber().sub(GlobalParams.MINIMA_CONFIRM_DEPTH);
+		for(Coin relc : foundcoins) {
+			if(relc.getBlockCreated().isLessEqual(mincoinblock)) {
+				relcoins.add(relc);
 			}
 		}
 		
-		//Lets build a transaction.. MUST use Minima to create a token!
-		ArrayList<Coin> relcoins = TxPoWSearcher.getRelevantUnspentCoins(tip,"0x00",true);
+		//Are there any coins at all..
+		if(relcoins.size()<1) {
+			throw new CommandException("No Minima Coins available!");
+		}
 		
 		//The current total
 		MiniNumber currentamount 	= MiniNumber.ZERO;
