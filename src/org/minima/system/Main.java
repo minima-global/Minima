@@ -661,11 +661,18 @@ public class Main extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(MAIN_CHECKER)) {
 			
+			//Check again..
+			PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
+			
 			//Check the Default keys
 			if(!mInitKeysCreated) {
-				mInitKeysCreated = MinimaDB.getDB().getWallet().initDefaultKeys();
-				if(mInitKeysCreated) {
-					MinimaLogger.log("All default getaddress keys created..");
+				try {
+					mInitKeysCreated = MinimaDB.getDB().getWallet().initDefaultKeys();
+					if(mInitKeysCreated) {
+						MinimaLogger.log("All default getaddress keys created..");
+					}
+				}catch(Exception exc) {
+					MinimaLogger.log(exc);
 				}
 			}
 			
@@ -686,9 +693,6 @@ public class Main extends MessageProcessor {
 			
 			//A Ping Message.. The top TxPoWID
 			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_PING, tip.getTxPoW().getTxPoWIDData());
-			
-			//Check again..
-			PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
 		}
 	}
 	
