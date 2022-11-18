@@ -16,6 +16,35 @@ public class trace extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\ntrace\n"
+				+ "\n"
+				+ "Show the message stacks of the internal Minima Engine with optional filter string.\n"
+				+ "\n"
+				+ "enable:\n"
+				+ "    true or false, true to enable or false to disable.\n"
+				+ "\n"
+				+ "filter: (optional)\n"
+				+ "    A case sensitive string to filter the messages by.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "trace enable:true\n"
+				+ "\n"
+				+ "trace enable:true filter:MAIN\n"
+				+ "\n"
+				+ "trace enable:true filter:MINER\n"
+				+ "\n"
+				+ "trace enable:true filter:MDS\n"
+				+ "\n"
+				+ "trace enable:true filter:NOTIFYMANAGER\n"
+				+ "\n"
+				+ "trace enable:true filter:TXPOWPROCESSOR\n"
+				+ "\n"
+				+ "trace enable:false\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"enable","filter"}));
 	}

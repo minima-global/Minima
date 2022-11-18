@@ -10,6 +10,19 @@ public class tutorial extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\ntutorial\n"
+				+ "\n"
+				+ "Show the complete Grammar for Minima KISSVM scripting.\n"
+				+ "\n"
+				+ "KISS is the scripting language used to write Minima scripts/smart contracts.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "tutorial\n";
+	}
+	
+	@Override
 	public JSONObject runCommand() throws Exception{
 		JSONObject ret = getJSONReply();
 

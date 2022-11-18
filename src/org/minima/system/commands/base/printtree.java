@@ -14,6 +14,32 @@ public class printtree extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nprinttree\n"
+				+ "\n"
+				+ "Print a tree representation of the blockchain.\n"
+				+ "\n"
+				+ "Default depth 32 blocks, can be increased to see more of the txpow tree.\n"
+				+ "\n"
+				+ "Optionally show the cascading chain, default is false.\n"
+				+ "\n"
+				+ "depth: (optional)\n"
+				+ "    Number of blocks back from the tip to show in the txpow tree.\n"
+				+ "\n"
+				+ "cascade: (optional)\n"
+				+ "    true or false, true shows the cascade.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "printtree\n"
+				+ "\n"
+				+ "printtree depth:500\n"
+				+ "\n"
+				+ "printtree cascade:true\n";
+				
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"depth","cascade"}));
 	}

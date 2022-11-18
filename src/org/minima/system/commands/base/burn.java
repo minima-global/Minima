@@ -41,7 +41,9 @@ public class burn extends Command {
 	public String getFullHelp() {
 		return "\nburn\n"
 				+ "\n"
-				+ "View number of burn txns and max/median/avg/min burn metrics for last 1, 10 and 50 blocks\n"
+				+ "View the number of burn transactions and the maximum, median, average and minimum burn metrics for the last 1, 10 and 50 blocks.\n"
+				+ "\n"
+				+ "Use as an indicator for an appropriate burn amount for transactions.\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"

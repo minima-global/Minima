@@ -28,10 +28,10 @@ public class balance extends Command {
 	public String getFullHelp() {
 		return "\nbalance\n"
 				+ "\n"
-				+ "Show your total balance of Minima and tokens\n"
+				+ "Show your total balance of Minima and tokens.\n"
 				+ "\n"
 				+ "address: (optional)\n"
-				+ "    Show the balance for a specific 0x or Mx address\n"
+				+ "    Show the balance for a specific 0x or Mx address.\n"
 				+ "\n"
 				+ "tokenid: (optional)\n"
 				+ "    Show the balance for a specific tokenid. Minima is 0x00.\n"
@@ -41,11 +41,11 @@ public class balance extends Command {
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
-				+ "balance"
+				+ "balance\n"
 				+ "\n"
-				+ "balance tokenid:0x1914727BAF21B89F17EA5A1C084D2BC28F2AE99EC296BE9B8771228C59B36F01 confirmations:10\n"
+				+ "balance tokenid:0xFED5.. confirmations:10\n"
 				+ "\n"
-				+ "balance address:0x1164E55C916266D7F75368FFD20F4E643EC3EADEE1389F98FCE82ECEE88E7761\n";
+				+ "balance address:0xFF..\n";
 	}
 	
 	@Override

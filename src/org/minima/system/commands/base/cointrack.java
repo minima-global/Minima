@@ -33,7 +33,7 @@ public class cointrack extends Command {
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
-				+ "cointrack enable:true coinid:0x4781880C5CF7AE50CE99F7713456F1245D583ED5D6037CCEE8987D3B54A7FD65\n";
+				+ "cointrack enable:true coinid:0xCD34..\n";
 	}
 	
 	@Override

@@ -38,6 +38,10 @@ public class mmrcreate extends Command {
 				+ "\n"
 				+ "Must specify a JSON array of string/HEX data for the leaf nodes.\n"
 				+ "\n"
+				+ "They could be a list of public keys.. and then in a script you can check if the given key is one in the set.\n"
+				+ "\n"
+				+ "OR you can have different scripts.. and then you can execute any number of scripts from the same UTXO.\n"
+				+ "\n"
 				+ "Returns the MMR data and proof for each leaf node and the MMR root hash.\n"
 				+ "\n"
 				+ "nodes:\n"
@@ -47,7 +51,7 @@ public class mmrcreate extends Command {
 				+ "\n"
 				+ "mmrcreate nodes:[\"RETURN TRUE\",\"RETURN FALSE\"]\n"
 				+ "\n"
-				+ "mmrcreate nodes:[\"0xD4A3972148BE80A473E78794DB90F9AC2010467CDE9B3F1BEBB4238E62423166\",\"0xD4A3972148BE80A473E78794DB90F9AC2010467CDE9B3F1BEBB4238E62423166\"] \n";
+				+ "mmrcreate nodes:[\"0xFF..\",\"0xEE..\"]\n";
 	}
 	
 	@Override

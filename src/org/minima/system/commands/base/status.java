@@ -38,6 +38,24 @@ public class status extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nstatus\n"
+				+ "\n"
+				+ "Show the general status for Minima and your node. Optionally clean the RAM.\n"
+				+ "\n"
+				+ "Prints details for general status, memory used, chain info, stored txpow units, network connections, p2p connections and traffic.\n"
+				+ "\n"
+				+ "clean: (optional)\n"
+				+ "    true only, clear the RAM.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "status\n"
+				+ "\n"
+				+ "status clean:true\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"clean"}));
 	}

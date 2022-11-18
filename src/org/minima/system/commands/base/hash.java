@@ -20,7 +20,9 @@ public class hash extends Command {
 	public String getFullHelp() {
 		return "\nhash\n"
 				+ "\n"
-				+ "Returns the hash of the data provided using the algorithm specified, default is KECCAK.\n"
+				+ "Hash the data - default KECCAK.\n"
+				+ "\n"
+				+ "Returns the hash of the data provided using the algorithm specified.\n"
 				+ "\n"
 				+ "data:\n"
 				+ "    The data to hash. Can be HEX (0x) or a string in quotes.\n"

@@ -22,7 +22,9 @@ public class coincheck extends Command {
 	public String getFullHelp() {
 		return "\ncoincheck\n"
 				+ "\n"
-				+ "Check a coin exists and is valid.\n"
+				+ "Check a coin exists and is valid. Can only check unspent coins.\n"
+				+ "\n"
+				+ "Returns the coin details and whether the MMR proof is valid.\n"
 				+ "\n"
 				+ "data:\n"
 				+ "    The data of a coin. Can be found using the 'coinexport' command.\n"
