@@ -161,6 +161,9 @@ public class send extends Command {
 		
 		//get the tip..
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+		if(debug) {
+			MinimaLogger.log("Current tip : "+tip.getTxPoW().getBlockNumber());
+		}
 		
 		//Get the parent deep enough for valid confirmed coins
 		int confdepth = GlobalParams.MINIMA_CONFIRM_DEPTH.getAsInt();
@@ -172,6 +175,10 @@ public class send extends Command {
 				ret.put("message", "Insufficient blocks..");
 				return ret;
 			}
+		}
+		
+		if(debug) {
+			MinimaLogger.log("Check From : "+tip.getTxPoW().getBlockNumber());
 		}
 		
 		//Get the TxPoWDB
