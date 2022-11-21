@@ -1,6 +1,7 @@
 package org.minima.system.commands.scripts;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.database.mmr.MMRProof;
 import org.minima.kissvm.Contract;
@@ -21,6 +22,11 @@ public class runscript extends Command {
 
 	public runscript() {
 		super("runscript","[script:] (state:{}) (prevstate:{}) (globals:{}) (signatures:[]) (extrascripts:{}) - Run a script with the defined parameters");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"script","state","prevstate","globals","signatures","extrascreipt"}));
 	}
 	
 	@Override

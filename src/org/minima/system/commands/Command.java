@@ -2,6 +2,7 @@ package org.minima.system.commands;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,19 +25,19 @@ import org.minima.system.commands.base.coinimport;
 import org.minima.system.commands.base.cointrack;
 import org.minima.system.commands.base.consolidate;
 import org.minima.system.commands.base.debugflag;
+import org.minima.system.commands.base.file;
 import org.minima.system.commands.base.getaddress;
 import org.minima.system.commands.base.hash;
 import org.minima.system.commands.base.hashtest;
 import org.minima.system.commands.base.healthcheck;
 import org.minima.system.commands.base.incentivecash;
 import org.minima.system.commands.base.logs;
+import org.minima.system.commands.base.magic;
 import org.minima.system.commands.base.mempool;
 import org.minima.system.commands.base.missingcmd;
 import org.minima.system.commands.base.mmrcreate;
 import org.minima.system.commands.base.mmrproof;
 import org.minima.system.commands.base.newaddress;
-import org.minima.system.commands.base.p2pstate;
-import org.minima.system.commands.base.peers;
 import org.minima.system.commands.base.printmmr;
 import org.minima.system.commands.base.printtree;
 import org.minima.system.commands.base.quit;
@@ -60,11 +61,11 @@ import org.minima.system.commands.network.disconnect;
 import org.minima.system.commands.network.message;
 import org.minima.system.commands.network.network;
 import org.minima.system.commands.network.nodecount;
+import org.minima.system.commands.network.p2pstate;
+import org.minima.system.commands.network.peers;
 import org.minima.system.commands.network.ping;
 import org.minima.system.commands.network.rpc;
 import org.minima.system.commands.network.webhooks;
-import org.minima.system.commands.persistent.file;
-import org.minima.system.commands.persistent.sql;
 import org.minima.system.commands.scripts.newscript;
 import org.minima.system.commands.scripts.runscript;
 import org.minima.system.commands.scripts.scripts;
@@ -72,6 +73,9 @@ import org.minima.system.commands.search.coins;
 import org.minima.system.commands.search.keys;
 import org.minima.system.commands.search.tokens;
 import org.minima.system.commands.search.txpow;
+import org.minima.system.commands.send.sendnosign;
+import org.minima.system.commands.send.sendpost;
+import org.minima.system.commands.send.sendsign;
 import org.minima.system.commands.signatures.sign;
 import org.minima.system.commands.signatures.verify;
 import org.minima.system.commands.txn.txnauto;
@@ -108,11 +112,14 @@ public abstract class Command {
 			
 			new mds(), new sendpoll(), new healthcheck(), new mempool(),
 			
+			new sendsign(), new sendnosign(), new sendpost(),
+			new magic(),
+			
 			new maxsign(), new maxverify(),
 			new archive(), new logs(),
 			
-			new ping(), new random(),
-			new sql(),new file(),
+			new ping(), new random(),new file(),
+			
 			new vault(), new consolidate(),
 			new backup(), new restore(), new test(), 
 			new runscript(), new tutorial(),new keys(),
@@ -145,6 +152,10 @@ public abstract class Command {
 	
 	public void setCompleteCommand(String zCommand) {
 		mCompleteCommand = zCommand;
+	}
+	
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>();
 	}
 	
 	public String getCompleteCommand() {
@@ -255,6 +266,14 @@ public abstract class Command {
 		return (JSONArray) mParams.get(zParamName);
 	}
 	
+	public String getAddressParam(String zParamName, String zDefault) throws CommandException {
+		if(existsParam(zParamName)) {
+			return getAddressParam(zParamName);
+		}
+		
+		return zDefault;
+	}
+	
 	public String getAddressParam(String zParamName) throws CommandException {
 		if(!existsParam(zParamName)) {
 			throw new CommandException("param not specified : "+zParamName);
@@ -323,6 +342,37 @@ public abstract class Command {
 			//The final result
 			JSONObject result = null;
 			
+			//Check the Parameters
+			ArrayList<String> validparams 	= cmd.getValidParams();
+			JSONObject allparams 			=  cmd.getParams();
+			Set<String> keys 				= allparams.keySet(); 
+			
+			boolean validp=true;
+			for(String key : keys) {
+				if(!validparams.contains(key)) {
+					
+					//Invalid Param
+					result=  new JSONObject();
+					result.put("command", command);
+					result.put("params", allparams);
+					result.put("status", false);
+					result.put("pending", false);
+					result.put("error", "Invalid parameter : "+key);
+					
+					//Add to the List..
+					res.add(result);
+					
+					//And that's all folks..
+					validp=false;
+					break;
+				}
+			}
+			
+			//Are we valid..
+			if(!validp) {
+				break;
+			}
+			
 			//Is this a MiniDAPP..
 			if(!zMiniDAPPID.equals("0x00")) {
 			
@@ -386,6 +436,20 @@ public abstract class Command {
 		}
 		
 		return res;
+	}
+	
+	public static Command getCommandOnly(String zCommandName) {
+		int commandlen = ALL_COMMANDS.length;
+		
+		Command comms = null;
+		for(int i=0;i<commandlen;i++) {
+			if(ALL_COMMANDS[i].getName().equals(zCommandName)) {
+				comms = ALL_COMMANDS[i].getFunction();
+				break;
+			}
+		}
+	
+		return comms;
 	}
 	
 	public static Command getCommand(String zCommand) {

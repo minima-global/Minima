@@ -1,6 +1,7 @@
 package org.minima.system.commands.search;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
@@ -16,6 +17,11 @@ public class coins extends Command {
 
 	public coins() {
 		super("coins","(relevant:true) (sendable:true) (coinid:) (amount:) (address:) (tokenid:) - Search for coins");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"relevant","sendable","coinid","amount","address","tokenid"}));
 	}
 	
 	@Override

@@ -1,6 +1,7 @@
 package org.minima.system.commands.txn;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRProof;
@@ -32,6 +33,11 @@ public class txnauto extends Command {
 
 	public txnauto() {
 		super("txnauto","[id:] [amount:] [address:] - Create a send transaction automatically");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"id","amount","address"}));
 	}
 	
 	@Override

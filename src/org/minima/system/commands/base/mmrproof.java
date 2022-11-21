@@ -1,5 +1,8 @@
 package org.minima.system.commands.base;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniData;
@@ -21,6 +24,35 @@ public class mmrproof extends Command {
 	
 	public mmrproof() {
 		super("mmrproof","[data:] [proof:] [root:] - Check an MMR proof");
+	}
+	
+	@Override
+	public String getFullHelp() {
+		return "\nmmrproof\n"
+				+ "\n"
+				+ "Check an MMR Proof.\n"
+				+ "\n"
+				+ "Can be used to check MMR Proof of coins, scripts or a custom MMR tree created with the 'mmrcreate' command.\n"
+				+ "\n"
+				+ "Returns true if the proof is valid or false if not.\n"
+				+ "\n"
+				+ "data:\n"
+				+ "    String/HEX data of an MMR leaf node.\n"
+				+ "\n"
+				+ "proof:\n"
+				+ "    The MMR proof of the data from the 'mmrcreate' command.\n"
+				+ "\n"
+				+ "root:\n"
+				+ "    The root hash of the MMR tree from the 'mmrcreate' command.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "mmrproof data:0xCD34.. proof:0xFED5.. root:0xDAE6..\n";
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"data","proof","root"}));
 	}
 	
 	@Override

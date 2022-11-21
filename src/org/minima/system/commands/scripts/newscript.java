@@ -1,5 +1,8 @@
 package org.minima.system.commands.scripts;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.database.MinimaDB;
 import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
@@ -12,6 +15,11 @@ public class newscript extends Command {
 
 	public newscript() {
 		super("newscript","[script:] [trackall:false|true] (clean:false|true) - Add a new custom script. Track ALL addresses or just ones with relevant state variables.");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"script","trackall","clean"}));
 	}
 	
 	@Override

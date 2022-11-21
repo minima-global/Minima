@@ -1,5 +1,8 @@
 package org.minima.system.commands.network;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.objects.Greeting;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
@@ -10,6 +13,11 @@ public class ping extends Command {
 
 	public ping() {
 		super("ping","[host:] - Ping a host and get back Minima Node info");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"host"}));
 	}
 	
 	@Override

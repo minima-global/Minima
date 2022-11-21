@@ -1,6 +1,7 @@
 package org.minima.system.commands.base;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRProof;
@@ -29,12 +30,65 @@ import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.txn.txnutils;
 import org.minima.system.params.GlobalParams;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class tokencreate extends Command {
 
 	public tokencreate() {
 		super("tokencreate","[name:] [amount:] (decimals:) (script:) (state:{}) (signtoken:) (webvalidate:) (burn:) - Create a token. 'name' can be a JSON Object");
+	}
+	
+	@Override
+	public String getFullHelp() {
+		return "\ntokencreate\n"
+				+ "\n"
+				+ "Create (mint) custom tokens or NFTs.\n"
+				+ "\n"
+				+ "You must have some sendable Minima in your wallet as tokens are 'colored coins', a fraction of 1 Minima.\n"
+				+ "\n"
+				+ "name:\n"
+				+ "    The name of the token. Can be a string or JSON Object.\n"
+				+ "\n"
+				+ "amount: \n"
+				+ "    The amount of total supply to create for the token. Between 1 and 1 Trillion.\n"
+				+ "\n"
+				+ "decimals: (optional)\n"
+				+ "    The number of decimal places for the token. Default is 8, maximum 16.\n"
+				+ "    To create NFTs, use 0.\n"
+				+ "\n"
+				+ "script: (optional)\n"
+				+ "    Add a custom script that must return 'true' when spending the token.\n"
+				+ "\n"
+				+ "state: (optional)\n"
+				+ "    List of state variables, if adding a script. A JSON object in the format {\"port\":\"value\",..}\n"
+				+ "\n"
+				+ "signtoken: (optional)\n"
+				+ "    Provide a public key to sign the token with.\n"
+				+ "    Useful for proving you are the creator of the token/NFT.\n"
+				+ "\n"
+				+ "webvalidate: (optional)\n"
+				+ "    Provide a URL to a publicly viewable .txt file you are hosting which stores the tokenid for validation purposes.\n"
+				+ "    Create the file in advance and get the tokenid after the token has been minted.\n"
+				+ "\n"
+				+ "burn: (optional)\n"
+				+ "    Amount to burn with the tokencreate minting transaction.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "tokencreate name:newtoken amount:1000000\n"
+				+ "\n"
+				+ "tokencreate amount:10 name:{\"name\":\"newcoin\",\"link\":\"http:mysite.com\",\"description\":\"A very cool token\"}\n"
+				+ "\n"
+				+ "tokencreate name:mynft amount:10 decimals:0 webvalidate:https://www.mysite.com/nftvalidation.txt signtoken:0xFF.. burn:0.1\n"
+				+ "\n"
+				+ "tokencreate name:charitycoin amount:1000 script:\"ASSERT VERIFYOUT(@TOTOUT-1 0xMyAddress 1 0x00 TRUE)\"\n";				
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"name","amount","decimals","script",
+				"state","signtoken","webvalidate","burn"}));
 	}
 	
 	@Override
@@ -117,8 +171,8 @@ public class tokencreate extends Command {
 		//What is the scale..
 		int scale = MiniNumber.MAX_DECIMAL_PLACES - decimals;
 		
-		//The actual amount of Minima that needs to be sent
-		MiniNumber sendamount 	= new MiniNumber(colorminima);
+		//The actual amount of Minima that needs to be sent - add the burn if any
+		MiniNumber sendamount 	= colorminima.add(burn);
 		
 		//Send it to ourselves
 		ScriptRow sendkey 		= MinimaDB.getDB().getWallet().getDefaultAddress();
@@ -259,7 +313,7 @@ public class tokencreate extends Command {
 		}
 		
 		//Now add the output..
-		Coin recipient = new Coin(Coin.COINID_OUTPUT, sendaddress, sendamount, Token.TOKENID_CREATE, true);
+		Coin recipient = new Coin(Coin.COINID_OUTPUT, sendaddress, colorminima, Token.TOKENID_CREATE, true);
 		
 		//Is there a Web Validation URL
 		if(existsParam("webvalidate")) {
@@ -350,21 +404,7 @@ public class tokencreate extends Command {
 		}
 		
 		//The final TxPoW
-		TxPoW txpow = null;
-		
-		//Is there a BURN..
-		if(burn.isMore(MiniNumber.ZERO)) {
-			
-			//Create a Burn Transaction
-			TxnRow burntxn = txnutils.createBurnTransaction(addedcoinid,transaction.getTransactionID(),burn);
-
-			//Now create a complete TxPOW
-			txpow = TxPoWGenerator.generateTxPoW(transaction, witness, burntxn.getTransaction(), burntxn.getWitness());
-		
-		}else {
-			//Now create a complete TxPOW
-			txpow = TxPoWGenerator.generateTxPoW(transaction, witness);
-		}
+		TxPoW txpow = TxPoWGenerator.generateTxPoW(transaction, witness);
 		
 		//Calculate the size..
 		txpow.calculateTXPOWID();

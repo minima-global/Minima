@@ -26,38 +26,9 @@ public class test extends Command {
 		//Get the Archive DB
 		ArchiveManager arch = MinimaDB.getDB().getArchive();
 		
-		//Get the current lowest block
-		TxBlock txbbefore = arch.loadLastBlock();
+		arch.hackShut();
 		
-		JSONObject resp = new JSONObject();
-		
-		TxBlock firstblock = arch.loadFirstBlock();
-		TxBlock lastblock = arch.loadLastBlock();
-		resp.put("xfirstblock", firstblock.getTxPoW().getBlockNumber());
-		resp.put("xlastblock", lastblock.getTxPoW().getBlockNumber());
-		
-		resp.put("archivesizebefore", arch.getSize());
-		resp.put("lastblock", txbbefore.getTxPoW().getBlockNumber().toString());
-		resp.put("lasttime", new Date(txbbefore.getTxPoW().getTimeMilli().getAsLong()));
-		resp.put("lastjson", arch.loadLastBlockJSON());
-		
-		//Now do a cleanDB
-		int del = arch.cleanDB();
-		MinimaLogger.log("DELETED : "+del);
-		
-		txbbefore = arch.loadLastBlock();
-		
-		resp.put("archiveafter", arch.getSize());
-		resp.put("aftlastblock", txbbefore.getTxPoW().getBlockNumber().toString());
-		resp.put("aftlasttime", new Date(txbbefore.getTxPoW().getTimeMilli().getAsLong()));
-		resp.put("afterjson", arch.loadLastBlockJSON());
-		
-		ArrayList<TxBlock> blocks = arch.loadBlockRange(new MiniNumber(2000), new MiniNumber(2010));
-		for(TxBlock block : blocks) {
-			MinimaLogger.log(block.getTxPoW().getBlockNumber().toString());
-		}
-		
-		ret.put("response", resp);
+		ret.put("response", "Archive DB Closed for test");
 	
 		return ret;
 	}

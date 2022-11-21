@@ -1,6 +1,7 @@
 package org.minima.system.commands.scripts;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.wallet.ScriptRow;
@@ -15,6 +16,11 @@ public class scripts extends Command {
 
 	public scripts() {
 		super("scripts","(address:) - Search scripts / addresses");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"address"}));
 	}
 	
 	@Override

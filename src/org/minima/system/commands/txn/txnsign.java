@@ -1,6 +1,7 @@
 package org.minima.system.commands.txn;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.txndb.TxnDB;
@@ -22,6 +23,11 @@ public class txnsign extends Command {
 
 	public txnsign() {
 		super("txnsign","[id:] [publickey:0x..|auto] - Sign a transaction");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"id","publickey"}));
 	}
 	
 	@Override

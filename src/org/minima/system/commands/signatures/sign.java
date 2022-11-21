@@ -1,5 +1,8 @@
 package org.minima.system.commands.signatures;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.database.MinimaDB;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.base.MiniData;
@@ -11,6 +14,11 @@ public class sign extends Command {
 
 	public sign() {
 		super("sign","[publickey:] [data:] - Sign the data with the publickey");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"publickey","data"}));
 	}
 	
 	@Override

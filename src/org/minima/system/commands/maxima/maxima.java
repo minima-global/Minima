@@ -1,6 +1,7 @@
 package org.minima.system.commands.maxima;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.maxima.MaximaContact;
@@ -12,6 +13,7 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.network.connect;
 import org.minima.system.network.maxima.MaxMsgHandler;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaximaMessage;
@@ -29,7 +31,60 @@ public class maxima extends Command {
 	
 	@Override
 	public String getFullHelp() {
-		return "Maxima is an information transport layer running ontop of Minima";
+		return "\nmaxima\n"
+				+ "\n"
+				+ "Check your Maxima details, send a message / data, enable logs.\n"
+				+ "\n"
+				+ "Maxima is an information transport layer running on top of Minima.\n"
+				+ "\n"
+				+ "action:\n"
+				+ "    info : Show your Maxima details - name, publickey, staticmls, mls, local identity and contact address.\n"
+				+ "    setname : Set your Maxima name so your contacts recognise you. Default 'noname'.\n"
+				+ "    hosts : List your Maxima hosts and see their Maxima public key, contact address, last seen time and if you are connected.\n"
+				+ "    send : Send a message to a contact. Must specify 'id|to|publickey', 'application' and 'data' parameters.\n"
+				+ "    refresh : Refresh your contacts by sending them a network message. \n"
+				+ "\n"
+				+ "name: (optional)\n"
+				+ "    Set your name. Use with 'action:setname'.\n"
+				+ "\n"
+				+ "id|to|publickey: (optional)\n"
+				+ "    The id, contact address or public key of the recipient of the message. Use with 'action:send'.\n"
+				+ "\n"
+				+ "application: (optional)\n"
+				+ "    The ip:port to send a message to. Use with 'action:send'.\n"
+				+ "\n"
+				+ "data: (optional)\n"
+				+ "    The data to send. Can be HEX or a JSON object. Use with 'action:send'.\n"
+				+ "\n"
+				+ "logs: (optional)\n"
+				+ "    true or false, true turns on detailed logs for Maxima.\n"
+				+ "\n"
+				+ "poll: (optional)\n"
+				+ "    true or false, true will poll the send action until successful. Use with 'action:send'.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "maxima action:info\n"
+				+ "\n"
+				+ "maxima action:setname name:myname\n"
+				+ "\n"
+				+ "maxima action:hosts\n"
+				+ "\n"
+				+ "maxima action:send id:1 application:ip:port data:0xFED5..\n"
+				+ "\n"
+				+ "maxima action:send to:MxG18H.. application:ip:port data:0xFED5..\n"
+				+ "\n"
+				+ "maxima action:send publickey:0xCD34.. application:ip:port data:0xFED5.. poll:true\n"
+				+ "\n"
+				+ "maxima action:refresh\n"
+				+ "\n"
+				+ "maxima logs:true\n";
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"action","name","id","to",
+				"publickey","application","data","logs","poll","host"}));
 	}
 	
 	@Override
@@ -77,6 +132,13 @@ public class maxima extends Command {
 		}else if(func.equals("staticmls")) {
 		
 			String host = getParam("host");
+			
+			//Check is valid..
+			Message conn = connect.createConnectMessage(host);
+			if(conn == null) {
+				throw new CommandException("Invalid host.. must be host:port : "+host);
+			}
+			
 			if(host.equals("clear")) {
 				max.setStaticMLS(false, "");
 			}else {

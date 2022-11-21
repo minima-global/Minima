@@ -1,6 +1,7 @@
 package org.minima.system.commands.base;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.database.mmr.MMR;
 import org.minima.database.mmr.MMRData;
@@ -27,6 +28,35 @@ public class mmrcreate extends Command {
 	
 	public mmrcreate() {
 		super("mmrcreate","[nodes:[]] - Create an MMR Tree of data. Nodes can be STRING / HEX");
+	}
+	
+	@Override
+	public String getFullHelp() {
+		return "\nmmrcreate\n"
+				+ "\n"
+				+ "Create an MMR Tree of data. Can be used in MAST contracts.\n"
+				+ "\n"
+				+ "Must specify a JSON array of string/HEX data for the leaf nodes.\n"
+				+ "\n"
+				+ "They could be a list of public keys.. and then in a script you can check if the given key is one in the set.\n"
+				+ "\n"
+				+ "OR you can have different scripts.. and then you can execute any number of scripts from the same UTXO.\n"
+				+ "\n"
+				+ "Returns the MMR data and proof for each leaf node and the MMR root hash.\n"
+				+ "\n"
+				+ "nodes:\n"
+				+ "    JSON array of string/HEX data for the leaf nodes.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "mmrcreate nodes:[\"RETURN TRUE\",\"RETURN FALSE\"]\n"
+				+ "\n"
+				+ "mmrcreate nodes:[\"0xFF..\",\"0xEE..\"]\n";
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"nodes"}));
 	}
 	
 	@Override
@@ -74,7 +104,7 @@ public class mmrcreate extends Command {
 			//Increment
 			counter++;
 			
-			//Add to thew MMR
+			//Add to the MMR
 			mmrtree.addEntry(new MMRData(hash));
 		}
 		

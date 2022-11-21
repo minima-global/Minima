@@ -10,7 +10,9 @@ import java.util.Date;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRData;
+import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
+import org.minima.database.userprefs.UserDB;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
 import org.minima.objects.Magic;
@@ -84,7 +86,12 @@ public class TxPoWGenerator {
 		}
 		
 		//Set the correct Magic Numbers..
+		UserDB udb = MinimaDB.getDB().getUserDB();
+		
 		Magic txpowmagic = tip.getTxPoW().getMagic().calculateNewCurrent();
+		txpowmagic.setDesiredKISSVM(udb.getMagicDesiredKISSVM());
+		txpowmagic.setDesiredMaxTxPoWSize(udb.getMagicMaxTxPoWSize());
+		txpowmagic.setDesiredMaxTxns(udb.getMagicMaxTxns());
 		txpow.setMagic(txpowmagic);
 		
 		//Set the parents..
@@ -140,6 +147,25 @@ public class TxPoWGenerator {
 				return o2.getBurn().compareTo(o1.getBurn());
 			}
 		});
+		
+		//MAX number of transactions in mempool.. 1 hrs worth of blocks..
+		int max 					= tip.getTxPoW().getMagic().getMaxNumTxns().getAsInt() * 12 * 6;
+		int counter					= 0;
+		ArrayList<TxPoW> newmempool = new ArrayList<>();
+		TxPoWDB txpdb 				= MinimaDB.getDB().getTxPoWDB();
+		for(TxPoW memtxp : mempool) {
+			if(counter<max) {
+				newmempool.add(memtxp);
+			}else {
+				//Remove from RAMDB..
+				MinimaLogger.log("MEMPOOL MAX SIZE REACHED : REMOVED id:"+memtxp.getTxPoWID()+" burn:"+memtxp.getBurn());
+				txpdb.removeMemPoolTxPoW(memtxp.getTxPoWID());
+			}
+			counter++;
+		}
+		
+		//Swap lists..
+		mempool = newmempool;
 		
 		//The final TxPoW transactions put in this TxPoW
 		ArrayList<TxPoW> chosentxns = new ArrayList<>();

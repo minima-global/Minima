@@ -1,6 +1,8 @@
 package org.minima.system.commands.base;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;
@@ -14,6 +16,11 @@ public class file extends Command {
 
 	public file() {
 		super("file","[action:list|load|save|delete] [file:] (data:)- Load, save, delete or list files. / is root. Data is in 0xHEX format");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"action","file","data"}));
 	}
 	
 	@Override

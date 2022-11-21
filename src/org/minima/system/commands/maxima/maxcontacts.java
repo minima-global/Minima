@@ -1,6 +1,7 @@
 package org.minima.system.commands.maxima;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.maxima.MaximaContact;
@@ -24,6 +25,46 @@ public class maxcontacts extends Command {
 
 	public maxcontacts() {
 		super("maxcontacts","[action:list|mls|add|remove|search] (contact:) (id:) (publickey:) - Manage your Maxima contacts");
+	}
+	
+	@Override
+	public String getFullHelp() {
+		return "\nmaxcontacts\n"
+				+ "\n"
+				+ "Manage your Maxima contacts. List, refresh, add, remove or search contacts.\n"
+				+ "\n"
+				+ "action:\n"
+				+ "    list : List your Maxima contacts to see their id, address details, MLS and if they are on the same chain.\n"
+				+ "    mls : Send a message to your contacts to refresh your MLS (Minima Location Service) details.\n"
+				+ "    add : Add a new contact. Use with the 'contact' parameter.\n"
+				+ "    remove : Remove a Maxima contact. Will also remove you from their contacts. Use with the 'id' parameter.\n"
+				+ "    search : Search for a contact. Use with the 'id' or 'publickey' parameter.\n"
+				+ "\n"
+				+ "contact: (optional)\n"
+				+ "    The Maxima contact address of another node. Can be found using the 'maxima' command.\n"
+				+ "\n"
+				+ "id: (optional)\n"
+				+ "    The id of an existing contact to remove or search for.\n"
+				+ "\n"
+				+ "publickey: (optional)\n"
+				+ "    The Maxima public key of an existing contact to remove or search for.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "maxcontacts action:list\n"
+				+ "\n"
+				+ "maxcontacts action:mls\n"
+				+ "\n"
+				+ "maxcontacts action:add contact:MxG18H..\n"
+				+ "\n"
+				+ "maxcontacts action:remove id:1\n"
+				+ "\n"
+				+ "maxcontacts action:search publickey:0x3081..\n";
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"action","contact","id","publickey"}));
 	}
 	
 	@Override
