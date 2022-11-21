@@ -20,7 +20,7 @@ public class StatusTest extends MinimaCliTest {
     public MinimaTestNode test = new MinimaTestNode();
 
     @Test
-    public void testConnectWithNoArgs () throws Exception
+    public void testStatusWithNoArgs () throws Exception
     {
         String output = test.runCommand("status");
 
