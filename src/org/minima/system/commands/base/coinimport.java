@@ -23,6 +23,25 @@ public class coinimport extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\ncoinimport\n"
+				+ "\n"
+				+ "Import a coin including its MMR proof.\n"
+				+ "\n"
+				+ "Optionally you can track the coin to add it to your relevant coins list and know when it becomes spent.\n"
+				+ "\n"
+				+ "data:\n"
+				+ "    The data of a coin. Can be found using the 'coinexport' command.\n"
+				+ "\n"
+				+ "track: (optional)\n"
+				+ "    true or false, true will create an MMR entry for the coin and add it to your relevant coins.\n"			
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "coinimport data:0x00000..\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"data","track"}));
 	}

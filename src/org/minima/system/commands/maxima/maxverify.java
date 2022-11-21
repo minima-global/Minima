@@ -17,6 +17,26 @@ public class maxverify extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nmaxverify\n"
+				+ "\n"
+				+ "Verify data with a Maxima public key. Returns valid true or false.\n"
+				+ "\n"
+				+ "data:\n"
+				+ "    The 0x HEX data to verify the signature for.\n"
+				+ "\n"
+				+ "publickey:\n"
+				+ "    The Maxima public key of the signer.\n"
+				+ "\n"
+				+ "signature:\n"
+				+ "    The signature of the data.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "maxverify data:0xCD34.. publickey:0xFED5 signature:0x4827..\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"data","publickey","signature"}));
 	}

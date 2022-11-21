@@ -17,6 +17,32 @@ public class sendpoll extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nsendpoll\n"
+				+ "\n"
+				+ "Send function that adds 'send' commands to a list and polls every 30 seconds until the return status is 'true'.\n"
+				+ "\n"
+				+ "Accepts the same parameters as the 'send' function.\n"
+				+ "\n"
+				+ "action: (optional)\n"
+				+ "    list : list all the 'send' commands in the polling list.\n"
+				+ "    remove : remove a 'send' command from the polling list.\n"
+				+ "\n"
+				+ "uid: (optional)\n"
+				+ "    The uid of a 'send' command you wish to remove from the polling list. Use with 'action:remove'.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "sendpoll address:0xFF.. amount:10\n"
+				+ "\n"
+				+ "sendpoll address:0xFF.. amount:10 tokenid:0xFED5.. burn:0.1\n"
+				+ "\n"
+				+ "sendpoll action:list\n"
+				+ "\n"
+				+ "sendpoll action:remove uid:0x..\n";				
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"action","uid",
 				"address","amount","multi","tokenid","state","burn","split","debug","dryrun","mine"}));

@@ -18,6 +18,26 @@ public class hashtest extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nhashtest\n"
+				+ "\n"
+				+ "Check the speed of hashing of this device. Defaults to 1 million hashes.\n"
+				+ "\n"
+				+ "Returns the time taken in milliseconds and speed in megahashes/second.\n"
+				+ "\n"
+				+ "E.g. A speed of 0.5 MH/s indicates 500000 hashes per second.\n"
+				+ "\n"
+				+ "amount: (optional)\n"
+				+ "    Number of hashes to execute.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "hashtest\n"
+				+ "\n"
+				+ "hashtest amount:2000000\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"amount"}));
 	}
