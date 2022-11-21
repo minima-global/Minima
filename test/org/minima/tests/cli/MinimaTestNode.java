@@ -145,4 +145,7 @@ public class MinimaTestNode {
         return attempts != 250;
     }
 
+    public void killMinima(){
+        minima.runMinimaCMD("quit",false);
+    }
 }
