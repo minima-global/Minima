@@ -41,7 +41,7 @@ public class hash extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"data"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"data","type"}));
 	}
 	
 	@Override
