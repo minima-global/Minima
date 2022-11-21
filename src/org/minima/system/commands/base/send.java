@@ -65,8 +65,8 @@ public class send extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"address","amount","multi",
-				"tokenid","state","burn","split","debug","dryrun","mine"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","uid",
+				"address","amount","multi","tokenid","state","burn","split","debug","dryrun","mine"}));
 	}
 	
 	@Override

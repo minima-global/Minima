@@ -19,7 +19,7 @@ public class sendpoll extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"action","uid",
-				"address","amount","multi","tokenid","state","burn","split","debug","dryrun"}));
+				"address","amount","multi","tokenid","state","burn","split","debug","dryrun","mine"}));
 	}
 	
 	@Override
