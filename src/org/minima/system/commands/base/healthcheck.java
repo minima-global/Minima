@@ -2,6 +2,7 @@ package org.minima.system.commands.base;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.cascade.Cascade;
+import org.minima.database.cascade.CascadeNode;
 import org.minima.database.maxima.MaximaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.base.MiniNumber;
@@ -13,6 +14,23 @@ public class healthcheck extends Command {
 
 	public healthcheck() {
 		super("healthcheck","Run a system check to see everything adds up");
+	}
+	
+	@Override
+	public String getFullHelp() {
+		return "\nhealthcheck\n"
+				+ "\n"
+				+ "Return information about your chain, cascade and maxima.\n"
+				+ "\n"
+				+ "Chain - tip:current chain tip block, root:current chain root block, chainlength:number of blocks in the heaviest chain.\n"
+				+ "\n"
+				+ "Cascade - tip:current cascade tip block, tipcorrect:returns true if the cascade tip meets the root of the txpow tree.\n"
+				+ "\n"
+				+ "Maxima - hosts:number of maxima hosts, contacts:number of maxima contacts.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "healthcheck\n";
 	}
 	
 	@Override
@@ -42,17 +60,23 @@ public class healthcheck extends Command {
 		
 		//Now check the cascade
 		Cascade casc = MinimaDB.getDB().getCascade();
-		MiniNumber casctip = casc.getTip().getTxPoW().getBlockNumber();
+		CascadeNode ctip = casc.getTip();
+		if(ctip != null) {
+			MiniNumber casctip = casc.getTip().getTxPoW().getBlockNumber();
+			
+			JSONObject cascade = new JSONObject();
+			cascade.put("tip", casctip.toString());
+			
+			boolean correctstart = casctip.isEqual(treeroot.decrement());
+			cascade.put("tipcorrect", correctstart);
+			
+			cascade.put("cascadelength", casc.getLength());
+			
+			resp.put("cascade", cascade);
+		}else {
+			resp.put("cascade", "nocacade");
+		}
 		
-		JSONObject cascade = new JSONObject();
-		cascade.put("tip", casctip.toString());
-		
-		boolean correctstart = casctip.isEqual(treeroot.decrement());
-		cascade.put("tipcorrect", correctstart);
-		
-		cascade.put("cascadelength", casc.getLength());
-		
-		resp.put("cascade", cascade);
 		
 		//Now check Maxima..
 		MaximaDB maxdb = MinimaDB.getDB().getMaximaDB();

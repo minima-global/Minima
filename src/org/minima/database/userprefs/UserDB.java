@@ -2,6 +2,7 @@ package org.minima.database.userprefs;
 
 import java.util.ArrayList;
 
+import org.minima.objects.Magic;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.params.GlobalParams;
@@ -169,6 +170,33 @@ public class UserDB extends JsonDB{
 	
 	public void setAutoBackup(boolean zAuto) {
 		setBoolean("autobackup", zAuto);
+	}
+	
+	/**
+	 * Desired Magic Numbers
+	 */
+	public MiniNumber getMagicDesiredKISSVM() {
+		return getNumber("magic_kissvm", Magic.DEFAULT_KISSVM_OPERATIONS);
+	}
+	
+	public void setMagicDesiredKISSVM(MiniNumber zKISSVM) {
+		setNumber("magic_kissvm", zKISSVM);
+	}
+	
+	public MiniNumber getMagicMaxTxPoWSize() {
+		return getNumber("magic_txpowsize", Magic.DEFAULT_TXPOW_SIZE);
+	}
+	
+	public void setMagicMaxTxPoWSize(MiniNumber zMaxSize) {
+		setNumber("magic_txpowsize", zMaxSize);
+	}
+	
+	public MiniNumber getMagicMaxTxns() {
+		return getNumber("magic_txns", Magic.DEFAULT_TXPOW_TXNS);
+	}
+	
+	public void setMagicMaxTxns(MiniNumber zMaxTxns) {
+		setNumber("magic_txns", zMaxTxns);
 	}
 	
 }

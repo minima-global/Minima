@@ -38,6 +38,19 @@ public class burn extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nburn\n"
+				+ "\n"
+				+ "View the number of burn transactions and the maximum, median, average and minimum burn metrics for the last 1, 10 and 50 blocks.\n"
+				+ "\n"
+				+ "Use as an indicator for an appropriate burn amount for transactions.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "burn\n";
+	}
+	
+	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		

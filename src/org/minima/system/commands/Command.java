@@ -32,6 +32,7 @@ import org.minima.system.commands.base.hashtest;
 import org.minima.system.commands.base.healthcheck;
 import org.minima.system.commands.base.incentivecash;
 import org.minima.system.commands.base.logs;
+import org.minima.system.commands.base.magic;
 import org.minima.system.commands.base.mempool;
 import org.minima.system.commands.base.missingcmd;
 import org.minima.system.commands.base.mmrcreate;
@@ -72,6 +73,9 @@ import org.minima.system.commands.search.coins;
 import org.minima.system.commands.search.keys;
 import org.minima.system.commands.search.tokens;
 import org.minima.system.commands.search.txpow;
+import org.minima.system.commands.send.sendnosign;
+import org.minima.system.commands.send.sendpost;
+import org.minima.system.commands.send.sendsign;
 import org.minima.system.commands.signatures.sign;
 import org.minima.system.commands.signatures.verify;
 import org.minima.system.commands.txn.txnauto;
@@ -107,6 +111,9 @@ public abstract class Command {
 //			new sshtunnel(), 
 			
 			new mds(), new sendpoll(), new healthcheck(), new mempool(),
+			
+			new sendsign(), new sendnosign(), new sendpost(),
+			new magic(),
 			
 			new maxsign(), new maxverify(),
 			new archive(), new logs(),
@@ -257,6 +264,14 @@ public abstract class Command {
 		}
 		
 		return (JSONArray) mParams.get(zParamName);
+	}
+	
+	public String getAddressParam(String zParamName, String zDefault) throws CommandException {
+		if(existsParam(zParamName)) {
+			return getAddressParam(zParamName);
+		}
+		
+		return zDefault;
 	}
 	
 	public String getAddressParam(String zParamName) throws CommandException {

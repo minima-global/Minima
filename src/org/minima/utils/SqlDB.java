@@ -23,6 +23,7 @@ public abstract class SqlDB {
 	 * The actual File used..
 	 */
 	protected File mSQLFile;
+	protected File mSQLDBNoMV;
 	
 	public SqlDB() {}
 	
@@ -39,6 +40,9 @@ public abstract class SqlDB {
 	 */
 	public void loadDB(File zFile) throws SQLException {
 		
+		//Store this for open checks
+		mSQLDBNoMV = zFile;
+		
 		//Make sure the parent files exist
 		zFile.getParentFile().mkdirs();
 		
@@ -50,28 +54,54 @@ public abstract class SqlDB {
 				
 		//The H2 JDBC URL
 		String h2db = "jdbc:h2:"+path+";MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE";
-//		String h2db = "jdbc:h2:"+path+";MODE=MySQL";
 		
 		//Create the connection
 		mSQLConnection = DriverManager.getConnection(h2db, "SA", "");
-		
-//		//Save and compact the DB!
-//		Statement stmt = mSQLConnection.createStatement();
-//	
-//		//Shut down.. this saves and closes all the data
-//		stmt.execute("SHUTDOWN COMPACT");
-//
-//		//Close the connection
-//		mSQLConnection.close();
-//		
-//		//Now open a NEW Connection..
-//		mSQLConnection = DriverManager.getConnection(h2db, "SA", "");
 		
 		//Auto commit changes
 		mSQLConnection.setAutoCommit(true);
 
 		//Perform Create SQL
 		createSQL();
+	}
+	
+	public boolean checkOpen() throws SQLException {
+		
+		//Check not NULL
+		boolean reopen = false;
+		if(mSQLConnection==null) {
+			reopen = true;
+			
+		}else if(mSQLConnection.isClosed()) {
+			reopen = true;
+		}
+		
+		//Do we need to restart..
+		if(reopen) {
+			
+			//Notify User
+			MinimaLogger.log("SQLDB RE-OPEN : "+mSQLDBNoMV.getName());
+			
+			//Clean memory
+			System.gc();
+			
+			//Get the full db path
+			String path = mSQLDBNoMV.getAbsolutePath();
+					
+			//The H2 JDBC URL
+			String h2db = "jdbc:h2:"+path+";MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE";
+			
+			//Create the connection
+			mSQLConnection = DriverManager.getConnection(h2db, "SA", "");
+			
+			//Auto commit changes
+			mSQLConnection.setAutoCommit(true);
+
+			//Perform Create SQL
+			createSQL();
+		}
+		
+		return reopen;
 	}
 	
 	public void hardCloseDB() {

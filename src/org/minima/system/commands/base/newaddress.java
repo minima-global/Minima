@@ -13,6 +13,19 @@ public class newaddress extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nnewaddress\n"
+				+ "\n"
+				+ "Create a new address that will not be not used for anything else (not one of the 64 default change address).\n"
+				+ "\n"
+				+ "Can be used for a specific use case or for improved privacy.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "newaddress\n";
+	}
+	
+	@Override
 	public JSONObject runCommand() throws Exception{
 		JSONObject ret = getJSONReply();
 		

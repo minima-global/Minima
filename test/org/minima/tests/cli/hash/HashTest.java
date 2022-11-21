@@ -18,14 +18,6 @@ import org.minima.tests.cli.MinimaCliTest;
 public class HashTest extends MinimaCliTest {
 
     public MinimaTestNode test = new MinimaTestNode();
-
-    @Test
-    public void testConnectWithNoArgs () throws Exception
-    {
-        String output = test.runCommand("hash");
-
-        runBaseTests(output);        
-    }
     
     public void runBaseTests (String output) throws Exception
     {
@@ -41,4 +33,32 @@ public class HashTest extends MinimaCliTest {
         assertFalse((boolean)json.get("pending"));
     }
 
+    @Test
+    public void testConnectWithNoArgs () throws Exception
+    {
+        String output = test.runCommand("hash");
+
+        runBaseTests(output);        
+    }
+
+    @Test
+    public void runKeccakTest() throws Exception {
+        String output = test.runCommand("hash data:0xB291E3A6D546E1D5E61A3EF08D01474386749D267774D718E8E07280F678A628 type:keccak");
+        System.out.println("keccak output: ");
+        System.out.println(output);
+    }
+
+    @Test
+    public void runSha2Test() throws Exception {
+        String output = test.runCommand("hash data:0xB291E3A6D546E1D5E61A3EF08D01474386749D267774D718E8E07280F678A628 type:sha2");
+        System.out.println("sha2 output: ");
+        System.out.println(output);
+    }
+
+    @Test
+    public void runSha3Test() throws Exception {
+        String output = test.runCommand("hash data:0xB291E3A6D546E1D5E61A3EF08D01474386749D267774D718E8E07280F678A628 type:sha3");
+        System.out.println("sha3 output: ");
+        System.out.println(output);
+    }
 }

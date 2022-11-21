@@ -242,6 +242,40 @@ public class TxPoWSearcher {
 		return null;
 	}
 
+	public static TxPoW searchChainForTxPoW(MiniData zTxPoWID) {
+		
+		//Start node position
+		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+		
+		//Now cycle through and get all your coins..
+		while(tip != null) {
+
+			//The Block
+			TxPoW txblock = tip.getTxPoW();
+			
+			//Is this block the txn
+			if(txblock.getTxPoWIDData().isEqual(zTxPoWID)) {
+				return txblock;
+			}
+			
+			//Check all the transactions..
+			ArrayList<MiniData> txns = txblock.getBlockTransactions();
+			for(MiniData txn : txns) {
+				
+				//Is this the one..
+				if(txn.isEqual(zTxPoWID)) {
+					return txblock;
+				}
+			}
+			
+			
+			//And move back up the tree
+			tip = tip.getParent();
+		}
+		
+		return null;
+	}
+
 	public static ArrayList<TxPoW> searchTxPoWviaAddress(MiniData zAddress) {
 		
 		ArrayList<TxPoW> ret = new ArrayList<>();

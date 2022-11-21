@@ -1014,4 +1014,10 @@ public class MaximaManager extends MessageProcessor {
 		data.put("connected", zConnected);
 		Main.getInstance().PostNotifyEvent("MAXIMAHOSTS", data);
 	}
+	
+	public void NotifyMaximaContactsChanged() {
+		//Post a Notify Message
+		JSONObject data = new JSONObject();
+		Main.getInstance().PostNotifyEvent("MAXIMACONTACTS", data);
+	}
 }

@@ -11,6 +11,19 @@ public class quit extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nquit\n"
+				+ "\n"
+				+ "Shutdown Minima safely.\n"
+				+ "\n"
+				+ "Ensure you have a backup before shutting down.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "quit\n";
+	}
+	
+	@Override
 	public JSONObject runCommand() {
 		JSONObject ret = getJSONReply();
 		

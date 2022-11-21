@@ -60,13 +60,66 @@ public class send extends Command {
 	}
 	
 	public send() {
-		super("send","(address:Mx..|0x..) (amount:) (multi:[address:amount,..]) (tokenid:) (state:{}) (burn:) (split:) (debug:) (dryrun:) - Send Minima or Tokens to an address");
+		super("send","(address:Mx..|0x..) (amount:) (multi:[address:amount,..]) (tokenid:) (state:{}) (burn:) (split:) (mine:) (debug:) (dryrun:) - Send Minima or Tokens to an address");
+	}
+	
+	@Override
+	public String getFullHelp() {
+		return "\nsend\n"
+				+ "\n"
+				+ "Send Minima or custom tokens to a wallet or custom script address.\n"
+				+ "\n"
+				+ "Optionally, send to multiple addresses in one transaction; split UTxOs; add state variables or include a burn.\n"
+				+ "\n"
+				+ "address: (optional)\n"
+				+ "    A Minima 0x or Mx wallet address or custom script address. Must also specify amount.\n"
+				+ "\n"
+				+ "amount: (optional)\n"
+				+ "    The amount of Minima or custom tokens to send to the specified address.\n"
+				+ "\n"
+				+ "multi: (optional)\n"
+				+ "    JSON Array listing addresses and amounts to send in one transaction.\n"
+				+ "    Takes the format [address:amount,address2:amount2,..], with each set in double quotes.\n"
+				+ "\n"
+				+ "tokenid: (optional)\n"
+				+ "    If sending a custom token, you must specify its tokenid. Defaults to Minima (0x00).\n"
+				+ "\n"
+				+ "state: (optional)\n"
+				+ "    List of state variables, if sending coins to a script. A JSON object in the format {\"port\":\"value\",..}\n"
+				+ "\n"
+				+ "burn: (optional)\n"
+				+ "    The amount of Minima to burn with this transaction.\n"
+				+ "\n"
+				+ "split: (optional)\n"
+				+ "    You can set the number of coins the recipient will receive, between 1 and 20. Default is 1.\n"
+				+ "    The amount being sent will be split into multiple coins of equal value.\n"
+				+ "    You can split your own coins by sending to your own address.\n"
+				+ "    Useful if you want to send multiple transactions without waiting for change to be confirmed.\n"
+				+ "\n"
+				+ "debug: (optional)\n"
+				+ "    true or false, true will print more detailed logs.\n"
+				+ "\n"
+				+ "dryrun: (optional)\n"
+				+ "    true or false, true will simulate the send transaction but not execute it.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "send address:0xFF.. amount:10\n"
+				+ "\n"
+				+ "send address:0xFF.. amount:10 tokenid:0xFED5.. burn:0.1\n"
+				+ "\n"
+				+ "send address:0xFF.. amount:10 split:5 burn:0.1\n"
+				+ "\n"
+				+ "send multi:[\"0xFF..:10\",\"0xEE..:10\",\"0xDD..:10\"] split:20\n"
+				+ "\n"
+				+ "send amount:1 address:0xFF.. state:{\"0\":\"0xEE..\",\"1\":\"0xDD..\"}\n";
+					
 	}
 
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"address","amount","multi",
-				"tokenid","state","burn","split","debug","dryrun"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","uid",
+				"address","amount","multi","tokenid","state","burn","split","debug","dryrun","mine"}));
 	}
 	
 	@Override
@@ -76,7 +129,7 @@ public class send extends Command {
 		//Who are we sending to
 		ArrayList<AddressAmount> recipients = new ArrayList<>();
 		
-		//What is the toal amount we are sending..
+		//What is the total amount we are sending..
 		MiniNumber totalamount = MiniNumber.ZERO;
 		
 		//Is it a MULTI send..
@@ -155,6 +208,9 @@ public class send extends Command {
 		if(existsParam("state")) {
 			state = getJSONObjectParam("state");
 		}
+		
+		//Are we Mining synchronously
+		boolean minesync = getBooleanParam("mine", false);
 		
 		//get the tip..
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
@@ -508,16 +564,27 @@ public class send extends Command {
 		//Calculate the txpowid / size..
 		txpow.calculateTXPOWID();
 		
-		//All good..
-		ret.put("dryrun", dryrun);
-		ret.put("response", txpow.toJSON());
-		
 		if(!dryrun) {
-			//Send it to the Miner..
-			Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txpow);
+			
+			//Sync or Asyn mining..
+			if(minesync) {
+				boolean success = Main.getInstance().getTxPoWMiner().MineMaxTxPoW(false, txpow, 120000);
+				
+				if(!success) {
+					throw new CommandException("FAILED TO MINE txn in 120 seconds !?");
+				}
+				
+			}else {
+				Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txpow);
+			}
+			
 		}else {
 			MinimaLogger.log("DRY RUN - not sending");
 		}
+		
+		//All good..
+		ret.put("dryrun", dryrun);
+		ret.put("response", txpow.toJSON());
 		
 		return ret;
 	}
@@ -535,11 +602,11 @@ public class send extends Command {
 	 * Expects all the coins to be of the same tokenid
 	 */
 	
-	private static ArrayList<Coin> selectCoins(ArrayList<Coin> zAllCoins, MiniNumber zAmountRequired){
+	public static ArrayList<Coin> selectCoins(ArrayList<Coin> zAllCoins, MiniNumber zAmountRequired){
 		return selectCoins(zAllCoins, zAmountRequired, false);
 	}
 	
-	private static ArrayList<Coin> selectCoins(ArrayList<Coin> zAllCoins, MiniNumber zAmountRequired, boolean zDebug){
+	public static ArrayList<Coin> selectCoins(ArrayList<Coin> zAllCoins, MiniNumber zAmountRequired, boolean zDebug){
 		ArrayList<Coin> ret = new ArrayList<>();
 		
 		//Get the TxPoWDB
@@ -548,14 +615,6 @@ public class send extends Command {
 		
 		//First sort the coins by size and address..
 		ArrayList<Coin> coinlist = orderCoins(zAllCoins);
-//		Collections.sort(zAllCoins, new Comparator<Coin>() {
-//			@Override
-//			public int compare(Coin zCoin1, Coin zCoin2) {
-//				MiniNumber amt1 = zCoin1.getAmount();
-//				MiniNumber amt2 = zCoin2.getAmount();
-//				return amt2.compareTo(amt1);
-//			}
-//		});
 
 		//Are we debugging..
 		if(zDebug) {
