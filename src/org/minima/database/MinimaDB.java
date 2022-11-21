@@ -15,6 +15,7 @@ import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.wallet.Wallet;
 import org.minima.system.network.p2p.P2PDB;
 import org.minima.system.params.GeneralParams;
+import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 
 public class MinimaDB {
@@ -188,7 +189,31 @@ public class MinimaDB {
 			
 			//Set the Archive folder
 			File archsqlfolder = new File(basedb,"archivesql");
-			mArchive.loadDB(new File(archsqlfolder,"archive"));
+			try {
+				
+				//Try and load the Archive DB
+				mArchive.loadDB(new File(archsqlfolder,"archive"));
+				
+//				throw new Exception("TEST CRASH ARCHIVEDB!");
+				
+			}catch(Exception exc) {
+				
+				//Log the complete error
+				MinimaLogger.log(exc);
+				
+				//There wqas an issue.. wipe it.. and resync..
+				MinimaLogger.log("ERROR loading ArchiveDB.. WIPE and RESYNC.. ");
+				
+				//Close the DB
+				mArchive.hardCloseDB();
+				
+				//Delete the ArchiveDB folder
+				MiniFile.deleteFileOrFolder(archsqlfolder.getAbsolutePath(), archsqlfolder);
+				
+				//And reload..
+				mArchive = new ArchiveManager();
+				mArchive.loadDB(new File(archsqlfolder,"archive"));
+			}
 			
 			//Are we Storing in a MySQL..
 			if(!GeneralParams.MYSQL_HOST.equals("")) {
@@ -199,13 +224,37 @@ public class MinimaDB {
 						GeneralParams.MYSQL_PASSWORD);
 			}
 			
+			//Load the SQL DB
+			File txpowsqlfolder = new File(basedb,"txpowsql");
+			try {
+				
+				//Try and load the Archive DB
+				mTxPoWDB.loadSQLDB(new File(txpowsqlfolder,"txpow"));
+				
+//				throw new Exception("TEST CRASH TXPOWDB!");
+				
+			}catch(Exception exc) {
+				
+				//Log the complete error
+				MinimaLogger.log(exc);
+				
+				//There wqas an issue.. wipe it.. and resync..
+				MinimaLogger.log("ERROR loading TxPoWSQLDB.. WIPE and RESYNC.. ");
+				
+				//Close the DB
+				mTxPoWDB.hardCloseSQLDB();
+				
+				//Delete the ArchiveDB folder
+				MiniFile.deleteFileOrFolder(txpowsqlfolder.getAbsolutePath(), txpowsqlfolder);
+				
+				//And reload..
+				mTxPoWDB	= new TxPoWDB();
+				mTxPoWDB.loadSQLDB(new File(txpowsqlfolder,"txpow"));
+			}
+			
 			//Load the wallet
 			File walletsqlfolder = new File(basedb,"walletsql");
 			mWallet.loadDB(new File(walletsqlfolder,"wallet"));
-			
-			//Load the SQL DB
-			File txpowsqlfolder = new File(basedb,"txpowsql");
-			mTxPoWDB.loadSQLDB(new File(txpowsqlfolder,"txpow"));
 			
 			//Load the MaximaDB
 			File maxsqlfolder = new File(basedb,"maximasql");

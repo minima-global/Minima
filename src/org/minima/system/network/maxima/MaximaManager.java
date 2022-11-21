@@ -96,6 +96,9 @@ public class MaximaManager extends MessageProcessor {
 	private static final String MAXIMA_MLSTIME 		= "maxima_mlstime";
 	private static final String MAXIMA_OLDMLSHOST 	= "maxima_oldmlshost";
 	
+	private static final String MAXIMA_ISSTATICMLS 	= "maxima_isstaticmls";
+	private static final String MAXIMA_STATICMLS 	= "maxima_staticmls";
+	
 	/**
 	 * The Response message for a Maxima Message
 	 */
@@ -131,6 +134,12 @@ public class MaximaManager extends MessageProcessor {
 	public boolean mMaximaLogs 	= false;
 
 	/**
+	 * Are you a static Maxima ID
+	 */
+	boolean mStaticMaxima  = false;
+	String mStaticMaximaID = "";
+	
+	/**
 	 * The Contacts Manager
 	 */
 	MaximaContactManager mMaxContacts;
@@ -140,6 +149,15 @@ public class MaximaManager extends MessageProcessor {
 	 */
 	MaxMsgHandler mMaxSender;
 	
+	/**
+	 * Are we using a STATIC MLS
+	 */
+	boolean mIsStaticMLS 	= false;
+	String mStaticMLS 		= "";
+	
+	/**
+	 * Main Constructor
+	 */
 	public MaximaManager() {
 		super("MAXIMA");
 		
@@ -185,7 +203,28 @@ public class MaximaManager extends MessageProcessor {
 		return getMaximaMLSIdentity()+"@"+GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
 	}
 	
+	public boolean isStaticMLS() {
+		return mIsStaticMLS;
+	}
+	
+	public void setStaticMLS(boolean zStatic, String zStaticAddress) {
+		mIsStaticMLS 	= zStatic;
+		mStaticMLS 		= zStaticAddress;
+		
+		//Get the UserDB
+		UserDB udb = MinimaDB.getDB().getUserDB();
+		udb.setBoolean(MAXIMA_ISSTATICMLS, mIsStaticMLS);
+		udb.setString(MAXIMA_STATICMLS, mStaticMLS);
+		
+		//Save this..
+		MinimaDB.getDB().saveUserDB();
+	}
+	
 	public String getMLSHost() {
+		if(mIsStaticMLS) {
+			return mStaticMLS;
+		}
+		
 		String mls = mMLSService.getMLSServer();
 		if(mls.equals("")) {
 			return mMaximaMLSAddress+"@"+GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
@@ -195,6 +234,10 @@ public class MaximaManager extends MessageProcessor {
 	}
 	
 	public String getOldMLSHost() {
+		if(mIsStaticMLS) {
+			return mStaticMLS;
+		}
+		
 		String mls = mMLSService.getOldMLSServer();
 		if(mls.equals("")) {
 			return mMaximaMLSAddress+"@"+GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
@@ -221,6 +264,11 @@ public class MaximaManager extends MessageProcessor {
 	
 	public String getRandomMaximaAddress() {
 
+		//Are we a static address..
+		if(mStaticMaxima) {
+			return mMaximaMLSAddress+"@"+mStaticMaximaID;
+		}
+		
 		//Who are we connected to
 		ArrayList<MaximaHost> connctedhosts = getAllConnectedHosts();
 		
@@ -232,6 +280,10 @@ public class MaximaManager extends MessageProcessor {
 		return connctedhosts.get(new Random().nextInt(connctedhosts.size())).getMaximaAddress();
 	}
 
+	public void setStaticAddress(boolean zStatic, String zAddress) {
+		mStaticMaxima 	= zStatic;
+		mStaticMaximaID = zAddress;
+	}
 	
 	public MaximaMessage createMaximaMessage(String zTo, String zApplication, MiniData zData) {
 		MaximaMessage maxima 	= new MaximaMessage();
@@ -277,6 +329,13 @@ public class MaximaManager extends MessageProcessor {
 			
 				//Convert to a Maxima Address
 				mMaximaMLSAddress = Address.makeMinimaAddress(mMLSPublic);
+			}
+			
+			//Are we using a Static MLS
+			mIsStaticMLS 	= udb.getBoolean(MAXIMA_ISSTATICMLS, false);
+			mStaticMLS		= udb.getString(MAXIMA_STATICMLS, "");
+			if(mIsStaticMLS) {
+				MinimaLogger.log("Static MLS found : "+mStaticMLS);
 			}
 			
 			//Hard set the MLSService
@@ -930,12 +989,16 @@ public class MaximaManager extends MessageProcessor {
 		if(allcontacts.size() > 0) {
 			//Send the message - to BOTH hosts.. old and new
 			PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SETAPP,mlspackdata));
-			PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,mlspackdata));
+			if(!mIsStaticMLS) {
+				PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,mlspackdata));
+			}
 			mHaveContacts = true;
 		}else {
 			if(mHaveContacts) {
 				PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SETAPP,mlspackdata));
-				PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,mlspackdata));
+				if(!mIsStaticMLS) {
+					PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,mlspackdata));
+				}
 			}
 			mHaveContacts = false;
 		}
@@ -950,5 +1013,11 @@ public class MaximaManager extends MessageProcessor {
 		data.put("host", zFullAddress);
 		data.put("connected", zConnected);
 		Main.getInstance().PostNotifyEvent("MAXIMAHOSTS", data);
+	}
+	
+	public void NotifyMaximaContactsChanged() {
+		//Post a Notify Message
+		JSONObject data = new JSONObject();
+		Main.getInstance().PostNotifyEvent("MAXIMACONTACTS", data);
 	}
 }

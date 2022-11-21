@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.URLDecoder;
 import java.util.Date;
 import java.util.StringTokenizer;
@@ -282,6 +283,17 @@ public class MDSCompleteHandler implements Runnable {
 			
 		}catch(SSLHandshakeException exc) {
 		}catch(SSLException exc) {
+		
+		}catch(SocketException exc) {
+			
+			// send HTTP Headers
+			out.println("HTTP/1.1 500 OK");
+			out.println("Server: HTTP MDS Server from Minima : 1.3");
+			out.println("Date: " + new Date());
+			out.println("Content-type: text/plain");
+			out.println("Access-Control-Allow-Origin: *");
+			out.println(); // blank line between headers and content, very important !
+			out.flush(); // flush character output stream buffer
 		
 		}catch(IllegalArgumentException exc) {
 			MinimaLogger.log(exc.toString());

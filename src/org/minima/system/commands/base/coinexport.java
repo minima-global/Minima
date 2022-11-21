@@ -1,5 +1,8 @@
 package org.minima.system.commands.base;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.txpowtree.TxPoWTreeNode;
@@ -17,6 +20,28 @@ public class coinexport extends Command {
 
 	public coinexport() {
 		super("coinexport","[coinid:] - Export a coin");
+	}
+	
+	@Override
+	public String getFullHelp() {
+		return "\ncoinexport\n"
+				+ "\n"
+				+ "Export a coin including its MMR proof.\n"
+				+ "\n"
+				+ "A coin can then be imported and tracked on another node using the 'coinimport' command.\n"
+				+ "\n"
+				+ "coinid:\n"
+				+ "    The id of a coin. Can be found using the 'coins' command.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "coinexport coinid:0xCD34..\n";
+	}
+	
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"coinid"}));
 	}
 	
 	@Override

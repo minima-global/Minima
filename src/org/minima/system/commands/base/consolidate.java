@@ -1,6 +1,7 @@
 package org.minima.system.commands.base;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -35,6 +36,58 @@ public class consolidate extends Command {
 
 	public consolidate() {
 		super("consolidate","[tokenid:] (coinage:) (maxcoins:) (maxsigs:) (burn:) (debug:) (dryrun:) - Consolidate coins by sending them back to yourself");
+	}
+	
+	@Override
+	public String getFullHelp() {
+		return "\nconsolidate\n"
+				+ "\n"
+				+ "Consolidate multiple coins (UTxOs) into one by sending them back to yourself. Must have at least 3 coins.\n"
+				+ "\n"
+				+ "Useful to prevent having many coins of tiny value and to manage the number of coins you are tracking.\n"
+				+ "\n"
+				+ "Optionally set the minimum coin age (in blocks), maximum number of coins and maximum number of signatures for the transaction.\n"
+				+ "\n"
+				+ "tokenid:\n"
+				+ "    The tokenid for Minima or custom token to consolidate coins for. Minima is 0x00.\n"
+				+ "\n"
+				+ "coinage: (optional)\n"
+				+ "    The minimum number of blocks deep (confirmations) a coin needs to be. Default is 3.\n"
+				+ "\n"
+				+ "maxcoins: (optional)\n"
+				+ "    The maximum number of coins to consolidate. Minimum 3, up to 20.\n"
+				+ "    Coins are first sorted by value (smallest first) before adding to the transaction.\n"
+				+ "\n"
+				+ "maxsigs: (optional)\n"
+				+ "    The maximum number of signatures for the transaction, up to 5.\n"
+				+ "    Coins are then sorted by address to minimize the number of signatures required.\n"
+				+ "\n"
+				+ "burn: (optional)\n"
+				+ "    Amount of Minima to burn with the transaction.\n"
+				+ "\n"
+				+ "debug: (optional)\n"
+				+ "    true or false, true will print more detailed logs.\n"
+				+ "\n"
+				+ "dryrun: (optional)\n"
+				+ "    true or false, true will simulate the consolidate transaction but not execute it.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "consolidate tokenid:0x00\n"
+				+ "\n"
+				+ "consolidate tokenid:0x77.. coinage:10\n"
+				+ "\n"
+				+ "consolidate tokenid:0x00 maxcoins:5\n"
+				+ "\n"
+				+ "consolidate tokenid:0x00 coinage:10 maxcoins:8 burn:1\n"
+				+ "\n"
+				+ "consolidate tokenid:0x00 coinage:10 maxcoins:8 maxsigs:3 burn:1 dryrun:true\n";
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"tokenid","coinage","maxcoins",
+				"maxsigs","burn","debug","dryrun"}));
 	}
 	
 	@Override

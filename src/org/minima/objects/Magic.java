@@ -44,17 +44,17 @@ public class Magic implements Streamable {
 	/**
 	 * Default Maximum size of a TxPoW unit.. Can change
 	 */
-	private static final MiniNumber DEFAULT_TXPOW_SIZE 	= new MiniNumber(64*1024);
+	public static final MiniNumber DEFAULT_TXPOW_SIZE 	= new MiniNumber(64*1024);
 	
 	/**
 	 * Default Maximum Number of executed KISSVM Operations
 	 */
-	private static final MiniNumber DEFAULT_KISSVM_OPERATIONS 	= new MiniNumber(1024);
+	public static final MiniNumber DEFAULT_KISSVM_OPERATIONS 	= new MiniNumber(1024);
 	
 	/**
 	 * Default Maximum number of Txns per block
 	 */
-	private static final MiniNumber DEFAULT_TXPOW_TXNS	= new MiniNumber(256);
+	public static final MiniNumber DEFAULT_TXPOW_TXNS	= new MiniNumber(256);
 	
 		
 	/**
@@ -83,7 +83,7 @@ public class Magic implements Streamable {
 		mDesiredMaxTxnPerBlock        	= DEFAULT_TXPOW_TXNS;
 		mDesiredMinTxPoWWork			= MIN_TXPOW_WORK;
 	}
-
+	
 	public JSONObject toJSON() {
 		JSONObject magic = new JSONObject();
 		
@@ -129,9 +129,25 @@ public class Magic implements Streamable {
 	}
 	
 	/**
+	 * Set the desired values..
+	 */
+	public void setDesiredKISSVM(MiniNumber zKISSVM) {
+		mDesiredMaxKISSVMOps = zKISSVM;
+	}
+	
+	public void setDesiredMaxTxPoWSize(MiniNumber zMaxSize) {
+		mDesiredMaxTxPoWSize = zMaxSize;
+	}
+	
+	public void setDesiredMaxTxns(MiniNumber zMaxTxn) {
+		mDesiredMaxTxnPerBlock = zMaxTxn;
+	}
+	
+	
+	/**
 	 * Calculate the current MAX values by taking a heavily weighted average
 	 * 
-	 *  Desired MUST be >= x0.5 and <= x2
+	 *  Desired calculated as >= x0.5 and <= x2
 	 *  
 	 */
 	public Magic calculateNewCurrent() {

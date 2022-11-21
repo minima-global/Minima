@@ -1,6 +1,7 @@
 package org.minima.system.commands.txn;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
@@ -24,6 +25,11 @@ public class txncheck extends Command {
 
 	public txncheck() {
 		super("txncheck","[id:] - Show details about the transaction");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"id"}));
 	}
 	
 	@Override

@@ -155,7 +155,14 @@ public class MDSManager extends MessageProcessor {
 		return mMiniHUBPassword;
 	}
 	
-	public boolean checkMiniHUBPasword(String zPassword) {
+	/**
+	 * One check at a time
+	 * @throws InterruptedException 
+	 */
+	public synchronized boolean checkMiniHUBPasword(String zPassword) throws InterruptedException {
+		//PAUSE - this prevents fast checking of passwords
+		Thread.sleep(1000);
+		
 		if(GeneralParams.MDS_PASSWORD.equals("")) {
 			return mMiniHUBPassword.replace("-", "").equalsIgnoreCase(zPassword.replace("-", "").trim());
 		}

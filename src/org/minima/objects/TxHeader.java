@@ -54,7 +54,7 @@ public class TxHeader implements Streamable {
 	/**
 	 * MAGIC numbers that set the chain parameters
 	 */
-	public Magic mMagic = new Magic();
+	public Magic mMagic	= new Magic();
 	
 	/**
 	 * The MMR Root!

@@ -1,5 +1,8 @@
 package org.minima.system.commands.network;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.network.minima.NIOManager;
@@ -10,6 +13,11 @@ public class disconnect extends Command {
 
 	public disconnect() {
 		super("disconnect","[uid:uid] - Disconnect from a connected or connecting host");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"uid"}));
 	}
 	
 	@Override

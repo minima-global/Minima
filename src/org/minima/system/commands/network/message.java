@@ -1,5 +1,8 @@
 package org.minima.system.commands.network;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
@@ -9,7 +12,12 @@ import org.minima.utils.json.JSONObject;
 public class message extends Command {
 
 	public message() {
-		super("message","(uid:uid) [data:message] - Send a message over the network to one of your direct peers");
+		super("message","[data:message] (uid:uid) - Send a message over the network to one of your direct peers");
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"uid","data"}));
 	}
 	
 	@Override

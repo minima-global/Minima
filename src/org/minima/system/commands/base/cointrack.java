@@ -1,5 +1,8 @@
 package org.minima.system.commands.base;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Coin;
 import org.minima.objects.base.MiniData;
@@ -12,6 +15,30 @@ public class cointrack extends Command {
 
 	public cointrack() {
 		super("cointrack","[enable:true|false] [coinid:] - Track or untrack a coin");
+	}
+	
+	@Override
+	public String getFullHelp() {
+		return "\ncointrack\n"
+				+ "\n"
+				+ "Track or untrack a coin.\n"
+				+ "\n"
+				+ "Track a coin to keep its MMR proof up-to-date and know when it becomes spent. Stop tracking to remove it from your relevant coins list.\n"
+				+ "\n"
+				+ "enable:\n"
+				+ "    true or false, true will add the coin to your relevant coins, false will remove it from your relevant coins.\n"
+				+ "\n"
+				+ "coinid:\n"
+				+ "    The id of a coin. Can be found using the 'coins' command.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "cointrack enable:true coinid:0xCD34..\n";
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"file","password"}));
 	}
 	
 	@Override

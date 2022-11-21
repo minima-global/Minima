@@ -39,6 +39,10 @@ public class TxPoWDB {
 		mSqlDB.loadDB(zFile);
 	}
 	
+	public void hardCloseSQLDB() {
+		mSqlDB.hardCloseDB();
+	}
+	
 	public void saveDB() {
 		//Shut down the SQL DB cleanly
 		mSqlDB.saveDB();
@@ -65,11 +69,8 @@ public class TxPoWDB {
 	}
 	
 	public void addSQLTxPoW(TxPoW zTxPoW) {
-		//Get the ID
-		String txpid = zTxPoW.getTxPoWID();
-		
 		//Is it in the SQL
-		if(!mSqlDB.exists(txpid)) {
+		if(!mSqlDB.exists(zTxPoW.getTxPoWID())) {
 			//Add it to the SQL..
 			mSqlDB.addTxPoW(zTxPoW);
 		}
@@ -86,12 +87,6 @@ public class TxPoWDB {
 		if(txp == null) {
 			//Check the SQL..
 			txp = mSqlDB.getTxPoW(zTxPoWID);
-			
-			//If found add to RamDB
-			if(txp != null) {
-				//For fast access next time
-				mRamDB.addTxPoW(txp);
-			}
 		}
 		
 		//Could still be null
@@ -170,8 +165,11 @@ public class TxPoWDB {
 	 * When you access a txpow it's record is updated 
 	 * and will not be deleted for another time period 
 	 */
-	public void cleanDB() {
+	public void cleanDBRAM() {
 		mRamDB.cleanDB();
+	}
+	
+	public void cleanDBSQL() {
 		mSqlDB.cleanDB();
 	}
 	

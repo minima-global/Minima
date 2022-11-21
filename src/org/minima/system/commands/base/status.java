@@ -4,6 +4,8 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 import org.minima.database.MinimaDB;
@@ -33,6 +35,29 @@ public class status extends Command {
 
 	public status() {
 		super("status","(clean:true) - Show general status for Minima and clean RAM");
+	}
+	
+	@Override
+	public String getFullHelp() {
+		return "\nstatus\n"
+				+ "\n"
+				+ "Show the general status for Minima and your node. Optionally clean the RAM.\n"
+				+ "\n"
+				+ "Prints details for general status, memory used, chain info, stored txpow units, network connections, p2p connections and traffic.\n"
+				+ "\n"
+				+ "clean: (optional)\n"
+				+ "    true only, clear the RAM.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "status\n"
+				+ "\n"
+				+ "status clean:true\n";
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"clean"}));
 	}
 	
 	@Override
@@ -83,7 +108,7 @@ public class status extends Command {
 //		MiniNumber usersperpulse 	= MiniNumber.ONE.div(new MiniNumber(""+pulsespeed).div(GlobalParams.MINIMA_BLOCK_SPEED));
 //		MiniNumber totaldevs 		= usersperpulse.mult(ratio).floor();
 
-		details.put("devices", ratio.ceil().toString());
+		//details.put("devices", ratio.ceil().toString());
 
 		//The Current total Length of the Minima Chain
 		long totallength = txptree.getHeaviestBranchLength()+cascade.getLength();

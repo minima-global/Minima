@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 import java.util.zip.GZIPOutputStream;
@@ -30,6 +32,35 @@ public class backup extends Command {
 	
 	public backup() {
 		super("backup","(password:) (file:) (auto:) (complete:false|true) - Backup the system. Uses a timestamped name by default");
+	}
+	
+	@Override
+	public String getFullHelp() {
+		return "\nbackup\n"
+				+ "\n"
+				+ "Backup your node. Uses a timestamped name by default.\n"
+				+ "\n"
+				+ "password: (optional)\n"
+				+ "    Set a password using uppercase, lowercase characters and numbers only.\n"
+				+ "\n"
+				+ "file: (optional)\n"
+				+ "    Specify a filename or local path for the backup.\n"
+				+ "\n"
+				+ "auto: (optional)\n"
+				+ "    true or false, true will schedule a default, non-password protected backup every 24 hours.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "backup password:Longsecurepassword456\n"
+				+ "\n"
+				+ "backup password:Longsecurepassword456 file:my-full-backup-01-Jan-22\n"
+				+ "\n"
+				+ "backup auto:true\n";
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"password","file","auto","complete"}));
 	}
 	
 	@Override

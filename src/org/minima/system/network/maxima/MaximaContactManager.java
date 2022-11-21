@@ -132,6 +132,9 @@ public class MaximaContactManager extends MessageProcessor {
 				MinimaLogger.log("DELETED contact request from : "+publickey);
 				if(checkcontact != null) {
 					maxdb.deleteContact(checkcontact.getUID());
+				
+					//Contacts have changed
+					mManager.NotifyMaximaContactsChanged();
 				}
 				
 				return;
@@ -170,7 +173,10 @@ public class MaximaContactManager extends MessageProcessor {
 				
 				maxdb.updateContact(mxcontact);
 			}
-						
+			
+			//Send a message that Tells there has been an update..
+			mManager.NotifyMaximaContactsChanged();
+			
 			//Send them a contact message aswell..
 			if(intro || checkcontact == null) {
 				Message msg = new Message(MAXCONTACTS_UPDATEINFO);
@@ -200,6 +206,9 @@ public class MaximaContactManager extends MessageProcessor {
 				mxcontact.setMyAddress((String)mycontactinfo.get("address"));
 				maxdb.updateContact(mxcontact);
 			}
+			
+			//There has been an Update
+			mManager.NotifyMaximaContactsChanged();
 			
 			MiniString str			= new MiniString(mycontactinfo.toString());
 			MiniData mdata 			= new MiniData(mycontactinfo.toString().getBytes(MiniString.MINIMA_CHARSET));
@@ -240,6 +249,9 @@ public class MaximaContactManager extends MessageProcessor {
 			
 			//Delete the contact
 			maxdb.deleteContact(id);
+			
+			//Contacts have changed
+			mManager.NotifyMaximaContactsChanged();
 			
 			//Tell them
 			NIOClient nioc = Main.getInstance().getNIOManager().getNIOClient(host); 
