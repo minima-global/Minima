@@ -108,7 +108,7 @@ public class status extends Command {
 //		MiniNumber usersperpulse 	= MiniNumber.ONE.div(new MiniNumber(""+pulsespeed).div(GlobalParams.MINIMA_BLOCK_SPEED));
 //		MiniNumber totaldevs 		= usersperpulse.mult(ratio).floor();
 
-		details.put("devices", ratio.ceil().toString());
+		//details.put("devices", ratio.ceil().toString());
 
 		//The Current total Length of the Minima Chain
 		long totallength = txptree.getHeaviestBranchLength()+cascade.getLength();
