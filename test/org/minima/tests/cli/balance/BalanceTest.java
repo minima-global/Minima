@@ -143,15 +143,15 @@ public class BalanceTest extends MinimaCliTest {
 
         runBaseTests (output);
         
-        System.out.println("Testing with garbage ZALGO text. He comes. \n");
-
-        String zalgo = " ̵̨̨͕̥̼̤̪͉̬̟̪͙̮͙̳͈͉̹̗̳̳͍͔̤͐̆̓͊̃̒̿̈́̽͌̀̎̃̓̎͛̌̓̒̾͑͆͘͘͜͝ ̶̢̨̢̪̯̩̙̗̫͕̘̦͉̮̗̹̼̳̭̱͈̭̮̠͙̻̫̆̎̎̈́̈̒̂͗̐̏͆̓̿̐͒͂͌̍͜͝ͅͅ";
-
-        minimaTestNode.setCommand("balance address:" + zalgo);
-
-        output = minimaTestNode.runCommand();
-
-        runBaseTests (output);
+//        System.out.println("Testing with garbage ZALGO text. He comes. \n");
+//
+//        String zalgo = " ÌµÍ˜Í�Ì†ÍƒÍŠÌƒÌ’Ì¿Í„Ì½ÍŒÌ€Í�ÌŽÌƒÍƒÌŽÍ›ÌŒÍƒÍ˜Ì’Ì¾Í‘Í†Í•Ì¥Ì¼Ì¤ÌªÍ‰Ì¬ÍœÌŸÌªÍ™Ì®Í™Ì³ÍˆÍ‰Ì¨Ì¹Ì—Ì³Ì¨Ì³Í�Í”Ì¤ Ì¶Ì†ÌŽÍ�ÌŽÍ„ÌˆÌ’Ì‚Í—Ì�Ì�Í†Ì“Ì¿Ì�Í’Í‚ÍŒÌ�ÌªÌ¯Ì©Ì™Í…Ì—Ì«Ì¢Í•Ì˜Ì¨Ì¦ÍœÍ‰Í…Ì®Ì—Ì¹Ì¼Ì³Ì­Ì±Ì¢ÍˆÌ­Ì®Ì Í™Ì»Ì«";
+//
+//        minimaTestNode.setCommand("balance address:" + zalgo);
+//
+//        output = minimaTestNode.runCommand();
+//
+//        runBaseTests (output);
 
         //Test with extra garbage arguments
 
