@@ -23,8 +23,8 @@ public class TxncheckTest extends MinimaCliTest {
     public void testTxncheckWithNoArgs () throws Exception
     {
         String output = test.runCommand("txncheck");
-
         runBaseTests(output);        
+        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

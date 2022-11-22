@@ -24,7 +24,8 @@ public class ConnectTest extends MinimaCliTest {
     {
         String output = test.runCommand("connect");
 
-        runBaseTests(output);        
+        runBaseTests(output);   
+        test.killMinima();     
     }
     
     public void runBaseTests (String output) throws Exception

@@ -23,8 +23,8 @@ public class VaultTest extends MinimaCliTest {
     public void testVaultWithNoArgs () throws Exception
     {
         String output = test.runCommand("vault");
-
         runBaseTests(output);        
+        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

@@ -23,8 +23,8 @@ public class TxndeleteTest extends MinimaCliTest {
     public void testTxndeleteWithNoArgs () throws Exception
     {
         String output = test.runCommand("txndelete");
-
         runBaseTests(output);        
+        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

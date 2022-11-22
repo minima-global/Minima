@@ -23,8 +23,8 @@ public class MmrProof extends MinimaCliTest {
     public void testConnectWithNoArgs () throws Exception
     {
         String output = test.runCommand("mmrproof");
-
         runBaseTests(output);        
+        test.killMinima();
     }
 
     public void runBaseTests (String output) throws Exception

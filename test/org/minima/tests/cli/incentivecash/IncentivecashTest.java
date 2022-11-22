@@ -23,8 +23,8 @@ public class IncentivecashTest extends MinimaCliTest {
     public void testConnectWithNoArgs () throws Exception
     {
         String output = test.runCommand("incentivecash");
-
         runBaseTests(output);        
+        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

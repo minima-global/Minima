@@ -48,6 +48,7 @@ public class CoinexportTest extends MinimaCliTest {
         System.out.println(output);
 
         baseTests(output);
+        test.killMinima();
     }
 
 }

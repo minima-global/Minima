@@ -23,8 +23,8 @@ public class PrinttreeTest extends MinimaCliTest {
     public void testConnectWithNoArgs () throws Exception
     {
         String output = test.runCommand("printtree");
-
         runBaseTests(output);        
+        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception
