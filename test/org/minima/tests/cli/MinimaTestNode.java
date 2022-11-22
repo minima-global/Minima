@@ -145,6 +145,19 @@ public class MinimaTestNode {
         return attempts != 250;
     }
 
+    public String getPublicKey () throws Exception
+    {
+        String getaddressOutput = minima.runMinimaCMD("getaddress");
+
+        JSONObject json = (JSONObject) new JSONParser().parse(getaddressOutput);
+
+        var responseAttr = json.get("response");
+
+        JSONObject responseObj = (JSONObject) new JSONParser().parse(responseAttr.toString());
+        
+        return responseObj.get("publickey").toString();
+    }
+
     public void killMinima(){
         minima.runMinimaCMD("quit",false);
     }
