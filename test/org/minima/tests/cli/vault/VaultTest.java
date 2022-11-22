@@ -1,4 +1,4 @@
-package org.minima.tests.cli.vaulttest;
+package org.minima.tests.cli.vault;
 
 import org.junit.Test;
 import org.junit.Before;

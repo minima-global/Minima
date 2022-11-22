@@ -1,4 +1,4 @@
-package org.minima.tests.cli.txnsigntest;
+package org.minima.tests.cli.txnsign;
 
 import org.junit.Test;
 import org.junit.Before;

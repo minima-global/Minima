@@ -1,4 +1,4 @@
-package org.minima.tests.cli.txpowtest;
+package org.minima.tests.cli.txpow;
 
 import org.junit.Test;
 import org.junit.Before;

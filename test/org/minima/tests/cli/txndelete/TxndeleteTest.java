@@ -1,4 +1,4 @@
-package org.minima.tests.cli.txndeletetest;
+package org.minima.tests.cli.txndelete;
 
 import org.junit.Test;
 import org.junit.Before;
