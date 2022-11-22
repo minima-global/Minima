@@ -1,4 +1,4 @@
-package org.minima.tests.cli.coinimport;
+package org.minima.tests.cli.coinexport;
 
 import org.junit.Test;
 import org.junit.Before;
