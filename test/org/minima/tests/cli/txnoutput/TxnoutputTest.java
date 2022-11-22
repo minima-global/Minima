@@ -1,4 +1,4 @@
-package org.minima.tests.cli.txnoutputtest;
+package org.minima.tests.cli.txnoutput;
 
 import org.junit.Test;
 import org.junit.Before;

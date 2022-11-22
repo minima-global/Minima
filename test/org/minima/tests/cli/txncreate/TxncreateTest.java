@@ -1,4 +1,4 @@
-package org.minima.tests.cli.txncreatetest;
+package org.minima.tests.cli.txncreate;
 
 import org.junit.Test;
 import org.junit.Before;

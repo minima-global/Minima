@@ -1,4 +1,4 @@
-package org.minima.tests.cli.verifytest;
+package org.minima.tests.cli.verify;
 
 import org.junit.Test;
 import org.junit.Before;

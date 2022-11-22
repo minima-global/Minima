@@ -1,4 +1,4 @@
-package org.minima.tests.cli.txnstatetest;
+package org.minima.tests.cli.txnstate;
 
 import org.junit.Test;
 import org.junit.Before;

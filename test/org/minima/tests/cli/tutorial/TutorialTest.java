@@ -1,4 +1,4 @@
-package org.minima.tests.cli.tutorialtest;
+package org.minima.tests.cli.tutorial;
 
 import org.junit.Test;
 import org.junit.Before;

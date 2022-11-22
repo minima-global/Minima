@@ -1,4 +1,4 @@
-package org.minima.tests.cli.txnscripttest;
+package org.minima.tests.cli.txnscript;
 
 import org.junit.Test;
 import org.junit.Before;

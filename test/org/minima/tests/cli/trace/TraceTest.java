@@ -1,4 +1,4 @@
-package org.minima.tests.cli.tracetest;
+package org.minima.tests.cli.trace;
 
 import org.junit.Test;
 import org.junit.Before;

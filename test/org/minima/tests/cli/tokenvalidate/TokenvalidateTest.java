@@ -1,4 +1,4 @@
-package org.minima.tests.cli.tokenvalidatetest;
+package org.minima.tests.cli.tokenvalidate;
 
 import org.junit.Test;
 import org.junit.Before;

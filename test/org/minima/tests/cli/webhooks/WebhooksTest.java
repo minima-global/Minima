@@ -1,4 +1,4 @@
-package org.minima.tests.cli.webhookstest;
+package org.minima.tests.cli.webhooks;
 
 import org.junit.Test;
 import org.junit.Before;
