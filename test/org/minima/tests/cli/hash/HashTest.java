@@ -42,8 +42,6 @@ public class HashTest extends MinimaCliTest {
         String output = test.runCommand("hash");
 
         runBaseTests(output);      
-
-        test.killMinima();  
     }
 
     @Test
@@ -62,8 +60,6 @@ public class HashTest extends MinimaCliTest {
             JSONObject json = (JSONObject) new JSONParser().parse(output);
             assertTrue((boolean)json.get("status"));
         }
-
-        test.killMinima();
     }
 
     @Test
@@ -78,7 +74,6 @@ public class HashTest extends MinimaCliTest {
         String expectedResult = "0xFD1FFC2F69003EE91D43AEF271B7FBA023121DCA7937334E6EA8CE7059BB756F";
 
         assertTrue(hashResponse.equals(expectedResult));
-        test.killMinima();
     }
 
     @Test
@@ -93,7 +88,6 @@ public class HashTest extends MinimaCliTest {
         String expectedResult = "0xB20E583B50A4E5E5CD3F4D65D2E0C783F8D8BAE0EBB78888BB5A977487C18064";
 
         assertTrue(hashResponse.equals(expectedResult));
-        test.killMinima();
     }
 
     @Test
@@ -108,7 +102,6 @@ public class HashTest extends MinimaCliTest {
         String expectedResult = "0xC11DC39488565959A2A427C109415E41BEAA3816D3BB6B90FCF04E8EA09ED437";
 
         assertTrue(hashResponse.equals(expectedResult));
-        test.killMinima();
     }
 
     @Test
@@ -120,6 +113,5 @@ public class HashTest extends MinimaCliTest {
         JSONObject json = (JSONObject) new JSONParser().parse(output);
 
         assertFalse((boolean)json.get("status"));
-        test.killMinima();
     }    
 }

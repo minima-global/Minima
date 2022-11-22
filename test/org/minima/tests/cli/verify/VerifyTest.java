@@ -25,8 +25,6 @@ public class VerifyTest extends MinimaCliTest {
         String output = test.runCommand("verify");
 
         runBaseTests(output);        
-
-        test.killMinima();
     }
 
     @Test 
@@ -60,9 +58,7 @@ public class VerifyTest extends MinimaCliTest {
 
         System.out.println(output.toString());
 
-        runBaseTestsWithValidArgs(output);
-
-        test.killMinima();
+        runBaseTestsWithValidArgs(output);        
     }
 
     @Test
@@ -95,8 +91,6 @@ public class VerifyTest extends MinimaCliTest {
         System.out.println(output.toString());
 
         runBaseTestsWithInvalidArgs(output);
-
-        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

@@ -25,8 +25,6 @@ public class SignTest extends MinimaCliTest {
         String output = test.runCommand("sign");
 
         runBaseTests(output);     
-        
-        test.killMinima();
     }
 
     @Test
@@ -65,9 +63,6 @@ public class SignTest extends MinimaCliTest {
         assertTrue((boolean)json.get("status"));
 
         assertFalse((boolean)json.get("pending"));
-
-        test.killMinima();
-
     }
 
     @Test
@@ -91,8 +86,6 @@ public class SignTest extends MinimaCliTest {
         assertTrue((boolean)json.get("status"));
 
         assertFalse((boolean)json.get("pending"));
-
-        test.killMinima();
     }
 
     @Test
@@ -101,8 +94,6 @@ public class SignTest extends MinimaCliTest {
         String output = test.runCommand("sign");
 
         runBaseTests(output);     
-        
-        test.killMinima();
     }
 
     @Test
@@ -112,7 +103,6 @@ public class SignTest extends MinimaCliTest {
 
         runBaseTests(output);       
         
-        test.killMinima();
     }
 
     public void runBaseTests (String output) throws Exception

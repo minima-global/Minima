@@ -79,8 +79,6 @@ public class DoBurnTest extends MinimaCliTest {
         JSONObject burnInnerResponseJSON = (JSONObject) json.get("response");
         JSONObject fiftyBlockResponse = (JSONObject) burnInnerResponseJSON.get("50block");
         assertTrue((long)fiftyBlockResponse.get("txns") == 4); //initial minting of coins on genesis block + 3 send events is 4 txns
-         
-        test.killMinima();
     }
 
     //burn using consolidate
@@ -120,7 +118,6 @@ public class DoBurnTest extends MinimaCliTest {
 
         //status of the cmd request must be true
         assertTrue((boolean)json.get("status"));
-        test.killMinima();
     }
 
     //burn using tokencreate
@@ -143,7 +140,6 @@ public class DoBurnTest extends MinimaCliTest {
         JSONObject fiftyBlockResponse = (JSONObject) burnInnerResponseJSON.get("50block");
         
         assertTrue((long)fiftyBlockResponse.get("txns") == 3); //3 burns have happened, one when initial token supply was made, one for the send command and one for the tokencreate command
-        test.killMinima();
     }
 
     @Test
@@ -185,8 +181,6 @@ public class DoBurnTest extends MinimaCliTest {
         assertTrue((long)fiftyBlockResponse.get("med") == 10);
         assertTrue((long)fiftyBlockResponse.get("avg") == 15);
         assertTrue((long)fiftyBlockResponse.get("min") == 0);
-        
-        test.killMinima();
     }
 
 
@@ -255,5 +249,4 @@ public class DoBurnTest extends MinimaCliTest {
         System.out.println(address);
         return address;
     }
-
 }

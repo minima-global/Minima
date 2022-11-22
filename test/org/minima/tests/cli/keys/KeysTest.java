@@ -26,7 +26,6 @@ public class KeysTest extends MinimaCliTest {
         String output = test.runCommand("keys");
 
         runBaseTests(output);     
-        test.killMinima();   
     }
     
     public void runBaseTests (String output) throws Exception
@@ -67,7 +66,6 @@ public class KeysTest extends MinimaCliTest {
         }
 
         assertFalse(failed);
-        test.killMinima();
     }
 
     private static String[] push(String[] array, String push) {

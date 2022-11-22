@@ -80,30 +80,27 @@ public class MinimaTestNode {
 
         //Catch error..
         try {
-            
-            //Now wait for valid..
-            Thread.sleep(1000);
-            
-            //Run status
-            String status = minima.runMinimaCMD("status",false);
-
-            //Make a JSON
-            JSONObject json = (JSONObject) new JSONParser().parse(status);
 
             //Get the status..
-            while(!(boolean)json.get("status")){
+            JSONObject json     = new JSONObject();
+            boolean statusOK     = false;
+            while(!statusOK){
+                MinimaLogger.log("Waiting for Status .. "+json.toString());
+                
                 Thread.sleep(2000);
 
                 //Run Status..
-                status = minima.runMinimaCMD("status");
+                String status = minima.runMinimaCMD("status");
 
                 //Make a JSON
                 json = (JSONObject) new JSONParser().parse(status);
 
-                MinimaLogger.log("Waiting for Status .. "+json.toString());
+                //Are we ok
+                statusOK = (boolean)json.get("status");
             }
 
-           
+            //Wait for Network to definitely start up
+            Thread.sleep(1000);
             
         }catch(Exception exc) {
             exc.printStackTrace();
