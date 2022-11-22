@@ -1,12 +1,11 @@
 package org.minima.tests.cli;
-import org.junit.Before;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.After;
-import org.minima.utils.json.JSONArray;
+import org.junit.Before;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
-import org.junit.Test;
-import org.junit.After;
-import static org.junit.Assert.*;
 
 public class MinimaCliTest {
 

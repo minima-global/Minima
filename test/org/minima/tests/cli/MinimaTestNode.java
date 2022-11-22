@@ -3,20 +3,16 @@ package org.minima.tests.cli;
 import java.util.ArrayList;
 
 import org.minima.Minima;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.network.webhooks.NotifyManager;
-import org.minima.utils.MiniFormat;
+import org.minima.system.params.TestParams;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageListener;
-
-import org.minima.utils.json.JSONArray;
-import org.minima.utils.json.JSONObject;
-
-import org.minima.system.params.*;
-import org.minima.objects.base.MiniNumber;
 
 
 public class MinimaTestNode {
