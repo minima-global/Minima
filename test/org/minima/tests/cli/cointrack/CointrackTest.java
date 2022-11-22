@@ -25,7 +25,9 @@ public class CointrackTest extends MinimaCliTest {
         //run coins
         String output = test.runCommand("cointrack");
 
-        runBaseTests(output);        
+        runBaseTests(output); 
+
+        test.killMinima();       
     }
     
     public void runBaseTests (String output) throws Exception

@@ -27,6 +27,8 @@ public class CoinsTest extends MinimaCliTest {
         //run coins
         String coinsOutput = test.runCommand("coins");
         super.runBaseTests(coinsOutput);
+
+        test.killMinima();
     }
 
 }

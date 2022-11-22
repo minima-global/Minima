@@ -23,8 +23,8 @@ public class WebhooksTest extends MinimaCliTest {
     public void testWebhooksWithNoArgs () throws Exception
     {
         String output = test.runCommand("webhooks");
-
         runBaseTests(output);        
+        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

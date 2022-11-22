@@ -23,8 +23,8 @@ public class TutorialTest extends MinimaCliTest {
     public void testTutorialWithNoArgs () throws Exception
     {
         String output = test.runCommand("tutorial");
-
         runBaseTests(output);        
+        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

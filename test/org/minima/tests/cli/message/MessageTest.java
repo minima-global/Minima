@@ -19,16 +19,12 @@ public class MessageTest extends MinimaCliTest {
 
     public MinimaTestNode test = new MinimaTestNode();
 
-    /*
-    ERROR: Maxima is meant to require an action: parameter
-    */ 
-
     @Test
     public void testConnectWithNoArgs () throws Exception
     {
         String output = test.runCommand("message");
-
         runBaseTests(output);        
+        test.killMinima();
     }
 
     public void runBaseTests (String output) throws Exception

@@ -23,8 +23,8 @@ public class TokencreateTest extends MinimaCliTest {
     public void testTokencreateWithNoArgs () throws Exception
     {
         String output = test.runCommand("tokencreate");
-
         runBaseTests(output);        
+        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

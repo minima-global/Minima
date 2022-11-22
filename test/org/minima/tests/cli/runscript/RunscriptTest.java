@@ -27,8 +27,8 @@ public class RunscriptTest extends MinimaCliTest {
     public void testConnectWithNoArgs () throws Exception
     {
         String output = test.runCommand("runscript");
-
         runBaseTests(output);        
+        test.killMinima();
     }
 
     public void runBaseTests (String output) throws Exception

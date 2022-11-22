@@ -23,8 +23,8 @@ public class VerifyTest extends MinimaCliTest {
     public void testVerifyWithNoArgs () throws Exception
     {
         String output = test.runCommand("verify");
-
         runBaseTests(output);        
+        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception
