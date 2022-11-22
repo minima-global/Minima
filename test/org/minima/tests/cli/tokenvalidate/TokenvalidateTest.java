@@ -1,4 +1,4 @@
-package org.minima.tests.cli.tokenvalidatetest;
+package org.minima.tests.cli.tokenvalidate;
 
 import org.junit.Test;
 import org.junit.Before;
@@ -23,8 +23,8 @@ public class TokenvalidateTest extends MinimaCliTest {
     public void testTokenvalidateWithNoArgs () throws Exception
     {
         String output = test.runCommand("tokenvalidate");
-
         runBaseTests(output);        
+        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

@@ -1,4 +1,4 @@
-package org.minima.tests.cli.txnsigntest;
+package org.minima.tests.cli.txnsign;
 
 import org.junit.Test;
 import org.junit.Before;
@@ -23,8 +23,8 @@ public class TxnsignTest extends MinimaCliTest {
     public void testTxnsignWithNoArgs () throws Exception
     {
         String output = test.runCommand("txnsign");
-
         runBaseTests(output);        
+        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

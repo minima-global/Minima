@@ -1,4 +1,4 @@
-package org.minima.tests.cli.txnexporttest;
+package org.minima.tests.cli.txnexport;
 
 import org.junit.Test;
 import org.junit.Before;
@@ -23,8 +23,8 @@ public class TxnexportTest extends MinimaCliTest {
     public void testTxnexportWithNoArgs () throws Exception
     {
         String output = test.runCommand("txnexport");
-
         runBaseTests(output);        
+        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

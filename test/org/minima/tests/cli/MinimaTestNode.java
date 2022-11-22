@@ -3,20 +3,16 @@ package org.minima.tests.cli;
 import java.util.ArrayList;
 
 import org.minima.Minima;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.network.webhooks.NotifyManager;
-import org.minima.utils.MiniFormat;
+import org.minima.system.params.TestParams;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageListener;
-
-import org.minima.utils.json.JSONArray;
-import org.minima.utils.json.JSONObject;
-
-import org.minima.system.params.*;
-import org.minima.objects.base.MiniNumber;
 
 
 public class MinimaTestNode {
@@ -80,30 +76,27 @@ public class MinimaTestNode {
 
         //Catch error..
         try {
-            
-            //Now wait for valid..
-            Thread.sleep(1000);
-            
-            //Run status
-            String status = minima.runMinimaCMD("status",false);
-
-            //Make a JSON
-            JSONObject json = (JSONObject) new JSONParser().parse(status);
 
             //Get the status..
-            while(!(boolean)json.get("status")){
+            JSONObject json     = new JSONObject();
+            boolean statusOK     = false;
+            while(!statusOK){
+                MinimaLogger.log("Waiting for Status .. "+json.toString());
+                
                 Thread.sleep(2000);
 
                 //Run Status..
-                status = minima.runMinimaCMD("status");
+                String status = minima.runMinimaCMD("status");
 
                 //Make a JSON
                 json = (JSONObject) new JSONParser().parse(status);
 
-                MinimaLogger.log("Waiting for Status .. "+json.toString());
+                //Are we ok
+                statusOK = (boolean)json.get("status");
             }
 
-           
+            //Wait for Network to definitely start up
+            Thread.sleep(1000);
             
         }catch(Exception exc) {
             exc.printStackTrace();
@@ -145,4 +138,20 @@ public class MinimaTestNode {
         return attempts != 250;
     }
 
+    public String getPublicKey () throws Exception
+    {
+        String getaddressOutput = minima.runMinimaCMD("getaddress");
+
+        JSONObject json = (JSONObject) new JSONParser().parse(getaddressOutput);
+
+        var responseAttr = json.get("response");
+
+        JSONObject responseObj = (JSONObject) new JSONParser().parse(responseAttr.toString());
+        
+        return responseObj.get("publickey").toString();
+    }
+
+    public void killMinima(){
+        minima.runMinimaCMD("quit",false);
+    }
 }

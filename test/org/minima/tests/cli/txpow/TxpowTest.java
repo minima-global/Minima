@@ -1,4 +1,4 @@
-package org.minima.tests.cli.txpowtest;
+package org.minima.tests.cli.txpow;
 
 import org.junit.Test;
 import org.junit.Before;
@@ -23,8 +23,8 @@ public class TxpowTest extends MinimaCliTest {
     public void testTxpowWithNoArgs () throws Exception
     {
         String output = test.runCommand("txpow");
-
         runBaseTests(output);        
+        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

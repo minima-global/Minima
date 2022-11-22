@@ -1,4 +1,4 @@
-package org.minima.tests.cli.txninputtest;
+package org.minima.tests.cli.txninput;
 
 import org.junit.Test;
 import org.junit.Before;
@@ -23,8 +23,8 @@ public class TxninputTest extends MinimaCliTest {
     public void testTxninputWithNoArgs () throws Exception
     {
         String output = test.runCommand("txninput");
-
         runBaseTests(output);        
+        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

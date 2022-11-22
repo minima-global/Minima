@@ -1,4 +1,4 @@
-package org.minima.tests.cli.txnlisttest;
+package org.minima.tests.cli.txnlist;
 
 import org.junit.Test;
 import org.junit.Before;
@@ -23,8 +23,8 @@ public class TxnlistTest extends MinimaCliTest {
     public void testTxnlistWithNoArgs () throws Exception
     {
         String output = test.runCommand("txnlist");
-
         runBaseTests(output);        
+        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

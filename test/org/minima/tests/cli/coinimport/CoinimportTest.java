@@ -55,15 +55,16 @@ public class CoinimportTest extends MinimaCliTest {
 
         String output = test.runCommand("coinimport data:"+exportjson.get("response"));
 
-//{"command":"coinimport","params":{"data":{"command":"coinexport","params":{"coinid":"0x4A53698FC9721731817BAB4488ED58F5B6CBEF110AD951F6F53374EB9F30C5F9"},"status":true,"pending":false,"response":"0x000000204A53698FC9721731817BAB4488ED58F5B6CBEF110AD951F6F53374EB9F30C5F9000000205EC75319945DED777D1B7B8A4603484D5E2D2D1C92F9BF6CA8D34FC950C32C4FF70101000000010001000100000000010100000101000100000001010001010100000020A53AD6A229F11DAD05FD0D9164F8EEE96501FA67ED9FEF7087EEA5C43E293357000100"}},"status":false,"pending":false,"error":"class org.minima.utils.json.JSONObject cannot be cast to class java.lang.String (org.minima.utils.json.JSONObject is in unnamed module of loader 'app'; java.lang.String is in module java.base of loader 'bootstrap')"}
-
         System.out.println("output: ");
         System.out.println(output);
 
         json = (JSONObject) new JSONParser().parse(output);
         
         assertFalse((boolean)json.get("status")); //MMR proof already tracked
-        //baseTests(output);
+        
+        baseTests(output);
+
+        test.killMinima();
     }
 
 }

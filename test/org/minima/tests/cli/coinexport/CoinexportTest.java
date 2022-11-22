@@ -1,4 +1,4 @@
-package org.minima.tests.cli.coinimport;
+package org.minima.tests.cli.coinexport;
 
 import org.junit.Test;
 import org.junit.Before;
@@ -48,6 +48,7 @@ public class CoinexportTest extends MinimaCliTest {
         System.out.println(output);
 
         baseTests(output);
+        test.killMinima();
     }
 
 }

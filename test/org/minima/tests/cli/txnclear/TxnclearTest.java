@@ -1,4 +1,4 @@
-package org.minima.tests.cli.txncleartest;
+package org.minima.tests.cli.txnclear;
 
 import org.junit.Test;
 import org.junit.Before;
@@ -23,8 +23,8 @@ public class TxnclearTest extends MinimaCliTest {
     public void testTxnclearWithNoArgs () throws Exception
     {
         String output = test.runCommand("txnclear");
-
         runBaseTests(output);        
+        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

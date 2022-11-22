@@ -68,6 +68,7 @@ public class BalanceTest extends MinimaCliTest {
 
         System.out.println("unconfirmed must be lte total");
         assertTrue(unconfirmed.compareTo(total) < 1);
+
     }
 
     @Test
@@ -80,7 +81,6 @@ public class BalanceTest extends MinimaCliTest {
         //tests that apply to every balance command
         runBaseTests (output);
 
-        killMinima();
     }
 
     @Test
@@ -257,7 +257,6 @@ public class BalanceTest extends MinimaCliTest {
         String output = minimaTestNode.runCommand();
 
         runBaseTests (output);
-
     }
 
     @Test
@@ -270,7 +269,6 @@ public class BalanceTest extends MinimaCliTest {
         String output = minimaTestNode.runCommand();
 
         runBaseTests (output);
-        
     }
 
     @Test
@@ -315,10 +313,6 @@ public class BalanceTest extends MinimaCliTest {
         assertFalse((boolean)json.get("status"));
         assertFalse((boolean)json.get("pending"));
 
-    }
-
-    public void killMinima(){
-         minimaTestNode.minima.runMinimaCMD("quit",false);
     }
 
 }

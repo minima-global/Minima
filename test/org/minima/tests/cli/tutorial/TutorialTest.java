@@ -1,4 +1,4 @@
-package org.minima.tests.cli.tutorialtest;
+package org.minima.tests.cli.tutorial;
 
 import org.junit.Test;
 import org.junit.Before;
@@ -23,8 +23,8 @@ public class TutorialTest extends MinimaCliTest {
     public void testTutorialWithNoArgs () throws Exception
     {
         String output = test.runCommand("tutorial");
-
         runBaseTests(output);        
+        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

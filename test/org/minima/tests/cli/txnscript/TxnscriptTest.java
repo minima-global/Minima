@@ -1,4 +1,4 @@
-package org.minima.tests.cli.txnscripttest;
+package org.minima.tests.cli.txnscript;
 
 import org.junit.Test;
 import org.junit.Before;
@@ -23,8 +23,8 @@ public class TxnscriptTest extends MinimaCliTest {
     public void testTxnscriptWithNoArgs () throws Exception
     {
         String output = test.runCommand("txnscript");
-
         runBaseTests(output);        
+        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

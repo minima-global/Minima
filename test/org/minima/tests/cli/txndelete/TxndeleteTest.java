@@ -1,4 +1,4 @@
-package org.minima.tests.cli.txndeletetest;
+package org.minima.tests.cli.txndelete;
 
 import org.junit.Test;
 import org.junit.Before;
@@ -23,8 +23,8 @@ public class TxndeleteTest extends MinimaCliTest {
     public void testTxndeleteWithNoArgs () throws Exception
     {
         String output = test.runCommand("txndelete");
-
         runBaseTests(output);        
+        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

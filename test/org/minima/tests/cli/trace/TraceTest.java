@@ -1,4 +1,4 @@
-package org.minima.tests.cli.tracetest;
+package org.minima.tests.cli.trace;
 
 import org.junit.Test;
 import org.junit.Before;
@@ -23,8 +23,8 @@ public class TraceTest extends MinimaCliTest {
     public void testTraceWithNoArgs () throws Exception
     {
         String output = test.runCommand("trace");
-
         runBaseTests(output);        
+        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception
