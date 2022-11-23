@@ -26,11 +26,14 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.CommandException;
+import org.minima.system.mds.handler.CMDcommand;
 import org.minima.system.mds.hub.MDSHub;
 import org.minima.system.mds.hub.MDSHubDelete;
 import org.minima.system.mds.hub.MDSHubError;
 import org.minima.system.mds.hub.MDSHubInstall;
 import org.minima.system.mds.hub.MDSHubLogon;
+import org.minima.system.mds.hub.MDSHubPending;
+import org.minima.system.mds.hub.MDSHubPendingAction;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.ZipExtractor;
@@ -137,42 +140,13 @@ public class MDSFileHandler implements Runnable {
 				dos.flush();
 			
 			}else if(fileRequested.startsWith("login.html")){
-				
-				//PASSWORD passed in POST data
-				int contentlength = 0;
-				while(input != null && !input.trim().equals("")) {
-					//MinimaLogger.log("RPC : "+input);
-					int ref = input.indexOf("Content-Length:"); 
-					if(ref != -1) {
-						//Get it..
-						int start     = input.indexOf(":");
-						contentlength = Integer.parseInt(input.substring(start+1).trim());
-					}	
-					input = bufferedReader.readLine();
-				}
-				
-				//How much data
-				char[] cbuf 	= new char[contentlength];
-				
-				//Read it ALL in
-				int len,total=0;
-				while( (len = bufferedReader.read(cbuf,total,contentlength-total)) != -1) {
-					total += len;
-					if(total == contentlength) {
-						break;
-					}
-				}
-				
-				//Here is the login attempt
-				Map params  = getQueryMap(new String(cbuf));
-				String pass = params.get("password").toString();
-				
-				//Check this is the correct password..
+			
+				Map params  = checkPostPassword(input, bufferedReader, inputStream);
 				String webpage = null;
-				if(!mMDS.checkMiniHUBPasword(pass)) {
-					MinimaLogger.log("Incorrect Password at MDS login! : "+pass);
+				if(params == null) {
 					webpage 	= MDSHubError.createHubPage();
 				}else {
+					String pass = params.get("password").toString();
 					webpage 	= MDSHub.createHubPage(mMDS, pass);
 				}
 				
@@ -299,40 +273,85 @@ public class MDSFileHandler implements Runnable {
 				dos.write(file, 0, finallength);
 				dos.flush();
 	
-			}else if(fileRequested.startsWith("delete.html")){
+			}else if(fileRequested.startsWith("pending.html")){
 				
-				//get the POST data
-				int contentlength = 0;
-				while(input != null && !input.trim().equals("")) {
-					int ref = input.indexOf("Content-Length:"); 
-					if(ref != -1) {
-						//Get it..
-						int start     = input.indexOf(":");
-						contentlength = Integer.parseInt(input.substring(start+1).trim());
-					}	
-					input = bufferedReader.readLine();
+				Map params  = checkPostPassword(input, bufferedReader, inputStream);
+				String webpage = null;
+				if(params == null) {
+					webpage 	= MDSHubError.createHubPage();
+				}else {
+					String pass = params.get("password").toString();
+					webpage 	= MDSHubPending.createHubPage(mMDS, pass);
 				}
 				
-				//Read the data..
-				byte[] alldata = new byte[contentlength];
+				//Get the data
+				byte[] file = webpage.getBytes(MiniString.MINIMA_CHARSET);
+	
+				//Calculate the size of the response
+				int finallength = file.length;
+	
+				dos.writeBytes("HTTP/1.0 200 OK\r\n");
+				dos.writeBytes("Content-Type: text/html\r\n");
+				dos.writeBytes("Content-Length: " + finallength + "\r\n");
+				dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
+				dos.writeBytes("\r\n");
+				dos.write(file, 0, finallength);
+				dos.flush();
+			
+			}else if(fileRequested.startsWith("pendingaction.html")){
 				
-				//Read it ALL in
-				int len,total=0;
-				while( (len = inputStream.read(alldata,total,contentlength-total)) != -1) {
-					total += len;
-					if(total == contentlength) {
-						break;
-					}
-				}
-				
-				Map params = getQueryMap(new String(alldata));
-				String password = params.get("password").toString();
-				String uid 		= params.get("uid").toString();
-				
-				if(!mMDS.checkMiniHUBPasword(password)) {
-					MinimaLogger.log("Incorrect Delete MiniDAPP Password : "+password);
+				Map params  	= checkPostPassword(input, bufferedReader, inputStream);
+				if(params == null) {
 					throw new IllegalArgumentException("Invalid Password");
 				}
+				
+				String password = params.get("password").toString();
+				String accept 	= params.get("accept").toString();
+				String uid 		= params.get("uid").toString();
+				
+				String webpage=null;
+				if(accept.equals("accept")) {
+					
+					//Run this command
+					CMDcommand cmd = new CMDcommand("0x00", "mds action:accept uid:"+uid);
+					String result = cmd.runCommand();
+					
+					//Run this command..
+					webpage = MDSHubPendingAction.createHubPage(mMDS, password, true, result);
+					
+				}else {
+					
+					//Run this command
+					CMDcommand cmd = new CMDcommand("0x00", "mds action:deny uid:"+uid);
+					String result = cmd.runCommand();
+					
+					//Deny this command
+					webpage = MDSHubPendingAction.createHubPage(mMDS, password, false, result);
+				}
+				
+				//Get the data
+				byte[] file = webpage.getBytes(MiniString.MINIMA_CHARSET);
+	
+				//Calculate the size of the response
+				int finallength = file.length;
+	
+				dos.writeBytes("HTTP/1.0 200 OK\r\n");
+				dos.writeBytes("Content-Type: text/html\r\n");
+				dos.writeBytes("Content-Length: " + finallength + "\r\n");
+				dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
+				dos.writeBytes("\r\n");
+				dos.write(file, 0, finallength);
+				dos.flush();
+				
+			}else if(fileRequested.startsWith("delete.html")){
+				
+				Map params  	= checkPostPassword(input, bufferedReader, inputStream);
+				if(params == null) {
+					throw new IllegalArgumentException("Invalid Password");
+				}
+				
+				String password = params.get("password").toString();
+				String uid 		= params.get("uid").toString();
 				
 				//Now add to the DB
 				MDSDB db = MinimaDB.getDB().getMDSDB();
@@ -447,11 +466,41 @@ public class MDSFileHandler implements Runnable {
 	    return map;  
 	}
 	
-	public static void main(String[] args) {
-	      String str = "<script type='javascript'>runsomething</script> <p><b>Welcome to Tutorials Point</b></p>";
-	      System.out.println("Before removing HTML Tags: " + str);
-//	      str = str.replaceAll("\\<.*?\\>", "");
-	      str = str.replaceAll("\\<.*?>", "");
-	      System.out.println("After removing HTML Tags: " + str);
-	   }
+	public Map checkPostPassword(String input, BufferedReader bufferedReader, InputStream inputStream) throws Exception {
+		//PASSWORD passed in POST data
+		int contentlength = 0;
+		while(input != null && !input.trim().equals("")) {
+			//MinimaLogger.log("RPC : "+input);
+			int ref = input.indexOf("Content-Length:"); 
+			if(ref != -1) {
+				//Get it..
+				int start     = input.indexOf(":");
+				contentlength = Integer.parseInt(input.substring(start+1).trim());
+			}	
+			input = bufferedReader.readLine();
+		}
+		
+		//How much data
+		char[] cbuf 	= new char[contentlength];
+		
+		//Read it ALL in
+		int len,total=0;
+		while( (len = bufferedReader.read(cbuf,total,contentlength-total)) != -1) {
+			total += len;
+			if(total == contentlength) {
+				break;
+			}
+		}
+		
+		//Here is the login attempt
+		Map params  	= getQueryMap(new String(cbuf));
+		String password = params.get("password").toString();
+		
+		if(!mMDS.checkMiniHUBPasword(password)) {
+			MinimaLogger.log("Incorrect MiniDAPP Password : "+password);
+			return null;
+		}
+		
+		return params;
+	}
 }
