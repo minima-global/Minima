@@ -51,7 +51,7 @@ public class ping extends Command {
 			resp.put("valid", false);
 		}else {
 			resp.put("valid", true);
-			resp.put("version", greet.getVersion());
+			resp.put("version", greet.getVersion().toString());
 			resp.put("extradata", greet.getExtraData());
 		}
 			
