@@ -24,6 +24,30 @@ public class peers extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\npeers\n"
+				+ "\n"
+				+ "Prints the peers list this node has. P2P must be enabled.\n"
+				+ "\n"
+				+ "Your peers are the other Minima nodes you know about.\n"
+				+ "\n"
+				+ "action: (optional)\n"
+				+ "    list : List your peers. The default.\n"
+				+ "    addpeers : Add a list of new peers. \n"
+				+ "\n"
+				+ "peerslist: (optional)\n"
+				+ "    JSON array of new peers [ip:port,ip:port,..]\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "peers\n"
+				+ "\n"
+				+ "peers action:list\n"
+				+ "\n"
+				+ "peers action:addpeers peerslist:[\"31.125.188.214:9001\",\"94.0.239.117:9001\"]\n";
+	}
+
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"action","peerslist"}));
 	}

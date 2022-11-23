@@ -16,6 +16,17 @@ public class ping extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nping\n"
+				+ "\n"
+				+ "Ping a host and get back Minima Node info.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "ping host:\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"host"}));
 	}
