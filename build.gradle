@@ -138,3 +138,13 @@ docker {
     copySpec.from("docker/minima").into(".")
 }
 
+test {
+    //dependsOn cleanTest
+    //testLogging.showStandardStreams = true
+    
+    testLogging.exceptionFormat = 'full'
+    testLogging {
+        events "PASSED", "SKIPPED", "FAILED"
+    }
+    
+}

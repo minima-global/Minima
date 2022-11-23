@@ -17,14 +17,11 @@ import org.minima.tests.cli.MinimaCliTest;
 
 public class VaultTest extends MinimaCliTest {
 
-    public MinimaTestNode test = new MinimaTestNode();
-
     @Test
     public void testVaultWithNoArgs () throws Exception
     {
-        String output = test.runCommand("vault");
+        String output = super.minimaTestNode.runCommand("vault");
         runBaseTests(output);        
-        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

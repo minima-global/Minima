@@ -1,13 +1,28 @@
 package org.minima.tests.cli;
 
-import org.minima.utils.json.JSONArray;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
-import org.junit.Test;
-import org.junit.After;
-import static org.junit.Assert.*;
 
 public class MinimaCliTest {
+
+    public static MinimaTestNode minimaTestNode;
+    
+    @BeforeClass
+    public static void initTest() throws Exception {
+        //Start up Minima
+        minimaTestNode = new MinimaTestNode();
+    }
+    
+    @AfterClass
+    public static void finishTest() throws Exception {
+        //Shut her down
+        minimaTestNode.killMinima();
+    }
 
     public void runBaseTests (String output) throws Exception {
         System.out.println("Printing the output of the command:");
@@ -26,4 +41,3 @@ public class MinimaCliTest {
     }
 
 }
-

@@ -17,14 +17,11 @@ import org.minima.tests.cli.MinimaCliTest;
 
 public class TutorialTest extends MinimaCliTest {
 
-    public MinimaTestNode test = new MinimaTestNode();
-
     @Test
     public void testTutorialWithNoArgs () throws Exception
     {
-        String output = test.runCommand("tutorial");
+        String output = super.minimaTestNode.runCommand("tutorial");
         runBaseTests(output);        
-        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

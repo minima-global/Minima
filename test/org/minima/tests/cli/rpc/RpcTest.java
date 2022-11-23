@@ -17,14 +17,11 @@ import org.minima.tests.cli.MinimaCliTest;
 
 public class RpcTest extends MinimaCliTest {
 
-    public MinimaTestNode test = new MinimaTestNode();
-
     @Test
     public void testConnectWithNoArgs () throws Exception
     {
-        String output = test.runCommand("rpc");
+        String output = super.minimaTestNode.runCommand("rpc");
         runBaseTests(output);        
-        test.killMinima();
     }
 
     public void runBaseTests (String output) throws Exception

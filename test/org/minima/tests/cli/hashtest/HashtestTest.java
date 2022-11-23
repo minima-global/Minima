@@ -17,14 +17,11 @@ import org.minima.tests.cli.MinimaCliTest;
 
 public class HashtestTest extends MinimaCliTest {
 
-    public MinimaTestNode test = new MinimaTestNode();
-
     @Test
     public void testConnectWithNoArgs () throws Exception
     {
-        String output = test.runCommand("hashtest");
+        String output = super.minimaTestNode.runCommand("hashtest");
         runBaseTests(output);   
-        test.killMinima();     
     }
     
     public void runBaseTests (String output) throws Exception

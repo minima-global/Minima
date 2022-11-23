@@ -17,14 +17,11 @@ import org.minima.tests.cli.MinimaCliTest;
 
 public class MdsTest extends MinimaCliTest {
 
-    public MinimaTestNode test = new MinimaTestNode();
-
     @Test
     public void testConnectWithNoArgs () throws Exception
     {
-        String output = test.runCommand("mds");
+        String output = super.minimaTestNode.runCommand("mds");
         runBaseTests(output);        
-        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

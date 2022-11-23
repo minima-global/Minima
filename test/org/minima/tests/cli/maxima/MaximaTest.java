@@ -17,8 +17,6 @@ import org.minima.tests.cli.MinimaCliTest;
 
 public class MaximaTest extends MinimaCliTest {
 
-    public MinimaTestNode test = new MinimaTestNode();
-
     /*
     ERROR: Maxima is meant to require an action: parameter
     */ 
@@ -26,9 +24,8 @@ public class MaximaTest extends MinimaCliTest {
     @Test
     public void testConnectWithNoArgs () throws Exception
     {
-        String output = test.runCommand("maxima");
+        String output = super.minimaTestNode.runCommand("maxima");
         runBaseTests(output);        
-        test.killMinima();
     }
 
     public void runBaseTests (String output) throws Exception

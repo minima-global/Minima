@@ -17,17 +17,13 @@ import org.minima.tests.cli.MinimaCliTest;
 
 public class CointrackTest extends MinimaCliTest {
 
-    public MinimaTestNode test = new MinimaTestNode();
-
     @Test
     public void testCointrackWithNoArgs () throws Exception
     {
         //run coins
-        String output = test.runCommand("cointrack");
+        String output = super.minimaTestNode.runCommand("cointrack");
 
         runBaseTests(output); 
-
-        test.killMinima();       
     }
     
     public void runBaseTests (String output) throws Exception

@@ -17,14 +17,11 @@ import org.minima.tests.cli.MinimaCliTest;
 
 public class TxndeleteTest extends MinimaCliTest {
 
-    public MinimaTestNode test = new MinimaTestNode();
-
     @Test
     public void testTxndeleteWithNoArgs () throws Exception
     {
-        String output = test.runCommand("txndelete");
+        String output = super.minimaTestNode.runCommand("txndelete");
         runBaseTests(output);        
-        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception
