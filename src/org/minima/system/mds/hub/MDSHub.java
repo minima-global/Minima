@@ -1,10 +1,14 @@
 package org.minima.system.mds.hub;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.minidapps.MDSDB;
 import org.minima.database.minidapps.MiniDAPP;
+import org.minima.objects.Coin;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.mds.MDSManager;
 
 public class MDSHub {
@@ -147,8 +151,16 @@ public class MDSHub {
 		//List the current MDS apps..
 		ArrayList<MiniDAPP> dapps = db.getAllMiniDAPPs();
 		
+		//First Sort by name
+		Collections.sort(dapps, new Comparator<MiniDAPP>() {
+			@Override
+			public int compare(MiniDAPP z1, MiniDAPP z2) {
+				return z1.getName().compareTo(z2.getName());
+			}
+		});
+		
 		if(dapps.size() == 0) {
-			page += "<li><div class='app-title'>No MiniDAPPs Installed yet..<br><br></div></li>";
+			page += "<li><div class='list-item-container'>No MiniDAPPs Installed yet..<br><br></div></li>";
 		}else {
 			
 			for(MiniDAPP dapp : dapps) {

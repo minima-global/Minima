@@ -168,7 +168,7 @@ public class MDSHubPending {
 		ArrayList<PendingCommand> allpending = Main.getInstance().getMDSManager().getAllPending(); 
 		
 		if(allpending.size() == 0) {
-			page += "<div class='app-title'><br>No pending transactions..<br><br></div>";
+			page += "<li><div class='list-item-container'>No pending transactions..<br><br></div></li>";
 		}else {
 			
 			for(PendingCommand pcommand : allpending) {
