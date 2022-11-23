@@ -57,14 +57,14 @@ public class TxPoWDB {
 		
 		//Do we have it already..
 		if(!mRamDB.exists(txpid)) {
-			//Is it in the SQL
-			if(!mSqlDB.exists(txpid)) {
-				//Add it to the SQL..
-				mSqlDB.addTxPoW(zTxPoW);
-			}
-			
 			//Add it to the RAM
 			mRamDB.addTxPoW(zTxPoW);
+		}
+		
+		//Is it in the SQL
+		if(!mSqlDB.exists(txpid)) {
+			//Add it to the SQL..
+			mSqlDB.addTxPoW(zTxPoW);
 		}
 	}
 	
