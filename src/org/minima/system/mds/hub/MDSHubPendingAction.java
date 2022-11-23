@@ -124,7 +124,7 @@ public class MDSHubPendingAction {
 		//And now add the output
 		page+="<div class='list-container'>\r\n"
 				+ "	<div class='list-item-container' style=\"text-align: left;overflow-wrap: break-word;display: inline-block;\">\r\n"
-				+ "		<pre id=\"json\">"+zOuput+"</pre>\r\n"
+				+ "		<pre id=\"json\">"+MDSHub.stripHTML(zOuput)+"</pre>\r\n"
 				+ "	</div>\r\n"
 				+ "</div>";
 		
