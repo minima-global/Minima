@@ -18,15 +18,12 @@ import org.minima.tests.cli.MinimaCliTest;
 
 public class KeysTest extends MinimaCliTest {
 
-    public MinimaTestNode test = new MinimaTestNode();
-
     @Test
     public void testConnectWithNoArgs () throws Exception
     {
-        String output = test.runCommand("keys");
+        String output = super.minimaTestNode.runCommand("keys");
 
         runBaseTests(output);     
-        test.killMinima();   
     }
     
     public void runBaseTests (String output) throws Exception
@@ -48,7 +45,7 @@ public class KeysTest extends MinimaCliTest {
 
             if(Arrays.asList(arr).contains(i))
             {
-                output = test.runCommand("keys action:list");
+                output = super.minimaTestNode.runCommand("keys action:list");
                 var jsonObject =  (JSONObject) new JSONParser().parse(output.toString());
                 JSONArray response = (JSONArray) jsonObject.get("response");
                 
@@ -57,7 +54,7 @@ public class KeysTest extends MinimaCliTest {
                 }
             }
 
-            output = test.runCommand("keys action:new");
+            output = super.minimaTestNode.runCommand("keys action:new");
 
             JSONObject json = (JSONObject) new JSONParser().parse(output);
             JSONObject InnerResponseJSON = (JSONObject) json.get("response");
@@ -67,7 +64,6 @@ public class KeysTest extends MinimaCliTest {
         }
 
         assertFalse(failed);
-        test.killMinima();
     }
 
     private static String[] push(String[] array, String push) {

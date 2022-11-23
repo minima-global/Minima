@@ -17,8 +17,6 @@ import org.minima.tests.cli.MinimaCliTest;
 
 public class SendpollTest extends MinimaCliTest {
 
-    public MinimaTestNode test = new MinimaTestNode();
-
     /*
     
     ERROR: returns status:true with no arguments
@@ -29,9 +27,8 @@ public class SendpollTest extends MinimaCliTest {
     @Test
     public void testConnectWithNoArgs () throws Exception
     {
-        String output = test.runCommand("sendpoll");
+        String output = super.minimaTestNode.runCommand("sendpoll");
         runBaseTests(output);        
-        test.killMinima();
     }
 
     public void runBaseTests (String output) throws Exception

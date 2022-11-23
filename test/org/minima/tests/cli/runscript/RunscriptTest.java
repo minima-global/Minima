@@ -17,8 +17,6 @@ import org.minima.tests.cli.MinimaCliTest;
 
 public class RunscriptTest extends MinimaCliTest {
 
-    public MinimaTestNode test = new MinimaTestNode();
-
     /*
     ERROR: runscript is meant to require an script: parameter
     */ 
@@ -26,9 +24,8 @@ public class RunscriptTest extends MinimaCliTest {
     @Test
     public void testConnectWithNoArgs () throws Exception
     {
-        String output = test.runCommand("runscript");
+        String output = super.minimaTestNode.runCommand("runscript");
         runBaseTests(output);        
-        test.killMinima();
     }
 
     public void runBaseTests (String output) throws Exception

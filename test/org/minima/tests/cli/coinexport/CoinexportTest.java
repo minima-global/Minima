@@ -1,4 +1,4 @@
-package org.minima.tests.cli.coinimport;
+package org.minima.tests.cli.coinexport;
 
 import org.junit.Test;
 import org.junit.Before;
@@ -16,9 +16,6 @@ import org.minima.tests.cli.MinimaTestNode;
 import org.minima.tests.cli.MinimaCliTest;
 
 public class CoinexportTest extends MinimaCliTest {
-
-    public MinimaTestNode test = new MinimaTestNode();
-
     
     public void baseTests (String output) throws Exception
     {
@@ -28,10 +25,10 @@ public class CoinexportTest extends MinimaCliTest {
     @Test
     public void coinImportWithCoinid() throws Exception
     {
-        boolean confirmed = test.waitForMinimaBlockConfirmation(); 
+        boolean confirmed = super.minimaTestNode.waitForMinimaBlockConfirmation(); 
 
         //run coins
-        String coinsOutput = test.runCommand("coins");
+        String coinsOutput = super.minimaTestNode.runCommand("coins");
 
         JSONObject json = (JSONObject) new JSONParser().parse(coinsOutput);
         var responseAttr = json.get("response");
@@ -42,13 +39,12 @@ public class CoinexportTest extends MinimaCliTest {
         var coinid = responseInnerJson.get("coinid");
 
         //coinexport with coinid
-        String output = test.runCommand("coinexport coinid:"+coinid.toString());
+        String output = super.minimaTestNode.runCommand("coinexport coinid:"+coinid.toString());
 
         System.out.println("output: ");
         System.out.println(output);
 
         baseTests(output);
-        test.killMinima();
     }
 
 }

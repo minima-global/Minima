@@ -17,14 +17,11 @@ import org.minima.tests.cli.MinimaCliTest;
 
 public class TokensTest extends MinimaCliTest {
 
-    public MinimaTestNode test = new MinimaTestNode();
-
     @Test
     public void testTokensWithNoArgs () throws Exception
     {
-        String output = test.runCommand("tokens");
+        String output = super.minimaTestNode.runCommand("tokens");
         runBaseTests(output);        
-        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

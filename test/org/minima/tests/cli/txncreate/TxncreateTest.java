@@ -17,14 +17,11 @@ import org.minima.tests.cli.MinimaCliTest;
 
 public class TxncreateTest extends MinimaCliTest {
 
-    public MinimaTestNode test = new MinimaTestNode();
-
     @Test
     public void testTxncreateWithNoArgs () throws Exception
     {
-        String output = test.runCommand("txncreate");
+        String output = super.minimaTestNode.runCommand("txncreate");
         runBaseTests(output);        
-        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception

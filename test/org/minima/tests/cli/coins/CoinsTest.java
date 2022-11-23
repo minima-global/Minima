@@ -17,18 +17,14 @@ import org.minima.tests.cli.MinimaCliTest;
 
 public class CoinsTest extends MinimaCliTest {
 
-    public MinimaTestNode test = new MinimaTestNode();
-
     @Test
     public void runBaseTests () throws Exception
     {
-        boolean confirmed = test.waitForMinimaBlockConfirmation(); 
+        boolean confirmed = super.minimaTestNode.waitForMinimaBlockConfirmation(); 
 
         //run coins
-        String coinsOutput = test.runCommand("coins");
+        String coinsOutput = super.minimaTestNode.runCommand("coins");
         super.runBaseTests(coinsOutput);
-
-        test.killMinima();
     }
 
 }

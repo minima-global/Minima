@@ -22,9 +22,8 @@ public class HelpTest extends MinimaCliTest {
     @Test
     public void testConnectWithNoArgs () throws Exception
     {
-        String output = test.runCommand("help");
+        String output = super.minimaTestNode.runCommand("help");
         runBaseTests(output);        
-        test.killMinima();
     }
     
     public void runBaseTests (String output) throws Exception
