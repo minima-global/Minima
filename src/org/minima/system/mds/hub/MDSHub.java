@@ -92,6 +92,19 @@ public class MDSHub {
 			+ "		  		opacity: 0.8;\n"
 			+ "				font-style: italic;\n"
 			+ "		}"
+			+ "		\n"
+			+ "		.deletebutton {\n"
+			+ "		    background-color: #f00;\n"
+			+ "		    border: 2.5px solid #00f;\n"
+			+ "		  	border-radius: 8px;\n"
+			+ "		  	padding: 4px 4px;\n"
+			+ "		  	font-size: 10px;\n"
+			+ "		}\n"
+			+ "		\n"
+			+ "		.deletebutton:hover {\n"
+			+ "			 	cursor: pointer;\n"
+			+ "		    	background-color: #f88;\n"
+			+ "		}"
 			+ ""
 			+ "    </style>"
 			+ "</head>\n"
@@ -134,12 +147,21 @@ public class MDSHub {
 				
 				page +=   "<li>\n"
 						+ "                <a class=\"list-item-container\" href='"+base+"index.html?uid="+zMDS.convertMiniDAPPID(dapp.getUID())+"' target=\"_blank\" rel=\"noopener noreferrer\">\n"
-						+ "                    <img width='50' src='"+base+dapp.getIcon()+"'>\n"
+						+ "                    <img width='50' height='50' src='"+base+dapp.getIcon()+"'>\n"
 						+ "\n"
 						+ "                    <div class=list-item-right>\n"
-						+ "                        <div class=\"app-title\">"+dapp.getName()+"</div>\n"
-						+ "                        <div>"+dapp.getDescription()+"</div>\n"
-						+ "                        <div>"+dapp.getVersion()+"</div>\n"
+						+ "                        <div class=\"app-title\">"+stripHTML(dapp.getName())+"</div>\n"
+						+ "                        <div>"+stripHTML(dapp.getDescription())+"</div>\n"
+						+ "                        <div>"+stripHTML(dapp.getVersion())+"</div>\n"
+						+ ""
+						+ "						   <div style='height:32'>\r\n"
+						+ "                        <br>\r\n"
+						+ "                        <form action=\"delete.html\" method=POST onsubmit='return confirm(\"Are you sure you wish to delete this MiniDAPP ?\");'>\n"
+						+ "							  <input type='hidden' name='password' value='"+zPassword+"'>\r\n"
+						+ "							  <input type='hidden' name='uid' value='"+dapp.getUID()+"'>\r\n"
+						+ "							  <input class='deletebutton' type=\"submit\" value='&nbsp;Delete&nbsp;'>\r\n"
+						+ "							</form>\r\n"
+						+ "                        </div>"
 						+ "                    </div>\n"
 						+ "                </a>\n"
 						+ "            </li>";
@@ -173,5 +195,9 @@ public class MDSHub {
 		
 		return page;
 		
+	}
+	
+	public static String stripHTML(String zHTMLString) {
+		return zHTMLString.replaceAll("\\<.*?>", "");
 	}
 }

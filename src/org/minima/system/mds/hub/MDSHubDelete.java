@@ -5,7 +5,7 @@ import org.minima.database.minidapps.MDSDB;
 import org.minima.database.minidapps.MiniDAPP;
 import org.minima.system.mds.MDSManager;
 
-public class MDSHubInstall {
+public class MDSHubDelete {
 
 	public static final String HUB_START ="<html>\r\n"
 			+ "\r\n"
@@ -99,11 +99,9 @@ public class MDSHubInstall {
 			+ "        <div>MDS</div>\r\n"
 			+ "    </div>\r\n"
 			+ "<br><br><br>"
-			+ "<div class='app-title'>Application Installed..</div>"
-			+ "    <div class=\"list-container\">\r\n"
-			+ "        <ul>";
+			+ "<div class='app-title'>Application Deleted..</div>\n";
 	
-	public static String createHubPage(MDSManager zMDS, MiniDAPP zDAPP, String zPassword) {
+	public static String createHubPage(MDSManager zMDS, String zPassword) {
 		
 		//Start the HTML
 		String page = HUB_START;
@@ -111,24 +109,9 @@ public class MDSHubInstall {
 		//Get the DB
 		MDSDB db = MinimaDB.getDB().getMDSDB();
 		
-		String base = "./"+zDAPP.getUID()+"/";
-		
-		page +=   "<li>\r\n"
-				+ "                <div class=\"list-item-container\">\r\n"
-				+ "                    <img width='50' height='50' src='"+base+zDAPP.getIcon()+"'>\r\n"
-				+ "\r\n"
-				+ "                    <div class=list-item-right>\r\n"
-				+ "                        <div class=\"app-title\">"+MDSHub.stripHTML(zDAPP.getName())+"</div>\r\n"
-				+ "                        <div>"+MDSHub.stripHTML(zDAPP.getDescription())+"</div>\r\n"
-				+ "                        <div>"+MDSHub.stripHTML(zDAPP.getVersion())+"</div>\r\n"
-				+ "                    </div>\r\n"
-				+ "                </div>\r\n"
-				+ "            </li>"
-				+ "</div>";
-	
 		//Now the return form..
 		page += 
-				"	<form action=\"login.html\" method=\"post\">\r\n"
+				  "	<br><br><br><form action=\"login.html\" method=\"post\">\r\n"
 				+ "		<input type='hidden' name='password' value='"+zPassword+"'/>\r\n"
 				+ "		<input class='solobutton' style='width:200;' type=\"submit\" value='Back to MDS Hub' onClick=\"this.form.submit(); this.disabled=true; this.value='Checking..';\"/>\r\n"
 				+ "	</form>\r\n"

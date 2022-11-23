@@ -12,6 +12,8 @@ import java.net.Socket;
 import java.net.URLDecoder;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.net.ssl.SSLException;
@@ -25,6 +27,7 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.CommandException;
 import org.minima.system.mds.hub.MDSHub;
+import org.minima.system.mds.hub.MDSHubDelete;
 import org.minima.system.mds.hub.MDSHubError;
 import org.minima.system.mds.hub.MDSHubInstall;
 import org.minima.system.mds.hub.MDSHubLogon;
@@ -161,15 +164,13 @@ public class MDSFileHandler implements Runnable {
 				}
 				
 				//Here is the login attempt
-				String data = new String(cbuf);
-				
-				//Get the password..
-				String pass = getPasswordFromPost(data);
+				Map params  = getQueryMap(new String(cbuf));
+				String pass = params.get("password").toString();
 				
 				//Check this is the correct password..
 				String webpage = null;
 				if(!mMDS.checkMiniHUBPasword(pass)) {
-					MinimaLogger.log("Incorrect Password : "+pass);
+					MinimaLogger.log("Incorrect Password at MDS login! : "+pass);
 					webpage 	= MDSHubError.createHubPage();
 				}else {
 					webpage 	= MDSHub.createHubPage(mMDS, pass);
@@ -227,6 +228,10 @@ public class MDSFileHandler implements Runnable {
 				
 				//Password is the next line..
 				String password = dis.readLine();
+				if(!mMDS.checkMiniHUBPasword(password)) {
+					MinimaLogger.log("Incorrect Install MiniDAPP Password : "+password);
+					throw new IllegalArgumentException("Invalid Password");
+				}
 				
 				//Now read lines until we reach the data
 				line = dis.readLine();
@@ -293,7 +298,83 @@ public class MDSFileHandler implements Runnable {
 				dos.writeBytes("\r\n");
 				dos.write(file, 0, finallength);
 				dos.flush();
+	
+			}else if(fileRequested.startsWith("delete.html")){
 				
+				//get the POST data
+				int contentlength = 0;
+				while(input != null && !input.trim().equals("")) {
+					int ref = input.indexOf("Content-Length:"); 
+					if(ref != -1) {
+						//Get it..
+						int start     = input.indexOf(":");
+						contentlength = Integer.parseInt(input.substring(start+1).trim());
+					}	
+					input = bufferedReader.readLine();
+				}
+				
+				//Read the data..
+				byte[] alldata = new byte[contentlength];
+				
+				//Read it ALL in
+				int len,total=0;
+				while( (len = inputStream.read(alldata,total,contentlength-total)) != -1) {
+					total += len;
+					if(total == contentlength) {
+						break;
+					}
+				}
+				
+				Map params = getQueryMap(new String(alldata));
+				String password = params.get("password").toString();
+				String uid 		= params.get("uid").toString();
+				
+				if(!mMDS.checkMiniHUBPasword(password)) {
+					MinimaLogger.log("Incorrect Delete MiniDAPP Password : "+password);
+					throw new IllegalArgumentException("Invalid Password");
+				}
+				
+				//Now add to the DB
+				MDSDB db = MinimaDB.getDB().getMDSDB();
+				db.deleteMiniDAPP(uid);
+				
+				// Delete web..
+				String mdsroot 	= Main.getInstance().getMDSManager().getRootMDSFolder().getAbsolutePath();
+				File dest 		= Main.getInstance().getMDSManager().getWebFolder();
+				File minidapp 	= new File(dest,uid);
+				if(minidapp.exists()) {
+					MiniFile.deleteFileOrFolder(mdsroot, minidapp);
+				}
+				
+				//Delete Data folder
+				Main.getInstance().getMDSManager().shutdownSQL(uid);
+				File dbfolder1 = Main.getInstance().getMDSManager().getMiniDAPPDataFolder(uid);
+				if(dbfolder1.exists()) {
+					MiniFile.deleteFileOrFolder(mdsroot, dbfolder1);
+				}
+				
+				//There has been a change
+				Message uninstall = new Message(MDSManager.MDS_MINIDAPPS_UNINSTALLED);
+				uninstall.addString("uid", uid);
+				Main.getInstance().getMDSManager().PostMessage(uninstall);
+				
+				//Create the webpage
+				String webpage = MDSHubDelete.createHubPage(mMDS, password);
+		
+				//Get the data
+				byte[] file = webpage.getBytes(MiniString.MINIMA_CHARSET);
+	
+				//Calculate the size of the response
+				int finallength = file.length;
+	
+				dos.writeBytes("HTTP/1.0 200 OK\r\n");
+				dos.writeBytes("Content-Type: text/html\r\n");
+				dos.writeBytes("Content-Length: " + finallength + "\r\n");
+				dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
+				dos.writeBytes("\r\n");
+				dos.write(file, 0, finallength);
+				dos.flush();
+	
 			}else {
 			
 				//Remove the params..
@@ -354,26 +435,23 @@ public class MDSFileHandler implements Runnable {
 		}	
 	}	
 	
-	private String getPasswordFromURL(String zURL) {
-		
-		int index = zURL.indexOf("?");
-		if(index != -1) {
-			
-			String fullpass = zURL.substring(index+1);
-			index 			= fullpass.indexOf("=");
-			String pass 	= fullpass.substring(index+1); 
-			
-			return pass;
-		}
-		
-		return "";
+	public static Map<String, String> getQueryMap(String query) {  
+	    String[] params = query.split("&");  
+	    Map<String, String> map = new HashMap<String, String>();
+
+	    for (String param : params) {  
+	        String name = param.split("=")[0];  
+	        String value = param.split("=")[1];  
+	        map.put(name, value);  
+	    }  
+	    return map;  
 	}
 	
-	private String getPasswordFromPost(String zData) {
-		
-		int index 		= zData.indexOf("=");
-		String pass 	= zData.substring(index+1); 
-		
-		return pass;
-	}
+	public static void main(String[] args) {
+	      String str = "<script type='javascript'>runsomething</script> <p><b>Welcome to Tutorials Point</b></p>";
+	      System.out.println("Before removing HTML Tags: " + str);
+//	      str = str.replaceAll("\\<.*?\\>", "");
+	      str = str.replaceAll("\\<.*?>", "");
+	      System.out.println("After removing HTML Tags: " + str);
+	   }
 }
