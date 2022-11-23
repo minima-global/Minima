@@ -20,22 +20,106 @@ public class TxnstateTest extends MinimaCliTest {
     @Test
     public void testTxnstateWithNoArgs () throws Exception
     {
+        System.out.println("NEW TEST: testTxnstateWithNoArgs");
+
         String output = super.minimaTestNode.runCommand("txnstate");
-        runBaseTests(output);        
+        runBaseTestsWithInvalidArgs(output);        
+    }
+
+    @Test
+    public void testTxnstateWithValidArgs () throws Exception
+    {
+        System.out.println("NEW TEST: testTxnstateWithValidArgs");
+
+        super.minimaTestNode.runCommand("txncreate id:myTransaction");
+
+        String output = super.minimaTestNode.runCommand("txnstate id:myTransaction port:0 value:\"0\"");
+        
+        runBaseTestsWithValidArgs(output);        
+    }
+
+    @Test
+    public void testTxnstateWithLongArgs () throws Exception
+    {
+        System.out.println("NEW TEST: testTxnstateWithLongArgs");
+
+        super.minimaTestNode.runCommand("txncreate id:myTransaction");
+
+        String output = super.minimaTestNode.runCommand("txnstate id:myTransaction port:0 value:\"123\"");
+        
+        runBaseTestsWithValidArgs(output);        
+    }
+
+    @Test
+    public void testTxnstateWithNoQoutesAroundValueArgument () throws Exception
+    {
+        System.out.println("NEW TEST: testTxnstateWithNoQoutesAroundIdArgument");
+
+        super.minimaTestNode.runCommand("txncreate id:myTransaction");
+
+        String output = super.minimaTestNode.runCommand("txnstate id:myTransaction port:0 value:0");
+        
+        runBaseTestsWithValidArgs(output);        
+    }
+
+    @Test
+    public void testTxnstateWithNonNumericValueArgument () throws Exception
+    {
+        System.out.println("NEW TEST: testTxnstateWithNoQoutesAroundIdArgument");
+
+        super.minimaTestNode.runCommand("txncreate id:myTransaction");
+
+        String output = super.minimaTestNode.runCommand("txnstate id:myTransaction port:0 value:\"hello\"");
+        
+        runBaseTestsWithInvalidArgs(output);     
+    }
+
+    @Test
+    public void testTxnstateWithHexidecimalValueArgument () throws Exception
+    {
+        System.out.println("NEW TEST: testTxnstateWithNoQoutesAroundIdArgument");
+
+        super.minimaTestNode.runCommand("txncreate id:myTransaction");
+
+        String output = super.minimaTestNode.runCommand("txnstate id:myTransaction port:0 value:\"0xfff\"");
+        
+        runBaseTestsWithValidArgs(output);        
+    }
+
+    @Test
+    public void testTxnstateWithCapitalisedHexidecimalValueArgument () throws Exception
+    {
+        System.out.println("NEW TEST: testTxnstateWithNoQoutesAroundIdArgument");
+
+        super.minimaTestNode.runCommand("txncreate id:myTransaction");
+
+        String output = super.minimaTestNode.runCommand("txnstate id:myTransaction port:0 value:\"0xFFF\"");
+        
+        runBaseTestsWithValidArgs(output);        
     }
     
-    public void runBaseTests (String output) throws Exception
+    public void runBaseTestsWithInvalidArgs (String output) throws Exception
     {
         //The cmd response should be valid JSON
         JSONObject json = (JSONObject) new JSONParser().parse(output);
 
         //status of the cmd request must be true
-        System.out.println("status must be false: " + json.get("status"));
-        assertFalse((boolean)json.get("status"));
+        assertFalse("status must be false: ", (boolean)json.get("status"));
 
         //cmd response pending should be false
-        System.out.println("pending must be false:" + json.get("pending").toString());
-        assertFalse((boolean)json.get("pending"));
+        assertFalse("pending must be false: ", (boolean)json.get("pending"));
+    }
+
+    public void runBaseTestsWithValidArgs (String output) throws Exception
+    {
+        //The cmd response should be valid JSON
+        JSONObject json = (JSONObject) new JSONParser().parse(output);
+
+       //status of the cmd request must be true
+       assertTrue("status must be true: ", (boolean)json.get("status"));
+
+       //cmd response pending should be false
+       assertFalse("pending must be false: ", (boolean)json.get("pending"));
     }
 
 }

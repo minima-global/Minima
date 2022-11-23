@@ -21,21 +21,86 @@ public class TxndeleteTest extends MinimaCliTest {
     public void testTxndeleteWithNoArgs () throws Exception
     {
         String output = super.minimaTestNode.runCommand("txndelete");
-        runBaseTests(output);        
+        runBaseTestsWithInvalidArgs(output);        
+    }
+
+    @Test
+    public void testTxndeleteWithValidArgs () throws Exception
+    {
+
+        super.minimaTestNode.runCommand("txncreate id:myTransaction");
+        
+        String output = super.minimaTestNode.runCommand("txndelete id:myTransaction");
+        
+        runBaseTestsWithValidArgs(output);        
+
+    }
+
+    @Test
+    public void testTxndeleteWithValidArgsAndQuotes () throws Exception
+    {
+
+        super.minimaTestNode.runCommand("txncreate id:\"myTransaction\"");
+        
+        String output = super.minimaTestNode.runCommand("txndelete id:\"myTransaction\"");
+        
+        runBaseTestsWithValidArgs(output);        
+        
+    }
+
+    @Test
+    public void testTxndeleteTxThatDoesNotExist () throws Exception
+    {
+
+        super.minimaTestNode.runCommand("txncreate id:myTransaction");
+        
+        String output = super.minimaTestNode.runCommand("txndelete id:notMyTransaction");
+        
+        runBaseTestsWithInvalidArgs(output);        
+    }
+
+    @Test
+    public void testTxndeleteTryOtherTxCommandsOnDeletedTransaction () throws Exception
+    {
+
+        super.minimaTestNode.runCommand("txncreate id:myTransaction");
+        
+        super.minimaTestNode.runCommand("txndelete id:myTransaction");
+        
+        String output = super.minimaTestNode.runCommand("txnstate id:myTransaction port:0 value:\"this shouldnt work\"");
+
+        runBaseTestsWithInvalidArgs(output);        
     }
     
-    public void runBaseTests (String output) throws Exception
+    public void runBaseTestsWithInvalidArgs (String output) throws Exception
     {
         //The cmd response should be valid JSON
         JSONObject json = (JSONObject) new JSONParser().parse(output);
 
         //status of the cmd request must be true
-        System.out.println("status must be false: " + json.get("status"));
-        assertFalse((boolean)json.get("status"));
+        assertFalse("status must be false: ", (boolean)json.get("status"));
 
         //cmd response pending should be false
-        System.out.println("pending must be false:" + json.get("pending").toString());
-        assertFalse((boolean)json.get("pending"));
+        assertFalse("pending must be false: ", (boolean)json.get("pending"));
+    }
+
+    public void runBaseTestsWithValidArgs (String output) throws Exception
+    {
+        //The cmd response should be valid JSON
+        JSONObject json = (JSONObject) new JSONParser().parse(output);
+
+       //status of the cmd request must be true
+       assertTrue("status must be true: ", (boolean)json.get("status"));
+
+       //cmd response pending should be false
+       assertFalse("pending must be false: ", (boolean)json.get("pending"));
+
+        System.out.println("The response of the function was");
+        System.out.println(json.get("response").toString());
+        System.out.println(json.get("response").toString() == "Deleted");
+
+       //Response should be Deleted
+       assertTrue("response must be \"Deleted\": ", json.get("response").toString().equals("Deleted"));
     }
 
 }
