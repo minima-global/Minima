@@ -4,15 +4,15 @@ import org.minima.system.mds.MDSManager;
 
 public class MDSHubDelete {
 	
-	public static String createHubPage(MDSManager zMDS, String zPassword) {
+	public static String createHubPage(MDSManager zMDS, String zSessionID) {
 		
 		//Start the HTML
 		String page = MDSUtil.HUB_START;
 		
 		//Now the return form..
-		page += MDSUtil.returnPasswordButton(zPassword,"login.html","Main Menu");
+		page += MDSUtil.returnSessionIDButton(zSessionID,"main.html","Main Menu");
 				
-		page += "<br><div class='app-title'>MiniDAPP Deleted..</div><br><br>";
+		page += "<br><center><div class='app-title'>MiniDAPP Deleted..</div></center>";
 		
 		page += MDSUtil.HUB_END;
 		

@@ -4,20 +4,20 @@ import org.minima.system.mds.MDSManager;
 
 public class MDSHubPendingAction {
 	
-	public static String createHubPage(MDSManager zMDS, String zPassword, boolean zAccept, String zOuput) {
+	public static String createHubPage(MDSManager zMDS, String zSessionID, boolean zAccept, String zOuput) {
 		
 		//Start the HTML
 		String page = MDSUtil.HUB_START;
 		
 		//First the back button..
-		page += MDSUtil.returnPasswordButton(zPassword,"pending.html","Pending Transactions");
+		page += MDSUtil.returnSessionIDButton(zSessionID,"pending.html","Pending Transactions");
 		
 		//Now are we accepting
 		if(zAccept) {
-			page+="<div class='app-title'>Pending action ACCEPTED!..</div>\n";
+			page+="<center><div class='app-title'>Pending action ACCEPTED!..</div></center>\n";
 			
 		}else {
-			page+="<div class='app-title'>Pending action DENIED!..</div>\n";
+			page+="<center><div class='app-title'>Pending action DENIED!..</div></center>\n";
 		}
 		
 		//And now add the output

@@ -22,6 +22,14 @@ public class MDSUtil {
 			+ "            color: rgba(255, 255, 255, 0.95);\n"
 			+ "            font-size: 30px;\n"
 			+ "        }\n"
+			+ "		.mainlogon {\n"
+			+ "            padding: 20px;\n"
+			+ "            background: #F4F4F5;\n"
+			+ "            border-radius: 16px;\n"
+			+ "            color: #16181C;\n"
+			+ "            text-decoration: none;\n"
+			+ "            width : 400px;\n"
+			+ "        }\n"
 			+ "        .list-container {\n"
 			+ "            display:flex;\n"
 			+ "            justify-content: center;\n"
@@ -149,13 +157,13 @@ public class MDSUtil {
 			+ "\n"
 			+ "</html>";
 
-	public static String returnPasswordButton(String zPassword, String zLink, String zText) {
+	public static String returnSessionIDButton(String zSessionID, String zLink, String zText) {
 		
 		String button =   "<center>"
 				+ "<div>"
 				+ "		<form action='"+zLink+"' method=POST>\n"
-				+ "			<input type='hidden' name='password' value='"+zPassword+"'>\n"
-				+ "			<input class='solobutton' style='width:200;' onClick=\"this.form.submit(); this.disabled=true; this.value='Checking..';\" type=\"submit\" value='"+zText+"'>\n"
+				+ "			<input type='hidden' name='sessionid' value='"+zSessionID+"'>\n"
+				+ "			<input class='solobutton' style='width:200;' onClick=\"this.form.submit(); this.disabled=true;\" type=\"submit\" value='"+zText+"'>\n"
 				+ "		</form><br>"
 				+ "</div>"
 				+ "</center>";

@@ -5,13 +5,13 @@ import org.minima.system.mds.MDSManager;
 
 public class MDSHubInstall {
 
-	public static String createHubPage(MDSManager zMDS, MiniDAPP zDAPP, String zPassword) {
+	public static String createHubPage(MDSManager zMDS, MiniDAPP zDAPP, String zSessionID) {
 		
 		//Start the HTML
 		String page = MDSUtil.HUB_START;
 		
 		//Print the back button
-		page += MDSUtil.returnPasswordButton(zPassword,"login.html","Main Menu");
+		page += MDSUtil.returnSessionIDButton(zSessionID,"main.html","Main Menu");
 		
 		String base = "./"+zDAPP.getUID()+"/";
 		
@@ -27,7 +27,7 @@ public class MDSHubInstall {
 				+ "                </div>\n"
 				+ "</li>";
 		
-		page += "<br><div class='app-title'>MiniDAPP Installed..</div><br><br>";
+		page += "<br><center><div class='app-title'>MiniDAPP Installed..</div></center>";
 		
 		page += MDSUtil.HUB_END;
 		

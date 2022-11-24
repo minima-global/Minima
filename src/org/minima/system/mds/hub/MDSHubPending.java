@@ -9,12 +9,12 @@ import org.minima.utils.json.JSONObject;
 
 public class MDSHubPending {
 
-	public static String createHubPage(MDSManager zMDS, String zPassword) {
+	public static String createHubPage(MDSManager zMDS, String zSessionID) {
 		
 		//Start the HTML
 		String page = MDSUtil.HUB_START;
 		
-		page += MDSUtil.returnPasswordButton(zPassword,"login.html","Main Menu");
+		page += MDSUtil.returnSessionIDButton(zSessionID,"main.html","Main Menu");
 		
 		//Get all the pending commands..
 		ArrayList<PendingCommand> allpending = Main.getInstance().getMDSManager().getAllPending(); 
@@ -62,19 +62,19 @@ public class MDSHubPending {
 						+ "                        			\r\n"
 						+ "                        			<td>\r\n"
 						+ "                        				<form action=\"pendingaction.html\" method=POST onsubmit=\"return confirm('Are you sure you want to ACCEPT this action ?');\">\r\n"
-						+ "										  <input type='hidden' name='password' value='"+zPassword+"'>\r\n"
+						+ "										  <input type='hidden' name='sessionid' value='"+zSessionID+"'>\r\n"
 						+ "										  <input type='hidden' name='accept' value='accept'>\r\n"
 						+ "										  <input type='hidden' name='uid' value='"+puid+"'>\r\n"
-						+ "										  <input class='acceptbutton' type=\"submit\" value='Accept'>\r\n"
+						+ "										  <input class='acceptbutton' style='width:100;' type=\"submit\" value='&nbsp;&nbsp;Accept&nbsp;&nbsp;'>\r\n"
 						+ "										</form>		\r\n"
 						+ "                        			</td>\r\n"
 						+ "									<td>&nbsp;&nbsp;</td>"
 						+ "                        			<td>\r\n"
 						+ "                        				<form action=\"pendingaction.html\" method=POST onsubmit=\"return confirm('Are you sure you want to DENY this action ?');\">\r\n"
-						+ "										  <input type='hidden' name='password' value='"+zPassword+"'>\r\n"
+						+ "										  <input type='hidden' name='sessionid' value='"+zSessionID+"'>\r\n"
 						+ "										  <input type='hidden' name='accept' value='deny'>\r\n"
 						+ "										  <input type='hidden' name='uid' value='"+puid+"'>\r\n"
-						+ "										  <input class='deletebutton' type=\"submit\" value='Deny'>\r\n"
+						+ "										  <input class='deletebutton' style='width:100;' type=\"submit\" value='&nbsp;&nbsp;Deny&nbsp;&nbsp;'>\r\n"
 						+ "										</form>		\r\n"
 						+ "                        			</td>\r\n"
 						+ "                        			\r\n"

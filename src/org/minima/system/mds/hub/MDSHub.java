@@ -11,12 +11,12 @@ import org.minima.system.mds.MDSManager;
 
 public class MDSHub {
 	
-	public static String createHubPage(MDSManager zMDS, String zPassword) {
+	public static String createHubPage(MDSManager zMDS, String zSessionID) {
 		
 		//Start the HTML
 		String page = MDSUtil.HUB_START;
 		
-		page += MDSUtil.returnPasswordButton(zPassword,"pending.html","Pending Transactions");
+		page += MDSUtil.returnSessionIDButton(zSessionID,"pending.html","Pending Transactions");
 		
 		//Get the DB
 		MDSDB db = MinimaDB.getDB().getMDSDB();
@@ -52,9 +52,9 @@ public class MDSHub {
 						+ "						   <div style='height:40'>\r\n"
 						+ "                        <br>\r\n"
 						+ "                        <form action=\"delete.html\" method=POST onsubmit='return confirm(\"Are you sure you wish to delete this MiniDAPP ?\");'>\n"
-						+ "							  <input type='hidden' name='password' value='"+zPassword+"'>\r\n"
+						+ "							  <input type='hidden' name='sessionid' value='"+zSessionID+"'>\r\n"
 						+ "							  <input type='hidden' name='uid' value='"+dapp.getUID()+"'>\r\n"
-						+ "							  <input class='deletebutton' type=\"submit\" value='&nbsp;Delete&nbsp;'>\r\n"
+						+ "							  <input class='deletebutton' style='width:100;' type=\"submit\" value='&nbsp;Delete&nbsp;'>\r\n"
 						+ "							</form>\r\n"
 						+ "                        </div>"
 						+ "                    </div>\n"
@@ -76,7 +76,7 @@ public class MDSHub {
 				+ "                        <div class=\"app-title\">Install a MiniDAPP</div>\n"
 				+ "                        <div><br>"
 				+ "<form action=\"install.html\" method=POST enctype='multipart/form-data'>\n"
-				+ "  <input type='hidden' name='password' value='"+zPassword+"'>\n"
+				+ "  <input type='hidden' name='sessionid' value='"+zSessionID+"'>\n"
 				+ "  <input class='solobutton' type=\"file\" id=\"myFile\" name=\"filename\" required>\n"
 				+ "  <input class='solobutton' type=\"submit\" value='Install'>\n"
 				+ "</form>"
@@ -84,6 +84,15 @@ public class MDSHub {
 				+ "                    </div>\n"
 				+ "                </div>\n"
 				+ "            </li>";
+		
+		page +=   "<center>"
+				+ "<br>"
+				+ "<div>"
+				+ "		<form action='index.html' method=POST>\n"
+				+ "			<input class='solobutton' style='width:200;' onClick=\"this.form.submit(); this.disabled=true; this.value='Checking..';\" type=\"submit\" value='Log Off'>\n"
+				+ "		</form><br>"
+				+ "</div>"
+				+ "</center>";
 		
 		//End the HTML
 		page += MDSUtil.HUB_END;
