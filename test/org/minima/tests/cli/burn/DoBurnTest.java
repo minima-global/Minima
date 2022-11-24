@@ -41,10 +41,6 @@ public class DoBurnTest extends MinimaCliTest {
 
         var responseAttr = json.get("response");
 
-        //The response body must be valid JSON
-        var obj =  (JSONObject) new JSONParser().parse(responseAttr.toString());
-        JSONObject responseInnerJson = (JSONObject) obj.get(0);
-
         String newAddress = getNewAddress();
         String newAddress2 = getNewAddress();
         String newAddress3 = getNewAddress();
@@ -58,20 +54,8 @@ public class DoBurnTest extends MinimaCliTest {
         Thread.sleep(30000);//waiting 30 seconds for transaction finality so we can see if tx is picked up with burn
         String sendOutput3 = runCommand("send address:"+newAddress3+" amount:50 burn:30"); 
         Thread.sleep(30000);//waiting 30 seconds for transaction finality so we can see if tx is picked up with burn
-        
-        System.out.println("Send response: "); 
-        System.out.println(sendOutput);
-
-        System.out.println("Send response 2: "); 
-        System.out.println(sendOutput2);
-
-        System.out.println("Send response 3: "); 
-        System.out.println(sendOutput3);
 
         output = runCommand("burn");
-
-        System.out.println("second burn result: ");
-        System.out.println(output);
 
         json = (JSONObject) new JSONParser().parse(output);
         JSONObject burnInnerResponseJSON = (JSONObject) json.get("response");
@@ -91,26 +75,15 @@ public class DoBurnTest extends MinimaCliTest {
         addressAmount += '"'+newAddress1+":20"+'"'+",";
         addressAmount += '"'+newAddress1+":30"+'"'+"]";
 
-        System.out.println("address amount array: ");
-        System.out.println(addressAmount);
-
         String sendOutput = runCommand("send multi:"+addressAmount+" burn:50");
-        System.out.println("sendOutput output: ");
-        System.out.println(sendOutput);
 
         Thread.sleep(90000);//waiting 1.5 minute for transaction finality so we can see if tx is picked up with burn
 
         String balanceResponse = runCommand("balance");
-        System.out.println(balanceResponse);
 
         String coinsResponse = runCommand("coins");
-        System.out.println("coins output: ");
-        System.out.println(coinsResponse);
 
         String output = runCommand("consolidate tokenid:0x00");
-
-        System.out.println("consolidate output: ");
-        System.out.println(output);
 
         JSONObject json = (JSONObject) new JSONParser().parse(output);
 
@@ -157,20 +130,8 @@ public class DoBurnTest extends MinimaCliTest {
         Thread.sleep(30000);//waiting 1 minute for transaction finality so we can see if tx is picked up with burn
         String sendOutput3 = runCommand("send address:"+newAddress3+" amount:50 burn:30"); 
         Thread.sleep(30000);//waiting 1 minute for transaction finality so we can see if tx is picked up with burn
-        
-        System.out.println("Send response: "); 
-        System.out.println(sendOutput);
-
-        System.out.println("Send response 2: "); 
-        System.out.println(sendOutput2);
-
-        System.out.println("Send response 3: "); 
-        System.out.println(sendOutput3);
 
         String output = runCommand("burn");
-
-        System.out.println("second burn result: ");
-        System.out.println(output);
 
         JSONObject json = (JSONObject) new JSONParser().parse(output);
         JSONObject burnInnerResponseJSON = (JSONObject) json.get("response");
@@ -209,24 +170,16 @@ public class DoBurnTest extends MinimaCliTest {
         //get my new address
         String getaddressResponse = runCommand("newaddress");
         
-        System.out.println("Response Object: ");
-        System.out.println(getaddressResponse);
-        
         var stringResponseObj = (JSONObject) new JSONParser().parse(getaddressResponse);
         JSONObject stringResponseResponseObj = (JSONObject) stringResponseObj.get("response");
         String address = stringResponseResponseObj.get("address").toString();
-        
-        System.out.println("address: ");
-        System.out.println(address);
+
         return address;
     }
 
     String getAddress() throws Exception{
         //get my new address
         String getaddressResponse = runCommand("getaddress");
-        
-        System.out.println("Response Object: ");
-        System.out.println(getaddressResponse);
         
         var stringResponseObj = (JSONObject) new JSONParser().parse(getaddressResponse);
         JSONObject stringResponseResponseObj = (JSONObject) stringResponseObj.get("response");
