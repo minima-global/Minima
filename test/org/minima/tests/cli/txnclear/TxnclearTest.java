@@ -21,21 +21,63 @@ public class TxnclearTest extends MinimaCliTest {
     public void testTxnclearWithNoArgs () throws Exception
     {
         String output = super.minimaTestNode.runCommand("txnclear");
-        runBaseTests(output);        
+        runBaseTestsWithInvalidArgs(output);        
     }
-    
-    public void runBaseTests (String output) throws Exception
+
+    @Test
+    public void testTxnclearWithIdArg () throws Exception
+    {
+        super.minimaTestNode.runCommand("txncreate id:mytx");
+
+        String output = super.minimaTestNode.runCommand("txnclear id:mytx");
+
+        runBaseTestsWithValidArgs(output);        
+    }
+
+    @Test
+    public void testTxnclearWithBadIdArg () throws Exception
+    {
+        super.minimaTestNode.runCommand("txncreate id:mytx");
+
+        String output = super.minimaTestNode.runCommand("txnclear id:notmytx");
+        
+        runBaseTestsWithInvalidArgs(output);        
+    }
+
+    @Test
+    public void testTxnclearTwiceOnTheSameTx () throws Exception
+    {
+        super.minimaTestNode.runCommand("txncreate id:mytx");
+
+        super.minimaTestNode.runCommand("txnclear id:mytx");
+
+        String output = super.minimaTestNode.runCommand("txnclear id:mytx");
+        
+        runBaseTestsWithInvalidArgs(output);        
+    }
+
+    public void runBaseTestsWithValidArgs (String output) throws Exception
     {
         //The cmd response should be valid JSON
         JSONObject json = (JSONObject) new JSONParser().parse(output);
 
         //status of the cmd request must be true
-        System.out.println("status must be false: " + json.get("status"));
-        assertFalse((boolean)json.get("status"));
+        assertTrue("status must be true: ", (boolean)json.get("status"));
 
         //cmd response pending should be false
-        System.out.println("pending must be false:" + json.get("pending").toString());
-        assertFalse((boolean)json.get("pending"));
+        assertFalse("pending must be false: ", (boolean)json.get("pending"));
+    }
+
+    public void runBaseTestsWithInvalidArgs (String output) throws Exception
+    {
+        //The cmd response should be valid JSON
+        JSONObject json = (JSONObject) new JSONParser().parse(output);
+
+        //status of the cmd request must be true
+        assertFalse("status must be false: ", (boolean)json.get("status"));
+
+        //cmd response pending should be false
+        assertFalse("pending must be false: ", (boolean)json.get("pending"));
     }
 
 }
