@@ -138,6 +138,39 @@ public class MinimaTestNode {
         return attempts != 250;
     }
 
+    public int getCurrentBlock () throws Exception
+    {
+        String statusOutput = this.runCommand("status");
+        var jsonObject =  (JSONObject) new JSONParser().parse(statusOutput.toString());
+        JSONObject responseJson = (JSONObject) jsonObject.get("response");
+        JSONObject chainJson = (JSONObject) responseJson.get("chain");
+
+        String block = chainJson.get("block").toString();
+        return Integer.parseInt(block);        
+    }
+
+    public String getNewAddress() throws Exception{
+        //get my new address
+        String getaddressResponse = this.runCommand("newaddress");
+        
+        var stringResponseObj = (JSONObject) new JSONParser().parse(getaddressResponse);
+        JSONObject stringResponseResponseObj = (JSONObject) stringResponseObj.get("response");
+        String address = stringResponseResponseObj.get("address").toString();
+
+        return address;
+    }
+
+    public String getAddress() throws Exception{
+        //get a default address
+        String getaddressResponse = this.runCommand("getaddress");
+        
+        var stringResponseObj = (JSONObject) new JSONParser().parse(getaddressResponse);
+        JSONObject stringResponseResponseObj = (JSONObject) stringResponseObj.get("response");
+        String address = stringResponseResponseObj.get("address").toString();
+
+        return address;
+    }
+
     public String getPublicKey () throws Exception
     {
         String getaddressOutput = minima.runMinimaCMD("getaddress");
