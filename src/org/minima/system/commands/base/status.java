@@ -79,10 +79,10 @@ public class status extends Command {
 		ArchiveManager arch = MinimaDB.getDB().getArchive(); 
 		Wallet wallet 		= MinimaDB.getDB().getWallet();
 
-		//Do we haver any blocks..
-		if(txptree.getTip() == null) {
-			throw new CommandException("No Blocks yet..");
-		}
+//		//Do we haver any blocks..
+//		if(txptree.getTip() == null) {
+//			throw new CommandException("No Blocks yet..");
+//		}
 
 		JSONObject details = new JSONObject();
 		details.put("version", GlobalParams.MINIMA_VERSION);
@@ -90,16 +90,16 @@ public class status extends Command {
 		//Uptime..
 		details.put("uptime", MiniFormat.ConvertMilliToTime(Main.getInstance().getUptimeMilli()));
 		
-		//How many Devices..
-		BigDecimal blkweightdec 	= new BigDecimal(txptree.getTip().getTxPoW().getBlockDifficulty().getDataValue());
-		BigDecimal blockWeight 		= Crypto.MAX_VALDEC.divide(blkweightdec, MathContext.DECIMAL32);
-
-		//What is the user hashrate..
-		MiniNumber userhashrate 	= MinimaDB.getDB().getUserDB().getHashRate();
-		if(userhashrate.isLess(Magic.MIN_HASHES)) {
-			userhashrate = Magic.MIN_HASHES;
-		}
-		MiniNumber ratio 			= new MiniNumber(blockWeight).div(userhashrate);
+//		//How many Devices..
+//		BigDecimal blkweightdec 	= new BigDecimal(txptree.getTip().getTxPoW().getBlockDifficulty().getDataValue());
+//		BigDecimal blockWeight 		= Crypto.MAX_VALDEC.divide(blkweightdec, MathContext.DECIMAL32);
+//
+//		//What is the user hashrate..
+//		MiniNumber userhashrate 	= MinimaDB.getDB().getUserDB().getHashRate();
+//		if(userhashrate.isLess(Magic.MIN_HASHES)) {
+//			userhashrate = Magic.MIN_HASHES;
+//		}
+//		MiniNumber ratio 			= new MiniNumber(blockWeight).div(userhashrate);
 		
 //		MinimaLogger.log("blkweight    : "+blockWeight);
 //		MinimaLogger.log("userhashrate : "+userhashrate);
@@ -111,22 +111,31 @@ public class status extends Command {
 		//details.put("devices", ratio.ceil().toString());
 
 		//The Current total Length of the Minima Chain
-		long totallength = txptree.getHeaviestBranchLength()+cascade.getLength();
-		details.put("length", totallength);
-
-		//The total weight of the chain + cascade
-		BigInteger chainweight 	= txptree.getRoot().getTotalWeight().toBigInteger();
-		BigInteger cascweight 	= MinimaDB.getDB().getCascade().getTotalWeight().toBigInteger();
-
-		details.put("weight", chainweight.add(cascweight).toString());
-		
-		//Total Minima..
-		MiniNumber minima = MinimaDB.getDB().getTxPoWTree().getTip().getTxPoW().getMMRTotal();
-		details.put("minima", minima.toString());
-		
-		//How many coins..
-		BigDecimal coins = MinimaDB.getDB().getTxPoWTree().getTip().getMMR().getEntryNumber().getBigDecimal();
-		details.put("coins", coins.toString());
+		BigInteger chainweight 	= BigInteger.ZERO;
+		BigInteger cascweight 	= BigInteger.ZERO;
+		if(txptree.getTip() != null) {
+			long totallength = txptree.getHeaviestBranchLength()+cascade.getLength();
+			details.put("length", totallength);
+	
+			//The total weight of the chain + cascade
+			chainweight = txptree.getRoot().getTotalWeight().toBigInteger();
+			cascweight 	= MinimaDB.getDB().getCascade().getTotalWeight().toBigInteger();
+	
+			details.put("weight", chainweight.add(cascweight).toString());
+			
+			//Total Minima..
+			MiniNumber minima = MinimaDB.getDB().getTxPoWTree().getTip().getTxPoW().getMMRTotal();
+			details.put("minima", minima.toString());
+			
+			//How many coins..
+			BigDecimal coins = MinimaDB.getDB().getTxPoWTree().getTip().getMMR().getEntryNumber().getBigDecimal();
+			details.put("coins", coins.toString());
+		}else {
+			details.put("length", 0);
+			details.put("weight", "0");
+			details.put("minima", "0");
+			details.put("coins", "0");
+		}
 		
 		details.put("data", GeneralParams.DATA_FOLDER);
 
@@ -203,7 +212,11 @@ public class status extends Command {
 			tree.put("weight", chainweight.toString());
 			
 		}else {
-			tree.put("root", "0x00");
+			tree.put("block", 0);
+			tree.put("time", "NO BLOCKS YET");
+			tree.put("hash", "0x00");
+			tree.put("length", 0);
+			tree.put("branches", 0);
 		}
 		
 		if(debug) {
