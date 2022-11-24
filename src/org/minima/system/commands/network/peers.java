@@ -4,6 +4,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
@@ -23,7 +24,7 @@ public class peers extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","peerslist"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","peerslist","max"}));
 	}
 	
 	@Override
@@ -42,9 +43,25 @@ public class peers extends Command {
 			P2PManager p2PManager = (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();
 			
 			JSONObject resp = new JSONObject();
-			resp.put("peers-list", InetSocketAddressIO.addressesListToJSONArray(p2PManager.getPeersCopy()));
-			ret.put("response", resp);
 			
+			int maxpeers = getNumberParam("max", MiniNumber.THOUSAND).getAsInt();
+			
+			JSONArray peerarray = InetSocketAddressIO.addressesListToJSONArray(p2PManager.getPeersCopy());
+			JSONArray parray 	= new JSONArray();
+			int counter=0;
+			for(Object obj : peerarray) {
+				
+				String peer = (String)obj;
+				parray.add(peer);
+				
+				counter++;
+				if(counter>maxpeers) {
+					break;
+				}
+			}
+			
+			resp.put("peers-list", parray);
+			ret.put("response", resp);
 			
 		}else if(action.equals("addpeers")) {
 			
