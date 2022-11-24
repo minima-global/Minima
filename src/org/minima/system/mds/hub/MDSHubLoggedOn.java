@@ -1,19 +1,19 @@
 package org.minima.system.mds.hub;
 
-public class MDSHubError {
+public class MDSHubLoggedOn {
 
-public static String createHubPage() {
+	public static String createHubPage(String zSessionID) {
 		
 		//Start the HTML
 		String page = MDSUtil.HUB_START;
 		
 		//Add the Main page Link
-		page += MDSUtil.returnSessionIDButton("","index.html","Back to Logon");
+		page += MDSUtil.returnSessionIDButton(zSessionID,"main.html","Main Menu");
 		
 		//Now the Login Form
 		page += 
 		"<center>"
-		+ "Login / SessionID Error - pls log back in"
+		+ "Log on Successful..!"
 		+ "</center>";
 		
 		page += MDSUtil.HUB_END;

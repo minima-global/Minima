@@ -3,8 +3,8 @@
 
 <head>
     <title>MDS HUB</title>
-    <!--<meta name="viewport" content="width=800" /> -->
-	  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=800" />
+	<!--  <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
 <style>
         body {
             font-family: Arial, sans-serif;
@@ -18,18 +18,17 @@
             color: rgba(255, 255, 255, 0.95);
             font-size: 30px;
         }
-        
-        @media (max-width: 800px) {
-		       div.list-item-container {
-		            width: 80vw;
-		        }
-		}
-
         .list-container {
             display:flex;
             justify-content: space-around;
             padding-top: 50px;
         }
+
+@media (max-width: 768px) {
+	  .list-item-container {
+            width: 80vw;
+        }
+}
 
         .list-container ul {
             list-style: none;
@@ -64,8 +63,7 @@
             font-weight: bold;
             font-size: larger;
         }
-        
-		.solobutton {
+.solobutton {
 		    background-color: #eee;
 		    border: 0.5px solid #EDEDED;
 		  	border-radius: 8px;
