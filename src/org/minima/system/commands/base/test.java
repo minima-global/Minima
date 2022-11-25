@@ -1,6 +1,8 @@
 package org.minima.system.commands.base;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
@@ -16,15 +18,22 @@ public class test extends Command {
 	}
 	
 	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"show"}));
+	}
+	
+	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 	
+		boolean show = getBooleanParam("show", true);
+		
 		//Send a notification
 		JSONObject notification = new JSONObject();
 		notification.put("uid", "0x01");
 		notification.put("title", "My Title");
 		notification.put("text", "My text");
-		notification.put("show", true);
+		notification.put("show", show);
 		
 		//Post it
 		Main.getInstance().PostNotifyEvent("NOTIFICATION", notification);
