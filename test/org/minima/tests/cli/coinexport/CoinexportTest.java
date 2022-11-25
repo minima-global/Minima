@@ -41,9 +41,6 @@ public class CoinexportTest extends MinimaCliTest {
         //coinexport with coinid
         String output = super.minimaTestNode.runCommand("coinexport coinid:"+coinid.toString());
 
-        System.out.println("output: ");
-        System.out.println(output);
-
         baseTests(output);
     }
 

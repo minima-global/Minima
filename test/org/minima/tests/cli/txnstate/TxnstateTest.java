@@ -20,8 +20,6 @@ public class TxnstateTest extends MinimaCliTest {
     @Test
     public void testTxnstateWithNoArgs () throws Exception
     {
-        System.out.println("NEW TEST: testTxnstateWithNoArgs");
-
         String output = super.minimaTestNode.runCommand("txnstate");
         runBaseTestsWithInvalidArgs(output);        
     }
@@ -29,8 +27,6 @@ public class TxnstateTest extends MinimaCliTest {
     @Test
     public void testTxnstateWithValidArgs () throws Exception
     {
-        System.out.println("NEW TEST: testTxnstateWithValidArgs");
-
         super.minimaTestNode.runCommand("txncreate id:myTransaction");
 
         String output = super.minimaTestNode.runCommand("txnstate id:myTransaction port:0 value:\"0\"");
@@ -41,8 +37,6 @@ public class TxnstateTest extends MinimaCliTest {
     @Test
     public void testTxnstateWithLongArgs () throws Exception
     {
-        System.out.println("NEW TEST: testTxnstateWithLongArgs");
-
         super.minimaTestNode.runCommand("txncreate id:myTransaction");
 
         String output = super.minimaTestNode.runCommand("txnstate id:myTransaction port:0 value:\"123\"");
@@ -53,8 +47,6 @@ public class TxnstateTest extends MinimaCliTest {
     @Test
     public void testTxnstateWithNoQoutesAroundValueArgument () throws Exception
     {
-        System.out.println("NEW TEST: testTxnstateWithNoQoutesAroundIdArgument");
-
         super.minimaTestNode.runCommand("txncreate id:myTransaction");
 
         String output = super.minimaTestNode.runCommand("txnstate id:myTransaction port:0 value:0");
@@ -65,8 +57,6 @@ public class TxnstateTest extends MinimaCliTest {
     @Test
     public void testTxnstateWithNonNumericValueArgument () throws Exception
     {
-        System.out.println("NEW TEST: testTxnstateWithNoQoutesAroundIdArgument");
-
         super.minimaTestNode.runCommand("txncreate id:myTransaction");
 
         String output = super.minimaTestNode.runCommand("txnstate id:myTransaction port:0 value:\"hello\"");
@@ -77,8 +67,6 @@ public class TxnstateTest extends MinimaCliTest {
     @Test
     public void testTxnstateWithHexidecimalValueArgument () throws Exception
     {
-        System.out.println("NEW TEST: testTxnstateWithNoQoutesAroundIdArgument");
-
         super.minimaTestNode.runCommand("txncreate id:myTransaction");
 
         String output = super.minimaTestNode.runCommand("txnstate id:myTransaction port:0 value:\"0xfff\"");
@@ -89,8 +77,6 @@ public class TxnstateTest extends MinimaCliTest {
     @Test
     public void testTxnstateWithCapitalisedHexidecimalValueArgument () throws Exception
     {
-        System.out.println("NEW TEST: testTxnstateWithNoQoutesAroundIdArgument");
-
         super.minimaTestNode.runCommand("txncreate id:myTransaction");
 
         String output = super.minimaTestNode.runCommand("txnstate id:myTransaction port:0 value:\"0xFFF\"");

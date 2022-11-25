@@ -63,7 +63,7 @@ public class KeysTest extends MinimaCliTest {
             keylist = push(keylist, key);
         }
 
-        assertFalse(failed);
+        assertFalse("key generation should not fail", failed);
     }
 
     private static String[] push(String[] array, String push) {
