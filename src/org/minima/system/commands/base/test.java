@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
 import org.minima.objects.base.MiniData;
+import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.utils.json.JSONObject;
 
@@ -18,12 +19,16 @@ public class test extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 	
-		//Get the Archive DB
-		ArchiveManager arch = MinimaDB.getDB().getArchive();
+		//Send a notification
+		JSONObject notification = new JSONObject();
+		notification.put("uid", "0x01");
+		notification.put("title", "My Title");
+		notification.put("text", "My text");
 		
-		arch.hackShut();
+		//Post it
+		Main.getInstance().PostNotifyEvent("NOTIFICATION", notification);
 		
-		ret.put("response", "Archive DB Closed for test");
+		ret.put("response", notification);
 	
 		return ret;
 	}
