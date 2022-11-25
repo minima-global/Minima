@@ -29,7 +29,6 @@ public class DoBurnTest extends MinimaCliTest {
         
         String output = runCommand("burn");
 
-        System.out.println(output);
         //The cmd response should be valid JSON
         JSONObject json = (JSONObject) new JSONParser().parse(output);
 
@@ -60,7 +59,7 @@ public class DoBurnTest extends MinimaCliTest {
         json = (JSONObject) new JSONParser().parse(output);
         JSONObject burnInnerResponseJSON = (JSONObject) json.get("response");
         JSONObject fiftyBlockResponse = (JSONObject) burnInnerResponseJSON.get("50block");
-        assertTrue((long)fiftyBlockResponse.get("txns") == 4); //initial minting of coins on genesis block + 3 send events is 4 txns
+        assertTrue("There should be four transactions", (long)fiftyBlockResponse.get("txns") == 4); //initial minting of coins on genesis block + 3 send events is 4 txns
     }
 
     //burn using consolidate
@@ -88,7 +87,7 @@ public class DoBurnTest extends MinimaCliTest {
         JSONObject json = (JSONObject) new JSONParser().parse(output);
 
         //status of the cmd request must be true
-        assertTrue((boolean)json.get("status"));
+        assertTrue("response status should be true", (boolean)json.get("status"));
     }
 
     //burn using tokencreate
@@ -110,7 +109,7 @@ public class DoBurnTest extends MinimaCliTest {
         JSONObject burnInnerResponseJSON = (JSONObject) json.get("response");
         JSONObject fiftyBlockResponse = (JSONObject) burnInnerResponseJSON.get("50block");
         
-        assertTrue((long)fiftyBlockResponse.get("txns") == 3); //3 burns have happened, one when initial token supply was made, one for the send command and one for the tokencreate command
+        assertTrue("There should be three transactions", (long)fiftyBlockResponse.get("txns") == 3); //3 burns have happened, one when initial token supply was made, one for the send command and one for the tokencreate command
     }
 
     @Test
@@ -136,10 +135,10 @@ public class DoBurnTest extends MinimaCliTest {
         JSONObject json = (JSONObject) new JSONParser().parse(output);
         JSONObject burnInnerResponseJSON = (JSONObject) json.get("response");
         JSONObject fiftyBlockResponse = (JSONObject) burnInnerResponseJSON.get("50block");
-        assertTrue((long)fiftyBlockResponse.get("max") == 30);
-        assertTrue((long)fiftyBlockResponse.get("med") == 10);
-        assertTrue((long)fiftyBlockResponse.get("avg") == 15);
-        assertTrue((long)fiftyBlockResponse.get("min") == 0);
+        assertTrue("max should be 30",(long)fiftyBlockResponse.get("max") == 30);
+        assertTrue("med should be 10",(long)fiftyBlockResponse.get("med") == 10);
+        assertTrue("avg should be 15",(long)fiftyBlockResponse.get("avg") == 15);
+        assertTrue("min should be 0",(long)fiftyBlockResponse.get("min") == 0);
     }
 
     boolean waitForMinimaBlockConfirmation() throws Exception {
@@ -184,9 +183,7 @@ public class DoBurnTest extends MinimaCliTest {
         var stringResponseObj = (JSONObject) new JSONParser().parse(getaddressResponse);
         JSONObject stringResponseResponseObj = (JSONObject) stringResponseObj.get("response");
         String address = stringResponseResponseObj.get("address").toString();
-        
-        System.out.println("address: ");
-        System.out.println(address);
+
         return address;
     }
 }

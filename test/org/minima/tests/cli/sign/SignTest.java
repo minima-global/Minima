@@ -28,11 +28,7 @@ public class SignTest extends MinimaCliTest {
     @Test
     public void testSignWithPublicKeyAndDataArgs () throws Exception 
     {
-        System.out.println("Starting test");
-
         String publicKey = super.minimaTestNode.getPublicKey();
-
-        System.out.println("Public key is " + publicKey);
 
         String data = "0x26DA9AE7D32A5702FB18D3D3034EF3EE50A8BA1F2DE0D280B0F2BB458B91A5F5"; //random data
 
@@ -42,35 +38,25 @@ public class SignTest extends MinimaCliTest {
 
         JSONObject json = (JSONObject) new JSONParser().parse(output);
 
-        assertTrue((boolean)json.get("status"));
+        assertTrue("status must be true", (boolean)json.get("status"));
 
-        assertFalse((boolean)json.get("pending"));
+        assertFalse("pending must be true", (boolean)json.get("pending"));
 
         String signature = json.get("response").toString();
 
-        System.out.println("Veryfiying the signature");
-
         output = super.minimaTestNode.runCommand("verify data:"+data+" publickey:"+publicKey + " signature:" + signature);
-
-        System.out.println("Result of the signature verification");
-
-        System.out.println(output.toString());
 
         json = (JSONObject) new JSONParser().parse(output);
 
-        assertTrue((boolean)json.get("status"));
+        assertTrue("status must be true",(boolean)json.get("status"));
 
-        assertFalse((boolean)json.get("pending"));
+        assertFalse("pending must be false",(boolean)json.get("pending"));
     }
 
     @Test
     public void testSignWithInvalidPublicKeyAndDataArgs () throws Exception 
     {
-        System.out.println("Starting test");
-
         String publicKey = "0xC53237461AC2B614CF258E6B4D07A693642EE8F104B14BE6DE09C09370A7CF2E"; //Public key of another separate account
-
-        System.out.println("Public key is " + publicKey);
 
         String data = "0x26DA9AE7D32A5702FB18D3D3034EF3EE50A8BA1F2DE0D280B0F2BB458B91A5F5"; //random data
 
@@ -81,9 +67,9 @@ public class SignTest extends MinimaCliTest {
 
         JSONObject json = (JSONObject) new JSONParser().parse(output);
 
-        assertTrue((boolean)json.get("status"));
+        assertTrue("status must be true", (boolean)json.get("status"));
 
-        assertFalse((boolean)json.get("pending"));
+        assertFalse("pending must be false", (boolean)json.get("pending"));
     }
 
     @Test
@@ -109,12 +95,9 @@ public class SignTest extends MinimaCliTest {
         JSONObject json = (JSONObject) new JSONParser().parse(output);
 
         //status of the cmd request must be true
-        System.out.println("status must be false: " + json.get("status"));
-        assertFalse((boolean)json.get("status"));
+        assertFalse("status must be false", (boolean)json.get("status"));
 
-        //cmd response pending should be false
-        System.out.println("pending must be false:" + json.get("pending").toString());
-        assertFalse((boolean)json.get("pending"));
+        assertFalse("pending must be false", (boolean)json.get("pending"));
     }
 
     public void runBaseTestsOnExpectedArgs (String output) throws Exception
@@ -123,12 +106,9 @@ public class SignTest extends MinimaCliTest {
         JSONObject json = (JSONObject) new JSONParser().parse(output);
 
         //status of the cmd request must be true
-        System.out.println("status must be false: " + json.get("status"));
-        assertTrue((boolean)json.get("status"));
+        assertTrue("status must be true", (boolean)json.get("status"));
 
-        //cmd response pending should be false
-        System.out.println("pending must be false:" + json.get("pending").toString());
-        assertFalse((boolean)json.get("pending"));
+        assertFalse("pending must be false", (boolean)json.get("pending"));
     }
 
 }

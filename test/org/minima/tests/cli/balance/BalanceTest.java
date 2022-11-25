@@ -43,41 +43,19 @@ public class BalanceTest extends MinimaCliTest {
         BigDecimal sendable = new BigDecimal(responseInnerJson.get("sendable").toString()); 
         BigDecimal total = new BigDecimal(responseInnerJson.get("total").toString());
 
-        //Confirmed coins cannot be negative
-        //System.out.println("confirmed must be gte 0");
-        //assertTrue(confirmed.compareTo(ZERO) >= 0);
-
         assertTrue("confirmed must be gte 0", confirmed.compareTo(ZERO) >= 0);
 
-        //Unconfirmed coins cannot be negative
-        //System.out.println("unconfirmed must be gte 0");
-        //assertTrue(unconfirmed.compareTo(ZERO) >= 0);
         assertTrue("unconfirmed must be gte 0", unconfirmed.compareTo(ZERO) >= 0);
 
-        //Spendable coins cannot be negative
-        //System.out.println("sendable must be gte 0");
-        //assertTrue(sendable.compareTo(ZERO) >= 0);
         assertTrue("sendable must be gte 0", sendable.compareTo(ZERO) >= 0);
 
-        //Total coins cannot be negative
-        //System.out.println("total must be gte 0");
-        //assertTrue(total.compareTo(ZERO) >= 0);
         assertTrue("total must be gte 0", total.compareTo(ZERO) >= 0);
 
-        //confirmed, unconfirmed and spendable must not be gt total
-        //System.out.println("confirmed must be lte total");
-        //assertTrue(confirmed.compareTo(total) < 1);
         assertTrue("unconfirmed must be lte total",unconfirmed.compareTo(total) < 1);
 
-
-        //System.out.println("sendable must be lte total");
-        //assertTrue(sendable.compareTo(total) < 1);
         assertTrue("sendable must be lte total",sendable.compareTo(total) < 1);
 
-        //System.out.println("unconfirmed must be lte total");
-        //assertTrue(unconfirmed.compareTo(total) < 1);
         assertTrue("unconfirmed must be lte total",unconfirmed.compareTo(total) < 1);
-
     }
 
     @Test
@@ -117,18 +95,12 @@ public class BalanceTest extends MinimaCliTest {
 
         output = minimaTestNode.runCommand();
 
-        System.out.println("Regular 0x address\n");
-        System.out.println(output);
-
         runBaseTests (output);        
         
         //Run tests with Mx address
         minimaTestNode.setCommand("balance address:" + myMiniAddress);
 
         output = minimaTestNode.runCommand();
-
-        System.out.println("Mx address\n");
-        System.out.println(output);
 
         runBaseTests (output);     
 
@@ -147,19 +119,6 @@ public class BalanceTest extends MinimaCliTest {
 
         output = minimaTestNode.runCommand();
 
-        System.out.println("The output is ");
-        System.out.println(output.toString());
-
-        runBaseTests (output);
-        
-        System.out.println("Testing with garbage ZALGO text. He comes. \n");
-
-        String zalgo = " ̵̨̨͕̥̼̤̪͉̬̟̪͙̮͙̳͈͉̹̗̳̳͍͔̤͐̆̓͊̃̒̿̈́̽͌̀̎̃̓̎͛̌̓̒̾͑͆͘͘͜͝ ̶̢̨̢̪̯̩̙̗̫͕̘̦͉̮̗̹̼̳̭̱͈̭̮̠͙̻̫̆̎̎̈́̈̒̂͗̐̏͆̓̿̐͒͂͌̍͜͝ͅͅ";
-
-        minimaTestNode.setCommand("balance address:" + zalgo);
-
-        output = minimaTestNode.runCommand();
-
         runBaseTests (output);
 
         //Test with extra garbage arguments
@@ -169,16 +128,9 @@ public class BalanceTest extends MinimaCliTest {
         output = minimaTestNode.runCommand();
 
         json = (JSONObject) new JSONParser().parse(output);
-        
-        //status of the cmd request must be true
-        //System.out.println("status must be false");
-        //assertFalse((boolean)json.get("status"));
 
         assertFalse("status must be false",(boolean)json.get("status"));
 
-        //cmd response pending should be false
-        //System.out.println("pending must be false:");
-        //assertFalse((boolean)json.get("pending"));
         assertFalse("pending must be false",(boolean)json.get("pending"));
 
     }
@@ -186,24 +138,15 @@ public class BalanceTest extends MinimaCliTest {
     @Test
     public void testBalanceWithGarbageArg() throws Exception {
 
-        System.out.println("Testing with garbage argument");
-
         minimaTestNode.setCommand("balance garbage:mygarbage");
 
         String output = minimaTestNode.runCommand();
 
         JSONObject json = (JSONObject) new JSONParser().parse(output);
 
-        //status of the cmd request must be true
-        //System.out.println("status must be false");
-        //assertFalse((boolean)json.get("status"));
         assertFalse("status must be false",(boolean)json.get("status"));
 
-        //cmd response pending should be false
-        //System.out.println("pending must be false:");
-        //assertFalse((boolean)json.get("pending"));
         assertFalse("pending must be false",(boolean)json.get("pending"));
-
     }
 
     @Test
@@ -221,8 +164,6 @@ public class BalanceTest extends MinimaCliTest {
         assertFalse("status must be false",(boolean)json.get("status"));
         assertFalse("pending must be false",(boolean)json.get("pending"));
         
-        System.out.println("Testing balance with evil quotes");
-
         /*
         ----------------------------
         !!! THIS TEST IS FAILING !!!
@@ -264,8 +205,6 @@ public class BalanceTest extends MinimaCliTest {
     @Test
     public void testBalanceWithMultipleArg() throws Exception {
 
-        System.out.println("Testing with garbage argument");
-
         minimaTestNode.setCommand("balance address:0x7F234423354BF8E172F1019C7ED64310FB2EE7C9F5AFDA640F28D49F8D64DCDC confirmations:1");
 
         String output = minimaTestNode.runCommand();
@@ -275,8 +214,6 @@ public class BalanceTest extends MinimaCliTest {
 
     @Test
     public void testBalanceWithDuplicateAddressArg() throws Exception {
-
-        System.out.println("Testing with garbage argument");
 
         minimaTestNode.setCommand("balance address:0x7F234423354BF8E172F1019C7ED64310FB2EE7C9F5AFDA640F28D49F8D64DCDC address:0x7F234423354BF8E172F1019C7ED64310FB2EE7C9F5AFDA640F28D49F8D64DCDC");
 
@@ -288,20 +225,17 @@ public class BalanceTest extends MinimaCliTest {
     @Test
     public void testBalanceWithConfirmationsArg() throws Exception {
 
-        System.out.println("Testing balance with confirmation argument \n");
         minimaTestNode.setCommand("balance confirmations:0");
         String output = minimaTestNode.runCommand();
         runBaseTests (output);
 
 
-        System.out.println("Test with 1000000000000000000000000000000000000000000000000000000000000000000000 confirmations");
         minimaTestNode.setCommand("balance confirmations:1000000000000000000000000000000000000000000000000000000000000000000000");
         output = minimaTestNode.runCommand();
         JSONObject json = (JSONObject) new JSONParser().parse(output);
         assertFalse("Status should be false",(boolean)json.get("status"));
         assertFalse("Pending should be false",(boolean)json.get("pending"));
 
-        System.out.println("Test with floating point confirmations");
         minimaTestNode.setCommand("balance confirmations:0.01");
         output = minimaTestNode.runCommand();
         json = (JSONObject) new JSONParser().parse(output);
@@ -313,7 +247,6 @@ public class BalanceTest extends MinimaCliTest {
         !!! THIS TEST IS FAILING !!!
         ----------------------------
         */
-        System.out.println("Test with non numeric confirmations");
         minimaTestNode.setCommand("balance confirmations:a");
         output = minimaTestNode.runCommand();
         json = (JSONObject) new JSONParser().parse(output);
@@ -321,7 +254,6 @@ public class BalanceTest extends MinimaCliTest {
         assertFalse("Status should be false",(boolean)json.get("status"));
         assertFalse("Pending should be false",(boolean)json.get("pending"));
 
-        System.out.println("Test with extra garbage args");
         minimaTestNode.setCommand("balance confirmations:1 garble:garble");
         output = minimaTestNode.runCommand();
         json = (JSONObject) new JSONParser().parse(output);

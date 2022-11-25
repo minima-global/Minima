@@ -83,7 +83,6 @@ public class TxncreateTest extends MinimaCliTest {
         JSONObject json = (JSONObject) new JSONParser().parse(output);
 
         //status of the cmd request must be true
-        System.out.println("status must be true: " + json.get("status"));
         assertTrue("response status should be true", (boolean)json.get("status"));
 
         //cmd response pending should be false
@@ -95,16 +94,11 @@ public class TxncreateTest extends MinimaCliTest {
         //The cmd response should be valid JSON
         JSONObject json = (JSONObject) new JSONParser().parse(output);
 
-        System.out.println("THE OUTPUT OF THE TEST ");
-        System.out.println(output);
-
         //status of the cmd request must be true
-        System.out.println("status must be false: " + json.get("status"));
-        assertFalse((boolean)json.get("status"));
+        assertFalse("status must be false: ", (boolean)json.get("status"));
 
         //cmd response pending should be false
-        System.out.println("pending must be false:" + json.get("pending").toString());
-        assertFalse((boolean)json.get("pending"));
+        assertFalse("pending must be false: ", (boolean)json.get("pending"));
     }
 
 }

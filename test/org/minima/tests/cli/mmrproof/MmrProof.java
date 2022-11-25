@@ -54,12 +54,10 @@ public class MmrProof extends MinimaCliTest {
         JSONObject json = (JSONObject) new JSONParser().parse(output);
 
         //status of the cmd request must be true
-        System.out.println("status must be false: " + json.get("status"));
-        assertFalse((boolean)json.get("status"));
+        assertFalse("status must be false: ", (boolean)json.get("status"));
 
         //cmd response pending should be false
-        System.out.println("pending must be false:" + json.get("pending").toString());
-        assertFalse((boolean)json.get("pending"));
+        assertFalse("pending must be false: ", (boolean)json.get("pending"));
     }
 
     
@@ -84,7 +82,7 @@ public class MmrProof extends MinimaCliTest {
         innerJson = (JSONObject) jsonObject.get("response");
         boolean valid = (boolean)innerJson.get("valid");
         
-        assertTrue(valid);
+        assertTrue("proof must be valid: ", valid);
 
         super.minimaTestNode.killMinima();
     }
@@ -111,7 +109,7 @@ public class MmrProof extends MinimaCliTest {
         innerJson = (JSONObject) jsonObject.get("response");
         boolean valid = (boolean)innerJson.get("valid");
         
-        assertFalse(valid);
+        assertFalse("proof must be invalid: ", valid);
 
     }
 

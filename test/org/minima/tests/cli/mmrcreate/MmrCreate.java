@@ -76,10 +76,10 @@ public class MmrCreate extends MinimaCliTest {
         JSONObject json = (JSONObject) new JSONParser().parse(output);
 
         //status of the cmd request must be true
-        assertFalse((boolean)json.get("status"));
+        assertFalse("status must be false: ", (boolean)json.get("status"));
 
         //cmd response pending should be false
-        assertFalse((boolean)json.get("pending"));
+        assertFalse("pending must be false: ", (boolean)json.get("pending"));
     }
 
     public void createTree(String treedata) throws Exception
