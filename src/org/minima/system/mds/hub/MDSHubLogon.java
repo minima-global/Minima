@@ -23,9 +23,7 @@ public class MDSHubLogon {
 		+ "	</form>\n"
 		+ "</div>"
 		+ "<br>"
-		+ "You may only login to <b>1</b> MiniHUB at a time<br>"
-		+ "<br>"
-		+ "You will be logged out of others that are open"
+		+ "You may only open <b>1</b> MiniHUB at a time<br>"
 		+ "</center>";
 
 		
