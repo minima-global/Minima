@@ -24,6 +24,7 @@ public class test extends Command {
 		notification.put("uid", "0x01");
 		notification.put("title", "My Title");
 		notification.put("text", "My text");
+		notification.put("show", true);
 		
 		//Post it
 		Main.getInstance().PostNotifyEvent("NOTIFICATION", notification);

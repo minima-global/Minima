@@ -177,7 +177,23 @@ public class MDSCompleteHandler implements Runnable {
 					//Create a Command and run it..
 					CMDcommand cmd = new CMDcommand(minidappid, data);
 					result = cmd.runCommand();
-				
+
+				}else if(command.equals("notify")) {
+					
+					//Get the MiniDAPP
+					MiniDAPP md = mMDS.getMiniDAPP(minidappid);
+					String name = md.getName(); 
+					
+					//Create a Command and run it..
+					NOTIFYcommand notify = new NOTIFYcommand(minidappid, name, data, true);
+					result = notify.runCommand();
+
+				}else if(command.equals("notifycancel")) {
+					
+					//Create a Command and run it..
+					NOTIFYcommand notify = new NOTIFYcommand(minidappid, "", "", false);
+					result = notify.runCommand();
+					
 				}else if(command.equals("net")) {
 					
 					//Create a Command and run it..

@@ -2,6 +2,7 @@ package org.minima.system.mds.runnable;
 
 import org.minima.system.mds.MDSManager;
 import org.minima.system.mds.handler.CMDcommand;
+import org.minima.system.mds.handler.NOTIFYcommand;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.mozilla.javascript.Context;
@@ -180,6 +181,23 @@ public class MDSJS {
 		
 		//Call the main MDS Function in JS
 		zCallback.call(mContext, mScope, mScope, makeNativeJSONArgs(sqlresult));
+	}
+	
+	/**
+	 * Notify Function
+	 */
+	public void notify(String zText) {
+			
+		//Create a Command
+		NOTIFYcommand notify = new NOTIFYcommand(mMiniDAPPID, mMiniDAPPName, zText, true);
+		notify.runCommand();
+	}
+	
+	public void notifycancel() {
+		
+		//Create a Command
+		NOTIFYcommand notify = new NOTIFYcommand(mMiniDAPPID, "", "", false);
+		notify.runCommand();
 	}
 	
 	/**
