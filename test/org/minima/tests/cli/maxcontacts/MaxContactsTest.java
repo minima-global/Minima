@@ -18,7 +18,7 @@ import org.minima.tests.cli.MinimaCliTest;
 public class MaxContactsTest extends MinimaCliTest {
 
     @Test
-    public void testConnectWithNoArgs () throws Exception
+    public void testMaxContactsWithNoArgs () throws Exception
     {
         String output = super.minimaTestNode.runCommand("maxcontacts");
         runBaseTests(output);  

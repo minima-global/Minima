@@ -18,7 +18,7 @@ import org.minima.tests.cli.MinimaCliTest;
 public class DisconnectTest extends MinimaCliTest {
 
     @Test
-    public void testConnectWithNoArgs () throws Exception
+    public void testDisconnectWithNoArgs () throws Exception
     {
         String output = super.minimaTestNode.runCommand("disconnect");
         runBaseTests(output);        

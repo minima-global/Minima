@@ -18,7 +18,7 @@ import org.minima.tests.cli.MinimaCliTest;
 public class PrinttreeTest extends MinimaCliTest {
 
     @Test
-    public void testConnectWithNoArgs () throws Exception
+    public void testPrinttreeWithNoArgs () throws Exception
     {
         String output = super.minimaTestNode.runCommand("printtree");
         runBaseTests(output);        

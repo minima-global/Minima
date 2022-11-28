@@ -20,7 +20,7 @@ public class HelpTest extends MinimaCliTest {
     public MinimaTestNode test = new MinimaTestNode();
 
     @Test
-    public void testConnectWithNoArgs () throws Exception
+    public void testHelpWithNoArgs () throws Exception
     {
         String output = super.minimaTestNode.runCommand("help");
         runBaseTests(output);        

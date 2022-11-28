@@ -18,7 +18,7 @@ import org.minima.tests.cli.MinimaCliTest;
 public class MdsTest extends MinimaCliTest {
 
     @Test
-    public void testConnectWithNoArgs () throws Exception
+    public void testMdsWithNoArgs () throws Exception
     {
         String output = super.minimaTestNode.runCommand("mds");
         runBaseTests(output);        

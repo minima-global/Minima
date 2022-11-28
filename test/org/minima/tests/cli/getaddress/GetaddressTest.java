@@ -18,7 +18,7 @@ import org.minima.tests.cli.MinimaCliTest;
 public class GetaddressTest extends MinimaCliTest {
 
     @Test
-    public void testConnectWithNoArgs () throws Exception
+    public void testGetaddressWithNoArgs () throws Exception
     {
         String output = super.minimaTestNode.runCommand("getaddress");
         runBaseTests(output);  

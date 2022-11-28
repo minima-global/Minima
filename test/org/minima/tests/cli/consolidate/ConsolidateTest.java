@@ -18,7 +18,7 @@ import org.minima.tests.cli.MinimaCliTest;
 public class ConsolidateTest extends MinimaCliTest {
 
     @Test
-    public void testConnectWithNoArgs () throws Exception
+    public void testConsolidateWithNoArgs () throws Exception
     {
         String output = super.minimaTestNode.runCommand("consolidate");
         runBaseTests(output);  

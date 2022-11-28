@@ -18,7 +18,7 @@ import org.minima.tests.cli.MinimaCliTest;
 public class ScriptsTest extends MinimaCliTest {
 
     @Test
-    public void testConnectWithNoArgs () throws Exception
+    public void testScriptsWithNoArgs () throws Exception
     {
         String output = super.minimaTestNode.runCommand("scripts");
         runBaseTests(output);        

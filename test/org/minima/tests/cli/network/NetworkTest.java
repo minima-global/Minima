@@ -18,7 +18,7 @@ import org.minima.tests.cli.MinimaCliTest;
 public class NetworkTest extends MinimaCliTest {
 
     @Test
-    public void testConnectWithNoArgs () throws Exception
+    public void testNetworkWithNoArgs () throws Exception
     {
         String output = super.minimaTestNode.runCommand("network");
         runBaseTests(output);        

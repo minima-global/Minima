@@ -22,7 +22,7 @@ public class RunscriptTest extends MinimaCliTest {
     */ 
 
     @Test
-    public void testConnectWithNoArgs () throws Exception
+    public void testRunscriptWithNoArgs () throws Exception
     {
         String output = super.minimaTestNode.runCommand("runscript");
         runBaseTests(output);        
