@@ -82,7 +82,7 @@ public class TxPoWSqlDB extends SqlDB {
 			SQL_DELETE_TXPOW	= mSQLConnection.prepareStatement("DELETE FROM txpow WHERE timemilli < ? AND isrelevant=0");
 			SQL_EXISTS			= mSQLConnection.prepareStatement("SELECT txpowid FROM txpow WHERE txpowid=?");
 		
-			SQL_SELECT_RELEVANT = mSQLConnection.prepareStatement("SELECT * FROM txpow WHERE isrelevant=1 LIMIT 500");
+			SQL_SELECT_RELEVANT = mSQLConnection.prepareStatement("SELECT * FROM txpow WHERE isrelevant=1 LIMIT 200");
 	}
 	
 	public void wipeDB() throws SQLException {
