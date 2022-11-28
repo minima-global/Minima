@@ -544,6 +544,9 @@ public class Main extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(MAIN_CLEANDB_RAM)) {
 			
+			//Do it again..
+			PostTimerMessage(new TimerMessage(CLEANDB_RAM_TIMER, MAIN_CLEANDB_RAM));
+			
 			//Clean up the RAM Memory
 			System.gc();
 			
@@ -553,10 +556,10 @@ public class Main extends MessageProcessor {
 			//Now save the state - in case system crashed..
 			MinimaDB.getDB().saveState();
 			
-			//Do it again..
-			PostTimerMessage(new TimerMessage(CLEANDB_RAM_TIMER, MAIN_CLEANDB_RAM));
-		
 		}else if(zMessage.getMessageType().equals(MAIN_CLEANDB_SQL)) {
+			
+			//Do it again..
+			PostTimerMessage(new TimerMessage(CLEANDB_SQL_TIMER, MAIN_CLEANDB_SQL));
 			
 			//Do some house keeping on the DB
 			MinimaDB.getDB().getTxPoWDB().cleanDBSQL();
@@ -564,10 +567,10 @@ public class Main extends MessageProcessor {
 			//Same with the ArchiveDB
 			MinimaDB.getDB().getArchive().cleanDB();
 			
-			//Do it again..
-			PostTimerMessage(new TimerMessage(CLEANDB_SQL_TIMER, MAIN_CLEANDB_SQL));
-			
 		}else if(zMessage.getMessageType().equals(MAIN_PULSE)) {
+			
+			//And then wait again..
+			PostTimerMessage(new TimerMessage(GeneralParams.USER_PULSE_FREQ, MAIN_PULSE));
 			
 			//Create Pulse Message
 			Pulse pulse = Pulse.createPulse();
@@ -575,9 +578,6 @@ public class Main extends MessageProcessor {
 			//And send it to all your peers..
 			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_PULSE, pulse);
 			
-			//And then wait again..
-			PostTimerMessage(new TimerMessage(GeneralParams.USER_PULSE_FREQ, MAIN_PULSE));
-		
 		}else if(zMessage.getMessageType().equals(MAIN_INCENTIVE)) {
 			
 			//Do it agin..
@@ -632,6 +632,9 @@ public class Main extends MessageProcessor {
 
 		}else if(zMessage.getMessageType().equals(MAIN_AUTOBACKUP)) {
 			
+			//And Again..
+			PostTimerMessage(new TimerMessage(AUTOBACKUP_TIMER, MAIN_AUTOBACKUP));
+			
 			//Are we backing up..
 			if(MinimaDB.getDB().getUserDB().isAutoBackup()) {
 			
@@ -642,9 +645,6 @@ public class Main extends MessageProcessor {
 				MinimaLogger.log("AUTOBACKUP : "+res.toString());
 			
 			}
-			
-			//And Again..
-			PostTimerMessage(new TimerMessage(AUTOBACKUP_TIMER, MAIN_AUTOBACKUP));
 			
 		}else if(zMessage.getMessageType().equals(MAIN_NETRESET)) {
 			
