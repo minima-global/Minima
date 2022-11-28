@@ -18,6 +18,24 @@ public class txnlist extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\ntxnlist\n"
+				+ "\n"
+				+ "List your custom transactions. Includes previously posted transactions.\n"
+				+ "\n"
+				+ "Returns the full details of transactions.\n"
+				+ "\n"
+				+ "id: (optional)\n"
+				+ "    The id of a single transaction to list.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "txnlist\n"
+				+ "\n"
+				+ "txnlist id:multisig\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"id"}));
 	}

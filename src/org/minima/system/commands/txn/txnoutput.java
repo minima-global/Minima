@@ -24,6 +24,43 @@ public class txnoutput extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\ntxnoutput\n"
+				+ "\n"
+				+ "Create a transaction output.\n"
+				+ "\n"
+				+ "This will create a new coin (UTxO).\n"
+				+ "\n"
+				+ "If the sum of inputs > outputs, the difference will be burned unless change to the sender is defined as an output.\n"
+				+ "\n"
+				+ "Optionally store the transaction state variables in the new output coin.\n"
+				+ "\n"
+				+ "id:\n"
+				+ "    The id of the transaction to add an output to.\n"
+				+ "\n"
+				+ "amount:\n"
+				+ "    The amount for the output. To send to the specified address.\n"
+				+ "\n"
+				+ "address:\n"
+				+ "    Address of the recipient/script to send the output to. Can be 0x or Mx address.\n"
+				+ "\n"
+				+ "tokenid: (optional)\n"
+				+ "    tokenid of the output. Default is Minima (0x00).\n"
+				+ "\n"
+				+ "storestate: (optional)\n"
+				+ "    true or false, true will keep the state variables of the transaction in the newly created output coin.\n"
+				+ "    Default is true.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "txnoutput id:simpletxn amount:10 address:0xFED5..\n"
+				+ "\n"
+				+ "txnoutput id:multisig amount:10 address:0xFED5.. tokenid:0xCEF5.. storestate:false\n"
+				+ "\n"
+				+ "txnoutput id:eltootxn amount:10 address:0xFED5..\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"id","amount","address","tokenid","storestate"}));
 	}
