@@ -18,7 +18,7 @@ import org.minima.tests.cli.MinimaCliTest;
 public class MessageTest extends MinimaCliTest {
 
     @Test
-    public void testConnectWithNoArgs () throws Exception
+    public void testMessageWithNoArgs () throws Exception
     {
         String output = super.minimaTestNode.runCommand("message");
         runBaseTests(output);        

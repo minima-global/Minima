@@ -18,7 +18,7 @@ import org.minima.tests.cli.MinimaCliTest;
 public class HashtestTest extends MinimaCliTest {
 
     @Test
-    public void testConnectWithNoArgs () throws Exception
+    public void testHashtestWithNoArgs () throws Exception
     {
         String output = super.minimaTestNode.runCommand("hashtest");
         runBaseTests(output);   

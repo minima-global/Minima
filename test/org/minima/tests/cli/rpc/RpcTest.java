@@ -18,7 +18,7 @@ import org.minima.tests.cli.MinimaCliTest;
 public class RpcTest extends MinimaCliTest {
 
     @Test
-    public void testConnectWithNoArgs () throws Exception
+    public void testRpcWithNoArgs () throws Exception
     {
         String output = super.minimaTestNode.runCommand("rpc");
         runBaseTests(output);        

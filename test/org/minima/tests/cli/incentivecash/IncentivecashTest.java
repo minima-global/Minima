@@ -18,7 +18,7 @@ import org.minima.tests.cli.MinimaCliTest;
 public class IncentivecashTest extends MinimaCliTest {
 
     @Test
-    public void testConnectWithNoArgs () throws Exception
+    public void testIncentivecashWithNoArgs () throws Exception
     {
         String output = super.minimaTestNode.runCommand("incentivecash");
         runBaseTests(output);        

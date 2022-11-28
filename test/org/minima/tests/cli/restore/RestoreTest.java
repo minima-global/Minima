@@ -18,7 +18,7 @@ import org.minima.tests.cli.MinimaCliTest;
 public class RestoreTest extends MinimaCliTest {
 
     @Test
-    public void testConnectWithNoArgs () throws Exception
+    public void testRestoreWithNoArgs () throws Exception
     {
         String output = super.minimaTestNode.runCommand("restore");
         runBaseTests(output);        

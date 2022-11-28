@@ -22,7 +22,7 @@ public class MaximaTest extends MinimaCliTest {
     */ 
 
     @Test
-    public void testConnectWithNoArgs () throws Exception
+    public void testMaximaWithNoArgs () throws Exception
     {
         String output = super.minimaTestNode.runCommand("maxima");
         runBaseTests(output);        
