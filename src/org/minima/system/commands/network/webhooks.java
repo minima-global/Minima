@@ -6,6 +6,7 @@ import java.util.Arrays;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.network.webhooks.NotifyManager;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -13,6 +14,34 @@ public class webhooks extends Command {
 
 	public webhooks() {
 		super("webhooks","(action:list|add|remove|clear) (hook:url) - Add a web hook that is called with Minima events as they happen");
+	}
+	
+	@Override
+	public String getFullHelp() {
+		return "\nwebhooks\n"
+				+ "\n"
+				+ "Add a web hook that is called with Minima events as they happen.\n"
+				+ "\n"
+				+ "POST requests, so the URL must be a POST endpoint.\n"
+				+ "\n"
+				+ "action: (optional)\n"
+				+ "    list : List your existing webhooks. The default.\n"
+				+ "    add : Add a new webhook. \n"
+				+ "    remove : Remove an existing webhook.\n"
+				+ "    clear : Clear the existing webhooks.\n"
+				+ "\n"
+				+ "hook: (optional)\n"
+				+ "    A URL, must be a POST endpoint.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "webhooks action:list\n"
+				+ "\n"
+				+ "webhooks action:add hook:http://127.0.0.1/myapi.php\n"
+				+ "\n"
+				+ "webhooks action:remove hook:http://127.0.0.1/myapi.php\n"
+				+ "\n"
+				+ "webhooks action:clear\n";
 	}
 	
 	@Override

@@ -16,6 +16,24 @@ public class message extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nmessage\n"
+				+ "\n"
+				+ "Send a message to one or all of your direct peers.\n"
+				+ "\n"
+				+ "data:\n"
+				+ "    The message as a string.\n"
+				+ "\n"
+				+ "uid: (optional)\n"
+				+ "    Leave blank to send a message to all peers or enter the uid of the peer to send the message to.\n"
+				+ "    uid can be found from the 'network' command.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "message data:\"hello\" uid:CVNPMLPOCQ0HQ\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"uid","data"}));
 	}

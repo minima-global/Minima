@@ -16,6 +16,24 @@ public class connect extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nconnect\n"
+				+ "\n"
+				+ "Connect to a network Minima instance.\n"
+				+ "\n"
+				+ "Connect to another node to join the main network or to create a private test network.\n"
+				+ "\n"
+				+ "Set your own host using the -host parameter at start up.\n"
+				+ "\n"
+				+ "host:\n"
+				+ "    The external ip:port of the node to connect to.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "connect host:94.0.239.117:9001\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"host"}));
 	}

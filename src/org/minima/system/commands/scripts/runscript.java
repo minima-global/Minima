@@ -25,6 +25,47 @@ public class runscript extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nrunscript\n"
+				+ "\n"
+				+ "Test run a script with predefined parameters without executing on chain.\n"
+				+ "\n"
+				+ "Scripts will be auto cleaned for you.\n"
+				+ "\n"
+				+ "script:\n"
+				+ "    The script to run, surrounded by double quotes.\n"
+				+ "\n"
+				+ "state: (optional)\n"
+				+ "    State variable values to use when running the script.\n"
+				+ "    JSON object in the format {0:value,1:value,..}.\n"
+				+ "\n"
+				+ "prevstate: (optional)\n"
+				+ "    The previous state variable values (for the input coin) to use when running the script.\n"
+				+ "    JSON object in the format {0:value,1:value,..}.\n"
+				+ "\n"
+				+ "globals: (optional)\n"
+				+ "    The Global variable values to use when running the script.\n"
+				+ "    JSON object in the format {@GLOBAL:value,..}.\n"
+				+ "\n"
+				+ "signatures: (optional)\n"
+				+ "    The signatures required for the script. JSON array.\n"
+				+ "\n"
+				+ "extrascripts: (optional)\n"
+				+ "    Extra scripts required for MAST contracts. \n"
+				+ "    JSON object in the format {script:proof,..}.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "runscript script:\"RETURN SIGNEDBY(0xFF..) AND @BLOCK GT 100\" globals:{\"@BLOCK\":\"101\"} signatures:[\"0xFF\"]\n"
+				+ "\n"
+				+ "runscript script:\"LET st=STATE(99) LET ps=PREVSTATE(99) IF st EQ ps AND @COINAGE GT 20\n"
+				+ "AND SIGNEDBY(0xFF) THEN RETURN TRUE ELSEIF st GT ps AND SIGNEDBY(0xEE) THEN RETURN TRUE ENDIF\"\n"
+				+ "globals:{\"@COINAGE\":\"23\"} state:{\"99\":\"0\"} prevstate:{\"99\":\"0\"} signatures:[\"0xFF\"]\n"
+				+ "\n"
+				+ "runscript script:\"MAST 0x0E3..\" extrascripts:{\"RETURN TRUE\":\"0x000..\"}\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"script","state","prevstate","globals","signatures","extrascreipt"}));
 	}

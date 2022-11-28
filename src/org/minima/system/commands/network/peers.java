@@ -23,8 +23,32 @@ public class peers extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\npeers\n"
+				+ "\n"
+				+ "Prints the peers list this node has. P2P must be enabled.\n"
+				+ "\n"
+				+ "Your peers are the other Minima nodes you know about.\n"
+				+ "\n"
+				+ "action: (optional)\n"
+				+ "    list : List your peers. The default.\n"
+				+ "    addpeers : Add a list of new peers. \n"
+				+ "\n"
+				+ "peerslist: (optional)\n"
+				+ "    JSON array of new peers [ip:port,ip:port,..]\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "peers\n"
+				+ "\n"
+				+ "peers action:list\n"
+				+ "\n"
+				+ "peers action:addpeers peerslist:[\"31.125.188.214:9001\",\"94.0.239.117:9001\"]\n";
+	}
+
+	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","peerslist","max"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","peerslist"}));
 	}
 	
 	@Override
@@ -43,25 +67,9 @@ public class peers extends Command {
 			P2PManager p2PManager = (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();
 			
 			JSONObject resp = new JSONObject();
-			
-			int maxpeers = getNumberParam("max", MiniNumber.THOUSAND).getAsInt();
-			
-			JSONArray peerarray = InetSocketAddressIO.addressesListToJSONArray(p2PManager.getPeersCopy());
-			JSONArray parray 	= new JSONArray();
-			int counter=0;
-			for(Object obj : peerarray) {
-				
-				String peer = (String)obj;
-				parray.add(peer);
-				
-				counter++;
-				if(counter>maxpeers) {
-					break;
-				}
-			}
-			
-			resp.put("peers-list", parray);
+			resp.put("peers-list", InetSocketAddressIO.addressesListToJSONArray(p2PManager.getPeersCopy()));
 			ret.put("response", resp);
+			
 			
 		}else if(action.equals("addpeers")) {
 			

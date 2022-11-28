@@ -30,6 +30,8 @@ public class coinimport extends Command {
 				+ "\n"
 				+ "Optionally you can track the coin to add it to your relevant coins list and know when it becomes spent.\n"
 				+ "\n"
+				+ "Importing does not allow the spending of a coin - just the knowledge of its existence.\n"
+				+ "\n"
 				+ "data:\n"
 				+ "    The data of a coin. Can be found using the 'coinexport' command.\n"
 				+ "\n"
