@@ -17,6 +17,22 @@ public class maxsign extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nmaxsign\n"
+				+ "\n"
+				+ "Sign a piece of data with your Maxima ID.\n"
+				+ "\n"
+				+ "Returns the signature of the data, signed with your Maxima private key.\n"
+				+ "\n"
+				+ "data:\n"
+				+ "    The 0x HEX data to sign.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "maxsign data:0xCD34..\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"data"}));
 	}

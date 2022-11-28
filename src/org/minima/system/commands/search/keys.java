@@ -18,6 +18,27 @@ public class keys extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nkeys\n"
+				+ "\n"
+				+ "Get a list of all your public keys or create a new key.\n"
+				+ "\n"
+				+ "Each public key can be used for signing securely 262144 (64^3) times.\n"
+				+ "\n"
+				+ "action: (optional)\n"
+				+ "    list : List your existing public keys. The default.\n"
+				+ "    new : Create a new key pair.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "keys\n"
+				+ "\n"
+				+ "keys action:list\n"
+				+ "\n"
+				+ "keys action:new\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"action"}));
 	}

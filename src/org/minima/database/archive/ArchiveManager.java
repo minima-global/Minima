@@ -587,7 +587,5 @@ public class ArchiveManager extends SqlDB {
 		//Shut down
 		arch.saveDB();
 	}
-
-
 	
 }

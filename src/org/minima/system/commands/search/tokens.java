@@ -19,6 +19,35 @@ public class tokens extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\ntokens\n"
+				+ "\n"
+				+ "List all tokens in the unpruned chain.\n"
+				+ "\n"
+				+ "Optionally import or export tokens to share token data.\n"
+				+ "\n"
+				+ "tokenid: (optional)\n"
+				+ "    The tokenid of the token to search for or export.\n"
+				+ "\n"
+				+ "action: (optional)\n"
+				+ "    import : List your existing public keys.\n"
+				+ "    export : Create a new key.\n"
+				+ "\n"
+				+ "data: (optional)\n"
+				+ "    The data of the token to import, generated from the export.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "tokens\n"
+				+ "\n"
+				+ "tokens tokenid:0xFED5..\n"
+				+ "\n"
+				+ "tokens action:export tokenid:0xFED5..\n"
+				+ "\n"
+				+ "tokens action:import data:0x000..\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"tokenid","action","data"}));
 	}

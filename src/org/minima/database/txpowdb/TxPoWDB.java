@@ -59,18 +59,19 @@ public class TxPoWDB {
 		
 		//Do we have it already..
 		if(!mRamDB.exists(txpid)) {
-			//Is it in the SQL
-			if(!mSqlDB.exists(txpid)) {
-				
-				//Is this TxPoW relevant
-				boolean relevant = TxPoWSearcher.checkTxPoWRelevant(zTxPoW, MinimaDB.getDB().getWallet());
-				
-				//Add it to the SQL..
-				mSqlDB.addTxPoW(zTxPoW, relevant);
-			}
-			
+
 			//Add it to the RAM
 			mRamDB.addTxPoW(zTxPoW);
+		}
+		
+		//Is it in the SQL
+		if(!mSqlDB.exists(txpid)) {
+			
+			//Is this TxPoW relevant
+			boolean relevant = TxPoWSearcher.checkTxPoWRelevant(zTxPoW, MinimaDB.getDB().getWallet());
+			
+			//Add it to the SQL..
+			mSqlDB.addTxPoW(zTxPoW, relevant);
 		}
 	}
 	

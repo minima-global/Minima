@@ -14,6 +14,25 @@ public class logs extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nlogs\n"
+				+ "\n"
+				+ "Enable detailed logs for script errors or mining activity.\n"
+				+ "\n"
+				+ "scripts: (optional)\n"
+				+ "    true or false, true turns on detailed logs for script errors.\n"
+				+ "\n"
+				+ "mining: (optional)\n"
+				+ "    true or false, true turns on detailed logs for mining start/end activity.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "logs scripts:true\n"
+				+ "\n"
+				+ "logs scripts:false mining:true\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"scripts","mining"}));
 	}

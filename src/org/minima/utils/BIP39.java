@@ -54,12 +54,14 @@ public class BIP39 {
 	
 	public static MiniData convertStringToSeed(String zPhrase) {
 		
-		MiniString phrase = new MiniString(zPhrase.trim());
+		MiniString phrase = new MiniString(zPhrase);
 		
 		return new MiniData(Crypto.getInstance().hashData(phrase.getData()));
 	}
 	
 	public static void main(String[] zArgs) {
+		
+		System.out.println(WORD_LIST.length);
 		
 		//Get the list
 		String[] words = getNewWordList();

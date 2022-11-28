@@ -69,7 +69,6 @@ public class archive extends Command {
 				+ "keyuses:\n"
 				+ "    How many times at most did you use your keys.. Every time you resync with seed phrase this needs to be higher as Minima Signatures are stateful. Defaults to 1000 - the max is 262144 for normal keys\n"
 				+ "\n"
-				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "archive action:resync host:89.98.89.98:8888\n";

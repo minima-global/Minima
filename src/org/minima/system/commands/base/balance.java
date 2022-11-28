@@ -23,7 +23,31 @@ public class balance extends Command {
 	public balance() {
 		super("balance","(address:) (tokenid:) (confirmations:) - Show your total balance of Minima and tokens");
 	}
-
+	
+	@Override
+	public String getFullHelp() {
+		return "\nbalance\n"
+				+ "\n"
+				+ "Show your total balance of Minima and tokens.\n"
+				+ "\n"
+				+ "address: (optional)\n"
+				+ "    Show the balance for a specific 0x or Mx address.\n"
+				+ "\n"
+				+ "tokenid: (optional)\n"
+				+ "    Show the balance for a specific tokenid. Minima is 0x00.\n"
+				+ "\n"
+				+ "confirmations: (optional)\n"
+				+ "    Set the number of block confirmations required before a coin is considered confirmed in your balance. Default is 3.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "balance\n"
+				+ "\n"
+				+ "balance tokenid:0xFED5.. confirmations:10\n"
+				+ "\n"
+				+ "balance address:0xFF..\n";
+	}
+	
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"address","tokenid","confirmations"}));

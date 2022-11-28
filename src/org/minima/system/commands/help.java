@@ -71,7 +71,7 @@ import org.minima.utils.json.JSONObject;
 public class help extends Command {
 
 	public help() {
-		super("help","Show Help. [] are required. () are optional. Chain multiple commands with ;");
+		super("help","Show Help. [] are required. () are optional. Use 'help command:' for full help. Chain multiple commands with ;");
 	}
 	
 	@Override

@@ -15,6 +15,22 @@ public class random extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nrandom\n"
+				+ "\n"
+				+ "Generate a random hash value, defaults to 32 bytes.\n"
+				+ "\n"
+				+ "size: (optional)\n"
+				+ "    Integer number of bytes for the hash value.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "random\n"
+				+ "\n"
+				+ "random size:64\n";	
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"size"}));
 	}

@@ -21,6 +21,20 @@ public class tokenvalidate extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\ntokenvalidate\n"
+				+ "\n"
+				+ "Validate the signature and webvalidate link in a token.\n"
+				+ "\n"
+				+ "tokenid:\n"
+				+ "    The tokenid of the custom token/NFT to validate.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "tokenvalidate tokenid:0xFED5..\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"tokenid"}));
 	}
