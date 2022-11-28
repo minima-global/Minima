@@ -6,7 +6,6 @@ import java.util.Arrays;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.network.webhooks.NotifyManager;
-import org.minima.system.params.GeneralParams;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
