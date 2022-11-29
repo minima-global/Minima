@@ -2,7 +2,6 @@ package org.minima.system.mds.runnable;
 
 import org.minima.system.mds.MDSManager;
 import org.minima.system.mds.handler.COMMSCommand;
-import org.minima.system.mds.handler.NETcommand;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.NativeJSON;

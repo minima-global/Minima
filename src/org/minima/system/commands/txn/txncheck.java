@@ -28,6 +28,22 @@ public class txncheck extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\ntxncheck\n"
+				+ "\n"
+				+ "Show details about the transaction.\n"
+				+ "\n"
+				+ "Verify whether the inputs, outputs, signatures, proofs and scripts are valid.\n"
+				+ "\n"
+				+ "id: (optional)\n"
+				+ "    The id of the transaction to check.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "txncheck id:multisig\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"id"}));
 	}

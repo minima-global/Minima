@@ -16,6 +16,17 @@ public class ping extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nping\n"
+				+ "\n"
+				+ "Ping a host and get back Minima Node info.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "ping host:\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"host"}));
 	}
@@ -51,7 +62,7 @@ public class ping extends Command {
 			resp.put("valid", false);
 		}else {
 			resp.put("valid", true);
-			resp.put("version", greet.getVersion());
+			resp.put("version", greet.getVersion().toString());
 			resp.put("extradata", greet.getExtraData());
 		}
 			

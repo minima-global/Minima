@@ -19,7 +19,58 @@ import org.minima.utils.json.JSONObject;
 public class txninput extends Command {
 
 	public txninput() {
-		super("txninput","[id:] (coinid:) (coindata:) (floating:) (address:) (amount:) (tokenid:) (sciptmmr:true)- Add a coin as an input to a transaction");
+		super("txninput","[id:] (coinid:) (coindata:) (floating:) (address:) (amount:) (tokenid:) (scriptmmr:true)- Add a coin as an input to a transaction");
+	}
+	
+	@Override
+	public String getFullHelp() {
+		return "\ntxninput\n"
+				+ "\n"
+				+ "Add a coin as an input to a transaction.\n"
+				+ "\n"
+				+ "Optionally specify address, amount and tokenid to use an unspecified coinid - a floating ELTOO coin.\n"
+				+ "\n"
+				+ "A floating coin can be attached to multiple different existing coins as long as it has the same\n"
+				+ "\n"
+				+ "address, amount and tokenid - but different coinid.\n"
+				+ "\n"
+				+ "id:\n"
+				+ "    The id of the transaction to add an input to.\n"
+				+ "\n"
+				+ "coinid: (optional)\n"
+				+ "    The id of the coin to add as an input.\n"
+				+ "\n"
+				+ "coindata: (optional)\n"
+				+ "    The data of the coin to add, instead of coinid.\n"
+				+ "    Can be from the 'coinexport' command or 'outputcoindata' from another transaction.\n"
+				+ "\n"
+				+ "floating: (optional)\n"
+				+ "    true or false, true will add an unspecified, floating ELTOO coin as an input.\n"
+				+ "    If true, also specify address, amount, tokenid.\n"
+				+ "    If false, specify a coinid or coindata.\n"
+				+ "\n"
+				+ "address: (optional)\n"
+				+ "    Coin address to use for the floating input. Can be 0x or Mx address.\n"
+				+ "    The coin that is used "
+				+ "\n"
+				+ "amount: (optional)\n"
+				+ "    Amount of a coin for the floating input.\n"
+				+ "\n"
+				+ "tokenid: (optional)\n"
+				+ "    tokenid of a coin for the floating input.\n"
+				+ "\n"
+				+ "scriptmmr: (optional)\n"
+				+ "    true or false, true will add the scripts and MMR proof for the coin.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "txninput id:simpletxn coinid:0xD0BF..\n"
+				+ "\n"
+				+ "txninput id:multisig coinid:0xD0BF.. scriptmmr:true\n"
+				+ "\n"
+				+ "txninput id:posttxn coindata:0x000..\n"
+				+ "\n"
+				+ "txninput id:eltootxn floating:true address:0xFED5.. amount:10 tokenid:0x00\n";
 	}
 	
 	@Override

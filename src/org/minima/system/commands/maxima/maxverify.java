@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.minima.objects.base.MiniData;
-import org.minima.system.Main;
 import org.minima.system.commands.Command;
-import org.minima.system.network.maxima.MaximaManager;
 import org.minima.utils.encrypt.SignVerify;
 import org.minima.utils.json.JSONObject;
 

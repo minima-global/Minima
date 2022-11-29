@@ -17,6 +17,40 @@ public class vault extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nvault\n"
+				+ "\n"
+				+ "BE CAREFUL. Wipe / Restore your private keys.\n"
+				+ "\n"
+				+ "View your passphrase and seed. DO NOT SHARE THESE WITH ANYONE.\n"
+				+ "\n"
+				+ "ENSURE YOU HAVE A BACKUP AND SECURE RECORD OF YOUR PASSPHRASE BEFORE LOCKING.\n"
+				+ "\n"
+				+ "You must have your passphrase to unlock your private keys.\n"
+				+ "\n"
+				+ "action: (optional)\n"
+				+ "    seed : Show your seed phrase. The default. \n"
+				+ "    lock : Lock your node to remove your private keys.\n"
+				+ "    unlock : Unlock your node to reinstate your private keys.\n"
+				+ "\n"
+				+ "seed: (optional)\n"
+				+ "    Enter your seed to lock your node.\n"
+				+ "    This will delete your private keys.\n"
+				+ "\n"
+				+ "phrase: (optional)\n"
+				+ "    Enter your passphrase in double quotes to unlock your node.\n"
+				+ "    This will reinstate your private keys.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "vault\n"
+				+ "\n"
+				+ "vault action:lock seed:0xDD4E..\n"
+				+ "\n"
+				+ "vault action:unlock phrase:\"SPRAY LAMP..\"\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"action","seed","phrase"}));
 	}

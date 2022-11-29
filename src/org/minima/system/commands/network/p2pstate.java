@@ -12,6 +12,19 @@ public class p2pstate extends Command {
 	}
 
 	@Override
+	public String getFullHelp() {
+		return "\np2pstate\n"
+				+ "\n"
+				+ "Prints full details of the internal p2p state.\n"
+				+ "\n"
+				+ "Includes details of your in and out connections and total peers.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "p2pstate\n";
+	}
+	
+	@Override
 	public JSONObject runCommand() throws Exception{
 		JSONObject ret = getJSONReply();
 

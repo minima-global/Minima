@@ -21,6 +21,27 @@ public class txnscript extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\ntxnscript\n"
+				+ "\n"
+				+ "Add scripts to a transaction.\n"
+				+ "\n"
+				+ "id:\n"
+				+ "    The id of the transaction.\n"
+				+ "\n"
+				+ "scripts:\n"
+				+ "    JSON holds the script and the proof in the format {script:proof}\n"
+				+ "    If it is a single script, and not one created with mmrcreate, leave the proof blank.\n"
+				+ "    If it is an mmrcreate script, include the proof.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "txnscript id:txnmast scripts:{\"RETURN TRUE\":\"\"}\n"
+				+ "\n"
+				+ "txnscript id:txnmast scripts:{\"RETURN TRUE\":\"0x000..\"}\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"id","scripts"}));
 	}

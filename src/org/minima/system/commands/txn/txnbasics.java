@@ -20,6 +20,22 @@ public class txnbasics extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\ntxnbasics\n"
+				+ "\n"
+				+ "Automatically set the MMR proofs and scripts for a transaction.\n"
+				+ "\n"
+				+ "Only run this when a transaction is ready to be posted.\n"
+				+ "\n"
+				+ "id:\n"
+				+ "    The id of the transaction.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "txnbasics id:simpletxn\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"id"}));
 	}

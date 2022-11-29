@@ -61,6 +61,8 @@ public class BIP39 {
 	
 	public static void main(String[] zArgs) {
 		
+		System.out.println(WORD_LIST.length);
+		
 		//Get the list
 		String[] words = getNewWordList();
 		

@@ -21,6 +21,32 @@ public class txpow extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\ntxpow\n"
+				+ "\n"
+				+ "Search for a specific TxPoW in the unpruned chain or your mempool.\n"
+				+ "\n"
+				+ "Search by txpowid, block or 0x / Mx address.\n"
+				+ "\n"
+				+ "txpowid: (optional)\n"
+				+ "    txpowid of the TxPoW to search for.\n"
+				+ "\n"
+				+ "block: (optional)\n"
+				+ "    Block number to search in. Must be in the unpruned chain.\n"
+				+ "\n"
+				+ "address: (optional)\n"
+				+ "    0x or Mx address. Search for TxPoWs containing this specific address.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "txpow txpowid:0x000..\n"
+				+ "\n"
+				+ "txpow block:200\n"
+				+ "\n"
+				+ "txpow address:0xCEF6..\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"txpowid","block","address","onchain"}));
 	}

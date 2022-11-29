@@ -529,7 +529,7 @@ public class NIOManager extends MessageProcessor {
 			
 			//Check we have a chain..
 			if(MinimaDB.getDB().getTxPoWTree().getRoot() == null) {
-				MinimaLogger.log("No TxPoWTree yet.. requited for NIO_SYNCTXBLOCK");
+				MinimaLogger.log("No TxPoWTree yet.. required for NIO_SYNCTXBLOCK");
 				return;
 			}
 			
