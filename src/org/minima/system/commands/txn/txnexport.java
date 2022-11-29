@@ -21,6 +21,27 @@ public class txnexport extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\ntxnexport\n"
+				+ "\n"
+				+ "Export a transaction as HEX or to a file.\n"
+				+ "\n"
+				+ "The output can then be imported using 'txnimport' to another node. E.g. For signing.\n"
+				+ "\n"
+				+ "id:\n"
+				+ "    The id of the transaction to export.\n"
+				+ "\n"
+				+ "file: (optional)\n"
+				+ "    File name/path to export the transaction to, must use the .txn extension.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "txnexport id:simpletxn\n"
+				+ "\n"
+				+ "txnexport id:multisig file:multisig.txn\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"id","file"}));
 	}

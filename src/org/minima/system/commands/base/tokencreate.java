@@ -7,6 +7,7 @@ import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
+import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
@@ -27,6 +28,7 @@ import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.txn.txnutils;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.json.JSONObject;
 
@@ -55,7 +57,8 @@ public class tokencreate extends Command {
 				+ "    To create NFTs, use 0.\n"
 				+ "\n"
 				+ "script: (optional)\n"
-				+ "    Add a custom script that must return 'true' when spending the token.\n"
+				+ "    Add a custom script that must return 'TRUE' when spending any coin of this token.\n"
+				+ "    Both the token script and coin script must return 'TRUE' for a coin to be sendable.\n"
 				+ "\n"
 				+ "state: (optional)\n"
 				+ "    List of state variables, if adding a script. A JSON object in the format {\"port\":\"value\",..}\n"
@@ -168,8 +171,8 @@ public class tokencreate extends Command {
 		//What is the scale..
 		int scale = MiniNumber.MAX_DECIMAL_PLACES - decimals;
 		
-		//The actual amount of Minima that needs to be sent - add the burn if any
-		MiniNumber sendamount 	= colorminima.add(burn);
+		//The actual amount of Minima that needs to be sent
+		MiniNumber sendamount 	= new MiniNumber(colorminima);
 		
 		//Send it to ourselves
 		ScriptRow sendkey 		= MinimaDB.getDB().getWallet().getDefaultAddress();
@@ -310,7 +313,7 @@ public class tokencreate extends Command {
 		}
 		
 		//Now add the output..
-		Coin recipient = new Coin(Coin.COINID_OUTPUT, sendaddress, colorminima, Token.TOKENID_CREATE, true);
+		Coin recipient = new Coin(Coin.COINID_OUTPUT, sendaddress, sendamount, Token.TOKENID_CREATE, true);
 		
 		//Is there a Web Validation URL
 		if(existsParam("webvalidate")) {
@@ -401,7 +404,21 @@ public class tokencreate extends Command {
 		}
 		
 		//The final TxPoW
-		TxPoW txpow = TxPoWGenerator.generateTxPoW(transaction, witness);
+		TxPoW txpow = null;
+		
+		//Is there a BURN..
+		if(burn.isMore(MiniNumber.ZERO)) {
+			
+			//Create a Burn Transaction
+			TxnRow burntxn = txnutils.createBurnTransaction(addedcoinid,transaction.getTransactionID(),burn);
+
+			//Now create a complete TxPOW
+			txpow = TxPoWGenerator.generateTxPoW(transaction, witness, burntxn.getTransaction(), burntxn.getWitness());
+		
+		}else {
+			//Now create a complete TxPOW
+			txpow = TxPoWGenerator.generateTxPoW(transaction, witness);
+		}
 		
 		//Calculate the size..
 		txpow.calculateTXPOWID();

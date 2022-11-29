@@ -40,7 +40,6 @@ public class coinexport extends Command {
 				+ "coinexport coinid:0xCD34..\n";
 	}
 	
-	
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"coinid"}));
