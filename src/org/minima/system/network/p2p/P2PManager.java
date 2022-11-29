@@ -160,7 +160,7 @@ public class P2PManager extends MessageProcessor {
     	
     	while (state.isDoingDiscoveryConnection() && isRunning()){
             
-    		//Only ccheck a few times - will try again later
+    		//Only check a few times - will try again later on next process loop
     		if(attempts>=3) {
     			MinimaLogger.log("Discovery node connection paused.. tried "+attempts+" times..");
     			return;
