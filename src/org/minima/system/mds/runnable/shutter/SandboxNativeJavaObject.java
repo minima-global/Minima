@@ -1,6 +1,5 @@
 package org.minima.system.mds.runnable.shutter;
 
-import org.minima.utils.MinimaLogger;
 import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.Scriptable;
 

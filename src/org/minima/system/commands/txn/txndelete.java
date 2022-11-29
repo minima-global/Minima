@@ -15,6 +15,20 @@ public class txndelete extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\ntxndelete\n"
+				+ "\n"
+				+ "Delete a previously created custom transaction.\n"
+				+ "\n"
+				+ "id:\n"
+				+ "    The id of the transaction to delete.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "txndelete id:multisig\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"id"}));
 	}

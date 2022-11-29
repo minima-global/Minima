@@ -495,7 +495,7 @@ public class MDSManager extends MessageProcessor {
 				byte[] serv = MiniFile.readCompleteFile(service);
 				String code = new String(serv,MiniString.MINIMA_CHARSET);
 				
-				//Load it into the servcei runner..
+				//Load it into the service runner..
 				Context ctx = Context.enter();
 				ctx.setOptimizationLevel(-1);
 				ctx.setLanguageVersion(Context.VERSION_1_8);

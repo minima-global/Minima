@@ -92,6 +92,22 @@ var MDS = {
 	},
 	
 	/**
+	 * Notify the User - on Phone it pops up in status bar. On desktop appears in Logs
+	 */
+	notify : function(output){
+		//Send via POST
+		httpPostAsync(MDS.mainhost+"notify?"+"uid="+MDS.minidappuid, output);
+	},
+	
+	/**
+	 * Cancel this MiniDAPPs notification
+	 */
+	notifycancel : function(){
+		//Send via POST
+		httpPostAsync(MDS.mainhost+"notifycancel?"+"uid="+MDS.minidappuid, "*");
+	},
+	
+	/**
 	 * Runs a function on the Minima Command Line - same format as MInima
 	 */
 	cmd : function(command, callback){

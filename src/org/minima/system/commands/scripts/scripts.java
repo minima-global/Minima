@@ -19,6 +19,24 @@ public class scripts extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nscripts\n"
+				+ "\n"
+				+ "List all scripts or search for a script / basic address your node is tracking.\n"
+				+ "\n"
+				+ "address: (optional)\n"
+				+ "    Script address or basic address to search for. Can be 0x or Mx address.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "scripts\n"
+				+ "\n"
+				+ "scripts address:0xFED5..\n"
+				+ "\n"
+				+ "scripts address:MxG087..n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"address"}));
 	}

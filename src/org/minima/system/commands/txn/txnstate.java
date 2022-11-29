@@ -19,6 +19,30 @@ public class txnstate extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\ntxnstate\n"
+				+ "\n"
+				+ "Add a state variable to a transaction.\n"
+				+ "\n"
+				+ "id:\n"
+				+ "    The id of the transaction.\n"
+				+ "\n"
+				+ "port:\n"
+				+ "    Port number of the state variable, from 0-255.\n"
+				+ "\n"
+				+ "value:\n"
+				+ "    Value for the state variable.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "txnstate id:multisig port:0 value:0xFED5..\n"
+				+ "\n"
+				+ "txnstate id:multisig port:1 value:100 \n"
+				+ "\n"
+				+ "txnstate id:multisig port:1 value:\"string\" \n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"id","port","value"}));
 	}

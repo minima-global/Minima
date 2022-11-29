@@ -1,6 +1,7 @@
 #!/bin/sh
 set -e
 
+#Remove The OLD Minima install
 CLEAN_FLAG=''
 PORT=''
 HOME="/home/minima"

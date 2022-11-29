@@ -17,6 +17,26 @@ public class verify extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nverify\n"
+				+ "\n"
+				+ "Verify a signature. Returns valid true or false.\n"
+				+ "\n"
+				+ "data:\n"
+				+ "    The 0x HEX data to verify the signature for.\n"
+				+ "\n"
+				+ "publickey:\n"
+				+ "    The public key of the signer.\n"
+				+ "\n"
+				+ "signature:\n"
+				+ "    The signature of the data.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "verify data:0xCD34.. publickey:0xFED5 signature:0x4827..\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"publickey","data","signature"}));
 	}

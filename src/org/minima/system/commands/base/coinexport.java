@@ -30,6 +30,8 @@ public class coinexport extends Command {
 				+ "\n"
 				+ "A coin can then be imported and tracked on another node using the 'coinimport' command.\n"
 				+ "\n"
+				+ "This does not allow the spending of a coin - just the knowledge of its existence.\n"
+				+ "\n"
 				+ "coinid:\n"
 				+ "    The id of a coin. Can be found using the 'coins' command.\n"
 				+ "\n"
@@ -37,7 +39,6 @@ public class coinexport extends Command {
 				+ "\n"
 				+ "coinexport coinid:0xCD34..\n";
 	}
-	
 	
 	@Override
 	public ArrayList<String> getValidParams(){

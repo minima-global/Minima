@@ -30,6 +30,61 @@ public class mds extends Command {
 		super("mds","(action:list|install|update|uninstall|pending|accept|deny|permission) (file:) (uid:) (trust:read|write)- MiniDAPP System management");
 	}
 	
+	
+	@Override
+	public String getFullHelp() {
+		return "\nmds\n"
+				+ "\n"
+				+ "MiniDAPP System management.\n"
+				+ "\n"
+				+ "Install, update or uninstall MiniDapps and set their permissions to READ/WRITE. Default permission is READ.\n"
+				+ "\n"
+				+ "DO NOT give WRITE permissions to MiniDapps you do not trust!"
+				+ "\n"
+				+ "Accept/deny pending commands from MiniDapps with READ permissions.\n"
+				+ "\n"
+				+ "action: (optional)\n"
+				+ "    list : List your installed MiniDapps. Default parameter.\n"
+				+ "    install : Install a new MiniDapp and optionally set its permission. Must specify 'file'.\n"
+				+ "    update : Update and replace an existing MiniDapp. Must specify MiniDapp 'uid' and 'file' of new MiniDapp.\n"
+				+ "    uninstall : Uninstall a MiniDapp. Must specify MiniDapp 'uid'.\n"
+				+ "    pending : List all pending commands waiting to be accepted or denied.\n"
+				+ "    accept : Accept a pending command. Must specify 'uid' of the pending command.\n"
+				+ "    deny : Deny a pending command. Must specify 'uid' of the pending command.\n"
+				+ "    permission : Set permission for a MiniDapp to READ or WRITE. Must specify existing MiniDapp 'uid' and 'trust'.\n"
+				+ "\n"
+				+ "file: (optional)\n"
+				+ "    The file name of the MiniDapp to install. Can either be in the Minima folder or specify the file path.\n"
+				+ "\n"
+				+ "uid (optional)\n"
+				+ "    The uid of the MiniDapp to update, uninstall.\n"
+				+ "\n"
+				+ "trust: (optional)\n"
+				+ "    The ip:port to send a message to. Use with 'action:send'.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "mds\n"
+				+ "\n"
+				+ "mds action:list\n"
+				+ "\n"
+				+ "mds action:install file:wallet_1.0.mds.zip \n"
+				+ "\n"
+				+ "mds action:install file:/Users/MyUser/Downloads/wallet_1.0.mds.zip trust:write\n"
+				+ "\n"
+				+ "mds action:update uid:0xABA3.. file:wallet_2.0.mds.zip \n"
+				+ "\n"
+				+ "mds action:uninstall uid:0xABA3..\n"
+				+ "\n"
+				+ "mds action:pending\n"
+				+ "\n"
+				+ "mds action:accept uid:0xCDF6..\n"
+				+ "\n"
+				+ "mds action:deny uid:0xCDF6..\n"
+				+ "\n"
+				+ "mds action:permission uid:0xABA3.. trust:write\n";
+	}
+	
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"action","file","uid","trust"}));

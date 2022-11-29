@@ -20,6 +20,51 @@ public class coins extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\ncoins\n"
+				+ "\n"
+				+ "Search for coins that are relevant to you or in the unpruned chain.\n"
+				+ "\n"
+				+ "relevant: (optional)\n"
+				+ "    true or false, true will only return coins you are tracking.\n"
+				+ "    false will search all coins in the unpruned chain.\n"
+				+ "    Default is false unless no other parameters are provided.\n"
+				+ "\n"
+				+ "sendable: (optional)\n"
+				+ "    true only, filter out coins that are not sendable, they might be locked in a contract.\n"
+				+ "    Default is to return sendable and unsendable coins.\n"
+				+ "\n"
+				+ "coinid: (optional)\n"
+				+ "    A coinid, to search for a single coin.\n"
+				+ "\n"
+				+ "amount: (optional)\n"
+				+ "    The coin value to search for.\n"
+				+ "\n"
+				+ "address: (optional)\n"
+				+ "    Address of a coin to search for, could be a script address.\n"
+				+ "    Can be a 0x or Mx address.\n"
+				+ "\n"
+				+ "tokenid: (optional)\n"
+				+ "    A tokenid, to search for coins of a specific token. Minima is 0x00.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "coins\n"
+				+ "\n"
+				+ "coins relevant:true sendable:true\n"
+				+ "\n"
+				+ "coins relevant:true amount:10\n"
+				+ "\n"
+				+ "coins coinid:0xEECD7..\n"
+				+ "\n"
+				+ "coins relevant:true tokenid:0xFED5..\n"
+				+ "\n"
+				+ "coins relevant:true address:0xCEF6.. tokenid:0x00\n"
+				+ "\n"
+				+ "coins relevant:true address:MxABC9..\n";
+	}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"relevant","sendable","coinid","amount","address","tokenid"}));
 	}
