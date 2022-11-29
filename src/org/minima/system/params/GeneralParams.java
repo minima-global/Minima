@@ -23,6 +23,11 @@ public class GeneralParams {
 	public static boolean CLEAN = false;
 	
 	/**
+	 * Are we running an Archive node 
+	 */
+	public static boolean ARCHIVE = false;
+	
+	/**
 	 * The Wallet AES Password
 	 */
 	public static String MAIN_PASSWORD = "minima"; 

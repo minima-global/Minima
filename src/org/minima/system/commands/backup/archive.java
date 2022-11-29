@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Date;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.archive.ArchiveManager;
 import org.minima.database.archive.MySQLConnect;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowtree.TxPoWTreeNode;
@@ -80,30 +81,36 @@ public class archive extends Command {
 	
 		String action = getParam("action");
 		
+		//Get the ArchiveManager
+		ArchiveManager arch = MinimaDB.getDB().getArchive();
 		
 		if(action.equals("integrity")) {
 			
-			if(!MinimaDB.getDB().getArchive().isStoreMySQL()) {
-				throw new CommandException("You are not running an Archive noide.. ");
-			}
-			
 			//Scan through the entire DB.. checking.. 
-			MinimaLogger.log("Checking Archive DB.. this will take some time..");
-			
-			//Get the MySQL Connect DB
-			MySQLConnect mysql = MinimaDB.getDB().getArchive().getMySQLCOnnect();
+			MinimaLogger.log("Checking Archive DB.. this may take some time..");
 			
 			//Get the cascade
-			Cascade dbcasc = mysql.loadCascade(); 
+			Cascade dbcasc = arch.loadCascade(); 
+			
+			//What is the first entry
+			boolean startcheck 	= true;
+			MiniNumber lastlog 	= MiniNumber.ZERO;
+			MiniNumber start 	= MiniNumber.ZERO;
+			TxBlock startarch 	= arch.loadLastBlock();
+			if(startarch == null) {
+				MinimaLogger.log("You have no Archive blocks..");
+				startcheck = false;
+			}else {
+				lastlog = startarch.getTxPoW().getBlockNumber();
+				start 	= lastlog;
+			}
 			
 			//Get t the initial 1000
-			MiniNumber lastlog 		= MiniNumber.ZERO;
-			MiniNumber start 		= MiniNumber.ZERO;
 			MiniData parenthash 	= null;
 			MiniNumber parentnum 	= null;
 			int errorsfound 		= 0;
 			int total = 0;
-			while(true) {
+			while(startcheck) {
 				
 				//Do we log a message
 				if(lastlog.isLess(start.sub(new MiniNumber(2000)))) {
@@ -111,8 +118,11 @@ public class archive extends Command {
 					lastlog = start;
 				}
 				
+				MiniNumber end = start.add(MiniNumber.TWOFIVESIX);
+				
 				//Get some blocks
-				ArrayList<TxBlock> blocks = mysql.loadBlockRange(start); 
+				ArrayList<TxBlock> blocks = arch.loadArchBlockRange(start,end); 
+				
 				for(TxBlock block : blocks) {
 					total++;
 					
@@ -245,13 +255,13 @@ public class archive extends Command {
 			MiniNumber endblock 	= MiniNumber.ZERO;
 			boolean foundsome 		= false;
 			
-			//Are we wiping previous archive
-			if(MinimaDB.getDB().getArchive().isStoreMySQL()) {
-				MySQLConnect mysql = MinimaDB.getDB().getArchive().getMySQLCOnnect();
-				mysql.wipeAll();
-				mysql.shutdown();
-				mysql.init();
-			}
+//			//Are we wiping previous archive
+//			if(MinimaDB.getDB().getArchive().isStoreMySQL()) {
+//				MySQLConnect mysql = MinimaDB.getDB().getArchive().getMySQLCOnnect();
+//				mysql.wipeAll();
+//				mysql.shutdown();
+//				mysql.init();
+//			}
 			
 			while(true) {
 				

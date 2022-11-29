@@ -108,22 +108,6 @@ public class MySQLConnect {
 	}
 	
 	public boolean saveCascade(Cascade zCascade) throws SQLException {
-		
-//			//Store as a file..
-//			File root 			= MinimaDB.getDB().getBaseDBFolder();
-//			File cascadefile 	= new File(root,CASCADE_FILE); 
-//
-//			//Does it exist..
-//			if(cascadefile.exists()) {
-//				cascadefile.delete();
-//			}
-//			
-//			//Write the file out..
-//			try {
-//				MiniFile.writeObjectToFile(cascadefile, zCascade);
-//			} catch (IOException e) {
-//				throw new SQLException(e);
-//			}
 			
 			//get the MiniData version..
 			MiniData cascdata = MiniData.getMiniDataVersion(zCascade);
@@ -143,28 +127,7 @@ public class MySQLConnect {
 			return true;
 	}
 	
-	
 	public Cascade loadCascade() throws SQLException {
-		
-//		//Store as a file..
-//		File root 			= MinimaDB.getDB().getBaseDBFolder();
-//		File cascadefile 	= new File(root,CASCADE_FILE); 
-//
-//		if(cascadefile.exists()) {
-//			
-//			//Read it in..
-//			byte[] data = null;
-//			try {
-//				data = MiniFile.readCompleteFile(cascadefile);
-//			} catch (IOException e) {
-//				throw new SQLException(e);
-//			}
-//			
-//			//Convert
-//			return Cascade.convertMiniDataVersion(new MiniData(data));
-//		}
-//		
-//		return null;
 		
 		LOAD_CASCADE.clearParameters();
 		

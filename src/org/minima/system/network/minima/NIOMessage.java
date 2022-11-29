@@ -749,49 +749,49 @@ public class NIOMessage implements Runnable {
 			
 			}else if(type.isEqual(MSG_ARCHIVE_REQ)) {
 				
-				//Do we support archive data
-				if(!MinimaDB.getDB().getArchive().isStoreMySQL()) {
-					MinimaLogger.log("Archive IBD request we do not support.. from "+mClientUID);
-					return;
-				}
-				
-				//What block are we starting from..
-				MiniNumber firstblock 	= MiniNumber.ReadFromStream(dis);
-				
-				IBD ibd = new IBD();
-				
-				//Is this a test connect
-				if(firstblock.isEqual(MiniNumber.MINUSONE)) {
-					MinimaLogger.log("Archive IBD connection test..");
-					
-					//Send it.. empty just testing the connection
-					NIOManager.sendNetworkMessage(mClientUID, MSG_ARCHIVE_DATA, ibd);
-					
-				}else {
-					MinimaLogger.log("Archive IBD request start @ "+firstblock);
-					ibd.createArchiveIBD(firstblock);
-					
-					//Send it..
-					NIOManager.sendNetworkMessage(mClientUID, MSG_ARCHIVE_DATA, ibd);
-				}
+//				//Do we support archive data
+//				if(!MinimaDB.getDB().getArchive().isStoreMySQL()) {
+//					MinimaLogger.log("Archive IBD request we do not support.. from "+mClientUID);
+//					return;
+//				}
+//				
+//				//What block are we starting from..
+//				MiniNumber firstblock 	= MiniNumber.ReadFromStream(dis);
+//				
+//				IBD ibd = new IBD();
+//				
+//				//Is this a test connect
+//				if(firstblock.isEqual(MiniNumber.MINUSONE)) {
+//					MinimaLogger.log("Archive IBD connection test..");
+//					
+//					//Send it.. empty just testing the connection
+//					NIOManager.sendNetworkMessage(mClientUID, MSG_ARCHIVE_DATA, ibd);
+//					
+//				}else {
+//					MinimaLogger.log("Archive IBD request start @ "+firstblock);
+//					ibd.createArchiveIBD(firstblock);
+//					
+//					//Send it..
+//					NIOManager.sendNetworkMessage(mClientUID, MSG_ARCHIVE_DATA, ibd);
+//				}
 			
 			}else if(type.isEqual(MSG_ARCHIVE_SINGLE_REQ)) {
 				
-				//Do we support archive data
-				if(!MinimaDB.getDB().getArchive().isStoreMySQL()) {
-					MinimaLogger.log("Archive single request we do not saupport.. from "+mClientUID);
-					return;
-				}
-				
-				//What block do they want
-				MiniNumber blocknum 	= MiniNumber.ReadFromStream(dis);
-				
-				//Get that block
-				TxBlock block = MinimaDB.getDB().getArchive().getMySQLCOnnect().loadBlockFromNum(blocknum.getAsLong());
-				if(block != null) {
-					//Send it to them..
-					NIOManager.sendNetworkMessage(mClientUID, MSG_ARCHIVE_DATA, block);
-				}
+//				//Do we support archive data
+//				if(!MinimaDB.getDB().getArchive().isStoreMySQL()) {
+//					MinimaLogger.log("Archive single request we do not saupport.. from "+mClientUID);
+//					return;
+//				}
+//				
+//				//What block do they want
+//				MiniNumber blocknum 	= MiniNumber.ReadFromStream(dis);
+//				
+//				//Get that block
+//				TxBlock block = MinimaDB.getDB().getArchive().getMySQLCOnnect().loadBlockFromNum(blocknum.getAsLong());
+//				if(block != null) {
+//					//Send it to them..
+//					NIOManager.sendNetworkMessage(mClientUID, MSG_ARCHIVE_DATA, block);
+//				}
 				
 			}else if(type.isEqual(MSG_ARCHIVE_DATA)) {
 			

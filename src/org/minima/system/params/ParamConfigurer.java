@@ -150,6 +150,9 @@ public class ParamConfigurer {
     	dbpassword("dbpassword", "Main Wallet / SQL AES password - MUST be specified on FIRST launch - CANNOT be changed later", (args, configurer) -> {
             GeneralParams.MAIN_PASSWORD = args;
         }),
+    	archive("archive", "Run anarchive node that does not delete old data", (args, configurer) -> {
+            GeneralParams.ARCHIVE = true;
+        }),
     	basefolder("basefolder", "Specify a default file creation / backup / restore folder", (args, configurer) -> {
     		//Get that folder
     		File backupfolder 	= new File(args);
@@ -266,22 +269,22 @@ public class ParamConfigurer {
                 GeneralParams.NO_SYNC_IBD = true;
             }
         }),
-        mysqlhost("mysqlhost", "Store all archive data in a MySQL DB", (args, configurer) -> {
-            GeneralParams.MYSQL_HOST = args;
-            configurer.mUseMySQL = true;
-        }),
-        mysqldb("mysqldb", "The MySQL Database", (args, configurer) -> {
-        	GeneralParams.MYSQL_DB = args;
-        	configurer.mUseMySQL = true;
-        }),
-        mysqluser("mysqluser", "The MySQL User", (args, configurer) -> {
-        	GeneralParams.MYSQL_USER = args;
-        	configurer.mUseMySQL = true;
-        }),
-        mysqlpassword("mysqlpassword", "The MySQL Password", (args, configurer) -> {
-        	GeneralParams.MYSQL_PASSWORD = args;
-        	configurer.mUseMySQL = true;
-        }),
+//        mysqlhost("mysqlhost", "Store all archive data in a MySQL DB", (args, configurer) -> {
+//            GeneralParams.MYSQL_HOST = args;
+//            configurer.mUseMySQL = true;
+//        }),
+//        mysqldb("mysqldb", "The MySQL Database", (args, configurer) -> {
+//        	GeneralParams.MYSQL_DB = args;
+//        	configurer.mUseMySQL = true;
+//        }),
+//        mysqluser("mysqluser", "The MySQL User", (args, configurer) -> {
+//        	GeneralParams.MYSQL_USER = args;
+//        	configurer.mUseMySQL = true;
+//        }),
+//        mysqlpassword("mysqlpassword", "The MySQL Password", (args, configurer) -> {
+//        	GeneralParams.MYSQL_PASSWORD = args;
+//        	configurer.mUseMySQL = true;
+//        }),
         genesis("genesis", "Create a genesis block, -clean and -automine", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.CLEAN = true;
