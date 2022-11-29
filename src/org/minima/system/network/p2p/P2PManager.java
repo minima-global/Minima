@@ -156,13 +156,21 @@ public class P2PManager extends MessageProcessor {
     		return;
     	}
     	
+    	int attempts=0;
+    	
     	while (state.isDoingDiscoveryConnection() && isRunning()){
-            InetSocketAddress address = P2PParams.DEFAULT_NODE_LIST.get(rand.nextInt(P2PParams.DEFAULT_NODE_LIST.size()));
+            
+    		//Only ccheck a few times - will try again later
+    		if(attempts>=3) {
+    			MinimaLogger.log("Discovery node connection paused.. tried "+attempts+" times..");
+    			return;
+    		}
+    		
+    		InetSocketAddress address = P2PParams.DEFAULT_NODE_LIST.get(rand.nextInt(P2PParams.DEFAULT_NODE_LIST.size()));
             Greeting greet = NIOManager.sendPingMessage(address.getHostString(), address.getPort(), true);
             if (greet != null) {
                 JSONArray peersArrayList = (JSONArray) greet.getExtraData().get("peers-list");
                 if (peersArrayList != null){
-//                    MinimaLogger.log(peersArrayList.toString());
                     List<InetSocketAddress> peers = InetSocketAddressIO.addressesJSONArrayToList(peersArrayList);
                     Collections.shuffle(peers);
                     state.getKnownPeers().addAll(peers);
@@ -177,8 +185,11 @@ public class P2PManager extends MessageProcessor {
                     P2PFunctions.log_debug("Wait interrupted");
                 }
             }
+            
+            attempts++;
         }
     }
+    
     @Override
     protected void processMessage(Message zMessage) throws Exception {
     	
