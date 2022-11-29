@@ -156,8 +156,18 @@ public class P2PManager extends MessageProcessor {
     		return;
     	}
     	
+    	int attempts = 0;
     	while (state.isDoingDiscoveryConnection() && isRunning()){
-            InetSocketAddress address = P2PParams.DEFAULT_NODE_LIST.get(rand.nextInt(P2PParams.DEFAULT_NODE_LIST.size()));
+            
+    		//Only try 5 times..
+    		if(attempts>=1) {
+    			MinimaLogger.log("Discovery connection paused.. failerd 5 times: ");
+    			break;
+    		}
+    		
+    		InetSocketAddress address = P2PParams.DEFAULT_NODE_LIST.get(rand.nextInt(P2PParams.DEFAULT_NODE_LIST.size()));
+            
+            MinimaLogger.log("Discovery connection : "+address.toString());
             Greeting greet = NIOManager.sendPingMessage(address.getHostString(), address.getPort(), true);
             if (greet != null) {
                 JSONArray peersArrayList = (JSONArray) greet.getExtraData().get("peers-list");
@@ -177,6 +187,8 @@ public class P2PManager extends MessageProcessor {
                     P2PFunctions.log_debug("Wait interrupted");
                 }
             }
+            
+            attempts++;
         }
     }
     @Override
@@ -258,6 +270,8 @@ public class P2PManager extends MessageProcessor {
             if(state.getKnownPeers().size() < 250) {
                 InetSocketAddress address = (InetSocketAddress) zMessage.getObject("address");
                 state.getKnownPeers().add(address);
+                
+                MinimaLogger.log("ADD PEER "+address.toString());
             }
         }
         sendMessages(sendMsgs);
@@ -343,6 +357,8 @@ public class P2PManager extends MessageProcessor {
 
         if (!state.isNoConnect()) {
 
+        	MinimaLogger.log("LOOP CHECK PEERS "+state.getKnownPeers().size());
+        	
             if (!state.getKnownPeers().isEmpty()) {
                 // If there are fewer connections than the min number of connections connect using the peers list
                 // Min number of connections is the param clients use, so clients will always connect using the peers list
