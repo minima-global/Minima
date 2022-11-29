@@ -36,7 +36,20 @@ public class MDSHub {
 			page += "<li><div class='list-item-container'>No MiniDAPPs Installed yet..<br><br></div></li>";
 		}else {
 			
+			String permread  = "Are you sure you wish to give this MiniDAPP READ permissions ?\\n"
+							 + "\\n"
+							 + "This MiniDAPP will NOT be able to send funds without triggering a pending request.";
+			
+			String permwrite =    "Are you sure you wish to give this MiniDAPP WRITE permissions ?\\n"
+								+ "\\n"
+								+ "This MiniDAPP will be able to send funds without triggering a pending request.\\n"
+								+ "\\n"
+								+ "ONLY do this if you trust this MiniDAPP.";
+			
 			for(MiniDAPP dapp : dapps) {
+				
+				//iS IT A read OR write APP..
+				String permission = dapp.getPermission().toUpperCase();
 				
 				String base = "./"+dapp.getUID()+"/";
 				
@@ -47,15 +60,38 @@ public class MDSHub {
 						+ "                    <div class=list-item-right>\n"
 						+ "                        <div class=\"app-title\">"+stripHTML(dapp.getName())+"</div>\n"
 						+ "                        <div>"+stripHTML(dapp.getDescription())+"</div>\n"
-						+ "                        <div>"+stripHTML(dapp.getVersion())+"</div>\n"
+						+ "                        <div>"+stripHTML(dapp.getVersion())+" [ "+permission+" ]</div>\n"
 						+ ""
-						+ "						   <div style='height:40'>\r\n"
-						+ "                        <br>\r\n"
-						+ "                        <form action=\"delete.html\" method=POST onsubmit='return confirm(\"Are you sure you wish to delete this MiniDAPP ?\");'>\n"
-						+ "							  <input type='hidden' name='sessionid' value='"+zSessionID+"'>\r\n"
-						+ "							  <input type='hidden' name='uid' value='"+dapp.getUID()+"'>\r\n"
-						+ "							  <input class='deletebutton' style='width:100;' type=\"submit\" value='&nbsp;Delete&nbsp;'>\r\n"
-						+ "							</form>\r\n"
+						+ "						   <div style='height:40'>\n"
+						+ "                        <br>\n"
+						+ "                        <table>"
+						+ "							<tr>"
+						+ "							<td>"
+						+ "							<form action=\"permissions.html\" method=POST onsubmit='return confirm(\""+permread+"\");'>\n"
+						+ "							  <input type='hidden' name='sessionid' value='"+zSessionID+"'>\n"
+						+ "							  <input type='hidden' name='uid' value='"+dapp.getUID()+"'>\n"
+						+ "							  <input type='hidden' name='permission' value='read'>"	
+						+ "							  <input class='permissionbutton' style='width:80;' type=\"submit\" value='&nbsp;READ&nbsp;'>\n"
+						+ "							</form>\n"
+						+ "							</td>"
+						+ "							<td>"
+						+ "							<form action=\"permissions.html\" method=POST onsubmit='return confirm(\""+permwrite+"\");'>\n"
+						+ "							  <input type='hidden' name='sessionid' value='"+zSessionID+"'>\n"
+						+ "							  <input type='hidden' name='uid' value='"+dapp.getUID()+"'>\n"
+						+ "							  <input type='hidden' name='permission' value='write'>"	
+						+ "							  <input class='permissionbutton' style='width:80;' type=\"submit\" value='&nbsp;WRITE&nbsp;'>\n"
+						+ "							</form>\n"
+						+ "							</td>"
+						+ "							<td>&nbsp;&nbsp;</td>"
+						+ "							<td>"
+						+ "							<form action=\"delete.html\" method=POST onsubmit='return confirm(\"Are you sure you wish to delete this MiniDAPP ?\");'>\n"
+						+ "							  <input type='hidden' name='sessionid' value='"+zSessionID+"'>\n"
+						+ "							  <input type='hidden' name='uid' value='"+dapp.getUID()+"'>\n"
+						+ "							  <input class='deletebutton' style='width:100;' type=\"submit\" value='&nbsp;Delete&nbsp;'>\n"
+						+ "							</form>\n"
+						+ "							</td>"
+						+ "							</tr>"
+						+ "							</table>"
 						+ "                        </div>"
 						+ "                    </div>\n"
 						+ "                </a>\n"

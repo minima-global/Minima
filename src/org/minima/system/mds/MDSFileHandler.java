@@ -34,6 +34,7 @@ import org.minima.system.mds.hub.MDSHubLoggedOn;
 import org.minima.system.mds.hub.MDSHubLogon;
 import org.minima.system.mds.hub.MDSHubPending;
 import org.minima.system.mds.hub.MDSHubPendingAction;
+import org.minima.system.mds.hub.MDSHubPermission;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.ZipExtractor;
@@ -334,7 +335,43 @@ public class MDSFileHandler implements Runnable {
 				
 				//Create the webpage
 				writeHTMLPage(dos, MDSHubDelete.createHubPage(mMDS, mMainSessionID));
+			
+			}else if(fileRequested.startsWith("permissions.html")){
 				
+				//Check the sessionID
+				Map params = checkPostSessionID(input, bufferedReader, inputStream);
+				createNewSessionID();
+				if(params == null) {
+					throw new IllegalArgumentException("Invalid SessionID");
+				}
+				
+				String uid 		 = params.get("uid").toString();
+				String perm 	 = params.get("permission").toString();
+				
+				//Now add to the DB
+				MDSDB db 	= MinimaDB.getDB().getMDSDB();
+				MiniDAPP md = db.getMiniDAPP(uid);
+				
+				//Now update the TRUST level..
+				if(perm.equals("write")) {
+					md.setPermission("write");
+				
+				}else if(perm.equals("read")) {
+					md.setPermission("read");
+					
+				}else {
+					throw new IllegalArgumentException("Invalid Permission!");
+				}
+				
+				//Now update.. delete the old / insert the new..
+				db.deleteMiniDAPP(uid);
+				
+				//And insert..
+				db.insertMiniDAPP(md);
+				
+				//Create the webpage
+				writeHTMLPage(dos, MDSHubPermission.createHubPage(mMDS, mMainSessionID,perm.toUpperCase()));
+			
 			}else {
 			
 				//Remove the params..

@@ -55,7 +55,8 @@ public class tokencreate extends Command {
 				+ "    To create NFTs, use 0.\n"
 				+ "\n"
 				+ "script: (optional)\n"
-				+ "    Add a custom script that must return 'true' when spending the token.\n"
+				+ "    Add a custom script that must return 'TRUE' when spending any coin of this token.\n"
+				+ "    Both the token script and coin script must return 'TRUE' for a coin to be sendable.\n"
 				+ "\n"
 				+ "state: (optional)\n"
 				+ "    List of state variables, if adding a script. A JSON object in the format {\"port\":\"value\",..}\n"
@@ -422,5 +423,4 @@ public class tokencreate extends Command {
 	public Command getFunction() {
 		return new tokencreate();
 	}
-
 }
