@@ -433,8 +433,8 @@ public class NIOMessage implements Runnable {
 					fullyvalid = false;
 				}
 				
-				//Check the MMR - could be in a separate branch
-				if(!TxPoWChecker.checkMMR(tip.getMMR(), txpow)) {
+				//Check the MMR - could be in a separate branch / or a future txn..
+				if(!TxPoWChecker.checkMMR(tip.getMMR(), txpow, false)) {
 					fullyvalid = false;
 				}
 				
