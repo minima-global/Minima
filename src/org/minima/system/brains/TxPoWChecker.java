@@ -527,18 +527,23 @@ public class TxPoWChecker {
 	 * Check the MMR Proofs
 	 */
 	public static boolean checkMMR(MMR zTipMMR, TxPoW zTxPoW) throws Exception {
-		
+		return checkMMR(zTipMMR, zTxPoW, true);
+	}
+	
+	public static boolean checkMMR(MMR zTipMMR, TxPoW zTxPoW, boolean zLog) throws Exception {
+			
+			
 		//Check the Transaction..
-		boolean valid = checkMMR(zTipMMR, zTxPoW.getWitness());
+		boolean valid = checkMMR(zTipMMR, zTxPoW.getWitness(), zLog);
 		if(!valid) {
 			return false;
 		}
 		
 		//Check the Burn Transaction..
-		return checkMMR(zTipMMR, zTxPoW.getBurnWitness());
+		return checkMMR(zTipMMR, zTxPoW.getBurnWitness(), zLog);
 	}
 	
-	private static boolean checkMMR(MMR zTipMMR, Witness zWitness) throws Exception {
+	private static boolean checkMMR(MMR zTipMMR, Witness zWitness, boolean zLog) throws Exception {
 		//Get the all the MMR Proofs
 		ArrayList<CoinProof> mmrproofs 	= zWitness.getAllCoinProofs();
 		int proofs = mmrproofs.size();
@@ -556,13 +561,14 @@ public class TxPoWChecker {
 			MMRData mmrcoin = MMRData.CreateMMRDataLeafNode(txcoin, txcoin.getAmount());
 			
 			//Is it valid..
-//			boolean validmmr = zTipMMR.checkProofTimeValid(cproof.getCoin().getMMREntryNumber(), cproof.getMMRData(), cproof.getMMRProof());
 			boolean validmmr = zTipMMR.checkProofTimeValid(	cproof.getCoin().getMMREntryNumber(), 
 															mmrcoin, 
 															cproof.getMMRProof());
 			
 			if(!validmmr) {
-				MinimaLogger.log("Invalid MMR Proof!");
+				if(zLog) {
+					MinimaLogger.log("Invalid MMR Proof!");
+				}
 				return false;
 			}
 		}

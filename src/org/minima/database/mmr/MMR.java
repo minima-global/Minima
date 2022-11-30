@@ -494,7 +494,7 @@ public class MMR implements Streamable {
 		//Get the Parent MMR at this time
 		MMR mmr = getParentAtTime(zProof.getBlockTime());
 		if(mmr == null) {
-			//We do not have this MMR - so cannot check..
+			//We do not have this MMR - so cannot check.. could be in future..
 			return false;
 		}
 		
