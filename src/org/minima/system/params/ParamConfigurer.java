@@ -175,7 +175,7 @@ public class ParamConfigurer {
             	GeneralParams.ALLOW_ALL_IP = true;
             }
         }),
-        archive("archive", "Be an Archive node - store all data", (args, configurer) -> {
+        archive("archive", "Run an Archive node - store all data / cascade for resync", (args, configurer) -> {
             if ("true".equals(args)) {
             	GeneralParams.ARCHIVE = true;
             }
@@ -195,7 +195,7 @@ public class ParamConfigurer {
     		
         	GeneralParams.MDS_INITFOLDER= initFolder.getAbsolutePath();
         }),
-        mdswrite("mdswrite", "Make an init MiniDAPP WRITE access", (arg, configurer) -> {
+        mdswrite("mdswrite", "Make an initial MiniDAPP WRITE access", (arg, configurer) -> {
         	GeneralParams.MDS_WRITE= arg;
         }),
         conf("conf", "Specify a configuration file (absolute)", (args, configurer) -> {
@@ -224,7 +224,8 @@ public class ParamConfigurer {
         }),
         mobile("mobile", "Sets this device to a mobile device - used for metrics only", (args, configurer) -> {
             if ("true".equals(args)) {
-                GeneralParams.IS_MOBILE = true;
+            	GeneralParams.IS_ACCEPTING_IN_LINKS = false;
+                GeneralParams.IS_MOBILE 			= true;
             }
         }),
         showparams("showparams", "Show startup params on launch", (args, configurer) -> {
