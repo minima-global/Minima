@@ -26,7 +26,7 @@ public class MiniData implements Streamable {
 	public static int MINIMA_MAX_HASH_LENGTH 		= 64;
 	
 	/**
-	 * 256 MB Max MiniData size
+	 * 512 MB Max MiniData size
 	 */
 	public static int MINIMA_MAX_MINIDATA_LENGTH 	= 1024 * 1024 * 512;
 	
