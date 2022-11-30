@@ -266,6 +266,37 @@ public class IBD implements Streamable {
 				mTxBlocks.add(block);
 			}
 			
+			//And now add all the blocks.. root will be first
+			TxPoWTreeNode root = MinimaDB.getDB().getTxPoWTree().getRoot();
+			if(root.getTxPoW().getBlockNumber().isEqual(zFirstBlock)) {
+				
+				MinimaLogger.log("Archive request for main tree data @ "+zFirstBlock);
+				
+				//Add the whole tree..
+				TxBlock lastblock = null;
+				ArrayList<TxBlock> mainblocks = new ArrayList<>();
+				TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+				while(tip != null) {
+					lastblock = tip.getTxBlock();
+					mainblocks.add(0,lastblock);
+					tip = tip.getParent();
+				}
+				
+				//All good - or has it changed this exact second
+				MiniNumber lastadded=lastblock.getTxPoW().getBlockNumber();
+				if(lastadded.isEqual(zFirstBlock)) {
+				
+					//And now add these..
+					for(TxBlock block : mainblocks) {
+						mTxBlocks.add(block);
+					}
+				}else {
+					
+					//IBD main chain changed..
+					MinimaLogger.log("Archive main tree data error.. root:"+lastadded+" req:"+zFirstBlock);
+				}
+			}
+			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
 		}
