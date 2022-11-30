@@ -189,7 +189,7 @@ public class MinimaDB {
 			
 			//Load the wallet
 			File walletsqlfolder = new File(basedb,"walletsql");
-			mWallet.loadEncryptedDB(new File(walletsqlfolder,"wallet"),GeneralParams.MAIN_PASSWORD);
+			mWallet.loadEncryptedDB(new File(walletsqlfolder,"wallet"),GeneralParams.MAIN_DBPASSWORD);
 			
 			//Set the Archive folder
 			File archsqlfolder = new File(basedb,"archivesql");
@@ -245,14 +245,14 @@ public class MinimaDB {
 			
 			//Load the MaximaDB
 			File maxsqlfolder = new File(basedb,"maximasql");
-			mMaximaDB.loadEncryptedDB(new File(maxsqlfolder,"maxima"),GeneralParams.MAIN_PASSWORD);
+			mMaximaDB.loadEncryptedDB(new File(maxsqlfolder,"maxima"),GeneralParams.MAIN_DBPASSWORD);
 			
 			//Load ther MDS DB
 			File mdssqlfolder = new File(basedb,"mdssql");
-			mMDSDB.loadEncryptedDB(new File(mdssqlfolder,"mds"),GeneralParams.MAIN_PASSWORD);
+			mMDSDB.loadEncryptedDB(new File(mdssqlfolder,"mds"),GeneralParams.MAIN_DBPASSWORD);
 			
 			//Load the User Prefs
-			mUserDB.loadDB(GeneralParams.MAIN_PASSWORD, new File(basedb,"userprefs.db"));
+			mUserDB.loadDB(GeneralParams.MAIN_DBPASSWORD, new File(basedb,"userprefs.db"));
 			
 			//Load the custom Txns..
 			mTxnDB = new TxnDB();
@@ -265,7 +265,7 @@ public class MinimaDB {
 			mTxPoWTree.loadDB(new File(basedb,"chaintree.db"));
 			
 			//And finally..
-			mP2PDB.loadDB(GeneralParams.MAIN_PASSWORD, new File(basedb,"p2p.db"));
+			mP2PDB.loadDB(GeneralParams.MAIN_DBPASSWORD, new File(basedb,"p2p.db"));
 			
 			//Do we need to store the cascade in the ArchiveDB
 			getArchive().checkCascadeRequired(getCascade());
@@ -297,7 +297,7 @@ public class MinimaDB {
 			if(zResetWallet) {
 				mWallet					= new Wallet();
 				File walletsqlfolder 	= new File(basedb,"walletsql");
-				mWallet.loadEncryptedDB(new File(walletsqlfolder,"wallet"),GeneralParams.MAIN_PASSWORD);
+				mWallet.loadEncryptedDB(new File(walletsqlfolder,"wallet"),GeneralParams.MAIN_DBPASSWORD);
 			}
 			
 			//Set the Archive folder
@@ -364,8 +364,8 @@ public class MinimaDB {
 			
 			//JsonDBs
 			mTxnDB.saveDB();
-			mUserDB.saveDB(GeneralParams.MAIN_PASSWORD, new File(basedb,"userprefs.db"));
-			mP2PDB.saveDB(GeneralParams.MAIN_PASSWORD, new File(basedb,"p2p.db"));
+			mUserDB.saveDB(GeneralParams.MAIN_DBPASSWORD, new File(basedb,"userprefs.db"));
+			mP2PDB.saveDB(GeneralParams.MAIN_DBPASSWORD, new File(basedb,"p2p.db"));
 			
 			//Custom
 			mCascade.saveDB(new File(basedb,"cascade.db"));
@@ -389,7 +389,7 @@ public class MinimaDB {
 			File basedb = getBaseDBFolder();
 			
 			//JsonDBs
-			mUserDB.saveDB(GeneralParams.MAIN_PASSWORD, new File(basedb,"userprefs.db"));
+			mUserDB.saveDB(GeneralParams.MAIN_DBPASSWORD, new File(basedb,"userprefs.db"));
 			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);

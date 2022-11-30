@@ -28,9 +28,9 @@ public class GeneralParams {
 	public static boolean ARCHIVE = false;
 	
 	/**
-	 * The Wallet AES Password
+	 * The SQL DB Aes Password
 	 */
-	public static String MAIN_PASSWORD = "minima"; 
+	public static String MAIN_DBPASSWORD = "minima"; 
 	
 	/**
 	 * Where are the database files stored. This is set at startup.
@@ -131,14 +131,6 @@ public class GeneralParams {
 	 * Don't download sync IBD
 	 */
 	public static boolean NO_SYNC_IBD = false;
-	
-	/**
-	 * MySQL Archive Settings
-	 */
-	public static String MYSQL_HOST 	= "";
-	public static String MYSQL_DB 		= "";
-	public static String MYSQL_USER 	= "";
-	public static String MYSQL_PASSWORD = "";
 	
 	/**
 	 * How many days do you keep the TxPoW in the SQL DB
