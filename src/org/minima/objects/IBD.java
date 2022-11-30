@@ -221,6 +221,10 @@ public class IBD implements Streamable {
 		
 			//Are we shutting down..
 			if(Main.getInstance().isShuttingDown()) {
+				
+				//Unlock..
+				MinimaDB.getDB().readLock(false);
+				
 				return;
 			}
 			
@@ -241,6 +245,11 @@ public class IBD implements Streamable {
 	
 	public void createArchiveIBD(MiniNumber zFirstBlock) {
 		
+		//Are we shutting down..
+		if(Main.getInstance().isShuttingDown()) {
+			return;
+		}
+		
 		//Get the ArchiveManager
 		ArchiveManager arch = MinimaDB.getDB().getArchive();
 			
@@ -248,6 +257,16 @@ public class IBD implements Streamable {
 		MinimaDB.getDB().readLock(true);
 		
 		try {
+			
+			//Are we shutting down..
+			if(Main.getInstance().isShuttingDown()) {
+				
+				//Unlock..
+				MinimaDB.getDB().readLock(false);
+				
+				return;
+			}
+			
 			MiniNumber startcount = zFirstBlock;
 			
 			if(zFirstBlock.isEqual(MiniNumber.ZERO)) {
