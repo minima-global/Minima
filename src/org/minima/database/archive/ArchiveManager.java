@@ -53,21 +53,29 @@ public class ArchiveManager extends SqlDB {
 		
 		if(GeneralParams.ARCHIVE && zCascade.getLength()>0) {
 			//Where does our archive start
-			TxBlock gen = mMySQL.loadBlockFromNum(1);
+			TxBlock gen = loadLastBlock();
 			
 			//Do we have it..
 			if(gen!=null) {
-				//we have it.. no cascade required..
-				return;
+				
+				//Notify..
+				MinimaLogger.log("Archive Node First Block : "+gen.getTxPoW().getBlockNumber());
+				
+				//Check the Block NUmber
+				if(gen.getTxPoW().getBlockNumber().isEqual(MiniNumber.ONE)) {
+					
+					//We have from genesis
+					return;
+				}
 			}
 			
 			//Do we actually have a cascade yet
-			Cascade casc = mMySQL.loadCascade();
+			Cascade casc = loadCascade();
 			
 			//if not.. store our one..
 			if(casc == null) {
 				MinimaLogger.log("Saving Cascade in ARCHIVEDB.. tip : "+zCascade.getTip().getTxPoW().getBlockNumber());
-				mMySQL.saveCascade(zCascade);
+				saveCascade(zCascade);
 			}else {
 				MinimaLogger.log("Cascade in ARCHIVEDB.. tip : "+casc.getTip().getTxPoW().getBlockNumber());
 			}
@@ -203,6 +211,21 @@ public class ArchiveManager extends SqlDB {
 	
 	public synchronized boolean saveBlock(TxBlock zBlock) throws SQLException {
 		
+		//Try Twice.. incase db shuts during..
+		try {
+			_intSaveBlock(zBlock);
+			
+		}catch(Exception exc) {
+			
+			//Try again..
+			_intSaveBlock(zBlock);
+		}
+		
+		return true;
+	}
+	
+	private synchronized boolean _intSaveBlock(TxBlock zBlock) throws SQLException {
+		
 		//Make sure..
 		checkOpen();
 	
@@ -222,11 +245,6 @@ public class ArchiveManager extends SqlDB {
 		
 		//Do it.
 		SQL_INSERT_SYNCBLOCK.execute();
-	
-		//Do we MySQL
-		if(mStoreMySQL) {
-			mMySQL.saveBlock(zBlock);
-		}
 		
 		return true;		
 	}
