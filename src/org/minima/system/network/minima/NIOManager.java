@@ -549,12 +549,14 @@ public class NIOManager extends MessageProcessor {
 			}
 			
 			//Check is within acceptable time..
-			long timenow = System.currentTimeMillis();
-			long maxtime = timenow - SYNC_MAX_TIME;
-			if(lastpow.getTimeMilli().getAsLong() < maxtime) {
-				//we have enough..
-				MinimaLogger.log("We have enough archive blocks.. lastblock "+new Date(lastpow.getTimeMilli().getAsLong()));
-				return;
+			if(!GeneralParams.ARCHIVE) {
+				long timenow = System.currentTimeMillis();
+				long maxtime = timenow - SYNC_MAX_TIME;
+				if(lastpow.getTimeMilli().getAsLong() < maxtime) {
+					//we have enough..
+					MinimaLogger.log("We have enough archive blocks.. lastblock "+new Date(lastpow.getTimeMilli().getAsLong()));
+					return;
+				}
 			}
 			
 			//Send a message asking for a sync
