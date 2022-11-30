@@ -233,43 +233,43 @@ public class IBD implements Streamable {
 	
 	public void createArchiveIBD(MiniNumber zFirstBlock) {
 		
-		//Get the ArchiveManager
-		ArchiveManager arch = MinimaDB.getDB().getArchive();
-				
-		//Are we storing Archive Data
-		if(arch.isStoreMySQL()) {
-			
-			//Get the SQL Connect
-			MySQLConnect mySQLConnect = arch.getMySQLCOnnect();
-			
-			//Lock the DB - cascade and tree tip / root cannot change while doing this..
-			MinimaDB.getDB().readLock(true);
-			
-			try {
-				if(zFirstBlock.isEqual(MiniNumber.ZERO)) {
-					//Load cascade if there is one
-					mCascade = mySQLConnect.loadCascade();
-				}
-				
-				//Was therea cascade
-				MiniNumber startcount = zFirstBlock;
-				if(mCascade != null) {
-					startcount = mCascade.getTip().getTxPoW().getBlockNumber();
-				}
-				
-				//Load the block range..
-				ArrayList<TxBlock> blocks = mySQLConnect.loadBlockRange(zFirstBlock);
-				for(TxBlock block : blocks) {
-					mTxBlocks.add(block);
-				}
-				
-			}catch(Exception exc) {
-				MinimaLogger.log(exc);
-			}
-			
-			//Unlock..
-			MinimaDB.getDB().readLock(false);
-		}
+//		//Get the ArchiveManager
+//		ArchiveManager arch = MinimaDB.getDB().getArchive();
+//				
+//		//Are we storing Archive Data
+//		if(arch.isStoreMySQL()) {
+//			
+//			//Get the SQL Connect
+//			MySQLConnect mySQLConnect = arch.getMySQLCOnnect();
+//			
+//			//Lock the DB - cascade and tree tip / root cannot change while doing this..
+//			MinimaDB.getDB().readLock(true);
+//			
+//			try {
+//				if(zFirstBlock.isEqual(MiniNumber.ZERO)) {
+//					//Load cascade if there is one
+//					mCascade = mySQLConnect.loadCascade();
+//				}
+//				
+//				//Was therea cascade
+//				MiniNumber startcount = zFirstBlock;
+//				if(mCascade != null) {
+//					startcount = mCascade.getTip().getTxPoW().getBlockNumber();
+//				}
+//				
+//				//Load the block range..
+//				ArrayList<TxBlock> blocks = mySQLConnect.loadBlockRange(zFirstBlock);
+//				for(TxBlock block : blocks) {
+//					mTxBlocks.add(block);
+//				}
+//				
+//			}catch(Exception exc) {
+//				MinimaLogger.log(exc);
+//			}
+//			
+//			//Unlock..
+//			MinimaDB.getDB().readLock(false);
+//		}
 	}
 	
 	/**

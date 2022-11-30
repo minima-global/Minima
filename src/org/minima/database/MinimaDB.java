@@ -217,15 +217,6 @@ public class MinimaDB {
 				mArchive.loadDB(new File(archsqlfolder,"archive"));
 			}
 			
-			//Are we Storing in a MySQL..
-			if(!GeneralParams.MYSQL_HOST.equals("")) {
-				mArchive.setupMySQL(
-						GeneralParams.MYSQL_HOST, 
-						GeneralParams.MYSQL_DB,
-						GeneralParams.MYSQL_USER,
-						GeneralParams.MYSQL_PASSWORD);
-			}
-			
 			//Load the SQL DB
 			File txpowsqlfolder = new File(basedb,"txpowsql");
 			try {
@@ -313,15 +304,6 @@ public class MinimaDB {
 			mArchive			= new ArchiveManager();
 			File archsqlfolder 	= new File(basedb,"archivesql");
 			mArchive.loadDB(new File(archsqlfolder,"archive"));
-			
-			//Are we Storing in a MySQL..
-			if(!GeneralParams.MYSQL_HOST.equals("")) {
-				mArchive.setupMySQL(
-						GeneralParams.MYSQL_HOST, 
-						GeneralParams.MYSQL_DB,
-						GeneralParams.MYSQL_USER,
-						GeneralParams.MYSQL_PASSWORD);
-			}
 			
 			//Load the SQL DB
 			mTxPoWDB			= new TxPoWDB();

@@ -83,10 +83,6 @@ public class archive extends Command {
 		
 		if(action.equals("integrity")) {
 			
-			if(!MinimaDB.getDB().getArchive().isStoreMySQL()) {
-				throw new CommandException("You are not running an Archive noide.. ");
-			}
-			
 			//Scan through the entire DB.. checking.. 
 			MinimaLogger.log("Checking Archive DB.. this will take some time..");
 			
@@ -245,13 +241,13 @@ public class archive extends Command {
 			MiniNumber endblock 	= MiniNumber.ZERO;
 			boolean foundsome 		= false;
 			
-			//Are we wiping previous archive
-			if(MinimaDB.getDB().getArchive().isStoreMySQL()) {
-				MySQLConnect mysql = MinimaDB.getDB().getArchive().getMySQLCOnnect();
-				mysql.wipeAll();
-				mysql.shutdown();
-				mysql.init();
-			}
+//			//Are we wiping previous archive
+//			if(MinimaDB.getDB().getArchive().isStoreMySQL()) {
+//				MySQLConnect mysql = MinimaDB.getDB().getArchive().getMySQLCOnnect();
+//				mysql.wipeAll();
+//				mysql.shutdown();
+//				mysql.init();
+//			}
 			
 			while(true) {
 				
