@@ -248,7 +248,22 @@ public class status extends Command {
 		if(debug) {
 			MinimaLogger.log("txpowdb done..");
 		}
-		database.put("archivedb", arch.getSize());
+		
+		
+		//Archive DB data
+		JSONObject archdb 	= new JSONObject();
+		int size 			= arch.getSize();
+		Cascade archcasc 	= arch.loadCascade(); 
+		archdb.put("size", size);
+		if(size>0) {
+			archdb.put("start", arch.loadLastBlock().getTxPoW().getBlockNumber().toString());
+			archdb.put("startdate", new Date(arch.loadLastBlock().getTxPoW().getTimeMilli().getAsLong()).toString());
+			archdb.put("end", arch.loadFirstBlock().getTxPoW().getBlockNumber().toString());
+			if(archcasc!=null) {
+				archdb.put("cascadetip", archcasc.getTip().getTxPoW().getBlockNumber());	
+			}
+		}
+		database.put("archivedb", archdb);
 		if(debug) {
 			MinimaLogger.log("archivedb done..");
 		}
