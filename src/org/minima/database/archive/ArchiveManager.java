@@ -133,23 +133,7 @@ public class ArchiveManager extends SqlDB {
 	
 	public void checkCascadeRequired(Cascade zCascade) throws SQLException {
 		
-		if(GeneralParams.ARCHIVE && zCascade.getLength()>0) {
-			//Where does our archive start
-			TxBlock gen = loadLastBlock();
-			
-			//Do we have it..
-			if(gen!=null) {
-				
-				//Notify..
-				MinimaLogger.log("Archive Node Complete - no Cascade required");
-				
-				//Check the Block NUmber
-				if(gen.getTxPoW().getBlockNumber().isEqual(MiniNumber.ONE)) {
-					
-					//We have from genesis
-					return;
-				}
-			}
+		if(zCascade.getLength()>0) {
 			
 			//Do we actually have a cascade yet
 			Cascade casc = loadCascade();
@@ -159,7 +143,7 @@ public class ArchiveManager extends SqlDB {
 				MinimaLogger.log("Saving Cascade in ARCHIVEDB.. tip : "+zCascade.getTip().getTxPoW().getBlockNumber());
 				saveCascade(zCascade);
 			}else {
-				MinimaLogger.log("Cascade in ARCHIVEDB.. tip : "+casc.getTip().getTxPoW().getBlockNumber());
+				MinimaLogger.log("Cascade already in ARCHIVEDB.. tip : "+casc.getTip().getTxPoW().getBlockNumber());
 			}
 		}
 	}
@@ -542,12 +526,6 @@ public class ArchiveManager extends SqlDB {
 
 	public synchronized int cleanDB() {
 		
-		//Are we an archive node
-		if(GeneralParams.ARCHIVE) {
-			//Don't delete old blocks
-			return 0;
-		}
-		
 		try {
 			//Make sure..
 			checkOpen();
@@ -576,7 +554,8 @@ public class ArchiveManager extends SqlDB {
 			}
 			
 			//Last block to keep
-			MiniNumber cutoff = fb.getTxPoW().getBlockNumber().sub(new MiniNumber(MAX_KEEP_BLOCKS));
+//			MiniNumber cutoff = fb.getTxPoW().getBlockNumber().sub(new MiniNumber(MAX_KEEP_BLOCKS));
+			MiniNumber cutoff = fb.getTxPoW().getBlockNumber().sub(new MiniNumber(1000));
 			
 			//Set the parameters
 			SQL_DELETE_TXBLOCKS.clearParameters();

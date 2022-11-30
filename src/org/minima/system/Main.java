@@ -564,8 +564,10 @@ public class Main extends MessageProcessor {
 			//Do some house keeping on the DB
 			MinimaDB.getDB().getTxPoWDB().cleanDBSQL();
 			
-			//Same with the ArchiveDB
-			MinimaDB.getDB().getArchive().cleanDB();
+			//Same with the ArchiveDB - if not running an archive node
+			if(!GeneralParams.ARCHIVE) {
+				MinimaDB.getDB().getArchive().cleanDB();
+			}
 			
 		}else if(zMessage.getMessageType().equals(MAIN_PULSE)) {
 			

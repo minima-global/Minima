@@ -91,16 +91,6 @@ public class archive extends Command {
 			
 			//What is the first block in the DB
 			TxBlock starterblock = arch.loadLastBlock();
-			if(starterblock == null) {
-				MinimaLogger.log("ArchiveDB has no blocks");
-			
-				JSONObject resp = new JSONObject();
-				resp.put("message", "Archive integrity check completed");
-				resp.put("recommend", "Your ArchiveDB is empty");
-				ret.put("response", resp);
-				
-				return ret;
-			}
 			
 			//What is the first entry
 			boolean startcheck 	= true;
@@ -130,6 +120,13 @@ public class archive extends Command {
 				
 				//Can start from cascade
 				MinimaLogger.log("ArchiveDB cascade start : "+tip);
+				
+				//Start the test from then onwards
+				if(!startatroot) {
+					lastlog = tip.increment();
+					start 	= lastlog;
+				}
+				
 			}else {
 				
 				//Can start from cascade
@@ -168,16 +165,7 @@ public class archive extends Command {
 						
 						archstart 	= parentnum;
 						
-						MinimaLogger.log("ArchiveDB blocks start at block "+parentnum+" @ "+new Date(block.getTxPoW().getTimeMilli().getAsLong()));
-						if(dbcasc != null) {
-							MiniNumber tip = dbcasc.getTip().getTxPoW().getBlockNumber();
-							MinimaLogger.log("ArchiveDB Cascade tip at block "+tip);
-							
-							if(!parentnum.isEqual(tip.increment())) {
-								MinimaLogger.log("ArchiveDB start does not match Cascade!");
-								errorsfound++;
-							}	
-						}
+						MinimaLogger.log("ArchiveDB blocks resync start at block "+parentnum+" @ "+new Date(block.getTxPoW().getTimeMilli().getAsLong()));
 						
 					}else {
 						
@@ -196,7 +184,7 @@ public class archive extends Command {
 				}
 				
 				//Have we checked them all..
-				if(blocks.size() < 2) {
+				if(blocks.size()==0) {
 					break;
 				}
 				
@@ -325,14 +313,27 @@ public class archive extends Command {
 				Main.getInstance().getTxPoWProcessor().postProcessArchiveIBD(ibd, "0x00");
 			
 				//Now wait until processed
+				boolean error = false;
 				TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+				int attempts = 0;
 				while(foundsome && tip == null) {
 					Thread.sleep(250);
 					tip = MinimaDB.getDB().getTxPoWTree().getTip();
+					attempts++;
+					if(attempts>16) {
+						error = true;
+						break;
+					}
+				}
+				
+				if(error) {
+					MinimaLogger.log("ERROR : There was an error processing that IBD");
+					break;
 				}
 				
 				//Now wait to catch up..
 				MinimaLogger.log("Waiting for chain to catch up.. please wait");
+				attempts = 0;
 				while(foundsome) {
 					if(!tip.getBlockNumber().isEqual(endblock)) {
 						Thread.sleep(100);
@@ -341,6 +342,17 @@ public class archive extends Command {
 					}
 					
 					tip = MinimaDB.getDB().getTxPoWTree().getTip();
+					
+					attempts++;
+					if(attempts>100) {
+						error = true;
+						break;
+					}
+				}
+				
+				if(error) {
+					MinimaLogger.log("ERROR : There was an error processing that IBD");
+					break;
 				}
 				
 				//Do we have enough to ask again.. 
@@ -352,25 +364,6 @@ public class archive extends Command {
 			//Notify the Android Listener
 			NotifyListener(minimalistener,"All blocks loaded.. pls wait");
 			MinimaLogger.log("All Archive data received and processed.. shutting down.."); 
-			
-			//DOUBLE CHECK
-			TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
-			while(foundsome && tip == null) {
-				Thread.sleep(1000);
-				tip = MinimaDB.getDB().getTxPoWTree().getTip();
-			}
-			
-			//Now wait to catch up..
-			while(foundsome) {
-				if(!tip.getBlockNumber().isEqual(endblock)) {
-					MinimaLogger.log("Waiting for chain to catch up.. please wait");
-					Thread.sleep(5000);
-				}else {
-					break;
-				}
-				
-				tip = MinimaDB.getDB().getTxPoWTree().getTip();
-			}
 			
 			//And NOW shut down..
 			Main.getInstance().getTxPoWProcessor().stopMessageProcessor();

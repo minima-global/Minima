@@ -749,12 +749,6 @@ public class NIOMessage implements Runnable {
 			
 			}else if(type.isEqual(MSG_ARCHIVE_REQ)) {
 				
-//				//Do we support archive data
-//				if(!MinimaDB.getDB().getArchive().isStoreMySQL()) {
-//					MinimaLogger.log("Archive IBD request we do not support.. from "+mClientUID);
-//					return;
-//				}
-				
 				//What block are we starting from..
 				MiniNumber firstblock 	= MiniNumber.ReadFromStream(dis);
 				
