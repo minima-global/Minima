@@ -147,7 +147,7 @@ public class ParamConfigurer {
     		//Set this globally
     		GeneralParams.DATA_FOLDER 	= minimafolder.getAbsolutePath();
         }),
-    	password("password", "Main Wallet AES password - MUST be specified on first launch", (args, configurer) -> {
+    	dbpassword("dbpassword", "Main Wallet / SQL AES password - MUST be specified on first launch. CANNOT be changed later.", (args, configurer) -> {
             GeneralParams.MAIN_PASSWORD = args;
         }),
     	basefolder("basefolder", "Specify a default file creation / backup / restore folder", (args, configurer) -> {
