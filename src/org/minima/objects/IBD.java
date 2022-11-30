@@ -110,9 +110,17 @@ public class IBD implements Streamable {
 						
 						//And NOW - Load the range..
 						ArrayList<TxBlock> blocks = MinimaDB.getDB().getArchive().loadBlockRange(found, myroot);
-						for(TxBlock block : blocks) {
-							mTxBlocks.add(0,block);
+						
+						//Check not tooo many
+						if(blocks.size()>120000) {
+							MinimaLogger.log("Intersection found but User too far back to sync.. too many blocks "+blocks.size());
+							createCompleteIBD();
+						}else {
+							for(TxBlock block : blocks) {
+								mTxBlocks.add(0,block);
+							}
 						}
+						
 					}else {
 						MinimaLogger.log("No Archive blocks found to match New User.. ");
 						createCompleteIBD();
@@ -190,6 +198,7 @@ public class IBD implements Streamable {
 		mCascade = MinimaDB.getDB().getCascade().deepCopy();
 	
 		//And now add all the blocks.. root will be first
+		mTxBlocks = new ArrayList<>();
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 		while(tip != null) {
 			mTxBlocks.add(0,tip.getTxBlock());
