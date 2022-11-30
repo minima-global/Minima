@@ -49,39 +49,6 @@ public class ArchiveManager extends SqlDB {
 		super();
 	}
 	
-	public void checkCascadeRequired(Cascade zCascade) throws SQLException {
-		
-		if(GeneralParams.ARCHIVE && zCascade.getLength()>0) {
-			//Where does our archive start
-			TxBlock gen = loadLastBlock();
-			
-			//Do we have it..
-			if(gen!=null) {
-				
-				//Notify..
-				MinimaLogger.log("Archive Node First Block : "+gen.getTxPoW().getBlockNumber());
-				
-				//Check the Block NUmber
-				if(gen.getTxPoW().getBlockNumber().isEqual(MiniNumber.ONE)) {
-					
-					//We have from genesis
-					return;
-				}
-			}
-			
-			//Do we actually have a cascade yet
-			Cascade casc = loadCascade();
-			
-			//if not.. store our one..
-			if(casc == null) {
-				MinimaLogger.log("Saving Cascade in ARCHIVEDB.. tip : "+zCascade.getTip().getTxPoW().getBlockNumber());
-				saveCascade(zCascade);
-			}else {
-				MinimaLogger.log("Cascade in ARCHIVEDB.. tip : "+casc.getTip().getTxPoW().getBlockNumber());
-			}
-		}
-	}
-	
 	@Override
 	protected void createSQL() throws SQLException {
 			
@@ -164,6 +131,39 @@ public class ArchiveManager extends SqlDB {
 		return -1;
 	}
 	
+	public void checkCascadeRequired(Cascade zCascade) throws SQLException {
+		
+		if(GeneralParams.ARCHIVE && zCascade.getLength()>0) {
+			//Where does our archive start
+			TxBlock gen = loadLastBlock();
+			
+			//Do we have it..
+			if(gen!=null) {
+				
+				//Notify..
+				MinimaLogger.log("Archive Node Complete - no Cascade required");
+				
+				//Check the Block NUmber
+				if(gen.getTxPoW().getBlockNumber().isEqual(MiniNumber.ONE)) {
+					
+					//We have from genesis
+					return;
+				}
+			}
+			
+			//Do we actually have a cascade yet
+			Cascade casc = loadCascade();
+			
+			//if not.. store our one..
+			if(casc == null) {
+				MinimaLogger.log("Saving Cascade in ARCHIVEDB.. tip : "+zCascade.getTip().getTxPoW().getBlockNumber());
+				saveCascade(zCascade);
+			}else {
+				MinimaLogger.log("Cascade in ARCHIVEDB.. tip : "+casc.getTip().getTxPoW().getBlockNumber());
+			}
+		}
+	}
+
 	public boolean saveCascade(Cascade zCascade) throws SQLException {
 		
 		//get the MiniData version..
@@ -445,6 +445,10 @@ public class ArchiveManager extends SqlDB {
 	}
 	
 	public synchronized ArrayList<TxBlock> loadBlockRange(MiniNumber zStartBlock, MiniNumber zEndBlock) {
+		return loadBlockRange(zStartBlock, zEndBlock, true);
+	}
+	
+	public synchronized ArrayList<TxBlock> loadBlockRange(MiniNumber zStartBlock, MiniNumber zEndBlock, boolean zDescending) {
 		
 		ArrayList<TxBlock> blocks = new ArrayList<>();
 		
@@ -482,12 +486,21 @@ public class ArchiveManager extends SqlDB {
 		}
 		
 		//Now do the ordering.. MUCH FASTER than the SQL way..
-		Collections.sort(blocks, new Comparator<TxBlock>() {
-			@Override
-			public int compare(TxBlock zBlk1, TxBlock zBlk2) {
-				return zBlk2.getTxPoW().getBlockNumber().compareTo(zBlk1.getTxPoW().getBlockNumber());
-			}
-		});
+		if(zDescending) {
+			Collections.sort(blocks, new Comparator<TxBlock>() {
+				@Override
+				public int compare(TxBlock zBlk1, TxBlock zBlk2) {
+					return zBlk2.getTxPoW().getBlockNumber().compareTo(zBlk1.getTxPoW().getBlockNumber());
+				}
+			});
+		}else {
+			Collections.sort(blocks, new Comparator<TxBlock>() {
+				@Override
+				public int compare(TxBlock zBlk1, TxBlock zBlk2) {
+					return zBlk1.getTxPoW().getBlockNumber().compareTo(zBlk2.getTxPoW().getBlockNumber());
+				}
+			});
+		}
 		
 		return blocks;
 	}
@@ -528,6 +541,13 @@ public class ArchiveManager extends SqlDB {
 	}
 
 	public synchronized int cleanDB() {
+		
+		//Are we an archive node
+		if(GeneralParams.ARCHIVE) {
+			//Don't delete old blocks
+			return 0;
+		}
+		
 		try {
 			//Make sure..
 			checkOpen();

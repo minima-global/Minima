@@ -754,26 +754,26 @@ public class NIOMessage implements Runnable {
 //					MinimaLogger.log("Archive IBD request we do not support.. from "+mClientUID);
 //					return;
 //				}
-//				
-//				//What block are we starting from..
-//				MiniNumber firstblock 	= MiniNumber.ReadFromStream(dis);
-//				
-//				IBD ibd = new IBD();
-//				
-//				//Is this a test connect
-//				if(firstblock.isEqual(MiniNumber.MINUSONE)) {
-//					MinimaLogger.log("Archive IBD connection test..");
-//					
-//					//Send it.. empty just testing the connection
-//					NIOManager.sendNetworkMessage(mClientUID, MSG_ARCHIVE_DATA, ibd);
-//					
-//				}else {
-//					MinimaLogger.log("Archive IBD request start @ "+firstblock);
-//					ibd.createArchiveIBD(firstblock);
-//					
-//					//Send it..
-//					NIOManager.sendNetworkMessage(mClientUID, MSG_ARCHIVE_DATA, ibd);
-//				}
+				
+				//What block are we starting from..
+				MiniNumber firstblock 	= MiniNumber.ReadFromStream(dis);
+				
+				IBD ibd = new IBD();
+				
+				//Is this a test connect
+				if(firstblock.isEqual(MiniNumber.MINUSONE)) {
+					MinimaLogger.log("Archive IBD connection test..");
+					
+					//Send it.. empty just testing the connection
+					NIOManager.sendNetworkMessage(mClientUID, MSG_ARCHIVE_DATA, ibd);
+					
+				}else {
+					MinimaLogger.log("Archive IBD request start @ "+firstblock);
+					ibd.createArchiveIBD(firstblock);
+					
+					//Send it..
+					NIOManager.sendNetworkMessage(mClientUID, MSG_ARCHIVE_DATA, ibd);
+				}
 			
 			}else if(type.isEqual(MSG_ARCHIVE_SINGLE_REQ)) {
 				

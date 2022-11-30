@@ -405,6 +405,9 @@ public class TxPoWProcessor extends MessageProcessor {
 							//Set this for us
 							MinimaDB.getDB().setIBDCascade(ibd.getCascade());
 							
+							//Do we need to store the cascade in the ArchiveDB
+							MinimaDB.getDB().getArchive().checkCascadeRequired(ibd.getCascade());
+							
 						}catch(Exception exc) {
 							MinimaLogger.log(exc);
 						}

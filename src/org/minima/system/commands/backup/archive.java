@@ -89,20 +89,51 @@ public class archive extends Command {
 			//Scan through the entire DB.. checking.. 
 			MinimaLogger.log("Checking Archive DB.. this may take some time..");
 			
-			//Get the cascade
-			Cascade dbcasc = arch.loadCascade(); 
+			//What is the first block in the DB
+			TxBlock starterblock = arch.loadLastBlock();
+			if(starterblock == null) {
+				MinimaLogger.log("ArchiveDB has no blocks");
+			
+				JSONObject resp = new JSONObject();
+				resp.put("message", "Archive integrity check completed");
+				resp.put("recommend", "Your ArchiveDB is empty");
+				ret.put("response", resp);
+				
+				return ret;
+			}
 			
 			//What is the first entry
 			boolean startcheck 	= true;
+			boolean startatroot = false;
 			MiniNumber lastlog 	= MiniNumber.ZERO;
 			MiniNumber start 	= MiniNumber.ZERO;
-			TxBlock startarch 	= arch.loadLastBlock();
-			if(startarch == null) {
+			if(starterblock == null) {
 				MinimaLogger.log("You have no Archive blocks..");
 				startcheck = false;
 			}else {
-				lastlog = startarch.getTxPoW().getBlockNumber();
+				lastlog = starterblock.getTxPoW().getBlockNumber();
 				start 	= lastlog;
+				
+				//Is it from root..
+				MiniNumber startblocknumber = starterblock.getTxPoW().getBlockNumber();
+				if(startblocknumber.isEqual(MiniNumber.ONE)) {
+					MinimaLogger.log("ArchiveDB starts at root");
+					startatroot = true;
+				}
+			}
+			
+			//Get the cascade
+			Cascade dbcasc = arch.loadCascade(); 
+			if(dbcasc != null) {
+				//Get the tip..
+				MiniNumber tip = dbcasc.getTip().getTxPoW().getBlockNumber();
+				
+				//Can start from cascade
+				MinimaLogger.log("ArchiveDB cascade start : "+tip);
+			}else {
+				
+				//Can start from cascade
+				MinimaLogger.log("ArchiveDB has no cascade ");
 			}
 			
 			//Get t the initial 1000
@@ -110,6 +141,8 @@ public class archive extends Command {
 			MiniNumber parentnum 	= null;
 			int errorsfound 		= 0;
 			int total = 0;
+			MiniNumber archstart = start;
+			
 			while(startcheck) {
 				
 				//Do we log a message
@@ -118,10 +151,11 @@ public class archive extends Command {
 					lastlog = start;
 				}
 				
+				//Use batches of 256
 				MiniNumber end = start.add(MiniNumber.TWOFIVESIX);
 				
 				//Get some blocks
-				ArrayList<TxBlock> blocks = null;//arch.loadArchBlockRange(start,end); 
+				ArrayList<TxBlock> blocks = arch.loadBlockRange(start.decrement(),end,false); 
 				
 				for(TxBlock block : blocks) {
 					total++;
@@ -131,6 +165,8 @@ public class archive extends Command {
 						parenthash 	= block.getTxPoW().getTxPoWIDData();
 						parentnum  	= block.getTxPoW().getBlockNumber();
 						lastlog 	= parentnum;
+						
+						archstart 	= parentnum;
 						
 						MinimaLogger.log("ArchiveDB blocks start at block "+parentnum+" @ "+new Date(block.getTxPoW().getTimeMilli().getAsLong()));
 						if(dbcasc != null) {
@@ -170,6 +206,7 @@ public class archive extends Command {
 			
 			JSONObject resp = new JSONObject();
 			resp.put("message", "Archive integrity check completed");
+			resp.put("start", archstart);
 			resp.put("blocks", total);
 			resp.put("cascade", (dbcasc!=null));
 			resp.put("errors", errorsfound);
@@ -227,10 +264,6 @@ public class archive extends Command {
 				//Set it..
 				wallet.updateSeedRow(phrase, seed.to0xString());
 				
-//				MinimaDB.getDB().getUserDB().setBasePrivatePhrase(phrase);
-//				MinimaDB.getDB().getUserDB().setBasePrivateSeed(seed.to0xString());
-//				MinimaDB.getDB().getWallet().initBaseSeed(seed);
-				
 				//Now cycle through all the default wallet keys..
 				MinimaLogger.log("Creating a total of "+keys+" keys / addresses..");
 				for(int i=0;i<keys;i++) {
@@ -255,14 +288,6 @@ public class archive extends Command {
 			MiniNumber endblock 	= MiniNumber.ZERO;
 			boolean foundsome 		= false;
 			
-//			//Are we wiping previous archive
-//			if(MinimaDB.getDB().getArchive().isStoreMySQL()) {
-//				MySQLConnect mysql = MinimaDB.getDB().getArchive().getMySQLCOnnect();
-//				mysql.wipeAll();
-//				mysql.shutdown();
-//				mysql.init();
-//			}
-			
 			while(true) {
 				
 				//Send him a message..
@@ -271,9 +296,11 @@ public class archive extends Command {
 				//Is there a cascade..
 				if(startblock.isEqual(MiniNumber.ZERO) && ibd.hasCascade()) {
 					MinimaLogger.log("Cascade Received.. "+ibd.getCascade().getTip().getTxPoW().getBlockNumber());
+					
+					//Set it as our cascade
 					MinimaDB.getDB().setIBDCascade(ibd.getCascade());
 					
-					//Do we need to sdave this..
+					//Do we need to save this..
 					MinimaDB.getDB().getArchive().checkCascadeRequired(ibd.getCascade());
 				}
 				
@@ -317,7 +344,7 @@ public class archive extends Command {
 				}
 				
 				//Do we have enough to ask again.. 
-				if(size<2) {
+				if(size==0) {
 					break;
 				}
 			}

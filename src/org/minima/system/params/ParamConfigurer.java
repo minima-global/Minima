@@ -180,6 +180,11 @@ public class ParamConfigurer {
             	GeneralParams.ALLOW_ALL_IP = true;
             }
         }),
+        archive("archive", "Be an Archive node - store all data", (args, configurer) -> {
+            if ("true".equals(args)) {
+            	GeneralParams.ARCHIVE = true;
+            }
+        }),
         mdsenable("mdsenable", "Enable MDS", (args, configurer) -> {
             if ("true".equals(args)) {
             	GeneralParams.MDS_ENABLED = true;

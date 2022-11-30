@@ -233,9 +233,38 @@ public class IBD implements Streamable {
 	
 	public void createArchiveIBD(MiniNumber zFirstBlock) {
 		
-//		//Get the ArchiveManager
-//		ArchiveManager arch = MinimaDB.getDB().getArchive();
-//				
+		//Get the ArchiveManager
+		ArchiveManager arch = MinimaDB.getDB().getArchive();
+			
+		//Lock the DB - cascade and tree tip / root cannot change while doing this..
+		MinimaDB.getDB().readLock(true);
+		
+		try {
+			if(zFirstBlock.isEqual(MiniNumber.ZERO)) {
+				//Load cascade if there is one
+				mCascade = arch.loadCascade();
+			}
+			
+			//Was therea cascade
+			MiniNumber startcount = zFirstBlock;
+			if(mCascade != null) {
+				startcount = mCascade.getTip().getTxPoW().getBlockNumber();
+			}
+			
+			//Load the block range..
+			MiniNumber end = zFirstBlock.add(MiniNumber.THIRTYTWO);
+			ArrayList<TxBlock> blocks = arch.loadBlockRange(zFirstBlock.decrement(),end, false);
+			for(TxBlock block : blocks) {
+				mTxBlocks.add(block);
+			}
+			
+		}catch(Exception exc) {
+			MinimaLogger.log(exc);
+		}
+		
+		//Unlock..
+		MinimaDB.getDB().readLock(false);
+		
 //		//Are we storing Archive Data
 //		if(arch.isStoreMySQL()) {
 //			
