@@ -27,7 +27,6 @@ public class ParamConfigurer {
     private boolean daemon = false;
     private boolean rpcenable = false;
     private boolean mShutdownhook = true;
-    private boolean mUseMySQL= false;
     
     public ParamConfigurer usingConfFile(String[] programArgs) {
         List<String> zArgsList = Arrays.asList(programArgs);
@@ -131,10 +130,6 @@ public class ParamConfigurer {
         return mShutdownhook;
     }
     
-    public boolean isMySQLRequired() {
-    	return mUseMySQL;
-    }
-
     enum ParamKeys {
     	data("data", "Specify the data folder (defaults to .minima/ under user home", (args, configurer) -> {
     		//Get that folder
@@ -271,35 +266,15 @@ public class ParamConfigurer {
                 GeneralParams.NO_SYNC_IBD = true;
             }
         }),
-        mysqlhost("mysqlhost", "Store all archive data in a MySQL DB", (args, configurer) -> {
-            GeneralParams.MYSQL_HOST = args;
-            configurer.mUseMySQL = true;
-        }),
-        mysqldb("mysqldb", "The MySQL Database", (args, configurer) -> {
-        	GeneralParams.MYSQL_DB = args;
-        	configurer.mUseMySQL = true;
-        }),
-        mysqluser("mysqluser", "The MySQL User", (args, configurer) -> {
-        	GeneralParams.MYSQL_USER = args;
-        	configurer.mUseMySQL = true;
-        }),
-        mysqlpassword("mysqlpassword", "The MySQL Password", (args, configurer) -> {
-        	GeneralParams.MYSQL_PASSWORD = args;
-        	configurer.mUseMySQL = true;
-        }),
         genesis("genesis", "Create a genesis block, -clean and -automine", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.CLEAN = true;
-//                GeneralParams.PRIVATE_NETWORK = true;
                 GeneralParams.GENESIS = true;
-//                GeneralParams.AUTOMINE = true;
             }
         }),
         test("test", "Use test params on a private network", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.TEST_PARAMS 		= true;
-//                GeneralParams.PRIVATE_NETWORK 	= true;
-//                GeneralParams.P2P_ENABLED 		= false;
                 TestParams.setTestParams();
             }
         }),
