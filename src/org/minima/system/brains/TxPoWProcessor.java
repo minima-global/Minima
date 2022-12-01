@@ -30,9 +30,10 @@ public class TxPoWProcessor extends MessageProcessor {
 	private static final String TXPOWPROCESSOR_PROCESS_ARCHIVEIBD 	= "TXP_PROCESS_ARCHIVEIBD";
 	
 	/**
-	 * The first IBD you receive
+	 * The IBD you receive on startup
 	 */
-	boolean mFirstIBD = true;
+	private long mFirstIBD 				= System.currentTimeMillis();
+	private long MAX_FIRST_IBD_TIME 	= 1000 * 60 * 5; 
 	
 	public TxPoWProcessor() {
 		super("TXPOWPROCESSOR");
@@ -432,10 +433,8 @@ public class TxPoWProcessor extends MessageProcessor {
 			MiniNumber timenow 		= new MiniNumber(System.currentTimeMillis());
 			
 			//First run accept the IBD - still follow heaviest chain
-			if(!mFirstIBD) {
-				
-				//No longer the first
-				mFirstIBD = false;
+			long diff = System.currentTimeMillis() - mFirstIBD;
+			if(diff > MAX_FIRST_IBD_TIME) {
 				
 				//If our chain is up to date (within 3 hrs) we don't accept TxBlock at all.. only full blocks
 				if(txptree.getTip() != null && ibd.getTxBlocks().size()>0) {
