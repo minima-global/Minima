@@ -7,7 +7,7 @@ public class MDSHubLogon {
 		//Start the HTML
 		String page = MDSUtil.HUB_START;
 		
-		page += MDSUtil.returnHeader(zSessionID, false, false);
+		page += MDSUtil.returnLogonHeader();
 		
 		//Now the Login Form
 		page += 
