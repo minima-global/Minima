@@ -201,17 +201,17 @@
                         <div>0.1.5 [ READ ]</div>
 						   <div style="height:40">
                         <br>
-                        <table>							<tbody><tr>							<td>							<form action="permissions.html" method="POST" onsubmit="return confirm(&quot;Are you sure you wish to give this MiniDAPP READ permissions ?\n\nThis MiniDAPP will NOT be able to send funds without triggering a pending request.&quot;);">
+                        <table>							<tbody><tr>							<td>							<form action="permissions.html" method="POST" onsubmit="">
 							  <input type="hidden" name="sessionid" value="0xE5CFF3010DFBB9336CFD6751BEB60555122E31D6312287A27B85B6005FC605E8">
 							  <input type="hidden" name="uid" value="0xB09A6FD84628EE3EC2BC3B445DF63FF7">
 							  <input type="hidden" name="permission" value="read">							  <input class="permissionbutton" style="width:80;" type="submit" value="&nbsp;READ&nbsp;">
 							</form>
-							</td>							<td>							<form action="permissions.html" method="POST" onsubmit="return confirm(&quot;Are you sure you wish to give this MiniDAPP WRITE permissions ?\n\nThis MiniDAPP will be able to send funds without triggering a pending request.\n\nONLY do this if you trust this MiniDAPP.&quot;);">
+							</td>							<td>							<form action="permissions.html" method="POST" onsubmit="return confirm('Are you sure you wish to give this MiniDAPP WRITE permissions ?\n\nThis MiniDAPP will be able to send funds without triggering a pending request.\n\nONLY do this if you trust this MiniDAPP.');">
 							  <input type="hidden" name="sessionid" value="0xE5CFF3010DFBB9336CFD6751BEB60555122E31D6312287A27B85B6005FC605E8">
 							  <input type="hidden" name="uid" value="0xB09A6FD84628EE3EC2BC3B445DF63FF7">
 							  <input type="hidden" name="permission" value="write">							  <input class="permissionbutton" style="width:80;" type="submit" value="&nbsp;WRITE&nbsp;">
 							</form>
-							</td>							<td>&nbsp;&nbsp;</td>							<td>							<form action="delete.html" method="POST" onsubmit="return confirm(&quot;Are you sure you wish to delete this MiniDAPP ?&quot;);">
+							</td>							<td>&nbsp;&nbsp;</td>							<td>							<form action="delete.html" method="POST" onsubmit="return confirm('Are you sure you wish to delete this MiniDAPP ?');">
 							  <input type="hidden" name="sessionid" value="0xE5CFF3010DFBB9336CFD6751BEB60555122E31D6312287A27B85B6005FC605E8">
 							  <input type="hidden" name="uid" value="0xB09A6FD84628EE3EC2BC3B445DF63FF7">
 							  <input class="deletebutton" style="width:100;" type="submit" value="&nbsp;Delete&nbsp;">
