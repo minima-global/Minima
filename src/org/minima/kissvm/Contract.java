@@ -673,7 +673,7 @@ public class Contract {
 //		String scr = new String("VERIFYOUT(@INPUT @AMOUNT PREVSTATE(2) @TOKENID FALSE)");
 //		String scr = new String("PREVSTATE(2) @GLOB FALSE");
 //		String scr = new String("@GLOB FALSE");
-//		String scr = new String("let g  = (1 * 3 + (45)+2)");
+		String scr = new String("let g  = (1 * 3 + (45)+2)");
 
 //		String scr = new String("LET safehouse = [ LET pkcold = coldkey LET pkhot = HOT_KEY\r\n"
 //				+ "                  IF SIGNEDBY ( pkcold ) THEN RETURN TRUE ENDIF\r\n"
@@ -683,8 +683,6 @@ public class Contract {
 //		String scr = new String("let a  = ((sd+1*(12) (23)))buyer ");
 //		String scr = new String("INC((asas) (2323))");
 //		String scr = new String("ASSERT ( [hello][dd](ff) [sdsd](f) *[jjj]) LET f=   (  0  ) ");
-
-		String scr = new String("let a=0xFF let g=0 while g lt 100 do let g=inc(g) let a=concat(a a) endwhile");
 		
 		MinimaLogger.log("Script:"+scr);
 		
