@@ -103,6 +103,11 @@ public class VERIFYOUT extends MinimaFunction{
 	}
 	
 	@Override
+	public boolean isRequiredMinimumParameterNumber() {
+		return true;
+	}
+	
+	@Override
 	public int requiredParams() {
 		return 4;
 	}
