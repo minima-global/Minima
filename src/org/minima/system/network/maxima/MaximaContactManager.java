@@ -244,6 +244,7 @@ public class MaximaContactManager extends MessageProcessor {
 			//Reset that host PubKey.. and Update DB
 			if(mxhost != null) {
 				mxhost.createKeys();
+				mxhost.updateLastSeen();
 				maxdb.updateHost(mxhost);
 			}
 			
