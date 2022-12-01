@@ -10,13 +10,14 @@ import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.Value;
 
 public class CONCAT extends MinimaFunction{
-
+	
 	public CONCAT() {
 		super("CONCAT");
 	}
 
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
+		
 		//Check parameters..
 		checkMinParamNumber(requiredParams());
 		
@@ -35,10 +36,17 @@ public class CONCAT extends MinimaFunction{
 			
 			//This is a HEXValue
 			HexValue hex = (HexValue)vv;
+			hex.checkSize();
 			
 			//Get the bytes
 			parambytes[counter] = hex.getRawData();
 			totlen += parambytes[counter].length;
+		
+			//1MB max size..
+			if(totlen > HexValue.MAX_HEX_SIZE) {
+				throw new ExecutionException("MAX Concatenate len reached : "+totlen);
+			}
+			
 			counter++;
 		}
 		
