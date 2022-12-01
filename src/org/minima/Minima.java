@@ -13,6 +13,7 @@ import org.minima.system.commands.Command;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.system.params.ParamConfigurer;
+import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -94,6 +95,22 @@ public class Minima {
 		//Set this globally
 		GeneralParams.DATA_FOLDER 	= minimafolder.getAbsolutePath();
 
+		//Check for previous versions - and delete
+		File check102 = new File(dataFolder,"0.102");
+		if(check102.exists()) {
+			String rootpath = check102.getAbsolutePath();
+			MinimaLogger.log("OLD data folder found - "+rootpath);
+			MiniFile.deleteFileOrFolder(rootpath, check102);
+		}
+		
+		File check103 = new File(dataFolder,"0.103");
+		if(check103.exists()) {
+			String rootpath = check103.getAbsolutePath();
+			MinimaLogger.log("OLD data folder found - "+rootpath);
+			MiniFile.deleteFileOrFolder(rootpath, check103);
+		}
+		
+		//Run Params configure
 		ParamConfigurer configurer = null;
 		try {
 			configurer = new ParamConfigurer()

@@ -19,6 +19,7 @@ import java.util.function.BiConsumer;
 
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.params.P2PParams;
+import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 
 public class ParamConfigurer {
@@ -133,8 +134,23 @@ public class ParamConfigurer {
     enum ParamKeys {
     	data("data", "Specify the data folder (defaults to .minima/ under user home", (args, configurer) -> {
     		//Get that folder
-    		File dataFolder 	= new File(args);
-    				
+    		File dataFolder = new File(args);
+
+    		//Check for previous versions - and delete
+    		File check102 = new File(dataFolder,"0.102");
+    		if(check102.exists()) {
+    			String rootpath = check102.getAbsolutePath();
+    			MinimaLogger.log("OLD data folder found - "+rootpath);
+    			MiniFile.deleteFileOrFolder(rootpath, check102);
+    		}
+    		
+    		File check103 = new File(dataFolder,"0.103");
+    		if(check103.exists()) {
+    			String rootpath = check103.getAbsolutePath();
+    			MinimaLogger.log("OLD data folder found - "+rootpath);
+    			MiniFile.deleteFileOrFolder(rootpath, check103);
+    		}
+    		
     		//Depends on the Base Minima Version
     		File minimafolder 	= new File(dataFolder,GlobalParams.MINIMA_BASE_VERSION);
     		minimafolder.mkdirs();
