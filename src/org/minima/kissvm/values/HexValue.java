@@ -7,9 +7,9 @@ import org.minima.objects.base.MiniNumber;
 public class HexValue extends Value {
 	
 	/**
-	 * Maximum size of a HEX value - 2MB ( enough for a very large Merkle Proof )
+	 * Maximum size of a HEX value - 1MB ( enough for a very large Merkle Proof )
 	 */
-	public static final int MAX_HEX_SIZE = 2 * 1024 * 1024;
+	public static final int MAX_HEX_SIZE = 1024 * 1024;
 	
 	/**
 	 * The RAW bytes
@@ -103,7 +103,7 @@ public class HexValue extends Value {
 	public void checkSize() throws ExecutionException {
 		int len = getRawData().length;
 		if(len > MAX_HEX_SIZE) {
-			throw new ExecutionException("MAX HEX value length reached (2MB max) : "+len);
+			throw new ExecutionException("MAX HEX value length reached : "+len);
 		}
 	}
 }
