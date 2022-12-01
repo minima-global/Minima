@@ -13,8 +13,8 @@ public class MDSHubPending {
 		
 		//Start the HTML
 		String page = MDSUtil.HUB_START;
-		
-		page += MDSUtil.returnSessionIDButton(zSessionID,"main.html","Main Menu");
+
+		page += MDSUtil.returnHeader(zSessionID, true, true);
 		
 		//Get all the pending commands..
 		ArrayList<PendingCommand> allpending = Main.getInstance().getMDSManager().getAllPending(); 
