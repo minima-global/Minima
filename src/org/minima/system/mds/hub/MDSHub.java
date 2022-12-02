@@ -114,7 +114,7 @@ public class MDSHub {
 				+ "<form action=\"install.html\" method=POST enctype='multipart/form-data'>\n"
 				+ "  <input type='hidden' name='sessionid' value='"+zSessionID+"'>\n"
 				+ "  <input class='solobutton' type=\"file\" id=\"myFile\" name=\"filename\" required>\n"
-				+ "  <input class='solobutton' type=\"submit\" value='Install'>\n"
+				+ "  <input class='solobutton' type=\"submit\" value='&nbsp;Install&nbsp;'>\n"
 				+ "</form>"
 				+ "							</div>\n"
 				+ "                    </div>\n"
