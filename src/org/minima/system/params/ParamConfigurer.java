@@ -19,6 +19,7 @@ import java.util.function.BiConsumer;
 
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.params.P2PParams;
+import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 
 public class ParamConfigurer {
@@ -27,7 +28,6 @@ public class ParamConfigurer {
     private boolean daemon = false;
     private boolean rpcenable = false;
     private boolean mShutdownhook = true;
-    private boolean mUseMySQL= false;
     
     public ParamConfigurer usingConfFile(String[] programArgs) {
         List<String> zArgsList = Arrays.asList(programArgs);
@@ -131,15 +131,26 @@ public class ParamConfigurer {
         return mShutdownhook;
     }
     
-    public boolean isMySQLRequired() {
-    	return mUseMySQL;
-    }
-
     enum ParamKeys {
     	data("data", "Specify the data folder (defaults to .minima/ under user home", (args, configurer) -> {
     		//Get that folder
-    		File dataFolder 	= new File(args);
-    				
+    		File dataFolder = new File(args);
+
+    		//Check for previous versions - and delete
+    		File check102 = new File(dataFolder,"0.102");
+    		if(check102.exists()) {
+    			String rootpath = check102.getAbsolutePath();
+    			MinimaLogger.log("OLD data folder found - "+rootpath);
+    			MiniFile.deleteFileOrFolder(rootpath, check102);
+    		}
+    		
+    		File check103 = new File(dataFolder,"0.103");
+    		if(check103.exists()) {
+    			String rootpath = check103.getAbsolutePath();
+    			MinimaLogger.log("OLD data folder found - "+rootpath);
+    			MiniFile.deleteFileOrFolder(rootpath, check103);
+    		}
+    		
     		//Depends on the Base Minima Version
     		File minimafolder 	= new File(dataFolder,GlobalParams.MINIMA_BASE_VERSION);
     		minimafolder.mkdirs();
@@ -147,8 +158,8 @@ public class ParamConfigurer {
     		//Set this globally
     		GeneralParams.DATA_FOLDER 	= minimafolder.getAbsolutePath();
         }),
-    	password("password", "Main Wallet AES password - MUST be specified on first launch", (args, configurer) -> {
-            GeneralParams.MAIN_PASSWORD = args;
+    	dbpassword("dbpassword", "Main Wallet / SQL AES password - MUST be specified on first launch. CANNOT be changed later.", (args, configurer) -> {
+            GeneralParams.MAIN_DBPASSWORD = args;
         }),
     	basefolder("basefolder", "Specify a default file creation / backup / restore folder", (args, configurer) -> {
     		//Get that folder
@@ -180,6 +191,11 @@ public class ParamConfigurer {
             	GeneralParams.ALLOW_ALL_IP = true;
             }
         }),
+        archive("archive", "Run an Archive node - store all data / cascade for resync", (args, configurer) -> {
+            if ("true".equals(args)) {
+            	GeneralParams.ARCHIVE = true;
+            }
+        }),
         mdsenable("mdsenable", "Enable MDS", (args, configurer) -> {
             if ("true".equals(args)) {
             	GeneralParams.MDS_ENABLED = true;
@@ -195,7 +211,7 @@ public class ParamConfigurer {
     		
         	GeneralParams.MDS_INITFOLDER= initFolder.getAbsolutePath();
         }),
-        mdswrite("mdswrite", "Make an init MiniDAPP WRITE access", (arg, configurer) -> {
+        mdswrite("mdswrite", "Make an initial MiniDAPP WRITE access", (arg, configurer) -> {
         	GeneralParams.MDS_WRITE= arg;
         }),
         conf("conf", "Specify a configuration file (absolute)", (args, configurer) -> {
@@ -224,7 +240,8 @@ public class ParamConfigurer {
         }),
         mobile("mobile", "Sets this device to a mobile device - used for metrics only", (args, configurer) -> {
             if ("true".equals(args)) {
-                GeneralParams.IS_MOBILE = true;
+            	GeneralParams.IS_ACCEPTING_IN_LINKS = false;
+                GeneralParams.IS_MOBILE 			= true;
             }
         }),
         showparams("showparams", "Show startup params on launch", (args, configurer) -> {
@@ -266,35 +283,15 @@ public class ParamConfigurer {
                 GeneralParams.NO_SYNC_IBD = true;
             }
         }),
-        mysqlhost("mysqlhost", "Store all archive data in a MySQL DB", (args, configurer) -> {
-            GeneralParams.MYSQL_HOST = args;
-            configurer.mUseMySQL = true;
-        }),
-        mysqldb("mysqldb", "The MySQL Database", (args, configurer) -> {
-        	GeneralParams.MYSQL_DB = args;
-        	configurer.mUseMySQL = true;
-        }),
-        mysqluser("mysqluser", "The MySQL User", (args, configurer) -> {
-        	GeneralParams.MYSQL_USER = args;
-        	configurer.mUseMySQL = true;
-        }),
-        mysqlpassword("mysqlpassword", "The MySQL Password", (args, configurer) -> {
-        	GeneralParams.MYSQL_PASSWORD = args;
-        	configurer.mUseMySQL = true;
-        }),
         genesis("genesis", "Create a genesis block, -clean and -automine", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.CLEAN = true;
-//                GeneralParams.PRIVATE_NETWORK = true;
                 GeneralParams.GENESIS = true;
-//                GeneralParams.AUTOMINE = true;
             }
         }),
         test("test", "Use test params on a private network", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.TEST_PARAMS 		= true;
-//                GeneralParams.PRIVATE_NETWORK 	= true;
-//                GeneralParams.P2P_ENABLED 		= false;
                 TestParams.setTestParams();
             }
         }),

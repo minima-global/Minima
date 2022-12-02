@@ -86,7 +86,11 @@ public class OperatorExpression implements Expression{
 					Value.checkSameType(lval, rval);
 					StringValue lnv = (StringValue)lval;
 					StringValue rnv = (StringValue)rval;
-					return lnv.add(rnv);
+					
+					StringValue res = lnv.add(rnv);
+					res.checkSize();
+					
+					return res;
 				
 				}else {
 					throw new ExecutionException("Invalid type in ADD. MUST be Number or String "+lval.toString());

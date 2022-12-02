@@ -430,7 +430,11 @@ public class Contract {
 		if(vv.getValueType() != Value.VALUE_HEX) {
 			throw new ExecutionException("Incorrect Parameter type - should be HEXValue @ "+zParamNumber+" "+zFunction.getName());
 		}
-		return (HexValue)vv;
+		
+		HexValue res = (HexValue)vv;
+		res.checkSize();
+		
+		return res;
 	}
 	
 	public StringValue getStringParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
@@ -438,7 +442,11 @@ public class Contract {
 		if(vv.getValueType() != Value.VALUE_SCRIPT) {
 			throw new ExecutionException("Incorrect Parameter type - should be ScriptValue @ "+zParamNumber+" "+zFunction.getName());
 		}
-		return (StringValue)vv;
+		
+		StringValue res = (StringValue)vv;
+		res.checkSize();
+		
+		return res;
 	}
 	
 	public BooleanValue getBoolParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
@@ -665,23 +673,24 @@ public class Contract {
 //		String scr = new String("VERIFYOUT(@INPUT @AMOUNT PREVSTATE(2) @TOKENID FALSE)");
 //		String scr = new String("PREVSTATE(2) @GLOB FALSE");
 //		String scr = new String("@GLOB FALSE");
-//		String scr = new String("let g  = (1 * 3 + (45)+2)");
+		String scr = new String("let g  = (1 * 3 + (45)+2)");
 
 //		String scr = new String("LET safehouse = [ LET pkcold = coldkey LET pkhot = HOT_KEY\r\n"
 //				+ "                  IF SIGNEDBY ( pkcold ) THEN RETURN TRUE ENDIF\r\n"
 //				+ "                  IF SIGNEDBY ( pkhot ) THEN IF @BLKDIFF GT 20 THEN\r\n"
 //				+ "                  RETURN VERIFYOUT ( @INPUT PREVSTATE ( 21 ) @AMOUNT @TOKENID TRUE ) ENDIF ENDIF ]");
 //		String scr = new String("[as]+(sd)buyer (amount/price) buyer (amount/price)buyer");
-		String scr = new String("let a  = ((sd+1*(12) (23)))buyer ");
+//		String scr = new String("let a  = ((sd+1*(12) (23)))buyer ");
 //		String scr = new String("INC((asas) (2323))");
 //		String scr = new String("ASSERT ( [hello][dd](ff) [sdsd](f) *[jjj]) LET f=   (  0  ) ");
-
-		MinimaLogger.log(scr);
+		
+		MinimaLogger.log("Script:"+scr);
 		
 		String clean = Contract.cleanScript(scr,true);
+		MinimaLogger.log("Clean:"+clean);
 		
-		MinimaLogger.log("");
-		MinimaLogger.log(clean);
-		
+		//Run it..
+		Contract ctr = new Contract(clean, new ArrayList<>(), new Witness(), new Transaction(), new ArrayList<>(),true);
+		ctr.run();
 	}
 }

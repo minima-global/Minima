@@ -27,6 +27,7 @@ import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.commands.network.connect;
 import org.minima.system.network.NetworkManager;
@@ -548,13 +549,21 @@ public class NIOManager extends MessageProcessor {
 				lastpow = lastblock.getTxPoW();
 			}
 			
-			//Check is within acceptable time..
-			long timenow = System.currentTimeMillis();
-			long maxtime = timenow - SYNC_MAX_TIME;
-			if(lastpow.getTimeMilli().getAsLong() < maxtime) {
-				//we have enough..
-				MinimaLogger.log("We have enough archive blocks.. lastblock "+new Date(lastpow.getTimeMilli().getAsLong()));
+			//Do we have them all
+			if(lastpow.getBlockNumber().isEqual(MiniNumber.ONE)) {
+				//we have them all
 				return;
+			}
+			
+			//Check is within acceptable time..
+			if(!GeneralParams.ARCHIVE) {
+				long timenow = System.currentTimeMillis();
+				long maxtime = timenow - SYNC_MAX_TIME;
+				if(lastpow.getTimeMilli().getAsLong() < maxtime) {
+					//we have enough..
+					MinimaLogger.log("We have enough archive blocks.. lastblock "+new Date(lastpow.getTimeMilli().getAsLong()));
+					return;
+				}
 			}
 			
 			//Send a message asking for a sync

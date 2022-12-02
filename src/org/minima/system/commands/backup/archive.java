@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.Date;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.archive.MySQLConnect;
+import org.minima.database.archive.ArchiveManager;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.wallet.Wallet;
@@ -80,30 +80,66 @@ public class archive extends Command {
 	
 		String action = getParam("action");
 		
+		//Get the ArchiveManager
+		ArchiveManager arch = MinimaDB.getDB().getArchive();
 		
 		if(action.equals("integrity")) {
 			
-			if(!MinimaDB.getDB().getArchive().isStoreMySQL()) {
-				throw new CommandException("You are not running an Archive noide.. ");
+			//Scan through the entire DB.. checking.. 
+			MinimaLogger.log("Checking Archive DB.. this may take some time..");
+			
+			//What is the first block in the DB
+			TxBlock starterblock = arch.loadLastBlock();
+			
+			//What is the first entry
+			boolean startcheck 	= true;
+			boolean startatroot = false;
+			MiniNumber lastlog 	= MiniNumber.ZERO;
+			MiniNumber start 	= MiniNumber.ZERO;
+			if(starterblock == null) {
+				MinimaLogger.log("You have no Archive blocks..");
+				startcheck = false;
+			}else {
+				lastlog = starterblock.getTxPoW().getBlockNumber();
+				start 	= lastlog;
+				
+				//Is it from root..
+				MiniNumber startblocknumber = starterblock.getTxPoW().getBlockNumber();
+				if(startblocknumber.isEqual(MiniNumber.ONE)) {
+					MinimaLogger.log("ArchiveDB starts at root");
+					startatroot = true;
+				}
 			}
 			
-			//Scan through the entire DB.. checking.. 
-			MinimaLogger.log("Checking Archive DB.. this will take some time..");
-			
-			//Get the MySQL Connect DB
-			MySQLConnect mysql = MinimaDB.getDB().getArchive().getMySQLCOnnect();
-			
 			//Get the cascade
-			Cascade dbcasc = mysql.loadCascade(); 
+			Cascade dbcasc = arch.loadCascade(); 
+			if(dbcasc != null) {
+				//Get the tip..
+				MiniNumber tip = dbcasc.getTip().getTxPoW().getBlockNumber();
+				
+				//Can start from cascade
+				MinimaLogger.log("ArchiveDB cascade start : "+tip);
+				
+				//Start the test from then onwards
+				if(!startatroot) {
+					lastlog = tip.increment();
+					start 	= lastlog;
+				}
+				
+			}else {
+				
+				//Can start from cascade
+				MinimaLogger.log("ArchiveDB has no cascade ");
+			}
 			
 			//Get t the initial 1000
-			MiniNumber lastlog 		= MiniNumber.ZERO;
-			MiniNumber start 		= MiniNumber.ZERO;
 			MiniData parenthash 	= null;
 			MiniNumber parentnum 	= null;
 			int errorsfound 		= 0;
 			int total = 0;
-			while(true) {
+			MiniNumber archstart = start;
+			
+			while(startcheck) {
 				
 				//Do we log a message
 				if(lastlog.isLess(start.sub(new MiniNumber(2000)))) {
@@ -111,8 +147,12 @@ public class archive extends Command {
 					lastlog = start;
 				}
 				
+				//Use batches of 256
+				MiniNumber end = start.add(MiniNumber.TWOFIVESIX);
+				
 				//Get some blocks
-				ArrayList<TxBlock> blocks = mysql.loadBlockRange(start); 
+				ArrayList<TxBlock> blocks = arch.loadBlockRange(start.decrement(),end,false); 
+				
 				for(TxBlock block : blocks) {
 					total++;
 					
@@ -122,16 +162,9 @@ public class archive extends Command {
 						parentnum  	= block.getTxPoW().getBlockNumber();
 						lastlog 	= parentnum;
 						
-						MinimaLogger.log("ArchiveDB blocks start at block "+parentnum+" @ "+new Date(block.getTxPoW().getTimeMilli().getAsLong()));
-						if(dbcasc != null) {
-							MiniNumber tip = dbcasc.getTip().getTxPoW().getBlockNumber();
-							MinimaLogger.log("ArchiveDB Cascade tip at block "+tip);
-							
-							if(!parentnum.isEqual(tip.increment())) {
-								MinimaLogger.log("ArchiveDB start does not match Cascade!");
-								errorsfound++;
-							}	
-						}
+						archstart 	= parentnum;
+						
+						MinimaLogger.log("ArchiveDB blocks resync start at block "+parentnum+" @ "+new Date(block.getTxPoW().getTimeMilli().getAsLong()));
 						
 					}else {
 						
@@ -150,7 +183,7 @@ public class archive extends Command {
 				}
 				
 				//Have we checked them all..
-				if(blocks.size() < 2) {
+				if(blocks.size()==0) {
 					break;
 				}
 				
@@ -160,6 +193,7 @@ public class archive extends Command {
 			
 			JSONObject resp = new JSONObject();
 			resp.put("message", "Archive integrity check completed");
+			resp.put("start", archstart);
 			resp.put("blocks", total);
 			resp.put("cascade", (dbcasc!=null));
 			resp.put("errors", errorsfound);
@@ -217,10 +251,6 @@ public class archive extends Command {
 				//Set it..
 				wallet.updateSeedRow(phrase, seed.to0xString());
 				
-//				MinimaDB.getDB().getUserDB().setBasePrivatePhrase(phrase);
-//				MinimaDB.getDB().getUserDB().setBasePrivateSeed(seed.to0xString());
-//				MinimaDB.getDB().getWallet().initBaseSeed(seed);
-				
 				//Now cycle through all the default wallet keys..
 				MinimaLogger.log("Creating a total of "+keys+" keys / addresses..");
 				for(int i=0;i<keys;i++) {
@@ -245,14 +275,6 @@ public class archive extends Command {
 			MiniNumber endblock 	= MiniNumber.ZERO;
 			boolean foundsome 		= false;
 			
-			//Are we wiping previous archive
-			if(MinimaDB.getDB().getArchive().isStoreMySQL()) {
-				MySQLConnect mysql = MinimaDB.getDB().getArchive().getMySQLCOnnect();
-				mysql.wipeAll();
-				mysql.shutdown();
-				mysql.init();
-			}
-			
 			while(true) {
 				
 				//Send him a message..
@@ -261,9 +283,11 @@ public class archive extends Command {
 				//Is there a cascade..
 				if(startblock.isEqual(MiniNumber.ZERO) && ibd.hasCascade()) {
 					MinimaLogger.log("Cascade Received.. "+ibd.getCascade().getTip().getTxPoW().getBlockNumber());
+					
+					//Set it as our cascade
 					MinimaDB.getDB().setIBDCascade(ibd.getCascade());
 					
-					//Do we need to sdave this..
+					//Do we need to save this..
 					MinimaDB.getDB().getArchive().checkCascadeRequired(ibd.getCascade());
 				}
 				
@@ -288,14 +312,27 @@ public class archive extends Command {
 				Main.getInstance().getTxPoWProcessor().postProcessArchiveIBD(ibd, "0x00");
 			
 				//Now wait until processed
+				boolean error = false;
 				TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+				int attempts = 0;
 				while(foundsome && tip == null) {
 					Thread.sleep(250);
 					tip = MinimaDB.getDB().getTxPoWTree().getTip();
+					attempts++;
+					if(attempts>16) {
+						error = true;
+						break;
+					}
+				}
+				
+				if(error) {
+					MinimaLogger.log("ERROR : There was an error processing that IBD");
+					break;
 				}
 				
 				//Now wait to catch up..
 				MinimaLogger.log("Waiting for chain to catch up.. please wait");
+				attempts = 0;
 				while(foundsome) {
 					if(!tip.getBlockNumber().isEqual(endblock)) {
 						Thread.sleep(100);
@@ -304,10 +341,21 @@ public class archive extends Command {
 					}
 					
 					tip = MinimaDB.getDB().getTxPoWTree().getTip();
+					
+					attempts++;
+					if(attempts>100) {
+						error = true;
+						break;
+					}
+				}
+				
+				if(error) {
+					MinimaLogger.log("ERROR : There was an error processing that IBD");
+					break;
 				}
 				
 				//Do we have enough to ask again.. 
-				if(size<2) {
+				if(size==0) {
 					break;
 				}
 			}
@@ -315,25 +363,6 @@ public class archive extends Command {
 			//Notify the Android Listener
 			NotifyListener(minimalistener,"All blocks loaded.. pls wait");
 			MinimaLogger.log("All Archive data received and processed.. shutting down.."); 
-			
-			//DOUBLE CHECK
-			TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
-			while(foundsome && tip == null) {
-				Thread.sleep(1000);
-				tip = MinimaDB.getDB().getTxPoWTree().getTip();
-			}
-			
-			//Now wait to catch up..
-			while(foundsome) {
-				if(!tip.getBlockNumber().isEqual(endblock)) {
-					MinimaLogger.log("Waiting for chain to catch up.. please wait");
-					Thread.sleep(5000);
-				}else {
-					break;
-				}
-				
-				tip = MinimaDB.getDB().getTxPoWTree().getTip();
-			}
 			
 			//And NOW shut down..
 			Main.getInstance().getTxPoWProcessor().stopMessageProcessor();

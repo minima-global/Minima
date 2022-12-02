@@ -42,70 +42,11 @@ public class ArchiveManager extends SqlDB {
 	PreparedStatement SQL_SELECT_FIRST			= null;
 	PreparedStatement SQL_SELECT_SYNC_LIST		= null;
 	
-	/**
-	 * Is there a MySQL backup of ALL the blocks..
-	 */
-	boolean mStoreMySQL = false;
-	MySQLConnect mMySQL;
+	PreparedStatement SAVE_CASCADE				= null;
+	PreparedStatement LOAD_CASCADE				= null;
 	
 	public ArchiveManager() {
 		super();
-	}
-	
-	public void setupMySQL(String zHost, String zDB, String zUser, String zPassword) throws SQLException {
-		
-		MinimaLogger.log("MySQL integration for Archive node activated..");
-		
-		//New MySQL
-		mMySQL = new MySQLConnect(zHost, zDB, zUser, zPassword);
-		
-		//Initialise it..
-		mMySQL.init();
-		
-		//We are storing in MySQL
-		mStoreMySQL = true;
-	}
-	
-	public boolean isStoreMySQL() {
-		return mStoreMySQL;
-	}
-	
-	public void checkCascadeRequired(Cascade zCascade) throws SQLException {
-		
-		if(isStoreMySQL() && zCascade.getLength()>0) {
-			//Where does our archive start
-			TxBlock gen = mMySQL.loadBlockFromNum(1);
-			
-			//Do we have it..
-			if(gen!=null) {
-				//we have it.. no cascade required..
-				return;
-			}
-			
-			//Do we actually have a cascade yet
-			Cascade casc = mMySQL.loadCascade();
-			
-			//if not.. store our one..
-			if(casc == null) {
-				MinimaLogger.log("Saving Cascade in ARCHIVEDB.. tip : "+zCascade.getTip().getTxPoW().getBlockNumber());
-				mMySQL.saveCascade(zCascade);
-			}else {
-				MinimaLogger.log("Cascade in ARCHIVEDB.. tip : "+casc.getTip().getTxPoW().getBlockNumber());
-			}
-		}
-	}
-	
-	public MySQLConnect getMySQLCOnnect() {
-		return mMySQL;
-	}
-	
-	@Override
-	public void saveDB() {
-		super.saveDB();
-			
-		if(mStoreMySQL) {
-			mMySQL.shutdown();
-		}
 	}
 	
 	@Override
@@ -126,6 +67,16 @@ public class ArchiveManager extends SqlDB {
 		//Run it..
 		stmt.execute(create);
 		
+		//Create the cascade table
+		String cascade = "CREATE TABLE IF NOT EXISTS `cascadedata` ("
+						+ "		`id` int auto_increment,"
+						+ "		`cascadetip` BIGINT NOT NULL,"
+						+ "		`fulldata` blob NOT NULL"
+						+ ")";
+		
+		//Run it..
+		stmt.execute(cascade);
+		
 		//Create some fast indexes..
 		String index = "CREATE INDEX IF NOT EXISTS fastsearch ON syncblock ( txpowid, block )";
 				
@@ -144,17 +95,17 @@ public class ArchiveManager extends SqlDB {
 		SQL_EXISTS_SYNCBLOCK	= mSQLConnection.prepareStatement("SELECT block FROM syncblock WHERE txpowid=?");
 		SQL_TOTAL_COUNT			= mSQLConnection.prepareStatement("SELECT COUNT(*) as tot FROM syncblock");
 
-//		SQL_SELECT_RANGE		= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block>? AND block<? ORDER BY block DESC");
 		SQL_SELECT_RANGE		= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block>? AND block<?");
 		
-		//SQL_DELETE_TXBLOCKS		= mSQLConnection.prepareStatement("DELETE FROM syncblock WHERE timemilli < ?");
 		SQL_DELETE_TXBLOCKS		= mSQLConnection.prepareStatement("DELETE FROM syncblock WHERE block < ?");
 		
 		SQL_SELECT_LAST			= mSQLConnection.prepareStatement("SELECT * FROM syncblock ORDER BY block ASC LIMIT 1");
 		SQL_SELECT_FIRST		= mSQLConnection.prepareStatement("SELECT * FROM syncblock ORDER BY block DESC LIMIT 1");
 		
-//		SQL_SELECT_SYNC_LIST	= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block<? ORDER BY block DESC LIMIT 100");
 		SQL_SELECT_SYNC_LIST	= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block<? AND block>=?");
+	
+		SAVE_CASCADE 			= mSQLConnection.prepareStatement("INSERT INTO cascadedata ( cascadetip, fulldata ) VALUES ( ?, ? )");
+		LOAD_CASCADE 			= mSQLConnection.prepareStatement("SELECT fulldata FROM cascadedata ORDER BY cascadetip ASC LIMIT 1");
 	}
 	
 	public synchronized int getSize() {
@@ -180,7 +131,84 @@ public class ArchiveManager extends SqlDB {
 		return -1;
 	}
 	
+	public void checkCascadeRequired(Cascade zCascade) throws SQLException {
+		
+		if(zCascade.getLength()>0) {
+			
+			//Do we actually have a cascade yet
+			Cascade casc = loadCascade();
+			
+			//if not.. store our one..
+			if(casc == null) {
+				MinimaLogger.log("Saving Cascade in ARCHIVEDB.. tip : "+zCascade.getTip().getTxPoW().getBlockNumber());
+				saveCascade(zCascade);
+			}else {
+				MinimaLogger.log("Cascade already in ARCHIVEDB.. tip : "+casc.getTip().getTxPoW().getBlockNumber());
+			}
+		}
+	}
+
+	public boolean saveCascade(Cascade zCascade) throws SQLException {
+		
+		//get the MiniData version..
+		MiniData cascdata = MiniData.getMiniDataVersion(zCascade);
+		
+		//Get the Query ready
+		SAVE_CASCADE.clearParameters();
+	
+		//Set main params
+		SAVE_CASCADE.setLong(1, zCascade.getTip().getTxPoW().getBlockNumber().getAsLong());
+		
+		//And finally the actual bytes
+		SAVE_CASCADE.setBytes(2, cascdata.getBytes());
+		
+		//Do it.
+		SAVE_CASCADE.execute();
+		
+		return true;
+	}
+	
+	
+	public Cascade loadCascade() throws SQLException {
+		
+		LOAD_CASCADE.clearParameters();
+		
+		ResultSet rs = LOAD_CASCADE.executeQuery();
+		
+		//Is there a valid result.. ?
+		if(rs.next()) {
+			
+			//Get the details..
+			byte[] syncdata 	= rs.getBytes("fulldata");
+			
+			//Create MiniData version
+			MiniData minisync = new MiniData(syncdata);
+			
+			//Convert
+			Cascade casc = Cascade.convertMiniDataVersion(minisync);
+			
+			return casc;
+		}
+		
+		return null;
+	}
+	
 	public synchronized boolean saveBlock(TxBlock zBlock) throws SQLException {
+		
+		//Try Twice.. incase db shuts during..
+		try {
+			_intSaveBlock(zBlock);
+			
+		}catch(Exception exc) {
+			
+			//Try again..
+			_intSaveBlock(zBlock);
+		}
+		
+		return true;
+	}
+	
+	private synchronized boolean _intSaveBlock(TxBlock zBlock) throws SQLException {
 		
 		//Make sure..
 		checkOpen();
@@ -201,11 +229,6 @@ public class ArchiveManager extends SqlDB {
 		
 		//Do it.
 		SQL_INSERT_SYNCBLOCK.execute();
-	
-		//Do we MySQL
-		if(mStoreMySQL) {
-			mMySQL.saveBlock(zBlock);
-		}
 		
 		return true;		
 	}
@@ -406,6 +429,10 @@ public class ArchiveManager extends SqlDB {
 	}
 	
 	public synchronized ArrayList<TxBlock> loadBlockRange(MiniNumber zStartBlock, MiniNumber zEndBlock) {
+		return loadBlockRange(zStartBlock, zEndBlock, true);
+	}
+	
+	public synchronized ArrayList<TxBlock> loadBlockRange(MiniNumber zStartBlock, MiniNumber zEndBlock, boolean zDescending) {
 		
 		ArrayList<TxBlock> blocks = new ArrayList<>();
 		
@@ -443,12 +470,21 @@ public class ArchiveManager extends SqlDB {
 		}
 		
 		//Now do the ordering.. MUCH FASTER than the SQL way..
-		Collections.sort(blocks, new Comparator<TxBlock>() {
-			@Override
-			public int compare(TxBlock zBlk1, TxBlock zBlk2) {
-				return zBlk2.getTxPoW().getBlockNumber().compareTo(zBlk1.getTxPoW().getBlockNumber());
-			}
-		});
+		if(zDescending) {
+			Collections.sort(blocks, new Comparator<TxBlock>() {
+				@Override
+				public int compare(TxBlock zBlk1, TxBlock zBlk2) {
+					return zBlk2.getTxPoW().getBlockNumber().compareTo(zBlk1.getTxPoW().getBlockNumber());
+				}
+			});
+		}else {
+			Collections.sort(blocks, new Comparator<TxBlock>() {
+				@Override
+				public int compare(TxBlock zBlk1, TxBlock zBlk2) {
+					return zBlk1.getTxPoW().getBlockNumber().compareTo(zBlk2.getTxPoW().getBlockNumber());
+				}
+			});
+		}
 		
 		return blocks;
 	}
@@ -489,6 +525,7 @@ public class ArchiveManager extends SqlDB {
 	}
 
 	public synchronized int cleanDB() {
+		
 		try {
 			//Make sure..
 			checkOpen();
@@ -517,7 +554,8 @@ public class ArchiveManager extends SqlDB {
 			}
 			
 			//Last block to keep
-			MiniNumber cutoff = fb.getTxPoW().getBlockNumber().sub(new MiniNumber(MAX_KEEP_BLOCKS));
+//			MiniNumber cutoff = fb.getTxPoW().getBlockNumber().sub(new MiniNumber(MAX_KEEP_BLOCKS));
+			MiniNumber cutoff = fb.getTxPoW().getBlockNumber().sub(new MiniNumber(1000));
 			
 			//Set the parameters
 			SQL_DELETE_TXBLOCKS.clearParameters();

@@ -1,9 +1,15 @@
 package org.minima.kissvm.values;
 
+import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 
 public class HexValue extends Value {
+	
+	/**
+	 * Maximum size of a HEX value - 1MB ( enough for a very large Merkle Proof )
+	 */
+	public static final int MAX_HEX_SIZE = 1024 * 1024;
 	
 	/**
 	 * The RAW bytes
@@ -89,24 +95,15 @@ public class HexValue extends Value {
 		return mData.isEqual(zValue.getMiniData());
 	}
 	
-//	public boolean isLess(HEXValue zValue) {
-//		return mData.isLess(zValue.getMiniData());
-//	}
-//	
-//	public boolean isLessEqual(HEXValue zValue) {
-//		return mData.isLessEqual(zValue.getMiniData());
-//	}
-//	
-//	public boolean isMore(HEXValue zValue) {
-//		return mData.isMore(zValue.getMiniData());
-//	}
-//	
-//	public boolean isMoreEqual(HEXValue zValue) {
-//		return mData.isMoreEqual(zValue.getMiniData());
-//	}
-	
 	@Override
 	public String toString() {
 		return mData.toString();
+	}
+	
+	public void checkSize() throws ExecutionException {
+		int len = getRawData().length;
+		if(len > MAX_HEX_SIZE) {
+			throw new ExecutionException("MAX HEX value length reached : "+len);
+		}
 	}
 }

@@ -3,6 +3,7 @@
  */
 package org.minima.kissvm.values;
 
+import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.tokens.ScriptTokenizer;
 
 /**
@@ -52,10 +53,28 @@ public abstract class Value {
 		if(zValue.startsWith("[") && zValue.endsWith("]")) {
 			//remove the square brackets..
 			String sc = zValue.substring(1,zValue.length()-1);
-			return new StringValue(sc);
+			
+			//Check Size
+			StringValue sv = new StringValue(sc);
+			try {
+				sv.checkSize();
+			} catch (ExecutionException e) {
+				throw new IllegalArgumentException("Invalid StringValue max size reached");
+			}
+			
+			return sv;
 			
 		}else if(zValue.startsWith("0x")) {
-			return new HexValue(zValue);
+			
+			//Check Size
+			HexValue hexval = new HexValue(zValue);
+			try {
+				hexval.checkSize();
+			} catch (ExecutionException e) {
+				throw new IllegalArgumentException("Invalid HEXValue max size reached..");
+			}
+			
+			return hexval;
 
 		}else if(zValue.equals("TRUE")) {
 			return BooleanValue.TRUE;

@@ -29,6 +29,12 @@ public class TxPoWProcessor extends MessageProcessor {
 	private static final String TXPOWPROCESSOR_PROCESS_SYNCIBD 		= "TXP_PROCESS_SYNCIBD";
 	private static final String TXPOWPROCESSOR_PROCESS_ARCHIVEIBD 	= "TXP_PROCESS_ARCHIVEIBD";
 	
+	/**
+	 * The IBD you receive on startup
+	 */
+	private long mFirstIBD 				= System.currentTimeMillis();
+	private long MAX_FIRST_IBD_TIME 	= 1000 * 60 * 5; 
+	
 	public TxPoWProcessor() {
 		super("TXPOWPROCESSOR");
 	}
@@ -405,6 +411,9 @@ public class TxPoWProcessor extends MessageProcessor {
 							//Set this for us
 							MinimaDB.getDB().setIBDCascade(ibd.getCascade());
 							
+							//Do we need to store the cascade in the ArchiveDB
+							MinimaDB.getDB().getArchive().checkCascadeRequired(ibd.getCascade());
+							
 						}catch(Exception exc) {
 							MinimaLogger.log(exc);
 						}
@@ -423,19 +432,24 @@ public class TxPoWProcessor extends MessageProcessor {
 			TxPowTree txptree 		= MinimaDB.getDB().getTxPoWTree();
 			MiniNumber timenow 		= new MiniNumber(System.currentTimeMillis());
 			
-			//If our chain is up to date (within 3 hrs) we don't accept TxBlock at all.. only full blocks
-			if(txptree.getTip() != null && ibd.getTxBlocks().size()>0) {
-				MiniNumber notxblocktimediff = new MiniNumber(1000 * 60 * 180);
-				if(GeneralParams.TEST_PARAMS) {
-					notxblocktimediff = new MiniNumber(1000 * 60 * 5);
-				}
-				if(txptree.getTip().getTxPoW().getTimeMilli().sub(timenow).abs().isLess(notxblocktimediff)) {
-					MinimaLogger.log("Your chain tip is up to date - no TxBlocks accepted - only FULL TxPoW");
-					
-					//Ask to sync the TxBlocks
-					askToSyncTxBlocks(uid);
-					
-					return;
+			//First run accept the IBD - still follow heaviest chain
+			long diff = System.currentTimeMillis() - mFirstIBD;
+			if(diff > MAX_FIRST_IBD_TIME) {
+				
+				//If our chain is up to date (within 3 hrs) we don't accept TxBlock at all.. only full blocks
+				if(txptree.getTip() != null && ibd.getTxBlocks().size()>0) {
+					MiniNumber notxblocktimediff = new MiniNumber(1000 * 60 * 180);
+					if(GeneralParams.TEST_PARAMS) {
+						notxblocktimediff = new MiniNumber(1000 * 60 * 5);
+					}
+					if(txptree.getTip().getTxPoW().getTimeMilli().sub(timenow).abs().isLess(notxblocktimediff)) {
+						MinimaLogger.log("Your chain tip is up to date - no TxBlocks accepted - only FULL TxPoW");
+						
+						//Ask to sync the TxBlocks
+						askToSyncTxBlocks(uid);
+						
+						return;
+					}
 				}
 			}
 			

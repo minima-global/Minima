@@ -14,7 +14,6 @@ import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Greeting;
 import org.minima.objects.IBD;
 import org.minima.objects.Pulse;
-import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
@@ -392,10 +391,10 @@ public class NIOMessage implements Runnable {
 				boolean fullyvalid = true;
 				
 				//Interesting info.. check this.. probably a timing issue
-				if(blockdiffratio < 0.1) {
+				if(blockdiffratio < 0.01) {
 					//Block difficulty too low..
 					MinimaLogger.log("Received txpow with low block difficulty.. "+blockdiffratio+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
-					fullyvalid = false;
+//					fullyvalid = false;
 				}
 				
 				if(block.isLessEqual(cascadeblock)) {
@@ -434,8 +433,8 @@ public class NIOMessage implements Runnable {
 					fullyvalid = false;
 				}
 				
-				//Check the MMR - could be in a separate branch
-				if(!TxPoWChecker.checkMMR(tip.getMMR(), txpow)) {
+				//Check the MMR - could be in a separate branch / or a future txn..
+				if(!TxPoWChecker.checkMMR(tip.getMMR(), txpow, false)) {
 					fullyvalid = false;
 				}
 				
@@ -749,12 +748,6 @@ public class NIOMessage implements Runnable {
 			
 			}else if(type.isEqual(MSG_ARCHIVE_REQ)) {
 				
-				//Do we support archive data
-				if(!MinimaDB.getDB().getArchive().isStoreMySQL()) {
-					MinimaLogger.log("Archive IBD request we do not support.. from "+mClientUID);
-					return;
-				}
-				
 				//What block are we starting from..
 				MiniNumber firstblock 	= MiniNumber.ReadFromStream(dis);
 				
@@ -777,21 +770,21 @@ public class NIOMessage implements Runnable {
 			
 			}else if(type.isEqual(MSG_ARCHIVE_SINGLE_REQ)) {
 				
-				//Do we support archive data
-				if(!MinimaDB.getDB().getArchive().isStoreMySQL()) {
-					MinimaLogger.log("Archive single request we do not saupport.. from "+mClientUID);
-					return;
-				}
-				
-				//What block do they want
-				MiniNumber blocknum 	= MiniNumber.ReadFromStream(dis);
-				
-				//Get that block
-				TxBlock block = MinimaDB.getDB().getArchive().getMySQLCOnnect().loadBlockFromNum(blocknum.getAsLong());
-				if(block != null) {
-					//Send it to them..
-					NIOManager.sendNetworkMessage(mClientUID, MSG_ARCHIVE_DATA, block);
-				}
+//				//Do we support archive data
+//				if(!MinimaDB.getDB().getArchive().isStoreMySQL()) {
+//					MinimaLogger.log("Archive single request we do not saupport.. from "+mClientUID);
+//					return;
+//				}
+//				
+//				//What block do they want
+//				MiniNumber blocknum 	= MiniNumber.ReadFromStream(dis);
+//				
+//				//Get that block
+//				TxBlock block = MinimaDB.getDB().getArchive().getMySQLCOnnect().loadBlockFromNum(blocknum.getAsLong());
+//				if(block != null) {
+//					//Send it to them..
+//					NIOManager.sendNetworkMessage(mClientUID, MSG_ARCHIVE_DATA, block);
+//				}
 				
 			}else if(type.isEqual(MSG_ARCHIVE_DATA)) {
 			

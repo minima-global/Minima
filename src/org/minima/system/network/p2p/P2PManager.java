@@ -156,23 +156,22 @@ public class P2PManager extends MessageProcessor {
     		return;
     	}
     	
-    	int attempts = 0;
+    	int attempts=0;
+    	
     	while (state.isDoingDiscoveryConnection() && isRunning()){
             
-    		//Only try 5 times..
-    		if(attempts>=1) {
-    			MinimaLogger.log("Discovery connection paused.. failerd 5 times: ");
-    			break;
+    		//Only check a few times - will try again later on next process loop
+    		if(attempts>=3) {
+    			MinimaLogger.log("Discovery node connection paused.. tried "+attempts+" times..");
+    			return;
     		}
     		
     		InetSocketAddress address = P2PParams.DEFAULT_NODE_LIST.get(rand.nextInt(P2PParams.DEFAULT_NODE_LIST.size()));
-            
-            MinimaLogger.log("Discovery connection : "+address.toString());
-            Greeting greet = NIOManager.sendPingMessage(address.getHostString(), address.getPort(), true);
+
+    		Greeting greet = NIOManager.sendPingMessage(address.getHostString(), address.getPort(), true);
             if (greet != null) {
                 JSONArray peersArrayList = (JSONArray) greet.getExtraData().get("peers-list");
                 if (peersArrayList != null){
-//                    MinimaLogger.log(peersArrayList.toString());
                     List<InetSocketAddress> peers = InetSocketAddressIO.addressesJSONArrayToList(peersArrayList);
                     Collections.shuffle(peers);
                     state.getKnownPeers().addAll(peers);
@@ -191,6 +190,7 @@ public class P2PManager extends MessageProcessor {
             attempts++;
         }
     }
+    
     @Override
     protected void processMessage(Message zMessage) throws Exception {
     	

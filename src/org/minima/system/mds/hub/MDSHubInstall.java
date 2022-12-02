@@ -10,8 +10,7 @@ public class MDSHubInstall {
 		//Start the HTML
 		String page = MDSUtil.HUB_START;
 		
-		//Print the back button
-		page += MDSUtil.returnSessionIDButton(zSessionID,"main.html","Main Menu");
+		page += MDSUtil.returnHeader(zSessionID, true, true);
 		
 		String base = "./"+zDAPP.getUID()+"/";
 		

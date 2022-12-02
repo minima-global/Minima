@@ -479,6 +479,8 @@ public class MaximaManager extends MessageProcessor {
 					maxdb.newHost(mxhost);
 				}else {
 					MinimaLogger.log("MAXIMA EXISTING connection : "+nioc.getFullAddress());
+					mxhost.updateLastSeen();
+					maxdb.updateHost(mxhost);
 				}
 				
 				//So we know the details.. Post them to him.. so he knows who we are..
@@ -819,8 +821,8 @@ public class MaximaManager extends MessageProcessor {
 				
 				//Check Valid..
 				if(!uid.equals(nioc.getUID())) {
-					MinimaLogger.log("INVALID MAXCHECK REC:"+uid+" FROM:"+nioc.getUID());
-					return;
+					MinimaLogger.log("INVALID MAXCHECK REC:"+uid+" FROM:"+nioc.getUID()+" Could be multiple connections to the same Host..? @ "+nioc.getFullAddress());
+					//return;
 				}
 				
 				MinimaLogger.log("MAXIMA HOST accepted : "+nioc.getFullAddress());
