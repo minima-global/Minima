@@ -16,7 +16,7 @@ public class MDSHub {
 		//Start the HTML
 		String page = MDSUtil.HUB_START;
 		
-		page += MDSUtil.returnSessionIDButton(zSessionID,"pending.html","Pending Transactions");
+		page += MDSUtil.returnHeader(zSessionID, true, false);
 		
 		//Get the DB
 		MDSDB db = MinimaDB.getDB().getMDSDB();
@@ -114,21 +114,12 @@ public class MDSHub {
 				+ "<form action=\"install.html\" method=POST enctype='multipart/form-data'>\n"
 				+ "  <input type='hidden' name='sessionid' value='"+zSessionID+"'>\n"
 				+ "  <input class='solobutton' type=\"file\" id=\"myFile\" name=\"filename\" required>\n"
-				+ "  <input class='solobutton' type=\"submit\" value='Install'>\n"
+				+ "  <input class='solobutton' type=\"submit\" value='&nbsp;Install&nbsp;'>\n"
 				+ "</form>"
 				+ "							</div>\n"
 				+ "                    </div>\n"
 				+ "                </div>\n"
 				+ "            </li>";
-		
-		page +=   "<center>"
-				+ "<br>"
-				+ "<div>"
-				+ "		<form action='index.html' method=POST>\n"
-				+ "			<input class='solobutton' style='width:200;' onClick=\"this.form.submit(); this.disabled=true; this.value='Checking..';\" type=\"submit\" value='Log Off'>\n"
-				+ "		</form><br>"
-				+ "</div>"
-				+ "</center>";
 		
 		//End the HTML
 		page += MDSUtil.HUB_END;

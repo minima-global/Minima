@@ -10,7 +10,7 @@ public class MDSHubPendingAction {
 		String page = MDSUtil.HUB_START;
 		
 		//First the back button..
-		page += MDSUtil.returnSessionIDButton(zSessionID,"pending.html","Pending Transactions");
+		page += MDSUtil.returnHeader(zSessionID, true, false);
 		
 		//Now are we accepting
 		if(zAccept) {
