@@ -16,7 +16,9 @@ public class LexicalTokenizer{
 	int 		mPos;
 	int 		mSize;
 	
-	public LexicalTokenizer(List<ScriptToken> zTokens) {
+	int mStackDepth;
+	
+	public LexicalTokenizer(List<ScriptToken> zTokens, int zStackDepth) {
 		mTokens = zTokens;
 		mPos 	= 0;
 		mSize   = zTokens.size();
@@ -46,5 +48,17 @@ public class LexicalTokenizer{
 	
 	public boolean hasMoreElements() {
 		return mPos<mSize;
+	}
+	
+	public int getStackDepth() {
+		return mStackDepth;
+	}
+	
+	public void incrementStackDepth() {
+		mStackDepth++;
+	}
+	
+	public void decrementStackDepth() {
+		mStackDepth--;
 	}
 }

@@ -16,7 +16,7 @@ public class LexicalTokenizerTests {
 
     @Test
     public void testConstructors() {
-        LexicalTokenizer lt = new LexicalTokenizer(new ArrayList<ScriptToken>());
+        LexicalTokenizer lt = new LexicalTokenizer(new ArrayList<ScriptToken>(),0);
         assertThrows(MinimaParseException.class, () -> {
             lt.getNextToken();
         });
@@ -34,7 +34,7 @@ public class LexicalTokenizerTests {
         String Script = "a b c d e f g h i j k l m n o p q r s t u v w x y z";
         try {
             List<ScriptToken> tokens = ScriptToken.tokenize(Script);
-            LexicalTokenizer lt = new LexicalTokenizer(tokens);
+            LexicalTokenizer lt = new LexicalTokenizer(tokens,0);
 
             for (int i = 0; i < tokens.size(); i++) {
                 assertEquals(i, lt.getCurrentPosition());

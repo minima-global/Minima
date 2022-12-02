@@ -40,10 +40,8 @@ public class FUNCTION extends MinimaFunction{
 			//What type is it..
 			if(paramval.getValueType() == Value.VALUE_SCRIPT) {
 				finalfunction = REPLACE.safeReplaceAll(finalfunction, "$"+i, "["+paramval.toString()+"]");
-//				finalfunction = finalfunction.replace("$"+i, "["+paramval.toString()+"]");
 			}else {
 				finalfunction = REPLACE.safeReplaceAll(finalfunction, "$"+i, paramval.toString());
-//				finalfunction = finalfunction.replace("$"+i, paramval.toString());
 			}
 		}
 		
@@ -58,7 +56,7 @@ public class FUNCTION extends MinimaFunction{
 			List<ScriptToken> tokens = tokz.tokenize();	
 		
 			//And now convert to a statement block..
-			StatementBlock mBlock = StatementParser.parseTokens(tokens);
+			StatementBlock mBlock = StatementParser.parseTokens(tokens, zContract.getStackDepth());
 			
 			//Now run it..
 			mBlock.run(zContract);

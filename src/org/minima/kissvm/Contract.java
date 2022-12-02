@@ -87,6 +87,12 @@ public class Contract {
 	public int MAX_INSTRUCTIONS = 1024;
 	
 	/**
+	 * The STACK depth - how many recursive functions can you call
+	 */
+	public static final int MAX_STACK_DEPTH = 32;
+	int mStackDepth = 0;
+	
+	/**
 	 * A complete log of the contract execution
 	 */
 	String mCompleteLog="";
@@ -177,7 +183,7 @@ public class Contract {
 			}
 		
 			//Convert this list of Tokens into a list of Statements
-			mBlock = StatementParser.parseTokens(tokens);
+			mBlock = StatementParser.parseTokens(tokens, 0);
 			
 			traceLog("Script token parse OK.");
 			mParseOK = true;
@@ -303,11 +309,36 @@ public class Contract {
 		MAX_INSTRUCTIONS = zMax;
 	}
 	
+	public void resetStackDepth() {
+		mStackDepth = 0;
+	}
+	
+	public int getStackDepth() {
+		return mStackDepth;
+	}
+	
+	public void incrementStackDepth() {
+		mStackDepth++;
+	}
+	
+	public void decrementStackDepth() {
+		mStackDepth--;
+	}
+	
+	public void checkStackDepth() throws ExecutionException {
+		if(mStackDepth>MAX_STACK_DEPTH) {
+			throw new ExecutionException("Stack depth too deep! (MAX "+MAX_STACK_DEPTH+") "+mStackDepth);
+		}
+	}
+
 	public void run() {
 		if(!mParseOK) {
 			traceLog("Script parse FAILED. Please fix and retry.");
 			return;
 		}
+		
+		//Reset the Stack Depth
+		resetStackDepth();
 		
 		//Run the code block
 		try {
@@ -691,7 +722,38 @@ public class Contract {
 //		String scr = new String("LET a = 10 LET b = -2147483648 LET c = HEX(a - b) RETURN SUBSET(a b c)");
 		//String scr = new String("LET a = 0xFF let tt = SUBSET(0 2 a) RETURN tt");
 		
-		String scr = "LET (0 0) = 0xFF RETURN EXISTS (0 0)";
+//		String scr = "LET x = 0xAAAAAAAA " +
+//                "LET s = [REV(REV(] " +
+//                "LET e = [))] " +
+//                "LET g = 0 " +
+//                "WHILE g LT 10 DO" +
+//                "   LET g = INC(g) " +
+//                "   LET s = CONCAT(HEX(s) HEX(s)) " +
+//                "   LET s = UTF8(s) " +
+//                "   LET e = CONCAT(HEX(e) HEX(e)) " +
+//                "   LET e = UTF8(e) " +
+//                "   LET x = CONCAT(HEX(x) HEX(x)) " +
+//                "ENDWHILE " +
+//                "LET g = 0 " +
+//                "LET func = UTF8(CONCAT(HEX([LET z = ]) HEX(s) HEX([x]) HEX(e) HEX([ RETURN TRUE]))) " ;
+////                "EXEC func ";
+		
+//		String scr = "EXEC [LET t =REV(REV(0xFFEE))]";
+		
+		String scr = 
+				"LET x = 0xAAAAAAAA " +
+				"LET s = [REV(] " +
+				"LET e = [)] " +
+				"LET loop = 6 " +
+				"LET g = 0 " +
+				"WHILE g LT loop DO" +
+				"   LET g = INC(g) " +
+                "	LET s = s+s "+
+                "	LET e = e+e "+
+                "ENDWHILE "+
+                "LET complete = [LET result = ]+s+[0xFFEE]+e "+
+                "EXEC complete";
+                
 //		String scr = "LET a = [AAAA] " +
 //                "LET b = [LET c = LEN(a) LET d = LEN(a) LET e = LEN(a) LET d = LEN(a) ] " +
 //                "LET g = 0 " +

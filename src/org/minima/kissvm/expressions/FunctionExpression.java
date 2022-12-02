@@ -28,10 +28,19 @@ public class FunctionExpression implements Expression {
 	public Value getValue(Contract zContract) throws ExecutionException {
 		//This action counts as one instruction
 		zContract.incrementInstructions();
+
+		//Increment Stack Depth
+		zContract.incrementStackDepth();
 				
+		//Check Stack depth
+		zContract.checkStackDepth();
+		
 		//Get the Value
 		Value val = mFunction.runFunction(zContract);
-				
+		
+		//Decrement Stack Depth
+		zContract.decrementStackDepth();
+		
 		//And trace it..
 		zContract.traceLog(toString()+" returns:"+val.toString());
 		

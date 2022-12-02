@@ -5,6 +5,7 @@ package org.minima.kissvm.expressions;
 
 import java.util.List;
 
+import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.tokens.LexicalTokenizer;
@@ -26,14 +27,14 @@ public class ExpressionParser {
 	 * @param zTokens
 	 * @return
 	 */
-	public static Expression getExpression(List<ScriptToken> zTokens) throws MinimaParseException{
+	public static Expression getExpression(List<ScriptToken> zTokens, int zStackDepth) throws MinimaParseException{
 		//Must have some tokens!
 		if(zTokens.size() == 0) {
 			throw new MinimaParseException("Cannot have EMPTY expression");
 		}
 		
 		//Create a Lexical Tokenizer..
-		LexicalTokenizer lt = new LexicalTokenizer(zTokens);
+		LexicalTokenizer lt = new LexicalTokenizer(zTokens, zStackDepth);
 		
 		//get the complete expression..
 		Expression exp = getExpression(lt);
@@ -233,6 +234,12 @@ public class ExpressionParser {
 			//Which Function
 			MinimaFunction func = MinimaFunction.getFunction(tok.getToken());
 			
+			//Increment Stack Depth
+			zTokens.incrementStackDepth();
+			if(zTokens.getStackDepth() > Contract.MAX_STACK_DEPTH) {
+				throw new MinimaParseException("Stack too deep (MAX "+Contract.MAX_STACK_DEPTH+") "+zTokens.getStackDepth());
+			}
+			
 			//Remove the Front bracket.
 			ScriptToken bracket = zTokens.getNextToken();
 			if(bracket.getTokenType() != ScriptToken.TOKEN_OPENBRACKET) {
@@ -264,7 +271,17 @@ public class ExpressionParser {
 			//Now create the Complete Expression
 			exp = new FunctionExpression(func);
 			
+			//Decrement Stack
+			zTokens.decrementStackDepth();
+			
 		}else if(tok.getTokenType() == ScriptToken.TOKEN_OPENBRACKET) {
+			
+			//Increment Stack Depth
+			zTokens.incrementStackDepth();
+			if(zTokens.getStackDepth() > Contract.MAX_STACK_DEPTH) {
+				throw new MinimaParseException("Stack too deep (MAX "+Contract.MAX_STACK_DEPTH+") "+zTokens.getStackDepth());
+			}
+			
 			//It's a new complete expression
 			exp = getExpression(zTokens);
 			
@@ -274,6 +291,9 @@ public class ExpressionParser {
 			if(closebracket.getTokenType() != ScriptToken.TOKEN_CLOSEBRACKET) {
 				throw new MinimaParseException("Missing close bracket. Found : "+closebracket.getToken());
 			}
+			
+			//Decrement Stack
+			zTokens.decrementStackDepth();
 			
 		}else{
 			throw new MinimaParseException("Incorrect Token in script "+tok.getToken()+" @ "+zTokens.getCurrentPosition());
