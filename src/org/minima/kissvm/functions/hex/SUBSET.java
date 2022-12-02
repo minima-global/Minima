@@ -31,10 +31,15 @@ public class SUBSET extends MinimaFunction {
 		
 		//Now pick it out of the 3rd value..
 		byte[] orig = zContract.getHexParam(2, this).getRawData();
+		int origlen = orig.length;
 		
 		//Check limits
-		if(start<0 || end>orig.length) {
-			throw new ExecutionException("SUBSET range outside size of data array "+start+"-"+end+" length:"+orig.length);
+		if(start<0 || start>origlen) {
+			throw new ExecutionException("SUBSET start outside size of data array "+start+"-"+end+" length:"+origlen);
+		}
+		
+		if(end<0 || end>origlen) {
+			throw new ExecutionException("SUBSET end outside size of data array "+start+"-"+end+" length:"+origlen);
 		}
 		
 		//Now get the subset
