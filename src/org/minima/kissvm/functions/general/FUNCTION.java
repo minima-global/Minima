@@ -5,6 +5,7 @@ import java.util.List;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
+import org.minima.kissvm.functions.string.REPLACE;
 import org.minima.kissvm.statements.StatementBlock;
 import org.minima.kissvm.statements.StatementParser;
 import org.minima.kissvm.tokens.ScriptToken;
@@ -38,9 +39,11 @@ public class FUNCTION extends MinimaFunction{
 			
 			//What type is it..
 			if(paramval.getValueType() == Value.VALUE_SCRIPT) {
-				finalfunction = finalfunction.replace("$"+i, "["+paramval.toString()+"]");
+				finalfunction = REPLACE.safeReplaceAll(finalfunction, "$"+i, "["+paramval.toString()+"]");
+//				finalfunction = finalfunction.replace("$"+i, "["+paramval.toString()+"]");
 			}else {
-				finalfunction = finalfunction.replace("$"+i, paramval.toString());
+				finalfunction = REPLACE.safeReplaceAll(finalfunction, "$"+i, paramval.toString());
+//				finalfunction = finalfunction.replace("$"+i, paramval.toString());
 			}
 		}
 		
