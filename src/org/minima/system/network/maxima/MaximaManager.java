@@ -825,14 +825,14 @@ public class MaximaManager extends MessageProcessor {
 					//return;
 				}
 				
-				MinimaLogger.log("MAXIMA HOST accepted : "+nioc.getFullAddress());
-				
 				//Get the HOST
 				MaximaHost mxhost = maxdb.loadHost(nioc.getFullAddress());
 				if(mxhost == null) {
 					MinimaLogger.log("MaximaHost NOT Found on CHKCONNECT_APP "+nioc.getFullAddress()+" incoming:"+nioc.isIncoming());
 					return;
 				}
+				
+				MinimaLogger.log("MAXIMA HOST accepted : "+nioc.getFullAddress());
 				
 				//Now we can use this as one of Our Addresses
 				mxhost.setConnected(1);
