@@ -622,11 +622,7 @@ public class MaximaManager extends MessageProcessor {
 					}
 				}
 				
-				//Delete from Hosts DB
-				if(!reconnect) {
-					maxdb.deleteHost(nioc.getFullAddress());
-				}
-				
+				//There has been a change..
 				NotifyMaximaHostsChanged(nioc.getFullAddress(), false);
 			}
 			
