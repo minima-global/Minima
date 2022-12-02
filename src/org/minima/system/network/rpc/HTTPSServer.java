@@ -77,7 +77,7 @@ public abstract class HTTPSServer implements Runnable {
             TrustManager[] tm = trustManagerFactory.getTrustManagers();
              
             // Initialize SSLContext
-            SSLContext sslContext = SSLContext.getInstance("TLSv1.1");
+            SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
             sslContext.init(km,  tm, null);
              
             return sslContext;
