@@ -744,7 +744,7 @@ public class Contract {
 				"LET x = 0xAAAAAAAA " +
 				"LET s = [REV(] " +
 				"LET e = [)] " +
-				"LET loop = 6 " +
+				"LET loop = 20 " +
 				"LET g = 0 " +
 				"WHILE g LT loop DO" +
 				"   LET g = INC(g) " +

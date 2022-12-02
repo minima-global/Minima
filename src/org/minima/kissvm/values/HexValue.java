@@ -7,9 +7,9 @@ import org.minima.objects.base.MiniNumber;
 public class HexValue extends Value {
 	
 	/**
-	 * Maximum size of a HEX value - 1MB ( enough for a very large Merkle Proof )
+	 * Maximum size of a HEX value - 64K
 	 */
-	public static final int MAX_HEX_SIZE = 1024 * 1024;
+	public static final int MAX_HEX_SIZE = 64 * 1024;
 	
 	/**
 	 * The RAW bytes

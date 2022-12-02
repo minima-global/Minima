@@ -8,7 +8,7 @@ public class StringValue extends Value {
 	/**
 	 * MAX String Value length is 1MB - can still use multiple MAST scripts for more..
 	 */
-	public static final int MAX_STRING_LEN = 1024*1024;
+	public static final int MAX_STRING_LEN = 1024 * 64;
 	
 	/**
 	 * The String
@@ -48,7 +48,7 @@ public class StringValue extends Value {
 	public void checkSize() throws ExecutionException {
 		int len = getBytes().length;
 		if(len > MAX_STRING_LEN) {
-			throw new ExecutionException("MAX String length reached (1MB max) : "+len);
+			throw new ExecutionException("MAX String length reached (64K max) : "+len);
 		}
 	}
 }
