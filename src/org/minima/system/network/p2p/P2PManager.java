@@ -270,8 +270,6 @@ public class P2PManager extends MessageProcessor {
             if(state.getKnownPeers().size() < 250) {
                 InetSocketAddress address = (InetSocketAddress) zMessage.getObject("address");
                 state.getKnownPeers().add(address);
-                
-                MinimaLogger.log("ADD PEER "+address.toString());
             }
         }
         sendMessages(sendMsgs);
@@ -356,8 +354,6 @@ public class P2PManager extends MessageProcessor {
         state.getKnownPeers().remove(state.getMyMinimaAddress());
 
         if (!state.isNoConnect()) {
-
-        	MinimaLogger.log("LOOP CHECK PEERS "+state.getKnownPeers().size());
         	
             if (!state.getKnownPeers().isEmpty()) {
                 // If there are fewer connections than the min number of connections connect using the peers list

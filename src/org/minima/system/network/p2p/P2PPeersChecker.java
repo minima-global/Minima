@@ -73,7 +73,7 @@ public class P2PPeersChecker extends MessageProcessor {
     @Override
     protected void processMessage(Message zMessage) throws Exception {
    	
-    	MinimaLogger.log("PEERSCHECKER:"+zMessage.toString());
+    	//MinimaLogger.log("PEERSCHECKER:"+zMessage.toString());
     	
         if (zMessage.getMessageType().equals(PEERS_INIT)) {
 
@@ -106,7 +106,9 @@ public class P2PPeersChecker extends MessageProcessor {
             }
             
             if (force || P2PFunctions.getAllConnectedConnections().size() > 0) {
-                
+            
+            	MinimaLogger.log("P2P CHECK PEER :"+address.toString());
+            	
             	//Get a Greeting if possible
             	Greeting greet = NIOManager.sendPingMessage(address.getHostString(), address.getPort(), true);
                 
