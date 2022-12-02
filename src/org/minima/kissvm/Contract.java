@@ -561,6 +561,9 @@ public class Contract {
 		//Remove all the excess white space
 		String script = zScript.replaceAll("\\s+"," ").trim();
 		
+		//Remove all \
+		script = script.replaceAll("\\\\","").trim();
+		
 		//First CONVERT..
 		ScriptTokenizer tokz = new ScriptTokenizer(script, true);
 		try {
@@ -673,7 +676,7 @@ public class Contract {
 //		String scr = new String("VERIFYOUT(@INPUT @AMOUNT PREVSTATE(2) @TOKENID FALSE)");
 //		String scr = new String("PREVSTATE(2) @GLOB FALSE");
 //		String scr = new String("@GLOB FALSE");
-		String scr = new String("let g  = (1 * 3 + (45)+2)");
+//		String scr = new String("let g  = (1 * 3 + (45)+2)");
 
 //		String scr = new String("LET safehouse = [ LET pkcold = coldkey LET pkhot = HOT_KEY\r\n"
 //				+ "                  IF SIGNEDBY ( pkcold ) THEN RETURN TRUE ENDIF\r\n"
@@ -683,6 +686,27 @@ public class Contract {
 //		String scr = new String("let a  = ((sd+1*(12) (23)))buyer ");
 //		String scr = new String("INC((asas) (2323))");
 //		String scr = new String("ASSERT ( [hello][dd](ff) [sdsd](f) *[jjj]) LET f=   (  0  ) ");
+	
+		//String scr = new String("let a=[AA] let g=0 while g lt 10 do let g=inc(g) let a=replace(a [A] a) endwhile");
+//		String scr = new String("LET a = 10 LET b = -2147483648 LET c = HEX(a - b) RETURN SUBSET(a b c)");
+		//String scr = new String("LET a = 0xFF let tt = SUBSET(0 2 a) RETURN tt");
+		
+		String scr = "LET (0 0) = 0xFF RETURN EXISTS (0 0)";
+//		String scr = "LET a = [AAAA] " +
+//                "LET b = [LET c = LEN(a) LET d = LEN(a) LET e = LEN(a) LET d = LEN(a) ] " +
+//                "LET g = 0 " +
+//                "WHILE g LT 5 DO" +
+//                "   LET g = INC(g) " +
+//                "   LET b = CONCAT(HEX(b) HEX(b)) " +
+//                "   LET b = STRING(b) " +
+//                "ENDWHILE " +
+//                "LET g = 0 " +
+//                "LET b = CONCAT( HEX(b) HEX([RETURN TRUE]) ) "+
+//                "WHILE g LT 5 DO " +
+//                "   EXEC ASCII(b) " +
+//                "ENDWHILE ";
+//		String scr = new String("let a=[AAAA] let g=replace(a [A] a)");
+//		String scr = new String("let a=0xFF let g=0 while g lt 100 do let g=inc(g) let a=concat(a a) endwhile");
 		
 		MinimaLogger.log("Script:"+scr);
 		
