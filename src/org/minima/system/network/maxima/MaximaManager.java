@@ -544,6 +544,10 @@ public class MaximaManager extends MessageProcessor {
 				
 				//Ok - we should be connected..
 				MaximaHost mxhost = maxdb.loadHost(nioc.getFullAddress());
+				if(mxhost == null) {
+					MinimaLogger.log("MaximaHost NOT Found on CHECK_CONNECTED "+nioc.getFullAddress()+" incoming:"+nioc.isIncoming());
+					return;
+				}
 				
 				//Are we connected..
 				MinimaLogger.log("MAXIMA Check if connected : "+nioc.getFullAddress()+" "+mxhost.getConnected());
@@ -825,6 +829,10 @@ public class MaximaManager extends MessageProcessor {
 				
 				//Get the HOST
 				MaximaHost mxhost = maxdb.loadHost(nioc.getFullAddress());
+				if(mxhost == null) {
+					MinimaLogger.log("MaximaHost NOT Found on CHKCONNECT_APP "+nioc.getFullAddress()+" incoming:"+nioc.isIncoming());
+					return;
+				}
 				
 				//Now we can use this as one of Our Addresses
 				mxhost.setConnected(1);
