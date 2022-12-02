@@ -7,6 +7,8 @@ public class MDSHubLoggedOn {
 		//Start the HTML
 		String page = MDSUtil.HUB_START;
 		
+		page += MDSUtil.returnHeader(zSessionID, false, false);
+		
 		//Add the Main page Link
 		page += MDSUtil.returnSessionIDButton(zSessionID,"main.html","Main Menu");
 		

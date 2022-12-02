@@ -10,7 +10,7 @@ public class MDSHubPermission {
 		String page = MDSUtil.HUB_START;
 		
 		//Now the return form..
-		page += MDSUtil.returnSessionIDButton(zSessionID,"main.html","Main Menu");
+		page += MDSUtil.returnHeader(zSessionID, true, true);
 				
 		page += "<br><center><div class='app-title'>MiniDAPP given "+zPermission+" permissions..</div></center>";
 		

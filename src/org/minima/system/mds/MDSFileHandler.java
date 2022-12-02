@@ -525,6 +525,11 @@ public class MDSFileHandler implements Runnable {
 		
 		//Here is the login attempt
 		Map params  		= getQueryMap(new String(cbuf));
+		if(!params.containsKey("sessionid")) {
+			MinimaLogger.log("Missing MiniHUB SessionID");
+			return null;
+		}
+		
 		String sessionid 	= params.get("sessionid").toString();
 		
 		if(!mMainSessionID.equals(sessionid)) {

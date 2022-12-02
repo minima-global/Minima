@@ -7,8 +7,7 @@ public static String createHubPage() {
 		//Start the HTML
 		String page = MDSUtil.HUB_START;
 		
-		//Add the Main page Link
-		page += MDSUtil.returnSessionIDButton("","index.html","Back to Logon");
+		page += MDSUtil.returnHeader("", false, false);
 		
 		//Now the Login Form
 		page += 
