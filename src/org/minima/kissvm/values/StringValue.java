@@ -6,7 +6,7 @@ import org.minima.objects.base.MiniString;
 public class StringValue extends Value {
 	
 	/**
-	 * MAX String Value length is 1MB - can still use multiple MAST scripts for more..
+	 * MAX String Value length is 64K - can still use multiple MAST scripts for more..
 	 */
 	public static final int MAX_STRING_LEN = 1024 * 64;
 	
