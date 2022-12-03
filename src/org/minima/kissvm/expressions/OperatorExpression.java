@@ -88,7 +88,6 @@ public class OperatorExpression implements Expression{
 					StringValue rnv = (StringValue)rval;
 					
 					StringValue res = lnv.add(rnv);
-					res.checkSize();
 					
 					return res;
 				

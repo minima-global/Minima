@@ -17,6 +17,11 @@ public class StringValue extends Value {
 	
 	public StringValue(String zScript) {
 		mScript = new MiniString( zScript );
+		
+		int len = getBytes().length;
+		if(len > MAX_STRING_LEN) {
+			throw new IllegalArgumentException("MAX String length reached (64K max) : "+len);
+		}
 	}
 	
 	@Override
@@ -43,12 +48,5 @@ public class StringValue extends Value {
 	
 	public StringValue add(StringValue zSCValue) {
 		return new StringValue(mScript.toString()+zSCValue.toString());
-	}
-	
-	public void checkSize() throws ExecutionException {
-		int len = getBytes().length;
-		if(len > MAX_STRING_LEN) {
-			throw new ExecutionException("MAX String length reached (64K max) : "+len);
-		}
 	}
 }

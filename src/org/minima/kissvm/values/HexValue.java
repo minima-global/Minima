@@ -7,9 +7,9 @@ import org.minima.objects.base.MiniNumber;
 public class HexValue extends Value {
 	
 	/**
-	 * Maximum size of a HEX value - 64K
+	 * Maximum size of a HEX value - 256K
 	 */
-	public static final int MAX_HEX_SIZE = 64 * 1024;
+	public static final int MAX_HEX_SIZE = 256 * 1024;
 	
 	/**
 	 * The RAW bytes
@@ -17,14 +17,14 @@ public class HexValue extends Value {
 	protected MiniData mData;
 	
 	/**
-	 * Needed by ScriptValue to init
+	 * Convert a HEX String into a byte array
 	 */
-	protected HexValue() {}
+	public HexValue(String zHex) {
+		this(new MiniData(zHex));
+	}
 	
 	/**
 	 * Convert a MiniData byte array into a HEXValue
-	 * 
-	 * @param zData
 	 */
 	public HexValue(MiniData zData) {
 		this(zData.getBytes()); 
@@ -32,22 +32,16 @@ public class HexValue extends Value {
 	
 	/**
 	 * Convert a byte array into a HEXValue
-	 * 
-	 * @param zData
 	 */
 	public HexValue(byte[] zData) {
 		//It's a HEX value..
 		mData   = new MiniData(zData);
-	}
-	
-	/**
-	 * Convert a HEX String into a byte array
-	 * 
-	 * @param zHex
-	 */
-	public HexValue(String zHex) {
-		//HEX
-		mData 	= new MiniData(zHex);
+		
+		//Check Size
+		int len = mData.getLength();
+		if(len > MAX_HEX_SIZE) {
+			throw new IllegalArgumentException("MAX HEX value size reached : "+len+" MAX:"+MAX_HEX_SIZE);
+		}
 	}
 	
 	/**
@@ -98,12 +92,5 @@ public class HexValue extends Value {
 	@Override
 	public String toString() {
 		return mData.toString();
-	}
-	
-	public void checkSize() throws ExecutionException {
-		int len = getRawData().length;
-		if(len > MAX_HEX_SIZE) {
-			throw new ExecutionException("MAX HEX value length reached : "+len);
-		}
 	}
 }

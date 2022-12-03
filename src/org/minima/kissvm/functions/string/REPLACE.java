@@ -78,17 +78,4 @@ public class REPLACE extends MinimaFunction {
 		
 		return sb.toString();
 	}
-	
-	public static void main(String[] zArgs) throws ExecutionException {
-		
-		String start 	= "aa";
-		String search 	= "a";
-		
-		System.out.println("0:"+start);
-		
-		for(int i=1;i<5;i++) {
-			start = safeReplaceAll(start, search, start);
-			System.out.println(i+":"+start.length());
-		}	
-	}
 }

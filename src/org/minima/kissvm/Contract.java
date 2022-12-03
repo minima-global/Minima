@@ -458,11 +458,7 @@ public class Contract {
 		if(vv.getValueType() != Value.VALUE_HEX) {
 			throw new ExecutionException("Incorrect Parameter type - should be HEXValue @ "+zParamNumber+" "+zFunction.getName());
 		}
-		
-		HexValue res = (HexValue)vv;
-		res.checkSize();
-		
-		return res;
+		return (HexValue)vv;
 	}
 	
 	public StringValue getStringParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
@@ -470,11 +466,7 @@ public class Contract {
 		if(vv.getValueType() != Value.VALUE_SCRIPT) {
 			throw new ExecutionException("Incorrect Parameter type - should be ScriptValue @ "+zParamNumber+" "+zFunction.getName());
 		}
-		
-		StringValue res = (StringValue)vv;
-		res.checkSize();
-		
-		return res;
+		return (StringValue)vv;
 	}
 	
 	public BooleanValue getBoolParam(int zParamNumber, MinimaFunction zFunction) throws ExecutionException {
@@ -735,19 +727,18 @@ public class Contract {
 //                "LET func = UTF8(CONCAT(HEX([LET z = ]) HEX(s) HEX([x]) HEX(e) HEX([ RETURN TRUE]))) " ;
 ////                "EXEC func ";
 		
-//		String scr = "let func = [ EXEC [ LET f=0 ]  ] "
-//					+ "EXEC func "
-//					+ "LET g =0";
+		String scr = "let func = 0xFFFFFFFF "
+				   + "LET y = CONCAT ( func func func ) ";
 
-		String scr =  "IF 1 EQ 0 THEN "
-					+ "	LET y=1 "
-					+ "ELSEIF 1 EQ 1 THEN "
-					+ "	IF 0 EQ 0 THEN "
-					+ "		EXEC [ EXEC [ LET y=4 ] ]"
-					+ "	ENDIF "
-					+ "ELSE "
-					+ "	LET y=2 "
-					+ "ENDIF";// +
+//		String scr =  "IF 1 EQ 0 THEN "
+//					+ "	LET y=1 "
+//					+ "ELSEIF 1 EQ 1 THEN "
+//					+ "	IF 0 EQ 0 THEN "
+//					+ "		EXEC [ EXEC [ LET y=4 ] ]"
+//					+ "	ENDIF "
+//					+ "ELSE "
+//					+ "	LET y=2 "
+//					+ "ENDIF";// +
 //		"LET g = 0 " +
 //		"WHILE g LT loop DO" +
 //		"   LET g = INC(g) " +
