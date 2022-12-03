@@ -1,6 +1,5 @@
 package org.minima.kissvm.values;
 
-import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 
