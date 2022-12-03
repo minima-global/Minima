@@ -20,6 +20,7 @@ import org.minima.kissvm.statements.commands.WHILEstatement;
 import org.minima.kissvm.tokens.LexicalTokenizer;
 import org.minima.kissvm.tokens.ScriptToken;
 import org.minima.kissvm.values.BooleanValue;
+import org.minima.utils.MinimaLogger;
 
 /**
  * IF..THEN ELSEIF.. THEN.. ELSE.. ENDIF
@@ -36,6 +37,9 @@ public class StatementParser {
 	 */
 	public static StatementBlock parseTokens(List<ScriptToken> zTokens, int zStackDepth) throws Exception{
 		List<Statement> stats = new ArrayList<>();
+		
+		//The current stack depth
+		int currentStackDepth = zStackDepth+1;
 		
 		//Cycle..
 		int currentPosition	= 0;
@@ -86,7 +90,7 @@ public class StatementParser {
 					}
 					
 					//Create a Lexical Tokenizer.. there may be multiple expressions..
-					LexicalTokenizer lt = new LexicalTokenizer(arraypos, zStackDepth);
+					LexicalTokenizer lt = new LexicalTokenizer(arraypos, currentStackDepth);
 					
 					ArrayList<Expression> exps = new ArrayList<Expression>();
 					while(!lt.checkAllTokensUsed()) {
@@ -102,7 +106,7 @@ public class StatementParser {
 					currentPosition += lettokens.size();
 					
 					//Now create an expression from those tokens..
-					Expression exp = ExpressionParser.getExpression(lettokens, zStackDepth);
+					Expression exp = ExpressionParser.getExpression(lettokens, currentStackDepth);
 					
 					//And finally create the LET statement..
 					stats.add(new LETstatement(exps, exp));
@@ -122,7 +126,7 @@ public class StatementParser {
 					currentPosition += lettokens.size();
 					
 					//Now create an expression from those tokens..
-					Expression exp = ExpressionParser.getExpression(lettokens, zStackDepth);
+					Expression exp = ExpressionParser.getExpression(lettokens, currentStackDepth);
 					
 					//And finally create the LET statement..
 					stats.add(new LETstatement(varname, exp));
@@ -137,7 +141,7 @@ public class StatementParser {
 				currentPosition += exectokens.size();
 				
 				//Now create an expression from those tokens..
-				Expression exp = ExpressionParser.getExpression(exectokens, zStackDepth);
+				Expression exp = ExpressionParser.getExpression(exectokens, currentStackDepth);
 				
 				//And finally create the LET statement..
 				stats.add(new EXECstatement(exp));
@@ -148,7 +152,7 @@ public class StatementParser {
 				currentPosition += masttokens.size();
 				
 				//Now create an expression from those tokens..
-				Expression exp = ExpressionParser.getExpression(masttokens, zStackDepth);
+				Expression exp = ExpressionParser.getExpression(masttokens, currentStackDepth);
 				
 				//And finally create the LET statement..
 				stats.add(new MASTstatement(exp));
@@ -161,7 +165,7 @@ public class StatementParser {
 				List<ScriptToken> conditiontokens = getTokensToNextCommand(zTokens, currentPosition);
 				
 				//Now create an expression from those tokens..
-				Expression IFcondition = ExpressionParser.getExpression(conditiontokens, zStackDepth);
+				Expression IFcondition = ExpressionParser.getExpression(conditiontokens, currentStackDepth);
 				
 				//Increments
 				currentPosition += conditiontokens.size() + 1;
@@ -179,7 +183,7 @@ public class StatementParser {
 				actiontokens = actiontokens.subList(0, actiontokens.size()-1);
 				
 				//And convert that block of Tokens into a block of code..
-				StatementBlock IFaction = parseTokens(actiontokens, zStackDepth+1);
+				StatementBlock IFaction = parseTokens(actiontokens, currentStackDepth);
 				
 				//Add what we know to the IF statement..
 				ifsx.addCondition(IFcondition, IFaction);
@@ -199,7 +203,7 @@ public class StatementParser {
 						conditiontokens = getTokensToNextCommand(zTokens, currentPosition);
 						
 						//Create an Expression..
-						ELSEcondition = ExpressionParser.getExpression(conditiontokens, zStackDepth);
+						ELSEcondition = ExpressionParser.getExpression(conditiontokens, currentStackDepth);
 						
 						//Increments
 						currentPosition += conditiontokens.size() + 1;
@@ -218,7 +222,7 @@ public class StatementParser {
 					actiontokens = actiontokens.subList(0, actiontokens.size()-1);
 					
 					//And convert that block of Tokens into a block of code..
-					ELSEaction = parseTokens(actiontokens, zStackDepth+1);
+					ELSEaction = parseTokens(actiontokens, currentStackDepth);
 					
 					//Add what we know to the IF statement..
 					ifsx.addCondition(ELSEcondition, ELSEaction);
@@ -232,7 +236,7 @@ public class StatementParser {
 				List<ScriptToken> conditiontokens = getTokensToNextCommand(zTokens, currentPosition);
 				
 				//Now create an expression from those tokens..
-				Expression WHILEcondition = ExpressionParser.getExpression(conditiontokens, zStackDepth);
+				Expression WHILEcondition = ExpressionParser.getExpression(conditiontokens, currentStackDepth);
 				
 				//Increments
 				currentPosition += conditiontokens.size() + 1;
@@ -247,7 +251,7 @@ public class StatementParser {
 				actiontokens = actiontokens.subList(0, actiontokens.size()-1);
 				
 				//And convert that block of Tokens into a block of code..
-				StatementBlock WHILEaction = parseTokens(actiontokens, zStackDepth+1);
+				StatementBlock WHILEaction = parseTokens(actiontokens, currentStackDepth);
 				
 				//Create an IF statement
 				WHILEstatement ws = new WHILEstatement(WHILEcondition, WHILEaction);
@@ -261,7 +265,7 @@ public class StatementParser {
 				currentPosition += returntokens.size();
 				
 				//Now create an expression from those tokens..
-				Expression exp = ExpressionParser.getExpression(returntokens, zStackDepth);
+				Expression exp = ExpressionParser.getExpression(returntokens, currentStackDepth);
 				
 				//Create a new RETURN statement
 				stats.add(new ASSERTstatement(exp));
@@ -272,7 +276,7 @@ public class StatementParser {
 				currentPosition += returntokens.size();
 				
 				//Now create an expression from those tokens..
-				Expression exp = ExpressionParser.getExpression(returntokens, zStackDepth);
+				Expression exp = ExpressionParser.getExpression(returntokens, currentStackDepth);
 				
 				//Create a new RETURN statement
 				stats.add(new RETURNstatement(exp));
