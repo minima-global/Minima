@@ -740,8 +740,7 @@ public class Contract {
 //					+ "LET g =0";
 
 		String scr = 
-		"LET s = [EXEC [EXEC [EXEC [EXEC [EXEC [EXEC [EXEC [LET f=0]]]]]]]] " +
-		"EXEC s";// +
+		"LET ( 1 (1+2) ) = 1 ";// +
 //		"LET g = 0 " +
 //		"WHILE g LT loop DO" +
 //		"   LET g = INC(g) " +

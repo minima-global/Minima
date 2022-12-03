@@ -50,11 +50,8 @@ public class ExpressionParser {
 	}
 	
 	/**
-	 * Private classes to hierarchically break down the script into Valid Expressions with
+	 * Classes to hierarchically break down the script into Valid Expressions with
 	 * correct precedence.
-	 * @param zTokens
-	 * @param zPos
-	 * @return
 	 */
 	public static Expression getExpression(LexicalTokenizer zTokens) throws MinimaParseException{
 		
@@ -237,11 +234,9 @@ public class ExpressionParser {
 			exp = new ConstantExpression(BooleanValue.FALSE);
 		
 		}else if(tok.getTokenType() == ScriptToken.TOKEN_FUNCTIION) {
+			
 			//Which Function
 			MinimaFunction func = MinimaFunction.getFunction(tok.getToken());
-			
-			//Increment Stack Depth
-			zTokens.incrementStackDepth();
 			
 			//Remove the Front bracket.
 			ScriptToken bracket = zTokens.getNextToken();
@@ -262,9 +257,15 @@ public class ExpressionParser {
 				}else {
 					//Go Back
 					zTokens.goBackToken();
+			
+					//Increment Stack Depth
+					zTokens.incrementStackDepth();
 					
 					//And get the next expression..
 					func.addParameter(getExpression(zTokens));
+					
+					//Decrement Stack
+					zTokens.decrementStackDepth();
 				}
 			}
 						
@@ -274,9 +275,6 @@ public class ExpressionParser {
 			//Now create the Complete Expression
 			exp = new FunctionExpression(func);
 			
-			//Decrement Stack
-			zTokens.decrementStackDepth();
-			
 		}else if(tok.getTokenType() == ScriptToken.TOKEN_OPENBRACKET) {
 			
 			//Increment Stack Depth
@@ -285,15 +283,15 @@ public class ExpressionParser {
 			//It's a new complete expression
 			exp = getExpression(zTokens);
 			
+			//Decrement Stack
+			zTokens.decrementStackDepth();
+			
 			//Next token MUST be a close bracket..
 			ScriptToken closebracket = zTokens.getNextToken();
 			
 			if(closebracket.getTokenType() != ScriptToken.TOKEN_CLOSEBRACKET) {
 				throw new MinimaParseException("Missing close bracket. Found : "+closebracket.getToken());
 			}
-			
-			//Decrement Stack
-			zTokens.decrementStackDepth();
 			
 		}else{
 			throw new MinimaParseException("Incorrect Token in script "+tok.getToken()+" @ "+zTokens.getCurrentPosition());
