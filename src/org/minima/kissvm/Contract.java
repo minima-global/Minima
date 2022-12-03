@@ -87,9 +87,9 @@ public class Contract {
 	public int MAX_INSTRUCTIONS = 1024;
 	
 	/**
-	 * The STACK depth - how many recursive functions can you call
+	 * The STACK depth - how deep can you go
 	 */
-	public static final int MAX_STACK_DEPTH = 32;
+	public static final int MAX_STACK_DEPTH = 64;
 	int mStackDepth = 0;
 	
 	/**
@@ -279,7 +279,7 @@ public class Contract {
 	
 	public void traceLog(String zLog) {
 		if(isTrace()) {
-			MinimaLogger.log("INST["+mNumInstructions+"] - "+zLog);
+			MinimaLogger.log("INST["+mNumInstructions+"] STACK["+getStackDepth()+"] - "+zLog);
 		}
 		
 		//Store the complete Log
@@ -317,20 +317,17 @@ public class Contract {
 		return mStackDepth;
 	}
 	
-	public void incrementStackDepth() {
+	public void incrementStackDepth() throws ExecutionException  {
 		mStackDepth++;
+		if(mStackDepth>MAX_STACK_DEPTH) {
+			throw new ExecutionException("Stack depth too deep! (MAX "+MAX_STACK_DEPTH+") "+mStackDepth);
+		}
 	}
 	
 	public void decrementStackDepth() {
 		mStackDepth--;
 	}
 	
-	public void checkStackDepth() throws ExecutionException {
-		if(mStackDepth>MAX_STACK_DEPTH) {
-			throw new ExecutionException("Stack depth too deep! (MAX "+MAX_STACK_DEPTH+") "+mStackDepth);
-		}
-	}
-
 	public void run() {
 		if(!mParseOK) {
 			traceLog("Script parse FAILED. Please fix and retry.");
@@ -593,7 +590,7 @@ public class Contract {
 		String script = zScript.replaceAll("\\s+"," ").trim();
 		
 		//Remove all \
-		script = script.replaceAll("\\\\","").trim();
+//		script = script.replaceAll("\\\\","").trim();
 		
 		//First CONVERT..
 		ScriptTokenizer tokz = new ScriptTokenizer(script, true);
@@ -738,21 +735,34 @@ public class Contract {
 //                "LET func = UTF8(CONCAT(HEX([LET z = ]) HEX(s) HEX([x]) HEX(e) HEX([ RETURN TRUE]))) " ;
 ////                "EXEC func ";
 		
-//		String scr = "EXEC [LET t =REV(REV(0xFFEE))]";
-		
+//		String scr = "let func = [ EXEC [ LET f=0 ]  ] "
+//					+ "EXEC func "
+//					+ "LET g =0";
+
 		String scr = 
-				"LET x = 0xAAAAAAAA " +
-				"LET s = [REV(] " +
-				"LET e = [)] " +
-				"LET loop = 20 " +
-				"LET g = 0 " +
-				"WHILE g LT loop DO" +
-				"   LET g = INC(g) " +
-                "	LET s = s+s "+
-                "	LET e = e+e "+
-                "ENDWHILE "+
-                "LET complete = [LET result = ]+s+[0xFFEE]+e "+
-                "EXEC complete";
+		"LET s = [EXEC [EXEC [EXEC [EXEC [EXEC [EXEC [EXEC [LET f=0]]]]]]]] " +
+		"EXEC s";// +
+//		"LET g = 0 " +
+//		"WHILE g LT loop DO" +
+//		"   LET g = INC(g) " +
+//        "	LET s = s+s "+
+//        "	LET e = e+e "+
+//        "ENDWHILE "+
+//        "LET complete = [LET result = ]+s+[0xFFEE]+e "+
+//        "EXEC complete";
+		
+//		String scr = 
+//				"LET s = [REV(] " +
+//				"LET e = [)] " +
+//				"LET loop = 11 " +
+//				"LET g = 0 " +
+//				"WHILE g LT loop DO" +
+//				"   LET g = INC(g) " +
+//                "	LET s = s+s "+
+//                "	LET e = e+e "+
+//                "ENDWHILE "+
+//                "LET complete = [LET result = ]+s+[0xFFEE]+e "+
+//                "EXEC complete";
                 
 //		String scr = "LET a = [AAAA] " +
 //                "LET b = [LET c = LEN(a) LET d = LEN(a) LET e = LEN(a) LET d = LEN(a) ] " +

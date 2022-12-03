@@ -57,6 +57,12 @@ public class ExpressionParser {
 	 * @return
 	 */
 	public static Expression getExpression(LexicalTokenizer zTokens) throws MinimaParseException{
+		
+		//Check Stack Depth
+		if(zTokens.getStackDepth() > Contract.MAX_STACK_DEPTH) {
+			throw new MinimaParseException("Stack too deep (MAX "+Contract.MAX_STACK_DEPTH+") "+zTokens.getStackDepth());
+		}
+		
 		//Top level..
 		Expression exp = getRelation(zTokens);
 		
@@ -236,9 +242,6 @@ public class ExpressionParser {
 			
 			//Increment Stack Depth
 			zTokens.incrementStackDepth();
-			if(zTokens.getStackDepth() > Contract.MAX_STACK_DEPTH) {
-				throw new MinimaParseException("Stack too deep (MAX "+Contract.MAX_STACK_DEPTH+") "+zTokens.getStackDepth());
-			}
 			
 			//Remove the Front bracket.
 			ScriptToken bracket = zTokens.getNextToken();
@@ -278,9 +281,6 @@ public class ExpressionParser {
 			
 			//Increment Stack Depth
 			zTokens.incrementStackDepth();
-			if(zTokens.getStackDepth() > Contract.MAX_STACK_DEPTH) {
-				throw new MinimaParseException("Stack too deep (MAX "+Contract.MAX_STACK_DEPTH+") "+zTokens.getStackDepth());
-			}
 			
 			//It's a new complete expression
 			exp = getExpression(zTokens);

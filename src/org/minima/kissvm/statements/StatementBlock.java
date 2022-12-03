@@ -38,9 +38,6 @@ public class StatementBlock {
 		
 		//Increment Stack Depth
 		zContract.incrementStackDepth();
-				
-		//Check Stack depth
-		zContract.checkStackDepth();
 		
 		//Cycle through all the statements
 		for(Statement stat : mStatements) {
