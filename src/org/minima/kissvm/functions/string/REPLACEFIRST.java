@@ -1,14 +1,10 @@
 package org.minima.kissvm.functions.string;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
-import org.minima.utils.MinimaLogger;
 
 public class REPLACEFIRST extends MinimaFunction {
 
