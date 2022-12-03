@@ -179,7 +179,7 @@ public class StatementParser {
 				actiontokens = actiontokens.subList(0, actiontokens.size()-1);
 				
 				//And convert that block of Tokens into a block of code..
-				StatementBlock IFaction = parseTokens(actiontokens, zStackDepth);
+				StatementBlock IFaction = parseTokens(actiontokens, zStackDepth+1);
 				
 				//Add what we know to the IF statement..
 				ifsx.addCondition(IFcondition, IFaction);
@@ -218,7 +218,7 @@ public class StatementParser {
 					actiontokens = actiontokens.subList(0, actiontokens.size()-1);
 					
 					//And convert that block of Tokens into a block of code..
-					ELSEaction = parseTokens(actiontokens, zStackDepth);
+					ELSEaction = parseTokens(actiontokens, zStackDepth+1);
 					
 					//Add what we know to the IF statement..
 					ifsx.addCondition(ELSEcondition, ELSEaction);
@@ -247,7 +247,7 @@ public class StatementParser {
 				actiontokens = actiontokens.subList(0, actiontokens.size()-1);
 				
 				//And convert that block of Tokens into a block of code..
-				StatementBlock WHILEaction = parseTokens(actiontokens, zStackDepth);
+				StatementBlock WHILEaction = parseTokens(actiontokens, zStackDepth+1);
 				
 				//Create an IF statement
 				WHILEstatement ws = new WHILEstatement(WHILEcondition, WHILEaction);

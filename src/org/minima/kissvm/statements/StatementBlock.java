@@ -35,6 +35,13 @@ public class StatementBlock {
 	 * @throws ExecutionException
 	 */
 	public void run(Contract zContract) throws ExecutionException {
+		
+		//Increment Stack Depth
+		zContract.incrementStackDepth();
+				
+		//Check Stack depth
+		zContract.checkStackDepth();
+		
 		//Cycle through all the statements
 		for(Statement stat : mStatements) {
 			//Check for EXIT
@@ -51,5 +58,8 @@ public class StatementBlock {
 			//Run the next Statement
 			stat.execute(zContract);
 		}
+		
+		//Decrement Stack Depth
+		zContract.decrementStackDepth();
 	}
 }
