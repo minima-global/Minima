@@ -1,10 +1,6 @@
 package org.minima.tests.kissvm.expressions;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.ArrayList;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.ConstantExpression;
@@ -19,6 +15,10 @@ import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
+
+import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FunctionExpressionTests {
 
@@ -52,11 +52,11 @@ public class FunctionExpressionTests {
 
         Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
 
-        assertEquals("should be equal ", "0x0123456789", fe1.getValue(ctr).toString());
-        assertEquals("should be equal ", "HELLO WORLD", Value.getValue("[HELLO WORLD]").toString());
-        assertEquals("should be equal ", 4, ((NumberValue) fe2.getValue(ctr)).getNumber().getAsInt());
-        assertEquals("should be equal ", 10, ((NumberValue) fe3.getValue(ctr)).getNumber().getAsInt());
-        assertEquals("should be equal ", 11, ((NumberValue) fe4.getValue(ctr)).getNumber().getAsInt());
+        assertEquals("0x0123456789", fe1.getValue(ctr).toString(), "should be equal ");
+        assertEquals("HELLO WORLD", Value.getValue("[HELLO WORLD]").toString(), "should be equal ");
+        assertEquals(4, ((NumberValue) fe2.getValue(ctr)).getNumber().getAsInt(), "should be equal ");
+        assertEquals(10, ((NumberValue) fe3.getValue(ctr)).getNumber().getAsInt(), "should be equal ");
+        assertEquals(11, ((NumberValue) fe4.getValue(ctr)).getNumber().getAsInt(), "should be equal ");
     }
 
     @Test
@@ -90,18 +90,18 @@ public class FunctionExpressionTests {
 
         exp_s = "function:" + fCONCAT.getName() + ", params:" + fCONCAT.getAllParameters();
         obj_s = fe1.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         exp_s = "function:" + fLEN.getName() + ", params:" + fLEN.getAllParameters();
         obj_s = fe2.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         exp_s = "function:" + fABS.getName() + ", params:" + fABS.getAllParameters();
         obj_s = fe3.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         exp_s = "function:" + fINC.getName() + ", params:" + fINC.getAllParameters();
         obj_s = fe4.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
     }
 }

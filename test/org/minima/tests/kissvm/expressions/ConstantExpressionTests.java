@@ -1,10 +1,7 @@
 package org.minima.tests.kissvm.expressions;
 
-import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.ConstantExpression;
@@ -16,6 +13,10 @@ import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniNumber;
+
+import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ConstantExpressionTests {
 
@@ -33,10 +34,10 @@ public class ConstantExpressionTests {
 
         Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<StateVariable>());
 
-        assertEquals("should be equal ", bv, ce1.getValue(ctr));
-        assertEquals("should be equal ", hv, ce2.getValue(ctr));
-        assertEquals("should be equal ", nv, ce3.getValue(ctr));
-        assertEquals("should be equal ", sv, ce4.getValue(ctr));
+        assertEquals(bv, ce1.getValue(ctr), "should be equal ");
+        assertEquals(hv, ce2.getValue(ctr), "should be equal ");
+        assertEquals(nv, ce3.getValue(ctr), "should be equal ");
+        assertEquals(sv, ce4.getValue(ctr), "should be equal ");
     }
 
     @Test
@@ -56,19 +57,19 @@ public class ConstantExpressionTests {
 
         exp_s = bv.toString();
         obj_s = ce1.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         exp_s = hv.toString();
         obj_s = ce2.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         exp_s = nv.toString();
         obj_s = ce3.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         exp_s = sv.toString();
         obj_s = ce4.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
     }
 
 }

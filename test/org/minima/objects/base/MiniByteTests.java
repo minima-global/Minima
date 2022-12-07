@@ -1,18 +1,10 @@
 package org.minima.objects.base;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
-import org.junit.Test;
-import org.minima.objects.base.MiniByte;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MiniByteTests {
     @Test
@@ -29,19 +21,19 @@ public class MiniByteTests {
         System.out.println("MiniByte(true) k value is " + k);
         System.out.println("MiniByte(false) l value is " + l);
         System.out.println("MiniByte(byt) m value is " + m);
-        assertNotNull("should not be null", i);
+        assertNotNull(i, "should not be null");
         System.out.println("i:" + i + " resolves as " + i);
-        assertNotNull("should not be null", k.getByteValue());
+        assertNotNull(k.getByteValue(), "should not be null");
         System.out.println("k.getByteValue() k:" + k + " resolves as " + k);
-        assertFalse("should be equal resolves false", i.isEqual(j));
+        assertFalse(i.isEqual(j), "should be equal resolves false");
         System.out.println("i.isEqual(j) i:" + i + " j:" + j + " resolves as " + i.equals(j));
-        assertTrue("should be equal resolves true", i.isEqual(l));
+        assertTrue(i.isEqual(l), "should be equal resolves true");
         System.out.println("i.isEqual(l) i:" + i + " l:" + l + " resolves as " + i.isEqual(l));
-        assertTrue("should be true resolves true", j.isTrue());
+        assertTrue(j.isTrue(), "should be true resolves true");
         System.out.println("j.isTrue() j:" + j + " resolves as " + j.isTrue());
-        assertFalse("should be false resolves false", i.isTrue());
+        assertFalse(i.isTrue(), "should be false resolves false");
         System.out.println("i.isTrue() i:" + i + " resolves as " + i.isTrue());
-        assertNotNull("should not be null", j.toString());
+        assertNotNull(j.toString(), "should not be null");
         System.out.println("j.toString() The bitwise value is " + j.toString());
     }
 
@@ -61,8 +53,7 @@ public class MiniByteTests {
             System.out.println(" i is now equal to " + i);
         } catch (final IOException e) {
             System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
-            assertTrue(" there should be an IOException with message input too large ",
-                    e.getMessage().contains(new String("input too large")));
+            assertTrue(e.getMessage().contains(new String("input too large")), " there should be an IOException with message input too large ");
         }
 
     }
@@ -77,8 +68,7 @@ public class MiniByteTests {
             System.out.println(" i is now equal to " + i);
         } catch (final IOException e) {
             System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
-            assertTrue(" there should be an IOException with message input too large ",
-                    e.getMessage().contains(new String("input too large")));
+            assertTrue(e.getMessage().contains(new String("input too large")), " there should be an IOException with message input too large ");
         }
     }
 

@@ -1,44 +1,36 @@
 package org.minima.tests.cli.quit;
 
-import org.junit.Test;
-import org.junit.Before;
-import org.junit.After;
-import static org.junit.Assert.*;
-
-import org.minima.system.Main;
-import org.minima.tests.cli.MinimaTestNode;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.minima.tests.cli.MinimaCliTest;
 
-import java.net.*;
-import java.io.*;
+import java.io.IOException;
+import java.net.Socket;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class QuitTest extends MinimaCliTest {
 
+    @Disabled
     @Test
-    public void testQuitWithNoArgs () throws Exception
-    {
+    public void testQuitWithNoArgs() throws Exception {
         boolean portOpen = available(9001);
 
         assertFalse(portOpen);
 
-        String output = super.minimaTestNode.runCommand("quit");
+        String output = minimaTestNode.runCommand("quit");
 
-        //output = super.minimaTestNode.runCommand("status");
+        //output = minimaTestNode.runCommand("status");
 
         Thread.sleep(5000);
 
-        output = super.minimaTestNode.runCommand("status");
+        output = minimaTestNode.runCommand("status");
         portOpen = available(9001);
 
         assertTrue(portOpen);
 
-        //runBaseTests(output);        
-    }
-    
-    public void runBaseTests (String output) throws Exception
-    {
-        //The cmd response should be valid JSON
-        super.runBaseTests(output);
+        runBaseTests(output);
     }
 
     private static boolean available(int port) {
@@ -55,11 +47,11 @@ public class QuitTest extends MinimaCliTest {
             System.out.println("--------------Port " + port + " is available");
             return true;
         } finally {
-            if( s != null){
+            if (s != null) {
                 try {
                     s.close();
                 } catch (IOException e) {
-                    throw new RuntimeException("Something went wrong closing the port" , e);
+                    throw new RuntimeException("Something went wrong closing the port", e);
                 }
             }
         }

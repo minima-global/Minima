@@ -1,12 +1,7 @@
 package org.minima.tests.kissvm.expressions;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
 
-import java.math.BigInteger;
-import java.util.ArrayList;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.ConstantExpression;
@@ -18,6 +13,12 @@ import org.minima.kissvm.values.StringValue;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniNumber;
+
+import java.math.BigInteger;
+import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class OperatorExpressionTests {
 
@@ -398,61 +399,61 @@ public class OperatorExpressionTests {
         oe = new OperatorExpression(ce1, ce2, OperatorExpression.OPERATOR_ADD);
         exp_s = "( " + ce1.toString() + " + " + ce2.toString() + " )";
         obj_s = oe.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         oe = new OperatorExpression(ce1, ce2, OperatorExpression.OPERATOR_SUB);
         exp_s = "( " + ce1.toString() + " - " + ce2.toString() + " )";
         obj_s = oe.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         oe = new OperatorExpression(ce1, ce2, OperatorExpression.OPERATOR_MUL);
         exp_s = "( " + ce1.toString() + " * " + ce2.toString() + " )";
         obj_s = oe.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         oe = new OperatorExpression(ce1, ce2, OperatorExpression.OPERATOR_DIV);
         exp_s = "( " + ce1.toString() + " / " + ce2.toString() + " )";
         obj_s = oe.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         oe = new OperatorExpression(ce1, OperatorExpression.OPERATOR_NEG);
         exp_s = " - ( " + ce1.toString() + " )";
         obj_s = oe.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         oe = new OperatorExpression(ce1, ce2, OperatorExpression.OPERATOR_SHIFTL);
         exp_s = "( " + ce1.toString() + " << " + ce2.toString() + " )";
         obj_s = oe.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         oe = new OperatorExpression(ce1, ce2, OperatorExpression.OPERATOR_SHIFTR);
         exp_s = "( " + ce1.toString() + " >> " + ce2.toString() + " )";
         obj_s = oe.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         oe = new OperatorExpression(ce1, ce2, OperatorExpression.OPERATOR_MODULO);
         exp_s = "( " + ce1.toString() + " % " + ce2.toString() + " )";
         obj_s = oe.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         oe = new OperatorExpression(ce1, ce2, OperatorExpression.OPERATOR_AND);
         exp_s = "( " + ce1.toString() + " & " + ce2.toString() + " )";
         obj_s = oe.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         oe = new OperatorExpression(ce1, ce2, OperatorExpression.OPERATOR_OR);
         exp_s = "( " + ce1.toString() + " | " + ce2.toString() + " )";
         obj_s = oe.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         oe = new OperatorExpression(ce1, ce2, OperatorExpression.OPERATOR_XOR);
         exp_s = "( " + ce1.toString() + " ^ " + ce2.toString() + " )";
         obj_s = oe.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         oe = new OperatorExpression(ce1, ce2, Integer.MIN_VALUE); // returns ERROR on invalid operation
         exp_s = "( " + ce1.toString() + " ERROR " + ce2.toString() + " )"; // can be improved param ERROR param is not the best solution
         obj_s = oe.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
     }
 }

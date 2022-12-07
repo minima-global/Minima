@@ -1,7 +1,5 @@
 package org.minima.tests.cli;
 
-import java.util.ArrayList;
-
 import org.minima.Minima;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
@@ -14,6 +12,8 @@ import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageListener;
 
+import java.util.ArrayList;
+
 
 public class MinimaTestNode {
 
@@ -21,37 +21,37 @@ public class MinimaTestNode {
     public Minima minima;
 
     public MinimaTestNode() {
-        
+
         //New Instance of Minima
         minima = new Minima();
-        
+
         //Add a listener
         Main.setMinimaListener(new MessageListener() {
-            
+
             @Override
             public void processMessage(Message zMessage) {
-                if(zMessage.getMessageType().equals(MinimaLogger.MINIMA_LOG)){
+                if (zMessage.getMessageType().equals(MinimaLogger.MINIMA_LOG)) {
 
-                }else if(zMessage.getMessageType().equals(NotifyManager.NOTIFY_POST)){
+                } else if (zMessage.getMessageType().equals(NotifyManager.NOTIFY_POST)) {
                     //Get the JSON..
                     JSONObject notify = (JSONObject) zMessage.getObject("notify");
 
                     //What is the Event..
-                    String event    = (String) notify.get("event");
+                    String event = (String) notify.get("event");
                     JSONObject data = (JSONObject) notify.get("data");
 
-                    if(event.equals("NEWBLOCK")) {
+                    if (event.equals("NEWBLOCK")) {
                         //Get the TxPoW
                         JSONObject mTxPowJSON = (JSONObject) data.get("txpow");
-                        
-                    }else if(event.equals("NEWBALANCE")) {
+
+                    } else if (event.equals("NEWBALANCE")) {
                         //Balance change..
                     }
                 }
             }
         });
-        
-        
+
+
         //Now start her up..
         ArrayList<String> vars = new ArrayList<>();
 
@@ -59,7 +59,7 @@ public class MinimaTestNode {
         vars.add("-nop2p");
         vars.add("-test");
         vars.add("-genesis");
-        
+
         //Set a data dir..
         //vars.add("-data");
         //vars.add("");
@@ -78,11 +78,11 @@ public class MinimaTestNode {
         try {
 
             //Get the status..
-            JSONObject json     = new JSONObject();
-            boolean statusOK     = false;
-            while(!statusOK){
-                MinimaLogger.log("Waiting for Status .. "+json.toString());
-                
+            JSONObject json = new JSONObject();
+            boolean statusOK = false;
+            while (!statusOK) {
+                MinimaLogger.log("Waiting for Status .. " + json.toString());
+
                 Thread.sleep(2000);
 
                 //Run Status..
@@ -92,27 +92,27 @@ public class MinimaTestNode {
                 json = (JSONObject) new JSONParser().parse(status);
 
                 //Are we ok
-                statusOK = (boolean)json.get("status");
+                statusOK = (boolean) json.get("status");
             }
 
             //Wait for Network to definitely start up
             Thread.sleep(1000);
-            
-        }catch(Exception exc) {
+
+        } catch (Exception exc) {
             exc.printStackTrace();
-        }       
+        }
     }
 
-    public void setCommand(String _command){
+    public void setCommand(String _command) {
         command = _command;
     }
 
-    public String runCommand(){
-            String output = minima.runMinimaCMD(command, false);
-            return output.toString();
-    }    
+    public String runCommand() {
+        String output = minima.runMinimaCMD(command, false);
+        return output.toString();
+    }
 
-    public String runCommand(String command) throws Exception{
+    public String runCommand(String command) throws Exception {
         this.setCommand(command);
         String output = this.runCommand();
         return output;
@@ -122,37 +122,36 @@ public class MinimaTestNode {
 
         long balance = 0;
         int attempts = 0;
-        while(balance == 0 && attempts <= 250){
+        while (balance == 0 && attempts <= 250) {
             Thread.sleep(1000);
 
             this.setCommand("balance");
             String balanceOutput = this.runCommand();
 
-            var jsonObject =  (JSONObject) new JSONParser().parse(balanceOutput.toString());
+            var jsonObject = (JSONObject) new JSONParser().parse(balanceOutput.toString());
             JSONArray innerJson = (JSONArray) jsonObject.get("response");
             JSONObject innerJsonObj = (JSONObject) innerJson.get(0);
 
             balance = Long.valueOf(innerJsonObj.get("confirmed").toString()).longValue();
             attempts++;
-        } 
+        }
         return attempts != 250;
     }
 
-    public int getCurrentBlock () throws Exception
-    {
+    public int getCurrentBlock() throws Exception {
         String statusOutput = this.runCommand("status");
-        var jsonObject =  (JSONObject) new JSONParser().parse(statusOutput.toString());
+        var jsonObject = (JSONObject) new JSONParser().parse(statusOutput.toString());
         JSONObject responseJson = (JSONObject) jsonObject.get("response");
         JSONObject chainJson = (JSONObject) responseJson.get("chain");
 
         String block = chainJson.get("block").toString();
-        return Integer.parseInt(block);        
+        return Integer.parseInt(block);
     }
 
-    public String getNewAddress() throws Exception{
+    public String getNewAddress() throws Exception {
         //get my new address
         String getaddressResponse = this.runCommand("newaddress");
-        
+
         var stringResponseObj = (JSONObject) new JSONParser().parse(getaddressResponse);
         JSONObject stringResponseResponseObj = (JSONObject) stringResponseObj.get("response");
         String address = stringResponseResponseObj.get("address").toString();
@@ -160,10 +159,10 @@ public class MinimaTestNode {
         return address;
     }
 
-    public String getAddress() throws Exception{
+    public String getAddress() throws Exception {
         //get a default address
         String getaddressResponse = this.runCommand("getaddress");
-        
+
         var stringResponseObj = (JSONObject) new JSONParser().parse(getaddressResponse);
         JSONObject stringResponseResponseObj = (JSONObject) stringResponseObj.get("response");
         String address = stringResponseResponseObj.get("address").toString();
@@ -171,8 +170,7 @@ public class MinimaTestNode {
         return address;
     }
 
-    public String getPublicKey () throws Exception
-    {
+    public String getPublicKey() throws Exception {
         String getaddressOutput = minima.runMinimaCMD("getaddress");
 
         JSONObject json = (JSONObject) new JSONParser().parse(getaddressOutput);
@@ -180,11 +178,11 @@ public class MinimaTestNode {
         var responseAttr = json.get("response");
 
         JSONObject responseObj = (JSONObject) new JSONParser().parse(responseAttr.toString());
-        
+
         return responseObj.get("publickey").toString();
     }
 
-    public void killMinima(){
-        minima.runMinimaCMD("quit",false);
+    public void killMinima() {
+        minima.runMinimaCMD("quit", false);
     }
 }

@@ -23,12 +23,12 @@ public class DUMMYFUNCTION extends MinimaFunction {
     }
 
     @Override
-	public boolean isRequiredMinimumParameterNumber() {
-		return true;
-	}
-    
-	@Override
-	public int requiredParams() {
-		return 1;
-	}
+    public boolean isRequiredMinimumParameterNumber() {
+        return true;
+    }
+
+    @Override
+    public int requiredParams() {
+        return 1;
+    }
 }

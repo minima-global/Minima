@@ -1,20 +1,10 @@
 package org.minima.tests.kissvm.statements.commands;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
-import org.minima.kissvm.expressions.BooleanExpression;
-import org.minima.kissvm.expressions.ConstantExpression;
-import org.minima.kissvm.expressions.Expression;
-import org.minima.kissvm.expressions.FunctionExpression;
-import org.minima.kissvm.expressions.GlobalExpression;
-import org.minima.kissvm.expressions.OperatorExpression;
-import org.minima.kissvm.expressions.VariableExpression;
+import org.minima.kissvm.expressions.*;
 import org.minima.kissvm.functions.general.GET;
 import org.minima.kissvm.functions.number.DEC;
 import org.minima.kissvm.functions.sigs.CHECKSIG;
@@ -25,6 +15,11 @@ import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.StringValue;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
+
+import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class LETstatementTests {
 

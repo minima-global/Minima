@@ -1,8 +1,6 @@
 package org.minima.system.network.p2p;
 
-import junit.framework.TestCase;
-import org.minima.system.network.minima.NIOClientInfo;
-import org.minima.system.network.p2p.testingutils.QuickClients;
+import org.junit.jupiter.api.Test;
 import org.minima.system.network.p2p.testingutils.QuickInetLists;
 
 import java.net.InetSocketAddress;
@@ -10,7 +8,10 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UtilFuncsTest extends TestCase {
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+public class UtilFuncsTest {
 
 //    public void testGetClientFromInetAddressEitherDirection() {
 //        List<NIOClientInfo> clients = QuickClients.generateClientInfoList("10.0.0.", 5, 9001, "inUid", true);
@@ -27,12 +28,14 @@ public class UtilFuncsTest extends TestCase {
 //        assertNull(nullClient);
 //    }
 
+    @Test
     public void testSelectRandomAddress() throws UnknownHostException {
         List<InetSocketAddress> addresses = QuickInetLists.generateInetSockAddrList("192.168.0.", 10, 9001);
         InetSocketAddress address = UtilFuncs.selectRandomAddress(addresses);
         assertNotNull(address);
     }
 
+    @Test
     public void testSelectRandomAddressEmptyList() {
         ArrayList<InetSocketAddress> addresses = new ArrayList<>();
         InetSocketAddress address = UtilFuncs.selectRandomAddress(addresses);

@@ -1,19 +1,16 @@
 package org.minima.tests.kissvm.tokens;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.tokens.ScriptToken;
 import org.minima.kissvm.tokens.ScriptTokenizer;
 import org.minima.objects.base.MiniData;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TokenTests {
 
@@ -43,7 +40,7 @@ public class TokenTests {
             assertEquals(s, t.getToken());
             assertEquals("OPERATOR", t.getTokenTypeString());
         }
-        
+
         for (String s : ScriptTokenizer.TOKENS_BOOLEAN_OPERATOR) {
             ScriptToken t = new ScriptToken(ScriptToken.TOKEN_OPERATOR, s);
             assertEquals(ScriptToken.TOKEN_OPERATOR, t.getTokenType());
@@ -362,11 +359,11 @@ public class TokenTests {
         {
             String Script = "";
             String[] Values = {"0xA", "0xAB", "0x1AB", "0x1A2B",
-                MiniData.getRandomData(4).toString(),
-                MiniData.getRandomData(8).toString(),
-                MiniData.getRandomData(16).toString(),
-                MiniData.getRandomData(32).toString(),
-                MiniData.getRandomData(64).toString()};
+                    MiniData.getRandomData(4).toString(),
+                    MiniData.getRandomData(8).toString(),
+                    MiniData.getRandomData(16).toString(),
+                    MiniData.getRandomData(32).toString(),
+                    MiniData.getRandomData(64).toString()};
             for (String s : Values) {
                 Script = Script + s + " ";
             }

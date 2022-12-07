@@ -1,11 +1,7 @@
 package org.minima.tests.kissvm.statements.commands;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.ConstantExpression;
@@ -16,6 +12,11 @@ import org.minima.kissvm.statements.commands.RETURNstatement;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
+
+import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class IFstatementTests {
 

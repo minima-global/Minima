@@ -1,31 +1,22 @@
 package org.minima.tests.cli.mmrcreate;
 
-import org.junit.Test;
-import org.junit.Before;
-import org.junit.After;
-import static org.junit.Assert.*;
-
-import org.minima.system.commands.CommandException;
-
-import java.util.Arrays;
-
+import org.junit.jupiter.api.Test;
+import org.minima.tests.cli.MinimaCliTest;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 
-import org.minima.system.Main;
-import org.minima.tests.cli.MinimaTestNode;
-import org.minima.tests.cli.MinimaCliTest;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MmrCreate extends MinimaCliTest {
 
     //public MinimaTestNode test = new MinimaTestNode();
 
     @Test
-    public void testMmrcreateWithNoArgs () throws Exception
-    {
-        String output = super.minimaTestNode.runCommand("mmrcreate");
-        runBaseTests(output);        
+    public void testMmrcreateWithNoArgs() throws Exception {
+        String output = minimaTestNode.runCommand("mmrcreate");
+        outputFailed(output);
     }
 
     /*
@@ -34,75 +25,66 @@ public class MmrCreate extends MinimaCliTest {
         mmrcreate nodes:[] 
 
         java.lang.IndexOutOfBoundsException: Index 0 out of bounds for length 0
-    */ 
+    */
 
     @Test
-    public void createEmptyTree() throws Exception
-    {
-        String output = super.minimaTestNode.runCommand("mmrcreate nodes:"+noData);
-        runBaseTests(output);        
-        super.minimaTestNode.killMinima();
+    public void createEmptyTree() throws Exception {
+        String output = minimaTestNode.runCommand("mmrcreate nodes:" + noData);
+        runBaseTests(output);
     }
 
     @Test
-    public void createTreeWithGarbage() throws Exception
-    {
-        String output = super.minimaTestNode.runCommand("mmrcreate nodes:GARBAGESTRING");
-        runBaseTests(output);        
-        super.minimaTestNode.killMinima();
+    public void createTreeWithGarbage() throws Exception {
+        String output = minimaTestNode.runCommand("mmrcreate nodes:GARBAGESTRING");
+        runBaseTests(output);
     }
 
     @Test
-    public void createSmallTree() throws Exception
-    {
+    public void createSmallTree() throws Exception {
         createTree(smallData);
     }
 
     @Test
-    public void createMediumTree() throws Exception
-    {
+    public void createMediumTree() throws Exception {
         createTree(mediumData);
     }
 
     @Test
-    public void createBigTree() throws Exception
-    {
+    public void createBigTree() throws Exception {
         createTree(bigData);
     }
 
-    public void runBaseTests (String output) throws Exception
-    {
+    void outputFailed(String output) throws Exception {
         //The cmd response should be valid JSON
         JSONObject json = (JSONObject) new JSONParser().parse(output);
 
         //status of the cmd request must be true
-        assertFalse("status must be false: ", (boolean)json.get("status"));
+        assertFalse((boolean) json.get("status"), "status must be false: ");
 
         //cmd response pending should be false
-        assertFalse("pending must be false: ", (boolean)json.get("pending"));
+        assertFalse((boolean) json.get("pending"), "pending must be false: ");
     }
 
-    public void createTree(String treedata) throws Exception
-    {
-        String output = super.minimaTestNode.runCommand("mmrcreate nodes:"+treedata); 
+    public void createTree(String treedata) throws Exception {
+        String output = minimaTestNode.runCommand("mmrcreate nodes:" + treedata);
 
-        var jsonObject =  (JSONObject) new JSONParser().parse(output.toString());
+        var jsonObject = (JSONObject) new JSONParser().parse(output.toString());
         JSONObject innerJson = (JSONObject) jsonObject.get("response");
         JSONArray innerJsonObj = (JSONArray) innerJson.get("nodes");
         JSONObject firstNode = (JSONObject) innerJsonObj.get(0);
-       
+
 
         String data = firstNode.get("data").toString();
         String root = innerJson.get("root").toString();
         String proof = firstNode.get("proof").toString();
 
         //run mmr proof to check it successfully concludes that a node is in the mmrtree
-        output = super.minimaTestNode.runCommand("mmrproof data:0x2941de4921503b127164fad64b418604beb5fee6fac5628a4d47647d4f84cd7a proof:"+proof+" root:"+root);
+        output = minimaTestNode.runCommand("mmrproof data:0x2941de4921503b127164fad64b418604beb5fee6fac5628a4d47647d4f84cd7a proof:" + proof + " root:" + root);
 
-        jsonObject =  (JSONObject) new JSONParser().parse(output.toString());
+        jsonObject = (JSONObject) new JSONParser().parse(output.toString());
         innerJson = (JSONObject) jsonObject.get("response");
-        boolean valid = (boolean)innerJson.get("valid");
-        
+        boolean valid = (boolean) innerJson.get("valid");
+
         assertTrue(valid);
 
     }

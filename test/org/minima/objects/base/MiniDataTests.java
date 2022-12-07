@@ -1,19 +1,11 @@
 package org.minima.objects.base;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Arrays;
 
-import org.junit.Test;
-import org.minima.objects.base.MiniData;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MiniDataTests {
     @Test
@@ -28,60 +20,60 @@ public class MiniDataTests {
         System.out.println("k value is " + k);
         System.out.println("mData value is " + Arrays.toString(mData));
         System.out.println("mDataCompare value is " + Arrays.toString(mDataCompare));
-        assertNotNull("should not be null", i.getLength());
+        assertNotNull(i.getLength(), "should not be null");
         System.out.println("i.getLength()" + i + " resolves as " + i.getLength());
-        assertNotNull("should not be null", j.getLength());
+        assertNotNull(j.getLength(), "should not be null");
         System.out.println("i.getLength()" + j + " resolves as " + j.getLength());
-        assertNotNull("should not be null", k.getLength());
+        assertNotNull(k.getLength(), "should not be null");
         System.out.println("i.getLength()" + k + " resolves as " + k.getLength());
-        assertNotNull("should not be null", i.getBytes());
+        assertNotNull(i.getBytes(), "should not be null");
         System.out.println("i.getData()" + i + " resolves as " + i.getBytes());
-        assertNotNull("should not be null", i.getDataValue());
+        assertNotNull(i.getDataValue(), "should not be null");
         System.out.println("i.getDataValue()" + i + " resolves as " + i.getDataValue());
-        assertNotNull("should not be null", i.getDataValueDecimal());
+        assertNotNull(i.getDataValueDecimal(), "should not be null");
         System.out.println("i.getDataValueDecimal()" + i + " resolves as " + i.getDataValueDecimal());
-        assertNotNull("should not be null", i.to0xString());
+        assertNotNull(i.to0xString(), "should not be null");
         System.out.println("i.to0xString()" + i + " resolves as " + i.to0xString());
-        assertNotNull("should not be null", i.toString());
+        assertNotNull(i.toString(), "should not be null");
         System.out.println("i.toString()" + i + " resolves as " + i.toString());
-        assertNotNull("should not be null", mData[0].compare(k));
+        assertNotNull(mData[0].compare(k), "should not be null");
         System.out.println("mData[0].compare(k) resolves as " + mData[0].compare(k));
-        assertNotNull("should not be null", i.getRandomData(1));
+        assertNotNull(i.getRandomData(1), "should not be null");
         System.out.println("i.getRandomData(1)" + i + " resolves as " + i.getRandomData(1));
-        assertNotNull("should not be null", i.shiftr(64));
+        assertNotNull(i.shiftr(64), "should not be null");
         System.out.println("i.shiftr(64) i:" + i + " resolves as " + i.shiftr(64));
-        assertNotNull("should not be null", i.shiftl(64));
+        assertNotNull(i.shiftl(64), "should not be null");
         System.out.println("i.shiftl(64) i:" + i + " resolves as " + i.shiftl(64));
-        assertNotNull("should not be null", i.concat(j));
+        assertNotNull(i.concat(j), "should not be null");
         System.out.println("i.concat(j) i:" + i + " j:" + j + " resolves as " + i.concat(j));
-        assertNotNull("should not be null", i.to0xString(1));
+        assertNotNull(i.to0xString(1), "should not be null");
         System.out.println("i.to0xString(1)" + i + " resolves as " + i.to0xString(1));
-        assertNotNull("should not be null", i.to0xString(10000));
+        assertNotNull(i.to0xString(10000), "should not be null");
         System.out.println("i.to0xString(10000)" + i + " resolves as " + i.to0xString(10000));
-        assertFalse("should be equal to false", i.equals(j));
+        assertFalse(i.equals(j), "should be equal to false");
         System.out.println("i.equals(j) i:" + i + " j:" + j + " resolves as " + i.equals(j));
-        assertTrue("should be equal to true", j.equals(j));
+        assertTrue(j.equals(j), "should be equal to true");
         System.out.println("j.equals(j) j:" + j + " j:" + j + " resolves as " + j.equals(j));
-        assertFalse("should be equal to false", i.isEqual(j));
+        assertFalse(i.isEqual(j), "should be equal to false");
         System.out.println("i.isEqual(j)) i:" + i + " j:" + j + " resolves as " + i.isEqual(j));
-        assertFalse("should be equal to false", mData[1].isEqual(mDataCompare[1]));
+        assertFalse(mData[1].isEqual(mDataCompare[1]), "should be equal to false");
         System.out.println("mData[1].isEqual(mDataCompare[1]) mData[1]:" + mData[1] + " mDataCompare[1]:"
                 + mDataCompare[1] + " resolves as " + mData[1].isEqual(mDataCompare[1]));
-        assertTrue("should be equal to true", i.isLess(j));
+        assertTrue(i.isLess(j), "should be equal to true");
         System.out.println("i.isLess(j) i:" + i + " j:" + j + " resolves as " + i.isLess(j));
-        assertFalse("should be equal to false", j.isLess(i));
+        assertFalse(j.isLess(i), "should be equal to false");
         System.out.println("j.isLess(i) i:" + i + " j:" + j + " resolves as " + j.isLess(i));
-        assertFalse("should be less that or equal with value false", j.isLessEqual(i));
+        assertFalse(j.isLessEqual(i), "should be less that or equal with value false");
         System.out.println("j.isLessEqual(i) i:" + i + " j:" + j + " resolves as " + j.isLessEqual(i));
-        assertTrue("should be less that or equal with value true", j.isLessEqual(j));
+        assertTrue(j.isLessEqual(j), "should be less that or equal with value true");
         System.out.println("j.isLess(i) i:" + i + " j:" + j + " resolves as " + j.isLess(i));
-        assertTrue("should be more than with value true", j.isMore(i));
+        assertTrue(j.isMore(i), "should be more than with value true");
         System.out.println("j.isMore(i) i:" + i + " j:" + j + " resolves as " + j.isMore(i));
-        assertFalse("should be more than with value false", i.isMore(j));
+        assertFalse(i.isMore(j), "should be more than with value false");
         System.out.println("i.isMore(j) i:" + i + " j:" + j + " resolves as " + i.isMore(j));
-        assertFalse("should be more that or equal with value false", i.isMoreEqual(j));
+        assertFalse(i.isMoreEqual(j), "should be more that or equal with value false");
         System.out.println("i.isMoreEqual(j) i:" + i + " j:" + j + " resolves as " + i.isMoreEqual(j));
-        assertTrue("should be more that or equal with value true", j.isMoreEqual(j));
+        assertTrue(j.isMoreEqual(j), "should be more that or equal with value true");
         System.out.println("j.isMoreEqual(j) j:" + j + " j:" + j + " resolves as " + j.isMoreEqual(j));
     }
 
@@ -104,7 +96,7 @@ public class MiniDataTests {
             j.readDataStream(dis);
             assertNotNull(j);
             System.out.println("j.toString = " + j.toString());
-            assertTrue("j matches original value", j.toString().compareToIgnoreCase(value) == 0);
+            assertTrue(j.toString().compareToIgnoreCase(value) == 0, "j matches original value");
             System.out.println(" j is now equal to " + j);
 
             bos.reset();
@@ -113,7 +105,7 @@ public class MiniDataTests {
 
         } catch (final IOException e) {
             System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
-            assertTrue("test", true);
+            assertTrue(true, "test");
         }
 
     }
@@ -148,8 +140,7 @@ public class MiniDataTests {
             System.out.println(" j is now equal to " + j);
         } catch (final IOException e) {
             System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
-            assertTrue(" there should be an IOException with message input too large ",
-                    e.getMessage().contains(new String("input too large")));
+            assertTrue(e.getMessage().contains(new String("input too large")), " there should be an IOException with message input too large ");
         }
 
     }
@@ -207,8 +198,7 @@ public class MiniDataTests {
 
             assertNotNull(k);
         } catch (final IOException e) {
-            assertTrue(" there should be an IOException with message input too large ",
-                    e.getMessage().contains(new String("input too large")));
+            assertTrue(e.getMessage().contains(new String("input too large")), " there should be an IOException with message input too large ");
         }
 
     }
@@ -237,7 +227,7 @@ public class MiniDataTests {
             k = MiniData.ReadHashFromStream(dis);
             assertNotNull(k);
         } catch (IOException e) {
-            assertFalse("We should not reach this line", true);
+            assertFalse(true, "We should not reach this line");
         }
     }
 
@@ -267,10 +257,9 @@ public class MiniDataTests {
             k = j.ReadHashFromStream(dis);
             assertNotNull(k);
 
-            assertFalse("We should not reach this line", true);
+            assertFalse(true, "We should not reach this line");
         } catch (final IOException e) {
-            assertTrue(" there should be an IOException with message HASH Length too large ",
-                    e.getMessage().contains(new String(" HASH Length greater than 64")));
+            assertTrue(e.getMessage().contains(new String(" HASH Length greater than 64")), " there should be an IOException with message HASH Length too large ");
         }
 
     }

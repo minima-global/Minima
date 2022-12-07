@@ -1,11 +1,6 @@
 package org.minima.tests.kissvm.expressions;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-
-import java.util.ArrayList;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.VariableExpression;
@@ -17,6 +12,11 @@ import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
+
+import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class VariableExpressionTests {
 
@@ -52,10 +52,10 @@ public class VariableExpressionTests {
         ctr.setVariable("NumberValue", nv);
         ctr.setVariable("ScriptValue", sv);
 
-        assertEquals("should be equal ", bv, ve1.getValue(ctr));
-        assertEquals("should be equal ", hv, ve2.getValue(ctr));
-        assertEquals("should be equal ", nv, ve3.getValue(ctr));
-        assertEquals("should be equal ", sv, ve4.getValue(ctr));
+        assertEquals(bv, ve1.getValue(ctr), "should be equal ");
+        assertEquals(hv, ve2.getValue(ctr), "should be equal ");
+        assertEquals(nv, ve3.getValue(ctr), "should be equal ");
+        assertEquals(sv, ve4.getValue(ctr), "should be equal ");
     }
 
     @Test
@@ -70,18 +70,18 @@ public class VariableExpressionTests {
 
         exp_s = "variable:BooleanValue";
         obj_s = ge1.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         exp_s = "variable:HEXValue";
         obj_s = ge2.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         exp_s = "variable:NumberValue";
         obj_s = ge3.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         exp_s = "variable:ScriptValue";
         obj_s = ge4.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
     }
 }

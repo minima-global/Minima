@@ -1,16 +1,14 @@
 package org.minima.tests.kissvm.functions;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.NumberValue;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MinimaFunctionTests {
 

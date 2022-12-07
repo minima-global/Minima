@@ -1,32 +1,23 @@
 package org.minima.system.network.p2p;
 
-import junit.framework.TestCase;
-import org.minima.system.network.minima.NIOClientInfo;
-import org.minima.system.network.p2p.messages.InetSocketAddressIO;
+import org.junit.jupiter.api.Test;
 import org.minima.system.network.p2p.messages.P2PWalkLinks;
-import org.minima.system.network.p2p.testingutils.QuickClients;
 import org.minima.system.network.p2p.testingutils.QuickInetLists;
 import org.minima.system.network.p2p.testingutils.QuickState;
-import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class WalkLinksFuncsTest extends TestCase {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    public void setUp() throws Exception {
-        super.setUp();
-    }
+public class WalkLinksFuncsTest {
 
-    public void tearDown() throws Exception {
-    }
-
-
+    @Test
     public void testRemoveIPsInBFromA() throws UnknownHostException {
         Map<String, InetSocketAddress> A = QuickInetLists.generateConnectionUIDMap("filter", "10.0.0.", 10, 9001);
         List<InetSocketAddress> B = QuickInetLists.generateInetSockAddrList("10.0.0.", 5, 9001);
@@ -34,6 +25,7 @@ public class WalkLinksFuncsTest extends TestCase {
         assertEquals(5, ret.size());
     }
 
+    @Test
     public void testRemoveIPsInBFromAEmptyA() throws UnknownHostException {
         HashMap<String, InetSocketAddress> A = new HashMap<>();
         List<InetSocketAddress> B = QuickInetLists.generateInetSockAddrList("10.0.0.", 5, 9001);
@@ -41,6 +33,7 @@ public class WalkLinksFuncsTest extends TestCase {
         assertTrue(ret.isEmpty());
     }
 
+    @Test
     public void testOnReturnedWalkMsgOutLinksFull() throws UnknownHostException {
         P2PState state = QuickState.stateInAndOutLinks(5, 5, 9001);
         state.setMyMinimaAddress("60.0.0.1");

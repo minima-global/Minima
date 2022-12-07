@@ -1,20 +1,11 @@
 package org.minima.system.brains;
 
-import static org.junit.Assert.*;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.minima.database.MinimaDB;
-import org.minima.database.txpowdb.TxPoWDB;
-import org.minima.database.txpowtree.TxPoWTreeNode;
-import org.minima.database.txpowtree.TxPowTree;
-import org.minima.objects.TxPoW;
+import org.junit.jupiter.api.Test;
 
 public class TxPoWProcessorTest {
 
-	@Test
-	public void testTxPoWProcessor() {
+    @Test
+    public void testTxPoWProcessor() {
 //		//Create DB
 //		MinimaDB.clearDB();
 //		
@@ -63,10 +54,10 @@ public class TxPoWProcessorTest {
 //		
 //		//Stop processor
 //		txproc.stopMessageProcessor();
-	}
+    }
 
-	@Test
-	public void testTxPoWProcessor2() {
+    @Test
+    public void testTxPoWProcessor2() {
 //		//Create DB
 //		MinimaDB.clearDB();
 //		
@@ -124,13 +115,17 @@ public class TxPoWProcessorTest {
 //		
 //		//Stop processor
 //		txproc.stopMessageProcessor();
-	}
-	
-	public static void delay() {
-		delay(100);
-	}
-	
-	public static void delay(long zMilli) {
-		try {Thread.sleep(zMilli);} catch (InterruptedException e) {};
-	}
+    }
+
+    public static void delay() {
+        delay(100);
+    }
+
+    public static void delay(long zMilli) {
+        try {
+            Thread.sleep(zMilli);
+        } catch (InterruptedException e) {
+        }
+        ;
+    }
 }

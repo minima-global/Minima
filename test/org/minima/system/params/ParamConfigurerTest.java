@@ -1,8 +1,6 @@
 package org.minima.system.params;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -12,15 +10,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(JUnit4.class)
 public class ParamConfigurerTest {
 
     @Test
     public void usingNothing() {
 
-        String[] progArgs = new String[] {};
+        String[] progArgs = new String[]{};
         ParamConfigurer configurer = new ParamConfigurer()
                 .usingConfFile(progArgs)
                 .usingEnvVariables(new HashMap<>())
@@ -35,7 +33,7 @@ public class ParamConfigurerTest {
     @Test
     public void usingProgramArgs() {
 
-        String[] progArgs = new String[] {"-port", "8888",
+        String[] progArgs = new String[]{"-port", "8888",
                 "-rpcenable",
                 "-daemon",
                 "-host", "124.0.1.10",
@@ -67,40 +65,40 @@ public class ParamConfigurerTest {
         assertTrue(configurer.isDaemon());
         assertTrue(GeneralParams.CLEAN);
 //        assertTrue(GeneralParams.PRIVATE_NETWORK);
-        assertTrue( GeneralParams.GENESIS);
+        assertTrue(GeneralParams.GENESIS);
 //        assertTrue(GeneralParams.AUTOMINE);
         assertTrue(GeneralParams.TEST_PARAMS);
         assertEquals(TestParams.MINIMA_BLOCK_SPEED, GlobalParams.MINIMA_BLOCK_SPEED);
 
     }
 
-    @Test( expected = ParamConfigurer.UnknownArgumentException.class)
+    @Test
     public void invalidProgramArgs() {
 
-        String[] progArgs = new String[] {"-port", "8888",
+        String[] progArgs = new String[]{"-port", "8888",
                 "-rpcenable",
                 "-notvalid",
                 "-connect", "124.0.1.9:7777"};
-        ParamConfigurer configurer = new ParamConfigurer()
-                .usingConfFile(progArgs)
-                .usingEnvVariables(new HashMap<>())
-                .usingProgramArgs(progArgs)
-                .configure();
-
-        fail(); // if we get this far
+        assertThatExceptionOfType(ParamConfigurer.UnknownArgumentException.class)
+                .isThrownBy(() ->
+                        new ParamConfigurer()
+                        .usingConfFile(progArgs)
+                        .usingEnvVariables(new HashMap<>())
+                        .usingProgramArgs(progArgs)
+                        .configure());
     }
 
     @Test
     public void usingEnvVars() {
 
-        Map<String, String> envVarMap =new HashMap<>();
+        Map<String, String> envVarMap = new HashMap<>();
         envVarMap.put("MINIMA_CONNECT", "124.0.1.9:7777");
         envVarMap.put("MINIMA_RPCENABLE", "TRUE");
         envVarMap.put("MINIMA_DAEMON", "true");
         envVarMap.put("MINIMA_NOCONNECT", "something");
         envVarMap.put("OTHER_PROG_NOCONNECT", "something");
 
-        String[] progArgs = new String[] {"-port", "8888"};
+        String[] progArgs = new String[]{"-port", "8888"};
         ParamConfigurer configurer = new ParamConfigurer()
                 .usingConfFile(progArgs)
                 .usingEnvVariables(envVarMap)
@@ -120,15 +118,15 @@ public class ParamConfigurerTest {
 
         final File confFile = File.createTempFile(UUID.randomUUID().toString(), "conf");
 
-        FileWriter fw1 = new FileWriter( confFile );
-        BufferedWriter bw1 = new BufferedWriter( fw1 );
-        bw1.write( "port=999\nhost=19.0.1.6");
+        FileWriter fw1 = new FileWriter(confFile);
+        BufferedWriter bw1 = new BufferedWriter(fw1);
+        bw1.write("port=999\nhost=19.0.1.6");
         bw1.close();
 
-        Map<String, String> envVarMap =new HashMap<>();
+        Map<String, String> envVarMap = new HashMap<>();
         envVarMap.put("MINIMA_CONNECT", "124.0.1.9:7777");
 
-        String[] progArgs = new String[] {"-port", "8888", "-conf", confFile.getAbsolutePath()};
+        String[] progArgs = new String[]{"-port", "8888", "-conf", confFile.getAbsolutePath()};
         ParamConfigurer configurer = new ParamConfigurer()
                 .usingConfFile(progArgs)
                 .usingEnvVariables(envVarMap)

@@ -1,11 +1,7 @@
 package org.minima.tests.kissvm.expressions;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
 
-import java.util.ArrayList;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.GlobalExpression;
@@ -17,6 +13,11 @@ import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
+
+import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class GlobalExpressionTests {
 
@@ -52,10 +53,10 @@ public class GlobalExpressionTests {
         ctr.setGlobalVariable("NumberValue", nv);
         ctr.setGlobalVariable("ScriptValue", sv);
 
-        assertEquals("should be equal ", bv, ge1.getValue(ctr));
-        assertEquals("should be equal ", hv, ge2.getValue(ctr));
-        assertEquals("should be equal ", nv, ge3.getValue(ctr));
-        assertEquals("should be equal ", sv, ge4.getValue(ctr));
+        assertEquals(bv, ge1.getValue(ctr), "should be equal ");
+        assertEquals(hv, ge2.getValue(ctr), "should be equal ");
+        assertEquals(nv, ge3.getValue(ctr), "should be equal ");
+        assertEquals(sv, ge4.getValue(ctr), "should be equal ");
     }
 
     @Test
@@ -70,19 +71,19 @@ public class GlobalExpressionTests {
 
         exp_s = "global:BooleanValue";
         obj_s = ge1.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         exp_s = "global:HEXValue";
         obj_s = ge2.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         exp_s = "global:NumberValue";
         obj_s = ge3.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
 
         exp_s = "global:ScriptValue";
         obj_s = ge4.toString();
-        assertEquals("should be equal ", exp_s, obj_s);
+        assertEquals(exp_s, obj_s, "should be equal ");
     }
 
 }

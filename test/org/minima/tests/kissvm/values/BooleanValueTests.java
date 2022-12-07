@@ -1,31 +1,30 @@
 package org.minima.tests.kissvm.values;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.minima.kissvm.values.BooleanValue;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BooleanValueTests {
 
     @Test
     public void testConstructors() {
         BooleanValue bvt = new BooleanValue(true);
-        assertEquals("should be equal ", BooleanValue.VALUE_BOOLEAN, bvt.getValueType());
-        assertEquals("should be equal ", "TRUE", bvt.toString());
+        assertEquals(BooleanValue.VALUE_BOOLEAN, bvt.getValueType(), "should be equal ");
+        assertEquals("TRUE", bvt.toString(), "should be equal ");
 
         bvt = BooleanValue.TRUE;
-        assertEquals("should be equal ", BooleanValue.VALUE_BOOLEAN, bvt.getValueType());
-        assertEquals("should be equal ", "TRUE", bvt.toString());
+        assertEquals(BooleanValue.VALUE_BOOLEAN, bvt.getValueType(), "should be equal ");
+        assertEquals("TRUE", bvt.toString(), "should be equal ");
 
         BooleanValue bvf = new BooleanValue(false);
-        assertEquals("should be equal ", BooleanValue.VALUE_BOOLEAN, bvf.getValueType());
-        assertEquals("should be equal ", "FALSE", bvf.toString());
+        assertEquals(BooleanValue.VALUE_BOOLEAN, bvf.getValueType(), "should be equal ");
+        assertEquals("FALSE", bvf.toString(), "should be equal ");
 
         bvf = BooleanValue.FALSE;
-        assertEquals("should be equal ", BooleanValue.VALUE_BOOLEAN, bvf.getValueType());
-        assertEquals("should be equal ", "FALSE", bvf.toString());
+        assertEquals(BooleanValue.VALUE_BOOLEAN, bvf.getValueType(), "should be equal ");
+        assertEquals("FALSE", bvf.toString(), "should be equal ");
     }
 
     @Test
@@ -36,17 +35,17 @@ public class BooleanValueTests {
         BooleanValue bvf1 = new BooleanValue(false);
         BooleanValue bvf2 = BooleanValue.FALSE;
 
-        assertTrue("should be true ", bvt1.isTrue());
-        assertTrue("should be true ", bvt2.isTrue());
-        assertTrue("should be true ", bvf1.isFalse());
-        assertTrue("should be true ", bvf2.isFalse());
+        assertTrue(bvt1.isTrue(), "should be true ");
+        assertTrue(bvt2.isTrue(), "should be true ");
+        assertTrue(bvf1.isFalse(), "should be true ");
+        assertTrue(bvf2.isFalse(), "should be true ");
 
-        assertTrue("should be true ", bvt1.isEqual(bvt1));
-        assertTrue("should be true ", bvt1.isEqual(bvt2));
-        assertTrue("should be true ", bvt2.isEqual(bvt1));
+        assertTrue(bvt1.isEqual(bvt1), "should be true ");
+        assertTrue(bvt1.isEqual(bvt2), "should be true ");
+        assertTrue(bvt2.isEqual(bvt1), "should be true ");
 
-        assertFalse("should be false", bvt1.isEqual(bvf1));
-        assertFalse("should be false ", bvf2.isEqual(bvt2));
+        assertFalse(bvt1.isEqual(bvf1), "should be false");
+        assertFalse(bvf2.isEqual(bvt2), "should be false ");
 
 //        assertEquals("should be equal ", MiniNumber.ONE.getAsInt(), bvt1.getNumber().getAsInt());
 //        assertEquals("should be equal ", MiniNumber.ZERO.getAsInt(), bvf1.getNumber().getAsInt());

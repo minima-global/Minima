@@ -1,17 +1,11 @@
 package org.minima.objects.base;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
-import org.junit.Test;
-import org.minima.objects.base.MiniString;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MiniStringTests {
 
@@ -21,13 +15,13 @@ public class MiniStringTests {
         MiniString j = new MiniString(i);
         System.out.println("MiniString(\"MinimaTest\") i is now equal to " + i);
         System.out.println("MiniString(i) j is now equal to " + j);
-        assertNotNull("should not be null", i);
+        assertNotNull(i, "should not be null");
         System.out.println("i value is " + i);
-        assertNotNull("should not be null", j);
+        assertNotNull(j, "should not be null");
         System.out.println("j value is " + j);
-        assertNotNull("should not be null", i.toString());
+        assertNotNull(i.toString(), "should not be null");
         System.out.println("i.toString() value is " + i.toString());
-        assertNotNull("should not be null", i.getData());
+        assertNotNull(i.getData(), "should not be null");
         System.out.println("i.getData() value is " + i.getData());
     }
 
@@ -47,8 +41,7 @@ public class MiniStringTests {
             System.out.println(" i is now equal to " + i);
         } catch (final IOException e) {
             System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
-            assertTrue(" there should be an IOException with message input too large ",
-                    e.getMessage().contains(new String("input too large")));
+            assertTrue(e.getMessage().contains(new String("input too large")), " there should be an IOException with message input too large ");
         }
 
     }
@@ -63,8 +56,7 @@ public class MiniStringTests {
             System.out.println(" i is now equal to " + i);
         } catch (final IOException e) {
             System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
-            assertTrue(" there should be an IOException with message input too large ",
-                    e.getMessage().contains(new String("input too large")));
+            assertTrue(e.getMessage().contains(new String("input too large")), " there should be an IOException with message input too large ");
         }
     }
 

@@ -1,26 +1,22 @@
 package org.minima.tests.kissvm.functions.state;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.functions.state.STATE;
-import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HexValue;
-import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.StringValue;
-import org.minima.kissvm.values.Value;
+import org.minima.kissvm.values.*;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
+
+import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 //BooleanValue STATE (NumberValue statenum)
 //HEXValue STATE (NumberValue statenum)
@@ -41,7 +37,7 @@ public class STATETests {
             assertEquals("STATE", mf.getName());
             assertEquals(0, mf.getParameterNum());
         } catch (MinimaParseException ex) {
-            fail();
+            Assertions.fail();
         }
     }
 
@@ -88,7 +84,7 @@ public class STATETests {
                     }
 
                 } catch (ExecutionException ex) {
-                    fail();
+                    Assertions.fail();
                 }
             }
         }

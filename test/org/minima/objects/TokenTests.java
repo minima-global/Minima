@@ -1,21 +1,13 @@
 package org.minima.objects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
-import org.junit.Test;
-import org.minima.objects.Token;
+import org.junit.jupiter.api.Test;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
+
+import java.io.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TokenTests {
 
@@ -27,9 +19,9 @@ public class TokenTests {
         MiniNumber twelve = MiniNumber.TWELVE;
         Token t = new Token(coinId, twelve, twelve, name, script);
         assertNotNull(t);
-        assertEquals("Should be equal ", twelve, t.getAmount());
+        assertEquals(twelve, t.getAmount(), "Should be equal ");
         System.out.println("amount  value " + t.getAmount());
-        assertEquals("Should be equal ", name, t.getName());
+        assertEquals(name, t.getName(), "Should be equal ");
         System.out.println("name  value " + t.getName());
         System.out.println("script value " + script + " " + t.getTokenScript());
         // assertTrue("should be equal", t.getTokenScript().equals(script));
@@ -37,7 +29,7 @@ public class TokenTests {
         System.out.println("tokenscript  value " + t.getTokenScript());
         System.out.println("coin id  value " + t.getCoinID());
         System.out.println("token id  value " + t.getTokenID());
-        assertEquals("Should be equal ", twelve, t.getScale());
+        assertEquals(twelve, t.getScale(), "Should be equal ");
         System.out.println("scale value " + t.getScale());
 //        System.out.println("scale factor  value " + t.getScaleFactor());
         System.out.println("Json  value " + t.toJSON());
@@ -65,7 +57,7 @@ public class TokenTests {
             assertNotNull(t);
         } catch (final IOException e) {
             System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
-            assertTrue(" there should not be an IOException", false);
+            assertTrue(false, " there should not be an IOException");
         }
     }
 }

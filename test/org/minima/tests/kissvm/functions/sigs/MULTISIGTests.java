@@ -1,26 +1,20 @@
 package org.minima.tests.kissvm.functions.sigs;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.functions.sigs.MULTISIG;
-import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HexValue;
-import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.StringValue;
-import org.minima.kissvm.values.Value;
+import org.minima.kissvm.values.*;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
+
+import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 //BooleanValue MULTISIG (NumberValue required HEXValue sig1 … HEXValue sigN)
 public class MULTISIGTests {

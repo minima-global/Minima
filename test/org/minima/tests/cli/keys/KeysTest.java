@@ -1,60 +1,50 @@
 package org.minima.tests.cli.keys;
 
-import org.junit.Test;
-import org.junit.Before;
-import org.junit.After;
-import static org.junit.Assert.*;
-
-import org.minima.system.commands.CommandException;
-import java.util.Arrays;
-
+import org.junit.jupiter.api.Test;
+import org.minima.tests.cli.MinimaCliTest;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 
-import org.minima.system.Main;
-import org.minima.tests.cli.MinimaTestNode;
-import org.minima.tests.cli.MinimaCliTest;
+import java.util.Arrays;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class KeysTest extends MinimaCliTest {
 
     @Test
-    public void testKeysWithNoArgs () throws Exception
-    {
-        String output = super.minimaTestNode.runCommand("keys");
+    public void testKeysWithNoArgs() throws Exception {
+        String output = minimaTestNode.runCommand("keys");
 
-        runBaseTests(output);     
+        runBaseTests(output);
     }
-    
-    public void runBaseTests (String output) throws Exception
-    {
+
+    public void runBaseTests(String output) throws Exception {
         super.runBaseTests(output);
     }
 
     @Test
-    public void make50Keys() throws Exception
-    {
+    public void make50Keys() throws Exception {
         System.out.println("Making 50 keys: ");
 
-        Integer arr[] = { 1, 2, 5, 10, 20, 30, 49 };
+        Integer arr[] = {1, 2, 5, 10, 20, 30, 49};
         String keylist[] = {};
         boolean failed = false;
 
         String output = "";
         for (int i = 0; i < 50; i++) {
 
-            if(Arrays.asList(arr).contains(i))
-            {
-                output = super.minimaTestNode.runCommand("keys action:list");
-                var jsonObject =  (JSONObject) new JSONParser().parse(output.toString());
+            if (Arrays.asList(arr).contains(i)) {
+                output = minimaTestNode.runCommand("keys action:list");
+                var jsonObject = (JSONObject) new JSONParser().parse(output.toString());
                 JSONArray response = (JSONArray) jsonObject.get("response");
-                
-                if(response.size() != (keylist.length + 6)){ //we start with 6 keys when we spin up minima
+
+                if (response.size() != (keylist.length + 6)) { //we start with 6 keys when we spin up minima
                     failed = true;
                 }
             }
 
-            output = super.minimaTestNode.runCommand("keys action:new");
+            output = minimaTestNode.runCommand("keys action:new");
 
             JSONObject json = (JSONObject) new JSONParser().parse(output);
             JSONObject InnerResponseJSON = (JSONObject) json.get("response");
@@ -63,7 +53,7 @@ public class KeysTest extends MinimaCliTest {
             keylist = push(keylist, key);
         }
 
-        assertFalse("key generation should not fail", failed);
+        assertFalse(failed, "key generation should not fail");
     }
 
     private static String[] push(String[] array, String push) {

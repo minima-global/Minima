@@ -1,32 +1,22 @@
 package org.minima.tests.kissvm.functions.txn.input;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-
-import org.junit.Test;
-import org.minima.database.MinimaDB;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.functions.txn.input.GETINTOK;
-import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HexValue;
-import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.StringValue;
-import org.minima.kissvm.values.Value;
-import org.minima.objects.Address;
-import org.minima.objects.Coin;
-import org.minima.objects.ScriptProof;
-import org.minima.objects.Token;
-import org.minima.objects.Transaction;
-import org.minima.objects.Witness;
+import org.minima.kissvm.values.*;
+import org.minima.objects.*;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+
+import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 //HEXValue GETINTOK (NumberValue input)
 public class GETINTOKTests {
@@ -44,27 +34,27 @@ public class GETINTOKTests {
             assertEquals("GETINTOK", mf.getName());
             assertEquals(0, mf.getParameterNum());
         } catch (MinimaParseException ex) {
-            fail();
+            Assertions.fail();
         }
     }
 
     public static Address newSimpleAddress() {
-    	//Random public key
-    	MiniData pubk = MiniData.getRandomData(32);
-    	
-    	//Create a simple address
-    	String simpleaddress = new String("RETURN SIGNEDBY("+pubk.to0xString()+")"); 
-    	
-    	//Now create the address
-    	Address addr = new Address(simpleaddress);
-    	
-    	return addr;
+        //Random public key
+        MiniData pubk = MiniData.getRandomData(32);
+
+        //Create a simple address
+        String simpleaddress = new String("RETURN SIGNEDBY(" + pubk.to0xString() + ")");
+
+        //Now create the address
+        Address addr = new Address(simpleaddress);
+
+        return addr;
     }
-    
+
     @Test
     public void testValidParams() {
 
-    	Address addr1 = newSimpleAddress();
+        Address addr1 = newSimpleAddress();
         Address addr2 = newSimpleAddress();
         Address addr3 = newSimpleAddress();
         Address addr4 = newSimpleAddress();
@@ -85,10 +75,10 @@ public class GETINTOKTests {
 
         Witness w = new Witness();
         try {
-        	w.addScript(new ScriptProof(addr1.getScript()));
-        	w.addScript(new ScriptProof(addr2.getScript()));
+            w.addScript(new ScriptProof(addr1.getScript()));
+            w.addScript(new ScriptProof(addr2.getScript()));
         } catch (Exception ex) {
-            fail();
+            Assertions.fail();
         }
 
         Contract ctr = new Contract("", "", w, trx, new ArrayList<>());
@@ -103,7 +93,7 @@ public class GETINTOKTests {
                 assertEquals(Value.VALUE_HEX, res.getValueType());
                 assertEquals(in1.getTokenID(), ((HexValue) res).getMiniData());
             } catch (ExecutionException ex) {
-                fail();
+                Assertions.fail();
             }
         }
         {
@@ -114,7 +104,7 @@ public class GETINTOKTests {
                 assertEquals(Value.VALUE_HEX, res.getValueType());
                 assertEquals(in2.getTokenID(), ((HexValue) res).getMiniData());
             } catch (ExecutionException ex) {
-                fail();
+                Assertions.fail();
             }
         }
     }
@@ -122,7 +112,7 @@ public class GETINTOKTests {
     @Test
     public void testInvalidParams() {
 
-    	Address addr1 = newSimpleAddress();
+        Address addr1 = newSimpleAddress();
         Address addr2 = newSimpleAddress();
         Address addr3 = newSimpleAddress();
         Address addr4 = newSimpleAddress();
@@ -143,10 +133,10 @@ public class GETINTOKTests {
 
         Witness w = new Witness();
         try {
-        	w.addScript(new ScriptProof(addr1.getScript()));
-        	w.addScript(new ScriptProof(addr2.getScript()));
+            w.addScript(new ScriptProof(addr1.getScript()));
+            w.addScript(new ScriptProof(addr2.getScript()));
         } catch (Exception ex) {
-            fail();
+            Assertions.fail();
         }
 
         Contract ctr = new Contract("", "", w, trx, new ArrayList<>());

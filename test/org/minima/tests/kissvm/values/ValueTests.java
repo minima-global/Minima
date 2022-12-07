@@ -1,25 +1,20 @@
 package org.minima.tests.kissvm.values;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
 
-import org.junit.Test;
-import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HexValue;
-import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.StringValue;
-import org.minima.kissvm.values.Value;
+import org.junit.jupiter.api.Test;
+import org.minima.kissvm.values.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ValueTests {
 
     @Test
     public void testGettersAndSetters() {
-        assertEquals("should be equal ", new StringValue(" RETURN TRUE ").toString(), Value.getValue("[ RETURN TRUE ]").toString());
-        assertEquals("should be equal ", new HexValue("0xFFFF").toString(), Value.getValue("0xFFFF").toString());
-        assertEquals("should be equal ", BooleanValue.TRUE, Value.getValue("TRUE"));
-        assertEquals("should be equal ", BooleanValue.FALSE, Value.getValue("FALSE"));
-        assertEquals("should be equal ", new NumberValue(5).toString(), Value.getValue("5").toString());
+        assertEquals(new StringValue(" RETURN TRUE ").toString(), Value.getValue("[ RETURN TRUE ]").toString(), "should be equal ");
+        assertEquals(new HexValue("0xFFFF").toString(), Value.getValue("0xFFFF").toString(), "should be equal ");
+        assertEquals(BooleanValue.TRUE, Value.getValue("TRUE"), "should be equal ");
+        assertEquals(BooleanValue.FALSE, Value.getValue("FALSE"), "should be equal ");
+        assertEquals(new NumberValue(5).toString(), Value.getValue("5").toString(), "should be equal ");
         assertThrows(IllegalArgumentException.class, () -> {
             Value.getValue("!]");
         });
@@ -33,11 +28,11 @@ public class ValueTests {
             Value.getValue("z");
         });
 
-        assertEquals("should be equal ", StringValue.VALUE_SCRIPT, Value.getValueType("[RETURN TRUE]"));
-        assertEquals("should be equal ", HexValue.VALUE_HEX, Value.getValueType("0xFFFF"));
-        assertEquals("should be equal ", BooleanValue.VALUE_BOOLEAN, Value.getValueType("TRUE"));
-        assertEquals("should be equal ", BooleanValue.VALUE_BOOLEAN, Value.getValueType("FALSE"));
-        assertEquals("should be equal ", NumberValue.VALUE_NUMBER, Value.getValueType("5"));
+        assertEquals(StringValue.VALUE_SCRIPT, Value.getValueType("[RETURN TRUE]"), "should be equal ");
+        assertEquals(HexValue.VALUE_HEX, Value.getValueType("0xFFFF"), "should be equal ");
+        assertEquals(BooleanValue.VALUE_BOOLEAN, Value.getValueType("TRUE"), "should be equal ");
+        assertEquals(BooleanValue.VALUE_BOOLEAN, Value.getValueType("FALSE"), "should be equal ");
+        assertEquals(NumberValue.VALUE_NUMBER, Value.getValueType("5"), "should be equal ");
         assertThrows(IllegalArgumentException.class, () -> {
             Value.getValueType("!");
         });
@@ -51,11 +46,11 @@ public class ValueTests {
             Value.getValueType("!]");
         });
 
-        assertEquals("should be equal ", "BOOLEAN", Value.getValueTypeString(Value.VALUE_BOOLEAN));
-        assertEquals("should be equal ", "HEX", Value.getValueTypeString(Value.VALUE_HEX));
-        assertEquals("should be equal ", "NUMBER", Value.getValueTypeString(Value.VALUE_NUMBER));
-        assertEquals("should be equal ", "SCRIPT", Value.getValueTypeString(Value.VALUE_SCRIPT));
-        assertEquals("should be equal ", "ERROR_UNKNOWN_TYPE", Value.getValueTypeString(-99));
+        assertEquals("BOOLEAN", Value.getValueTypeString(Value.VALUE_BOOLEAN), "should be equal ");
+        assertEquals("HEX", Value.getValueTypeString(Value.VALUE_HEX), "should be equal ");
+        assertEquals("NUMBER", Value.getValueTypeString(Value.VALUE_NUMBER), "should be equal ");
+        assertEquals("SCRIPT", Value.getValueTypeString(Value.VALUE_SCRIPT), "should be equal ");
+        assertEquals("ERROR_UNKNOWN_TYPE", Value.getValueTypeString(-99), "should be equal ");
     }
 
     @Test

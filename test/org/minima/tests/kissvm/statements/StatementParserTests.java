@@ -1,18 +1,19 @@
 package org.minima.tests.kissvm.statements;
 
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.statements.StatementBlock;
 import org.minima.kissvm.statements.StatementParser;
 import org.minima.kissvm.tokens.ScriptToken;
 import org.minima.utils.MinimaLogger;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class StatementParserTests {
 
@@ -58,7 +59,7 @@ public class StatementParserTests {
                 String Script = "LET (a * ) = TRUE";
                 List<ScriptToken> tokens = ScriptToken.tokenize(Contract.cleanScript(Script));
                 StatementBlock sb = StatementParser.parseTokens(tokens);
-            });	
+            });
         }
 
         {
@@ -87,8 +88,8 @@ public class StatementParserTests {
                 List<ScriptToken> tokens = ScriptToken.tokenize(Contract.cleanScript(Script));
                 StatementBlock sb = StatementParser.parseTokens(tokens);
             } catch (MinimaParseException ex) {
-            	MinimaLogger.log(ex);
-            	fail();
+                MinimaLogger.log(ex);
+                fail();
             } catch (Exception ex) {
                 fail();
             }
@@ -160,14 +161,14 @@ public class StatementParserTests {
         }
 
         {
-        	assertThrows(MinimaParseException.class, () -> {
+            assertThrows(MinimaParseException.class, () -> {
                 ArrayList<ScriptToken> tokens = new ArrayList<>();
                 tokens.add(new ScriptToken(ScriptToken.TOKEN_COMMAND, "LET"));
                 tokens.add(new ScriptToken(ScriptToken.TOKEN_VARIABLE, "a"));
                 tokens.add(new ScriptToken(ScriptToken.TOKEN_OPERATOR, "+"));
                 tokens.add(new ScriptToken(ScriptToken.TOKEN_VALUE, "5"));
                 StatementBlock sb = StatementParser.parseTokens(tokens);
-        	});
+            });
         }
 
         {
@@ -223,7 +224,7 @@ public class StatementParserTests {
         }
 
         {
-        	assertThrows(MinimaParseException.class, () -> {
+            assertThrows(MinimaParseException.class, () -> {
                 String Script = "EXEC RETURN";
                 List<ScriptToken> tokens = ScriptToken.tokenize(Contract.cleanScript(Script));
                 StatementBlock sb = StatementParser.parseTokens(tokens);
@@ -258,7 +259,7 @@ public class StatementParserTests {
         }
 
         {
-        	assertThrows(MinimaParseException.class, () -> {
+            assertThrows(MinimaParseException.class, () -> {
                 String Script = "MAST RETURN TRUE";
                 List<ScriptToken> tokens = ScriptToken.tokenize(Contract.cleanScript(Script));
                 StatementBlock sb = StatementParser.parseTokens(tokens);
@@ -397,7 +398,7 @@ public class StatementParserTests {
         }
 
         {
-        	assertThrows(MinimaParseException.class, () -> {
+            assertThrows(MinimaParseException.class, () -> {
                 String Script = "ASSERT RETURN TRUE";
                 List<ScriptToken> tokens = ScriptToken.tokenize(Contract.cleanScript(Script));
                 StatementBlock sb = StatementParser.parseTokens(tokens);
@@ -405,7 +406,7 @@ public class StatementParserTests {
         }
 
         {
-        	assertThrows(MinimaParseException.class, () -> {
+            assertThrows(MinimaParseException.class, () -> {
                 String Script = "ASSERT RETURN A + @BLKNUM";
                 List<ScriptToken> tokens = ScriptToken.tokenize(Contract.cleanScript(Script));
                 StatementBlock sb = StatementParser.parseTokens(tokens);
@@ -452,7 +453,7 @@ public class StatementParserTests {
         }
 
         {
-        	assertThrows(MinimaParseException.class, () -> {
+            assertThrows(MinimaParseException.class, () -> {
                 String Script = "RETURN MAST 1";
                 List<ScriptToken> tokens = ScriptToken.tokenize(Contract.cleanScript(Script));
                 StatementBlock sb = StatementParser.parseTokens(tokens);

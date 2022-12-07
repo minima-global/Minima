@@ -1,9 +1,8 @@
 package org.minima.system.network.p2p;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.minima.system.network.p2p.params.P2PParams;
-import org.minima.system.params.GeneralParams;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -11,13 +10,13 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class P2PDBTest {
 
     ArrayList<InetSocketAddress> testPeers;
 
-    @Before
+    @BeforeEach
     public void before() throws Exception {
 
         testPeers = new ArrayList<>();

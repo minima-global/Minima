@@ -1,25 +1,21 @@
 package org.minima.tests.kissvm.functions.base;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.functions.hex.CONCAT;
-import org.minima.kissvm.values.BooleanValue;
-import org.minima.kissvm.values.HexValue;
-import org.minima.kissvm.values.NumberValue;
-import org.minima.kissvm.values.StringValue;
-import org.minima.kissvm.values.Value;
+import org.minima.kissvm.values.*;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
+
+import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 //HEXValue CONCAT (HEXValue arg1 … HEXValue argN)
 //ScriptValue CONCAT (ScriptValue arg1 … ScriptValue argN)
@@ -38,7 +34,7 @@ public class CONCATTests {
             assertEquals("CONCAT", mf.getName());
             assertEquals(0, mf.getParameterNum());
         } catch (MinimaParseException ex) {
-            fail();
+            Assertions.fail();
         }
     }
 
@@ -57,7 +53,7 @@ public class CONCATTests {
                 assertEquals(Value.VALUE_HEX, res.getValueType());
                 assertEquals("0x0123456789ABCDEF", ((HexValue) res).toString());
             } catch (ExecutionException ex) {
-                fail();
+                Assertions.fail();
             }
         }
         {
@@ -72,7 +68,7 @@ public class CONCATTests {
                 assertEquals(Value.VALUE_HEX, res.getValueType());
                 assertEquals("0x0123456789ABCDEF0123456789ABCDEF01234567", ((HexValue) res).toString());
             } catch (ExecutionException ex) {
-                fail();
+                Assertions.fail();
             }
         }
     }
@@ -118,7 +114,7 @@ public class CONCATTests {
                 assertEquals(Value.VALUE_HEX, res.getValueType());
                 assertEquals("", ((HexValue) res).toString()); // invalid HEX number representation
             } catch (ExecutionException ex) {
-                fail();
+                Assertions.fail();
             }
         }
 

@@ -1,21 +1,12 @@
 package org.minima.objects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
-import org.junit.Test;
-import org.junit.internal.ArrayComparisonFailure;
-import org.minima.objects.Address;
+import org.junit.jupiter.api.Test;
 import org.minima.objects.base.MiniData;
+
+import java.io.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AddressTests {
 
@@ -27,7 +18,7 @@ public class AddressTests {
         Address ad = new Address();
         Address a = new Address("0xf0f0");
         Address abc = new Address("0xf0f0");
-        assertNotNull("should not be null", a);
+        assertNotNull(a, "should not be null");
         // System.out.println("address value " + a);
         a.getAddressData();
         // System.out.println("address value " + a.getAddressData());
@@ -40,8 +31,8 @@ public class AddressTests {
         // System.out.println("json  value " + adrTwo.toJSON());
         // System.out.println("script  value " + adrTwo.getScript());
         // System.out.println("minima addess  value " + adrTwo.getMinimaAddress());
-        assertFalse("should not be equal ", a.isEqual(adrThree));
-        assertTrue("should not be equal ", a.isEqual(abc));
+        assertFalse(a.isEqual(adrThree), "should not be equal ");
+        assertTrue(a.isEqual(abc), "should not be equal ");
 
     }
 
@@ -65,7 +56,7 @@ public class AddressTests {
             assertEquals("0xFFF0F0", a.toString());
         } catch (final IOException e) {
             System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
-            assertTrue(" there should not be an IOException", false);
+            assertTrue(false, " there should not be an IOException");
         }
 
     }
@@ -77,13 +68,8 @@ public class AddressTests {
 
         String mxAddress = Address.makeMinimaAddress(i);
         MiniData j = Address.convertMinimaAddress(mxAddress);
-        try {
-            assertEquals("should be equal", i, j);
-            System.out.println("should be equal to - " + i);
-        } catch (ArrayComparisonFailure failure) {
-            System.out.println("Test failed: " + failure.getMessage());
-            assertFalse("test should not fail:" + failure.getMessage(), true);
-        }
+        assertEquals(i, j, "should be equal");
+        System.out.println("should be equal to - " + i);
 
         MiniData q = new MiniData(
                 "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -96,13 +82,8 @@ public class AddressTests {
         // System.out.println("New 32bit len1 " + len1);
         String mxAddress1 = Address.makeMinimaAddress(q);
         MiniData p = Address.convertMinimaAddress(mxAddress1);
-        try {
-            assertEquals("should be equal", q, p);
-            // System.out.println("should be equal to - " + q);
-        } catch (ArrayComparisonFailure failure) {
-            System.out.println("Test failed: " + failure.getMessage());
-            assertFalse("test should not fail:" + failure.getMessage(), true);
-        }
+        assertEquals(q, p, "should be equal");
+        // System.out.println("should be equal to - " + q);
 
         MiniData l = new MiniData("0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         MiniData o = new MiniData("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -115,16 +96,11 @@ public class AddressTests {
         MiniData m2 = Address.convertMinimaAddress(mxAddress4);
         MiniData m3 = Address.convertMinimaAddress(mxAddress5);
 
-        try {
-            assertEquals("should be equal", l, m);
-            assertEquals("should be equal", v, m2);
-            assertEquals("should be equal", o, m3);
+        assertEquals(l, m, "should be equal");
+        assertEquals(v, m2, "should be equal");
+        assertEquals(o, m3, "should be equal");
 
-            // System.out.println("should be equal to - " + l);
-        } catch (ArrayComparisonFailure failure) {
-            System.out.println("Test failed: " + failure.getMessage());
-            assertFalse("test should not fail:" + failure.getMessage(), true);
-        }
+        // System.out.println("should be equal to - " + l);
 
     }
 }

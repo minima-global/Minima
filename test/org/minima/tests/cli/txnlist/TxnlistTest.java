@@ -1,49 +1,40 @@
 package org.minima.tests.cli.txnlist;
 
-import org.junit.Test;
-import org.junit.Before;
-import org.junit.After;
-import static org.junit.Assert.*;
-
-import org.minima.system.commands.CommandException;
-
+import org.junit.jupiter.api.Test;
+import org.minima.tests.cli.MinimaCliTest;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 
-import org.minima.system.Main;
-import org.minima.tests.cli.MinimaTestNode;
-import org.minima.tests.cli.MinimaCliTest;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TxnlistTest extends MinimaCliTest {
 
     @Test
-    public void testTxnlistWithNoArgs () throws Exception
-    {
-        String output = super.minimaTestNode.runCommand("txnlist");
-        runBaseTestsWithValidArgs(output);        
+    public void testTxnlistWithNoArgs() throws Exception {
+        String output = minimaTestNode.runCommand("txnlist");
+        runBaseTestsWithValidArgs(output);
     }
 
     @Test
-    public void testTxnlistWithInvalidArgs () throws Exception
-    {
-        String output = super.minimaTestNode.runCommand("txnlist arg:invalid");
-        runBaseTestsWithInvalidArgs(output);        
+    public void testTxnlistWithInvalidArgs() throws Exception {
+        String output = minimaTestNode.runCommand("txnlist arg:invalid");
+        runBaseTestsWithInvalidArgs(output);
     }
 
     @Test
-    public void testTxnlistWithOneTransaction () throws Exception 
-    {
+    public void testTxnlistWithOneTransaction() throws Exception {
 
         String chosenTxId = "mytransaction";
 
-        super.minimaTestNode.runCommand("txncreate id:" + chosenTxId);
+        minimaTestNode.runCommand("txncreate id:" + chosenTxId);
 
-        String output = super.minimaTestNode.runCommand("txnlist");
+        String output = minimaTestNode.runCommand("txnlist");
 
-        runBaseTestsWithValidArgs (output);
+        runBaseTestsWithValidArgs(output);
 
-        JSONObject jsonOutput =  (JSONObject) new JSONParser().parse(output.toString());
+        JSONObject jsonOutput = (JSONObject) new JSONParser().parse(output.toString());
 
         JSONArray jsonArray = (JSONArray) jsonOutput.get("response");
 
@@ -51,61 +42,56 @@ public class TxnlistTest extends MinimaCliTest {
 
         String firstTransactionId = zeroth.get("id").toString();
 
-        assertTrue("The transaction id in the list should match the transaction id specified in txncreate ",firstTransactionId.equals(chosenTxId));
+        assertTrue(firstTransactionId.equals(chosenTxId), "The transaction id in the list should match the transaction id specified in txncreate ");
 
     }
 
     @Test
-    public void testTxnlistWithManyTransactions () throws Exception 
-    {
+    public void testTxnlistWithManyTransactions() throws Exception {
 
         int count = 0;
         int num_new_transactions = 100;
         String chosenTxIdBase = "mytransaction";
 
         //add 100 transactions
-        while(++count <= num_new_transactions)
-        {
-            
-            super.minimaTestNode.runCommand("txncreate id:" + chosenTxIdBase + Integer.toString(count));
-        }        
+        while (++count <= num_new_transactions) {
 
-        String output = super.minimaTestNode.runCommand("txnlist");
+            minimaTestNode.runCommand("txncreate id:" + chosenTxIdBase + Integer.toString(count));
+        }
 
-        runBaseTestsWithValidArgs (output);
+        String output = minimaTestNode.runCommand("txnlist");
 
-        JSONObject jsonOutput =  (JSONObject) new JSONParser().parse(output.toString());
+        runBaseTestsWithValidArgs(output);
+
+        JSONObject jsonOutput = (JSONObject) new JSONParser().parse(output.toString());
 
         JSONArray jsonArray = (JSONArray) jsonOutput.get("response");
 
         count = 0;
 
-        while(++count <= num_new_transactions)
-        {
+        while (++count <= num_new_transactions) {
 
             JSONObject nth_transaction = (JSONObject) jsonArray.get(count);
 
             String nthTransactionId = nth_transaction.get("id").toString();
 
-            assertTrue("The transaction id in the list should match the transaction id specified in txncreate ", nthTransactionId.equals(chosenTxIdBase + Integer.toString(count)));
+            assertTrue(nthTransactionId.equals(chosenTxIdBase + Integer.toString(count)), "The transaction id in the list should match the transaction id specified in txncreate ");
         }
     }
-    
-    public void runBaseTestsWithValidArgs (String output) throws Exception
-    {
+
+    public void runBaseTestsWithValidArgs(String output) throws Exception {
         super.runBaseTests(output);
     }
 
-    public void runBaseTestsWithInvalidArgs (String output) throws Exception
-    {
+    public void runBaseTestsWithInvalidArgs(String output) throws Exception {
         //The cmd response should be valid JSON
         JSONObject json = (JSONObject) new JSONParser().parse(output);
 
         //status of the cmd request must be true
-        assertFalse("status must be false: ", (boolean)json.get("status"));
+        assertFalse((boolean) json.get("status"), "status must be false: ");
 
         //cmd response pending should be false
-        assertFalse("pending must be false: ", (boolean)json.get("pending"));
+        assertFalse((boolean) json.get("pending"), "pending must be false: ");
     }
 
 }

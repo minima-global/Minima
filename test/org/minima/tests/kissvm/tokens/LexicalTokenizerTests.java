@@ -1,16 +1,14 @@
 package org.minima.tests.kissvm.tokens;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
+import org.junit.jupiter.api.Test;
+import org.minima.kissvm.exceptions.MinimaParseException;
+import org.minima.kissvm.tokens.LexicalTokenizer;
+import org.minima.kissvm.tokens.ScriptToken;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
-import org.minima.kissvm.exceptions.MinimaParseException;
-import org.minima.kissvm.tokens.LexicalTokenizer;
-import org.minima.kissvm.tokens.ScriptToken;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class LexicalTokenizerTests {
 
@@ -70,7 +68,7 @@ public class LexicalTokenizerTests {
             assertEquals(20, lt.getCurrentPosition());
         } catch (MinimaParseException ex) {
             fail();
-        } 
+        }
     }
 
 }

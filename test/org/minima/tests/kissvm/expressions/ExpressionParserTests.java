@@ -1,13 +1,7 @@
 package org.minima.tests.kissvm.expressions;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.BooleanExpression;
@@ -15,6 +9,11 @@ import org.minima.kissvm.expressions.Expression;
 import org.minima.kissvm.expressions.ExpressionParser;
 import org.minima.kissvm.expressions.OperatorExpression;
 import org.minima.kissvm.tokens.ScriptToken;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ExpressionParserTests {
 

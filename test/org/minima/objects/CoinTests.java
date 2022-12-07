@@ -1,21 +1,12 @@
 package org.minima.objects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
-import org.junit.Test;
-import org.minima.objects.Coin;
+import org.junit.jupiter.api.Test;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+
+import java.io.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CoinTests {
 
@@ -38,9 +29,9 @@ public class CoinTests {
         // System.out.println("Coin created values - " + c.toJSON());
         // System.out.println("Coin id value - " + c.mCoinID);
 //        c.resetCoinID(coinId2);
-        assertTrue("Token id should equal", c.getTokenID().equals(tokenId));
-        assertTrue("Amount should equal", c.getAmount().equals(two));
-        assertEquals("Address should equal", c.getAddress(), coinAddress);
+        assertTrue(c.getTokenID().equals(tokenId), "Token id should equal");
+        assertTrue(c.getAmount().equals(two), "Amount should equal");
+        assertEquals(c.getAddress(), coinAddress, "Address should equal");
         // System.out.println("Verify this value*** - " + c.getCoinID());
         // System.out.println("Coin to string value - " + c.toString());
 
@@ -72,7 +63,7 @@ public class CoinTests {
             assertNotNull(c);
         } catch (final IOException e) {
             // System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
-            assertTrue(" there should not be an IOException", false);
+            assertTrue(false, " there should not be an IOException");
         }
     }
 
@@ -97,7 +88,7 @@ public class CoinTests {
             assertNotNull(c);
         } catch (final IOException e) {
             System.out.println("IOException: " + e.toString() + " msg=" + e.getMessage());
-            assertTrue(" there should not be an IOException", false);
+            assertTrue(false, " there should not be an IOException");
         }
     }
 }

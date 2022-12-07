@@ -1,115 +1,101 @@
 package org.minima.tests.cli.mmrproof;
 
-import org.junit.Test;
-import org.junit.Before;
-import org.junit.After;
-import static org.junit.Assert.*;
-
-import org.minima.system.commands.CommandException;
-
+import org.junit.jupiter.api.Test;
+import org.minima.tests.cli.MinimaCliTest;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 
-import org.minima.system.Main;
-import org.minima.tests.cli.MinimaTestNode;
-import org.minima.tests.cli.MinimaCliTest;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MmrProof extends MinimaCliTest {
 
     @Test
-    public void testMmrProofWithNoArgs () throws Exception
-    {
-        String output = super.minimaTestNode.runCommand("mmrproof");
-        runBaseTests(output);        
+    public void testMmrProofWithNoArgs() throws Exception {
+        String output = minimaTestNode.runCommand("mmrproof");
+        runBaseTests(output);
     }
 
     @Test
-    public void createSmallSizedDataProof() throws Exception
-    {
+    public void createSmallSizedDataProof() throws Exception {
         testValidProof(smallData);
     }
 
     @Test
-    public void createMediumSizedDataProof() throws Exception
-    {
+    public void createMediumSizedDataProof() throws Exception {
         testValidProof(mediumData);
     }
 
     @Test
-    public void createBigSizedDataProof() throws Exception
-    {
+    public void createBigSizedDataProof() throws Exception {
         testValidProof(bigData);
     }
 
     @Test
-    public void createInvalidDataProof() throws Exception
-    {
+    public void createInvalidDataProof() throws Exception {
         testInvalidProof(mediumData);
     }
 
-    public void runBaseTests (String output) throws Exception
-    {
+    public void runBaseTests(String output) throws Exception {
         //The cmd response should be valid JSON
         JSONObject json = (JSONObject) new JSONParser().parse(output);
 
         //status of the cmd request must be true
-        assertFalse("status must be false: ", (boolean)json.get("status"));
+        assertFalse((boolean) json.get("status"), "status must be false: ");
 
         //cmd response pending should be false
-        assertFalse("pending must be false: ", (boolean)json.get("pending"));
+        assertFalse((boolean) json.get("pending"), "pending must be false: ");
     }
 
-    
-    public void testValidProof(String treedata) throws Exception
-    {
-        String output = super.minimaTestNode.runCommand("mmrcreate nodes:"+treedata); 
 
-        var jsonObject =  (JSONObject) new JSONParser().parse(output.toString());
+    public void testValidProof(String treedata) throws Exception {
+        String output = minimaTestNode.runCommand("mmrcreate nodes:" + treedata);
+
+        var jsonObject = (JSONObject) new JSONParser().parse(output.toString());
         JSONObject innerJson = (JSONObject) jsonObject.get("response");
         JSONArray innerJsonObj = (JSONArray) innerJson.get("nodes");
         JSONObject firstNode = (JSONObject) innerJsonObj.get(0);
-       
+
 
         String data = firstNode.get("data").toString();
         String root = innerJson.get("root").toString();
         String proof = firstNode.get("proof").toString();
 
         //run mmr proof to check it successfully concludes that a node is in the mmrtree
-        output = super.minimaTestNode.runCommand("mmrproof data:0x2941de4921503b127164fad64b418604beb5fee6fac5628a4d47647d4f84cd7a proof:"+proof+" root:"+root);
+        output = minimaTestNode.runCommand("mmrproof data:0x2941de4921503b127164fad64b418604beb5fee6fac5628a4d47647d4f84cd7a proof:" + proof + " root:" + root);
 
-        jsonObject =  (JSONObject) new JSONParser().parse(output.toString());
+        jsonObject = (JSONObject) new JSONParser().parse(output.toString());
         innerJson = (JSONObject) jsonObject.get("response");
-        boolean valid = (boolean)innerJson.get("valid");
-        
-        assertTrue("proof must be valid: ", valid);
+        boolean valid = (boolean) innerJson.get("valid");
 
-        super.minimaTestNode.killMinima();
+        assertTrue(valid, "proof must be valid: ");
+
+        minimaTestNode.killMinima();
     }
 
-    
-    public void testInvalidProof(String treedata) throws Exception
-    {
-        String output = super.minimaTestNode.runCommand("mmrcreate nodes:"+treedata); 
 
-        var jsonObject =  (JSONObject) new JSONParser().parse(output.toString());
+    public void testInvalidProof(String treedata) throws Exception {
+        String output = minimaTestNode.runCommand("mmrcreate nodes:" + treedata);
+
+        var jsonObject = (JSONObject) new JSONParser().parse(output.toString());
         JSONObject innerJson = (JSONObject) jsonObject.get("response");
         JSONArray innerJsonObj = (JSONArray) innerJson.get("nodes");
         JSONObject firstNode = (JSONObject) innerJsonObj.get(0);
-       
+
 
         String data = firstNode.get("data").toString();
         String root = innerJson.get("root").toString();
         String proof = firstNode.get("proof").toString();
 
         //run mmr proof to check it successfully concludes that a node is in the mmrtree
-        output = super.minimaTestNode.runCommand("mmrproof data:0x0000000000503b127164fad64b418604beb5fee6fac5628a4d47647d4f84cd7a proof:"+proof+" root:"+root);
+        output = minimaTestNode.runCommand("mmrproof data:0x0000000000503b127164fad64b418604beb5fee6fac5628a4d47647d4f84cd7a proof:" + proof + " root:" + root);
 
-        jsonObject =  (JSONObject) new JSONParser().parse(output.toString());
+        jsonObject = (JSONObject) new JSONParser().parse(output.toString());
         innerJson = (JSONObject) jsonObject.get("response");
-        boolean valid = (boolean)innerJson.get("valid");
-        
-        assertFalse("proof must be invalid: ", valid);
+        boolean valid = (boolean) innerJson.get("valid");
+
+        assertFalse(valid, "proof must be invalid: ");
 
     }
 
