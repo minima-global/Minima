@@ -462,7 +462,7 @@ public class NIOMessage implements Runnable {
 						exists = MinimaDB.getDB().getTxPoWDB().exists(txn.to0xString());
 						if(!exists) {
 							//request it.. with a slight delay - as may be in process stack
-							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txpow.getTxPoWIDData());
+							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txn);
 						}
 					}
 					
