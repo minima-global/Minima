@@ -77,17 +77,13 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     	return mShutDownComplete;
     }
     
-    public void waitToShutDown(boolean zUseLimit) {
+    public void waitToShutDown() {
     	long timewaited = 0;
     	while(!isShutdownComplete()) {
 			try {Thread.sleep(250);} catch (InterruptedException e) {}
 			timewaited +=250;
 			if(timewaited>10000) {
-				timewaited = 0;
 				MinimaLogger.log("Failed to shutdown in 10 secs for "+mName);
-				if(zUseLimit) {
-					break;
-				}
 			}
 		}
     }
@@ -170,7 +166,8 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
         }
         
         //All done..
-        mShutDownComplete = true;
+        mRunning 			= false;
+        mShutDownComplete 	= true;
     }
     
     /**

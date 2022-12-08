@@ -120,7 +120,7 @@ public class MDSManager extends MessageProcessor {
 		PostMessage(MDS_SHUTDOWN);
 		
 		//Waiting for shutdown..
-		waitToShutDown(true);
+		waitToShutDown();
 	}
 	
 	public File getRootMDSFolder() {

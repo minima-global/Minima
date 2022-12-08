@@ -308,7 +308,7 @@ public class Main extends MessageProcessor {
 			//Stop the main TxPoW processor
 			MinimaLogger.log("Waiting for TxPoWProcessor shutdown");
 			mTxPoWProcessor.stopMessageProcessor();
-			mTxPoWProcessor.waitToShutDown(false);
+			mTxPoWProcessor.waitToShutDown();
 			
 			//Now backup the  databases
 			MinimaLogger.log("Saving all db");
@@ -319,7 +319,7 @@ public class Main extends MessageProcessor {
 			
 			//Wait for it..
 			MinimaLogger.log("Waiting for Main thread shutdown");
-			waitToShutDown(true);
+			waitToShutDown();
 		
 			MinimaLogger.log("Shut down completed OK..");
 			
@@ -338,7 +338,7 @@ public class Main extends MessageProcessor {
 		
 		//Stop the main TxPoW processor
 		mTxPoWProcessor.stopMessageProcessor();
-		mTxPoWProcessor.waitToShutDown(false);	
+		mTxPoWProcessor.waitToShutDown();	
 	}
 	
 	public void archiveResetReady(boolean zResetWallet) {
