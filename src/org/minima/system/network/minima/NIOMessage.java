@@ -391,9 +391,9 @@ public class NIOMessage implements Runnable {
 				boolean fullyvalid = true;
 				
 				//Interesting info.. check this.. probably a timing issue
-				if(blockdiffratio < 0.01) {
+				if(txpow.isBlock() && blockdiffratio < 0.01) {
 					//Block difficulty too low..
-					MinimaLogger.log("Received txpow with low block difficulty.. "+blockdiffratio+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
+					MinimaLogger.log("Received txpow block with low block difficulty.. "+blockdiffratio+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
 //					fullyvalid = false;
 				}
 				
@@ -461,7 +461,6 @@ public class NIOMessage implements Runnable {
 					for(MiniData txn : txns) {
 						exists = MinimaDB.getDB().getTxPoWDB().exists(txn.to0xString());
 						if(!exists) {
-							//request it.. with a slight delay - as may be in process stack
 							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txn);
 						}
 					}
