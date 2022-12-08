@@ -693,93 +693,22 @@ public class Contract {
 	
 	public static void main(String[] zArgs) {
 		
-//		String scr = new String("VERIFYOUT(@INPUT @AMOUNT PREVSTATE(2) @TOKENID FALSE)");
-//		String scr = new String("PREVSTATE(2) @GLOB FALSE");
-//		String scr = new String("@GLOB FALSE");
-//		String scr = new String("let g  = (1 * 3 + (45)+2)");
+		
+//		String scr =  "LET a = [ LET returnvalue = $1 + $2 ] "
+//					+ "LET b = 2 "
+//					+ "LET c = 3 "
+//					+ "LET z = FUNCTION(a b c) "
+//					+ "return true";
+		
+		String scr = "LET f=0xFF << 1000000000 LET length=LEN(f)";
+		//String scr = "LET a=0xFF WHILE TRUE DO LET a = a<<1000 ENDWHILE";
+		
+//		String scr = "LET a = 0xff<<10000";
 
-//		String scr = new String("LET safehouse = [ LET pkcold = coldkey LET pkhot = HOT_KEY\r\n"
-//				+ "                  IF SIGNEDBY ( pkcold ) THEN RETURN TRUE ENDIF\r\n"
-//				+ "                  IF SIGNEDBY ( pkhot ) THEN IF @BLKDIFF GT 20 THEN\r\n"
-//				+ "                  RETURN VERIFYOUT ( @INPUT PREVSTATE ( 21 ) @AMOUNT @TOKENID TRUE ) ENDIF ENDIF ]");
-//		String scr = new String("[as]+(sd)buyer (amount/price) buyer (amount/price)buyer");
-//		String scr = new String("let a  = ((sd+1*(12) (23)))buyer ");
-//		String scr = new String("INC((asas) (2323))");
-//		String scr = new String("ASSERT ( [hello][dd](ff) [sdsd](f) *[jjj]) LET f=   (  0  ) ");
-	
-		//String scr = new String("let a=[AA] let g=0 while g lt 10 do let g=inc(g) let a=replace(a [A] a) endwhile");
-//		String scr = new String("LET a = 10 LET b = -2147483648 LET c = HEX(a - b) RETURN SUBSET(a b c)");
-		//String scr = new String("LET a = 0xFF let tt = SUBSET(0 2 a) RETURN tt");
-		
-//		String scr = "LET x = 0xAAAAAAAA " +
-//                "LET s = [REV(REV(] " +
-//                "LET e = [))] " +
-//                "LET g = 0 " +
-//                "WHILE g LT 10 DO" +
-//                "   LET g = INC(g) " +
-//                "   LET s = CONCAT(HEX(s) HEX(s)) " +
-//                "   LET s = UTF8(s) " +
-//                "   LET e = CONCAT(HEX(e) HEX(e)) " +
-//                "   LET e = UTF8(e) " +
-//                "   LET x = CONCAT(HEX(x) HEX(x)) " +
-//                "ENDWHILE " +
-//                "LET g = 0 " +
-//                "LET func = UTF8(CONCAT(HEX([LET z = ]) HEX(s) HEX([x]) HEX(e) HEX([ RETURN TRUE]))) " ;
-////                "EXEC func ";
-		
-		String scr = "let func = 0xFFFFFFFF "
-				   + "LET y = CONCAT ( func func func ) ";
-
-//		String scr =  "IF 1 EQ 0 THEN "
-//					+ "	LET y=1 "
-//					+ "ELSEIF 1 EQ 1 THEN "
-//					+ "	IF 0 EQ 0 THEN "
-//					+ "		EXEC [ EXEC [ LET y=4 ] ]"
-//					+ "	ENDIF "
-//					+ "ELSE "
-//					+ "	LET y=2 "
-//					+ "ENDIF";// +
-//		"LET g = 0 " +
-//		"WHILE g LT loop DO" +
-//		"   LET g = INC(g) " +
-//        "	LET s = s+s "+
-//        "	LET e = e+e "+
-//        "ENDWHILE "+
-//        "LET complete = [LET result = ]+s+[0xFFEE]+e "+
-//        "EXEC complete";
-		
-//		String scr = 
-//				"LET s = [REV(] " +
-//				"LET e = [)] " +
-//				"LET loop = 11 " +
-//				"LET g = 0 " +
-//				"WHILE g LT loop DO" +
-//				"   LET g = INC(g) " +
-//                "	LET s = s+s "+
-//                "	LET e = e+e "+
-//                "ENDWHILE "+
-//                "LET complete = [LET result = ]+s+[0xFFEE]+e "+
-//                "EXEC complete";
-                
-//		String scr = "LET a = [AAAA] " +
-//                "LET b = [LET c = LEN(a) LET d = LEN(a) LET e = LEN(a) LET d = LEN(a) ] " +
-//                "LET g = 0 " +
-//                "WHILE g LT 5 DO" +
-//                "   LET g = INC(g) " +
-//                "   LET b = CONCAT(HEX(b) HEX(b)) " +
-//                "   LET b = STRING(b) " +
-//                "ENDWHILE " +
-//                "LET g = 0 " +
-//                "LET b = CONCAT( HEX(b) HEX([RETURN TRUE]) ) "+
-//                "WHILE g LT 5 DO " +
-//                "   EXEC ASCII(b) " +
-//                "ENDWHILE ";
-//		String scr = new String("let a=[AAAA] let g=replace(a [A] a)");
-//		String scr = new String("let a=0xFF let g=0 while g lt 100 do let g=inc(g) let a=concat(a a) endwhile");
 		
 		MinimaLogger.log("Script:"+scr);
 		
-		String clean = Contract.cleanScript(scr,true);
+		String clean = Contract.cleanScript(scr,false);
 		MinimaLogger.log("Clean:"+clean);
 		
 		//Run it..

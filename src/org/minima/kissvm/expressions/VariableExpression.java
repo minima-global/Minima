@@ -24,6 +24,10 @@ public class VariableExpression implements Expression {
 
 	@Override
 	public Value getValue(Contract zContract) throws ExecutionException {
+		
+		//This action counts as one instruction
+		zContract.incrementInstructions();
+				
 		//Get the Value.. 
 		Value val = zContract.getVariable(mVariableName);
 		

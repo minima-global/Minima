@@ -39,9 +39,9 @@ public class FUNCTION extends MinimaFunction{
 			
 			//What type is it..
 			if(paramval.getValueType() == Value.VALUE_SCRIPT) {
-				finalfunction = REPLACE.safeReplaceAll(finalfunction, "$"+i, "["+paramval.toString()+"]");
+				finalfunction = REPLACE.safeReplaceAll(finalfunction, "\\$"+i, "["+paramval.toString()+"]");
 			}else {
-				finalfunction = REPLACE.safeReplaceAll(finalfunction, "$"+i, paramval.toString());
+				finalfunction = REPLACE.safeReplaceAll(finalfunction, "\\$"+i, paramval.toString());
 			}
 		}
 		

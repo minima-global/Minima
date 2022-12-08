@@ -78,4 +78,12 @@ public class REPLACE extends MinimaFunction {
 		
 		return sb.toString();
 	}
+	
+	public static void main(String[] zArgs) throws ExecutionException {
+		
+		String func = "$1$1$1$1";
+		String fin = safeReplaceAll(func, "\\$1", "3");
+		System.out.println(fin);
+		
+	}
 }

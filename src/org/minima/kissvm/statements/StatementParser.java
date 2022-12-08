@@ -161,7 +161,7 @@ public class StatementParser {
 				IFstatement ifsx = new IFstatement();
 				
 				//Get the IFConditional
-				List<ScriptToken> conditiontokens = getTokensToNextCommand(zTokens, currentPosition);
+				List<ScriptToken> conditiontokens = getTokensToRequiredCommand(zTokens, currentPosition, "THEN");
 				
 				//Now create an expression from those tokens..
 				Expression IFcondition = ExpressionParser.getExpression(conditiontokens, currentStackDepth);
@@ -197,15 +197,20 @@ public class StatementParser {
 						//ELSE is default
 						ELSEcondition = new ConstantExpression(BooleanValue.TRUE);
 						
-					}else {
+					}else if(nexttok.equals("ELSEIF")) {
 						//It's ELSEIF
-						conditiontokens = getTokensToNextCommand(zTokens, currentPosition);
+						conditiontokens = getTokensToRequiredCommand(zTokens, currentPosition, "THEN");
 						
 						//Create an Expression..
 						ELSEcondition = ExpressionParser.getExpression(conditiontokens, currentStackDepth);
 						
 						//Increments
 						currentPosition += conditiontokens.size() + 1;
+					
+					}else {
+						
+						//Incorrect IF statement
+						throw new MinimaParseException("MISSING ELSE or ELSEIF in IF Statement");
 					}
 					
 					//Now get the Action..
@@ -232,7 +237,7 @@ public class StatementParser {
 										
 			}else if(token.equalsIgnoreCase("WHILE")) {
 				//Get the WHILE Conditional - stop at the next THEN
-				List<ScriptToken> conditiontokens = getTokensToNextCommand(zTokens, currentPosition);
+				List<ScriptToken> conditiontokens = getTokensToRequiredCommand(zTokens, currentPosition, "DO");
 				
 				//Now create an expression from those tokens..
 				Expression WHILEcondition = ExpressionParser.getExpression(conditiontokens, currentStackDepth);
@@ -287,50 +292,6 @@ public class StatementParser {
 		
 		return new StatementBlock(stats);
 	}
-	
-	/*private static List<Token> getElseOrEndIF(List<Token> zTokens, int zCurrentPosition, boolean zElseAlso){
-		List<Token> rettokens = new ArrayList<>();
-		
-		int currentpos  = zCurrentPosition;
-		int total 		= zTokens.size();
-		
-		//Cycle through the tokens..
-		while(currentpos<total) {
-			
-			//Get the next token
-			Token tok = zTokens.get(currentpos);
-			
-			if(tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("ENDIF")) {
-				//We've found the end to the current depth IF
-				rettokens.add(tok);
-				return rettokens;
-			
-			}else if(zElseAlso && (tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("ELSE")) ) {
-				//We've found the end to the current depth IF
-				rettokens.add(tok);
-				return rettokens;
-				
-			}else if(tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("IF")) {
-				//Add it..
-				rettokens.add(tok);
-				currentpos++;
-				
-				//Go down One Level
-				List<Token> toks = getElseOrEndIF(zTokens, currentpos, false);
-			
-				rettokens.addAll(toks);
-				currentpos += toks.size();
-			
-			}else {
-				//Just add it to the list
-				rettokens.add(tok);
-				currentpos++;
-				
-			}
-		}
-		
-		return rettokens;
-	}*/
 	
 	private static List<ScriptToken> getElseOrElseIfOrEndIF(List<ScriptToken> zTokens, int zCurrentPosition, boolean zElseAlso){
 		List<ScriptToken> rettokens = new ArrayList<>();
@@ -448,6 +409,34 @@ public class StatementParser {
 			ret++;
 		}
 	
+		
+		return rettokens;
+	}
+	
+	private static List<ScriptToken> getTokensToRequiredCommand(List<ScriptToken> zTokens, 
+															int zCurrentPosition, 
+															String zRequiredToken ) throws MinimaParseException{
+		List<ScriptToken> rettokens = new ArrayList<>();
+		
+		int ret   = zCurrentPosition;
+		int total = zTokens.size();
+		boolean found=false;
+		while(ret<total) {
+			ScriptToken tok = zTokens.get(ret);
+			if(tok.getToken().equals(zRequiredToken)) {
+				found=true;
+				break;
+			}else {
+				//Add it to the list
+				rettokens.add(tok);
+			}
+			ret++;
+		}
+	
+		//Did we find it..
+		if(!found) {
+			throw new MinimaParseException("Could not find required token : "+zRequiredToken);
+		}
 		
 		return rettokens;
 	}
