@@ -63,8 +63,10 @@ public class P2PDBTest {
 
         // Save, Load and Delete the file
         File tmp = new File("tmp.db");
-        db.saveDB("password",tmp);
-        db.loadDB("password",tmp);
+//        db.saveEncryptedDB("password",tmp);
+//        db.loadEncryptedDB("password",tmp);
+        db.saveDB(tmp);
+        db.loadDB(tmp);
         tmp.delete();
 
         List<InetSocketAddress> loadedPeers = db.getPeersList();
@@ -84,8 +86,10 @@ public class P2PDBTest {
 
         // Save, Load and Delete the file
         File tmp = new File("tmp.db");
-        db.saveDB("password",tmp);
-        db.loadDB("password",tmp);
+//        db.saveEncryptedDB("password",tmp);
+//        db.loadEncryptedDB("password",tmp);
+        db.saveDB(tmp);
+        db.loadDB(tmp);
         tmp.delete();
 
         String loadedVersion = db.getVersion();

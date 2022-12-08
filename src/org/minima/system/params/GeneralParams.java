@@ -28,9 +28,10 @@ public class GeneralParams {
 	public static boolean ARCHIVE = false;
 	
 	/**
-	 * The SQL DB Aes Password
+	 * The SQL DB Aes Password. If it is 'minima' no Encryption used
 	 */
-	public static String MAIN_DBPASSWORD = "minima"; 
+	public static final String MAIN_NOENCRYPTDB = "minima";
+	public static String MAIN_DBPASSWORD 		= MAIN_NOENCRYPTDB; 
 	
 	/**
 	 * Where are the database files stored. This is set at startup.

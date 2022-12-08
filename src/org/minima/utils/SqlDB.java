@@ -71,7 +71,7 @@ public abstract class SqlDB {
 		createSQL();
 	}
 	
-	public void loadEncryptedDB(File zFile, String zPassword) throws SQLException {
+	public void loadEncryptedSQLDB(File zFile, String zPassword) throws SQLException {
 		
 		mEncrypted 			= true;
 		mEncryptedPassword 	= zPassword;
