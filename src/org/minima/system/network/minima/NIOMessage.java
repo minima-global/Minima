@@ -434,10 +434,10 @@ public class NIOMessage implements Runnable {
 					fullyvalid = false;
 				}
 				
-				//Check the MMR - could be in a separate branch
-				if(!TxPoWChecker.checkMMR(tip.getMMR(), txpow)) {
-					fullyvalid = false;
-				}
+//				//Check the MMR - could be in a separate branch
+//				if(!TxPoWChecker.checkMMR(tip.getMMR(), txpow)) {
+//					fullyvalid = false;
+//				}
 				
 				//How long did all that take..
 				long timefinish = System.currentTimeMillis();
@@ -463,7 +463,7 @@ public class NIOMessage implements Runnable {
 						exists = MinimaDB.getDB().getTxPoWDB().exists(txn.to0xString());
 						if(!exists) {
 							//request it.. with a slight delay - as may be in process stack
-							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txpow.getTxPoWIDData());
+							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txn);
 						}
 					}
 					

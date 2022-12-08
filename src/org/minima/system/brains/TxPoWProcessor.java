@@ -1,5 +1,6 @@
 package org.minima.system.brains;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
@@ -15,6 +16,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.network.minima.NIOManager;
+import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
@@ -429,14 +431,14 @@ public class TxPoWProcessor extends MessageProcessor {
 				if(GeneralParams.TEST_PARAMS) {
 					notxblocktimediff = new MiniNumber(1000 * 60 * 5);
 				}
-				if(txptree.getTip().getTxPoW().getTimeMilli().sub(timenow).abs().isLess(notxblocktimediff)) {
-					MinimaLogger.log("Your chain tip is up to date - no TxBlocks accepted - only FULL TxPoW");
-					
-					//Ask to sync the TxBlocks
-					askToSyncTxBlocks(uid);
-					
-					return;
-				}
+//				if(txptree.getTip().getTxPoW().getTimeMilli().sub(timenow).abs().isLess(notxblocktimediff)) {
+//					MinimaLogger.log("Your chain tip is up to date - no TxBlocks accepted - only FULL TxPoW");
+//					
+//					//Ask to sync the TxBlocks
+//					askToSyncTxBlocks(uid);
+//					
+//					return;
+//				}
 			}
 			
 			//How many blocks have we added
@@ -447,7 +449,10 @@ public class TxPoWProcessor extends MessageProcessor {
 			for(TxBlock block : blocks) {
 				
 				try {
-						
+
+					//Request missing txns
+					requestMissingTxns(uid, block);
+					
 					//Process it..
 					processSyncBlock(block);	
 					additions++;
@@ -588,6 +593,22 @@ public class TxPoWProcessor extends MessageProcessor {
 			Message synctxblock = new Message(NIOManager.NIO_SYNCTXBLOCK);
 			synctxblock.addString("client", zClientID);
 			Main.getInstance().getNetworkManager().getNIOManager().PostMessage(synctxblock);
+		}
+	}
+	
+	private void requestMissingTxns(String zClientID, TxBlock zBlock) {
+		MiniNumber block = zBlock.getTxPoW().getBlockNumber();
+		ArrayList<MiniData> txns = zBlock.getTxPoW().getBlockTransactions();
+		for(MiniData txn : txns) {
+			boolean exists = MinimaDB.getDB().getTxPoWDB().exists(txn.to0xString());
+			if(!exists) {
+				try {
+					MinimaLogger.log("Request missing txn from IBD @ "+block+" "+txn.to0xString());
+					NIOManager.sendNetworkMessage(zClientID, NIOMessage.MSG_TXPOWREQ, txn);
+				} catch (IOException e) {
+					MinimaLogger.log(e);
+				}
+			}
 		}
 	}
 }
