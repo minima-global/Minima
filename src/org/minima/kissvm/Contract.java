@@ -700,7 +700,7 @@ public class Contract {
 //					+ "LET z = FUNCTION(a b c) "
 //					+ "return true";
 		
-		String scr = "LET f=0xFF << 1000000000 LET length=LEN(f)";
+		String scr = "LET f=0xFF >> 1000000000 LET length=LEN(f)";
 		//String scr = "LET a=0xFF WHILE TRUE DO LET a = a<<1000 ENDWHILE";
 		
 //		String scr = "LET a = 0xff<<10000";
