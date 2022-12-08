@@ -130,13 +130,21 @@ public class JsonDB implements Streamable{
 	/**
 	 * Load and Save
 	 */
-	public void loadDB(String zPassword, File zFile) {
-		MiniFile.loadObjectEncrypted(zPassword, zFile, this);
+	public void loadDB(File zFile) {
+		MiniFile.loadObject(zFile, this);
 	}
 	
-	public void saveDB(String zPassword, File zFile) {
-		MiniFile.saveObjectEncrypted(zPassword, zFile, this);
+	public void saveDB(File zFile) {
+		MiniFile.saveObject(zFile, this);
 	}
+	
+//	public void loadEncryptedDB(String zPassword, File zFile) {
+//		MiniFile.loadObjectEncrypted(zPassword, zFile, this);
+//	}
+//	
+//	public void saveEncryptedDB(String zPassword, File zFile) {
+//		MiniFile.saveObjectEncrypted(zPassword, zFile, this);
+//	}
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
