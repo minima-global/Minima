@@ -170,6 +170,8 @@ public class StateVariable implements Streamable {
 		}else if(mType.isEqual(STATETYPE_STRING)) {
 			mData = MiniString.ReadFromStream(zIn);
 		
+		}else{
+			throw new IOException("Invalid StateVariable type : "+mType);
 		}
 	}
 	
