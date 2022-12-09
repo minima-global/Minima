@@ -124,7 +124,8 @@ public class maxima extends Command {
 			details.put("publickey", max.getPublicKey().to0xString());
 			details.put("staticmls", max.isStaticMLS());
 			details.put("mls", max.getMLSHost());
-			details.put("localidentity", max.getLocalMaximaAddress());
+			details.put("localidentity", max.getLocalMaximaAddress(false));
+			details.put("p2pidentity", max.getLocalMaximaAddress(true));
 			details.put("contact", max.getRandomMaximaAddress());
 			
 			ret.put("response", details);
@@ -132,13 +133,11 @@ public class maxima extends Command {
 		}else if(func.equals("staticmls")) {
 		
 			String host = getParam("host");
-			
-			//Check is valid..
-			Message conn = connect.createConnectMessage(host);
-			if(conn == null) {
-				throw new CommandException("Invalid host.. must be host:port : "+host);
+			if(!host.equals("clear") && !checkAddress(host)) {
+				throw new CommandException("Invalid MLS address : MUST be of type Mx..@host:port");
 			}
 			
+			//Check is valid..
 			if(host.equals("clear")) {
 				max.setStaticMLS(false, "");
 			}else {
@@ -148,6 +147,9 @@ public class maxima extends Command {
 			details.put("staticmls", max.isStaticMLS());
 			details.put("mls", max.getMLSHost());
 			ret.put("response", details);
+			
+			//Refresh
+			max.PostMessage(MaximaManager.MAXIMA_REFRESH);
 			
 		}else if(func.equals("setname")) {
 			
@@ -164,21 +166,6 @@ public class maxima extends Command {
 			
 			//Refresh
 			max.PostMessage(MaximaManager.MAXIMA_REFRESH);
-			
-		}else if(func.equals("statichost")) {
-			
-			String id = getParam("host");
-			if(id.equals("random")) {
-				details.put("static", false);
-				max.setStaticAddress(false, "");
-			}else {
-				details.put("static", true);
-				max.setStaticAddress(true, id);
-			}
-		
-			details.put("contact", max.getRandomMaximaAddress());
-			
-			ret.put("response", details);
 			
 		}else if(func.equals("hosts")) {
 			
@@ -391,7 +378,22 @@ public class maxima extends Command {
 		
 		return sender;
 	}
-	
+
+	//Check an MLS address
+	public static boolean checkAddress(String zMLS) {
+		
+		if(!zMLS.startsWith("Mx")) {
+			return false;
+		}
+		
+		int indexp 	= zMLS.indexOf("@");
+		int index 	= zMLS.indexOf(":");
+		if(indexp == -1 || index==-1) {
+			return false;
+		}
+		
+		return true;
+	}
 	
 	@Override
 	public Command getFunction() {

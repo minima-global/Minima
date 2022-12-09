@@ -28,6 +28,7 @@ import org.minima.system.network.maxima.mls.MLSService;
 import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
+import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.Crypto;
@@ -199,8 +200,25 @@ public class MaximaManager extends MessageProcessor {
 		return mMaxContacts;
 	}
 	
-	public String getLocalMaximaAddress() {
-		return getMaximaMLSIdentity()+"@"+GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
+	public String getCurrentHostIP() {
+		if(GeneralParams.P2P_ENABLED && !GeneralParams.IS_HOST_SET) {
+			return ((P2PManager)(Main.getInstance().getNetworkManager().getP2PManager())).getP2PAddress();
+		}
+		
+		return GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
+	}
+	
+	public String getLocalMaximaAddress(boolean zP2P) {
+		
+		///Regular host
+		String host = GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
+		
+		//What the P2P thinks you are
+		if(zP2P && GeneralParams.P2P_ENABLED && !GeneralParams.IS_HOST_SET) {
+			host = ((P2PManager)(Main.getInstance().getNetworkManager().getP2PManager())).getP2PAddress();
+		}
+		
+		return getMaximaMLSIdentity()+"@"+host;
 	}
 	
 	public boolean isStaticMLS() {
@@ -274,7 +292,7 @@ public class MaximaManager extends MessageProcessor {
 		
 		//Are there any..
 		if(connctedhosts.size() == 0) {
-			return getLocalMaximaAddress();
+			return getLocalMaximaAddress(true);
 		}
 		
 		return connctedhosts.get(new Random().nextInt(connctedhosts.size())).getMaximaAddress();

@@ -84,6 +84,10 @@ public class P2PManager extends MessageProcessor {
         return state.getKnownPeersCopy();
     }
 
+    public String getP2PAddress() {
+    	return state.getMyMinimaAddress().toString().replace("/", "");
+    }
+    
     public float getClients() {
         // Divided by number of connections clients haves to convert client connections into num clients
         return (float) state.getNoneP2PLinks().size() / P2PParams.MIN_NUM_CONNECTIONS;
