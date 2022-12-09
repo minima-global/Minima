@@ -134,7 +134,18 @@ public class MDSFileHandler implements Runnable {
 				
 				//Write the Main Login form
 				writeHTMLPage(dos, MDSHubLogon.createHubPage(mMainSessionID));
-						
+				
+			}else if(fileRequested.startsWith("logoff.html")){
+				
+				//Reset all session IDs..
+				Main.getInstance().getMDSManager().PostMessage(MDSManager.MDS_MINIDAPPS_RESETSESSIONS);
+				
+				//Create a NEW SessionID
+				createNewSessionID();
+				
+				//Write the Main Login form
+				writeHTMLPage(dos, MDSHubLogon.createHubPage(mMainSessionID));
+				
 			}else if(fileRequested.startsWith("login.html")){
 				
 				//Check the password AND SessionID

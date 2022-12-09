@@ -245,7 +245,7 @@ public class MDSUtil {
 		head   += "	        		</td>\n"
 				+ "	        		\n"
 				+ "	        		<td>\n"
-				+ "						<form action='index.html' method='POST'>\n"
+				+ "						<form action='logoff.html' method='POST'>\n"
 				+ "							<input class='solobutton' style='width:100;' onclick='this.form.submit(); this.disabled=true;' type='submit' value='Log Off'>\n"
 				+ "						</form>\n"
 				+ "					</td>\n"

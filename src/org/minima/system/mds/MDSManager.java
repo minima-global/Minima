@@ -39,10 +39,11 @@ import org.mozilla.javascript.ScriptableObject;
 
 public class MDSManager extends MessageProcessor {
 
-	public static final String MDS_INIT 				= "MDS_INIT";
-	public static final String MDS_SHUTDOWN 			= "MDS_SHUTDOWN";
-	public static final String MDS_POLLMESSAGE 			= "MDS_POLLMESSAGE";
-	public static final String MDS_MINIDAPPS_RESETALL 	= "MDS_MINIDAPPS_RESETALL";
+	public static final String MDS_INIT 					= "MDS_INIT";
+	public static final String MDS_SHUTDOWN 				= "MDS_SHUTDOWN";
+	public static final String MDS_POLLMESSAGE 				= "MDS_POLLMESSAGE";
+	public static final String MDS_MINIDAPPS_RESETALL 		= "MDS_MINIDAPPS_RESETALL";
+	public static final String MDS_MINIDAPPS_RESETSESSIONS 	= "MDS_MINIDAPPS_RESETSESSIONS";
 	
 	public static final String MDS_MINIDAPPS_INSTALLED 		= "MDS_MINIDAPPS_INSTALLED";
 	public static final String MDS_MINIDAPPS_UNINSTALLED 	= "MDS_MINIDAPPS_UNINSTALLED";
@@ -431,6 +432,19 @@ public class MDSManager extends MessageProcessor {
 			//Add then to the Poll Stack - web minidapps
 			mPollStack.addMessage(poll,to);
 		
+		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_RESETSESSIONS)) {
+			
+			//Clear the Old
+			mSessionID.clear();
+			
+			//Reassign..
+			ArrayList<MiniDAPP> dapps = MinimaDB.getDB().getMDSDB().getAllMiniDAPPs();
+			for(MiniDAPP dapp : dapps) {
+				String sessionid = MiniData.getRandomData(32).to0xString();
+				mSessionID.put(sessionid, dapp.getUID());
+			}
+			
+			
 		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_RESETALL)) {
 			
 			//Shut down all the Context Objkects..
@@ -544,7 +558,7 @@ public class MDSManager extends MessageProcessor {
 			}
 		}
 		
-		//Now add a uniques random SessionID
+		//Now add a unique random SessionID
 		String sessionid = MiniData.getRandomData(32).to0xString();
 		mSessionID.put(sessionid, zDAPP.getUID());
 	}
