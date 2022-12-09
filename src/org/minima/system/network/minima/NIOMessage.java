@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Hashtable;
 
 import org.minima.database.MinimaDB;
@@ -539,27 +540,44 @@ public class NIOMessage implements Runnable {
 				ArrayList<MiniData> mylist 		= MinimaDB.getDB().getTxPoWTree().getPulseList();
 				ArrayList<MiniData> requestlist = new ArrayList<>();
 				
+				//Create a HASH list
+				HashSet<String> fullist = new HashSet<>();
+				for(MiniData block : mylist) {
+					fullist.add(block.to0xString());
+				}
+				
+				long timestart = System.currentTimeMillis();
+				
 				//Now check for intersection
 				boolean found = false;
 				ArrayList<MiniData> pulsemsg = pulse.getBlockList();
 				for(MiniData block : pulsemsg) {
-					if(!ListCheck.MiniDataListContains(mylist, block)) {
-						TxPoW check = txpdb.getTxPoW(block.to0xString());
-						if(check == null) {
-							requestlist.add(0, block);
-						}else {
-							ArrayList<MiniData> txns = check.getBlockTransactions();
-							for(MiniData txn : txns) {
-								if(!txpdb.exists(txn.to0xString())) {
-									requestlist.add(0, txn);
-								}
+					String blockstr = block.to0xString();
+					
+					//Do we have the block
+					TxPoW check = txpdb.getTxPoW(blockstr);
+					if(check == null) {
+						//Ask for it
+						requestlist.add(0, block);
+					}else {
+						//Check all the transactions..
+						ArrayList<MiniData> txns = check.getBlockTransactions();
+						for(MiniData txn : txns) {
+							if(!txpdb.exists(txn.to0xString())) {
+								requestlist.add(0, txn);
 							}
 						}
-					}else {
+					}
+					
+					//Is there a crossover
+					if(fullist.contains(blockstr)) {
 						found = true;
-						break;
+						//break;
 					}
 				}
+				
+				long timediff = System.currentTimeMillis() - timestart;
+				MinimaLogger.log("PULSE("+pulsemsg.size()+") from:"+mClientUID+" TIME:"+timediff+"ms req:"+requestlist.size()+" crossover:"+found);
 				
 				//Did we find a crossover..
 				if(found) {
