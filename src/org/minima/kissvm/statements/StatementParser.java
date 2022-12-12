@@ -21,7 +21,6 @@ import org.minima.kissvm.statements.commands.WHILEstatement;
 import org.minima.kissvm.tokens.LexicalTokenizer;
 import org.minima.kissvm.tokens.ScriptToken;
 import org.minima.kissvm.values.BooleanValue;
-import org.minima.utils.MinimaLogger;
 
 /**
  * IF..THEN ELSEIF.. THEN.. ELSE.. ENDIF

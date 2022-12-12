@@ -40,8 +40,8 @@ public class SHA3 extends MinimaFunction {
 			
 		}
 		
-		//Perform the SHA2 Operation
-		byte[] ans = Crypto.getInstance().hashSHA3(data);
+		//Perform the SHA3 Operation
+		byte[] ans = Crypto.getInstance().hashData(data);
 		
 		//return the New HEXValue
 		return new HexValue(ans);

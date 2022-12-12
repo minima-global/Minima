@@ -14,7 +14,6 @@ import org.minima.kissvm.values.BooleanValue;
 import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.base.MiniNumber;
-import org.minima.utils.MinimaLogger;
 
 /**
  * @author Spartacus Rex
