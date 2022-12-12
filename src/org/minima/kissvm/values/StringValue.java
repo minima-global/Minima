@@ -5,9 +5,9 @@ import org.minima.objects.base.MiniString;
 public class StringValue extends Value {
 	
 	/**
-	 * MAX String Value length is 256K - can still use multiple MAST scripts for more..
+	 * MAX String Value length is 32K - can still use multiple MAST scripts for more..
 	 */
-	public static final int MAX_STRING_LEN = 1024 * 256;
+	public static final int MAX_STRING_LEN = 32 * 1024;
 	
 	/**
 	 * The String
@@ -19,7 +19,7 @@ public class StringValue extends Value {
 		
 		int len = getBytes().length;
 		if(len > MAX_STRING_LEN) {
-			throw new IllegalArgumentException("MAX String length reached (256K max) : "+len);
+			throw new IllegalArgumentException("MAX String length reached (32K max) : "+len);
 		}
 	}
 	
