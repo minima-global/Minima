@@ -25,8 +25,12 @@ public class SUBSET extends MinimaFunction {
 		int start = zContract.getNumberParam(0, this).getNumber().getAsInt();
 		int end   = zContract.getNumberParam(1, this).getNumber().getAsInt();
 		int len   = end - start;
+		
+		//Check size
 		if(len<0) {
 			throw new ExecutionException("Negative SUBSET length "+len);
+		}else if (len>HexValue.MAX_HEX_SIZE) {
+			throw new ExecutionException("SUBSET size too large "+len);
 		}
 		
 		//Now pick it out of the 3rd value..
