@@ -46,6 +46,9 @@ public class StatementBlock {
 				return;
 			}
 			
+			//This action counts as one instruction
+			zContract.incrementInstructions();
+			
 			//Trace it
 			zContract.traceLog(stat.toString());
 			
