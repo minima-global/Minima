@@ -157,8 +157,8 @@ public class OperatorExpression implements Expression{
 				NumberValue rnv = (NumberValue)rval;
 				
 				//Can only SHIFT max amount..
-				if(rnv.getNumber().isMore(MiniNumber.THOUSAND24)) {
-					throw new ExecutionException("Can only SHIFTLEFT 1024 MAX");
+				if(rnv.getNumber().isMore(MiniNumber.TWOFIVESIX)) {
+					throw new ExecutionException("Can only SHIFTLEFT 256 bits MAX");
 				}
 				
 				ret = new HexValue( lhv.getMiniData().shiftl(rnv.getNumber().getAsInt()).to0xString() );
@@ -170,6 +170,12 @@ public class OperatorExpression implements Expression{
 				rval.verifyType(Value.VALUE_NUMBER);
 				HexValue    lhv = (HexValue)lval;
 				NumberValue rnv = (NumberValue)rval;
+				
+				//Can only SHIFT max amount..
+				if(rnv.getNumber().isMore(MiniNumber.TWOFIVESIX)) {
+					throw new ExecutionException("Can only SHIFTRIGHT 256 bits MAX");
+				}
+				
 				ret = new HexValue( lhv.getMiniData().shiftr(rnv.getNumber().getAsInt()).to0xString() );
 			}
 			break;
