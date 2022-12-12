@@ -7,7 +7,10 @@ import org.minima.objects.base.MiniData;
 
 public class Winternitz {
 
-	public static final int WINTERNITZ_VALUE = 8;
+	/**
+	 * The WINTERNITZ hash value.. 8 is fast
+	 */
+	private static final int WINTERNITZ_VALUE = 8;
 	
 	/**
 	 * The Winternitz key.. only create it once..
