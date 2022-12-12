@@ -194,31 +194,4 @@ public class Crypto {
 		
 		return null;
 	}
-	
-	
-	public static void main(String[] zArgs) {
-		
-//		byte[] data = "Hello".getBytes();
-//		
-//		MiniData32 trest = new MiniData32("Hello You!");
-//		
-//		//Now Hash..
-//		try {
-//			Digest keccak = new SHA256Digest();
-//			byte[] output = new byte[keccak.getDigestSize()];
-//			keccak.update(trest.getData(), 0, trest.getLength());
-//			keccak.doFinal(output, 0);
-//			
-//			System.out.println(new MiniData32(output));
-//			
-//			byte[] hash = Crypto.getInstance().hashObject(trest).getData();
-//			
-//			System.out.println(new MiniData32(hash));
-//			
-//		}catch(Exception exc) {
-//			exc.printStackTrace();
-//		}
-		
-		
-	}
 }
