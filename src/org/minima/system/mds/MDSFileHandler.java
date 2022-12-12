@@ -133,7 +133,7 @@ public class MDSFileHandler implements Runnable {
 				createNewSessionID();
 				
 				//Write the Main Login form
-				writeHTMLPage(dos, MDSHubLogon.createHubPage(mMainSessionID));
+				writeHTMLPage(dos, MDSHubLogon.createHubPage());
 				
 			}else if(fileRequested.startsWith("logoff.html")){
 				
@@ -144,12 +144,12 @@ public class MDSFileHandler implements Runnable {
 				createNewSessionID();
 				
 				//Write the Main Login form
-				writeHTMLPage(dos, MDSHubLogon.createHubPage(mMainSessionID));
+				writeHTMLPage(dos, MDSHubLogon.createHubPage());
 				
 			}else if(fileRequested.startsWith("login.html")){
 				
 				//Check the password AND SessionID
-				Map params = checkPostPasswordSessionID(input, bufferedReader, inputStream);
+				Map params = checkPostPassword(input, bufferedReader, inputStream);
 				createNewSessionID();
 				
 				//Valid or Error
@@ -460,7 +460,7 @@ public class MDSFileHandler implements Runnable {
 	    return map;  
 	}
 	
-	public Map checkPostPasswordSessionID(String input, BufferedReader bufferedReader, InputStream inputStream) throws Exception {
+	public Map checkPostPassword(String input, BufferedReader bufferedReader, InputStream inputStream) throws Exception {
 		//PASSWORD passed in POST data
 		int contentlength = 0;
 		while(input != null && !input.trim().equals("")) {
@@ -499,12 +499,12 @@ public class MDSFileHandler implements Runnable {
 			return null;
 		}
 		
-		//And check the SessionID
-		String sessionid = params.get("sessionid").toString();
-		if(!mMainSessionID.equals(sessionid)) {
-			MinimaLogger.log("Incorrect MiniHUB SessionID : "+sessionid);
-			return null;
-		}
+//		//And check the SessionID
+//		String sessionid = params.get("sessionid").toString();
+//		if(!mMainSessionID.equals(sessionid)) {
+//			MinimaLogger.log("Incorrect MiniHUB SessionID : "+sessionid);
+//			return null;
+//		}
 		
 		return params;
 	}

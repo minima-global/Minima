@@ -2,7 +2,7 @@ package org.minima.system.mds.hub;
 
 public class MDSHubLogon {
 
-	public static String createHubPage(String zSessionID) {
+	public static String createHubPage() {
 		
 		//Start the HTML
 		String page = MDSUtil.HUB_START;
@@ -17,7 +17,6 @@ public class MDSHubLogon {
 		+ "	<br>\n"
 		+"	<form action='login.html' method='post'>\n"
 		+ "	\n"
-		+ "		<input type='hidden' name='sessionid' value='"+zSessionID+"'>\n"
 		+ "		<input class='logonentry' type='password' name='password' required/>\n"
 		+ "		\n"
 		+ "		<input class='logonbutton' style='width:100;' type='submit' value='login' onClick=\"this.form.submit(); this.disabled=true; this.value='Checking..';\"/>\n"
