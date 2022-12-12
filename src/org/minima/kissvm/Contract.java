@@ -700,7 +700,15 @@ public class Contract {
 //					+ "LET z = FUNCTION(a b c) "
 //					+ "return true";
 		
-		String scr = "LET f=0xFF >> 1000000000 LET length=LEN(f)";
+		String scr = "LET a = [AAAAAAAAAA] \r\n"
+				+ "LET a = a + a + a + a + a + a + a + a + a + a \r\n"
+				+ "LET a = a + a + a + a + a + a + a + a + a + a \r\n"
+				+ "LET a = a + a + a + a + a + a + a + a + a + a \r\n"
+				+ "LET a = a + a + a + a + a + a + a + a + a + a \r\n"
+				+ "LET a = [ LET x = ] + UTF8(0x5B) + a + UTF8(0x5D) \r\n"
+				+ "WHILE TRUE DO\r\n "
+				+ "EXEC [ EXEC [a] ] \r\n "
+				+ "ENDWHILE ";
 		//String scr = "LET a=0xFF WHILE TRUE DO LET a = a<<1000 ENDWHILE";
 		
 //		String scr = "LET a = 0xff<<10000";
