@@ -444,7 +444,6 @@ public class MDSManager extends MessageProcessor {
 				mSessionID.put(sessionid, dapp.getUID());
 			}
 			
-			
 		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_RESETALL)) {
 			
 			//Shut down all the Context Objkects..

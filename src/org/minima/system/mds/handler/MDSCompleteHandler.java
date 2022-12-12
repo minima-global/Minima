@@ -129,6 +129,10 @@ public class MDSCompleteHandler implements Runnable {
 				throw new IllegalArgumentException("Invalid session id for MiniDAPP "+uid);
 			}
 			
+			if(!command.equals("poll")) {
+				MinimaLogger.log("Session:"+uid+" MiniDAPP:"+minidappid+" cmd:"+command);
+			}
+			
 			//Get the Headers..
 			int contentlength = 0;
 			while(input != null && !input.trim().equals("")) {

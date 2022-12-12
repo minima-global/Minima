@@ -12,6 +12,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.URLDecoder;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -60,9 +61,10 @@ public class MDSFileHandler implements Runnable {
 	MDSManager mMDS;
 	
 	/**
-	 * The STATIC SessionID used for all interactions with MiniHUB
+	 * The Cookie
 	 */
-	static private String mMainSessionID = MiniData.getRandomData(32).to0xString();
+	static private String mCookieIDNOTSET 	= "NOT_SET";
+	static private String mCookieID 		= mCookieIDNOTSET;
 	
 	/**
 	 * Main Constructor
@@ -81,6 +83,7 @@ public class MDSFileHandler implements Runnable {
 		String fileRequested		= "";
 		InputStream inputStream 	= null;
 		OutputStream outputStream 	= null;
+		DataOutputStream dos		= null;
 		
 		try {
 			
@@ -89,7 +92,7 @@ public class MDSFileHandler implements Runnable {
 	        outputStream 	= mSocket.getOutputStream();
 	         
 	        BufferedReader bufferedReader 	= new BufferedReader(new InputStreamReader(inputStream, MiniString.MINIMA_CHARSET));
-	        DataOutputStream dos 			= new DataOutputStream(outputStream);
+	        dos 							= new DataOutputStream(outputStream);
 	        
 	        // get first line of the request from the client
 	     	String input = bufferedReader.readLine();
@@ -127,63 +130,80 @@ public class MDSFileHandler implements Runnable {
 			//And finally URL decode..
 			fileRequested 		= URLDecoder.decode(fileRequested,"UTF-8").trim();
 			
+			//Get all the headers
+			Hashtable<String, String> allheaders=new Hashtable<>();
+			
+			//Get the Headers
+			while(input != null && !input.trim().equals("")) {
+				int start    = input.indexOf(":");
+				if(start != -1) {
+					String name  = input.substring(0,start).trim();
+					String value = input.substring(start+1).trim();
+					
+					//Put it in the headers
+					allheaders.put(name, value);
+//					if(name.equals("Cookie")) {
+//						MinimaLogger.log("HEADER > "+name+":"+value);
+//					}
+				}
+				
+				//Read the next line..	
+				input = bufferedReader.readLine();
+			}
+			
 			if(fileRequested.equals("") || fileRequested.equals("index.html")) {
 				
-				//Create a NEW SessionID
-				createNewSessionID();
-				
 				//Write the Main Login form
-				writeHTMLPage(dos, MDSHubLogon.createHubPage(mMainSessionID));
+				writeHTMLPage(dos, MDSHubLogon.createHubPage("0xFF"));
 				
 			}else if(fileRequested.startsWith("logoff.html")){
 				
-				//Reset all session IDs..
+				//Reset Cookie iD..
+				clearCookieID();
+				
+				//Reset ther SessionIDs for each MiniDAPP
 				Main.getInstance().getMDSManager().PostMessage(MDSManager.MDS_MINIDAPPS_RESETSESSIONS);
 				
-				//Create a NEW SessionID
-				createNewSessionID();
-				
 				//Write the Main Login form
-				writeHTMLPage(dos, MDSHubLogon.createHubPage(mMainSessionID));
+				writeHTMLPage(dos, MDSHubLogon.createHubPage("0xFF"));
 				
 			}else if(fileRequested.startsWith("login.html")){
 				
-				//Check the password AND SessionID
-				Map params = checkPostPasswordSessionID(input, bufferedReader, inputStream);
-				createNewSessionID();
+				//Here is the login attempt
+				Map params = getPostParams(allheaders,bufferedReader);
 				
-				//Valid or Error
-				if(params == null) {
-					writeHTMLPage(dos, MDSHubError.createHubPage());
+				String password = "";
+				if(params.containsKey("password")) {
+					password = params.get("password").toString();
 				}else {
-					writeHTMLPage(dos, MDSHubLoggedOn.createHubPage(mMainSessionID));
+					throw new IllegalArgumentException("Invalid Password on MDS login");
 				}
+				
+				if(!mMDS.checkMiniHUBPasword(password)) {
+					throw new IllegalArgumentException("Invalid Password on MDS login");
+				}
+				
+				//Create new CookieID
+				createNewCookieID();
+				
+				//Write the Login OK page
+				writeHTMLPage(dos, MDSHubLoggedOn.createHubPage("0xFF"));
 				
 			}else if(fileRequested.startsWith("main.html")){
 				
-				//Check the sessionID
-				Map params  = checkPostSessionID(input, bufferedReader, inputStream);
-				createNewSessionID();
+				//Check the CookieID
+				checkCookie(allheaders);
 				
-				if(params == null) {
-					writeHTMLPage(dos, MDSHubError.createHubPage());
-				}else {
-					writeHTMLPage(dos, MDSHub.createHubPage(mMDS, mMainSessionID));
-				}
-	
+				//Write the home page
+				writeHTMLPage(dos, MDSHub.createHubPage(mMDS, "0xFF"));
+				
 			}else if(fileRequested.startsWith("install.html")){
 				
-				//get the POST data
-				int contentlength = 0;
-				while(input != null && !input.trim().equals("")) {
-					int ref = input.indexOf("Content-Length:"); 
-					if(ref != -1) {
-						//Get it..
-						int start     = input.indexOf(":");
-						contentlength = Integer.parseInt(input.substring(start+1).trim());
-					}	
-					input = bufferedReader.readLine();
-				}
+				//Check the CookieID
+				checkCookie(allheaders);
+				
+				//How much content
+				int contentlength = Integer.parseInt(allheaders.get("Content-Length"));
 				
 				//Read the data..
 				byte[] alldata = new byte[contentlength];
@@ -209,10 +229,10 @@ public class MDSFileHandler implements Runnable {
 				
 				//Password is the next line..
 				String sessionid = dis.readLine();
-				if(!mMainSessionID.equals(sessionid)) {
-					MinimaLogger.log("Incorrect Install MiniDAPP SessionID : "+sessionid);
-					throw new IllegalArgumentException("Invalid SessionID");
-				}
+//				if(!mMainSessionID.equals(sessionid)) {
+//					MinimaLogger.log("Incorrect Install MiniDAPP SessionID : "+sessionid);
+//					throw new IllegalArgumentException("Invalid SessionID");
+//				}
 				
 				//Now read lines until we reach the data
 				line = dis.readLine();
@@ -264,29 +284,23 @@ public class MDSFileHandler implements Runnable {
 				Main.getInstance().getMDSManager().PostMessage(installed);
 				
 				//Create the webpage
-				writeHTMLPage(dos, MDSHubInstall.createHubPage(mMDS,md,mMainSessionID));
+				writeHTMLPage(dos, MDSHubInstall.createHubPage(mMDS,md,"0xFF"));
 				
 			}else if(fileRequested.startsWith("pending.html")){
 				
-				//Check the sessionID
-				Map params  = checkPostSessionID(input, bufferedReader, inputStream);
-				createNewSessionID();
+				//Check the CookieID
+				checkCookie(allheaders);
 				
-				if(params == null) {
-					writeHTMLPage(dos, MDSHubError.createHubPage());
-				}else {
-					writeHTMLPage(dos, MDSHubPending.createHubPage(mMDS, mMainSessionID));
-				}
+				//Write the pending page
+				writeHTMLPage(dos, MDSHubPending.createHubPage(mMDS, "0xFF"));
 							
 			}else if(fileRequested.startsWith("pendingaction.html")){
 				
-				//Check the sessionID
-				Map params  = checkPostSessionID(input, bufferedReader, inputStream);
-				createNewSessionID();
+				//Check the CookieID
+				checkCookie(allheaders);
 				
-				if(params == null) {
-					throw new IllegalArgumentException("Invalid Password");
-				}
+				//Get all the params
+				Map params = getPostParams(allheaders, bufferedReader);
 				
 				String sessionid = params.get("sessionid").toString();
 				String accept 	 = params.get("accept").toString();
@@ -298,7 +312,7 @@ public class MDSFileHandler implements Runnable {
 					CMDcommand cmd = new CMDcommand("0x00", "mds action:accept uid:"+uid);
 					String result = cmd.runCommand();
 					
-					writeHTMLPage(dos, MDSHubPendingAction.createHubPage(mMDS, mMainSessionID, true, result));
+					writeHTMLPage(dos, MDSHubPendingAction.createHubPage(mMDS, "0xFF", true, result));
 					
 				}else {
 					
@@ -306,19 +320,19 @@ public class MDSFileHandler implements Runnable {
 					CMDcommand cmd = new CMDcommand("0x00", "mds action:deny uid:"+uid);
 					String result = cmd.runCommand();
 					
-					writeHTMLPage(dos, MDSHubPendingAction.createHubPage(mMDS, mMainSessionID, false, result));
+					writeHTMLPage(dos, MDSHubPendingAction.createHubPage(mMDS, "0xFF", false, result));
 				}
 				
 			}else if(fileRequested.startsWith("delete.html")){
 				
-				//Check the sessionID
-				Map params = checkPostSessionID(input, bufferedReader, inputStream);
-				createNewSessionID();
-				if(params == null) {
-					throw new IllegalArgumentException("Invalid SessionID");
-				}
+				//Check the CookieID
+				checkCookie(allheaders);
 				
-				String uid 		 = params.get("uid").toString();
+				//Get all the params
+				Map params = getPostParams(allheaders, bufferedReader);
+				
+				//WHo to delete
+				String uid = params.get("uid").toString();
 				
 				//Now add to the DB
 				MDSDB db = MinimaDB.getDB().getMDSDB();
@@ -345,16 +359,15 @@ public class MDSFileHandler implements Runnable {
 				Main.getInstance().getMDSManager().PostMessage(uninstall);
 				
 				//Create the webpage
-				writeHTMLPage(dos, MDSHubDelete.createHubPage(mMDS, mMainSessionID));
+				writeHTMLPage(dos, MDSHubDelete.createHubPage(mMDS, "0xFF"));
 			
 			}else if(fileRequested.startsWith("permissions.html")){
 				
-				//Check the sessionID
-				Map params = checkPostSessionID(input, bufferedReader, inputStream);
-				createNewSessionID();
-				if(params == null) {
-					throw new IllegalArgumentException("Invalid SessionID");
-				}
+				//Check the CookieID
+				checkCookie(allheaders);
+				
+				//Get all the params
+				Map params = getPostParams(allheaders, bufferedReader);
 				
 				String uid 		 = params.get("uid").toString();
 				String perm 	 = params.get("permission").toString();
@@ -381,7 +394,7 @@ public class MDSFileHandler implements Runnable {
 				db.insertMiniDAPP(md);
 				
 				//Create the webpage
-				writeHTMLPage(dos, MDSHubPermission.createHubPage(mMDS, mMainSessionID,perm.toUpperCase()));
+				writeHTMLPage(dos, MDSHubPermission.createHubPage(mMDS, "0xFF",perm.toUpperCase()));
 			
 			}else {
 			
@@ -428,9 +441,15 @@ public class MDSFileHandler implements Runnable {
 		
 		}catch(SSLHandshakeException exc) {
 		}catch(SSLException exc) {
-		}catch(IllegalArgumentException exc) {
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
+			
+			if(dos!=null) {
+				try {
+					writeHTMLPage(dos, MDSHubError.createHubPage());
+				} catch (IOException e) {
+				}
+			}
 			
 		}finally {
 			try {
@@ -443,7 +462,7 @@ public class MDSFileHandler implements Runnable {
 		}	
 	}	
 	
-	public static Map<String, String> getQueryMap(String query) {  
+	private static Map<String, String> getQueryMap(String query) {  
 	    String[] params 		= query.split("&");  
 	    Map<String, String> map = new HashMap<String, String>();
 
@@ -460,19 +479,35 @@ public class MDSFileHandler implements Runnable {
 	    return map;  
 	}
 	
-	public Map checkPostPasswordSessionID(String input, BufferedReader bufferedReader, InputStream inputStream) throws Exception {
-		//PASSWORD passed in POST data
-		int contentlength = 0;
-		while(input != null && !input.trim().equals("")) {
-			//MinimaLogger.log("RPC : "+input);
-			int ref = input.indexOf("Content-Length:"); 
-			if(ref != -1) {
-				//Get it..
-				int start     = input.indexOf(":");
-				contentlength = Integer.parseInt(input.substring(start+1).trim());
-			}	
-			input = bufferedReader.readLine();
+	private void checkCookie(Hashtable<String, String> zHeaders) throws IllegalArgumentException {
+		
+		//Get all the cookies..
+		String cookies = zHeaders.get("Cookie");
+		StringTokenizer strtok = new StringTokenizer(cookies,";");
+		while(strtok.hasMoreElements()) {
+			String cook = strtok.nextToken().trim();
+			int start 	= cook.indexOf("=");
+			if(start != -1) {
+				String name  = cook.substring(0,start).trim();
+				String value = cook.substring(start+1).trim();
+				
+				if(name.equals("mdscookie")) {
+					if(value.equals(mCookieIDNOTSET)) {
+						throw new IllegalArgumentException("Invalid SessionID");
+					}else if(!value.equals(mCookieID)) {
+						throw new IllegalArgumentException("Invalid SessionID");
+					}
+					
+					return;
+				}
+			}
 		}
+	}
+	
+	private Map getPostParams(Hashtable<String, String> zHeaders, BufferedReader bufferedReader) throws Exception {
+		
+		//How much content
+		int contentlength = Integer.parseInt(zHeaders.get("Content-Length"));
 		
 		//How much data
 		char[] cbuf 	= new char[contentlength];
@@ -486,76 +521,21 @@ public class MDSFileHandler implements Runnable {
 			}
 		}
 		
-		//Here is the login attempt
-		Map params  	= getQueryMap(new String(cbuf));
-		
-		String password = "";
-		if(params.containsKey("password")) {
-			password = params.get("password").toString();
-		}
-		
-		if(!mMDS.checkMiniHUBPasword(password)) {
-			MinimaLogger.log("Incorrect MiniDAPP Password : "+password);
-			return null;
-		}
-		
-		//And check the SessionID
-		String sessionid = params.get("sessionid").toString();
-		if(!mMainSessionID.equals(sessionid)) {
-			MinimaLogger.log("Incorrect MiniHUB SessionID : "+sessionid);
-			return null;
-		}
+		//Get all the params
+		Map params  = getQueryMap(new String(cbuf));
 		
 		return params;
 	}
 	
-	public Map checkPostSessionID(String input, BufferedReader bufferedReader, InputStream inputStream) throws Exception {
-		int contentlength = 0;
-		while(input != null && !input.trim().equals("")) {
-			//MinimaLogger.log("RPC : "+input);
-			int ref = input.indexOf("Content-Length:"); 
-			if(ref != -1) {
-				//Get it..
-				int start     = input.indexOf(":");
-				contentlength = Integer.parseInt(input.substring(start+1).trim());
-			}	
-			input = bufferedReader.readLine();
-		}
-		
-		//How much data
-		char[] cbuf 	= new char[contentlength];
-		
-		//Read it ALL in
-		int len,total=0;
-		while( (len = bufferedReader.read(cbuf,total,contentlength-total)) != -1) {
-			total += len;
-			if(total == contentlength) {
-				break;
-			}
-		}
-		
-		//Here is the login attempt
-		Map params  		= getQueryMap(new String(cbuf));
-		if(!params.containsKey("sessionid")) {
-			MinimaLogger.log("Missing MiniHUB SessionID");
-			return null;
-		}
-		
-		String sessionid 	= params.get("sessionid").toString();
-		
-		if(!mMainSessionID.equals(sessionid)) {
-			MinimaLogger.log("Incorrect MiniHUB SessionID : "+sessionid);
-			return null;
-		}
-		
-		return params;
+	private void clearCookieID() {
+		mCookieID = mCookieIDNOTSET;
 	}
 	
-	private void createNewSessionID() {
-		mMainSessionID = MiniData.getRandomData(32).to0xString();
+	private void createNewCookieID() {
+		mCookieID = MiniData.getRandomData(32).to0xString();
 	}
 	
-	public void writeHTMLPage(DataOutputStream zDos, String zWebPage) throws IOException {
+	private void writeHTMLPage(DataOutputStream zDos, String zWebPage) throws IOException {
 		//It's the root file..
 		byte[] file = zWebPage.getBytes();
 
@@ -564,6 +544,8 @@ public class MDSFileHandler implements Runnable {
         
 		zDos.writeBytes("HTTP/1.0 200 OK\r\n");
 		zDos.writeBytes("Content-Type: text/html\r\n");
+		zDos.writeBytes("Set-Cookie: mdscookie="+mCookieID+"\r\n");
+		zDos.writeBytes("Set-Cookie: SameSite=Strict\r\n");
 		zDos.writeBytes("Content-Length: " + finallength + "\r\n");
 		zDos.writeBytes("Access-Control-Allow-Origin: *\r\n");
 		zDos.writeBytes("\r\n");
