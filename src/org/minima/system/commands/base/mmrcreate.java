@@ -126,8 +126,9 @@ public class mmrcreate extends Command {
 			
 			JSONObject jobj = new JSONObject();
 			jobj.put("entry", leaf.mEntry);
-			jobj.put("input", leaf.mInput);
-			jobj.put("leaf", leaf.mLeafData.toJSON());	
+			jobj.put("data", leaf.mInput);
+			jobj.put("value", leaf.mLeafData.getValue().toString());
+			//jobj.put("leafnode", leaf.mLeafData.toJSON());	
 			
 			//Get the proof..
 			MMRProof proof = mmrtree.getProof(new MMREntryNumber(leaf.mEntry));
