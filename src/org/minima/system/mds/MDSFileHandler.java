@@ -416,7 +416,7 @@ public class MDSFileHandler implements Runnable {
 				
 				if(!webfile.exists() || !ischild || webfile.isDirectory()) {
 		    		
-		    		//MinimaLogger.log("HTTP : unknown file requested "+fileRequested+" "+webfile.getAbsolutePath());
+		    		MinimaLogger.log("HTTP : unknown file requested "+fileRequested+" "+webfile.getAbsolutePath());
 		    		
 		    		dos.writeBytes("HTTP/1.0 404 OK\r\n");
 					dos.writeBytes("\r\n");
