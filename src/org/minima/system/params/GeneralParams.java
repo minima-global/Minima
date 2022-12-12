@@ -30,8 +30,8 @@ public class GeneralParams {
 	/**
 	 * The SQL DB Aes Password. If it is 'minima' no Encryption used
 	 */
-	public static final String MAIN_NOENCRYPTDB = "minima";
-	public static String MAIN_DBPASSWORD 		= MAIN_NOENCRYPTDB; 
+	public static boolean IS_MAIN_DBPASSWORD_SET = false;
+	public static String MAIN_DBPASSWORD 		 = "minima"; 
 	
 	/**
 	 * Where are the database files stored. This is set at startup.

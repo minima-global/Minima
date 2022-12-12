@@ -189,7 +189,7 @@ public class MinimaDB {
 			
 			//Load the wallet
 			File walletsqlfolder = new File(basedb,"walletsql");
-			if(GeneralParams.MAIN_DBPASSWORD.equals(GeneralParams.MAIN_NOENCRYPTDB)) {
+			if(!GeneralParams.IS_MAIN_DBPASSWORD_SET) {
 				mWallet.loadDB(new File(walletsqlfolder,"wallet"));
 			}else {
 				MinimaLogger.log("Using Encrypted SQL DB");
@@ -250,15 +250,15 @@ public class MinimaDB {
 			
 			//Load the MaximaDB
 			File maxsqlfolder = new File(basedb,"maximasql");
-			if(GeneralParams.MAIN_DBPASSWORD.equals(GeneralParams.MAIN_NOENCRYPTDB)) {
+			if(!GeneralParams.IS_MAIN_DBPASSWORD_SET) {
 				mMaximaDB.loadDB(new File(maxsqlfolder,"maxima"));
 			}else {
 				mMaximaDB.loadEncryptedSQLDB(new File(maxsqlfolder,"maxima"),GeneralParams.MAIN_DBPASSWORD);
 			}
 			
-			//Load ther MDS DB
+			//Load the MDS DB
 			File mdssqlfolder = new File(basedb,"mdssql");
-			if(GeneralParams.MAIN_DBPASSWORD.equals(GeneralParams.MAIN_NOENCRYPTDB)) {
+			if(!GeneralParams.IS_MAIN_DBPASSWORD_SET) {
 				mMDSDB.loadDB(new File(mdssqlfolder,"mds"));
 			}else {
 				mMDSDB.loadEncryptedSQLDB(new File(mdssqlfolder,"mds"),GeneralParams.MAIN_DBPASSWORD);
@@ -312,7 +312,7 @@ public class MinimaDB {
 			if(zResetWallet) {
 				mWallet					= new Wallet();
 				File walletsqlfolder 	= new File(basedb,"walletsql");
-				if(GeneralParams.MAIN_DBPASSWORD.equals(GeneralParams.MAIN_NOENCRYPTDB)) {
+				if(!GeneralParams.IS_MAIN_DBPASSWORD_SET) {
 					mWallet.loadDB(new File(walletsqlfolder,"wallet"));
 				}else {
 					mWallet.loadEncryptedSQLDB(new File(walletsqlfolder,"wallet"),GeneralParams.MAIN_DBPASSWORD);
