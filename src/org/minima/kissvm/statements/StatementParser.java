@@ -6,6 +6,7 @@ package org.minima.kissvm.statements;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.expressions.Expression;
@@ -20,6 +21,7 @@ import org.minima.kissvm.statements.commands.WHILEstatement;
 import org.minima.kissvm.tokens.LexicalTokenizer;
 import org.minima.kissvm.tokens.ScriptToken;
 import org.minima.kissvm.values.BooleanValue;
+import org.minima.utils.MinimaLogger;
 
 /**
  * IF..THEN ELSEIF.. THEN.. ELSE.. ENDIF
@@ -40,6 +42,11 @@ public class StatementParser {
 		//The current stack depth
 		int currentStackDepth = zStackDepth+1;
 		
+		//Check Stack Depth
+		if(currentStackDepth > Contract.MAX_STACK_DEPTH) {
+			throw new MinimaParseException("Stack too deep (MAX "+Contract.MAX_STACK_DEPTH+") "+currentStackDepth);
+		}
+				
 		//Cycle..
 		int currentPosition	= 0;
 		int totaltokens 	= zTokens.size();
