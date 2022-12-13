@@ -466,13 +466,50 @@ public class NIOMessage implements Runnable {
 						}
 					}
 					
-					//Get the parent if we don't have it.. and is in front of our cascade
-					if(block.isMoreEqual(cascadeblock)) {
-						exists = MinimaDB.getDB().getTxPoWDB().exists(txpow.getParentID().to0xString());
-						if(!exists) {
-							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txpow.getParentID());
+//					//Get the parent if we don't have it.. and is in front of our cascade
+//					if(block.isMoreEqual(cascadeblock)) {
+//						exists = MinimaDB.getDB().getTxPoWDB().exists(txpow.getParentID().to0xString());
+//						if(!exists) {
+//							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txpow.getParentID());
+//						}
+//					}
+					
+					//Scan through all the blocks to see if we have everything..
+					TxPoWDB txpdb 	= MinimaDB.getDB().getTxPoWDB();
+					TxPoW current 	= txpow;
+					
+					int counter = 0;
+					while(counter<512) {
+						
+						//What height are we at
+						if(current.getBlockNumber().isLessEqual(cascadeblock)) {
+							//Far enough
+							break;
 						}
+						
+						//Get the parent
+						TxPoW parent = txpdb.getTxPoW(current.getParentID().to0xString());
+						if(parent == null) {
+							//Send a message for it and break..
+							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, current.getParentID());
+							break;
+						}
+							
+						//Check all the transactions in the block..
+						ArrayList<MiniData> ptxns = parent.getBlockTransactions();
+						for(MiniData txn : ptxns) {
+							exists = MinimaDB.getDB().getTxPoWDB().exists(txn.to0xString());
+							if(!exists) {
+								//request it.. with a slight delay - as may be in process stack
+								NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txn);
+							}
+						}
+						
+						//And make the parent current
+						current = parent;
+						counter++;
 					}
+					
 				}
 				
 			}else if(type.isEqual(MSG_GENMESSAGE)) {
