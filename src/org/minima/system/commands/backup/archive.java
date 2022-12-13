@@ -274,6 +274,8 @@ public class archive extends Command {
 			MiniNumber startblock 	= MiniNumber.ZERO;
 			MiniNumber endblock 	= MiniNumber.ZERO;
 			boolean foundsome 		= false;
+			boolean firstrun 		= true;
+			MiniNumber firstStart   = MiniNumber.ZERO;
 			
 			while(true) {
 				
@@ -296,6 +298,11 @@ public class archive extends Command {
 				if(size > 0) {
 					foundsome 		= true;
 					TxBlock start 	= ibd.getTxBlocks().get(0);
+					if(firstrun) {
+						firstrun 	= false;
+						firstStart 	= start.getTxPoW().getBlockNumber();
+					}
+					
 					TxBlock last 	= ibd.getTxBlocks().get(size-1);
 					endblock		= last.getTxPoW().getBlockNumber();
 					startblock 		= endblock.increment();
@@ -311,7 +318,7 @@ public class archive extends Command {
 				//Post it..
 				Main.getInstance().getTxPoWProcessor().postProcessArchiveIBD(ibd, "0x00");
 			
-				//Now wait until processed
+				//Now wait for something to happen
 				boolean error = false;
 				TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 				int attempts = 0;
@@ -377,8 +384,8 @@ public class archive extends Command {
 			MinimaDB.getDB().saveAllDB();
 			
 			JSONObject resp = new JSONObject();
-			resp.put("message", "Archive sync completed.. shutting down now.. pls restart after");
-			resp.put("start", "0");
+			resp.put("message", "Archive sync completed.. shutting down now.. please restart after");
+			resp.put("start", firstStart.toString());
 			resp.put("end", endblock.toString());
 			ret.put("response", resp);
 		

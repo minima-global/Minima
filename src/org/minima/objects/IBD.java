@@ -295,10 +295,18 @@ public class IBD implements Streamable {
 			}
 			
 			//And now add all the blocks.. root will be first
-			TxPoWTreeNode root = MinimaDB.getDB().getTxPoWTree().getRoot();
-			if(root.getTxPoW().getBlockNumber().isEqual(zFirstBlock)) {
+			TxPoWTreeNode root 		= MinimaDB.getDB().getTxPoWTree().getRoot();
+			MiniNumber rootblock 	= root.getTxPoW().getBlockNumber();
+			
+			MiniNumber reqblock = zFirstBlock; 
+			if(rootblock.isEqual(MiniNumber.ONE) && reqblock.isEqual(MiniNumber.ZERO)) {
+				MinimaLogger.log("Root Tree Archive IBD - starts at genesis");
+				reqblock = MiniNumber.ONE;
+			}
+			
+			if(rootblock.isEqual(reqblock)) {
 				
-				MinimaLogger.log("Archive request for main tree data @ "+zFirstBlock);
+				MinimaLogger.log("Archive request for main tree data @ "+reqblock);
 				
 				//Add the whole tree..
 				TxBlock lastblock = null;
@@ -312,7 +320,7 @@ public class IBD implements Streamable {
 				
 				//All good - or has it changed this exact second
 				MiniNumber lastadded=lastblock.getTxPoW().getBlockNumber();
-				if(lastadded.isEqual(zFirstBlock)) {
+				if(lastadded.isEqual(reqblock)) {
 				
 					//And now add these..
 					for(TxBlock block : mainblocks) {
@@ -321,7 +329,7 @@ public class IBD implements Streamable {
 				}else {
 					
 					//IBD main chain changed..
-					MinimaLogger.log("Archive main tree data error.. root:"+lastadded+" req:"+zFirstBlock);
+					MinimaLogger.log("Archive main tree data error.. root:"+lastadded+" req:"+reqblock);
 				}
 			}
 			
