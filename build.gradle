@@ -138,3 +138,7 @@ docker {
     copySpec.from("docker/minima").into(".")
 }
 
+/*test {
+    dependsOn cleanTest
+    testLogging.showStandardStreams = true
+}*/

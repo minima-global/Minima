@@ -16,6 +16,7 @@ import org.minima.kissvm.statements.commands.RETURNstatement;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
+import org.minima.utils.MinimaLogger;
 
 public class IFstatementTests {
 
@@ -90,7 +91,7 @@ public class IFstatementTests {
             }
             assertEquals(true, ctr.isSuccessSet());
             assertEquals(true, ctr.isSuccess());
-            assertEquals(1, ctr.getNumberOfInstructions());
+            assertEquals(3, ctr.getNumberOfInstructions());
         }
         {
             IFstatement ifs = new IFstatement();
@@ -105,7 +106,7 @@ public class IFstatementTests {
             }
             assertEquals(true, ctr.isSuccessSet());
             assertEquals(true, ctr.isSuccess());
-            assertEquals(1, ctr.getNumberOfInstructions());
+            assertEquals(3, ctr.getNumberOfInstructions());
         }
         {
             IFstatement ifs = new IFstatement();
@@ -120,7 +121,7 @@ public class IFstatementTests {
             }
             assertEquals(true, ctr.isSuccessSet());
             assertEquals(true, ctr.isSuccess());
-            assertEquals(1, ctr.getNumberOfInstructions());
+            assertEquals(4, ctr.getNumberOfInstructions());
         }
         {
             IFstatement ifs = new IFstatement();
@@ -136,7 +137,7 @@ public class IFstatementTests {
             }
             assertEquals(true, ctr.isSuccessSet());
             assertEquals(true, ctr.isSuccess());
-            assertEquals(1, ctr.getNumberOfInstructions());
+            assertEquals(3, ctr.getNumberOfInstructions());
         }
         {
             IFstatement ifs = new IFstatement();
@@ -152,7 +153,7 @@ public class IFstatementTests {
             }
             assertEquals(true, ctr.isSuccessSet());
             assertEquals(true, ctr.isSuccess());
-            assertEquals(1, ctr.getNumberOfInstructions());
+            assertEquals(4, ctr.getNumberOfInstructions());
         }
         {
             IFstatement ifs = new IFstatement();
@@ -168,7 +169,7 @@ public class IFstatementTests {
             }
             assertEquals(true, ctr.isSuccessSet());
             assertEquals(true, ctr.isSuccess());
-            assertEquals(1, ctr.getNumberOfInstructions());
+            assertEquals(5, ctr.getNumberOfInstructions());
         }
     }
 }

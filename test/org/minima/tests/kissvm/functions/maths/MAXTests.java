@@ -45,7 +45,8 @@ public class MAXTests {
     @Test
     public void testValidParams() {
         Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-
+        ctr.setMaxInstructions(Integer.MAX_VALUE);
+        
         MAX fn = new MAX();
 
         {
