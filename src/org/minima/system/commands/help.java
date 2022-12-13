@@ -104,6 +104,8 @@ public class help extends Command {
 
 			addCommand(details, new help());
 			
+			addCommand(details, new whitepaper());
+			
 			addCommand(details, new status());
 			addCommand(details, new printtree());
 			addCommand(details, new burn());
