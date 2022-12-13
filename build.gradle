@@ -124,7 +124,7 @@ publishing {
 }
 
 docker {
-    name 'minimaglobal/minima:dev'
+    name 'minimaglobal/minima:0.104'
     dockerfile project.file('docker/Dockerfile')
     
     buildx true
