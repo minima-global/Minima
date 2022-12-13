@@ -391,10 +391,10 @@ public class NIOMessage implements Runnable {
 				boolean fullyvalid = true;
 				
 				//Interesting info.. check this.. probably a timing issue
-				if(blockdiffratio < 0.01) {
+				if(txpow.isBlock() && blockdiffratio < 0.01) {
 					//Block difficulty too low..
-					MinimaLogger.log("Received txpow with low block difficulty.. "+blockdiffratio+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
-//					fullyvalid = false;
+					MinimaLogger.log("Received txpow block with low block difficulty.. "+blockdiffratio+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
+					fullyvalid = false;
 				}
 				
 				if(block.isLessEqual(cascadeblock)) {
