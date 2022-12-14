@@ -93,6 +93,11 @@ public class Contract {
 	int mStackDepth = 0;
 	
 	/**
+	 * MAX Function params
+	 */
+	public static final int MAX_FUNCTION_PARAMS = 10;
+	
+	/**
 	 * A complete log of the contract execution
 	 */
 	String mCompleteLog="";
@@ -701,7 +706,17 @@ public class Contract {
 //					+ "LET z = FUNCTION(a b c) "
 //					+ "return true";
 		
-		String scr = "LET a = 10 / 2 let g = \\$e";
+		String scr = "LET func = [ LET returnvalue=$1+$2+$3] LET f=FUNCTION(func 1 2 3 4) ";
+				
+//		String scr = "LET a = [$1$1$1$1$1$1$1$1$1$1] // the script\r\n"
+//				+ "LET b = [$2$2$2$2$2$2$2$2$2$2] // first script parameter\r\n"
+//				+ "LET c = [$3$3$3$3$3$3$3$3$3$3]\r\n"
+//				+ "LET d = [$4$4$4$4$4$4$4$4$4$4]\r\n"
+//				+ "LET e = [$5$5$5$5$5$5$5$5$5$5]\r\n"
+//				+ "LET f = [$6$6$6$6$6$6$6$6$6$6]\r\n"
+//				+ "LET g = [$7$7$7$7$7$7$7$7$7$7]\r\n"
+//				+ "LET h = [$8$8$8$8$8$8$8$8$8$8] // last script parameter\r\n"
+//				+ "LET z = FUNCTION(a b c d e f g h)";
 		
 		//String scr = "LET a=0xFF WHILE TRUE DO LET a = a<<1000 ENDWHILE";
 		
