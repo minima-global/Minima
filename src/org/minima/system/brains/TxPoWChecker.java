@@ -532,7 +532,6 @@ public class TxPoWChecker {
 	
 	public static boolean checkMMR(MMR zTipMMR, TxPoW zTxPoW, boolean zLog) throws Exception {
 			
-			
 		//Check the Transaction..
 		boolean valid = checkMMR(zTipMMR, zTxPoW.getWitness(), zLog);
 		if(!valid) {
