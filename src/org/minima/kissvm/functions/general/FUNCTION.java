@@ -50,6 +50,12 @@ public class FUNCTION extends MinimaFunction{
 			}else {
 				finalfunction = REPLACE.safeReplaceAll(finalfunction, "\\$"+i, paramval.toString());
 			}
+			
+			//Check number of replacements
+			StringTokenizer strtokdollar = new StringTokenizer(finalfunction,"$");
+			if(strtokdollar.countTokens()-1>64) {
+				throw new ExecutionException("Too many replacements in FUNCTION, max 64");
+			}
 		}
 		
 		//Remove any previous return vars..
