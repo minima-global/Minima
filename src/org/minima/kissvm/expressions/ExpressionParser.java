@@ -263,12 +263,15 @@ public class ExpressionParser {
 					
 					//And get the next expression..
 					func.addParameter(getExpression(zTokens));
+					if(func.getAllParameters().size() > Contract.MAX_FUNCTION_PARAMS) {
+						throw new MinimaParseException("Too many function params, max "+Contract.MAX_FUNCTION_PARAMS);
+					}
 					
 					//Decrement Stack
 					zTokens.decrementStackDepth();
 				}
 			}
-						
+			
 			//Check the correct number of Parameters 
 			func.checkParamNumberCorrect();
 			

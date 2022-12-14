@@ -1,6 +1,7 @@
 package org.minima.kissvm.functions.general;
 
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
@@ -16,7 +17,7 @@ import org.minima.kissvm.values.Value;
 
 public class FUNCTION extends MinimaFunction{
 
-	public static String FUNCTION_RETURN = "returnvalue";
+	public static final String FUNCTION_RETURN = "returnvalue";
 	
 	public FUNCTION() {
 		super("FUNCTION");
@@ -27,10 +28,17 @@ public class FUNCTION extends MinimaFunction{
 		checkMinParamNumber(requiredParams());
 		
 		//get the Script..
-		StringValue script = zContract.getStringParam(0, this);
+		StringValue script 		= zContract.getStringParam(0, this);
+		String finalfunction 	= script.toString();
+		
+		//Check number of replacements
+		StringTokenizer strtok 	= new StringTokenizer(finalfunction,"$");
+		int count 				= strtok.countTokens()-1;
+		if(count>64) {
+			throw new ExecutionException("Too many replacements in FUNCTION, max 64");
+		}
 		
 		//Replace all the $ variables..
-		String finalfunction = script.toString();
 		int params = getAllParameters().size();
 		for(int i=1;i<params;i++) {
 			
