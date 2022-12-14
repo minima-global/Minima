@@ -22,6 +22,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWChecker;
+import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.network.maxima.MaximaCTRLMessage;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaxTxPoW;
@@ -466,17 +467,9 @@ public class NIOMessage implements Runnable {
 						}
 					}
 					
-//					//Get the parent if we don't have it.. and is in front of our cascade
-//					if(block.isMoreEqual(cascadeblock)) {
-//						exists = MinimaDB.getDB().getTxPoWDB().exists(txpow.getParentID().to0xString());
-//						if(!exists) {
-//							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txpow.getParentID());
-//						}
-//					}
-					
 					//Scan through all the blocks to see if we have everything..
-					TxPoWDB txpdb 	= MinimaDB.getDB().getTxPoWDB();
-					TxPoW current 	= txpow;
+					TxPoWDB txpdb 				= MinimaDB.getDB().getTxPoWDB();
+					TxPoW current 				= txpow;
 					
 					int counter = 0;
 					while(counter<512) {
@@ -487,6 +480,16 @@ public class NIOMessage implements Runnable {
 							break;
 						}
 						
+						//What is the parent
+						MiniData parentid = current.getParentID();
+						
+						//Is this onchain already
+						TxPoWTreeNode node = TxPoWSearcher.searchChainForTxPoWBlock(parentid);
+						if(node!=null) {
+							//we'll search the tree next
+							break;
+						}
+						
 						//Get the parent
 						TxPoW parent = txpdb.getTxPoW(current.getParentID().to0xString());
 						if(parent == null) {
@@ -494,7 +497,7 @@ public class NIOMessage implements Runnable {
 							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, current.getParentID());
 							break;
 						}
-							
+						
 						//Check all the transactions in the block..
 						ArrayList<MiniData> ptxns = parent.getBlockTransactions();
 						for(MiniData txn : ptxns) {
@@ -510,6 +513,27 @@ public class NIOMessage implements Runnable {
 						counter++;
 					}
 					
+					//Now scan the whole tree - unless you already have per block
+					TxPoWTreeNode tipblock = MinimaDB.getDB().getTxPoWTree().getTip();
+					while(tipblock != null) {
+						
+						//Do we have all the txns in this block
+						boolean haveall = tipblock.checkFullTxns(txpdb);
+						
+						if(!haveall) {
+							ArrayList<MiniData> ptxns = tipblock.getTxPoW().getBlockTransactions();
+							for(MiniData txn : ptxns) {
+								exists = MinimaDB.getDB().getTxPoWDB().exists(txn.to0xString());
+								if(!exists) {
+									//request it.. with a slight delay - as may be in process stack
+									NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txn);
+								}
+							}
+						}
+						
+						//Get the parent
+						tipblock = tipblock.getParent();
+					}
 				}
 				
 			}else if(type.isEqual(MSG_GENMESSAGE)) {

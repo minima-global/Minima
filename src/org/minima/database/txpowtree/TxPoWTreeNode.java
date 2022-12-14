@@ -12,15 +12,18 @@ import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMREntryNumber;
 import org.minima.database.mmr.MMRProof;
+import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
 import org.minima.objects.StateVariable;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWSearcher;
+import org.minima.system.network.minima.NIOManager;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 
@@ -65,6 +68,11 @@ public class TxPoWTreeNode implements Streamable {
 	 * Computed from previous data
 	 */
 	ArrayList<Coin> 	mComputedRelevantCoins = new ArrayList<>();
+	
+	/**
+	 * Have we checked we have all the txns in this block
+	 */
+	boolean mHaveCheckedFull = false;
 	
 	private TxPoWTreeNode() {}
 	
@@ -131,13 +139,7 @@ public class TxPoWTreeNode implements Streamable {
 
 			//Create the MMRData
 			MMRData mmrdata = MMRData.CreateMMRDataLeafNode(spentcoin, MiniNumber.ZERO);
-			
-//			//Get the Hash of this 
-//			MiniData hashspent = Crypto.getInstance().hashObject(spentcoin);
-//			
-//			//And create a new MMRData structure - with ZERO value as it is now spent
-//			MMRData mmrdata = new MMRData(hashspent, MiniNumber.ZERO);
-			
+						
 			//Update the MMR
 			mMMR.updateEntry(entrynumber, input.getMMRProof(), mmrdata);
 			
@@ -169,13 +171,7 @@ public class TxPoWTreeNode implements Streamable {
 			
 			//Create the MMRData
 			MMRData mmrdata = MMRData.CreateMMRDataLeafNode(newcoin, output.getAmount());
-			
-//			//Get the Hash of this 
-//			MiniData hashunspent = Crypto.getInstance().hashObject(newcoin);
-//			
-//			//And create a new MMRData with the correct amount
-//			MMRData mmrdata = new MMRData(hashunspent, output.getAmount());
-			
+						
 			//And add to the MMR
 			mMMR.addEntry(mmrdata);	
 			
@@ -433,6 +429,28 @@ public class TxPoWTreeNode implements Streamable {
 		return mTotalWeight;
 	}
 
+	public boolean checkFullTxns(TxPoWDB zTxpDB) {
+		
+		//If we have already checked 
+		if(mHaveCheckedFull) {
+			return true;
+		}
+		
+		//Cycle through all the TxPoW and see if we have them all
+		ArrayList<MiniData> txns = getTxPoW().getBlockTransactions();
+		for(MiniData txn : txns) {
+			boolean exists = zTxpDB.exists(txn.to0xString());
+			if(!exists) {
+				return false;
+			}
+		}
+		
+		//We now KNOW we have all the txns
+		mHaveCheckedFull = true;
+		
+		return true;
+	}
+	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		mTxBlock.writeDataStream(zOut);
