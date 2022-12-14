@@ -33,8 +33,7 @@ public class FUNCTION extends MinimaFunction{
 		
 		//Check number of replacements
 		StringTokenizer strtok 	= new StringTokenizer(finalfunction,"$");
-		int count 				= strtok.countTokens()-1;
-		if(count>64) {
+		if(strtok.countTokens()-1>64) {
 			throw new ExecutionException("Too many replacements in FUNCTION, max 64");
 		}
 		
