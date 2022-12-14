@@ -81,10 +81,11 @@ public class TxPoWTreeNode implements Streamable {
 	}
 	
 	public TxPoWTreeNode(TxBlock zTxBlock, boolean zFindRelevant) {
-		mTxBlock		= zTxBlock;
-		mChildren 	 	= new ArrayList<>();
-		mTotalWeight 	= BigDecimal.ZERO;
-		mParent			= null;
+		mTxBlock			= zTxBlock;
+		mChildren 	 		= new ArrayList<>();
+		mTotalWeight 		= BigDecimal.ZERO;
+		mParent				= null;
+		mHaveCheckedFull 	= false;
 		
 		//Construct the MMR..
 		constructMMR(zFindRelevant);
