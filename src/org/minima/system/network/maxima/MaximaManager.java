@@ -613,6 +613,7 @@ public class MaximaManager extends MessageProcessor {
 				
 				if(mxhost != null) {
 					MinimaLogger.log("MAXIMA outgoing disconnection : "+nioc.getFullAddress()+" "+reconnect);
+					nioc.setMaximaDisconnected();
 				}
 				
 				//Update the MLS Servers
@@ -839,6 +840,7 @@ public class MaximaManager extends MessageProcessor {
 				//Check Valid..
 				if(!uid.equals(nioc.getUID())) {
 					MinimaLogger.log("INVALID MAXCHECK REC:"+uid+" FROM:"+nioc.getUID()+" Could be multiple connections to the same Host..? @ "+nioc.getFullAddress());
+					//Multiple connections to the same host cause this error ?
 					//return;
 				}
 				
@@ -846,6 +848,13 @@ public class MaximaManager extends MessageProcessor {
 				MaximaHost mxhost = maxdb.loadHost(nioc.getFullAddress());
 				if(mxhost == null) {
 					MinimaLogger.log("MaximaHost NOT Found on CHKCONNECT_APP "+nioc.getFullAddress()+" incoming:"+nioc.isIncoming());
+					return;
+				}
+				
+				//DOUBLE check - Are we connected..
+				if(nioc.hasMaximaDiscxonnected()) {
+					//Already disconnected
+					MinimaLogger.log("MaximaHost already disconnected at check connect "+nioc.getFullAddress()+" incoming:"+nioc.isIncoming());
 					return;
 				}
 				
