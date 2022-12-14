@@ -148,6 +148,8 @@ public class TxPoWProcessor extends MessageProcessor {
 								for(TxPoW child : children) {
 									processstack.push(child);
 								}
+							}else {
+								MinimaLogger.log("[!] Failed block check @ "+txpow.getBlockNumber()+" txpowid:"+txpow.getTxPoWID());
 							}
 						}
 						

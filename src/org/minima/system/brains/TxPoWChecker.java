@@ -140,7 +140,7 @@ public class TxPoWChecker {
 			
 			//First check this
 			if(zTxPoW.isTransaction()) {
-				boolean valid = checkTxPoWSimple(parentMMR, zTxPoW, zTxPoW);
+				boolean valid = checkTxPoWSimple(parentMMR, zTxPoW, zTxPoW, true);
 				if(!valid) {
 					return false;
 				}
@@ -148,7 +148,7 @@ public class TxPoWChecker {
 			
 			//Now check all the internal Transactions
 			for(TxPoW txpow : zTransactions) {
-				boolean valid = checkTxPoWSimple(parentMMR, txpow, zTxPoW);
+				boolean valid = checkTxPoWSimple(parentMMR, txpow, zTxPoW, true);
 				if(!valid) {
 					return false;
 				}
@@ -367,7 +367,7 @@ public class TxPoWChecker {
 	/**
 	 * Once accepted basic and signature checks are no longer needed..
 	 */
-	public static boolean checkTxPoWSimple(MMR zTipMMR, TxPoW zTxPoW, TxPoW zBlock) throws Exception {
+	public static boolean checkTxPoWSimple(MMR zTipMMR, TxPoW zTxPoW, TxPoW zBlock, boolean zLog) throws Exception {
 		
 		//Check TxPoW is required Minimum..
 		if(zTxPoW.getTxnDifficulty().isMore(zBlock.getMagic().getMinTxPowWork())) {
@@ -383,7 +383,7 @@ public class TxPoWChecker {
 		}
 		
 		//Check the MMR first - as quicker..
-		boolean valid = checkMMR(zTipMMR, zTxPoW);
+		boolean valid = checkMMR(zTipMMR, zTxPoW, zLog);
 		if(!valid) {
 			return false;
 		}
@@ -567,7 +567,7 @@ public class TxPoWChecker {
 			
 			if(!validmmr) {
 				if(zLog) {
-					MinimaLogger.log("Invalid MMR Proof!");
+					MinimaLogger.log("Invalid MMR Proof! @ "+zTipMMR.getBlockTime());
 				}
 				return false;
 			}

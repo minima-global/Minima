@@ -255,7 +255,7 @@ public class TxPoWGenerator {
 				}
 			
 				//Check if Valid!
-				if(valid && TxPoWChecker.checkTxPoWSimple(tip.getMMR(), memtxp, txpow)) {
+				if(valid && TxPoWChecker.checkTxPoWSimple(tip.getMMR(), memtxp, txpow, false)) {
 					
 					//Add to our list
 					chosentxns.add(memtxp);
