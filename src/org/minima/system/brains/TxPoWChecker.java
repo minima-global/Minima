@@ -526,7 +526,7 @@ public class TxPoWChecker {
 	/**
 	 * Check the MMR Proofs
 	 */
-	public static boolean checktokensMMR(MMR zTipMMR, TxPoW zTxPoW) throws Exception {
+	public static boolean checkMMR(MMR zTipMMR, TxPoW zTxPoW) throws Exception {
 		return checkMMR(zTipMMR, zTxPoW, true);
 	}
 	
