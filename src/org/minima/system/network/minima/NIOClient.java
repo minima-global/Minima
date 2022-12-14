@@ -77,6 +77,8 @@ public class NIOClient {
 	String mMaximaIdent = "";
 	String mMaximaMLS 	= "";
 	
+	boolean mHasMaximaDisconnected = false;
+	
 	/**
 	 * Specify extra info
 	 */
@@ -181,6 +183,14 @@ public class NIOClient {
 	
 	public String getMaximaMLS() {
 		return mMaximaMLS;	
+	}
+	
+	public boolean hasMaximaDiscxonnected() {
+		return mHasMaximaDisconnected;
+	}
+	
+	public void setMaximaDisconnected() {
+		mHasMaximaDisconnected = true;
 	}
 	
 	public void overrideHost(String zHost) {
