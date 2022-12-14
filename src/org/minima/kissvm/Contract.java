@@ -706,7 +706,7 @@ public class Contract {
 //					+ "LET z = FUNCTION(a b c) "
 //					+ "return true";
 		
-		String scr = "LET func = [ LET returnvalue=$1+$2+$3] LET f=FUNCTION(func 1 2 3 4) ";
+		String scr = "LET a = 10 LET b = -2147483648 LET c = HEX(a - b) RETURN SUBSET(a b c)";
 				
 //		String scr = "LET a = [$1$1$1$1$1$1$1$1$1$1] // the script\r\n"
 //				+ "LET b = [$2$2$2$2$2$2$2$2$2$2] // first script parameter\r\n"
