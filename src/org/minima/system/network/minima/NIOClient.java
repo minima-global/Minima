@@ -1,6 +1,5 @@
 package org.minima.system.network.minima;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;

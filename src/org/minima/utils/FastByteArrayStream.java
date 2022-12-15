@@ -7,7 +7,7 @@ import java.util.Objects;
 public class FastByteArrayStream extends ByteArrayOutputStream {
 	
 	/**
-	 * 256k initial size + 256K when needed
+	 * 256k max initial size + 256K when needed
 	 */
 	private static final int SIZE_INCREASE = 256 * 1024;
 	
