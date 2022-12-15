@@ -566,11 +566,11 @@ public class MaximaManager extends MessageProcessor {
 					return;
 				}
 				
-				//Are we connected..
-				MinimaLogger.log("MAXIMA Check if connected : "+nioc.getFullAddress()+" "+mxhost.getConnected());
-				
 				//If not connected..
 				if(mxhost.getConnected() == 0) {
+				
+					//Are we connected..
+					MinimaLogger.log("MAXIMA Check if connected : "+nioc.getFullAddress()+" "+mxhost.getConnected());
 					
 					//How many valid hosts are we connected to.. if enough leave it..
 					int conns = getAllConnectedHosts().size();
