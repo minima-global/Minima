@@ -1,5 +1,6 @@
 package org.minima.system.network.minima;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -10,6 +11,7 @@ import java.util.Date;
 
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
+import org.minima.utils.FastByteArrayOutputStream;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
@@ -39,7 +41,9 @@ public class NIOClient {
 	ByteBuffer mBufferIn;
 	int mReadCurrentPosition 	= 0;
     int mReadCurrentLimit 		= 0;
-    byte[] mReadData 			= null;
+    
+    byte[]	mReadByteArrayTemp					= null;
+	FastByteArrayOutputStream mReadByteArray 	= null;
 	
 	ByteBuffer mBufferOut;
 	int mWritePosition 			= 0;
@@ -106,12 +110,12 @@ public class NIOClient {
         mBufferIn 	= ByteBuffer.allocate(MAX_NIO_BUFFERS);
         mBufferOut 	= ByteBuffer.allocate(MAX_NIO_BUFFERS);
         
+        //Create the Read array
+        mReadByteArrayTemp = new byte[MAX_NIO_BUFFERS];
+        
         //Writing
         mMessages 				= new ArrayList<>();
         
-        //Reading
-    	mReadData 				= null;
-    	
     	mNIOManager = Main.getInstance().getNetworkManager().getNIOManager();
     	
     	mTimeConnected 		= System.currentTimeMillis();
@@ -329,7 +333,7 @@ public class NIOClient {
  	   	while(mBufferIn.hasRemaining()) {
  	   	
  	   		//What are we reading
- 	   		if(mReadData == null) {
+ 	   		if(mReadByteArray == null) {
  	   			
  	   			//Do we have enough for the size..
  	   			if(mBufferIn.remaining() >= 4) {
@@ -342,7 +346,9 @@ public class NIOClient {
  	   					throw new IOException("Message too big for read! "+mReadCurrentLimit);
  	   				}
  	   				
- 	   				mReadData = new byte[mReadCurrentLimit];
+ 	   				//Create a new array - with initial capacity of 64k
+ 	   				mReadByteArray 	= new FastByteArrayOutputStream();
+ 	   				
  	   			}else {
  	   				//Not enough for the size..
  	   				break;
@@ -350,7 +356,7 @@ public class NIOClient {
  	   		}
  	   		
  	   		//We have something..
- 	   		if(mReadData != null) {
+ 	   		if(mReadByteArray != null) {
  	   			//How much left to read for this object
 				int readremaining = mReadCurrentLimit - mReadCurrentPosition;
 				   
@@ -359,21 +365,28 @@ public class NIOClient {
 				if(buffread > readremaining) {
 					buffread = readremaining;
 				}
-				   
-				//Copy into the structure
-				mBufferIn.get(mReadData, mReadCurrentPosition, buffread);
+				
+				//Copy into the temp array
+				mBufferIn.get(mReadByteArrayTemp, 0, buffread);
+				
+				//Now write to the ByteArrayOutputStream
+				mReadByteArray.writeData(mReadByteArrayTemp, 0, buffread);
 				mReadCurrentPosition += buffread;
-				   
+				
 				//Are we done..
 				if(mReadCurrentPosition == mReadCurrentLimit) {
+					
+					//Get  all the data
+					byte[] allreaddata = mReadByteArray.toByteArray(); 
+					
 					//Post it !
 					Message msg = new Message(NIOManager.NIO_INCOMINGMSG);
 					msg.addString("uid", mUID);
-					msg.addObject("data", new MiniData(mReadData));
+					msg.addObject("data", new MiniData(allreaddata));
 					mNIOManager.PostMessage(msg);
 					
 					//New array required..
-					mReadData = null;
+					mReadByteArray = null;
 					
 					//Last message we have received from this client
 					mLastMessageRead = System.currentTimeMillis();
