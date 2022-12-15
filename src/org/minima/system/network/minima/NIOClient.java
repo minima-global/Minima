@@ -11,7 +11,7 @@ import java.util.Date;
 
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
-import org.minima.utils.FastByteArrayOutputStream;
+import org.minima.utils.FastByteArrayStream;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
@@ -43,7 +43,7 @@ public class NIOClient {
     int mReadCurrentLimit 		= 0;
     
     byte[]	mReadByteArrayTemp					= null;
-	FastByteArrayOutputStream mReadByteArray 	= null;
+	FastByteArrayStream mReadByteArray 	= null;
 	
 	ByteBuffer mBufferOut;
 	int mWritePosition 			= 0;
@@ -347,7 +347,7 @@ public class NIOClient {
  	   				}
  	   				
  	   				//Create a new array - with initial capacity of 64k
- 	   				mReadByteArray 	= new FastByteArrayOutputStream(mReadCurrentLimit);
+ 	   				mReadByteArray 	= new FastByteArrayStream(mReadCurrentLimit);
  	   				
  	   			}else {
  	   				//Not enough for the size..

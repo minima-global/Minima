@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class FastByteArrayOutputStream extends ByteArrayOutputStream {
+public class FastByteArrayStream extends ByteArrayOutputStream {
 	
 	/**
 	 * 256k initial size + 256K when needed
@@ -21,7 +21,7 @@ public class FastByteArrayOutputStream extends ByteArrayOutputStream {
 		return SIZE_INCREASE;
 	}
 	
-	public FastByteArrayOutputStream(int zTotalSize) {
+	public FastByteArrayStream(int zTotalSize) {
 		super(getRequiredSize(zTotalSize));
 	}
 	
