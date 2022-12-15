@@ -609,7 +609,18 @@ public class NIOMessage implements Runnable {
 				//Now check for intersection
 				boolean found = false;
 				ArrayList<MiniData> pulsemsg = pulse.getBlockList();
+				int counter=0;
 				for(MiniData block : pulsemsg) {
+					
+					//Is it one of ours already
+					TxPoWTreeNode node = TxPoWSearcher.searchChainForTxPoWBlock(block);
+					if(node!=null) {
+						found = true;
+						//We search this every block
+						break;
+					}
+					
+					counter++;
 					String blockstr = block.to0xString();
 					
 					//Do we have the block
@@ -635,7 +646,7 @@ public class NIOMessage implements Runnable {
 				}
 				
 				long timediff = System.currentTimeMillis() - timestart;
-				MinimaLogger.log("PULSE("+pulsemsg.size()+") from:"+mClientUID+" TIME:"+timediff+"ms req:"+requestlist.size()+" crossover:"+found);
+				MinimaLogger.log("PULSE("+counter+"/"+pulsemsg.size()+") from:"+mClientUID+" TIME:"+timediff+"ms req:"+requestlist.size()+" crossover:"+found);
 				
 				//Did we find a crossover..
 				if(found) {
