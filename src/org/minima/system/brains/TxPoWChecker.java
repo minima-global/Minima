@@ -432,6 +432,13 @@ public class TxPoWChecker {
 		ArrayList<CoinProof> mmrproofs 	= zWitness.getAllCoinProofs();
 		int ins = mmrproofs.size();
 		
+		//Check same..
+		int inputssize = zTransaction.getAllInputs().size();
+		if(ins != inputssize) {
+			MinimaLogger.log("Wrong number of MMRProofs("+ins+") for Inputs("+inputssize+")");
+			return false;
+		}
+		
 		//Cycle through and check..
 		for(int i=0;i<ins;i++) {
 			
