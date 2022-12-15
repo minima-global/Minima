@@ -22,6 +22,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWChecker;
+import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.network.maxima.MaximaCTRLMessage;
 import org.minima.system.network.maxima.MaximaManager;
@@ -439,6 +440,19 @@ public class NIOMessage implements Runnable {
 					fullyvalid = false;
 				}
 				
+				//Is the MEMPOOL Full
+				if(TxPoWGenerator.isMempoolFull()) {
+					
+					//What is the Burn
+					MiniNumber burn = txpow.getBurn();
+					
+					//Check the Burn
+					if(burn.isLessEqual(TxPoWGenerator.getMinMempoolBurn())) {
+						MinimaLogger.log("Received TxPoW with low burn when MEMPOOL full "+burn);
+						fullyvalid=false;
+					}
+				}
+				
 				//How long did all that take..
 				long timefinish = System.currentTimeMillis();
 				long timediff 	= timefinish - timestart;
@@ -450,7 +464,7 @@ public class NIOMessage implements Runnable {
 				//Ok - let's add to our database and process..
 				Main.getInstance().getTxPoWProcessor().postProcessTxPoW(txpow);
 				
-				//Since it's OK.. forward the TxPoWID to the rest of the network..
+				//ONLY if it's FULLY OK.. forward the TxPoWID to the rest of the network..
 				if(fullyvalid) {
 					//Forward to the network
 					NIOManager.sendNetworkMessageAll(MSG_TXPOWID, txpow.getTxPoWIDData());
@@ -646,7 +660,9 @@ public class NIOMessage implements Runnable {
 				}
 				
 				long timediff = System.currentTimeMillis() - timestart;
-				MinimaLogger.log("PULSE("+counter+"/"+pulsemsg.size()+") from:"+mClientUID+" TIME:"+timediff+"ms req:"+requestlist.size()+" crossover:"+found);
+				if(counter>0) {
+					MinimaLogger.log("PULSE("+counter+"/"+pulsemsg.size()+") from:"+mClientUID+" TIME:"+timediff+"ms req:"+requestlist.size()+" crossover:"+found);
+				}
 				
 				//Did we find a crossover..
 				if(found) {
