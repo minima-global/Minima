@@ -352,7 +352,12 @@ public class MDSManager extends MessageProcessor {
 			}
 			
 			//Set up the RHINOJS ContextFactory
-			ContextFactory.initGlobal(new SandboxContextFactory());
+			//Weird here when Android doesn't clear the class and the static variable persists..
+			if(!ContextFactory.hasExplicitGlobal()) {
+				ContextFactory.initGlobal(new SandboxContextFactory());
+			}else {
+				MinimaLogger.log("MDS RHINOJS INIT hasGlobal Allready!.. may need a restart");
+			}
 			
 			//Scan for MiniDApps
 			PostMessage(MDS_MINIDAPPS_RESETALL);
