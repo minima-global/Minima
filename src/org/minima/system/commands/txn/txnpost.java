@@ -58,11 +58,104 @@ public class txnpost extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 
+//		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
+//		
+//		//The transaction
+//		String id 		= getParam("id");
+//		MiniNumber burn = getNumberParam("burn", MiniNumber.ZERO);
+//		if(burn.isLess(MiniNumber.ZERO)) {
+//			throw new CommandException("Cannot have negative burn "+burn.toString());
+//		}
+//		
+//		//Get the row..
+//		TxnRow txnrow = db.getTransactionRow(id); 
+//		if(txnrow == null) {
+//			throw new CommandException("Transaction not found : "+id);
+//		}
+//		
+//		//Get the Transaction
+//		Transaction trans = txnrow.getTransaction();
+//		Witness wit		  = txnrow.getWitness();
+//		
+//		//Clear any previous checks..
+//		txnrow.getTransaction().clearIsMonotonic();
+//		
+//		//Set the scripts and MMR
+//		boolean auto = getBooleanParam("auto", false);
+//		if(auto) {
+//			//Set the MMR data and Scripts
+//			txnutils.setMMRandScripts(trans, wit);
+//		}
+//		
+//		//Compute the correct CoinID
+//		TxPoWGenerator.precomputeTransactionCoinID(trans);
+//		
+//		//Calculate the TransactionID..
+//		trans.calculateTransactionID();
+//		
+//		//The final TxPoW
+//		TxPoW txpow = null;
+//		
+//		//Is there a burn
+//		if(burn.isMore(MiniNumber.ZERO)) {
+//			
+//			//Get all the used coins..
+//			ArrayList<String> addedcoinid 	= new ArrayList<>();
+//			ArrayList<CoinProof> coins 		= wit.getAllCoinProofs();
+//			for(CoinProof cp : coins) {
+//				addedcoinid.add(cp.getCoin().getCoinID().to0xString());
+//			}
+//			
+//			//Create a Burn Transaction
+//			TxnRow burntxn = txnutils.createBurnTransaction(addedcoinid,trans.getTransactionID(),burn);
+//
+//			//Now create a complete TxPOW
+//			txpow = TxPoWGenerator.generateTxPoW(trans, wit, burntxn.getTransaction(), burntxn.getWitness());
+//			
+//		}else {
+//			//Now create the TxPoW
+//			txpow = TxPoWGenerator.generateTxPoW(trans, wit);
+//		}
+//		
+//		//Calculate the size..
+//		txpow.calculateTXPOWID();
+//		
+//		//All good..
+//		ret.put("response", txpow.toJSON());
+//				
+//		//Send it to the Miner..
+//		Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txpow);
+		
+		//Get the details
+		String id 		= getParam("id");
+		MiniNumber burn = getNumberParam("burn", MiniNumber.ZERO);
+		boolean auto 	= getBooleanParam("auto", false);
+		
+		//Post the Txn..
+		TxPoW txpow = postTxn(id, burn, auto);
+		
+		//Add to response..
+		ret.put("response", txpow.toJSON());
+		
+		return ret;
+	}
+
+	@Override
+	public Command getFunction() {
+		return new txnpost();
+	}
+	
+	/**
+	 * Also used by TxnSign if autopost set
+	 */
+	public static TxPoW postTxn(String zID, MiniNumber zBurn, boolean zAuto) throws Exception {
+		
+		//Get the TXN DB
 		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
 		
 		//The transaction
-		String id 		= getParam("id");
-		MiniNumber burn = getNumberParam("burn", MiniNumber.ZERO);
+		String id 		= zID;
+		MiniNumber burn = zBurn;
 		if(burn.isLess(MiniNumber.ZERO)) {
 			throw new CommandException("Cannot have negative burn "+burn.toString());
 		}
@@ -81,8 +174,7 @@ public class txnpost extends Command {
 		txnrow.getTransaction().clearIsMonotonic();
 		
 		//Set the scripts and MMR
-		boolean auto = getBooleanParam("auto", false);
-		if(auto) {
+		if(zAuto) {
 			//Set the MMR data and Scripts
 			txnutils.setMMRandScripts(trans, wit);
 		}
@@ -119,19 +211,11 @@ public class txnpost extends Command {
 		
 		//Calculate the size..
 		txpow.calculateTXPOWID();
-		
-		//All good..
-		ret.put("response", txpow.toJSON());
 				
 		//Send it to the Miner..
 		Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txpow);
 		
-		return ret;
-	}
-
-	@Override
-	public Command getFunction() {
-		return new txnpost();
+		return txpow;
 	}
 
 }

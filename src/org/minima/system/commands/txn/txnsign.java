@@ -11,7 +11,9 @@ import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
+import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
+import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.Signature;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.commands.Command;
@@ -22,7 +24,7 @@ import org.minima.utils.json.JSONObject;
 public class txnsign extends Command {
 
 	public txnsign() {
-		super("txnsign","[id:] [publickey:0x..|auto] - Sign a transaction");
+		super("txnsign","[id:] [publickey:0x..|auto] (txnpostauto:) (txnpostburn:) - Sign a transaction");
 	}
 	
 	@Override
@@ -39,16 +41,24 @@ public class txnsign extends Command {
 				+ "publickey:\n"
 				+ "    The public key specified in a custom script, or 'auto' for transactions with simple inputs.\n"
 				+ "\n"
+				+ "txnpostauto:\n"
+				+ "    Do you want to post this transaction. Use the same values as you would for txnpost auto(sort MMR and Scripts)\n"
+				+ "\n"
+				+ "txnpostburn:\n"
+				+ "    If you also post this transaction, do you want to add a burn transaction.\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "txnsign id:simpletxn publickey:auto\n"
 				+ "\n"
-				+ "txnsign id:multisig publickey:0xFD8B..\n";
+				+ "txnsign id:multisig publickey:0xFD8B..\n"
+				+ "\n"
+				+ "txnsign id:simpletxn publickey:auto txnpostauto:true\n";
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id","publickey"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","publickey","txnpostauto","txnpostburn"}));
 	}
 	
 	@Override
@@ -141,6 +151,26 @@ public class txnsign extends Command {
 		//Did we not find any
 		if(notfoundkeys.size()>0) {
 			resp.put("notfound", notfoundkeys);
+		}
+		
+		//Are we auto posting ASWELL..
+		if(existsParam("txnpostauto")) {
+			
+			//Are we AUTO
+			boolean postauto 	= getBooleanParam("txnpostauto");
+			
+			//Get the burn
+			MiniNumber burn 	= getNumberParam("txnpostburn", MiniNumber.ZERO);
+			
+			//And POst it..
+			TxPoW txp 			= txnpost.postTxn(id, burn, postauto);
+			
+			resp.put("txnpost", true);
+			resp.put("txnpostauto", postauto);
+			resp.put("txnpostburn", burn.toString());
+			
+		}else {
+			resp.put("txnpost", false);
 		}
 		
 		ret.put("response", resp);
