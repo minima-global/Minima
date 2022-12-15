@@ -347,7 +347,7 @@ public class NIOClient {
  	   				}
  	   				
  	   				//Create a new array - with initial capacity of 64k
- 	   				mReadByteArray 	= new FastByteArrayOutputStream();
+ 	   				mReadByteArray 	= new FastByteArrayOutputStream(mReadCurrentLimit);
  	   				
  	   			}else {
  	   				//Not enough for the size..

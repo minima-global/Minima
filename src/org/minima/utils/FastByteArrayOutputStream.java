@@ -9,10 +9,20 @@ public class FastByteArrayOutputStream extends ByteArrayOutputStream {
 	/**
 	 * 256k initial size + 256K when needed
 	 */
-	public static final int SIZE_INCREASE = 256 * 1024;
+	private static final int SIZE_INCREASE = 256 * 1024;
 	
-	public FastByteArrayOutputStream() {
-		super(SIZE_INCREASE);
+	/**
+	 * How much do we actually need
+	 */
+	private static int getRequiredSize(int zTotal) {
+		if(zTotal < SIZE_INCREASE) {
+			return zTotal;
+		}
+		return SIZE_INCREASE;
+	}
+	
+	public FastByteArrayOutputStream(int zTotalSize) {
+		super(getRequiredSize(zTotalSize));
 	}
 	
 	public void writeData(byte b[], int off, int len) {
