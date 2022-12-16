@@ -544,6 +544,7 @@ public class NIOManager extends MessageProcessor {
 			TxBlock lastblock 	= arch.loadLastBlock();
 			TxPoW lastpow 		= null;
 			if(lastblock == null) {
+				MinimaLogger.log("NIO_SYNCTXBLOCK : No data in archive setting root of tree :"+arch.getSize());
 				lastpow = MinimaDB.getDB().getTxPoWTree().getRoot().getTxPoW();
 			}else {
 				lastpow = lastblock.getTxPoW();
@@ -567,6 +568,7 @@ public class NIOManager extends MessageProcessor {
 			}
 			
 			//Send a message asking for a sync
+			MinimaLogger.log("[+] Request Sync IBD @ "+lastpow.getBlockNumber());
 			sendNetworkMessage(clientid, NIOMessage.MSG_TXBLOCK_REQ, lastpow);
 			
 		}else if(zMessage.getMessageType().equals(NIO_CHECKLASTMSG)) {
