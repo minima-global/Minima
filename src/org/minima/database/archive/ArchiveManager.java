@@ -554,8 +554,7 @@ public class ArchiveManager extends SqlDB {
 			}
 			
 			//Last block to keep
-//			MiniNumber cutoff = fb.getTxPoW().getBlockNumber().sub(new MiniNumber(MAX_KEEP_BLOCKS));
-			MiniNumber cutoff = fb.getTxPoW().getBlockNumber().sub(new MiniNumber(1000));
+			MiniNumber cutoff = fb.getTxPoW().getBlockNumber().sub(new MiniNumber(MAX_KEEP_BLOCKS));
 			
 			//Set the parameters
 			SQL_DELETE_TXBLOCKS.clearParameters();
