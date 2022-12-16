@@ -485,6 +485,9 @@ public class sendnosign extends Command {
 			txpow = TxPoWGenerator.generateTxPoW(transaction, witness);
 		}
 		
+		//Calculate the txpowid / size..
+		txpow.calculateTXPOWID();
+				
 		//Create the file..
 		File txnfile = MiniFile.createBaseFile("unsignedtransaction-"+System.currentTimeMillis()+".txn");
 				

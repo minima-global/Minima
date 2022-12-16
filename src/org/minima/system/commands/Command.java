@@ -76,6 +76,7 @@ import org.minima.system.commands.search.txpow;
 import org.minima.system.commands.send.sendnosign;
 import org.minima.system.commands.send.sendpost;
 import org.minima.system.commands.send.sendsign;
+import org.minima.system.commands.send.sendview;
 import org.minima.system.commands.signatures.sign;
 import org.minima.system.commands.signatures.verify;
 import org.minima.system.commands.txn.txnauto;
@@ -109,7 +110,7 @@ public abstract class Command {
 
 			new mds(), new sendpoll(), new healthcheck(), new mempool(),
 			
-			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(),
+			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(), new sendview(),
 			
 			new archive(), new logs(), new history(),
 			new magic(),

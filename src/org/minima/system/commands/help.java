@@ -50,6 +50,7 @@ import org.minima.system.commands.search.txpow;
 import org.minima.system.commands.send.sendnosign;
 import org.minima.system.commands.send.sendpost;
 import org.minima.system.commands.send.sendsign;
+import org.minima.system.commands.send.sendview;
 import org.minima.system.commands.signatures.sign;
 import org.minima.system.commands.signatures.verify;
 import org.minima.system.commands.txn.txnbasics;
@@ -125,6 +126,7 @@ public class help extends Command {
 			addCommand(details, new sendpoll());
 			
 			addCommand(details, new sendnosign());
+			addCommand(details, new sendview());
 			addCommand(details, new sendsign());
 			addCommand(details, new sendpost());
 			

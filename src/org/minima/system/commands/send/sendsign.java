@@ -17,7 +17,9 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.Signature;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.base.vault;
 import org.minima.utils.MiniFile;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class sendsign extends Command {
@@ -28,7 +30,7 @@ public class sendsign extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"file"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"file","password"}));
 	}
 	
 	@Override
@@ -51,6 +53,16 @@ public class sendsign extends Command {
 		
 		//Create a list of the required signatures
 		ArrayList<String> reqsigs = new ArrayList<>();
+		
+		boolean passwordlock = false;
+		if(existsParam("password") && !MinimaDB.getDB().getWallet().isBaseSeedAvailable()) {
+			
+			//Lets unlock the DB
+			vault.passowrdUnlockDB(getParam("password"));
+			 
+			//Lock at the end..
+			passwordlock = true;
+		}
 		
 		//Get the sigs required.. for the main transaction
 		Transaction trans 	= txp.getTransaction();
@@ -107,6 +119,16 @@ public class sendsign extends Command {
 				witness.addSignature(signature);
 			}	
 		}
+		
+		//Are we locking the DB
+		if(passwordlock) {
+			
+			//Lock the Wallet DB
+			vault.passwordLockDB(getParam("password"));
+		}
+		
+		//Calculate the TxPOWID
+		txp.calculateTXPOWID();
 		
 		//Create the file..
 		File txnfile = MiniFile.createBaseFile("signedtransaction-"+System.currentTimeMillis()+".txn");

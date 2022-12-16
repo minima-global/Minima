@@ -337,6 +337,9 @@ public class TxPoWGenerator {
 		txpow.setMMRRoot(root.getData());
 		txpow.setMMRTotal(root.getValue());
 		
+		//Calculate the txpowid / size..
+		txpow.calculateTXPOWID();
+				
 		return txpow;
 	}
 	

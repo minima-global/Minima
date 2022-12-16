@@ -60,7 +60,7 @@ public class send extends Command {
 	}
 	
 	public send() {
-		super("send","(address:Mx..|0x..) (amount:) (multi:[address:amount,..]) (tokenid:) (state:{}) (burn:) (split:) (mine:) (debug:) (dryrun:) - Send Minima or Tokens to an address");
+		super("send","(address:Mx..|0x..) (amount:) (multi:[address:amount,..]) (tokenid:) (state:{}) (password:) (burn:) (split:) (mine:) (debug:) (dryrun:) - Send Minima or Tokens to an address");
 	}
 	
 	@Override
@@ -89,6 +89,9 @@ public class send extends Command {
 				+ "\n"
 				+ "burn: (optional)\n"
 				+ "    The amount of Minima to burn with this transaction.\n"
+				+ "\n"
+				+ "password: (optional)\n"
+				+ "    If your Wallet is password locked you can unlock it for this one transaction - then relock it.\n"
 				+ "\n"
 				+ "split: (optional)\n"
 				+ "    You can set the number of coins the recipient will receive, between 1 and 20. Default is 1.\n"
@@ -119,7 +122,8 @@ public class send extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"action","uid",
-				"address","amount","multi","tokenid","state","burn","split","debug","dryrun","mine"}));
+				"address","amount","multi","tokenid","state","burn",
+				"split","debug","dryrun","mine","password"}));
 	}
 	
 	@Override
@@ -519,17 +523,42 @@ public class send extends Command {
 			MinimaLogger.log("Total signatures required : "+reqsigs.size());
 		}
 		
+		//Are we password unlocking..
+		boolean passwordlock = false;
+		if(!dryrun) {
+			if(existsParam("password") && !MinimaDB.getDB().getWallet().isBaseSeedAvailable()) {
+			
+				if(debug) {
+					MinimaLogger.log("Unlocking password DB");
+				}
+				
+				//Lets unlock the DB
+				vault.passowrdUnlockDB(getParam("password"));
+				 
+				//Lock at the end..
+				passwordlock = true;
+			}
+		}else {
+			MinimaLogger.log("DRYRUN so NOT Unlocking password DB");
+		}
+		
 		for(String pubkey : reqsigs) {
 			if(debug) {
 				MinimaLogger.log("Signing transction with : "+pubkey);
 			}
 			
 			if(!dryrun) {
-				//Use the wallet..
-				Signature signature = walletdb.signData(pubkey, transaction.getTransactionID());
+				try {
+					//Use the wallet..
+					Signature signature = walletdb.signData(pubkey, transaction.getTransactionID());
+					
+					//Add it..
+					witness.addSignature(signature);
+					
+				}catch (Exception e) {
+					throw new CommandException(e.toString());
+				}
 				
-				//Add it..
-				witness.addSignature(signature);
 			}else {
 				MinimaLogger.log("DRY RUN - not signing");
 			}
@@ -556,6 +585,13 @@ public class send extends Command {
 		txpow.calculateTXPOWID();
 		
 		if(!dryrun) {
+		
+			//Are we locking the DB
+			if(passwordlock) {
+				
+				//Lock the Wallet DB
+				vault.passwordLockDB(getParam("password"));
+			}
 			
 			//Sync or Asyn mining..
 			if(minesync) {

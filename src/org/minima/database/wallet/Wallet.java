@@ -258,15 +258,15 @@ public class Wallet extends SqlDB {
 		mBaseSeed = new SeedRow("", "0x00");
 	}
 	
-	public boolean resetBaseSeedPrivKeys(String zPhrase, String zSeed) throws SQLException {
-		
-		//reset the base seed
-		updateSeedRow(zPhrase, zSeed);
-						
-		//Get all the keys..
-		ArrayList<KeyRow> keys = getAllKeys();
+	public boolean resetBaseSeedPrivKeys(String zPhrase, String zSeed) {
 		
 		try {
+		
+			//reset the base seed
+			updateSeedRow(zPhrase, zSeed);
+							
+			//Get all the keys..
+			ArrayList<KeyRow> keys = getAllKeys();
 			
 			//The seed
 			MiniData seed = new MiniData(zSeed);
