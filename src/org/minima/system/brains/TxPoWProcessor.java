@@ -32,6 +32,11 @@ public class TxPoWProcessor extends MessageProcessor {
 	private static final String TXPOWPROCESSOR_PROCESS_ARCHIVEIBD 	= "TXP_PROCESS_ARCHIVEIBD";
 	
 	/**
+	 * Ask for Txns in blocks less than this old
+	 */
+	private static final MiniNumber TWELVE_HOURS = new MiniNumber(1000 * 60 * 60 * 12);
+	
+	/**
 	 * The IBD you receive on startup
 	 */
 	private long mFirstIBD 				= System.currentTimeMillis();
@@ -103,8 +108,34 @@ public class TxPoWProcessor extends MessageProcessor {
 			
 			//Check we are at least enough blocks on from the root of the tree.. for speed and difficulty calcs
 			MiniNumber blknum 	= txpow.getBlockNumber();
+			MiniNumber tipnum 	= txptree.getTip().getBlockNumber();
 			MiniNumber rootnum 	= txptree.getRoot().getBlockNumber();
-			boolean validrange 	= blknum.isMore(rootnum);
+			
+			boolean validrange = false;
+			if(GeneralParams.TEST_PARAMS) {
+				validrange 	= blknum.isMore(rootnum);
+			}else{
+				
+				//Make sure far enough from root to be able to check block difficulty
+				if(tipnum.isLess(MiniNumber.THOUSAND)) {
+					validrange = true;
+				}else {
+				
+					//Min block we will check..
+					MiniNumber minblock = rootnum.add(GlobalParams.MINIMA_BLOCKS_SPEED_CALC); 
+					
+					//Make sure at least Speed Calc away from root..
+					if(blknum.isMore(minblock)){
+						validrange = true;
+					}
+				}
+			}
+			
+			if(txpow.isBlock() && !validrange) {
+				MinimaLogger.log("Invalid range for block check @ "
+									+blknum+" root:"+rootnum+" tip:"+tipnum
+									+" txpowid:"+txpow.getTxPoWID());
+			}
 			
 			//Is it a block.. that is the only time we crunch
 			if(txpow.isBlock() && validrange) {
@@ -149,7 +180,10 @@ public class TxPoWProcessor extends MessageProcessor {
 									processstack.push(child);
 								}
 							}else {
-								MinimaLogger.log("[!] Failed block check @ "+txpow.getBlockNumber()+" txpowid:"+txpow.getTxPoWID()+" root:"+rootnum);
+								MinimaLogger.log("[!] Failed block check @ "
+													+txpow.getBlockNumber()+" txpowid:"
+													+txpow.getTxPoWID()
+													+" root:"+rootnum+" tip:"+tipnum);
 							}
 						}
 						
@@ -613,18 +647,28 @@ public class TxPoWProcessor extends MessageProcessor {
 	}
 	
 	private void requestMissingTxns(String zClientID, TxBlock zBlock) {
-		MiniNumber block = zBlock.getTxPoW().getBlockNumber();
-		ArrayList<MiniData> txns = zBlock.getTxPoW().getBlockTransactions();
-		for(MiniData txn : txns) {
-			boolean exists = MinimaDB.getDB().getTxPoWDB().exists(txn.to0xString());
-			if(!exists) {
-				try {
-					//MinimaLogger.log("Request missing txn from IBD @ "+block+" "+txn.to0xString());
+		
+		//Get the TxPoW
+		TxPoW txp = zBlock.getTxPoW();
+		
+		//Is this a recent block ? 
+		MiniNumber timenow = new MiniNumber(System.currentTimeMillis());
+		MiniNumber mintime = timenow.sub(TWELVE_HOURS);
+		if(txp.getTimeMilli().isLess(mintime)) {
+			return;
+		}
+		
+		//Get all the missing txns in the block
+		try {
+			ArrayList<MiniData> txns = txp.getBlockTransactions();
+			for(MiniData txn : txns) {
+				boolean exists = MinimaDB.getDB().getTxPoWDB().exists(txn.to0xString());
+				if(!exists) {
 					NIOManager.sendNetworkMessage(zClientID, NIOMessage.MSG_TXPOWREQ, txn);
-				} catch (IOException e) {
-					MinimaLogger.log(e);
 				}
 			}
+		} catch (IOException e) {
+			MinimaLogger.log(e);
 		}
 	}
 }
