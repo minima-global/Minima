@@ -35,7 +35,7 @@ public class FastByteArrayStream extends ByteArrayOutputStream {
 		
 		//What is the new size
 		int required = count + len;
-		if(required>=csize) {
+		if(required>csize) {
 			
 			//How much bigger to make it..
 			int increase = SIZE_INCREASE;
