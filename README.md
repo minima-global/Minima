@@ -120,7 +120,7 @@ The reports can be found at
 For those using Docker, you can try the Minima docker image without compiling the source code:
 ```
 docker pull minimaglobal/minima:tests
-docker run minima:tests
+docker run minimaglobal/minima:tests
 ```
 
 The tests tag maps to the tests github branch.
