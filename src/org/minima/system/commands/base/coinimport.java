@@ -76,19 +76,21 @@ public class coinimport extends Command {
 			
 			//Get the Tree Node..
 			TxPoWTreeNode node = TxPoWSearcher.getTreeNodeForCoin(newcoin.getCoinID());
-			
-			//Is it relevant..
-			if(node.isRelevantEntry(newcoin.getMMREntryNumber())) {
-				throw new CommandException("Attempting to add relevant coin we already have");
+			if(node!=null) {
+
+				//Is it relevant..
+				if (node.isRelevantEntry(newcoin.getMMREntryNumber())) {
+					throw new CommandException("Attempting to add relevant coin we already have");
+				}
+
+				//Add to relevant coins..
+				node.getRelevantCoinsEntries().add(newcoin.getMMREntryNumber());
+				node.calculateRelevantCoins();
+
+				//Added
+				ret.put("response", newcoinproof.toJSON());
+				return ret;
 			}
-			
-			//Add to relevant coins..
-			node.getRelevantCoinsEntries().add(newcoin.getMMREntryNumber());
-			node.calculateRelevantCoins();
-		
-			//Added
-			ret.put("response", newcoinproof.toJSON());
-			return ret;
 		}
 		
 		//Now check that newcoinproof is valid..
