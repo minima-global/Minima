@@ -190,7 +190,7 @@ public class consolidate extends Command {
 		MiniData myaddress 			= new MiniData(newwalletaddress.getAddress());
 		
 		//Construct the command
-		String command = "send coinage:"+coinage.toString()+" split:2 dryrun:"+dryrun+" debug:"+debug+" burn:"+burn.toString()
+		String command = "send split:2 dryrun:"+dryrun+" debug:"+debug+" burn:"+burn.toString()
 				+" amount:"+totalamount.toString()+" address:"+myaddress.to0xString()+" tokenid:"+tokenid;
 		
 		if(debug) {
