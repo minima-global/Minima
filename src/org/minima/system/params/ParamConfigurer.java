@@ -64,7 +64,7 @@ public class ParamConfigurer {
                 .collect(toMap(
                         entry -> entry.getKey().toLowerCase().replaceFirst("minima_", ""),
                         entry -> ofNullable(entry.getValue())
-                                .map(String::toLowerCase)
+                                //.map(String::toLowerCase)
                                 .orElse("")))
                 .entrySet().stream()
                 .filter(e -> toParamKey(e.getKey()).isPresent())
