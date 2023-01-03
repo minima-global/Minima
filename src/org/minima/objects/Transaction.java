@@ -361,6 +361,9 @@ public class Transaction implements Streamable {
 	 */
 	public void calculateTransactionID() {
 		mTransactionID = Crypto.getInstance().hashObject(this);
+		if(mTransactionID==null) {
+			throw new IllegalArgumentException("NULL mTransactionID!");
+		}
 	}
 	
 	public MiniData getTransactionID() {
@@ -411,7 +414,11 @@ public class Transaction implements Streamable {
 		ret.put("linkhash", mLinkHash.to0xString());
 	
 		calculateTransactionID();
-		ret.put("transactionid", mTransactionID.to0xString());
+		if(mTransactionID==null) {
+			ret.put("transactionid", "null");
+		}else {
+			ret.put("transactionid", mTransactionID.to0xString());
+		}
 		
 		return ret;
 	}
