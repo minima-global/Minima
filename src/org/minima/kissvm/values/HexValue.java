@@ -6,9 +6,9 @@ import org.minima.objects.base.MiniNumber;
 public class HexValue extends Value {
 	
 	/**
-	 * Maximum size of a HEX value - 256K
+	 * Maximum size of a HEX value - 64K
 	 */
-	public static final int MAX_HEX_SIZE = 256 * 1024;
+	public static final int MAX_HEX_SIZE = 64 * 1024;
 	
 	/**
 	 * The RAW bytes
