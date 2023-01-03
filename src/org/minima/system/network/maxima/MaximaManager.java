@@ -911,11 +911,12 @@ public class MaximaManager extends MessageProcessor {
 				}
 				
 				//Is THIS user allowed to see this data
-				if(!mlspack.isValidPublicKey(maxmsg.mFrom.to0xString())) {
-					MinimaLogger.log("Invalid MLS request for "+req.getPublicKey()+" by "+maxmsg.mFrom.to0xString());
-					maximaMessageStatus(nioc,MAXIMA_UNKNOWN);
-					return;
-				}
+				//HACK
+//				if(!mlspack.isValidPublicKey(maxmsg.mFrom.to0xString())) {
+//					MinimaLogger.log("Invalid MLS request for "+req.getPublicKey()+" by "+maxmsg.mFrom.to0xString());
+//					maximaMessageStatus(nioc,MAXIMA_UNKNOWN);
+//					return;
+//				}
 				
 				//Create a response..
 				MLSPacketGETResp mlsget = new MLSPacketGETResp(req.getPublicKey(),mlspack.getMaximaAddress(),req.getRandomUID());
@@ -1018,7 +1019,8 @@ public class MaximaManager extends MessageProcessor {
 		MiniData mlspackdata = MiniData.getMiniDataVersion(mlspack);
 		
 		//Refresh My MLS hosts..
-		if(allcontacts.size() > 0) {
+		//HACK
+		if(allcontacts.size() >= 0) {
 			//Send the message - to BOTH hosts.. old and new
 			PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SETAPP,mlspackdata));
 			if(!mIsStaticMLS) {

@@ -1,5 +1,13 @@
 package org.minima.system.commands.maxima;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -7,6 +15,7 @@ import org.minima.database.MinimaDB;
 import org.minima.database.maxima.MaximaContact;
 import org.minima.database.maxima.MaximaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
+import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
@@ -16,7 +25,11 @@ import org.minima.system.commands.CommandException;
 import org.minima.system.network.maxima.MaxMsgHandler;
 import org.minima.system.network.maxima.MaximaContactManager;
 import org.minima.system.network.maxima.MaximaManager;
+import org.minima.system.network.maxima.message.MaximaErrorMsg;
 import org.minima.system.network.maxima.message.MaximaMessage;
+import org.minima.system.network.maxima.mls.MLSPacketGETReq;
+import org.minima.system.network.maxima.mls.MLSPacketGETResp;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -147,6 +160,45 @@ public class maxcontacts extends Command {
 			
 			//Refresh
 			max.PostMessage(MaximaManager.MAXIMA_REFRESH);
+		
+		}else if(func.equals("addviamls")) {
+			
+			//Get the contact address
+			String address 	= getParam("contact");
+			
+			//Starts with MLS
+			int pubkeystart = address.indexOf(":");
+			int pubkeyend   = address.indexOf(":", pubkeystart+1);
+				
+			String pubkey 	  = address.substring(pubkeystart+1, pubkeyend);
+			String MLSaddress = address.substring(pubkeyend+1);
+			
+			MinimaLogger.log("PUBKEY : "+pubkey);
+			MinimaLogger.log("MLS    : "+MLSaddress);
+			
+			//Create a Get req
+			MLSPacketGETReq req = new MLSPacketGETReq(pubkey, "0x00");
+			
+			//Get the data version
+			MiniData reqdata = MiniData.getMiniDataVersion(req);
+			
+			Message getreq = maxima.createSendMessage(MLSaddress,MaximaManager.MAXIMA_MLS_GETAPP,reqdata);
+			
+			//Who to..
+			String host 	= getreq.getString("tohost");
+			int port		= getreq.getInteger("toport");
+			
+			//Create the packet
+			MiniData maxpacket = MaxMsgHandler.constructMaximaData(getreq);
+			if(maxpacket == null) {
+				throw new CommandException("Could not build Maxima message in time..");
+			}
+			
+			//Now send that..
+			MLSPacketGETResp resp = sendMLSMaxPacket(host, port, maxpacket);
+			
+			//Now send it..
+			details.put("mlsreq", resp.toJSON());
 			
 		}else if(func.equals("add")) {
 			
@@ -267,4 +319,54 @@ public class maxcontacts extends Command {
 		return new maxcontacts();
 	}
 
+	public static MLSPacketGETResp sendMLSMaxPacket(String zHost, int zPort, MiniData zMaxMessage) throws IOException {
+		
+		//Open the socket..
+		Socket sock = new Socket();
+
+		//20 seconds to connect
+		sock.connect(new InetSocketAddress(zHost, zPort), 20000);
+		
+		//20 seconds to read
+		sock.setSoTimeout(20000);
+		
+		//Create the streams..
+		OutputStream out 		= sock.getOutputStream();
+		DataOutputStream dos 	= new DataOutputStream(out);
+		
+		InputStream in			= sock.getInputStream();
+		DataInputStream dis 	= new DataInputStream(in);
+		
+		//Write the data
+		zMaxMessage.writeDataStream(dos);
+		dos.flush();
+		
+		//Tell the NIO
+		Main.getInstance().getNIOManager().getTrafficListener().addWriteBytes(zMaxMessage.getLength());
+	
+		//Read the data
+		MiniData resp 	= MiniData.ReadFromStream(dis);
+		byte[] msgdata 	= resp.getBytes();
+		
+		//Tell the NIO
+		Main.getInstance().getNIOManager().getTrafficListener().addReadBytes(resp.getLength());
+		
+		ByteArrayInputStream bais 	= new ByteArrayInputStream(msgdata);
+		DataInputStream respdis 	= new DataInputStream(bais);
+		
+		//What Type..
+		MiniByte type = MiniByte.ReadFromStream(respdis);
+		MiniData data = MiniData.ReadFromStream(respdis);
+		
+		//Convert
+		MLSPacketGETResp mls = MLSPacketGETResp.convertMiniDataVersion(data);
+	
+		//Close the streams..
+		dis.close();
+		in.close();
+		dos.close();
+		out.close();
+		
+		return mls;
+	}
 }
