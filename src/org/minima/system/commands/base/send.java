@@ -530,7 +530,7 @@ public class send extends Command {
 		boolean passwordlock = false;
 		if(!dryrun) {
 			
-			if(existsParam("password") && !MinimaDB.getDB().getWallet().isBaseSeedAvailable()) {
+			if(existsParam("password")) {
 			
 				if(MinimaDB.getDB().getWallet().isBaseSeedAvailable()) {
 					throw new CommandException("WalletDB NOT Locked! Password Invalid");
