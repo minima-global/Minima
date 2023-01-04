@@ -161,6 +161,9 @@ public class vault extends Command {
 		//Store it in the UserDB
 		MinimaDB.getDB().getUserDB().setEncryptedSeed(encrypted);
 		
+		//Save UserDB
+		MinimaDB.getDB().saveUserDB();
+		
 		//Wipe the private keys (but keep the public keys, modifiers etc)
 		try {
 			MinimaDB.getDB().getWallet().wipeBaseSeedRow();
@@ -201,6 +204,9 @@ public class vault extends Command {
 		}
 
 		MinimaDB.getDB().getUserDB().setEncryptedSeed(MiniData.ZERO_TXPOWID);
+		
+		//Save UserDB
+		MinimaDB.getDB().saveUserDB();
 	}
 	
 	@Override
