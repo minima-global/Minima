@@ -323,10 +323,13 @@ public class MDSManager extends MessageProcessor {
 			//The MDS Password
 			if(GeneralParams.MDS_PASSWORD.equals("")) {
 				//Create a NEW Main Password..
-				MiniData password 	= MiniData.getRandomData(32);
+				MiniData password 	= MiniData.getRandomData(64);
 				String b32			= BaseConverter.encode32(password.getBytes());
 				
-				mMiniHUBPassword	= b32.substring(2,6)+"-"+b32.substring(7,11)+"-"+b32.substring(12,16);
+				mMiniHUBPassword	= b32.substring(2,6)+"-"
+									 +b32.substring(7,11)+"-"
+									 +b32.substring(12,16)+"-"
+									 +b32.substring(17,21);
 			
 			}else {
 				//Pre-set..
