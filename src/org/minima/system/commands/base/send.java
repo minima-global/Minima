@@ -60,7 +60,7 @@ public class send extends Command {
 	}
 	
 	public send() {
-		super("send","(address:Mx..|0x..) (amount:) (multi:[address:amount,..]) (tokenid:) (state:{}) (password:) (burn:) (split:) (mine:) (debug:) (dryrun:) - Send Minima or Tokens to an address");
+		super("send","(address:Mx..|0x..) (amount:) (multi:[address:amount,..]) (tokenid:) (state:{}) (password:) (burn:) (split:) (coinage:) (mine:) (debug:) (dryrun:) - Send Minima or Tokens to an address");
 	}
 	
 	@Override
@@ -99,6 +99,9 @@ public class send extends Command {
 				+ "    You can split your own coins by sending to your own address.\n"
 				+ "    Useful if you want to send multiple transactions without waiting for change to be confirmed.\n"
 				+ "\n"
+				+ "coinage: (optional)\n"
+				+ "    How old must the coins be in blocks.\n"
+				+ "\n"
 				+ "debug: (optional)\n"
 				+ "    true or false, true will print more detailed logs.\n"
 				+ "\n"
@@ -122,7 +125,7 @@ public class send extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"action","uid",
-				"address","amount","multi","tokenid","state","burn",
+				"address","amount","multi","tokenid","state","burn","coinage",
 				"split","debug","dryrun","mine","password"}));
 	}
 	
