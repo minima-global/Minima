@@ -14,6 +14,7 @@ import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.Signature;
 import org.minima.objects.keys.TreeKey;
+import org.minima.system.commands.send.multisig;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.BIP39;
 import org.minima.utils.Crypto;
@@ -182,6 +183,14 @@ public class Wallet extends SqlDB {
 		
 		//The seed phrase
 		initBaseSeed();
+		
+		//Add the BASE MultiSig address - if not there
+		String msaddress = new Address(multisig.MULTISIG_CONTRACT).getAddressData().to0xString();
+		ScriptRow scr 	 = getScriptFromAddress(msaddress);
+		if(scr == null) {
+			MinimaLogger.log("Adding base MULTISIG address "+msaddress);
+			addScript(multisig.MULTISIG_CONTRACT, false, false, "0x00", false);
+		}
 	}
 	
 	public void resetDB(String zNewSeedPhrase) throws SQLException {
