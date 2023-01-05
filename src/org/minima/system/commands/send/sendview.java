@@ -5,7 +5,6 @@ import java.util.Arrays;
 
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
-import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.utils.MiniFile;
 import org.minima.utils.json.JSONObject;
