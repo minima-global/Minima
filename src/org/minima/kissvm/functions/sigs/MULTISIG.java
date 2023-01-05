@@ -23,11 +23,11 @@ public class MULTISIG extends MinimaFunction {
 		//How many to check from
 		int tot= getParameterNum()-1;
 		
-		//CHeck valid request..
-		if(num<=0) {
-			throw new ExecutionException("Must check 1 or more sigs in MULTISIG "+num);
+		//Check valid request..
+		if(num<0) {
+			throw new ExecutionException("CANNOT check negative sigs in MULTISIG "+num);
 		}
-		
+
 		//Cycle..
 		int found =0;
 		for(int i=0;i<tot;i++) {
