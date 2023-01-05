@@ -94,6 +94,8 @@ function getGlobals(){
 	addGlobalIfValid("@COINID");
 	addGlobalIfValid("@TOTIN");
 	addGlobalIfValid("@TOTOUT");
+	addGlobalIfValid("@COINAGE");
+	addGlobalIfValid("@CREATED");
 	
 	return JSON.stringify(globals);
 }
@@ -108,6 +110,8 @@ function clearGlobals(){
 	document.getElementById("@COINID").value = "";
 	document.getElementById("@TOTIN").value = "";
 	document.getElementById("@TOTOUT").value = "";
+	document.getElementById("@COINAGE").value = "";
+	document.getElementById("@CREATED").value = "";
 }
 
 function getOutputString(){

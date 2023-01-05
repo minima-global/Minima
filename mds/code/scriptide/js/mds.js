@@ -46,21 +46,13 @@ var MDS = {
 		var host = window.location.hostname;
 		var port =  Math.floor(window.location.port);
 		
-		if(MDS.logging){
-			MDS.log("Location : "+window.location);
-			MDS.log("Host     : "+host);
-			MDS.log("port     : "+port);	
-		}
-		
-		
 		//Get ther MiniDAPP UID
 		MDS.minidappuid = MDS.form.getParams("uid");
 		
 		//HARD SET if debug mode - running from a file
 		if(MDS.DEBUG_HOST != null){
-			
 			MDS.log("DEBUG Settings Found..");
-			
+		
 			host=MDS.DEBUG_HOST;
 			port=MDS.DEBUG_PORT;	
 		}
@@ -72,10 +64,6 @@ var MDS = {
 		//Is one specified..
 		if(MDS.minidappuid == "0x00"){
 			MDS.log("No MiniDAPP UID specified.. using test value");
-		}
-		
-		if(MDS.logging){
-			MDS.log("MDS UID  : "+MDS.minidappuid);
 		}
 		
 		//The ports..
@@ -104,6 +92,22 @@ var MDS = {
 	},
 	
 	/**
+	 * Notify the User - on Phone it pops up in status bar. On desktop appears in Logs
+	 */
+	notify : function(output){
+		//Send via POST
+		httpPostAsync(MDS.mainhost+"notify?"+"uid="+MDS.minidappuid, output);
+	},
+	
+	/**
+	 * Cancel this MiniDAPPs notification
+	 */
+	notifycancel : function(){
+		//Send via POST
+		httpPostAsync(MDS.mainhost+"notifycancel?"+"uid="+MDS.minidappuid, "*");
+	},
+	
+	/**
 	 * Runs a function on the Minima Command Line - same format as MInima
 	 */
 	cmd : function(command, callback){
@@ -119,8 +123,120 @@ var MDS = {
 		httpPostAsync(MDS.mainhost+"sql?"+"uid="+MDS.minidappuid, command, callback);
 	},
 	
+	/**	
+	 * Network Commands
+	 */
+	net : {
+		
+		/**
+		 * Make a GET request
+		 */
+		GET : function(url, callback){
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"net?"+"uid="+MDS.minidappuid, url, callback);	
+		},
+		
+		/**
+		 * Make a POST request
+		 */
+		POST : function(url, data, callback){
+			
+			//Create the sinlg eline version..
+			var postline = url+"&"+data;
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"netpost?"+"uid="+MDS.minidappuid, postline, callback);	
+		}
+		
+	},
+	
+	/**	
+	 * COMMS - send a message to ALL minidapps or JUST your own service.js
+	 */
+	comms : {
+		
+		/**
+		 * PUBLIC message broadcast to ALL (callback is optional)
+		 */
+		broadcast : function(msg, callback){
+			
+			//Create the single line
+			var commsline = "public&"+msg;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"comms?"+"uid="+MDS.minidappuid, commsline, callback);	
+		},
+		
+		/**
+		 * PRIVATE message send just to this MiniDAPP (callback is optional)
+		 */
+		solo : function(msg, callback){
+			
+			//Create the single line
+			var commsline = "private&"+msg;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"comms?"+"uid="+MDS.minidappuid, commsline, callback);	
+		}
+		
+	},
+	
 	/**
-	 * Form GET / POST parameters..
+	 * File access
+	 */
+	file : {
+		/**
+		 * List file in a folder .. start at /
+		 */
+		list : function(folder, callback){
+			
+			//Create the single line
+			var commsline = "list&"+folder;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		},
+		
+		/**
+		 * Save text - can be text, a JSON in string format or hex encoded data
+		 */
+		save : function(filename, text, callback){
+			
+			//Create the single line
+			var commsline = "save&"+filename+"&"+text;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		},
+		
+		/**
+		 * Load text - can be text, a JSON in string format or hex encoded data
+		 */
+		load : function(filename, callback){
+			
+			//Create the single line
+			var commsline = "load&"+filename;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		},
+		
+		/**
+		 * Delete a file
+		 */
+		delete : function(filename, callback){
+			
+			//Create the single line
+			var commsline = "delete&"+filename;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		}
+		
+	}, 
+	
+	/**
+	 * Utility function for GET parameters..
 	 */
 	form : {
 		
@@ -128,7 +244,7 @@ var MDS = {
 		getParams : function(parameterName){
 			    var result = null,
 		        tmp = [];
-			    var items = location.search.substr(1).split("&");
+			    var items = window.location.search.substr(1).split("&");
 			    for (var index = 0; index < items.length; index++) {
 			        tmp = items[index].split("=");
 			        //console.log("TMP:"+tmp);
@@ -155,8 +271,8 @@ var PollSeries  = 0;
 function PollListener(){
 	
 	//The POLL host
-	pollhost = MDS.mainhost+"poll?"+"uid="+MDS.minidappuid;
-	polldata = "series="+PollSeries+"&counter="+PollCounter;
+	var pollhost = MDS.mainhost+"poll?"+"uid="+MDS.minidappuid;
+	var polldata = "series="+PollSeries+"&counter="+PollCounter;
 	
 	httpPostAsyncPoll(pollhost,polldata,function(msg){
 		
