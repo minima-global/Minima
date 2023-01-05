@@ -66,6 +66,10 @@ public class multisig extends Command {
 				totalkeys++;
 			}
 			
+			if(totalkeys<required.getAsInt()) {
+				throw new CommandException("Cannot have LESS keys than required!");
+			}
+			
 			//Now construct the state params
 			String stateparams = "{\"0\":\""+required+"\",\"1\":\""+totalkeys+"\"";
 			
