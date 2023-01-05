@@ -77,7 +77,7 @@ public class newscript extends Command {
 		if(scr!=null && (scr.isTrack()==track)) {
 			
 			//Put the details in the response..
-			ret.put("response", scr.toJSON());
+			ret.put("response", "Script allready added!");
 			
 		}else {
 		
