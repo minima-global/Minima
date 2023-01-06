@@ -16,9 +16,11 @@ import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.base.MiniString;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -33,7 +35,7 @@ public class multisig extends Command {
 	 * CANNOT EVER CHANGE! - do a new function if need be
 	 */
 	public static final String MULTISIG_CONTRACT = 
-			"LET root=PREVSTATE(0) IF root NEQ 0x21 THEN IF SIGNEDBY(root) THEN RETURN TRUE ENDIF ENDIF LET n=PREVSTATE(1) LET m=PREVSTATE(2) LET script=[RETURN MULTISIG(]+STRING(n) LET counter=0 WHILE counter LT m DO LET script=script+[ ]+STRING(PREVSTATE(counter+3)) LET counter=INC(counter) ENDWHILE LET script=script+[)] EXEC script";
+			"LET root=PREVSTATE(1) IF root NEQ 0x21 THEN IF SIGNEDBY(root) THEN RETURN TRUE ENDIF ENDIF LET n=PREVSTATE(2) LET m=PREVSTATE(3) LET script=[RETURN MULTISIG(]+STRING(n) LET counter=0 WHILE counter LT m DO LET script=script+[ ]+STRING(PREVSTATE(counter+4)) LET counter=INC(counter) ENDWHILE LET script=script+[)] EXEC script";
 	
 	public multisig() {
 		super("multisig","Create a multisig coin that can be used by root OR n of m txns");
@@ -41,7 +43,7 @@ public class multisig extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","root","required","file","publickeys","amount", "tokenid","coinid","address"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","action","root","required","file","publickeys","amount", "tokenid","coinid","address"}));
 	}
 	
 	@Override
@@ -55,6 +57,13 @@ public class multisig extends Command {
 		String msaddress = new Address(multisig.MULTISIG_CONTRACT).getAddressData().to0xString();
 		
 		if(action.equals("create")) {
+			
+			//Is there an ID
+			String id = "";
+			if(existsParam("id")) {
+				MiniString sid 	= new MiniString(getParam("id"));
+				id = Crypto.getInstance().hashObject(sid).to0xString();
+			}
 			
 			//Is there a root key
 			String root = getParam("root", "0x21");
@@ -91,10 +100,15 @@ public class multisig extends Command {
 			}
 			
 			//Now construct the state params
-			String stateparams = "{\"0\":\""+root+"\",\"1\":\""+required+"\",\"2\":\""+totalkeys+"\"";
+			String stateparams = null;
+			if(id.equals("")) {
+				stateparams = "{\"1\":\""+root+"\",\"2\":\""+required+"\",\"3\":\""+totalkeys+"\"";
+			}else {
+				stateparams = "{\"0\":\""+id+"\",\"1\":\""+root+"\",\"2\":\""+required+"\",\"3\":\""+totalkeys+"\"";
+			}
 			
 			//Now add all the public keys
-			int counter=3;
+			int counter=4;
 			for(String pubk : allkeys) {
 				stateparams += ",\""+counter+"\":\""+pubk+"\"";
 				counter++;
@@ -147,18 +161,83 @@ public class multisig extends Command {
 																true, new MiniData(msaddress), 
 																false, MiniData.ZERO_TXPOWID, false);
 			
-			//Put it all in an array
-			JSONArray coinarr = new JSONArray();
-			for(Coin cc : coins) {
-				coinarr.add(cc.toJSON());
-			}
+			//Are we searching via id
+			if(existsParam("id")) {
+				
+				//Get the hash of the ID
+				MiniString sid 	= new MiniString(getParam("id"));
+				String id 		= Crypto.getInstance().hashObject(sid).to0xString();
+				
+				//Search for it..
+				JSONArray coinarr = new JSONArray();
+				for(Coin cc : coins) {
+					ArrayList<StateVariable> allstate = cc.getState();
+					for(StateVariable statevar : allstate) {
+						if(statevar.getData().toString().equals(id)) {
+							coinarr.add(cc.toJSON());
+						}
+					}
+				}
+				
+				ret.put("response", coinarr);
+				
+			}else {
 			
-			ret.put("response", coinarr);
+				//Put it all in an array
+				JSONArray coinarr = new JSONArray();
+				for(Coin cc : coins) {
+					coinarr.add(cc.toJSON());
+				}
+				
+				ret.put("response", coinarr);
+			}
 			
 		}else if(action.equals("spend")) {
 			
-			//Which coin
-			String coinid 		= getParam("coinid");
+			//Are we searching via id or coinid
+			String coinid = null;
+			if(existsParam("id")) {
+				
+				//Get the hash of the ID
+				MiniString sid 	= new MiniString(getParam("id"));
+				String id 		= Crypto.getInstance().hashObject(sid).to0xString();
+				
+				//Get the tree tip..
+				TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+				
+				//List all the multi sig coins you have..
+				ArrayList<Coin> coins = TxPoWSearcher.searchCoins(	tip, true, 
+																	false, MiniData.ZERO_TXPOWID,
+																	false,MiniNumber.ZERO,
+																	true, new MiniData(msaddress), 
+																	false, MiniData.ZERO_TXPOWID, false);
+				
+				//Search for it..
+				Coin fcoin = null;
+				for(Coin cc : coins) {
+					ArrayList<StateVariable> allstate = cc.getState();
+					for(StateVariable statevar : allstate) {
+						if(statevar.getData().toString().equals(id)) {
+							fcoin = cc;
+							break;
+						}
+					}
+					
+					if(fcoin!=null) {
+						break;
+					}
+				}
+				
+				if(fcoin!=null) {
+					coinid = fcoin.getCoinID().to0xString();
+				}else {
+					throw new CommandException("MultiSig with id not found : "+id);
+				}
+				
+			}else {
+				//Which coin
+				coinid = getParam("coinid");
+			}
 			
 			//Find the coin
 			Coin cc = TxPoWSearcher.searchCoin(new MiniData(coinid));
