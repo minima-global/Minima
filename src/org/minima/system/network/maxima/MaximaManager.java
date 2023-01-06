@@ -131,7 +131,7 @@ public class MaximaManager extends MessageProcessor {
 	boolean mHaveContacts = false;
 	
 	private boolean mInited 	= false;
-	public boolean mMaximaLogs 	= false;
+//	public boolean mMaximaLogs 	= false;
 
 	/**
 	 * Are you a static Maxima ID
@@ -744,7 +744,7 @@ public class MaximaManager extends MessageProcessor {
 				
 				//Do we have it
 				if(client != null) {
-					if(mMaximaLogs) {
+					if(GeneralParams.MAXIMA_LOGS) {
 						MinimaLogger.log("MAXIMA message forwarded to client : "+tomaxima);
 					}
 					
@@ -804,7 +804,7 @@ public class MaximaManager extends MessageProcessor {
 			maxjson.put("msgid", hash.to0xString());
 			
 			//Do we log
-			if(mMaximaLogs) {
+			if(GeneralParams.MAXIMA_LOGS) {
 				MinimaLogger.log("MAXIMA : "+maxjson.toString());
 			}
 			

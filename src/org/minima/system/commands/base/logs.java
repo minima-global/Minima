@@ -25,6 +25,9 @@ public class logs extends Command {
 				+ "mining: (optional)\n"
 				+ "    true or false, true turns on detailed logs for mining start/end activity.\n"
 				+ "\n"
+				+ "maxima: (optional)\n"
+				+ "    true or false, true turns on detailed logs for Maxima.\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "logs scripts:true\n"
@@ -45,10 +48,8 @@ public class logs extends Command {
 		if(existsParam("scripts")) {
 			String scripts = getParam("scripts", "false");
 			if(scripts.equals("true")) {
-				//Accept txpow messages
 				GeneralParams.SCRIPTLOGS = true;
 			}else {
-				//Don't accept txpow messages - pulse does that
 				GeneralParams.SCRIPTLOGS= false;
 			}
 		}
@@ -57,17 +58,26 @@ public class logs extends Command {
 		if(existsParam("mining")) {
 			String mining = getParam("mining", "false");
 			if(mining.equals("true")) {
-				//Accept txpow messages
 				GeneralParams.MINING_LOGS = true;
 			}else {
-				//Don't accept txpow messages - pulse does that
 				GeneralParams.MINING_LOGS= false;
+			}
+		}
+		
+		//Are we logging all maxima
+		if(existsParam("maxima")) {
+			String mining = getParam("maxima", "false");
+			if(mining.equals("true")) {
+				GeneralParams.MAXIMA_LOGS = true;
+			}else {
+				GeneralParams.MAXIMA_LOGS= false;
 			}
 		}
 		
 		JSONObject resp = new JSONObject();
 		resp.put("scripts", GeneralParams.SCRIPTLOGS);
 		resp.put("mining", GeneralParams.MINING_LOGS);
+		resp.put("maxima", GeneralParams.MAXIMA_LOGS);
 		
 		//Add balance..
 		ret.put("response", resp);

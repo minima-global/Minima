@@ -169,4 +169,9 @@ public class GeneralParams {
 	 */
 	public static boolean MINING_LOGS = false;
 	
+	/**
+	 * Enable full logs for Maxima..
+	 */
+	public static boolean MAXIMA_LOGS = false;
+	
 }

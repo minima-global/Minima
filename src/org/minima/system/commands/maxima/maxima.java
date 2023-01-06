@@ -55,9 +55,6 @@ public class maxima extends Command {
 				+ "data: (optional)\n"
 				+ "    The data to send. Can be HEX or a JSON object. Use with 'action:send'.\n"
 				+ "\n"
-				+ "logs: (optional)\n"
-				+ "    true or false, true turns on detailed logs for Maxima.\n"
-				+ "\n"
 				+ "poll: (optional)\n"
 				+ "    true or false, true will poll the send action until successful. Use with 'action:send'.\n"
 				+ "\n"
@@ -83,7 +80,7 @@ public class maxima extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"action","name","id","to",
-				"publickey","application","data","logs","poll","host"}));
+				"publickey","application","data","poll","host"}));
 	}
 	
 	@Override
@@ -101,15 +98,6 @@ public class maxima extends Command {
 		
 		MaximaDB maxdb = MinimaDB.getDB().getMaximaDB();
 		
-		//Enable Logs..
-		if(existsParam("logs")) {
-			if(getParam("logs").equals("true")) {
-				max.mMaximaLogs = true;
-			}else {
-				max.mMaximaLogs = false;
-			}
-		}
-		
 		JSONObject details = new JSONObject();
 		
 		if(func.equals("info")) {
@@ -118,7 +106,7 @@ public class maxima extends Command {
 			String fullhost = GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
 			
 			//Show details
-			details.put("logs", max.mMaximaLogs);
+			details.put("logs", GeneralParams.MAXIMA_LOGS);
 			details.put("name", MinimaDB.getDB().getUserDB().getMaximaName());
 			details.put("publickey", max.getPublicKey().to0xString());
 			details.put("staticmls", max.isStaticMLS());
