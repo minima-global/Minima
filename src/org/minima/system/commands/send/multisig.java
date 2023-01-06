@@ -123,7 +123,12 @@ public class multisig extends Command {
 			JSONArray result 		= Command.runMultiCommand(sendfunction);
 			JSONObject sendresult 	= (JSONObject) result.get(0); 
 			if((boolean) sendresult.get("status")) {
-				ret.put("response", sendresult.get("response"));
+				
+				JSONObject sender = new JSONObject();
+				sender.put("send", sendresult.get("response"));
+				sender.put("id", id);
+				ret.put("response", sender);
+				
 			}else {
 				ret.put("status", false);
 				if(sendresult.get("message") != null) {
