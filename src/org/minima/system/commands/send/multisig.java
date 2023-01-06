@@ -36,7 +36,7 @@ public class multisig extends Command {
 			"LET root=PREVSTATE(0) IF root NEQ 0x21 THEN IF SIGNEDBY(root) THEN RETURN TRUE ENDIF ENDIF LET n=PREVSTATE(1) LET m=PREVSTATE(2) LET script=[RETURN MULTISIG(]+STRING(n) LET counter=0 WHILE counter LT m DO LET script=script+[ ]+STRING(PREVSTATE(counter+3)) LET counter=INC(counter) ENDWHILE LET script=script+[)] EXEC script";
 	
 	public multisig() {
-		super("multisig","");
+		super("multisig","Create a multisig coin that can be used by root OR n of m txns");
 	}
 	
 	@Override
