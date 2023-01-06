@@ -5,9 +5,15 @@ import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
+import org.minima.database.userprefs.txndb.TxnDB;
+import org.minima.database.userprefs.txndb.TxnRow;
+import org.minima.database.wallet.KeyRow;
+import org.minima.database.wallet.ScriptRow;
+import org.minima.database.wallet.Wallet;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.StateVariable;
+import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWSearcher;
@@ -26,7 +32,8 @@ public class multisig extends Command {
 	 * 
 	 * CANNOT EVER CHANGE! - do a new function if need be
 	 */
-	public static final String MULTISIG_CONTRACT = "LET n=PREVSTATE(0) LET m=PREVSTATE(1) LET script=[RETURN MULTISIG(]+STRING(n) LET counter=0 WHILE counter LT m DO LET script=script+[ ]+STRING(PREVSTATE(counter+2)) LET counter=INC(counter) ENDWHILE LET script=script+[)] EXEC script";
+	public static final String MULTISIG_CONTRACT = 
+			"LET root=PREVSTATE(0) IF root NEQ 0x21 THEN IF SIGNEDBY(root) THEN RETURN TRUE ENDIF ENDIF LET n=PREVSTATE(1) LET m=PREVSTATE(2) LET script=[RETURN MULTISIG(]+STRING(n) LET counter=0 WHILE counter LT m DO LET script=script+[ ]+STRING(PREVSTATE(counter+3)) LET counter=INC(counter) ENDWHILE LET script=script+[)] EXEC script";
 	
 	public multisig() {
 		super("multisig","");
@@ -34,7 +41,7 @@ public class multisig extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","required","publickey","file","publickeys","amount", "tokenid","coinid","address"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","root","required","file","publickeys","amount", "tokenid","coinid","address"}));
 	}
 	
 	@Override
@@ -49,6 +56,14 @@ public class multisig extends Command {
 		
 		if(action.equals("create")) {
 			
+			//Is there a root key
+			String root = getParam("root", "0x21");
+			if(!root.equals("0x21")) {
+				if(!root.startsWith("0x") || root.length()!=66) {
+					throw  new CommandException("Invalid root key : "+root);
+				}
+			}
+			
 			//Get the required params
 			MiniNumber amount 	= getNumberParam("amount");
 			String tokenid 		= getParam("tokenid","0x00");
@@ -62,6 +77,11 @@ public class multisig extends Command {
 			JSONArray pubkeys = getJSONArrayParam("publickeys");
 			for(Object obj : pubkeys) {
 				String pubkey = (String)obj;
+				
+				if(!pubkey.startsWith("0x") || pubkey.length()!=66) {
+					throw  new CommandException("Invalid public key : "+pubkey);
+				}
+				
 				allkeys.add(pubkey);
 				totalkeys++;
 			}
@@ -71,10 +91,10 @@ public class multisig extends Command {
 			}
 			
 			//Now construct the state params
-			String stateparams = "{\"0\":\""+required+"\",\"1\":\""+totalkeys+"\"";
+			String stateparams = "{\"0\":\""+root+"\",\"1\":\""+required+"\",\"2\":\""+totalkeys+"\"";
 			
 			//Now add all the public keys
-			int counter=2;
+			int counter=3;
 			for(String pubk : allkeys) {
 				stateparams += ",\""+counter+"\":\""+pubk+"\"";
 				counter++;
@@ -102,6 +122,19 @@ public class multisig extends Command {
 				}
 			}
 		
+		}else if(action.equals("getkey")) {
+			
+			//Get one of your gets..
+			ScriptRow scrow = MinimaDB.getDB().getWallet().getDefaultAddress();
+			
+			//Get the public key
+			String key = scrow.getPublicKey();
+			
+			JSONObject keyjson = new JSONObject();
+			keyjson.put("publickey", key);
+			
+			ret.put("response", keyjson);
+			
 		}else if(action.equals("list")) {
 			
 			//Get the tree tip..
@@ -188,23 +221,48 @@ public class multisig extends Command {
 			ret.put("response", result);
 		
 		}else if(action.equals("sign")) {
-			
-			//Which publickey
-			String pubkey = getParam("publickey");
 
 			//Which file..
 			String file = getParam("file");
 			
 			//The signer function
 			String txnname  = "signed_"+file;
-			String txnsigner = 
-					  "txnimport id:"+txnname+" file:"+file+";"
-					+ "txnsign   id:"+txnname+" publickey:"+pubkey+";"
-					+ "txnexport id:"+txnname+" file:"+txnname+";"
-					+ "txndelete id:"+txnname;
+			String txnsigner = "txnimport id:"+txnname+" file:"+file+";";
+			
+			//Run that
+			JSONArray result 		= Command.runMultiCommand(txnsigner);
+			JSONObject importres 	= (JSONObject) result.get(0); 
+			if(!(boolean) importres.get("status")) {
+				throw new CommandException(importres.get("error").toString());
+			}
+			
+			//Rest now
+			txnsigner = "";
+			
+			//Get the wallet
+			Wallet wallet = MinimaDB.getDB().getWallet();
+			
+			//now find the public key
+			TxnDB db 						  = MinimaDB.getDB().getCustomTxnDB();
+			TxnRow txnrow 					  = db.getTransactionRow(txnname);
+			Transaction trans 				  = txnrow.getTransaction();
+			Coin multicoin 					  = trans.getAllInputs().get(0);
+			ArrayList<StateVariable> allstate = multicoin.getState();
+			for(StateVariable statevar : allstate) {
+				//Get the vaklue..
+				String possiblepubkey = statevar.getData().toString();
+				KeyRow key = wallet.getKeyFromPublic(possiblepubkey);
+				if(key != null) {
+					txnsigner	+= "txnsign id:"+txnname+" publickey:"+possiblepubkey+";";
+				}
+			}
+			
+			//Finish up
+			txnsigner	+= "txnexport id:"+txnname+" file:"+txnname+";"
+						+  "txndelete id:"+txnname;
 			
 			//Run it..
-			JSONArray result = Command.runMultiCommand(txnsigner);
+			result = Command.runMultiCommand(txnsigner);
 			ret.put("response", result);
 		
 		}else if(action.equals("post")) {
