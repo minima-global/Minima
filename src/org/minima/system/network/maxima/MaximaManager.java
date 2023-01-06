@@ -131,7 +131,6 @@ public class MaximaManager extends MessageProcessor {
 	boolean mHaveContacts = false;
 	
 	private boolean mInited 	= false;
-//	public boolean mMaximaLogs 	= false;
 
 	/**
 	 * Are you a static Maxima ID
