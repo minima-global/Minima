@@ -6,7 +6,6 @@ import java.util.Hashtable;
 import java.util.List;
 
 import org.minima.kissvm.exceptions.ExecutionException;
-import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.functions.string.CLEAN;
 import org.minima.kissvm.statements.StatementBlock;

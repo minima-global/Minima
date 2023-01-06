@@ -6,7 +6,6 @@ import java.util.Arrays;
 import org.minima.database.MinimaDB;
 import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
-import org.minima.kissvm.Contract;
 import org.minima.kissvm.functions.string.CLEAN;
 import org.minima.objects.Address;
 import org.minima.system.commands.Command;

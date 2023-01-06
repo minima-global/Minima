@@ -8,7 +8,6 @@ import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
 import org.minima.objects.TxBlock;
 import org.minima.objects.base.MiniData;
-import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.utils.json.JSONObject;
 

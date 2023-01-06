@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
 
-import org.minima.database.MinimaDB;
 import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.Signature;
