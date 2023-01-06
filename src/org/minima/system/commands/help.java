@@ -8,6 +8,7 @@ import org.minima.system.commands.backup.backup;
 import org.minima.system.commands.backup.restore;
 import org.minima.system.commands.base.balance;
 import org.minima.system.commands.base.burn;
+import org.minima.system.commands.base.checkaddress;
 import org.minima.system.commands.base.coinexport;
 import org.minima.system.commands.base.coinimport;
 import org.minima.system.commands.base.cointrack;
@@ -30,6 +31,8 @@ import org.minima.system.commands.base.trace;
 import org.minima.system.commands.base.vault;
 import org.minima.system.commands.maxima.maxcontacts;
 import org.minima.system.commands.maxima.maxima;
+import org.minima.system.commands.maxima.maxsign;
+import org.minima.system.commands.maxima.maxverify;
 import org.minima.system.commands.mds.mds;
 import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.disconnect;
@@ -113,6 +116,7 @@ public class help extends Command {
 			addCommand(details, new trace());
 			addCommand(details, new logs());
 			addCommand(details, new hashtest());
+			addCommand(details, new checkaddress());
 			
 			addCommand(details, new history());
 			addCommand(details, new txpow());
@@ -173,6 +177,8 @@ public class help extends Command {
 			addCommand(details, new network());
 			addCommand(details, new maxima());
 			addCommand(details, new maxcontacts());
+			addCommand(details, new maxsign());
+			addCommand(details, new maxverify());
 			addCommand(details, new message());
 			addCommand(details, new connect());
 			addCommand(details, new disconnect());

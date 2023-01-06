@@ -19,6 +19,7 @@ import org.minima.system.commands.backup.restore;
 import org.minima.system.commands.base.automine;
 import org.minima.system.commands.base.balance;
 import org.minima.system.commands.base.burn;
+import org.minima.system.commands.base.checkaddress;
 import org.minima.system.commands.base.coincheck;
 import org.minima.system.commands.base.coinexport;
 import org.minima.system.commands.base.coinimport;
@@ -115,7 +116,7 @@ public abstract class Command {
 			
 			new archive(), new logs(), new history(),
 			new magic(),
-			new multisig(),
+			new multisig(), new checkaddress(),
 			new maxsign(), new maxverify(),
 			
 			new ping(), new random(),new file(),
@@ -285,6 +286,15 @@ public abstract class Command {
 			try {
 				address = Address.convertMinimaAddress(address).to0xString();
 			}catch(IllegalArgumentException exc) {
+				throw new CommandException(exc.toString());
+			}
+		}
+		
+		//If it's an 0x address check converts to MiniData correctly
+		if(address.startsWith("0x")) {
+			try {
+				MiniData data = new MiniData(address);
+			}catch(Exception exc) {
 				throw new CommandException(exc.toString());
 			}
 		}
