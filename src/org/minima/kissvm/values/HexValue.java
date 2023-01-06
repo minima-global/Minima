@@ -1,14 +1,10 @@
 package org.minima.kissvm.values;
 
+import org.minima.kissvm.Contract;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 
 public class HexValue extends Value {
-	
-	/**
-	 * Maximum size of a HEX value - 64K
-	 */
-	public static final int MAX_HEX_SIZE = 64 * 1024;
 	
 	/**
 	 * The RAW bytes
@@ -38,8 +34,8 @@ public class HexValue extends Value {
 		
 		//Check Size
 		int len = mData.getLength();
-		if(len > MAX_HEX_SIZE) {
-			throw new IllegalArgumentException("MAX HEX value size reached : "+len+" MAX:"+MAX_HEX_SIZE);
+		if(len > Contract.MAX_DATA_SIZE) {
+			throw new IllegalArgumentException("MAX HEX value size reached : "+len+"/"+Contract.MAX_DATA_SIZE);
 		}
 	}
 	

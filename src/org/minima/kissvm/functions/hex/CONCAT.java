@@ -42,8 +42,8 @@ public class CONCAT extends MinimaFunction{
 			totlen += parambytes[counter].length;
 		
 			//1MB max size..
-			if(totlen > HexValue.MAX_HEX_SIZE) {
-				throw new ExecutionException("MAX HEX value size reached : "+totlen+" MAX:"+HexValue.MAX_HEX_SIZE);
+			if(totlen > Contract.MAX_DATA_SIZE) {
+				throw new ExecutionException("MAX HEX value size reached : "+totlen+"/"+Contract.MAX_DATA_SIZE);
 			}
 			
 			counter++;

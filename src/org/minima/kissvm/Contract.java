@@ -99,6 +99,11 @@ public class Contract {
 	public static final int MAX_FUNCTION_PARAMS = 32;
 	
 	/**
+	 * MAX size of String or HEX value - 64k
+	 */
+	public static final int MAX_DATA_SIZE = 64 * 1024;
+	
+	/**
 	 * A complete log of the contract execution
 	 */
 	String mCompleteLog="";

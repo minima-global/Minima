@@ -1,13 +1,9 @@
 package org.minima.kissvm.values;
 
+import org.minima.kissvm.Contract;
 import org.minima.objects.base.MiniString;
 
 public class StringValue extends Value {
-	
-	/**
-	 * MAX String Value length is 32K - can still use multiple MAST scripts for more..
-	 */
-	public static final int MAX_STRING_LEN = 32 * 1024;
 	
 	/**
 	 * The String
@@ -18,8 +14,8 @@ public class StringValue extends Value {
 		mScript = new MiniString( zScript );
 		
 		int len = getBytes().length;
-		if(len > MAX_STRING_LEN) {
-			throw new IllegalArgumentException("MAX String length reached (32K max) : "+len);
+		if(len > Contract.MAX_DATA_SIZE) {
+			throw new IllegalArgumentException("MAX String length reached : "+len+"/"+Contract.MAX_DATA_SIZE);
 		}
 	}
 	

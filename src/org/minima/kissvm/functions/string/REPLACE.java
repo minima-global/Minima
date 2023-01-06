@@ -63,7 +63,7 @@ public class REPLACE extends MinimaFunction {
 			m.appendReplacement(sb, zReplace);
 		    
 		    //Check length
-		    if(sb.length()>StringValue.MAX_STRING_LEN) {
+		    if(sb.length()>Contract.MAX_DATA_SIZE) {
 		    	throw new ExecutionException("Replace String too long! "+sb.length());
 		    }
 		}
@@ -72,7 +72,7 @@ public class REPLACE extends MinimaFunction {
 		m.appendTail(sb);
 		
 		//Final Check
-		if(sb.length()>StringValue.MAX_STRING_LEN) {
+		if(sb.length()>Contract.MAX_DATA_SIZE) {
 	    	throw new ExecutionException("Replace String too long! "+sb.length());
 	    }
 		

@@ -29,7 +29,7 @@ public class SUBSET extends MinimaFunction {
 		//Check size
 		if(len<0) {
 			throw new ExecutionException("Negative SUBSET length "+len);
-		}else if (len>HexValue.MAX_HEX_SIZE) {
+		}else if (len>Contract.MAX_DATA_SIZE) {
 			throw new ExecutionException("SUBSET size too large "+len);
 		}
 		
