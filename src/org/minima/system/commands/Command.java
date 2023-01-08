@@ -507,23 +507,21 @@ public abstract class Command {
 				comms.getParams().put(name, json);
 			
 			}else if(value.startsWith("[") && value.endsWith("]")) {
-				
+
+				//Is this a state variable
+				if(command.equals("txnstate")) {
+
+					//Could be a String variable.. add normal String parameter to..
+					comms.getParams().put(name, value);
+
+					continue;
+				}
 				//It's a JSONArray..!
 				JSONArray json = null;
 				try {
 					json = (JSONArray) new JSONParser().parse(value);
 				} catch (ParseException e) {
-					
-					//Is this a state variable
-					if(command.equals("txnstate")) {
-						
-						//Could be a String variable.. add normal String parameter to..
-						comms.getParams().put(name, value);
-						
-						continue;
-					}
-					
-					//Otherwise is just a broken JSONArray
+
 					return new missingcmd(command,"Invalid JSON parameter for "+command+" @ "+token+" "+e.toString());
 				}
 				
