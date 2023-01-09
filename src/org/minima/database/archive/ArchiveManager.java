@@ -40,6 +40,11 @@ public class ArchiveManager extends SqlDB {
 	
 	PreparedStatement SQL_SELECT_LAST			= null;
 	PreparedStatement SQL_SELECT_FIRST			= null;
+	
+	PreparedStatement SQL_SELECT_LAST_BLOCK		= null;
+	PreparedStatement SQL_SELECT_FIRST_BLOCK	= null;
+	PreparedStatement SQL_SELECT_BLOCK			= null;
+	
 	PreparedStatement SQL_SELECT_SYNC_LIST		= null;
 	
 	PreparedStatement SAVE_CASCADE				= null;
@@ -101,6 +106,10 @@ public class ArchiveManager extends SqlDB {
 		
 		SQL_SELECT_LAST			= mSQLConnection.prepareStatement("SELECT * FROM syncblock ORDER BY block ASC LIMIT 1");
 		SQL_SELECT_FIRST		= mSQLConnection.prepareStatement("SELECT * FROM syncblock ORDER BY block DESC LIMIT 1");
+		
+		SQL_SELECT_LAST_BLOCK	= mSQLConnection.prepareStatement("SELECT block FROM syncblock ORDER BY block ASC LIMIT 1");
+		SQL_SELECT_FIRST_BLOCK	= mSQLConnection.prepareStatement("SELECT block FROM syncblock ORDER BY block DESC LIMIT 1");
+		SQL_SELECT_BLOCK 		= mSQLConnection.prepareStatement("SELECT * FROM syncblock WHERE block=?");
 		
 		SQL_SELECT_SYNC_LIST	= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block<? AND block>=?");
 	
@@ -269,7 +278,77 @@ public class ArchiveManager extends SqlDB {
 		return null;
 	}
 	
-	public synchronized TxBlock loadLastBlock() {
+//	public synchronized TxBlock loadFirstBlock() {
+//		
+//		try {
+//			
+//			//Make sure..
+//			checkOpen();
+//		
+//			//Set search params
+//			SQL_SELECT_FIRST.clearParameters();
+//			
+//			//Run the query
+//			ResultSet rs = SQL_SELECT_FIRST.executeQuery();
+//			
+//			//Is there a valid result.. ?
+//			if(rs.next()) {
+//				
+//				//Get the details..
+//				byte[] syncdata 	= rs.getBytes("syncdata");
+//				
+//				//Create MiniData version
+//				MiniData minisync = new MiniData(syncdata);
+//				
+//				//Convert
+//				TxBlock sb = TxBlock.convertMiniDataVersion(minisync);
+//				
+//				return sb;
+//			}
+//			
+//		} catch (SQLException e) {
+//			MinimaLogger.log(e);
+//		}
+//		
+//		return null;
+//	}
+//
+//	public synchronized TxBlock loadLastBlock() {
+//		
+//		try {
+//			
+//			//Make sure..
+//			checkOpen();
+//		
+//			//Set search params
+//			SQL_SELECT_LAST.clearParameters();
+//			
+//			//Run the query
+//			ResultSet rs = SQL_SELECT_LAST.executeQuery();
+//			
+//			//Is there a valid result.. ?
+//			if(rs.next()) {
+//				
+//				//Get the details..
+//				byte[] syncdata 	= rs.getBytes("syncdata");
+//				
+//				//Create MiniData version
+//				MiniData minisync = new MiniData(syncdata);
+//				
+//				//Convert
+//				TxBlock sb = TxBlock.convertMiniDataVersion(minisync);
+//				
+//				return sb;
+//			}
+//			
+//		} catch (SQLException e) {
+//			MinimaLogger.log(e);
+//		}
+//		
+//		return null;
+//	}
+	
+	public synchronized TxBlock loadFirstBlock() {
 		
 		try {
 			
@@ -277,24 +356,42 @@ public class ArchiveManager extends SqlDB {
 			checkOpen();
 		
 			//Set search params
-			SQL_SELECT_LAST.clearParameters();
+			SQL_SELECT_FIRST_BLOCK.clearParameters();
 			
 			//Run the query
-			ResultSet rs = SQL_SELECT_LAST.executeQuery();
+			ResultSet rs = SQL_SELECT_FIRST_BLOCK.executeQuery();
 			
 			//Is there a valid result.. ?
+			long block 		= -1;
 			if(rs.next()) {
 				
 				//Get the details..
-				byte[] syncdata 	= rs.getBytes("syncdata");
+				block = rs.getLong("block");
+			}
+			
+			if(block!=-1) {
 				
-				//Create MiniData version
-				MiniData minisync = new MiniData(syncdata);
+				//Now get that block..
+				SQL_SELECT_BLOCK.clearParameters();
+				SQL_SELECT_BLOCK.setLong(1, block);
 				
-				//Convert
-				TxBlock sb = TxBlock.convertMiniDataVersion(minisync);
+				//Run the query
+				rs = SQL_SELECT_BLOCK.executeQuery();
 				
-				return sb;
+				//Is there a valid result.. ?
+				if(rs.next()) {
+					
+					//Get the details..
+					byte[] syncdata 	= rs.getBytes("syncdata");
+					
+					//Create MiniData version
+					MiniData minisync = new MiniData(syncdata);
+					
+					//Convert
+					TxBlock sb = TxBlock.convertMiniDataVersion(minisync);
+					
+					return sb;
+				}
 			}
 			
 		} catch (SQLException e) {
@@ -304,9 +401,7 @@ public class ArchiveManager extends SqlDB {
 		return null;
 	}
 	
-	public synchronized JSONObject loadLastBlockJSON() {
-		
-		JSONObject ret = new JSONObject();
+	public synchronized TxBlock loadLastBlock() {
 		
 		try {
 			
@@ -314,32 +409,87 @@ public class ArchiveManager extends SqlDB {
 			checkOpen();
 		
 			//Set search params
-			SQL_SELECT_LAST.clearParameters();
+			SQL_SELECT_LAST_BLOCK.clearParameters();
 			
 			//Run the query
-			ResultSet rs = SQL_SELECT_LAST.executeQuery();
+			ResultSet rs = SQL_SELECT_LAST_BLOCK.executeQuery();
 			
 			//Is there a valid result.. ?
+			long block 		= -1;
 			if(rs.next()) {
 				
-				ret.put("txpowid", rs.getString("txpowid"));
-				ret.put("block", rs.getBigDecimal("block").toString());
-				ret.put("timemilli", rs.getBigDecimal("timemilli").toString());
-				
 				//Get the details..
-				byte[] syncdata 	= rs.getBytes("syncdata");
+				block = rs.getLong("block");
+			}
+			
+			if(block!=-1) {
 				
-				ret.put("bytes", syncdata.length);
+				//Now get that block..
+				SQL_SELECT_BLOCK.clearParameters();
+				SQL_SELECT_BLOCK.setLong(1, block);
 				
-				return ret;
+				//Run the query
+				rs = SQL_SELECT_BLOCK.executeQuery();
+				
+				//Is there a valid result.. ?
+				if(rs.next()) {
+					
+					//Get the details..
+					byte[] syncdata 	= rs.getBytes("syncdata");
+					
+					//Create MiniData version
+					MiniData minisync = new MiniData(syncdata);
+					
+					//Convert
+					TxBlock sb = TxBlock.convertMiniDataVersion(minisync);
+					
+					return sb;
+				}
 			}
 			
 		} catch (SQLException e) {
 			MinimaLogger.log(e);
 		}
 		
-		return ret;
+		return null;
 	}
+	
+//	public synchronized JSONObject loadLastBlockJSON() {
+//		
+//		JSONObject ret = new JSONObject();
+//		
+//		try {
+//			
+//			//Make sure..
+//			checkOpen();
+//		
+//			//Set search params
+//			SQL_SELECT_LAST.clearParameters();
+//			
+//			//Run the query
+//			ResultSet rs = SQL_SELECT_LAST.executeQuery();
+//			
+//			//Is there a valid result.. ?
+//			if(rs.next()) {
+//				
+//				ret.put("txpowid", rs.getString("txpowid"));
+//				ret.put("block", rs.getBigDecimal("block").toString());
+//				ret.put("timemilli", rs.getBigDecimal("timemilli").toString());
+//				
+//				//Get the details..
+//				byte[] syncdata 	= rs.getBytes("syncdata");
+//				
+//				ret.put("bytes", syncdata.length);
+//				
+//				return ret;
+//			}
+//			
+//		} catch (SQLException e) {
+//			MinimaLogger.log(e);
+//		}
+//		
+//		return ret;
+//	}
 	
 	public synchronized ArrayList<TxBlock> loadSyncBlockRange(MiniNumber zStartBlock) {
 		
@@ -489,41 +639,6 @@ public class ArchiveManager extends SqlDB {
 		return blocks;
 	}
 	
-	public synchronized TxBlock loadFirstBlock() {
-		
-		try {
-			
-			//Make sure..
-			checkOpen();
-		
-			//Set search params
-			SQL_SELECT_FIRST.clearParameters();
-			
-			//Run the query
-			ResultSet rs = SQL_SELECT_FIRST.executeQuery();
-			
-			//Is there a valid result.. ?
-			if(rs.next()) {
-				
-				//Get the details..
-				byte[] syncdata 	= rs.getBytes("syncdata");
-				
-				//Create MiniData version
-				MiniData minisync = new MiniData(syncdata);
-				
-				//Convert
-				TxBlock sb = TxBlock.convertMiniDataVersion(minisync);
-				
-				return sb;
-			}
-			
-		} catch (SQLException e) {
-			MinimaLogger.log(e);
-		}
-		
-		return null;
-	}
-
 	public synchronized int cleanDB() {
 		
 		try {
@@ -531,30 +646,47 @@ public class ArchiveManager extends SqlDB {
 			checkOpen();
 		
 			//Set search params
-			SQL_SELECT_FIRST.clearParameters();
+			SQL_SELECT_FIRST_BLOCK.clearParameters();
 			
 			//Run the query
-			ResultSet rs = SQL_SELECT_FIRST.executeQuery();
+			ResultSet rs = SQL_SELECT_FIRST_BLOCK.executeQuery();
 			
 			//Is there a valid result.. ?
-			TxBlock fb = null;
+			long block 		= -1;
 			if(rs.next()) {
 				
 				//Get the details..
-				byte[] syncdata 	= rs.getBytes("syncdata");
-				
-				//Create MiniData version
-				MiniData minisync = new MiniData(syncdata);
-				
-				//Convert
-				fb = TxBlock.convertMiniDataVersion(minisync);
-				
+				block = rs.getLong("block");
 			}else {
 				return 0;
 			}
 			
+//			//Set search params
+//			SQL_SELECT_FIRST.clearParameters();
+//			
+//			//Run the query
+//			ResultSet rs = SQL_SELECT_FIRST.executeQuery();
+//			
+//			//Is there a valid result.. ?
+//			TxBlock fb = null;
+//			if(rs.next()) {
+//				
+//				//Get the details..
+//				byte[] syncdata 	= rs.getBytes("syncdata");
+//				
+//				//Create MiniData version
+//				MiniData minisync = new MiniData(syncdata);
+//				
+//				//Convert
+//				fb = TxBlock.convertMiniDataVersion(minisync);
+//				
+//			}else {
+//				return 0;
+//			}
+//			MiniNumber cutoff = fb.getTxPoW().getBlockNumber().sub(new MiniNumber(MAX_KEEP_BLOCKS));
+			
 			//Last block to keep
-			MiniNumber cutoff = fb.getTxPoW().getBlockNumber().sub(new MiniNumber(MAX_KEEP_BLOCKS));
+			MiniNumber cutoff = new MiniNumber(block).sub(new MiniNumber(MAX_KEEP_BLOCKS));
 			
 			//Set the parameters
 			SQL_DELETE_TXBLOCKS.clearParameters();
