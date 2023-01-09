@@ -54,7 +54,7 @@ public class status extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"clean"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"clean","debug"}));
 	}
 	
 	@Override

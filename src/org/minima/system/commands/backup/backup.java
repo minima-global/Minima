@@ -61,7 +61,7 @@ public class backup extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"password","file","auto"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"debug","password","file","auto"}));
 	}
 	
 	@Override
