@@ -119,7 +119,8 @@ public abstract class Command {
 			new multisig(), new checkaddress(),
 			new maxsign(), new maxverify(),
 			
-			new ping(), new random(),new file(),
+			new ping(), new random(),
+			//new file(),
 			
 			new vault(), new consolidate(),
 			new backup(), new restore(), new test(), 
