@@ -454,43 +454,6 @@ public class ArchiveManager extends SqlDB {
 		return null;
 	}
 	
-//	public synchronized JSONObject loadLastBlockJSON() {
-//		
-//		JSONObject ret = new JSONObject();
-//		
-//		try {
-//			
-//			//Make sure..
-//			checkOpen();
-//		
-//			//Set search params
-//			SQL_SELECT_LAST.clearParameters();
-//			
-//			//Run the query
-//			ResultSet rs = SQL_SELECT_LAST.executeQuery();
-//			
-//			//Is there a valid result.. ?
-//			if(rs.next()) {
-//				
-//				ret.put("txpowid", rs.getString("txpowid"));
-//				ret.put("block", rs.getBigDecimal("block").toString());
-//				ret.put("timemilli", rs.getBigDecimal("timemilli").toString());
-//				
-//				//Get the details..
-//				byte[] syncdata 	= rs.getBytes("syncdata");
-//				
-//				ret.put("bytes", syncdata.length);
-//				
-//				return ret;
-//			}
-//			
-//		} catch (SQLException e) {
-//			MinimaLogger.log(e);
-//		}
-//		
-//		return ret;
-//	}
-	
 	public synchronized ArrayList<TxBlock> loadSyncBlockRange(MiniNumber zStartBlock) {
 		
 		ArrayList<TxBlock> blocks = new ArrayList<>();
@@ -660,30 +623,6 @@ public class ArchiveManager extends SqlDB {
 			}else {
 				return 0;
 			}
-			
-//			//Set search params
-//			SQL_SELECT_FIRST.clearParameters();
-//			
-//			//Run the query
-//			ResultSet rs = SQL_SELECT_FIRST.executeQuery();
-//			
-//			//Is there a valid result.. ?
-//			TxBlock fb = null;
-//			if(rs.next()) {
-//				
-//				//Get the details..
-//				byte[] syncdata 	= rs.getBytes("syncdata");
-//				
-//				//Create MiniData version
-//				MiniData minisync = new MiniData(syncdata);
-//				
-//				//Convert
-//				fb = TxBlock.convertMiniDataVersion(minisync);
-//				
-//			}else {
-//				return 0;
-//			}
-//			MiniNumber cutoff = fb.getTxPoW().getBlockNumber().sub(new MiniNumber(MAX_KEEP_BLOCKS));
 			
 			//Last block to keep
 			MiniNumber cutoff = new MiniNumber(block).sub(new MiniNumber(MAX_KEEP_BLOCKS));
