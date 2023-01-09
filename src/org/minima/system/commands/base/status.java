@@ -54,7 +54,7 @@ public class status extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"clean","debug"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"clean","debug","complete"}));
 	}
 	
 	@Override
@@ -67,7 +67,8 @@ public class status extends Command {
 		}
 
 		//Are we verbose output
-		boolean debug = getBooleanParam("debug",false);
+		boolean debug 		= getBooleanParam("debug",false);
+		boolean complete 	= getBooleanParam("complete",false);
 		
 		//The Database
 		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
@@ -249,23 +250,29 @@ public class status extends Command {
 			MinimaLogger.log("txpowdb done..");
 		}
 		
-		
-		//Archive DB data
-		JSONObject archdb 	= new JSONObject();
-		int size 			= arch.getSize();
-		Cascade archcasc 	= arch.loadCascade(); 
-		archdb.put("size", size);
-		if(size>0) {
-			archdb.put("start", arch.loadLastBlock().getTxPoW().getBlockNumber().toString());
-			archdb.put("startdate", new Date(arch.loadLastBlock().getTxPoW().getTimeMilli().getAsLong()).toString());
-			archdb.put("end", arch.loadFirstBlock().getTxPoW().getBlockNumber().toString());
-			if(archcasc!=null) {
-				archdb.put("cascadetip", archcasc.getTip().getTxPoW().getBlockNumber());	
+		if(complete) {
+			//Archive DB data
+			JSONObject archdb 	= new JSONObject();
+			int size 			= arch.getSize();
+			Cascade archcasc 	= arch.loadCascade(); 
+			archdb.put("size", size);
+			if(size>0) {
+				archdb.put("start", arch.loadLastBlock().getTxPoW().getBlockNumber().toString());
+				archdb.put("startdate", new Date(arch.loadLastBlock().getTxPoW().getTimeMilli().getAsLong()).toString());
+				archdb.put("end", arch.loadFirstBlock().getTxPoW().getBlockNumber().toString());
+				if(archcasc!=null) {
+					archdb.put("cascadetip", archcasc.getTip().getTxPoW().getBlockNumber());	
+				}
 			}
-		}
-		database.put("archivedb", archdb);
-		if(debug) {
-			MinimaLogger.log("archivedb done..");
+			database.put("archivedb", archdb);
+			if(debug) {
+				MinimaLogger.log("archivedb done..");
+			}
+		}else {
+			database.put("archivedb", arch.getSize());
+			if(debug) {
+				MinimaLogger.log("archivedb done..");
+			}
 		}
 		
 		//Add ther adatabse
