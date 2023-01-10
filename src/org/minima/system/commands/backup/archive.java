@@ -371,8 +371,17 @@ public class archive extends Command {
 			NotifyListener(minimalistener,"All blocks loaded.. pls wait");
 			MinimaLogger.log("All Archive data received and processed.. shutting down.."); 
 			
+			JSONObject resp = new JSONObject();
+			resp.put("message", "Archive sync completed.. shutting down now.. please restart after");
+			resp.put("start", firstStart.toString());
+			resp.put("end", endblock.toString());
+			ret.put("response", resp);
+			
 			//And NOW shut down..
 			Main.getInstance().getTxPoWProcessor().stopMessageProcessor();
+			
+			//Now shutdown and save everything
+			MinimaDB.getDB().saveAllDB();
 			
 			//Don't do the usual shutdown hook
 			Main.getInstance().setHasShutDown();
@@ -380,15 +389,6 @@ public class archive extends Command {
 			//And NOW shut down..
 			Main.getInstance().stopMessageProcessor();
 			
-			//Now shutdown and save everything
-			MinimaDB.getDB().saveAllDB();
-			
-			JSONObject resp = new JSONObject();
-			resp.put("message", "Archive sync completed.. shutting down now.. please restart after");
-			resp.put("start", firstStart.toString());
-			resp.put("end", endblock.toString());
-			ret.put("response", resp);
-		
 		}else {
 			throw new CommandException("Invalid action : "+action);
 		}
