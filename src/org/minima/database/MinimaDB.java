@@ -339,11 +339,9 @@ public class MinimaDB {
 	}
 	
 	public void saveAllDB() {
-		//And the rest
 		MinimaLogger.log("Saving State..");
 		saveState();
 		
-		//First the SQL
 		MinimaLogger.log("Saving SQL..");
 		saveSQL();
 		
