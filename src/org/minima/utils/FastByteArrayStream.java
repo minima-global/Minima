@@ -28,7 +28,10 @@ public class FastByteArrayStream extends ByteArrayOutputStream {
 	public void writeData(byte b[], int off, int len) {
         
 		//Check valid
-		Objects.checkFromIndexSize(off, len, b.length);
+		if(off<0) {
+			return;
+		}
+//		Objects.checkFromIndexSize(off, len, b.length);
         
 		//What is the current size
 		int csize = buf.length;
