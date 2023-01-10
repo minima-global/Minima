@@ -88,6 +88,9 @@ public class status extends Command {
 		//Uptime..
 		details.put("uptime", MiniFormat.ConvertMilliToTime(Main.getInstance().getUptimeMilli()));
 		
+		//Is the Wallet Locked..
+		details.put("locked", !MinimaDB.getDB().getWallet().isBaseSeedAvailable());
+		
 //		//How many Devices..
 //		BigDecimal blkweightdec 	= new BigDecimal(txptree.getTip().getTxPoW().getBlockDifficulty().getDataValue());
 //		BigDecimal blockWeight 		= Crypto.MAX_VALDEC.divide(blkweightdec, MathContext.DECIMAL32);
