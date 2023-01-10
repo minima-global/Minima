@@ -236,7 +236,7 @@ public class MDSUtil {
 			if(zMainorPending) {
 				head += getSessionIDButton(zSessionID,"main.html","Main Menu");
 			}else{
-				head += getSessionIDButton(zSessionID,"pending.html","Pending Transactions");
+				head += getSessionIDButton(zSessionID,"pending.html","Pending");
 			}
 		}else {
 			head += "&nbsp";
