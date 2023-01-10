@@ -78,7 +78,7 @@ public class TxPoWSearcher {
 		}
 	}
 	
-	public static ArrayList<Coin> searchCoins(	TxPoWTreeNode zStartNode, boolean zRelevant, 
+	public static synchronized ArrayList<Coin> searchCoins(	TxPoWTreeNode zStartNode, boolean zRelevant, 
 												boolean zCheckCoinID, MiniData zCoinID,
 												boolean zCheckAmount, MiniNumber zAmount,
 												boolean zCheckAddress, MiniData zAddress,
@@ -169,29 +169,6 @@ public class TxPoWSearcher {
 				}
 			}
 		}
-		
-//		if(zSimpleOnly) {
-//			//Fresh List
-//			finalcoins = new ArrayList<>();
-//			
-//			//Get the wallet..
-//			Wallet wallet = MinimaDB.getDB().getWallet();
-//			
-//			//Get all the keys
-//			ArrayList<KeyRow> keys = wallet.getAllRelevant(false);
-//			
-//			//Now cycle through the coins
-//			for(Coin cc : coinentry) {
-//				for(KeyRow kr : keys) {
-//					//Is it a simple key
-//					if(!kr.getPublicKey().equals("")) {
-//						if(cc.getAddress().isEqual(new MiniData(kr.getAddress()))) {
-//							finalcoins.add(cc);
-//						}
-//					}
-//				}
-//			}
-//		}
 		
 		return finalcoins;
 	}	
