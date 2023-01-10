@@ -173,7 +173,10 @@ public class NIOMessage implements Runnable {
 				
 				if(!testcheck || !greetstr.startsWith(GlobalParams.MINIMA_BASE_VERSION)) {
 					
-					MinimaLogger.log("Greeting with Incompatible Version! "+greet.getVersion().toString()+" .. we are "+GlobalParams.MINIMA_VERSION);
+					MinimaLogger.log("Greeting with Incompatible Version! "+greet.getVersion().toString()+" .. we are "+GlobalParams.MINIMA_VERSION+" from "+nioclient.getFullAddress()+" incoming:"+nioclient.isIncoming());
+					
+					//Add to our Invalid Peers list
+					P2PFunctions.addInvalidPeer(nioclient.getFullAddress());
 					
 					//Tell the P2P..
 					Message newconn = new Message(P2PFunctions.P2P_NOCONNECT);

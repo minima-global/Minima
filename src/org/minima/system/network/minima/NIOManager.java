@@ -303,6 +303,12 @@ public class NIOManager extends MessageProcessor {
 			String host = zMessage.getString("host");
 			int port 	= zMessage.getInteger("port");
 			
+			//Double check if this peer on the naughty list
+			if(P2PFunctions.isInvalidPeer(host+":"+port)) {
+	        	MinimaLogger.log("NIO_CONNECT : Trying to connect to Invalid Peer - disallowed @ "+host+":"+port);
+	        	return;
+	        }
+			
 			//Create a new NetworkClient
 			NIOClient nc = new NIOClient(host, port);
 			
