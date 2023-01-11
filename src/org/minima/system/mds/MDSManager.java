@@ -404,8 +404,12 @@ public class MDSManager extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(MDS_TIMER_10SECONDS)) {
 
+			//Create a datat object
+			JSONObject data = new JSONObject();
+			data.put("timemilli", Long.toString(System.currentTimeMillis()));
+			
 			//Send a POLL message.. 
-			Main.getInstance().PostNotifyEvent(MDS_TIMER_10SECONDS, new JSONObject());
+			Main.getInstance().PostNotifyEvent(MDS_TIMER_10SECONDS, data);
 			
 			//Post another Message
 			PostTimerMessage(new TimerMessage(10000, MDS_TIMER_10SECONDS));
