@@ -73,12 +73,12 @@ public class P2PParams {
 
     public static String METRICS_URL = "http://35.242.245.96/network";
 
-//    public static List<InetSocketAddress> DEFAULT_NODE_LIST = Arrays.asList(
-//            new InetSocketAddress("34.107.100.54", 9001),
-//            new InetSocketAddress("34.175.184.152", 9001),
-//            new InetSocketAddress("34.175.101.178", 9001),
-//            new InetSocketAddress("34.140.164.3", 9001)
-//            );
+    public static List<InetSocketAddress> DEFAULT_NODE_LIST = Arrays.asList(
+            new InetSocketAddress("35.197.193.186", 9001),
+            new InetSocketAddress("35.230.131.241", 9001),
+            new InetSocketAddress("35.246.66.209", 9001),
+            new InetSocketAddress("34.142.20.110", 9001)
+            );
     
-    public static List<InetSocketAddress> DEFAULT_NODE_LIST = Arrays.asList();
+    //public static List<InetSocketAddress> DEFAULT_NODE_LIST = Arrays.asList();
 }
