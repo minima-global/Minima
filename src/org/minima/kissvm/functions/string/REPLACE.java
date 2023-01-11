@@ -53,8 +53,9 @@ public class REPLACE extends MinimaFunction {
 		StringBuffer sb = new StringBuffer();
 		
 		//Create a pattern and a matcher
-		Pattern p 		= Pattern.compile(zSearch);
-		Matcher m 		= p.matcher(zStart);
+		String literalPatternStr 	= Pattern.quote(zSearch);
+		Pattern p 					= Pattern.compile(literalPatternStr);
+		Matcher m 					= p.matcher(zStart);
 		
 		//Search for occurrences
 		while (m.find()) {
