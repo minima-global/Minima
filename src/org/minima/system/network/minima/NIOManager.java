@@ -62,8 +62,8 @@ public class NIOManager extends MessageProcessor {
 
 	public static final String NIO_SYNCTXBLOCK 		= "NIO_SYNCTXBLOCK";
 
-	//100MB limit on archive write
-	public static long MAX_ARCHIVE_WRITE			= 1024 * 1024 * 100;
+	//50MB limit on archive write
+	public static long MAX_ARCHIVE_WRITE			= 1024 * 1024 * 50;
 	
 	/**
 	 * How many attempts to reconnect
@@ -542,6 +542,19 @@ public class NIOManager extends MessageProcessor {
 			if(MinimaDB.getDB().getTxPoWTree().getRoot() == null) {
 				MinimaLogger.log("No TxPoWTree yet.. required for NIO_SYNCTXBLOCK");
 				return;
+			}
+			
+			//Are we limiting this..
+			if(GeneralParams.ARCHIVESYNC_LIMIT_BANDWIDTH) {
+				
+				//How much have we used..
+				long total 		= Main.getInstance().getNIOManager().getTrafficListener().getTotalRead();
+				String current 	= MiniFormat.formatSize(total);
+				
+				if(total > NIOManager.MAX_ARCHIVE_WRITE) {
+					MinimaLogger.log("MAX Bandwith used already ("+current+") - not asking for archive sync for 24hours..");
+					return;
+				}
 			}
 			
 			//Which client..
