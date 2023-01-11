@@ -36,7 +36,7 @@ public class CMDcommand {
 			}
 			
 		}catch(Exception exc) {
-			MinimaLogger.log("ERROR CMDHANDLER : "+mCompleteCommand+" "+exc);
+			//MinimaLogger.log("ERROR CMDHANDLER : "+mCompleteCommand+" "+exc);
 			
 			//Add the error
 			statfalse.put("error", exc.toString());

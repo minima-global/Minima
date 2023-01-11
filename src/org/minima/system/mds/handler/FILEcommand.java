@@ -128,7 +128,7 @@ public class FILEcommand {
 			result = stattrue.toJSONString();
 			
 		}catch(Exception exc) {
-			MinimaLogger.log("FILE command : "+mMiniDAPPID+" "+exc);
+			//MinimaLogger.log("FILE command : "+mMiniDAPPID+" "+exc);
 			
 			statfalse.put("error", exc.toString());
 			result = statfalse.toJSONString();
