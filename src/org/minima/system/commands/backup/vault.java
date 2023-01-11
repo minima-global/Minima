@@ -1,24 +1,18 @@
 package org.minima.system.commands.backup;
 
-import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.wallet.SeedRow;
-import org.minima.database.wallet.Wallet;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
-import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
-import org.minima.system.params.GeneralParams;
 import org.minima.utils.BIP39;
-import org.minima.utils.MiniFile;
 import org.minima.utils.encrypt.PasswordCrypto;
 import org.minima.utils.json.JSONObject;
-import org.minima.utils.ssl.SSLManager;
 
 public class vault extends Command {
 

@@ -1,6 +1,5 @@
 package org.minima.system.mds.handler;
 
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.RPCClient;
 import org.minima.utils.json.JSONObject;
 

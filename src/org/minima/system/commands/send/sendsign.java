@@ -17,7 +17,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.Signature;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
-import org.minima.system.commands.base.vault;
+import org.minima.system.commands.backup.vault;
 import org.minima.utils.MiniFile;
 import org.minima.utils.json.JSONObject;
 

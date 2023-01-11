@@ -591,9 +591,9 @@ public class Contract {
 //					+ "return true";
 		
 //		String scr = "LET n=STATE(0) LET m=STATE(1) LET script=[RETURN MULTISIG(]+STRING(n) LET counter=0 WHILE counter LT m DO LET script=script+[ ]+STRING(PREVSTATE(counter+2)) LET counter=INC(counter) ENDWHILE LET script=script+[)] EXEC script";
-		String scr = "WHILE  counter LT m DO  LET  script=script+[ ]+STRING(PREVSTATE(counter+2)) LET counter=INC(counter) ENDWHILE LET script=script+[)] EXEC script";
+//		String scr = "WHILE  counter LT m DO  LET  script=script+[ ]+STRING(PREVSTATE(counter+2)) LET counter=INC(counter) ENDWHILE LET script=script+[)] EXEC script";
 //		String scr = "IF x LT 6 THEN LET y=5 ENDIF LET f=0";
-//		String scr = "LET f=(6+6) LET i=0";
+		String scr = "LET f=[ hello hello hello hello hello] LET y=REPLACE(f [hello] [sir])";
 				
 //		String scr = "LET a = [$1$1$1$1$1$1$1$1$1$1] // the script\r\n"
 //				+ "LET b = [$2$2$2$2$2$2$2$2$2$2] // first script parameter\r\n"
@@ -616,7 +616,7 @@ public class Contract {
 		MinimaLogger.log("Clean :"+clean);
 		
 		//Run it..
-//		Contract ctr = new Contract(clean, new ArrayList<>(), new Witness(), new Transaction(), new ArrayList<>(),true);
-//		ctr.run();
+		Contract ctr = new Contract(clean, new ArrayList<>(), new Witness(), new Transaction(), new ArrayList<>(),true);
+		ctr.run();
 	}
 }
