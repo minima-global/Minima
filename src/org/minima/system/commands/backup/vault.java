@@ -1,4 +1,4 @@
-package org.minima.system.commands.base;
+package org.minima.system.commands.backup;
 
 import java.io.File;
 import java.sql.SQLException;
@@ -106,17 +106,26 @@ public class vault extends Command {
 			//Check for one or the other..
 			String initphrase = getParam("phrase");
 			
+			//Clean it up..
+			String cleanphrase = BIP39.cleanSeedPhrase(initphrase);
+			
 			//Convert to a data hash
-			MiniData seed = BIP39.convertStringToSeed(initphrase);
+			MiniData seed = BIP39.convertStringToSeed(cleanphrase);
 			
 			//And now recreate the private keys
-			boolean ok = MinimaDB.getDB().getWallet().resetBaseSeedPrivKeys(initphrase, seed.to0xString());
+			boolean ok = MinimaDB.getDB().getWallet().resetBaseSeedPrivKeys(cleanphrase, seed.to0xString());
 
 			if(!ok) {
 				throw new CommandException("Error updating Private keys.. please try again");
 			}
 
-			ret.put("response", "All private keys restored!");
+			JSONObject resp=new JSONObject();
+			resp.put("entered", initphrase);
+			resp.put("cleaned", cleanphrase);
+			resp.put("same", cleanphrase.equalsIgnoreCase(initphrase));
+			resp.put("result", "All private keys restored!");
+			
+			ret.put("response", resp);
 		
 		}else if(action.equals("passwordlock")) {
 			
@@ -136,50 +145,51 @@ public class vault extends Command {
 						
 			ret.put("response", "All private keys restored!");
 			
+			//NOT WORKING YET!
 		}else if(action.equals("keyreset")) {
 			
-			//Get the seed phrase
-			String phrase = getParam("phrase");
-			
-			//First stop everything.. and get ready to restore the files..
-			Main.getInstance().restoreReady();
-			
-			//Now delete the SQL DBs..
-			MinimaDB.getDB().getTxPoWDB().getSQLDB().wipeDB();
-			MinimaDB.getDB().getTxPoWDB().getSQLDB().saveDB();
-			
-			//Wipe ArchiveDB	
-			MinimaDB.getDB().getArchive().saveDB();
-			MinimaDB.getDB().getArchive().getSQLFile().delete();
-			
-			File basedb = MinimaDB.getDB().getBaseDBFolder();
-			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, new File(basedb,"cascade.db"));
-			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, new File(basedb,"chaintree.db"));
-			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, new File(basedb,"userprefs.db"));
-			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, new File(basedb,"p2p.db"));
-			
-			//And will need to recreate the SSL
-			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, SSLManager.getSSLFolder());
-			
-			//Reset all the private and public keys
-			Wallet wallet = MinimaDB.getDB().getWallet();
-			
-			//Wipe the whole DB..
-			wallet.resetDB(phrase);
-			
-			//Now create all the keys..
-			wallet.initDefaultKeys(Wallet.NUMBER_GETADDRESS_KEYS, true);
-			
-			//Now save the Databases..
-			MinimaDB.getDB().saveSQL();
-			
-			//Don't do the usual shutdown hook
-			Main.getInstance().setHasShutDown();
-			
-			//And NOW shut down..
-			Main.getInstance().stopMessageProcessor();
-			
-			ret.put("response", "All private keys restored!");
+//			//Get the seed phrase
+//			String phrase = getParam("phrase");
+//			
+//			//First stop everything.. and get ready to restore the files..
+//			Main.getInstance().restoreReady();
+//			
+//			//Now delete the SQL DBs..
+//			MinimaDB.getDB().getTxPoWDB().getSQLDB().wipeDB();
+//			MinimaDB.getDB().getTxPoWDB().getSQLDB().saveDB();
+//			
+//			//Wipe ArchiveDB	
+//			MinimaDB.getDB().getArchive().saveDB();
+//			MinimaDB.getDB().getArchive().getSQLFile().delete();
+//			
+//			File basedb = MinimaDB.getDB().getBaseDBFolder();
+//			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, new File(basedb,"cascade.db"));
+//			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, new File(basedb,"chaintree.db"));
+//			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, new File(basedb,"userprefs.db"));
+//			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, new File(basedb,"p2p.db"));
+//			
+//			//And will need to recreate the SSL
+//			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, SSLManager.getSSLFolder());
+//			
+//			//Reset all the private and public keys
+//			Wallet wallet = MinimaDB.getDB().getWallet();
+//			
+//			//Wipe the whole DB..
+//			wallet.resetDB(phrase);
+//			
+//			//Now create all the keys..
+//			wallet.initDefaultKeys(Wallet.NUMBER_GETADDRESS_KEYS, true);
+//			
+//			//Now save the Databases..
+//			MinimaDB.getDB().saveSQL();
+//			
+//			//Don't do the usual shutdown hook
+//			Main.getInstance().setHasShutDown();
+//			
+//			//And NOW shut down..
+//			Main.getInstance().stopMessageProcessor();
+//			
+//			ret.put("response", "All private keys restored!");
 			
 		}else {
 			throw new CommandException("Invalid action : "+action);
