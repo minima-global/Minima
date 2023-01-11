@@ -62,7 +62,7 @@ public class NIOManager extends MessageProcessor {
 
 	public static final String NIO_SYNCTXBLOCK 		= "NIO_SYNCTXBLOCK";
 
-	//50MB limit on archive write
+	//50MB limit on archive read / write
 	public static long MAX_ARCHIVE_WRITE			= 1024 * 1024 * 50;
 	
 	/**
@@ -544,18 +544,18 @@ public class NIOManager extends MessageProcessor {
 				return;
 			}
 			
-			//Are we limiting this..
-			if(GeneralParams.ARCHIVESYNC_LIMIT_BANDWIDTH) {
-				
-				//How much have we used..
-				long total 		= Main.getInstance().getNIOManager().getTrafficListener().getTotalRead();
-				String current 	= MiniFormat.formatSize(total);
-				
-				if(total > NIOManager.MAX_ARCHIVE_WRITE) {
-					MinimaLogger.log("MAX Bandwith used already ("+current+") - not asking for archive sync for 24hours..");
-					return;
-				}
-			}
+//			//Are we limiting this..
+//			if(GeneralParams.ARCHIVESYNC_LIMIT_BANDWIDTH) {
+//				
+//				//How much have we used..
+//				long total 		= Main.getInstance().getNIOManager().getTrafficListener().getTotalRead();
+//				String current 	= MiniFormat.formatSize(total);
+//				
+//				if(total > NIOManager.MAX_ARCHIVE_WRITE) {
+//					MinimaLogger.log("MAX Bandwith used already ("+current+") - not asking for archive sync for 24hours..");
+//					return;
+//				}
+//			}
 			
 			//Which client..
 			String clientid = zMessage.getString("client");
