@@ -70,6 +70,7 @@ public class StateVariable implements Streamable {
 		
 		//Set the Data
 		if(zData.toLowerCase().startsWith("mx")) {
+			//KISSVN ONLY understands 0x not Mx
 			mData = new MiniString(Address.convertMinimaAddress(zData).to0xString());
 			mType = STATETYPE_HEX;
 		
