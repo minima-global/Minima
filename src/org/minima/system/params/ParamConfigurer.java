@@ -284,6 +284,11 @@ public class ParamConfigurer {
                 GeneralParams.NO_SYNC_IBD = true;
             }
         }),
+        limitbandwidth("limitbandwidth", "Limit the amount sent for archive sync", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.ARCHIVESYNC_LIMIT_BANDWIDTH = true;
+            }
+        }),
         genesis("genesis", "Create a genesis block, -clean and -automine", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.CLEAN = true;

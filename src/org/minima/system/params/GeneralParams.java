@@ -174,4 +174,10 @@ public class GeneralParams {
 	 */
 	public static boolean MAXIMA_LOGS = false;
 	
+	/**
+	 * Do we LIMIT the bandwidth (-mobile)
+	 */
+	public static boolean ARCHIVESYNC_LIMIT_BANDWIDTH = false;
+	
+	
 }

@@ -818,6 +818,19 @@ public class NIOMessage implements Runnable {
 				//And post this on..
 				//MinimaLogger.log("[+] Received Sync IBD Request from "+mClientUID+" @ "+lastblock.getBlockNumber());
 				
+				//Are we limiting this..
+				if(GeneralParams.ARCHIVESYNC_LIMIT_BANDWIDTH) {
+					
+					//How much have we used..
+					long total 		= Main.getInstance().getNIOManager().getTrafficListener().getTotalWrite();
+					String current 	= MiniFormat.formatSize(total);
+					
+					if(total > NIOManager.MAX_ARCHIVE_WRITE) {
+						MinimaLogger.log("MAX Bandwith used already ("+current+") - no more archive sync for 24hours..");
+						return;
+					}
+				}
+				
 				//What was the last request from this user
 				MiniNumber lastreq = mlastSyncReq.get(mClientUID);
 				if(lastreq != null) {
