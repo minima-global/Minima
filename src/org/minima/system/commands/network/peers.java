@@ -47,7 +47,7 @@ public class peers extends Command {
 
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","peerslist"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","peerslist","max"}));
 	}
 	
 	@Override
@@ -65,10 +65,22 @@ public class peers extends Command {
 			
 			P2PManager p2PManager = (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();
 			
-			JSONObject resp = new JSONObject();
-			resp.put("peers-list", InetSocketAddressIO.addressesListToJSONArray(p2PManager.getPeersCopy()));
-			ret.put("response", resp);
+			//Get the peers list
+			ArrayList<InetSocketAddress> peers = p2PManager.getPeersCopy();
+			if(existsParam("max")) {
+				int max = getNumberParam("max").getAsInt();
+				if(max<peers.size()) {
+					ArrayList<InetSocketAddress> newpeers = new ArrayList<>();
+					for(int i=0;i<max;i++) {
+						newpeers.add(peers.get(i));
+					}
+					peers=newpeers;
+				}
+			}
 			
+			JSONObject resp = new JSONObject();
+			resp.put("peers-list", InetSocketAddressIO.addressesListToJSONArray(peers));
+			ret.put("response", resp);
 			
 		}else if(action.equals("addpeers")) {
 			
