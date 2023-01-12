@@ -390,7 +390,7 @@ public class whitepaper extends Command {
             + "protocol developers because the protocol is advanced enough to take care of itself, and should not require any Hard\n"
             + "Forks ever (there are no Soft Forks on Minima as all users are also miners), you need to use Quantum Secure\n"
             + "algorithms.\n"
-            + "    Minima uses the KECCAK hash algorithm for Tx-PoW mining, block and transaction hashes, proof chains,\n"
+            + "    Minima uses the SHA3 hash algorithm for Tx-PoW mining, block and transaction hashes, proof chains,\n"
             + "and signing or verifying data. All of the cryptographic security of Minima is provided by hash functions. The scripting\n"
             + "language supports SHA2-256 to allow cross-chain hash lock contracts with legacy chains. The signing algorithm is\n"
             + "the Winternitz One Time Signature scheme (WOTS). You can build hash trees of valid public keys, and process them\n"
