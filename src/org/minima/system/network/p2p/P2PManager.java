@@ -152,11 +152,20 @@ public class P2PManager extends MessageProcessor {
     }
 
 
+    private long mLastNotifyNoPeers 	= 0;
+    private long NOTIFY_NOPEERS_TIMER 	= 1000 * 60 * 3;
     private void doDiscoveryPing(){
         
     	//Check how many nodes there are..
     	if(P2PParams.DEFAULT_NODE_LIST.size()==0) {
-    		MinimaLogger.log("There are NO DEFAULT PEERS - please use command 'peers' to add a valid peer..");
+    		
+    		//Only show the message every few minutes..
+    		long timenow = System.currentTimeMillis();
+    		if(timenow - mLastNotifyNoPeers > NOTIFY_NOPEERS_TIMER) {
+    			MinimaLogger.log("There are NO DEFAULT PEERS - please use command 'peers' to add a valid peer..");
+    			mLastNotifyNoPeers = timenow;
+    		}
+    		
     		return;
     	}
     	
