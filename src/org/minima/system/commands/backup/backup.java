@@ -68,6 +68,9 @@ public class backup extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
+		//Check all keys are created..
+		vault.checkAllKeysCreated();
+		
 		//Is this an AUTO backup initiate..
 		if(existsParam("auto")) {
 			boolean setauto = getBooleanParam("auto");

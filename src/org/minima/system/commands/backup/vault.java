@@ -6,8 +6,10 @@ import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.wallet.SeedRow;
+import org.minima.database.wallet.Wallet;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
+import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.utils.BIP39;
@@ -79,6 +81,8 @@ public class vault extends Command {
 		
 		}else if(action.equals("lock")) {
 			
+			checkAllKeysCreated();
+			
 			//Are we already locked..
 			if(!MinimaDB.getDB().getWallet().isBaseSeedAvailable()) {
 				throw new CommandException("DB already locked!");
@@ -122,6 +126,8 @@ public class vault extends Command {
 			ret.put("response", resp);
 		
 		}else if(action.equals("passwordlock")) {
+			
+			checkAllKeysCreated();
 			
 			//Get the password
 			String password = getParam("password");
@@ -192,6 +198,21 @@ public class vault extends Command {
 		return ret;
 	}
 
+	/**
+	 * Check that all keys are created
+	 */
+	public static void checkAllKeysCreated() throws CommandException {
+		
+		//Are they all created..
+		if(Main.getInstance().getAllKeysCreated()) {
+			return;
+		}
+		
+		throw new CommandException("Please wait for ALL your keys to be created. "
+				+ "This can take 5 mins. "
+				+ "Currently ("+Main.getInstance().getAllDefaultKeysSize()+"/"+Wallet.NUMBER_GETADDRESS_KEYS+")");
+	}
+	
 	public static void passwordLockDB(String zPassword) throws CommandException {
 		
 		//Display the base seed..

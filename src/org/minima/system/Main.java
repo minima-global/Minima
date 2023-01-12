@@ -103,6 +103,12 @@ public class Main extends MessageProcessor {
 	MiniData mOldTip 							= MiniData.ZERO_TXPOWID;
 	
 	/**
+	 * Create all the initial Keys
+	 */
+	public static final String MAIN_INIT_KEYS 	= "MAIN_INIT_KEYS";
+	long INIT_KEYS_TIMER = 1000 * 30;
+	
+	/**
 	 * Main loop to check various values every 180 seconds..
 	 */
 	long CHECKER_TIMER							= 1000 * 180;
@@ -261,6 +267,9 @@ public class Main extends MessageProcessor {
 		//Debug Checker
 		PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
 		
+		//Init Keys
+		PostTimerMessage(new TimerMessage(INIT_KEYS_TIMER, MAIN_INIT_KEYS));
+				
 		//Reset Network stats every 24 hours
 		PostTimerMessage(new TimerMessage(NETRESET_TIMER, MAIN_NETRESET));
 		
@@ -509,6 +518,14 @@ public class Main extends MessageProcessor {
 		MinimaDB.getDB().getTxPoWDB().setOnMainChain(genesis.getTxPoWID());
 	}
 	
+	public boolean getAllKeysCreated() {
+		return mInitKeysCreated;
+	}
+	
+	public int getAllDefaultKeysSize() {
+		return MinimaDB.getDB().getWallet().getDefaultKeysNumber();
+	}
+	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		//Are we shutting down
@@ -659,16 +676,13 @@ public class Main extends MessageProcessor {
 		}else if(zMessage.getMessageType().equals(MAIN_SHUTDOWN)) {
 			
 			shutdown();
-			
-		}else if(zMessage.getMessageType().equals(MAIN_CHECKER)) {
-			
-			//Check again..
-			PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
+		
+		}else if(zMessage.getMessageType().equals(MAIN_INIT_KEYS)) {
 			
 			//Check the Default keys
 			if(!mInitKeysCreated) {
 				try {
-					mInitKeysCreated = MinimaDB.getDB().getWallet().initDefaultKeys();
+					mInitKeysCreated = MinimaDB.getDB().getWallet().initDefaultKeys(8);
 					if(mInitKeysCreated) {
 						MinimaLogger.log("All default getaddress keys created..");
 					}
@@ -676,6 +690,16 @@ public class Main extends MessageProcessor {
 					MinimaLogger.log(exc);
 				}
 			}
+			
+			//Check again..
+			if(!mInitKeysCreated) {
+				PostTimerMessage(new TimerMessage(INIT_KEYS_TIMER, MAIN_INIT_KEYS));
+			}
+			
+		}else if(zMessage.getMessageType().equals(MAIN_CHECKER)) {
+			
+			//Check again..
+			PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
 			
 			//Get the Current Tip
 			TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();

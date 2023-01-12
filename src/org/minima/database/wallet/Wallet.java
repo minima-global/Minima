@@ -30,7 +30,6 @@ public class Wallet extends SqlDB {
 	/**
 	 * The MAIN Private seed from which all others are derived..
 	 */
-//	private MiniData mMainPrivateSeed = MiniData.ZERO_TXPOWID; 
 	private SeedRow mBaseSeed = null;
 	
 	/**
@@ -332,8 +331,8 @@ public class Wallet extends SqlDB {
 	/**
 	 * Create an initial set of keys / addresses to use
 	 */
-	public boolean initDefaultKeys() {
-		return initDefaultKeys(8);
+	public int getDefaultKeysNumber() {
+		return getAllDefaultAddresses().size();
 	}
 	
 	public boolean initDefaultKeys(int zMaxNum) {
@@ -367,9 +366,13 @@ public class Wallet extends SqlDB {
 				}
 			}
 			
-			MinimaLogger.log(diff+" more initial keys created.. Total now : "+(numkeys+diff));
+			MinimaLogger.log(diff+" more initial keys created.. Total now : "+(numkeys+diff)+" / "+NUMBER_GETADDRESS_KEYS);
 		}else {
 			allcreated = true;
+		}
+		
+		if(getAllDefaultAddresses().size() >= NUMBER_GETADDRESS_KEYS) {
+			return true;
 		}
 		
 		return allcreated;
