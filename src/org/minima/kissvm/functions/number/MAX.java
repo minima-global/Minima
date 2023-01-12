@@ -28,7 +28,6 @@ public class MAX extends MinimaFunction {
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
 		checkMinParamNumber(requiredParams());
-		checkAllParamsType(Value.VALUE_NUMBER, zContract);
 		
 		//Run through the function parameters and pick the maximum numeric value..
 		ArrayList<Expression> params = getAllParameters();
@@ -37,8 +36,11 @@ public class MAX extends MinimaFunction {
 		NumberValue max 	= null;
 		
 		for(Expression exp : params) {
+			Value numval = exp.getValue(zContract);
+			checkIsOfType(numval, Value.VALUE_NUMBER);
+			
 			//Get the Value
-			NumberValue chk = (NumberValue)exp.getValue(zContract);
+			NumberValue chk = (NumberValue)numval;
 			
 			if(first) {
 				first 	= false;

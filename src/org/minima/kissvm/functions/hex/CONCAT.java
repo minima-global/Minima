@@ -24,15 +24,13 @@ public class CONCAT extends MinimaFunction{
 		//Run through the function parameters and concatenate..
 		ArrayList<Expression> params = getAllParameters();
 		
-		//Check all the same type
-		checkAllParamsType(Value.VALUE_HEX, zContract);
-		
 		//Sum them
 		byte[][] parambytes = new byte[getAllParameters().size()][];
 		int totlen  = 0;
 		int counter = 0;
 		for(Expression exp : params) {
 			Value vv = exp.getValue(zContract);
+			checkIsOfType(vv, Value.VALUE_HEX);
 			
 			//This is a HEXValue
 			HexValue hex = (HexValue)vv;

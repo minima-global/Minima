@@ -133,30 +133,11 @@ public abstract class MinimaFunction {
 		return mName;
 	}
 	
-	/**
-	 * Check all parameters are of the Type required
-	 * 
-	 * @param zType
-	 * @param zContract
-	 * @param zParams
-	 * @throws ExecutionException 
-	 */
-	protected void checkAllParamsType(int zType,Contract zContract) throws ExecutionException {
-		int count=0;
-		for(Expression exp : getAllParameters()) {
-			Value vv = exp.getValue(zContract);
-			if(vv.getValueType() != zType) {
-				throw new ExecutionException("Incorrect type in parameters @ "+count
-						+". Found "+Value.getValueTypeString(vv.getValueType())
-						+" expected "+Value.getValueTypeString(zType));
-			}
-			count++;
-		}
-	}
-	
 	protected void checkIsOfType(Value zValue, int zType) throws ExecutionException {
 		if((zValue.getValueType() & zType) == 0) {
-			throw new ExecutionException("Parameter is incorrect type in "+getName()+". Found "+Value.getValueTypeString(zValue.getValueType()));
+			throw new ExecutionException("Parameter is incorrect type in "+getName()
+			+" Found:"+Value.getValueTypeString(zValue.getValueType())
+			+" @ "+zValue.toString());
 		}
 	}
 	
