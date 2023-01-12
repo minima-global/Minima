@@ -1,5 +1,7 @@
 package org.minima.kissvm.functions.string;
 
+import java.util.regex.Pattern;
+
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
@@ -22,7 +24,10 @@ public class REPLACEFIRST extends MinimaFunction {
 		StringValue strrepl 	= zContract.getStringParam(2, this);
 
 		String main 	= strmain.toString();
+		
 		String search 	= strsearch.toString();
+		search 			= Pattern.quote(search);
+		
 		String repl 	= strrepl.toString();
 
 		//Now replace..
