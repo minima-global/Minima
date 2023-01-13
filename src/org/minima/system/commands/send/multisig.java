@@ -273,7 +273,7 @@ public class multisig extends Command {
 			}
 			
 			//The txnname..
-			String txnname_default 	= "multispend_"+System.currentTimeMillis();
+			String txnname_default 	= "multispend_"+System.currentTimeMillis()+".txn";
 			String txnname 			= getParam("file",txnname_default);
 			
 			//Create a txn..
@@ -296,7 +296,7 @@ public class multisig extends Command {
 			}
 						
 			//And finish off..
-			txnsender +=  "txnexport id:"+txnname+" file:"+txnname+".txn;"
+			txnsender +=  "txnexport id:"+txnname+" file:"+txnname+";"
 						+ "txndelete id:"+txnname;
 			
 			//Run it..
