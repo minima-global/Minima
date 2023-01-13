@@ -19,7 +19,7 @@ import org.minima.utils.json.JSONObject;
 public class vault extends Command {
 
 	public vault() {
-		super("vault","[action:seed|lock|unlock] (seed:) (phrase:) - BE CAREFUL. Wipe / Restore your private keys");
+		super("vault","[action:seed|wipekeys|restorekeys|passwordlock|passwordunlock] (seed:) (phrase:) - BE CAREFUL. Wipe/Restore/Encrypt/Decrypt your private keys");
 	}
 	
 	@Override
@@ -36,24 +36,30 @@ public class vault extends Command {
 				+ "\n"
 				+ "action: (optional)\n"
 				+ "    seed : Show your seed phrase. The default. \n"
-				+ "    lock : Lock your node to remove your private keys.\n"
-				+ "    unlock : Unlock your node to reinstate your private keys.\n"
+				+ "    wipekeys : Wipe your private keys - keep the public.\n"
+				+ "    restorekeys : Restore your private keys.\n"
+				+ "    passwordlock : Lock your node by password encrypting private keys.\n"
+				+ "    passwordunlock : Unlock your node to reinstating your private keys.\n"
 				+ "\n"
 				+ "seed: (optional)\n"
 				+ "    Enter your seed to lock your node.\n"
 				+ "    This will delete your private keys.\n"
 				+ "\n"
 				+ "phrase: (optional)\n"
-				+ "    Enter your passphrase in double quotes to unlock your node.\n"
+				+ "    Enter your passphrase in double quotes to restore your node.\n"
 				+ "    This will reinstate your private keys.\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "vault\n"
 				+ "\n"
-				+ "vault action:lock seed:0xDD4E..\n"
+				+ "vault action:wipekeys seed:0xDD4E..\n"
 				+ "\n"
-				+ "vault action:unlock phrase:\"SPRAY LAMP..\"\n";
+				+ "vault action:restorekeys phrase:\"SPRAY LAMP..\"\n"
+				+ "\n"
+				+ "vault action:passwordlock password:your_password\n"
+				+ "\n"
+				+ "vault action:passwordunlock password:your_password\n";
 	}
 	
 	@Override
@@ -79,7 +85,7 @@ public class vault extends Command {
 			
 			ret.put("response", json);
 		
-		}else if(action.equals("lock")) {
+		}else if(action.equals("wipekeys")) {
 			
 			checkAllKeysCreated();
 			
@@ -99,7 +105,7 @@ public class vault extends Command {
 			
 			ret.put("response", "All private keys wiped!");
 		
-		}else if(action.equals("unlock")) {
+		}else if(action.equals("restorekeys")) {
 			
 			//Check for one or the other..
 			String initphrase = getParam("phrase");
