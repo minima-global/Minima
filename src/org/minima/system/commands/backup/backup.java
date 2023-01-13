@@ -223,7 +223,11 @@ public class backup extends Command {
 			
 			//And send data
 			JSONObject resp = new JSONObject();
-			resp.put("block", MinimaDB.getDB().getTxPoWTree().getTip().getTxPoW().getBlockNumber());
+			if(MinimaDB.getDB().getTxPoWTree().getTip() != null) {
+				resp.put("block", MinimaDB.getDB().getTxPoWTree().getTip().getTxPoW().getBlockNumber());
+			}else {
+				resp.put("block", "-1");
+			}
 			resp.put("files", files);
 			resp.put("uncompressed", MiniFormat.formatSize(total));
 			resp.put("file", backupfile.getAbsolutePath());
