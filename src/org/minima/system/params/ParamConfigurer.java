@@ -151,6 +151,13 @@ public class ParamConfigurer {
     			MiniFile.deleteFileOrFolder(rootpath, check103);
     		}
     		
+    		File check104 = new File(dataFolder,"0.104");
+    		if(check104.exists()) {
+    			String rootpath = check104.getAbsolutePath();
+    			MinimaLogger.log("OLD data folder found - "+rootpath);
+    			MiniFile.deleteFileOrFolder(rootpath, check104);
+    		}
+    		
     		//Depends on the Base Minima Version
     		File minimafolder 	= new File(dataFolder,GlobalParams.MINIMA_BASE_VERSION);
     		minimafolder.mkdirs();

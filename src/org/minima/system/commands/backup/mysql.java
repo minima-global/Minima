@@ -49,13 +49,6 @@ public class mysql extends Command {
 	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
-	
-		//Load the rquired classes
-		try {
-			Class.forName("com.mysql.cj.jdbc.Driver");
-		} catch (ClassNotFoundException e1) {
-			e1.printStackTrace();
-		}
 		
 		//Get the details
 		String host 		= getParam("host");

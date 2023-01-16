@@ -110,6 +110,13 @@ public class Minima {
 			MiniFile.deleteFileOrFolder(rootpath, check103);
 		}
 		
+		File check104 = new File(dataFolder,"0.104");
+		if(check104.exists()) {
+			String rootpath = check104.getAbsolutePath();
+			MinimaLogger.log("OLD data folder found - "+rootpath);
+			MiniFile.deleteFileOrFolder(rootpath, check104);
+		}
+		
 		//Run Params configure
 		ParamConfigurer configurer = null;
 		try {
@@ -145,6 +152,13 @@ public class Minima {
 		MinimaLogger.log("*                                            *");
 		MinimaLogger.log("**********************************************");
 		MinimaLogger.log("Welcome to Minima v"+GlobalParams.MINIMA_VERSION+" - for assistance type help. Then press enter.");
+		
+		//Load the required MySQL classes
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		}
 		
 		//Main handler..
 		Main main = new Main();
