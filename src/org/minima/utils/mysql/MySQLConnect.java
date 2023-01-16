@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 import org.minima.database.cascade.Cascade;
 import org.minima.objects.TxBlock;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
@@ -32,6 +33,9 @@ public class MySQLConnect {
 	PreparedStatement SQL_FIND_SYNCBLOCK_ID 	= null;
 	PreparedStatement SQL_FIND_SYNCBLOCK_NUM 	= null;
 	PreparedStatement SQL_SELECT_RANGE			= null;
+	
+	PreparedStatement SQL_SELECT_LAST_BLOCK		= null;
+	PreparedStatement SQL_SELECT_FIRST_BLOCK	= null;
 	
 	PreparedStatement SAVE_CASCADE				= null;
 	PreparedStatement LOAD_CASCADE				= null;
@@ -82,7 +86,10 @@ public class MySQLConnect {
 		SQL_FIND_SYNCBLOCK_ID 	= mConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE txpowid=?");
 		SQL_FIND_SYNCBLOCK_NUM 	= mConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block=?");
 		SQL_SELECT_RANGE		= mConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block>=? ORDER BY block ASC LIMIT "+MAX_SYNCBLOCKS);
-				
+		
+		SQL_SELECT_LAST_BLOCK	= mConnection.prepareStatement("SELECT block FROM syncblock ORDER BY block ASC LIMIT 1");
+		SQL_SELECT_FIRST_BLOCK	= mConnection.prepareStatement("SELECT block FROM syncblock ORDER BY block DESC LIMIT 1");
+		
 		SAVE_CASCADE = mConnection.prepareStatement("INSERT INTO cascadedata ( cascadetip, fulldata ) VALUES ( ?, ? )");
 		LOAD_CASCADE = mConnection.prepareStatement("SELECT fulldata FROM cascadedata ORDER BY cascadetip ASC LIMIT 1");
 	}
@@ -105,63 +112,27 @@ public class MySQLConnect {
 	}
 	
 	public boolean saveCascade(Cascade zCascade) throws SQLException {
+			
+		//get the MiniData version..
+		MiniData cascdata = MiniData.getMiniDataVersion(zCascade);
 		
-//			//Store as a file..
-//			File root 			= MinimaDB.getDB().getBaseDBFolder();
-//			File cascadefile 	= new File(root,CASCADE_FILE); 
-//
-//			//Does it exist..
-//			if(cascadefile.exists()) {
-//				cascadefile.delete();
-//			}
-//			
-//			//Write the file out..
-//			try {
-//				MiniFile.writeObjectToFile(cascadefile, zCascade);
-//			} catch (IOException e) {
-//				throw new SQLException(e);
-//			}
-			
-			//get the MiniData version..
-			MiniData cascdata = MiniData.getMiniDataVersion(zCascade);
-			
-			//Get the Query ready
-			SAVE_CASCADE.clearParameters();
+		//Get the Query ready
+		SAVE_CASCADE.clearParameters();
+	
+		//Set main params
+		SAVE_CASCADE.setLong(1, zCascade.getTip().getTxPoW().getBlockNumber().getAsLong());
 		
-			//Set main params
-			SAVE_CASCADE.setLong(1, zCascade.getTip().getTxPoW().getBlockNumber().getAsLong());
-			
-			//And finally the actual bytes
-			SAVE_CASCADE.setBytes(2, cascdata.getBytes());
-			
-			//Do it.
-			SAVE_CASCADE.execute();
-			
-			return true;
+		//And finally the actual bytes
+		SAVE_CASCADE.setBytes(2, cascdata.getBytes());
+		
+		//Do it.
+		SAVE_CASCADE.execute();
+		
+		return true;
 	}
 	
 	
 	public Cascade loadCascade() throws SQLException {
-		
-//		//Store as a file..
-//		File root 			= MinimaDB.getDB().getBaseDBFolder();
-//		File cascadefile 	= new File(root,CASCADE_FILE); 
-//
-//		if(cascadefile.exists()) {
-//			
-//			//Read it in..
-//			byte[] data = null;
-//			try {
-//				data = MiniFile.readCompleteFile(cascadefile);
-//			} catch (IOException e) {
-//				throw new SQLException(e);
-//			}
-//			
-//			//Convert
-//			return Cascade.convertMiniDataVersion(new MiniData(data));
-//		}
-//		
-//		return null;
 		
 		LOAD_CASCADE.clearParameters();
 		
@@ -282,6 +253,58 @@ public class MySQLConnect {
 		return null;
 	}
 
+	public synchronized long loadFirstBlock() {
+		
+		try {
+			
+			//Set search params
+			SQL_SELECT_FIRST_BLOCK.clearParameters();
+			
+			//Run the query
+			ResultSet rs = SQL_SELECT_FIRST_BLOCK.executeQuery();
+			
+			//Is there a valid result.. ?
+			if(rs.next()) {
+				
+				//Get the block
+				long block = rs.getLong("block");
+				
+				return block;
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return -1;
+	}
+	
+	public synchronized long loadLastBlock() {
+		
+		try {
+			
+			//Set search params
+			SQL_SELECT_LAST_BLOCK.clearParameters();
+			
+			//Run the query
+			ResultSet rs = SQL_SELECT_LAST_BLOCK.executeQuery();
+			
+			//Is there a valid result.. ?
+			if(rs.next()) {
+				
+				//Get the block
+				long block = rs.getLong("block");
+				
+				return block;
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return -1;
+	}
+	
 	public synchronized ArrayList<TxBlock> loadBlockRange(MiniNumber zStartBlock) {
 		
 		ArrayList<TxBlock> blocks = new ArrayList<>();
@@ -354,10 +377,35 @@ public class MySQLConnect {
 	
 	public static void main(String[] zArgs) throws SQLException {
 		
+		//Load the required classes
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		}
 		
 		MySQLConnect mysql = new MySQLConnect("localhost:3306", "mydatabase", "myuser", "myuser");
-		
 		mysql.init();
+		
+		//Add some TxPoW..
+		TxPoW txp = new TxPoW();
+		txp.setBlockNumber(MiniNumber.ZERO);
+		txp.calculateTXPOWID();
+		TxBlock txblk = new TxBlock(txp);
+		
+		txp = new TxPoW();
+		txp.setBlockNumber(MiniNumber.ONE);
+		txp.calculateTXPOWID();
+		txblk = new TxBlock(txp);
+		
+		mysql.saveBlock(txblk);
+		
+		//Now search for the top block..
+		long firstblock = mysql.loadFirstBlock();
+		long lastblock 	= mysql.loadLastBlock();
+		
+		System.out.println("FIRST : "+firstblock);
+		System.out.println("LAST  : "+lastblock);
 		
 //		String txpid = "0x0003E914FBF1C04C9E1B52E37A171CA870E5310B33E50B9DFA9DF0C044A24150";
 //		TxBlock block = mysql.loadBlockFromID(txpid);
@@ -370,7 +418,6 @@ public class MySQLConnect {
 		for(TxBlock block : blocks) {
 			MinimaLogger.log(block.getTxPoW().getBlockNumber().toString());
 		}
-		
 		
 		mysql.shutdown();
 	}

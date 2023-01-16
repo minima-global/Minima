@@ -15,6 +15,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.backup;
+import org.minima.system.commands.backup.mysql;
 import org.minima.system.commands.backup.restore;
 import org.minima.system.commands.backup.vault;
 import org.minima.system.commands.base.automine;
@@ -118,7 +119,7 @@ public abstract class Command {
 			new multisig(), new checkaddress(),
 			new maxsign(), new maxverify(),
 			
-			new ping(), new random(),
+			new ping(), new random(), new mysql(),
 			//new file(),
 			
 			new vault(), new consolidate(),
