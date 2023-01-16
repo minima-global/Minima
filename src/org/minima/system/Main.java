@@ -121,14 +121,6 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_MINING 		= "MAIN_MINING";
 	
 	/**
-	 * Incentive Cash User ping..
-	 * 
-	 * Every 8 hours
-	 */
-	public static final String MAIN_INCENTIVE 	= "MAIN_INCENTIVE";
-	long IC_TIMER = 1000 * 60 * 60 * 8;
-	
-	/**
 	 * Main TxPoW Processor
 	 */
 	TxPoWProcessor 	mTxPoWProcessor;
@@ -260,9 +252,6 @@ public class Main extends MessageProcessor {
 			PostTimerMessage(new TimerMessage(60 * 1000, MAIN_CLEANDB_RAM));
 		}
 		PostTimerMessage(new TimerMessage(60 * 1000, MAIN_CLEANDB_SQL));
-		
-		//Store the IC User - do fast first time - 30 seconds in.. then every 8 hours
-		PostTimerMessage(new TimerMessage(1000*30, MAIN_INCENTIVE));
 		
 		//Debug Checker
 		PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
@@ -596,20 +585,6 @@ public class Main extends MessageProcessor {
 		
 			//And send it to all your peers..
 			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_PULSE, pulse);
-			
-		}else if(zMessage.getMessageType().equals(MAIN_INCENTIVE)) {
-			
-			//Do it agin..
-			PostTimerMessage(new TimerMessage(IC_TIMER, MAIN_INCENTIVE));
-			
-			//Get the User
-			String user = MinimaDB.getDB().getUserDB().getIncentiveCashUserID();
-			
-			//Make sure there is a User specified
-			if(!user.equals("")) {
-				//Call the RPC End point..
-				RPCClient.sendPUT("https://incentivecash.minima.global/api/ping/"+user+"?version="+GlobalParams.MINIMA_VERSION);
-			}
 			
 		}else if(zMessage.getMessageType().equals(MAIN_NEWBLOCK)) {
 			
