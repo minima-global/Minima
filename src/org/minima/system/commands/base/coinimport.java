@@ -76,7 +76,7 @@ public class coinimport extends Command {
 		Coin txcoin = currentproof.getCoin();
 		
 		//Create the MMRData Leaf Node..
-		MMRData mmrcoin = MMRData.CreateMMRDataLeafNode(txcoin, txcoin.getAmount());
+		MMRData mmrcoin 		= MMRData.CreateMMRDataLeafNode(txcoin, txcoin.getAmount());
 		
 		boolean currentvalid 	= tip.getMMR().checkProofTimeValid(	newcoin.getMMREntryNumber(), 
 																	mmrcoin, 
@@ -85,19 +85,21 @@ public class coinimport extends Command {
 			
 			//Get the Tree Node..
 			TxPoWTreeNode node = TxPoWSearcher.getTreeNodeForCoin(newcoin.getCoinID());
+			if(node!=null) {
 			
-			//Is it relevant..
-			if(node.isRelevantEntry(newcoin.getMMREntryNumber())) {
-				throw new CommandException("Attempting to add relevant coin we already have");
+				//Is it relevant..
+				if(node.isRelevantEntry(newcoin.getMMREntryNumber())) {
+					throw new CommandException("Attempting to add relevant coin we already have");
+				}
+				
+				//Add to relevant coins..
+				node.getRelevantCoinsEntries().add(newcoin.getMMREntryNumber());
+				node.calculateRelevantCoins();
+			
+				//Added
+				ret.put("response", newcoinproof.toJSON());
+				return ret;
 			}
-			
-			//Add to relevant coins..
-			node.getRelevantCoinsEntries().add(newcoin.getMMREntryNumber());
-			node.calculateRelevantCoins();
-		
-			//Added
-			ret.put("response", newcoinproof.toJSON());
-			return ret;
 		}
 		
 		//Get the Coin..
