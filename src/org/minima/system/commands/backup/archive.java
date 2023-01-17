@@ -231,7 +231,6 @@ public class archive extends Command {
 			}
 			
 			//Are we resetting the wallet too ?
-			boolean seedphrase 	= false;
 			MiniData seed 		= null;
 			String phrase = getParam("phrase","");
 			if(!phrase.equals("")) {

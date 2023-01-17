@@ -41,7 +41,7 @@ public class ArchiveServer extends HTTPServer {
 			//Load the block range..
 			try {
 				
-				return mMySQL.loadBlockRangeNoSync(zFirstBlock);
+				return mMySQL.loadBlockRange(zFirstBlock);
 				
 			}catch(Exception zExc) {
 				MinimaLogger.log("Connection failed.. reconnecting.. : "+zExc);
@@ -50,17 +50,8 @@ public class ArchiveServer extends HTTPServer {
 				try {Thread.sleep(1000);} catch (InterruptedException e) {}
 				
 				//Try again
-				try {
-					
-					return mMySQL.loadBlockRangeNoSync(zFirstBlock);
-					
-				} catch (SQLException e) {
-					MinimaLogger.log("ReConnection failed : "+e);
-					MinimaLogger.log(e);
-				}
+				return mMySQL.loadBlockRange(zFirstBlock);
 			}
-			
-			return null;
 		}
 		
 		@Override
