@@ -32,6 +32,9 @@ public class webhooks extends Command {
 				+ "hook: (optional)\n"
 				+ "    A URL, must be a POST endpoint.\n"
 				+ "\n"
+				+ "filter: (optional)\n"
+				+ "    Filters which events get posted.\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "webhooks action:list\n"
@@ -39,6 +42,8 @@ public class webhooks extends Command {
 				+ "webhooks action:add hook:http://127.0.0.1/myapi.php\n"
 				+ "\n"
 				+ "webhooks action:remove hook:http://127.0.0.1/myapi.php\n"
+				+ "\n"
+				+ "webhooks action:add hook:http://127.0.0.1/myapi.php filter:MINING\n"
 				+ "\n"
 				+ "webhooks action:clear\n";
 	}
