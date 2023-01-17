@@ -91,7 +91,8 @@ public class NotifyManager extends MessageProcessor {
 		if(zMessage.isMessageType(NOTIFY_POST)) {
 			
 			//Get the Message
-			JSONObject notify = (JSONObject) zMessage.getObject("notify");
+			JSONObject notify 	= (JSONObject) zMessage.getObject("notify");
+			String event 		= notify.getString("event");
 			
 			//Is some one listening directly
 			MessageListener minilistener = Main.getMinimaListener();
@@ -106,6 +107,14 @@ public class NotifyManager extends MessageProcessor {
 			ArrayList<String> hooks = getAllWebHooks();
 			for(String hook : hooks) {
 				
+				int index = hook.indexOf("#");
+				if(index == -1) {
+					return;
+				}
+				
+				String filter 	= hook.substring(0, index); 
+				String webhook 	= hook.substring(index+1, hook.length());
+				
 				//Check running..
 				if(!isRunning()) {
 					return;
@@ -113,11 +122,13 @@ public class NotifyManager extends MessageProcessor {
 				
 				try {
 				
-					//Post it..
-					RPCClient.sendPOST(hook, postmsg);
+					if(filter.equals("") || event.contains(filter)) {
+						//Post it..
+						RPCClient.sendPOST(webhook, postmsg);
+					}
 					
 				}catch(Exception exc) {
-					MinimaLogger.log("ERROR webhook : "+hook+" "+exc);
+					MinimaLogger.log("ERROR webhook : "+hook+" "+exc, false);
 				}
 			}
 		}

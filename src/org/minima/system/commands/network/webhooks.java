@@ -45,7 +45,7 @@ public class webhooks extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","hook"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","hook","filter"}));
 	}
 	
 	@Override
@@ -64,8 +64,12 @@ public class webhooks extends Command {
 		
 		if(action.equals("add")) {
 			
+			String filter = getParam("filter","");
 			String hook = getParam("hook");
-			notify.addHook(hook);
+			
+			String fullhook=filter+"#"+hook;
+			
+			notify.addHook(fullhook);
 			
 		}else if(action.equals("remove")) {
 			
