@@ -3,7 +3,6 @@ package org.minima.system.commands.base;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -15,7 +14,6 @@ import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.txpowtree.TxPowTree;
 import org.minima.database.wallet.Wallet;
-import org.minima.objects.Magic;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
@@ -25,7 +23,6 @@ import org.minima.system.commands.CommandException;
 import org.minima.system.network.NetworkManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
-import org.minima.utils.Crypto;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
@@ -57,7 +54,7 @@ public class status extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"clean"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"clean","debug","complete"}));
 	}
 	
 	@Override
@@ -70,7 +67,8 @@ public class status extends Command {
 		}
 
 		//Are we verbose output
-		boolean debug = getBooleanParam("debug",false);
+		boolean debug 		= getBooleanParam("debug",false);
+		boolean complete 	= getBooleanParam("complete",false);
 		
 		//The Database
 		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
@@ -89,6 +87,9 @@ public class status extends Command {
 
 		//Uptime..
 		details.put("uptime", MiniFormat.ConvertMilliToTime(Main.getInstance().getUptimeMilli()));
+		
+		//Is the Wallet Locked..
+		details.put("locked", !MinimaDB.getDB().getWallet().isBaseSeedAvailable());
 		
 //		//How many Devices..
 //		BigDecimal blkweightdec 	= new BigDecimal(txptree.getTip().getTxPoW().getBlockDifficulty().getDataValue());
@@ -251,9 +252,30 @@ public class status extends Command {
 		if(debug) {
 			MinimaLogger.log("txpowdb done..");
 		}
-		database.put("archivedb", arch.getSize());
-		if(debug) {
-			MinimaLogger.log("archivedb done..");
+		
+		if(complete) {
+			//Archive DB data
+			JSONObject archdb 	= new JSONObject();
+			int size 			= arch.getSize();
+			Cascade archcasc 	= arch.loadCascade(); 
+			archdb.put("size", size);
+			if(size>0) {
+				archdb.put("start", arch.loadLastBlock().getTxPoW().getBlockNumber().toString());
+				archdb.put("startdate", new Date(arch.loadLastBlock().getTxPoW().getTimeMilli().getAsLong()).toString());
+				archdb.put("end", arch.loadFirstBlock().getTxPoW().getBlockNumber().toString());
+				if(archcasc!=null) {
+					archdb.put("cascadetip", archcasc.getTip().getTxPoW().getBlockNumber());	
+				}
+			}
+			database.put("archivedb", archdb);
+			if(debug) {
+				MinimaLogger.log("archivedb done..");
+			}
+		}else {
+			database.put("archivedb", arch.getSize());
+			if(debug) {
+				MinimaLogger.log("archivedb done..");
+			}
 		}
 		
 		//Add ther adatabse

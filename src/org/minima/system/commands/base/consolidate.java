@@ -12,6 +12,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.send.send;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -93,22 +94,13 @@ public class consolidate extends Command {
 		}
 		
 		//Get the tip of the tree
-		TxPoWTreeNode tip 	= MinimaDB.getDB().getTxPoWTree().getTip();
+		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 		
-		//Get the parent deep enough for valid confirmed coins
-		int confdepth = GlobalParams.MINIMA_CONFIRM_DEPTH.getAsInt();
-		for(int i=0;i<confdepth;i++) {
-			tip = tip.getParent();
-			if(tip == null) {
-				//Insufficient blocks
-				ret.put("status", false);
-				ret.put("message", "Insufficient blocks..");
-				return ret;
-			}
+		//How old do the coins need to be.. used by consolidate
+		MiniNumber coinage = getNumberParam("coinage", GlobalParams.MINIMA_CONFIRM_DEPTH);
+		if(coinage.isLess(GlobalParams.MINIMA_CONFIRM_DEPTH)) {
+			throw new CommandException("Coinage MUST be >= "+GlobalParams.MINIMA_CONFIRM_DEPTH);
 		}
-		
-		//How old do the coins need to be..
-		MiniNumber coinage = getNumberParam("coinage", MiniNumber.ZERO);
 				
 		//Lets build a transaction..
 		ArrayList<Coin> foundcoins	= TxPoWSearcher.getRelevantUnspentCoins(tip,tokenid,true);

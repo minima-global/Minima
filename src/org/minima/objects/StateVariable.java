@@ -70,6 +70,7 @@ public class StateVariable implements Streamable {
 		
 		//Set the Data
 		if(zData.toLowerCase().startsWith("mx")) {
+			//KISSVN ONLY understands 0x not Mx
 			mData = new MiniString(Address.convertMinimaAddress(zData).to0xString());
 			mType = STATETYPE_HEX;
 		
@@ -170,6 +171,8 @@ public class StateVariable implements Streamable {
 		}else if(mType.isEqual(STATETYPE_STRING)) {
 			mData = MiniString.ReadFromStream(zIn);
 		
+		}else{
+			throw new IOException("Invalid StateVariable type : "+mType);
 		}
 	}
 	

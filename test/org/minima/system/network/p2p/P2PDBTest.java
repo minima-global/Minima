@@ -63,6 +63,8 @@ public class P2PDBTest {
 
         // Save, Load and Delete the file
         File tmp = new File("tmp.db");
+//        db.saveEncryptedDB("password",tmp);
+//        db.loadEncryptedDB("password",tmp);
         db.saveDB(tmp);
         db.loadDB(tmp);
         tmp.delete();
@@ -84,6 +86,8 @@ public class P2PDBTest {
 
         // Save, Load and Delete the file
         File tmp = new File("tmp.db");
+//        db.saveEncryptedDB("password",tmp);
+//        db.loadEncryptedDB("password",tmp);
         db.saveDB(tmp);
         db.loadDB(tmp);
         tmp.delete();

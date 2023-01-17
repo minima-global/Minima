@@ -6,7 +6,12 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import org.minima.database.mmr.MMR;
+import org.minima.database.mmr.MMRData;
+import org.minima.database.mmr.MMREntry;
+import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
@@ -41,9 +46,26 @@ public class Address implements Streamable{
 		//Convert script..
 		mScript = new MiniString(zScript);
 		
-		//Set the Address..
-		mAddressData = Crypto.getInstance().hashObject(mScript);
+		//USE THE SAME TECHNIQUE AS SCRIPTPROOF
 		
+		//Create an MMR proof..
+		MMR mmr = new MMR();
+		
+		//Create a new piece of data to add
+		MMRData scriptdata = MMRData.CreateMMRDataLeafNode(mScript, MiniNumber.ZERO);
+		
+		//Add to the MMR
+		MMREntry entry = mmr.addEntry(scriptdata);
+		
+		//Get the MMRProof
+		MMRProof proof = mmr.getProof(entry.getEntryNumber());
+		
+		//And calculate the final root..
+		MMRData root = proof.calculateProof(scriptdata);
+				
+		//The address is the final hash
+		mAddressData = root.getData();
+				
 		//The Minima address as short as can be..
 		mMinimaAddress = makeMinimaAddress(mAddressData);
 	}

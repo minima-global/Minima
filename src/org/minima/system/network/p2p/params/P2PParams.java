@@ -74,12 +74,26 @@ public class P2PParams {
     public static String METRICS_URL = "http://35.242.245.96/network";
 
     public static List<InetSocketAddress> DEFAULT_NODE_LIST = Arrays.asList(
-            new InetSocketAddress("35.189.237.10", 9001), // v101-genesis-node
-            new InetSocketAddress("34.92.63.200", 9001), // v101-asia-hong-kong
-            new InetSocketAddress("34.93.179.55", 9001), // v101-asia-india
-            new InetSocketAddress("34.65.164.213", 9001), // v101-eu-zurich
-            new InetSocketAddress("34.151.221.133", 9001), // v101-southamerica-east
-            new InetSocketAddress("34.67.254.187", 9001) // v101-usa-central
+            
+    		new InetSocketAddress("35.185.184.164", 9001),
+            new InetSocketAddress("35.197.193.30", 9001),
+            new InetSocketAddress("34.142.123.158", 9001),
+            new InetSocketAddress("34.89.23.209", 9001),
+            new InetSocketAddress("34.135.149.22", 9001),
+            
+            new InetSocketAddress("34.28.118.235", 9001),
+            new InetSocketAddress("34.171.105.59", 9001),
+            new InetSocketAddress("34.122.109.104", 9001),
+            new InetSocketAddress("34.142.197.222", 9001),
+            new InetSocketAddress("34.124.175.150", 9001),
+            
+            new InetSocketAddress("35.198.247.214", 9001),
+            new InetSocketAddress("34.165.238.9", 9001),
+            new InetSocketAddress("34.165.93.170", 9001),
+            new InetSocketAddress("34.165.41.114", 9001),
+            new InetSocketAddress("34.165.177.125", 9001),
+            
+            new InetSocketAddress("34.142.47.222", 9001)
             );
     
 //    public static List<InetSocketAddress> DEFAULT_NODE_LIST = Arrays.asList();

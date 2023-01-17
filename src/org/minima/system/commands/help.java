@@ -6,8 +6,10 @@ import java.util.Arrays;
 import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.backup;
 import org.minima.system.commands.backup.restore;
+import org.minima.system.commands.backup.vault;
 import org.minima.system.commands.base.balance;
 import org.minima.system.commands.base.burn;
+import org.minima.system.commands.base.checkaddress;
 import org.minima.system.commands.base.coinexport;
 import org.minima.system.commands.base.coinimport;
 import org.minima.system.commands.base.cointrack;
@@ -23,16 +25,14 @@ import org.minima.system.commands.base.newaddress;
 import org.minima.system.commands.base.printtree;
 import org.minima.system.commands.base.quit;
 import org.minima.system.commands.base.random;
-import org.minima.system.commands.base.send;
-import org.minima.system.commands.base.sendpoll;
 import org.minima.system.commands.base.status;
 import org.minima.system.commands.base.tokencreate;
 import org.minima.system.commands.base.tokenvalidate;
 import org.minima.system.commands.base.trace;
-import org.minima.system.commands.base.tutorial;
-import org.minima.system.commands.base.vault;
 import org.minima.system.commands.maxima.maxcontacts;
 import org.minima.system.commands.maxima.maxima;
+import org.minima.system.commands.maxima.maxsign;
+import org.minima.system.commands.maxima.maxverify;
 import org.minima.system.commands.mds.mds;
 import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.disconnect;
@@ -44,9 +44,16 @@ import org.minima.system.commands.scripts.newscript;
 import org.minima.system.commands.scripts.runscript;
 import org.minima.system.commands.scripts.scripts;
 import org.minima.system.commands.search.coins;
+import org.minima.system.commands.search.history;
 import org.minima.system.commands.search.keys;
 import org.minima.system.commands.search.tokens;
 import org.minima.system.commands.search.txpow;
+import org.minima.system.commands.send.send;
+import org.minima.system.commands.send.sendnosign;
+import org.minima.system.commands.send.sendpoll;
+import org.minima.system.commands.send.sendpost;
+import org.minima.system.commands.send.sendsign;
+import org.minima.system.commands.send.sendview;
 import org.minima.system.commands.signatures.sign;
 import org.minima.system.commands.signatures.verify;
 import org.minima.system.commands.txn.txnbasics;
@@ -98,27 +105,35 @@ public class help extends Command {
 			details.put("fullhelp", cmd.getFullHelp());
 			
 		}else{
-		
+
 			addCommand(details, new help());
+			
+			addCommand(details, new whitepaper());
 			
 			addCommand(details, new status());
 			addCommand(details, new printtree());
 			addCommand(details, new burn());
 			addCommand(details, new trace());
 			addCommand(details, new logs());
-	//		addCommand(details, new automine());
 			addCommand(details, new hashtest());
-	//		addCommand(details, new debugflag());
+			addCommand(details, new checkaddress());
 			
+			addCommand(details, new history());
 			addCommand(details, new txpow());
 			addCommand(details, new coins());
 			addCommand(details, new tokens());
 			addCommand(details, new keys());
-			
+	
 			addCommand(details, new getaddress());
 			addCommand(details, new newaddress());
 			addCommand(details, new send());
 			addCommand(details, new sendpoll());
+			
+			addCommand(details, new sendnosign());
+			addCommand(details, new sendview());
+			addCommand(details, new sendsign());
+			addCommand(details, new sendpost());
+			
 			addCommand(details, new balance());
 			addCommand(details, new tokencreate());
 			addCommand(details, new tokenvalidate());
@@ -128,7 +143,6 @@ public class help extends Command {
 			addCommand(details, new random());
 			
 	//		addCommand(details, new file());
-	//		addCommand(details, new sql());
 			
 			addCommand(details, new scripts());
 			addCommand(details, new newscript());
@@ -163,6 +177,8 @@ public class help extends Command {
 			addCommand(details, new network());
 			addCommand(details, new maxima());
 			addCommand(details, new maxcontacts());
+			addCommand(details, new maxsign());
+			addCommand(details, new maxverify());
 			addCommand(details, new message());
 			addCommand(details, new connect());
 			addCommand(details, new disconnect());

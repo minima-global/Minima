@@ -1,5 +1,6 @@
 package org.minima.system.brains;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
@@ -15,6 +16,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.network.minima.NIOManager;
+import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
@@ -28,6 +30,17 @@ public class TxPoWProcessor extends MessageProcessor {
 	private static final String TXPOWPROCESSOR_PROCESS_IBD 			= "TXP_PROCESS_IBD";
 	private static final String TXPOWPROCESSOR_PROCESS_SYNCIBD 		= "TXP_PROCESS_SYNCIBD";
 	private static final String TXPOWPROCESSOR_PROCESS_ARCHIVEIBD 	= "TXP_PROCESS_ARCHIVEIBD";
+	
+	/**
+	 * Ask for Txns in blocks less than this old
+	 */
+	private static final MiniNumber TWELVE_HOURS = new MiniNumber(1000 * 60 * 60 * 12);
+	
+	/**
+	 * The IBD you receive on startup
+	 */
+	private long mFirstIBD 				= System.currentTimeMillis();
+	private long MAX_FIRST_IBD_TIME 	= 1000 * 60 * 5; 
 	
 	public TxPoWProcessor() {
 		super("TXPOWPROCESSOR");
@@ -95,8 +108,34 @@ public class TxPoWProcessor extends MessageProcessor {
 			
 			//Check we are at least enough blocks on from the root of the tree.. for speed and difficulty calcs
 			MiniNumber blknum 	= txpow.getBlockNumber();
+			MiniNumber tipnum 	= txptree.getTip().getBlockNumber();
 			MiniNumber rootnum 	= txptree.getRoot().getBlockNumber();
-			boolean validrange 	= blknum.isMore(rootnum);
+			
+			boolean validrange = false;
+			if(GeneralParams.TEST_PARAMS) {
+				validrange 	= blknum.isMore(rootnum);
+			}else{
+				
+				//Make sure far enough from root to be able to check block difficulty
+				if(tipnum.isLess(MiniNumber.THOUSAND)) {
+					validrange = true;
+				}else {
+				
+					//Min block we will check..
+					MiniNumber minblock = rootnum.add(GlobalParams.MINIMA_BLOCKS_SPEED_CALC); 
+					
+					//Make sure at least Speed Calc away from root..
+					if(blknum.isMore(minblock)){
+						validrange = true;
+					}
+				}
+			}
+			
+			if(txpow.isBlock() && !validrange) {
+				MinimaLogger.log("Invalid range for block check @ "
+									+blknum+" root:"+rootnum+" tip:"+tipnum
+									+" txpowid:"+txpow.getTxPoWID());
+			}
 			
 			//Is it a block.. that is the only time we crunch
 			if(txpow.isBlock() && validrange) {
@@ -140,6 +179,11 @@ public class TxPoWProcessor extends MessageProcessor {
 								for(TxPoW child : children) {
 									processstack.push(child);
 								}
+							}else {
+								MinimaLogger.log("[!] Failed block check @ "
+													+txpow.getBlockNumber()+" txpowid:"
+													+txpow.getTxPoWID()
+													+" root:"+rootnum+" tip:"+tipnum);
 							}
 						}
 						
@@ -405,6 +449,9 @@ public class TxPoWProcessor extends MessageProcessor {
 							//Set this for us
 							MinimaDB.getDB().setIBDCascade(ibd.getCascade());
 							
+							//Do we need to store the cascade in the ArchiveDB
+							MinimaDB.getDB().getArchive().checkCascadeRequired(ibd.getCascade());
+							
 						}catch(Exception exc) {
 							MinimaLogger.log(exc);
 						}
@@ -423,19 +470,24 @@ public class TxPoWProcessor extends MessageProcessor {
 			TxPowTree txptree 		= MinimaDB.getDB().getTxPoWTree();
 			MiniNumber timenow 		= new MiniNumber(System.currentTimeMillis());
 			
-			//If our chain is up to date (within 3 hrs) we don't accept TxBlock at all.. only full blocks
-			if(txptree.getTip() != null && ibd.getTxBlocks().size()>0) {
-				MiniNumber notxblocktimediff = new MiniNumber(1000 * 60 * 180);
-				if(GeneralParams.TEST_PARAMS) {
-					notxblocktimediff = new MiniNumber(1000 * 60 * 5);
-				}
-				if(txptree.getTip().getTxPoW().getTimeMilli().sub(timenow).abs().isLess(notxblocktimediff)) {
-					MinimaLogger.log("Your chain tip is up to date - no TxBlocks accepted - only FULL TxPoW");
-					
-					//Ask to sync the TxBlocks
-					askToSyncTxBlocks(uid);
-					
-					return;
+			//First run accept the IBD - still follow heaviest chain
+			long diff = System.currentTimeMillis() - mFirstIBD;
+			if(diff > MAX_FIRST_IBD_TIME) {
+				
+				//If our chain is up to date (within 3 hrs) we don't accept TxBlock at all.. only full blocks
+				if(txptree.getTip() != null && ibd.getTxBlocks().size()>0) {
+					MiniNumber notxblocktimediff = new MiniNumber(1000 * 60 * 180);
+					if(GeneralParams.TEST_PARAMS) {
+						notxblocktimediff = new MiniNumber(1000 * 60 * 5);
+					}
+					if(txptree.getTip().getTxPoW().getTimeMilli().sub(timenow).abs().isLess(notxblocktimediff)) {
+						MinimaLogger.log("Your chain tip is up to date - no TxBlocks accepted - only FULL TxPoW");
+						
+						//Ask to sync the TxBlocks
+						askToSyncTxBlocks(uid);
+						
+						return;
+					}
 				}
 			}
 			
@@ -452,6 +504,9 @@ public class TxPoWProcessor extends MessageProcessor {
 					processSyncBlock(block);	
 					additions++;
 				
+					//Request any missing..
+					requestMissingTxns(uid,block);
+					
 					//If we've added a lot of blocks..
 					if(additions > 1000) {
 						
@@ -588,6 +643,32 @@ public class TxPoWProcessor extends MessageProcessor {
 			Message synctxblock = new Message(NIOManager.NIO_SYNCTXBLOCK);
 			synctxblock.addString("client", zClientID);
 			Main.getInstance().getNetworkManager().getNIOManager().PostMessage(synctxblock);
+		}
+	}
+	
+	private void requestMissingTxns(String zClientID, TxBlock zBlock) {
+		
+		//Get the TxPoW
+		TxPoW txp = zBlock.getTxPoW();
+		
+		//Is this a recent block ? 
+		MiniNumber timenow = new MiniNumber(System.currentTimeMillis());
+		MiniNumber mintime = timenow.sub(TWELVE_HOURS);
+		if(txp.getTimeMilli().isLess(mintime)) {
+			return;
+		}
+		
+		//Get all the missing txns in the block
+		try {
+			ArrayList<MiniData> txns = txp.getBlockTransactions();
+			for(MiniData txn : txns) {
+				boolean exists = MinimaDB.getDB().getTxPoWDB().exists(txn.to0xString());
+				if(!exists) {
+					NIOManager.sendNetworkMessage(zClientID, NIOMessage.MSG_TXPOWREQ, txn);
+				}
+			}
+		} catch (IOException e) {
+			MinimaLogger.log(e);
 		}
 	}
 }

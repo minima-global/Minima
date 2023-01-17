@@ -23,6 +23,17 @@ public class GeneralParams {
 	public static boolean CLEAN = false;
 	
 	/**
+	 * Are we running an Archive node
+	 */
+	public static boolean ARCHIVE = false;
+	
+	/**
+	 * The SQL DB Aes Password. If it is 'minima' no Encryption used
+	 */
+	public static boolean IS_MAIN_DBPASSWORD_SET = false;
+	public static String MAIN_DBPASSWORD 		 = "minima"; 
+	
+	/**
 	 * Where are the database files stored. This is set at startup.
 	 */
 	public static String DATA_FOLDER = "";
@@ -123,14 +134,6 @@ public class GeneralParams {
 	public static boolean NO_SYNC_IBD = false;
 	
 	/**
-	 * MySQL Archive Settings
-	 */
-	public static String MYSQL_HOST 	= "";
-	public static String MYSQL_DB 		= "";
-	public static String MYSQL_USER 	= "";
-	public static String MYSQL_PASSWORD = "";
-	
-	/**
 	 * How many days do you keep the TxPoW in the SQL DB
 	 */
 	public static long NUMBER_DAYS_SQLTXPOWDB = 3;
@@ -165,5 +168,16 @@ public class GeneralParams {
 	 * Enable full logs for mining..
 	 */
 	public static boolean MINING_LOGS = false;
+	
+	/**
+	 * Enable full logs for Maxima..
+	 */
+	public static boolean MAXIMA_LOGS = false;
+	
+	/**
+	 * Do we LIMIT the bandwidth (-mobile)
+	 */
+	public static boolean ARCHIVESYNC_LIMIT_BANDWIDTH = false;
+	
 	
 }

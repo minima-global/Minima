@@ -7,7 +7,6 @@ import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
-import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
@@ -28,7 +27,6 @@ import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
-import org.minima.system.commands.txn.txnutils;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.json.JSONObject;
 
@@ -171,8 +169,8 @@ public class tokencreate extends Command {
 		//What is the scale..
 		int scale = MiniNumber.MAX_DECIMAL_PLACES - decimals;
 		
-		//The actual amount of Minima that needs to be sent
-		MiniNumber sendamount 	= new MiniNumber(colorminima);
+		//The actual amount of Minima that needs to be sent - add the burn if any
+		MiniNumber sendamount 	= colorminima.add(burn);
 		
 		//Send it to ourselves
 		ScriptRow sendkey 		= MinimaDB.getDB().getWallet().getDefaultAddress();
@@ -180,21 +178,23 @@ public class tokencreate extends Command {
 		
 		//get the tip..
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+				
+		//Lets build a transaction..
+		ArrayList<Coin> foundcoins	= TxPoWSearcher.getRelevantUnspentCoins(tip,"0x00",true);
+		ArrayList<Coin> relcoins 	= new ArrayList<>();
 		
-		//Get the parent deep enough for valid confirmed coins
-		int confdepth = GlobalParams.MINIMA_CONFIRM_DEPTH.getAsInt();
-		for(int i=0;i<confdepth;i++) {
-			tip = tip.getParent();
-			if(tip == null) {
-				//Insufficient blocks
-				ret.put("status", false);
-				ret.put("message", "Insufficient blocks..");
-				return ret;
+		//Now make sure they are old enough
+		MiniNumber mincoinblock = tip.getBlockNumber().sub(GlobalParams.MINIMA_CONFIRM_DEPTH);
+		for(Coin relc : foundcoins) {
+			if(relc.getBlockCreated().isLessEqual(mincoinblock)) {
+				relcoins.add(relc);
 			}
 		}
 		
-		//Lets build a transaction.. MUST use Minima to create a token!
-		ArrayList<Coin> relcoins = TxPoWSearcher.getRelevantUnspentCoins(tip,"0x00",true);
+		//Are there any coins at all..
+		if(relcoins.size()<1) {
+			throw new CommandException("No Minima Coins available!");
+		}
 		
 		//The current total
 		MiniNumber currentamount 	= MiniNumber.ZERO;
@@ -313,7 +313,7 @@ public class tokencreate extends Command {
 		}
 		
 		//Now add the output..
-		Coin recipient = new Coin(Coin.COINID_OUTPUT, sendaddress, sendamount, Token.TOKENID_CREATE, true);
+		Coin recipient = new Coin(Coin.COINID_OUTPUT, sendaddress, colorminima, Token.TOKENID_CREATE, true);
 		
 		//Is there a Web Validation URL
 		if(existsParam("webvalidate")) {
@@ -341,6 +341,7 @@ public class tokencreate extends Command {
 			MiniData sigdata = MiniData.getMiniDataVersion(sig);
 			
 			//Get the Pubkey.. add it to the JSON
+			jsonname.put("signtype", "minima");
 			jsonname.put("signedby", sigpubkey);
 			jsonname.put("signature", sigdata.to0xString());
 		}
@@ -404,21 +405,7 @@ public class tokencreate extends Command {
 		}
 		
 		//The final TxPoW
-		TxPoW txpow = null;
-		
-		//Is there a BURN..
-		if(burn.isMore(MiniNumber.ZERO)) {
-			
-			//Create a Burn Transaction
-			TxnRow burntxn = txnutils.createBurnTransaction(addedcoinid,transaction.getTransactionID(),burn);
-
-			//Now create a complete TxPOW
-			txpow = TxPoWGenerator.generateTxPoW(transaction, witness, burntxn.getTransaction(), burntxn.getWitness());
-		
-		}else {
-			//Now create a complete TxPOW
-			txpow = TxPoWGenerator.generateTxPoW(transaction, witness);
-		}
+		TxPoW txpow = TxPoWGenerator.generateTxPoW(transaction, witness);
 		
 		//Calculate the size..
 		txpow.calculateTXPOWID();
@@ -436,5 +423,4 @@ public class tokencreate extends Command {
 	public Command getFunction() {
 		return new tokencreate();
 	}
-
 }

@@ -13,14 +13,14 @@ import org.minima.utils.json.JSONObject;
 public class hash extends Command {
 
 	public hash() {
-		super("hash","[data:] (type:keccak|sha2|sha3)- Hash the data - default KECCAK");
+		super("hash","[data:] (type:sha2|sha3)- Hash the data - default SHA3");
 	}
 	
 	@Override
 	public String getFullHelp() {
 		return "\nhash\n"
 				+ "\n"
-				+ "Hash the data - default KECCAK.\n"
+				+ "Hash the data - default SHA3.\n"
 				+ "\n"
 				+ "Returns the hash of the data provided using the algorithm specified.\n"
 				+ "\n"
@@ -29,7 +29,7 @@ public class hash extends Command {
 				+ "    String data will return the the byte representation of the string.\n"
 				+ "\n"
 				+ "type: (optional)\n"
-				+ "    keccak, sha2 or sha3. The hashing algorithm to use, default is KECCAK.\n"
+				+ "    sha2 or sha3. The hashing algorithm to use, default is SHA3.\n"
 				+ "    BTC and ETH support sha2 or sha3.\n"
 				+ "\n"
 				+ "Examples:\n"
@@ -57,17 +57,14 @@ public class hash extends Command {
 			data = new MiniData(new MiniString(datastr).getData());
 		}
 		
-		String hashtype = getParam("type", "keccak");
+		String hashtype = getParam("type", "sha3");
 	
 		byte[] hash = null;
-		if(hashtype.equals("keccak")) {
-			hash = Crypto.getInstance().hashData(data.getBytes());
-		
-		}else if(hashtype.equals("sha2")) {
+		if(hashtype.equals("sha2")) {
 			hash = Crypto.getInstance().hashSHA2(data.getBytes());
 		
 		}else if(hashtype.equals("sha3")) {
-			hash = Crypto.getInstance().hashSHA3(data.getBytes());
+			hash = Crypto.getInstance().hashData(data.getBytes());
 		
 		}else {
 			throw new CommandException("Invalid hash type : "+hashtype);

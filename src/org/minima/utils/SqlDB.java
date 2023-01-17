@@ -25,6 +25,12 @@ public abstract class SqlDB {
 	protected File mSQLFile;
 	protected File mSQLDBNoMV;
 	
+	/**
+	 * Is it Encrypted
+	 */
+	private boolean mEncrypted 			= false;
+	private String mEncryptedPassword 	= "";
+	
 	public SqlDB() {}
 	
 	/**
@@ -65,6 +71,36 @@ public abstract class SqlDB {
 		createSQL();
 	}
 	
+	public void loadEncryptedSQLDB(File zFile, String zPassword) throws SQLException {
+		
+		mEncrypted 			= true;
+		mEncryptedPassword 	= zPassword;
+		
+		//Store this for open checks
+		mSQLDBNoMV = zFile;
+		
+		//Make sure the parent files exist
+		zFile.getParentFile().mkdirs();
+		
+		//Get the full db path
+		String path = zFile.getAbsolutePath();
+		
+		//Store this
+		mSQLFile = new File(path+".mv.db");
+				
+		//The H2 JDBC URL
+		String h2db = "jdbc:h2:"+path+";MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE;CIPHER=AES";
+		
+		//Create the connection
+		mSQLConnection = DriverManager.getConnection(h2db, "SA", zPassword+" userpasswd");
+		
+		//Auto commit changes
+		mSQLConnection.setAutoCommit(true);
+
+		//Perform Create SQL
+		createSQL();
+	}
+	
 	public boolean checkOpen() throws SQLException {
 		
 		//Check not NULL
@@ -88,11 +124,22 @@ public abstract class SqlDB {
 			//Get the full db path
 			String path = mSQLDBNoMV.getAbsolutePath();
 					
-			//The H2 JDBC URL
-			String h2db = "jdbc:h2:"+path+";MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE";
+			if(mEncrypted) {
+				
+				//The H2 JDBC URL
+				String h2db = "jdbc:h2:"+path+";MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE;CIPHER=AES";
+				
+				//Create the connection
+				mSQLConnection = DriverManager.getConnection(h2db, "SA", mEncryptedPassword+" userpasswd");
 			
-			//Create the connection
-			mSQLConnection = DriverManager.getConnection(h2db, "SA", "");
+			}else {
+				
+				//The H2 JDBC URL
+				String h2db = "jdbc:h2:"+path+";MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE";
+				
+				//Create the connection
+				mSQLConnection = DriverManager.getConnection(h2db, "SA", "");
+			}
 			
 			//Auto commit changes
 			mSQLConnection.setAutoCommit(true);

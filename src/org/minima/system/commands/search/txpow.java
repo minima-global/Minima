@@ -17,7 +17,7 @@ import org.minima.utils.json.JSONObject;
 public class txpow extends Command {
 
 	public txpow() {
-		super("txpow","(txpowid:txpowid) (onchain:) (block:) (address:) - Search for a specific TxPoW or check for onchain");
+		super("txpow","(txpowid:) (onchain:) (block:) (address:) (relevant:) - Search for a specific TxPoW or check for onchain");
 	}
 	
 	@Override
@@ -48,7 +48,7 @@ public class txpow extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"txpowid","block","address","onchain"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"txpowid","block","address","onchain","relevant"}));
 	}
 	
 	@Override
@@ -66,6 +66,17 @@ public class txpow extends Command {
 			}
 		
 			ret.put("response", txpow.toJSON());
+			
+		}else if(existsParam("relevant")) {
+			
+			ArrayList<TxPoW> txps = MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant();
+			
+			JSONArray txns = new JSONArray();
+			for(TxPoW txp : txps) {
+				txns.add(txp.toJSON());
+			}
+			
+			ret.put("response", txns);
 			
 		}else if(existsParam("onchain")) {
 			MiniData txpowid = getDataParam("onchain");

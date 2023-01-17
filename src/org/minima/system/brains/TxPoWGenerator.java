@@ -34,6 +34,21 @@ public class TxPoWGenerator {
 	private final static MiniNumber MAX_SPBOUND_DIFFICULTY = new MiniNumber("2.0");
 	private final static MiniNumber MIN_SPBOUND_DIFFICULTY = new MiniNumber("0.5");
 	
+	
+	/**
+	 * Is the Mempool full
+	 */
+	private static boolean 		MEMPOOL_FULL 		= false;
+	private static MiniNumber 	MIN_MEMPOOL_BURN 	= MiniNumber.ZERO;
+	
+	public static boolean isMempoolFull() {
+		return MEMPOOL_FULL;
+	}
+	
+	public static MiniNumber getMinMempoolBurn() {
+		return MIN_MEMPOOL_BURN;
+	}
+	
 	/**
 	 * Calculate a Difficulty Hash for a given hash number
 	 */
@@ -153,6 +168,7 @@ public class TxPoWGenerator {
 		int counter					= 0;
 		ArrayList<TxPoW> newmempool = new ArrayList<>();
 		TxPoWDB txpdb 				= MinimaDB.getDB().getTxPoWDB();
+		MEMPOOL_FULL 				= false;
 		for(TxPoW memtxp : mempool) {
 			if(counter<max) {
 				newmempool.add(memtxp);
@@ -160,6 +176,14 @@ public class TxPoWGenerator {
 				//Remove from RAMDB..
 				MinimaLogger.log("MEMPOOL MAX SIZE REACHED : REMOVED id:"+memtxp.getTxPoWID()+" burn:"+memtxp.getBurn());
 				txpdb.removeMemPoolTxPoW(memtxp.getTxPoWID());
+				
+				//No more new Txpow forwarded with a low burn
+				if(!MEMPOOL_FULL) {
+					MEMPOOL_FULL = true;
+					
+					//Store this as the min burn
+					MIN_MEMPOOL_BURN = memtxp.getBurn();
+				}
 			}
 			counter++;
 		}
@@ -255,7 +279,7 @@ public class TxPoWGenerator {
 				}
 			
 				//Check if Valid!
-				if(valid && TxPoWChecker.checkTxPoWSimple(tip.getMMR(), memtxp, txpow)) {
+				if(valid && TxPoWChecker.checkTxPoWSimple(tip.getMMR(), memtxp, txpow, false)) {
 					
 					//Add to our list
 					chosentxns.add(memtxp);
@@ -313,6 +337,9 @@ public class TxPoWGenerator {
 		txpow.setMMRRoot(root.getData());
 		txpow.setMMRTotal(root.getValue());
 		
+		//Calculate the txpowid / size..
+		txpow.calculateTXPOWID();
+				
 		return txpow;
 	}
 	

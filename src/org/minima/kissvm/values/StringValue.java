@@ -1,5 +1,6 @@
 package org.minima.kissvm.values;
 
+import org.minima.kissvm.Contract;
 import org.minima.objects.base.MiniString;
 
 public class StringValue extends Value {
@@ -11,6 +12,11 @@ public class StringValue extends Value {
 	
 	public StringValue(String zScript) {
 		mScript = new MiniString( zScript );
+		
+		int len = getBytes().length;
+		if(len > Contract.MAX_DATA_SIZE) {
+			throw new IllegalArgumentException("MAX String length reached : "+len+"/"+Contract.MAX_DATA_SIZE);
+		}
 	}
 	
 	@Override
@@ -20,6 +26,10 @@ public class StringValue extends Value {
 	
 	public byte[] getBytes(){
 		return mScript.getData();
+	}
+	
+	public MiniString getMiniString() {
+		return mScript;
 	}
 	
 	@Override

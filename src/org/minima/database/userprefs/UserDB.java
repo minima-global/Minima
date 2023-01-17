@@ -17,25 +17,6 @@ public class UserDB extends JsonDB{
 	}
 	
 	/**
-	 * The BASE private seed key modifier
-	 */
-	public String getBasePrivateSeed() {
-		return getString("baseprivateseed", "");
-	}
-	
-	public void setBasePrivateSeed(String zBaseSeed) {
-		setString("baseprivateseed", zBaseSeed);
-	}
-	
-	public void setBasePrivatePhrase(String zBasePhrase) {
-		setString("baseprivatephrase", zBasePhrase);
-	}
-	
-	public String getBasePrivatePhrase() {
-		return getString("baseprivatephrase", "");
-	}
-	
-	/**
 	 * Set your Welcome message
 	 */
 	public void setWelcome(String zWelcome) {
@@ -199,4 +180,14 @@ public class UserDB extends JsonDB{
 		setNumber("magic_txns", zMaxTxns);
 	}
 	
+	/**
+	 * Encrypted version of Seed phrase
+	 */
+	public void setEncryptedSeed(MiniData zEncryptedSeed) {
+		setData("encrypted_seed", zEncryptedSeed);
+	}
+	
+	public MiniData getEncryptedSeed() {
+		return getData("encrypted_seed", MiniData.ZERO_TXPOWID);
+	}
 }

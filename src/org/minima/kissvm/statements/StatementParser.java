@@ -6,6 +6,7 @@ package org.minima.kissvm.statements;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.expressions.ConstantExpression;
 import org.minima.kissvm.expressions.Expression;
@@ -34,9 +35,17 @@ public class StatementParser {
 	 * @param zTokens
 	 * @return the list of Statements
 	 */
-	public static StatementBlock parseTokens(List<ScriptToken> zTokens) throws Exception{
+	public static StatementBlock parseTokens(List<ScriptToken> zTokens, int zStackDepth) throws Exception{
 		List<Statement> stats = new ArrayList<>();
 		
+		//The current stack depth
+		int currentStackDepth = zStackDepth+1;
+		
+		//Check Stack Depth
+		if(currentStackDepth > Contract.MAX_STACK_DEPTH) {
+			throw new MinimaParseException("Stack too deep (MAX "+Contract.MAX_STACK_DEPTH+") "+currentStackDepth);
+		}
+				
 		//Cycle..
 		int currentPosition	= 0;
 		int totaltokens 	= zTokens.size();
@@ -86,7 +95,7 @@ public class StatementParser {
 					}
 					
 					//Create a Lexical Tokenizer.. there may be multiple expressions..
-					LexicalTokenizer lt = new LexicalTokenizer(arraypos);
+					LexicalTokenizer lt = new LexicalTokenizer(arraypos, currentStackDepth);
 					
 					ArrayList<Expression> exps = new ArrayList<Expression>();
 					while(!lt.checkAllTokensUsed()) {
@@ -102,7 +111,7 @@ public class StatementParser {
 					currentPosition += lettokens.size();
 					
 					//Now create an expression from those tokens..
-					Expression exp = ExpressionParser.getExpression(lettokens);
+					Expression exp = ExpressionParser.getExpression(lettokens, currentStackDepth);
 					
 					//And finally create the LET statement..
 					stats.add(new LETstatement(exps, exp));
@@ -122,7 +131,7 @@ public class StatementParser {
 					currentPosition += lettokens.size();
 					
 					//Now create an expression from those tokens..
-					Expression exp = ExpressionParser.getExpression(lettokens);
+					Expression exp = ExpressionParser.getExpression(lettokens, currentStackDepth);
 					
 					//And finally create the LET statement..
 					stats.add(new LETstatement(varname, exp));
@@ -137,7 +146,7 @@ public class StatementParser {
 				currentPosition += exectokens.size();
 				
 				//Now create an expression from those tokens..
-				Expression exp = ExpressionParser.getExpression(exectokens);
+				Expression exp = ExpressionParser.getExpression(exectokens, currentStackDepth);
 				
 				//And finally create the LET statement..
 				stats.add(new EXECstatement(exp));
@@ -148,7 +157,7 @@ public class StatementParser {
 				currentPosition += masttokens.size();
 				
 				//Now create an expression from those tokens..
-				Expression exp = ExpressionParser.getExpression(masttokens);
+				Expression exp = ExpressionParser.getExpression(masttokens, currentStackDepth);
 				
 				//And finally create the LET statement..
 				stats.add(new MASTstatement(exp));
@@ -158,10 +167,10 @@ public class StatementParser {
 				IFstatement ifsx = new IFstatement();
 				
 				//Get the IFConditional
-				List<ScriptToken> conditiontokens = getTokensToNextCommand(zTokens, currentPosition);
+				List<ScriptToken> conditiontokens = getTokensToRequiredCommand(zTokens, currentPosition, "THEN");
 				
 				//Now create an expression from those tokens..
-				Expression IFcondition = ExpressionParser.getExpression(conditiontokens);
+				Expression IFcondition = ExpressionParser.getExpression(conditiontokens, currentStackDepth);
 				
 				//Increments
 				currentPosition += conditiontokens.size() + 1;
@@ -179,7 +188,7 @@ public class StatementParser {
 				actiontokens = actiontokens.subList(0, actiontokens.size()-1);
 				
 				//And convert that block of Tokens into a block of code..
-				StatementBlock IFaction = parseTokens(actiontokens);
+				StatementBlock IFaction = parseTokens(actiontokens, currentStackDepth);
 				
 				//Add what we know to the IF statement..
 				ifsx.addCondition(IFcondition, IFaction);
@@ -194,15 +203,20 @@ public class StatementParser {
 						//ELSE is default
 						ELSEcondition = new ConstantExpression(BooleanValue.TRUE);
 						
-					}else {
+					}else if(nexttok.equals("ELSEIF")) {
 						//It's ELSEIF
-						conditiontokens = getTokensToNextCommand(zTokens, currentPosition);
+						conditiontokens = getTokensToRequiredCommand(zTokens, currentPosition, "THEN");
 						
 						//Create an Expression..
-						ELSEcondition = ExpressionParser.getExpression(conditiontokens);
+						ELSEcondition = ExpressionParser.getExpression(conditiontokens, currentStackDepth);
 						
 						//Increments
 						currentPosition += conditiontokens.size() + 1;
+					
+					}else {
+						
+						//Incorrect IF statement
+						throw new MinimaParseException("MISSING ELSE or ELSEIF in IF Statement");
 					}
 					
 					//Now get the Action..
@@ -218,7 +232,7 @@ public class StatementParser {
 					actiontokens = actiontokens.subList(0, actiontokens.size()-1);
 					
 					//And convert that block of Tokens into a block of code..
-					ELSEaction = parseTokens(actiontokens);
+					ELSEaction = parseTokens(actiontokens, currentStackDepth);
 					
 					//Add what we know to the IF statement..
 					ifsx.addCondition(ELSEcondition, ELSEaction);
@@ -229,10 +243,10 @@ public class StatementParser {
 										
 			}else if(token.equalsIgnoreCase("WHILE")) {
 				//Get the WHILE Conditional - stop at the next THEN
-				List<ScriptToken> conditiontokens = getTokensToNextCommand(zTokens, currentPosition);
+				List<ScriptToken> conditiontokens = getTokensToRequiredCommand(zTokens, currentPosition, "DO");
 				
 				//Now create an expression from those tokens..
-				Expression WHILEcondition = ExpressionParser.getExpression(conditiontokens);
+				Expression WHILEcondition = ExpressionParser.getExpression(conditiontokens, currentStackDepth);
 				
 				//Increments
 				currentPosition += conditiontokens.size() + 1;
@@ -247,7 +261,7 @@ public class StatementParser {
 				actiontokens = actiontokens.subList(0, actiontokens.size()-1);
 				
 				//And convert that block of Tokens into a block of code..
-				StatementBlock WHILEaction = parseTokens(actiontokens);
+				StatementBlock WHILEaction = parseTokens(actiontokens, currentStackDepth);
 				
 				//Create an IF statement
 				WHILEstatement ws = new WHILEstatement(WHILEcondition, WHILEaction);
@@ -261,7 +275,7 @@ public class StatementParser {
 				currentPosition += returntokens.size();
 				
 				//Now create an expression from those tokens..
-				Expression exp = ExpressionParser.getExpression(returntokens);
+				Expression exp = ExpressionParser.getExpression(returntokens, currentStackDepth);
 				
 				//Create a new RETURN statement
 				stats.add(new ASSERTstatement(exp));
@@ -272,7 +286,7 @@ public class StatementParser {
 				currentPosition += returntokens.size();
 				
 				//Now create an expression from those tokens..
-				Expression exp = ExpressionParser.getExpression(returntokens);
+				Expression exp = ExpressionParser.getExpression(returntokens, currentStackDepth);
 				
 				//Create a new RETURN statement
 				stats.add(new RETURNstatement(exp));
@@ -284,50 +298,6 @@ public class StatementParser {
 		
 		return new StatementBlock(stats);
 	}
-	
-	/*private static List<Token> getElseOrEndIF(List<Token> zTokens, int zCurrentPosition, boolean zElseAlso){
-		List<Token> rettokens = new ArrayList<>();
-		
-		int currentpos  = zCurrentPosition;
-		int total 		= zTokens.size();
-		
-		//Cycle through the tokens..
-		while(currentpos<total) {
-			
-			//Get the next token
-			Token tok = zTokens.get(currentpos);
-			
-			if(tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("ENDIF")) {
-				//We've found the end to the current depth IF
-				rettokens.add(tok);
-				return rettokens;
-			
-			}else if(zElseAlso && (tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("ELSE")) ) {
-				//We've found the end to the current depth IF
-				rettokens.add(tok);
-				return rettokens;
-				
-			}else if(tok.getTokenType() == Token.TOKEN_COMMAND && tok.getToken().equals("IF")) {
-				//Add it..
-				rettokens.add(tok);
-				currentpos++;
-				
-				//Go down One Level
-				List<Token> toks = getElseOrEndIF(zTokens, currentpos, false);
-			
-				rettokens.addAll(toks);
-				currentpos += toks.size();
-			
-			}else {
-				//Just add it to the list
-				rettokens.add(tok);
-				currentpos++;
-				
-			}
-		}
-		
-		return rettokens;
-	}*/
 	
 	private static List<ScriptToken> getElseOrElseIfOrEndIF(List<ScriptToken> zTokens, int zCurrentPosition, boolean zElseAlso){
 		List<ScriptToken> rettokens = new ArrayList<>();
@@ -445,6 +415,34 @@ public class StatementParser {
 			ret++;
 		}
 	
+		
+		return rettokens;
+	}
+	
+	private static List<ScriptToken> getTokensToRequiredCommand(List<ScriptToken> zTokens, 
+															int zCurrentPosition, 
+															String zRequiredToken ) throws MinimaParseException{
+		List<ScriptToken> rettokens = new ArrayList<>();
+		
+		int ret   = zCurrentPosition;
+		int total = zTokens.size();
+		boolean found=false;
+		while(ret<total) {
+			ScriptToken tok = zTokens.get(ret);
+			if(tok.getToken().equals(zRequiredToken)) {
+				found=true;
+				break;
+			}else {
+				//Add it to the list
+				rettokens.add(tok);
+			}
+			ret++;
+		}
+	
+		//Did we find it..
+		if(!found) {
+			throw new MinimaParseException("Could not find required token : "+zRequiredToken);
+		}
 		
 		return rettokens;
 	}

@@ -10,21 +10,19 @@ import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.Value;
 
 public class CONCAT extends MinimaFunction{
-
+	
 	public CONCAT() {
 		super("CONCAT");
 	}
 
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
+		
 		//Check parameters..
 		checkMinParamNumber(requiredParams());
 		
 		//Run through the function parameters and concatenate..
 		ArrayList<Expression> params = getAllParameters();
-		
-		//Check all the same type
-		checkAllParamsType(Value.VALUE_HEX, zContract);
 		
 		//Sum them
 		byte[][] parambytes = new byte[getAllParameters().size()][];
@@ -32,6 +30,7 @@ public class CONCAT extends MinimaFunction{
 		int counter = 0;
 		for(Expression exp : params) {
 			Value vv = exp.getValue(zContract);
+			checkIsOfType(vv, Value.VALUE_HEX);
 			
 			//This is a HEXValue
 			HexValue hex = (HexValue)vv;
@@ -39,6 +38,12 @@ public class CONCAT extends MinimaFunction{
 			//Get the bytes
 			parambytes[counter] = hex.getRawData();
 			totlen += parambytes[counter].length;
+		
+			//1MB max size..
+			if(totlen > Contract.MAX_DATA_SIZE) {
+				throw new ExecutionException("MAX HEX value size reached : "+totlen+"/"+Contract.MAX_DATA_SIZE);
+			}
+			
 			counter++;
 		}
 		

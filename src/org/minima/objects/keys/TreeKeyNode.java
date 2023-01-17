@@ -52,8 +52,11 @@ public class TreeKeyNode {
 			//What is the PublicKey
 			MiniData pubkey = wots.getPublicKey();
 			
+			//Create the MMRData entry
+			MMRData pubentry = MMRData.CreateMMRDataLeafNode(pubkey, MiniNumber.ZERO);
+			
 			//Add this to the MMR..
-			mTree.addEntry(new MMRData(pubkey));
+			mTree.addEntry(pubentry);
 			
 			//Keep this in an array - for quick retrieval
 			mKeys[i] = wots;

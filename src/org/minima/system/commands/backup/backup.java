@@ -14,7 +14,8 @@ import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
 
 import org.minima.database.MinimaDB;
-import org.minima.objects.base.MiniByte;
+import org.minima.database.txpowdb.sql.TxPoWList;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
@@ -30,7 +31,7 @@ public class backup extends Command {
 	public static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat("dd_MM_yyyy_HHmmss", Locale.ENGLISH );
 	
 	public backup() {
-		super("backup","(password:) (file:) (auto:) (complete:false|true) - Backup the system. Uses a timestamped name by default");
+		super("backup","(password:) (file:) (auto:) - Backup the system. Uses a timestamped name by default");
 	}
 	
 	@Override
@@ -60,12 +61,15 @@ public class backup extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"password","file","auto","complete"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"debug","password","file","auto"}));
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
+		
+		//Check all keys are created..
+		vault.checkAllKeysCreated();
 		
 		//Is this an AUTO backup initiate..
 		if(existsParam("auto")) {
@@ -154,20 +158,10 @@ public class backup extends Command {
 			MinimaDB.getDB().getP2PDB().saveDB(p2pdb);
 			MiniData p2pdata = new MiniData(MiniFile.readCompleteFile(p2pdb));
 			
-			//For Complete..
-			File txpowdb 	= new File(backupfolder,"txpowdb.sql");
-			File archivedb 	= new File(backupfolder,"archive.sql");
-			
-			MiniData txpowdata 		= null;
-			MiniData archivedata 	= null;
-			
-			if(complete) {
-				MinimaDB.getDB().getTxPoWDB().getSQLDB().backupToFile(txpowdb);
-				txpowdata	= new MiniData(MiniFile.readCompleteFile(txpowdb));
-				
-				MinimaDB.getDB().getArchive().backupToFile(archivedb);
-				archivedata = new MiniData(MiniFile.readCompleteFile(archivedb));
-			}
+			//Store the relevant TxPoWs..
+			ArrayList<TxPoW> txps 	= MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant();
+			TxPoWList txplist 	 	= new TxPoWList(txps);
+			MiniData txplistdata 	= MiniData.getMiniDataVersion(txplist);
 			
 			//Now create the streams to save these
 			FileOutputStream fos 	= new FileOutputStream(backupfile);
@@ -194,20 +188,13 @@ public class backup extends Command {
 			GZIPOutputStream gzos		= new GZIPOutputStream(cos);
 			DataOutputStream ciphdos 	= new DataOutputStream(gzos);
 			
-			//Is it Complete
-			MiniByte.WriteToStream(ciphdos, complete);
-			
 			//And now put ALL of those files into a single file..
 			walletata.writeDataStream(ciphdos);
 			cascadedata.writeDataStream(ciphdos);
 			chaindata.writeDataStream(ciphdos);
 			userdata.writeDataStream(ciphdos);
 			p2pdata.writeDataStream(ciphdos);
-			
-			if(complete) {
-				txpowdata.writeDataStream(ciphdos);
-				archivedata.writeDataStream(ciphdos);
-			}
+			txplistdata.writeDataStream(ciphdos);
 			
 			//All done..
 			ciphdos.close();
@@ -221,30 +208,26 @@ public class backup extends Command {
 							cascade.length()+
 							chain.length()+
 							userdb.length()+
-							p2pdb.length();
-			
-			if(complete) {
-				total += 	txpowdb.length()+
-							cascade.length();
-			}
+							p2pdb.length()+
+							txplistdata.getLength();
 			
 			//Get all the individual File sizes..
 			JSONObject files = new JSONObject();
 			files.put("wallet", MiniFormat.formatSize(walletfile.length()));
 			
-			if(complete) {
-				files.put("txpowdb", MiniFormat.formatSize(txpowdb.length()));
-				files.put("archive", MiniFormat.formatSize(archivedb.length()));
-			}
-			
 			files.put("cascade", MiniFormat.formatSize(cascade.length()));
 			files.put("chain", MiniFormat.formatSize(chain.length()));
 			files.put("user", MiniFormat.formatSize(userdb.length()));
 			files.put("p2p", MiniFormat.formatSize(p2pdb.length()));
+			files.put("txpow", MiniFormat.formatSize(txplistdata.getLength()));
 			
 			//And send data
 			JSONObject resp = new JSONObject();
-			resp.put("block", MinimaDB.getDB().getTxPoWTree().getTip().getTxPoW().getBlockNumber());
+			if(MinimaDB.getDB().getTxPoWTree().getTip() != null) {
+				resp.put("block", MinimaDB.getDB().getTxPoWTree().getTip().getTxPoW().getBlockNumber());
+			}else {
+				resp.put("block", "-1");
+			}
 			resp.put("files", files);
 			resp.put("uncompressed", MiniFormat.formatSize(total));
 			resp.put("file", backupfile.getAbsolutePath());

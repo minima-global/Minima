@@ -5,7 +5,6 @@ import java.io.File;
 import org.minima.objects.base.MiniString;
 import org.minima.system.mds.MDSManager;
 import org.minima.utils.MiniFile;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -128,7 +127,7 @@ public class FILEcommand {
 			result = stattrue.toJSONString();
 			
 		}catch(Exception exc) {
-			MinimaLogger.log("FILE command : "+mMiniDAPPID+" "+exc);
+			//MinimaLogger.log("FILE command : "+mMiniDAPPID+" "+exc);
 			
 			statfalse.put("error", exc.toString());
 			result = statfalse.toJSONString();

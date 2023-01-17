@@ -51,11 +51,11 @@ dependencies {
 
 //    implementation 'com.jcraft:jsch:0.1.55'
     
-    implementation 'com.h2database:h2:1.4.200'
+    implementation 'com.h2database:h2:2.1.214'
     
  	implementation 'org.bouncycastle:bcpkix-jdk15on:1.69'
  	
- 	implementation "mysql:mysql-connector-java:8.0.25"
+ 	implementation "mysql:mysql-connector-java:8.0.24"
  	
  	//implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.25'
  	
@@ -124,7 +124,7 @@ publishing {
 }
 
 docker {
-    name 'minimaglobal/minima:dev'
+    name 'minimaglobal/minima:1.0'
     dockerfile project.file('docker/Dockerfile')
     
     buildx true
@@ -138,3 +138,7 @@ docker {
     copySpec.from("docker/minima").into(".")
 }
 
+/*test {
+    dependsOn cleanTest
+    testLogging.showStandardStreams = true
+}*/

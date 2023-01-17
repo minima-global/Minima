@@ -39,10 +39,11 @@ import org.mozilla.javascript.ScriptableObject;
 
 public class MDSManager extends MessageProcessor {
 
-	public static final String MDS_INIT 				= "MDS_INIT";
-	public static final String MDS_SHUTDOWN 			= "MDS_SHUTDOWN";
-	public static final String MDS_POLLMESSAGE 			= "MDS_POLLMESSAGE";
-	public static final String MDS_MINIDAPPS_RESETALL 	= "MDS_MINIDAPPS_RESETALL";
+	public static final String MDS_INIT 					= "MDS_INIT";
+	public static final String MDS_SHUTDOWN 				= "MDS_SHUTDOWN";
+	public static final String MDS_POLLMESSAGE 				= "MDS_POLLMESSAGE";
+	public static final String MDS_MINIDAPPS_RESETALL 		= "MDS_MINIDAPPS_RESETALL";
+	public static final String MDS_MINIDAPPS_RESETSESSIONS 	= "MDS_MINIDAPPS_RESETSESSIONS";
 	
 	public static final String MDS_MINIDAPPS_INSTALLED 		= "MDS_MINIDAPPS_INSTALLED";
 	public static final String MDS_MINIDAPPS_UNINSTALLED 	= "MDS_MINIDAPPS_UNINSTALLED";
@@ -120,7 +121,7 @@ public class MDSManager extends MessageProcessor {
 		PostMessage(MDS_SHUTDOWN);
 		
 		//Waiting for shutdown..
-		waitToShutDown(true);
+		waitToShutDown();
 	}
 	
 	public File getRootMDSFolder() {
@@ -322,10 +323,13 @@ public class MDSManager extends MessageProcessor {
 			//The MDS Password
 			if(GeneralParams.MDS_PASSWORD.equals("")) {
 				//Create a NEW Main Password..
-				MiniData password 	= MiniData.getRandomData(32);
+				MiniData password 	= MiniData.getRandomData(64);
 				String b32			= BaseConverter.encode32(password.getBytes());
 				
-				mMiniHUBPassword	= b32.substring(2,6)+"-"+b32.substring(7,11)+"-"+b32.substring(12,16);
+				mMiniHUBPassword	= b32.substring(2,6)+"-"
+									 +b32.substring(7,11)+"-"
+									 +b32.substring(12,16)+"-"
+									 +b32.substring(17,21);
 			
 			}else {
 				//Pre-set..
@@ -351,7 +355,12 @@ public class MDSManager extends MessageProcessor {
 			}
 			
 			//Set up the RHINOJS ContextFactory
-			ContextFactory.initGlobal(new SandboxContextFactory());
+			//Weird here when Android doesn't clear the class and the static variable persists..
+			if(!ContextFactory.hasExplicitGlobal()) {
+				ContextFactory.initGlobal(new SandboxContextFactory());
+			}else {
+				MinimaLogger.log("MDS RHINOJS INIT hasGlobal Allready!.. may need a restart");
+			}
 			
 			//Scan for MiniDApps
 			PostMessage(MDS_MINIDAPPS_RESETALL);
@@ -395,8 +404,12 @@ public class MDSManager extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(MDS_TIMER_10SECONDS)) {
 
+			//Create a datat object
+			JSONObject data = new JSONObject();
+			data.put("timemilli", Long.toString(System.currentTimeMillis()));
+			
 			//Send a POLL message.. 
-			Main.getInstance().PostNotifyEvent(MDS_TIMER_10SECONDS, new JSONObject());
+			Main.getInstance().PostNotifyEvent(MDS_TIMER_10SECONDS, data);
 			
 			//Post another Message
 			PostTimerMessage(new TimerMessage(10000, MDS_TIMER_10SECONDS));
@@ -431,6 +444,19 @@ public class MDSManager extends MessageProcessor {
 			//Add then to the Poll Stack - web minidapps
 			mPollStack.addMessage(poll,to);
 		
+		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_RESETSESSIONS)) {
+			
+			//Clear the Old
+			mSessionID.clear();
+			
+			//Reassign..
+			ArrayList<MiniDAPP> dapps = MinimaDB.getDB().getMDSDB().getAllMiniDAPPs();
+			for(MiniDAPP dapp : dapps) {
+				String sessionid = MiniData.getRandomData(32).to0xString();
+				mSessionID.put(sessionid, dapp.getUID());
+			}
+			
+			
 		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_RESETALL)) {
 			
 			//Shut down all the Context Objkects..
@@ -544,7 +570,7 @@ public class MDSManager extends MessageProcessor {
 			}
 		}
 		
-		//Now add a uniques random SessionID
+		//Now add a unique random SessionID
 		String sessionid = MiniData.getRandomData(32).to0xString();
 		mSessionID.put(sessionid, zDAPP.getUID());
 	}

@@ -38,7 +38,7 @@ public class cointrack extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"file","password"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"enable", "coinid"}));
 	}
 	
 	@Override

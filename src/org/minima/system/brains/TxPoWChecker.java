@@ -140,7 +140,7 @@ public class TxPoWChecker {
 			
 			//First check this
 			if(zTxPoW.isTransaction()) {
-				boolean valid = checkTxPoWSimple(parentMMR, zTxPoW, zTxPoW);
+				boolean valid = checkTxPoWSimple(parentMMR, zTxPoW, zTxPoW, true);
 				if(!valid) {
 					return false;
 				}
@@ -148,7 +148,7 @@ public class TxPoWChecker {
 			
 			//Now check all the internal Transactions
 			for(TxPoW txpow : zTransactions) {
-				boolean valid = checkTxPoWSimple(parentMMR, txpow, zTxPoW);
+				boolean valid = checkTxPoWSimple(parentMMR, txpow, zTxPoW, true);
 				if(!valid) {
 					return false;
 				}
@@ -367,7 +367,7 @@ public class TxPoWChecker {
 	/**
 	 * Once accepted basic and signature checks are no longer needed..
 	 */
-	public static boolean checkTxPoWSimple(MMR zTipMMR, TxPoW zTxPoW, TxPoW zBlock) throws Exception {
+	public static boolean checkTxPoWSimple(MMR zTipMMR, TxPoW zTxPoW, TxPoW zBlock, boolean zLog) throws Exception {
 		
 		//Check TxPoW is required Minimum..
 		if(zTxPoW.getTxnDifficulty().isMore(zBlock.getMagic().getMinTxPowWork())) {
@@ -383,7 +383,7 @@ public class TxPoWChecker {
 		}
 		
 		//Check the MMR first - as quicker..
-		boolean valid = checkMMR(zTipMMR, zTxPoW);
+		boolean valid = checkMMR(zTipMMR, zTxPoW, zLog);
 		if(!valid) {
 			return false;
 		}
@@ -431,6 +431,13 @@ public class TxPoWChecker {
 		//Get the coin proofs
 		ArrayList<CoinProof> mmrproofs 	= zWitness.getAllCoinProofs();
 		int ins = mmrproofs.size();
+		
+		//Check same..
+		int inputssize = zTransaction.getAllInputs().size();
+		if(ins != inputssize) {
+			MinimaLogger.log("Wrong number of MMRProofs("+ins+") for Inputs("+inputssize+")");
+			return false;
+		}
 		
 		//Cycle through and check..
 		for(int i=0;i<ins;i++) {
@@ -527,18 +534,22 @@ public class TxPoWChecker {
 	 * Check the MMR Proofs
 	 */
 	public static boolean checkMMR(MMR zTipMMR, TxPoW zTxPoW) throws Exception {
-		
+		return checkMMR(zTipMMR, zTxPoW, true);
+	}
+	
+	public static boolean checkMMR(MMR zTipMMR, TxPoW zTxPoW, boolean zLog) throws Exception {
+			
 		//Check the Transaction..
-		boolean valid = checkMMR(zTipMMR, zTxPoW.getWitness());
+		boolean valid = checkMMR(zTipMMR, zTxPoW.getWitness(), zLog);
 		if(!valid) {
 			return false;
 		}
 		
 		//Check the Burn Transaction..
-		return checkMMR(zTipMMR, zTxPoW.getBurnWitness());
+		return checkMMR(zTipMMR, zTxPoW.getBurnWitness(), zLog);
 	}
 	
-	private static boolean checkMMR(MMR zTipMMR, Witness zWitness) throws Exception {
+	private static boolean checkMMR(MMR zTipMMR, Witness zWitness, boolean zLog) throws Exception {
 		//Get the all the MMR Proofs
 		ArrayList<CoinProof> mmrproofs 	= zWitness.getAllCoinProofs();
 		int proofs = mmrproofs.size();
@@ -549,10 +560,21 @@ public class TxPoWChecker {
 			//Get the Coin Proof
 			CoinProof cproof = mmrproofs.get(i);
 			
-			//Check the MMR
-			boolean validmmr = zTipMMR.checkProofTimeValid(cproof.getCoin().getMMREntryNumber(), cproof.getMMRData(), cproof.getMMRProof());
+			//Get the Coin..
+			Coin txcoin = cproof.getCoin();
+			
+			//Create the MMRData Leaf Node..
+			MMRData mmrcoin = MMRData.CreateMMRDataLeafNode(txcoin, txcoin.getAmount());
+			
+			//Is it valid..
+			boolean validmmr = zTipMMR.checkProofTimeValid(	cproof.getCoin().getMMREntryNumber(), 
+															mmrcoin, 
+															cproof.getMMRProof());
+			
 			if(!validmmr) {
-				MinimaLogger.log("Invalid MMR Proof!");
+				if(zLog) {
+					MinimaLogger.log("Invalid MMR Proof! @ "+zTipMMR.getBlockTime());
+				}
 				return false;
 			}
 		}

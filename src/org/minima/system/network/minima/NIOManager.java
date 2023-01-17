@@ -27,6 +27,7 @@ import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.commands.network.connect;
 import org.minima.system.network.NetworkManager;
@@ -60,6 +61,9 @@ public class NIOManager extends MessageProcessor {
 
 	public static final String NIO_SYNCTXBLOCK 		= "NIO_SYNCTXBLOCK";
 
+	//50MB limit on archive read / write
+	public static long MAX_ARCHIVE_WRITE			= 1024 * 1024 * 50;
+	
 	/**
 	 * How many attempts to reconnect
 	 */
@@ -302,6 +306,12 @@ public class NIOManager extends MessageProcessor {
 			String host = zMessage.getString("host");
 			int port 	= zMessage.getInteger("port");
 			
+			//Double check if this peer on the naughty list
+			if(P2PFunctions.isInvalidPeer(host+":"+port)) {
+	        	MinimaLogger.log("NIO_CONNECT : Trying to connect to Invalid Peer - disallowed @ "+host+":"+port);
+	        	return;
+	        }
+			
 			//Create a new NetworkClient
 			NIOClient nc = new NIOClient(host, port);
 			
@@ -533,6 +543,19 @@ public class NIOManager extends MessageProcessor {
 				return;
 			}
 			
+//			//Are we limiting this..
+//			if(GeneralParams.ARCHIVESYNC_LIMIT_BANDWIDTH) {
+//				
+//				//How much have we used..
+//				long total 		= Main.getInstance().getNIOManager().getTrafficListener().getTotalRead();
+//				String current 	= MiniFormat.formatSize(total);
+//				
+//				if(total > NIOManager.MAX_ARCHIVE_WRITE) {
+//					MinimaLogger.log("MAX Bandwith used already ("+current+") - not asking for archive sync for 24hours..");
+//					return;
+//				}
+//			}
+			
 			//Which client..
 			String clientid = zMessage.getString("client");
 
@@ -543,21 +566,31 @@ public class NIOManager extends MessageProcessor {
 			TxBlock lastblock 	= arch.loadLastBlock();
 			TxPoW lastpow 		= null;
 			if(lastblock == null) {
+				MinimaLogger.log("NIO_SYNCTXBLOCK : No data in archive setting root of tree :"+arch.getSize());
 				lastpow = MinimaDB.getDB().getTxPoWTree().getRoot().getTxPoW();
 			}else {
 				lastpow = lastblock.getTxPoW();
 			}
 			
-			//Check is within acceptable time..
-			long timenow = System.currentTimeMillis();
-			long maxtime = timenow - SYNC_MAX_TIME;
-			if(lastpow.getTimeMilli().getAsLong() < maxtime) {
-				//we have enough..
-				MinimaLogger.log("We have enough archive blocks.. lastblock "+new Date(lastpow.getTimeMilli().getAsLong()));
+			//Do we have them all
+			if(lastpow.getBlockNumber().isEqual(MiniNumber.ONE)) {
+				//we have them all
 				return;
 			}
 			
+			//Check is within acceptable time..
+			if(!GeneralParams.ARCHIVE) {
+				long timenow = System.currentTimeMillis();
+				long maxtime = timenow - SYNC_MAX_TIME;
+				if(lastpow.getTimeMilli().getAsLong() < maxtime) {
+					//we have enough..
+					MinimaLogger.log("We have enough archive blocks.. lastblock "+new Date(lastpow.getTimeMilli().getAsLong()));
+					return;
+				}
+			}
+			
 			//Send a message asking for a sync
+			MinimaLogger.log("[+] Request Sync IBD @ "+lastpow.getBlockNumber());
 			sendNetworkMessage(clientid, NIOMessage.MSG_TXBLOCK_REQ, lastpow);
 			
 		}else if(zMessage.getMessageType().equals(NIO_CHECKLASTMSG)) {

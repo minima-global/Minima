@@ -1,6 +1,5 @@
 package org.minima.system.mds.handler;
 
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.RPCClient;
 import org.minima.utils.json.JSONObject;
 
@@ -59,7 +58,7 @@ public class NETcommand {
 			result = stattrue.toJSONString();
 			
 		}catch(Exception exc) {
-			MinimaLogger.log("ERROR NETcommand : "+mURL+" "+exc);
+			//MinimaLogger.log("ERROR NETcommand : "+mURL+" "+exc);
 			
 			statfalse.put("error", exc.toString());
 			result = statfalse.toJSONString();

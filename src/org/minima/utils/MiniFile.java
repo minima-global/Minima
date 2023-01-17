@@ -14,6 +14,7 @@ import java.nio.file.Paths;
 
 import org.minima.objects.base.MiniData;
 import org.minima.system.params.GeneralParams;
+import org.minima.utils.encrypt.PasswordCrypto;
 
 public class MiniFile {
 	
@@ -136,6 +137,32 @@ public class MiniFile {
 		}
 	}
 	
+	public static void loadObjectEncrypted(String zPassword, File zFile, Streamable zObject) {
+		//Does the File exist
+		if(!zFile.exists()) {
+			MinimaLogger.log("Load Object file does not exist : "+zFile.getAbsolutePath());
+			return;
+		}
+		
+		try {
+			//Read the whole file.. fast
+			byte[] data = MiniFile.readCompleteFile(zFile);
+			
+			//Now decrypt
+			MiniData decrypted = PasswordCrypto.decryptPassword(zPassword, new MiniData(data));
+			
+			//Convert to a Streamable object
+			ByteArrayInputStream bais = new ByteArrayInputStream(decrypted.getBytes());
+			DataInputStream dis = new DataInputStream(bais);
+			zObject.readDataStream(dis);
+			dis.close();
+			bais.close();
+			
+		} catch (Exception e) {
+			MinimaLogger.log(e);
+		}
+	}
+	
 	public static void saveObject(File zFile, Streamable zObject) {
 		try {
 			//Write into byte array
@@ -145,6 +172,22 @@ public class MiniFile {
 			MiniFile.writeDataToFile(zFile, casc.getBytes());
 			
 		}catch(IOException exc) {
+			MinimaLogger.log(exc);
+		}
+	}
+	
+	public static void saveObjectEncrypted(String zPassword, File zFile, Streamable zObject) {
+		try {
+			//Write into byte array
+			MiniData casc = MiniData.getMiniDataVersion(zObject);
+			
+			//Convert to an encrypted object
+			MiniData encrypted = PasswordCrypto.encryptPassword(zPassword, casc);
+			
+			//save to disk
+			MiniFile.writeDataToFile(zFile, encrypted.getBytes());
+			
+		}catch(Exception exc) {
 			MinimaLogger.log(exc);
 		}
 	}

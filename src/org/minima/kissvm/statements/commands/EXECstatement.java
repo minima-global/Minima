@@ -39,7 +39,7 @@ public class EXECstatement implements Statement{
 			List<ScriptToken> tokens = tokz.tokenize();	
 		
 			//And now convert to a statement block..
-			StatementBlock mBlock = StatementParser.parseTokens(tokens);
+			StatementBlock mBlock = StatementParser.parseTokens(tokens, zContract.getStackDepth());
 			
 			//Now run it..
 			mBlock.run(zContract);

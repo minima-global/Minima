@@ -14,6 +14,7 @@ import org.minima.kissvm.statements.commands.EXECstatement;
 import org.minima.kissvm.values.StringValue;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
+import org.minima.utils.MinimaLogger;
 
 public class EXECstatementTests {
 
@@ -44,6 +45,7 @@ public class EXECstatementTests {
             EXECstatement es = new EXECstatement(Empty);
 
             Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
+            
             //assertThrows(ExecutionException.class, () -> { // should throw this
             //    ifs.execute(ctr);
             //});
@@ -56,7 +58,7 @@ public class EXECstatementTests {
             }
             assertEquals(false, ctr.isSuccessSet());
             assertEquals(false, ctr.isSuccess());
-            assertEquals(0, ctr.getNumberOfInstructions());
+            assertEquals(1, ctr.getNumberOfInstructions());
         }
         {
             EXECstatement es = new EXECstatement(ReturnTrue);
@@ -69,7 +71,7 @@ public class EXECstatementTests {
             }
             assertEquals(true, ctr.isSuccessSet());
             assertEquals(true, ctr.isSuccess());
-            assertEquals(1, ctr.getNumberOfInstructions());
+            assertEquals(3, ctr.getNumberOfInstructions());
         }
         {
             EXECstatement es = new EXECstatement(ReturnFalse);
@@ -82,7 +84,7 @@ public class EXECstatementTests {
             }
             assertEquals(true, ctr.isSuccessSet());
             assertEquals(false, ctr.isSuccess());
-            assertEquals(1, ctr.getNumberOfInstructions());
+            assertEquals(3, ctr.getNumberOfInstructions());
         }
         {
             EXECstatement es = new EXECstatement(Garbage);
@@ -93,7 +95,7 @@ public class EXECstatementTests {
             });
             assertEquals(false, ctr.isSuccessSet());
             assertEquals(false, ctr.isSuccess());
-            assertEquals(0, ctr.getNumberOfInstructions());
+            assertEquals(1, ctr.getNumberOfInstructions());
         }
     }
 }

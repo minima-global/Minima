@@ -18,16 +18,16 @@ public class GET extends MinimaFunction{
 	public Value runFunction(Contract zContract) throws ExecutionException {
 		checkMinParamNumber(requiredParams());
 		
-		//MUST all be NUMBERS..
-		checkAllParamsType(Value.VALUE_NUMBER, zContract);
-		
 		//The full parameter String to search for
 		String ps = "";
 		
 		//Get all the parameters
 		ArrayList<Expression> params = getAllParameters();
 		for(Expression exp : params) {
-			ps += exp.getValue(zContract).toString().trim()+",";		
+			Value numval = exp.getValue(zContract);
+			checkIsOfType(numval, Value.VALUE_NUMBER);
+			
+			ps += numval.toString().trim()+",";		
 		}
 		
 		//Get the Value.. 

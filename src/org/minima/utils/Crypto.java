@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import org.bouncycastle.crypto.Digest;
-import org.bouncycastle.crypto.digests.KeccakDigest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.digests.SHA3Digest;
 import org.minima.objects.base.MiniData;
@@ -20,8 +19,6 @@ import org.minima.objects.base.MiniData;
  */
 public class Crypto {
 
-	public int HASH_STRENGTH = 256;
-	
 	/**
 	 * Largest Number
 	 */
@@ -52,29 +49,6 @@ public class Crypto {
 	public Crypto(){}
 
 	/**
-	 * Default KECCAK hashing
-	 * @param zData
-	 * @return
-	 */
-	public byte[] hashData(byte[] zData){
-		return hashData(zData, HASH_STRENGTH);
-	}
-	
-	public byte[] hashData(byte[] zData, int zBitLength){
-		try {
-			//Bouncy..
-			Digest keccak = new KeccakDigest(zBitLength);
-			byte[] output = new byte[keccak.getDigestSize()];
-			keccak.update(zData, 0, zData.length);
-			keccak.doFinal(output, 0);
-			return output;
-		}catch(Exception exc) {
-			MinimaLogger.log(exc);
-		}
-		return null;
-	}
-	
-	/**
 	 * SHA 2
 	 * @param zData
 	 * @return
@@ -97,14 +71,13 @@ public class Crypto {
 	
 	/**
 	 * SHA 3
-	 * @param zData
-	 * @return
+	 * The DEFAULT
 	 */
-	public byte[] hashSHA3(byte[] zData){
+	public byte[] hashData(byte[] zData){
 		try {
 			
 			//Bouncy..
-			Digest sha3 = new SHA3Digest(HASH_STRENGTH);
+			Digest sha3 = new SHA3Digest(256);
 			byte[] output = new byte[sha3.getDigestSize()];
 			sha3.update(zData, 0, zData.length);
 			sha3.doFinal(output, 0);
@@ -122,10 +95,6 @@ public class Crypto {
 	 * @return
 	 */
 	public MiniData hashObject(Streamable zObject) {
-		return hashObject(zObject, HASH_STRENGTH);
-	}
-	
-	public MiniData hashObject(Streamable zObject, int zBitLength) {
 		try {
 			//Get the Data..
 			ByteArrayOutputStream baos 	= new ByteArrayOutputStream();
@@ -141,7 +110,7 @@ public class Crypto {
 			byte[] objdata = baos.toByteArray();
 			
 			//Hash That
-			byte[] hashdata = hashData(objdata,zBitLength);
+			byte[] hashdata = hashData(objdata);
 			
 			MiniData ret = new MiniData(hashdata);
 			
@@ -158,10 +127,6 @@ public class Crypto {
 	}
 	
 	public MiniData hashObjects(Streamable zLeftObject, Streamable zRightObject2) {
-		return hashObjects(zLeftObject, zRightObject2, HASH_STRENGTH);
-	}
-	
-	public MiniData hashObjects(Streamable zLeftObject, Streamable zRightObject2, int zBitLength) {
 		try {
 			//Get the Data..
 			ByteArrayOutputStream baos 	= new ByteArrayOutputStream();
@@ -180,7 +145,7 @@ public class Crypto {
 			byte[] objdata = baos.toByteArray();
 			
 			//Hash That
-			byte[] hashdata = hashData(objdata,zBitLength);
+			byte[] hashdata = hashData(objdata);
 		
 			MiniData ret = new MiniData(hashdata);
 			
@@ -221,8 +186,6 @@ public class Crypto {
 			dos.close();
 			baos.close();
 			
-//			System.out.println("HASH FINISHED "+ret.to0xString());
-			
 			return ret;
 					
 		}catch (Exception e) {
@@ -230,32 +193,5 @@ public class Crypto {
 		}
 		
 		return null;
-	}
-	
-	
-	public static void main(String[] zArgs) {
-		
-//		byte[] data = "Hello".getBytes();
-//		
-//		MiniData32 trest = new MiniData32("Hello You!");
-//		
-//		//Now Hash..
-//		try {
-//			Digest keccak = new SHA256Digest();
-//			byte[] output = new byte[keccak.getDigestSize()];
-//			keccak.update(trest.getData(), 0, trest.getLength());
-//			keccak.doFinal(output, 0);
-//			
-//			System.out.println(new MiniData32(output));
-//			
-//			byte[] hash = Crypto.getInstance().hashObject(trest).getData();
-//			
-//			System.out.println(new MiniData32(hash));
-//			
-//		}catch(Exception exc) {
-//			exc.printStackTrace();
-//		}
-		
-		
 	}
 }

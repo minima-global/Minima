@@ -39,7 +39,7 @@ public class ParamConfigurerTest {
                 "-rpcenable",
                 "-daemon",
                 "-host", "124.0.1.10",
-                "-data", "mydaatafolder",
+                //"-data", "mydaatafolder",
                 "-p2pnode", "124.0.1.9",
                 "-genesis",
                 "-nop2p",
@@ -95,7 +95,7 @@ public class ParamConfigurerTest {
 
         Map<String, String> envVarMap =new HashMap<>();
         envVarMap.put("MINIMA_CONNECT", "124.0.1.9:7777");
-        envVarMap.put("MINIMA_RPCENABLE", "TRUE");
+        envVarMap.put("MINIMA_RPCENABLE", "true");
         envVarMap.put("MINIMA_DAEMON", "true");
         envVarMap.put("MINIMA_NOCONNECT", "something");
         envVarMap.put("OTHER_PROG_NOCONNECT", "something");

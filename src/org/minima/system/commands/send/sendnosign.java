@@ -30,7 +30,6 @@ import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
-import org.minima.system.commands.base.send;
 import org.minima.system.commands.txn.txnutils;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MiniFile;
@@ -485,6 +484,9 @@ public class sendnosign extends Command {
 			txpow = TxPoWGenerator.generateTxPoW(transaction, witness);
 		}
 		
+		//Calculate the txpowid / size..
+		txpow.calculateTXPOWID();
+				
 		//Create the file..
 		File txnfile = MiniFile.createBaseFile("unsignedtransaction-"+System.currentTimeMillis()+".txn");
 				

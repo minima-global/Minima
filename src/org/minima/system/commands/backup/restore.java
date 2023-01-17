@@ -12,7 +12,9 @@ import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 
 import org.minima.database.MinimaDB;
-import org.minima.objects.base.MiniByte;
+import org.minima.database.txpowdb.sql.TxPoWList;
+import org.minima.database.txpowdb.sql.TxPoWSqlDB;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
@@ -99,9 +101,6 @@ public class restore extends Command {
 		GZIPInputStream gzin 	= new GZIPInputStream(cis);
 		DataInputStream disciph = new DataInputStream(gzin);
 		
-		//Is this a complete backup..
-		boolean complete = MiniByte.ReadFromStream(disciph).isTrue();
-		
 		//The total size of files..
 		long total = 1;
 		
@@ -115,26 +114,26 @@ public class restore extends Command {
 		total += readNextBackup(new File(basedb,"userprefs.db"), disciph);
 		total += readNextBackup(new File(basedb,"p2p.db"), disciph);
 		
-		//Now load the sql
-		MinimaDB.getDB().getWallet().restoreFromFile(new File(restorefolder,"wallet.sql"));
-				
-		//Complete
-		if(complete) {
-			total += readNextBackup(new File(restorefolder,"txpowdb.sql"), disciph);
-			total += readNextBackup(new File(restorefolder,"archive.sql"), disciph);
+		//Now load the relevant TxPoW
+		TxPoWList txplist = readNextTxPoWList(disciph);
 		
-			MinimaDB.getDB().getTxPoWDB().getSQLDB().restoreFromFile(new File(restorefolder,"txpowdb.sql"));
-			MinimaDB.getDB().getArchive().restoreFromFile(new File(restorefolder,"archive.sql"));
-		}else {
-	
-			//Close and Wipe those..
-			MinimaDB.getDB().getTxPoWDB().getSQLDB().saveDB();
-			MinimaDB.getDB().getTxPoWDB().getSQLDB().getSQLFile().delete();
-			
-			MinimaDB.getDB().getArchive().saveDB();
-			MinimaDB.getDB().getArchive().getSQLFile().delete();
+		//And add these to the DB
+		TxPoWSqlDB txpsqldb = MinimaDB.getDB().getTxPoWDB().getSQLDB();
+		txpsqldb.wipeDB();
+		for(TxPoW txp : txplist.mTxPoWs) {
+			txpsqldb.addTxPoW(txp, true);
 		}
 		
+		//Now load the sql
+		MinimaDB.getDB().getWallet().restoreFromFile(new File(restorefolder,"wallet.sql"));
+	
+		//Close
+		MinimaDB.getDB().getTxPoWDB().getSQLDB().saveDB();
+		
+		//Wipe ArchiveDB	
+		MinimaDB.getDB().getArchive().saveDB();
+		MinimaDB.getDB().getArchive().getSQLFile().delete();
+	
 		//Close up shop..
 		disciph.close();
 		cis.close();
@@ -155,11 +154,7 @@ public class restore extends Command {
 		ret.put("message", "Restart Minima for restore to take effect!");
 		
 		//Now save the Databases..
-		if(complete) {
-			MinimaDB.getDB().saveSQL();
-		}else {
-			MinimaDB.getDB().saveWalletSQL();
-		}
+		MinimaDB.getDB().saveSQL();
 		
 		//Don't do the usual shutdown hook
 		Main.getInstance().setHasShutDown();
@@ -174,6 +169,12 @@ public class restore extends Command {
 		MiniData data = MiniData.ReadFromStream(zDis);
 		MiniFile.writeDataToFile(zOutput, data.getBytes());
 		return zOutput.length();
+	}
+	
+	private TxPoWList readNextTxPoWList(DataInputStream zDis) throws IOException {
+		MiniData data 		= MiniData.ReadFromStream(zDis);
+		TxPoWList txplist 	= TxPoWList.convertMiniDataVersion(data);
+		return txplist;
 	}
 
 	@Override

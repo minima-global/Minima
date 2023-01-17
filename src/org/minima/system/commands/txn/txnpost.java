@@ -58,11 +58,36 @@ public class txnpost extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 
+		//Get the details
+		String id 		= getParam("id");
+		MiniNumber burn = getNumberParam("burn", MiniNumber.ZERO);
+		boolean auto 	= getBooleanParam("auto", false);
+		
+		//Post the Txn..
+		TxPoW txpow = postTxn(id, burn, auto);
+		
+		//Add to response..
+		ret.put("response", txpow.toJSON());
+		
+		return ret;
+	}
+
+	@Override
+	public Command getFunction() {
+		return new txnpost();
+	}
+	
+	/**
+	 * Also used by TxnSign if autopost set
+	 */
+	public static TxPoW postTxn(String zID, MiniNumber zBurn, boolean zAuto) throws Exception {
+		
+		//Get the TXN DB
 		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
 		
 		//The transaction
-		String id 		= getParam("id");
-		MiniNumber burn = getNumberParam("burn", MiniNumber.ZERO);
+		String id 		= zID;
+		MiniNumber burn = zBurn;
 		if(burn.isLess(MiniNumber.ZERO)) {
 			throw new CommandException("Cannot have negative burn "+burn.toString());
 		}
@@ -81,8 +106,7 @@ public class txnpost extends Command {
 		txnrow.getTransaction().clearIsMonotonic();
 		
 		//Set the scripts and MMR
-		boolean auto = getBooleanParam("auto", false);
-		if(auto) {
+		if(zAuto) {
 			//Set the MMR data and Scripts
 			txnutils.setMMRandScripts(trans, wit);
 		}
@@ -119,19 +143,11 @@ public class txnpost extends Command {
 		
 		//Calculate the size..
 		txpow.calculateTXPOWID();
-		
-		//All good..
-		ret.put("response", txpow.toJSON());
 				
 		//Send it to the Miner..
 		Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txpow);
 		
-		return ret;
-	}
-
-	@Override
-	public Command getFunction() {
-		return new txnpost();
+		return txpow;
 	}
 
 }

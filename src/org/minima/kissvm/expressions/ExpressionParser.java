@@ -5,6 +5,7 @@ package org.minima.kissvm.expressions;
 
 import java.util.List;
 
+import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.functions.MinimaFunction;
 import org.minima.kissvm.tokens.LexicalTokenizer;
@@ -26,14 +27,14 @@ public class ExpressionParser {
 	 * @param zTokens
 	 * @return
 	 */
-	public static Expression getExpression(List<ScriptToken> zTokens) throws MinimaParseException{
+	public static Expression getExpression(List<ScriptToken> zTokens, int zStackDepth) throws MinimaParseException{
 		//Must have some tokens!
 		if(zTokens.size() == 0) {
 			throw new MinimaParseException("Cannot have EMPTY expression");
 		}
 		
 		//Create a Lexical Tokenizer..
-		LexicalTokenizer lt = new LexicalTokenizer(zTokens);
+		LexicalTokenizer lt = new LexicalTokenizer(zTokens, zStackDepth);
 		
 		//get the complete expression..
 		Expression exp = getExpression(lt);
@@ -49,13 +50,16 @@ public class ExpressionParser {
 	}
 	
 	/**
-	 * Private classes to hierarchically break down the script into Valid Expressions with
+	 * Classes to hierarchically break down the script into Valid Expressions with
 	 * correct precedence.
-	 * @param zTokens
-	 * @param zPos
-	 * @return
 	 */
 	public static Expression getExpression(LexicalTokenizer zTokens) throws MinimaParseException{
+		
+		//Check Stack Depth
+		if(zTokens.getStackDepth() > Contract.MAX_STACK_DEPTH) {
+			throw new MinimaParseException("Stack too deep (MAX "+Contract.MAX_STACK_DEPTH+") "+zTokens.getStackDepth());
+		}
+		
 		//Top level..
 		Expression exp = getRelation(zTokens);
 		
@@ -230,6 +234,7 @@ public class ExpressionParser {
 			exp = new ConstantExpression(BooleanValue.FALSE);
 		
 		}else if(tok.getTokenType() == ScriptToken.TOKEN_FUNCTIION) {
+			
 			//Which Function
 			MinimaFunction func = MinimaFunction.getFunction(tok.getToken());
 			
@@ -252,12 +257,21 @@ public class ExpressionParser {
 				}else {
 					//Go Back
 					zTokens.goBackToken();
+			
+					//Increment Stack Depth
+					zTokens.incrementStackDepth();
 					
 					//And get the next expression..
 					func.addParameter(getExpression(zTokens));
+					if(func.getAllParameters().size() > Contract.MAX_FUNCTION_PARAMS) {
+						throw new MinimaParseException("Too many function params, max "+Contract.MAX_FUNCTION_PARAMS);
+					}
+					
+					//Decrement Stack
+					zTokens.decrementStackDepth();
 				}
 			}
-						
+			
 			//Check the correct number of Parameters 
 			func.checkParamNumberCorrect();
 			
@@ -265,8 +279,15 @@ public class ExpressionParser {
 			exp = new FunctionExpression(func);
 			
 		}else if(tok.getTokenType() == ScriptToken.TOKEN_OPENBRACKET) {
+			
+			//Increment Stack Depth
+			zTokens.incrementStackDepth();
+			
 			//It's a new complete expression
 			exp = getExpression(zTokens);
+			
+			//Decrement Stack
+			zTokens.decrementStackDepth();
 			
 			//Next token MUST be a close bracket..
 			ScriptToken closebracket = zTokens.getNextToken();

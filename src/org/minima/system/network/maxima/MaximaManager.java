@@ -131,7 +131,6 @@ public class MaximaManager extends MessageProcessor {
 	boolean mHaveContacts = false;
 	
 	private boolean mInited 	= false;
-	public boolean mMaximaLogs 	= false;
 
 	/**
 	 * Are you a static Maxima ID
@@ -199,8 +198,25 @@ public class MaximaManager extends MessageProcessor {
 		return mMaxContacts;
 	}
 	
-	public String getLocalMaximaAddress() {
-		return getMaximaMLSIdentity()+"@"+GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
+	public String getCurrentHostIP() {
+		if(GeneralParams.P2P_ENABLED && !GeneralParams.IS_HOST_SET) {
+			return ((P2PManager)(Main.getInstance().getNetworkManager().getP2PManager())).getP2PAddress();
+		}
+		
+		return GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
+	}
+	
+	public String getLocalMaximaAddress(boolean zP2P) {
+		
+		///Regular host
+		String host = GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
+		
+		//What the P2P thinks you are
+		if(zP2P && GeneralParams.P2P_ENABLED && !GeneralParams.IS_HOST_SET) {
+			host = ((P2PManager)(Main.getInstance().getNetworkManager().getP2PManager())).getP2PAddress();
+		}
+		
+		return getMaximaMLSIdentity()+"@"+host;
 	}
 	
 	public boolean isStaticMLS() {
@@ -274,7 +290,7 @@ public class MaximaManager extends MessageProcessor {
 		
 		//Are there any..
 		if(connctedhosts.size() == 0) {
-			return getLocalMaximaAddress();
+			return getLocalMaximaAddress(true);
 		}
 		
 		return connctedhosts.get(new Random().nextInt(connctedhosts.size())).getMaximaAddress();
@@ -479,6 +495,8 @@ public class MaximaManager extends MessageProcessor {
 					maxdb.newHost(mxhost);
 				}else {
 					MinimaLogger.log("MAXIMA EXISTING connection : "+nioc.getFullAddress());
+					mxhost.updateLastSeen();
+					maxdb.updateHost(mxhost);
 				}
 				
 				//So we know the details.. Post them to him.. so he knows who we are..
@@ -542,12 +560,16 @@ public class MaximaManager extends MessageProcessor {
 				
 				//Ok - we should be connected..
 				MaximaHost mxhost = maxdb.loadHost(nioc.getFullAddress());
-				
-				//Are we connected..
-				MinimaLogger.log("MAXIMA Check if connected : "+nioc.getFullAddress()+" "+mxhost.getConnected());
+				if(mxhost == null) {
+					MinimaLogger.log("MaximaHost NOT Found on CHECK_CONNECTED "+nioc.getFullAddress()+" incoming:"+nioc.isIncoming());
+					return;
+				}
 				
 				//If not connected..
 				if(mxhost.getConnected() == 0) {
+				
+					//Are we connected..
+					MinimaLogger.log("MAXIMA Check if connected : "+nioc.getFullAddress()+" "+mxhost.getConnected());
 					
 					//How many valid hosts are we connected to.. if enough leave it..
 					int conns = getAllConnectedHosts().size();
@@ -590,6 +612,7 @@ public class MaximaManager extends MessageProcessor {
 				
 				if(mxhost != null) {
 					MinimaLogger.log("MAXIMA outgoing disconnection : "+nioc.getFullAddress()+" "+reconnect);
+					nioc.setMaximaDisconnected();
 				}
 				
 				//Update the MLS Servers
@@ -620,11 +643,7 @@ public class MaximaManager extends MessageProcessor {
 					}
 				}
 				
-				//Delete from Hosts DB
-				if(!reconnect) {
-					maxdb.deleteHost(nioc.getFullAddress());
-				}
-				
+				//There has been a change..
 				NotifyMaximaHostsChanged(nioc.getFullAddress(), false);
 			}
 			
@@ -724,7 +743,7 @@ public class MaximaManager extends MessageProcessor {
 				
 				//Do we have it
 				if(client != null) {
-					if(mMaximaLogs) {
+					if(GeneralParams.MAXIMA_LOGS) {
 						MinimaLogger.log("MAXIMA message forwarded to client : "+tomaxima);
 					}
 					
@@ -784,7 +803,7 @@ public class MaximaManager extends MessageProcessor {
 			maxjson.put("msgid", hash.to0xString());
 			
 			//Do we log
-			if(mMaximaLogs) {
+			if(GeneralParams.MAXIMA_LOGS) {
 				MinimaLogger.log("MAXIMA : "+maxjson.toString());
 			}
 			
@@ -819,14 +838,26 @@ public class MaximaManager extends MessageProcessor {
 				
 				//Check Valid..
 				if(!uid.equals(nioc.getUID())) {
-					MinimaLogger.log("INVALID MAXCHECK REC:"+uid+" FROM:"+nioc.getUID());
+					MinimaLogger.log("INVALID MAXCHECK REC:"+uid+" FROM:"+nioc.getUID()+" Could be multiple connections to the same Host..? @ "+nioc.getFullAddress());
+					//Multiple connections to the same host cause this error ?
+					//return;
+				}
+				
+				//Get the HOST
+				MaximaHost mxhost = maxdb.loadHost(nioc.getFullAddress());
+				if(mxhost == null) {
+					MinimaLogger.log("MaximaHost NOT Found on CHKCONNECT_APP "+nioc.getFullAddress()+" incoming:"+nioc.isIncoming());
+					return;
+				}
+				
+				//DOUBLE check - Are we connected..
+				if(nioc.hasMaximaDiscxonnected()) {
+					//Already disconnected
+					MinimaLogger.log("MaximaHost already disconnected at check connect "+nioc.getFullAddress()+" incoming:"+nioc.isIncoming());
 					return;
 				}
 				
 				MinimaLogger.log("MAXIMA HOST accepted : "+nioc.getFullAddress());
-				
-				//Get the HOST
-				MaximaHost mxhost = maxdb.loadHost(nioc.getFullAddress());
 				
 				//Now we can use this as one of Our Addresses
 				mxhost.setConnected(1);

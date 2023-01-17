@@ -8,8 +8,6 @@ import java.io.IOException;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniNumber;
-import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
@@ -43,13 +41,14 @@ public class CoinProof implements Streamable {
 	
 	public MMRData getMMRData() {
 		
-		//Get the Hash of this 
-		MiniData hash 		= Crypto.getInstance().hashObject(getCoin());
+//		//Get the Hash of this 
+//		MiniData hash 		= Crypto.getInstance().hashObject(getCoin());
+//		
+//		//The Value
+//		MiniNumber value 	= getCoin().getAmount();
 		
-		//The Value
-		MiniNumber value 	= getCoin().getAmount();
-		
-		return new MMRData(hash, value);
+//		return new MMRData(hash, value);
+		return MMRData.CreateMMRDataLeafNode(getCoin(), getCoin().getAmount());
 	}
 	
 	public JSONObject toJSON() {

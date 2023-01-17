@@ -86,7 +86,10 @@ public class OperatorExpression implements Expression{
 					Value.checkSameType(lval, rval);
 					StringValue lnv = (StringValue)lval;
 					StringValue rnv = (StringValue)rval;
-					return lnv.add(rnv);
+					
+					StringValue res = lnv.add(rnv);
+					
+					return res;
 				
 				}else {
 					throw new ExecutionException("Invalid type in ADD. MUST be Number or String "+lval.toString());
@@ -152,6 +155,12 @@ public class OperatorExpression implements Expression{
 				rval.verifyType(Value.VALUE_NUMBER);
 				HexValue    lhv = (HexValue)lval;
 				NumberValue rnv = (NumberValue)rval;
+				
+				//Can only SHIFT max amount..
+				if(rnv.getNumber().isMore(MiniNumber.TWOFIVESIX)) {
+					throw new ExecutionException("Can only SHIFTLEFT 256 bits MAX");
+				}
+				
 				ret = new HexValue( lhv.getMiniData().shiftl(rnv.getNumber().getAsInt()).to0xString() );
 			}
 			break;
@@ -161,6 +170,12 @@ public class OperatorExpression implements Expression{
 				rval.verifyType(Value.VALUE_NUMBER);
 				HexValue    lhv = (HexValue)lval;
 				NumberValue rnv = (NumberValue)rval;
+				
+				//Can only SHIFT max amount..
+				if(rnv.getNumber().isMore(MiniNumber.TWOFIVESIX)) {
+					throw new ExecutionException("Can only SHIFTRIGHT 256 bits MAX");
+				}
+				
 				ret = new HexValue( lhv.getMiniData().shiftr(rnv.getNumber().getAsInt()).to0xString() );
 			}
 			break;

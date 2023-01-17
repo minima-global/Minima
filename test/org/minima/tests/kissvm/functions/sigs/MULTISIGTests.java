@@ -160,7 +160,7 @@ public class MULTISIGTests {
         }
         {
             MinimaFunction mf = fn.getNewFunction();
-            mf.addParameter(new ConstantExpression(new NumberValue(0)));
+            mf.addParameter(new ConstantExpression(new NumberValue(-1)));
             mf.addParameter(new ConstantExpression(new HexValue("0x01234567")));
             assertThrows(ExecutionException.class, () -> { // Should throw this, for zero valid sigs
                 Value res = mf.runFunction(ctr);

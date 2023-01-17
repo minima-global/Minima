@@ -10,7 +10,6 @@ import java.util.HashSet;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
-import org.minima.database.archive.MySQLConnect;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.cascade.CascadeNode;
 import org.minima.database.txpowtree.TxPoWTreeNode;
@@ -111,9 +110,17 @@ public class IBD implements Streamable {
 						
 						//And NOW - Load the range..
 						ArrayList<TxBlock> blocks = MinimaDB.getDB().getArchive().loadBlockRange(found, myroot);
-						for(TxBlock block : blocks) {
-							mTxBlocks.add(0,block);
+						
+						//Check not tooo many
+						if(blocks.size()>120000) {
+							MinimaLogger.log("Intersection found but User too far back to sync.. too many blocks "+blocks.size());
+							createCompleteIBD();
+						}else {
+							for(TxBlock block : blocks) {
+								mTxBlocks.add(0,block);
+							}
 						}
+						
 					}else {
 						MinimaLogger.log("No Archive blocks found to match New User.. ");
 						createCompleteIBD();
@@ -191,6 +198,7 @@ public class IBD implements Streamable {
 		mCascade = MinimaDB.getDB().getCascade().deepCopy();
 	
 		//And now add all the blocks.. root will be first
+		mTxBlocks = new ArrayList<>();
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 		while(tip != null) {
 			mTxBlocks.add(0,tip.getTxBlock());
@@ -213,6 +221,10 @@ public class IBD implements Streamable {
 		
 			//Are we shutting down..
 			if(Main.getInstance().isShuttingDown()) {
+				
+				//Unlock..
+				MinimaDB.getDB().readLock(false);
+				
 				return;
 			}
 			
@@ -233,43 +245,100 @@ public class IBD implements Streamable {
 	
 	public void createArchiveIBD(MiniNumber zFirstBlock) {
 		
+		//Are we shutting down..
+		if(Main.getInstance().isShuttingDown()) {
+			return;
+		}
+		
 		//Get the ArchiveManager
 		ArchiveManager arch = MinimaDB.getDB().getArchive();
-				
-		//Are we storing Archive Data
-		if(arch.isStoreMySQL()) {
 			
-			//Get the SQL Connect
-			MySQLConnect mySQLConnect = arch.getMySQLCOnnect();
+		//Lock the DB - cascade and tree tip / root cannot change while doing this..
+		MinimaDB.getDB().readLock(true);
+		
+		try {
 			
-			//Lock the DB - cascade and tree tip / root cannot change while doing this..
-			MinimaDB.getDB().readLock(true);
-			
-			try {
-				if(zFirstBlock.isEqual(MiniNumber.ZERO)) {
-					//Load cascade if there is one
-					mCascade = mySQLConnect.loadCascade();
-				}
+			//Are we shutting down..
+			if(Main.getInstance().isShuttingDown()) {
 				
-				//Was therea cascade
-				MiniNumber startcount = zFirstBlock;
-				if(mCascade != null) {
-					startcount = mCascade.getTip().getTxPoW().getBlockNumber();
-				}
+				//Unlock..
+				MinimaDB.getDB().readLock(false);
 				
-				//Load the block range..
-				ArrayList<TxBlock> blocks = mySQLConnect.loadBlockRange(zFirstBlock);
-				for(TxBlock block : blocks) {
-					mTxBlocks.add(block);
-				}
-				
-			}catch(Exception exc) {
-				MinimaLogger.log(exc);
+				return;
 			}
 			
-			//Unlock..
-			MinimaDB.getDB().readLock(false);
+			MiniNumber startcount = zFirstBlock;
+			
+			if(zFirstBlock.isEqual(MiniNumber.ZERO)) {
+				
+				//What is the first block
+				TxBlock root = arch.loadLastBlock();
+				if(root != null) {
+				
+					if(!root.getTxPoW().getBlockNumber().isEqual(MiniNumber.ONE)) {
+					
+						//Load cascade if there is one
+						mCascade = arch.loadCascade();
+					
+						if(mCascade != null) {
+							startcount = mCascade.getTip().getTxPoW().getBlockNumber().increment();
+						}
+					}
+				}
+			}
+			
+			//Load the block range..
+			MiniNumber end = startcount.add(MiniNumber.TWOFIVESIX);
+			ArrayList<TxBlock> blocks = arch.loadBlockRange(startcount.decrement(),end, false);
+			for(TxBlock block : blocks) {
+				mTxBlocks.add(block);
+			}
+			
+			//And now add all the blocks.. root will be first
+			TxPoWTreeNode root 		= MinimaDB.getDB().getTxPoWTree().getRoot();
+			MiniNumber rootblock 	= root.getTxPoW().getBlockNumber();
+			
+			MiniNumber reqblock = zFirstBlock; 
+			if(rootblock.isEqual(MiniNumber.ONE) && reqblock.isEqual(MiniNumber.ZERO)) {
+				MinimaLogger.log("Root Tree Archive IBD - starts at genesis");
+				reqblock = MiniNumber.ONE;
+			}
+			
+			if(rootblock.isEqual(reqblock)) {
+				
+				MinimaLogger.log("Archive request for main tree data @ "+reqblock);
+				
+				//Add the whole tree..
+				TxBlock lastblock = null;
+				ArrayList<TxBlock> mainblocks = new ArrayList<>();
+				TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+				while(tip != null) {
+					lastblock = tip.getTxBlock();
+					mainblocks.add(0,lastblock);
+					tip = tip.getParent();
+				}
+				
+				//All good - or has it changed this exact second
+				MiniNumber lastadded=lastblock.getTxPoW().getBlockNumber();
+				if(lastadded.isEqual(reqblock)) {
+				
+					//And now add these..
+					for(TxBlock block : mainblocks) {
+						mTxBlocks.add(block);
+					}
+				}else {
+					
+					//IBD main chain changed..
+					MinimaLogger.log("Archive main tree data error.. root:"+lastadded+" req:"+reqblock);
+				}
+			}
+			
+		}catch(Exception exc) {
+			MinimaLogger.log(exc);
 		}
+		
+		//Unlock..
+		MinimaDB.getDB().readLock(false);
 	}
 	
 	/**

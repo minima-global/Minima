@@ -230,9 +230,10 @@ public class MaxMsgHandler extends MessageProcessor {
 				//Is it an error Message
 				if(!found) {
 					
+					ByteArrayInputStream bais 	= new ByteArrayInputStream(msgdata);
+					DataInputStream respdis 	= new DataInputStream(bais);
+					
 					try {
-						ByteArrayInputStream bais 	= new ByteArrayInputStream(msgdata);
-						DataInputStream respdis 	= new DataInputStream(bais);
 						
 						//What Type..
 						MiniByte type = MiniByte.ReadFromStream(respdis);
@@ -247,14 +248,17 @@ public class MaxMsgHandler extends MessageProcessor {
 						//Ok - it's read
 						valid = MaximaManager.MAXIMA_RESPONSE_FAIL;
 						
-						respdis.close();
-						bais.close();
-						
 						break;
 						
 					}catch(Exception exc){
 						found = false;
 						//MinimaLogger.log("Could not convert MLS GET Package : "+exc);
+					
+					}finally {
+						
+						//Close resources
+						respdis.close();
+						bais.close();
 					}
 				}
 			}

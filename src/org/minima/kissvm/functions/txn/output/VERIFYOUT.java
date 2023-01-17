@@ -26,7 +26,12 @@ public class VERIFYOUT extends MinimaFunction{
 	
 	@Override
 	public Value runFunction(Contract zContract) throws ExecutionException {
-		checkExactParamNumber(requiredParams());
+		
+		//Check parameters..
+		int paramnum = getAllParameters().size();
+		if(paramnum<4 || paramnum>5) {
+			throw new ExecutionException("VERIFYOUT requires 4 or 5 parameters");
+		}
 		
 		//Which Output
 		int output = zContract.getNumberParam(0, this).getNumber().getAsInt();
@@ -35,7 +40,14 @@ public class VERIFYOUT extends MinimaFunction{
 		MiniData address  = new MiniData(zContract.getHexParam(1, this).getRawData());
 		MiniNumber amount = zContract.getNumberParam(2, this).getNumber();
 		MiniData tokenid  = new MiniData(zContract.getHexParam(3, this).getRawData());
-		boolean keepstate = zContract.getBoolParam(4, this).isTrue();
+		
+		//Are we checking KEEPSTATE
+		boolean checkkeepstate 	= false;
+		boolean keepstate 		= false;
+		if(paramnum == 5) {
+			checkkeepstate 	= true;
+			keepstate = zContract.getBoolParam(4, this).isTrue();
+		}
 		
 		//Check an output exists..
 		Transaction trans = zContract.getTransaction();
@@ -50,10 +62,10 @@ public class VERIFYOUT extends MinimaFunction{
 		Coin cc = outs.get(output);
 		
 		//Check Keep State
-		boolean samestate = cc.storeState() == keepstate;
-//		if(cc.storeState() != keepstate) {
-//			return BooleanValue.FALSE;
-//		}
+		boolean samestate = true;
+		if(checkkeepstate) {
+			samestate = cc.storeState() == keepstate;
+		}
 		
 		//Now Check
 		boolean addr = address.isEqual(cc.getAddress());  
@@ -83,7 +95,7 @@ public class VERIFYOUT extends MinimaFunction{
 		//Log the error
 		if(!ver) {
 			zContract.traceLog("VERIFYOUT failed @ ouptut "+output+" found (address:"+cc.getAddress().to0xString()+" amount:"+outamt+" tokenid:"+cc.getTokenID().to0xString()+" keepstate:"+cc.storeState()+" ) "
-								+"expected (address:"+address.to0xString()+" amount:"+amount+" tokenid:"+tokenid.to0xString()+" keepstate:"+keepstate+")");
+								+"expected (address:"+address.to0xString()+" amount:"+amount+" tokenid:"+tokenid.to0xString()+" keepstate:"+keepstate+") CheckKeepState:"+checkkeepstate);
 		}
 		
 		//Return if all true
@@ -91,8 +103,13 @@ public class VERIFYOUT extends MinimaFunction{
 	}
 	
 	@Override
+	public boolean isRequiredMinimumParameterNumber() {
+		return true;
+	}
+	
+	@Override
 	public int requiredParams() {
-		return 5;
+		return 4;
 	}
 	
 	@Override

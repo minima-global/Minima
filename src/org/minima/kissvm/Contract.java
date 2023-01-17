@@ -6,8 +6,8 @@ import java.util.Hashtable;
 import java.util.List;
 
 import org.minima.kissvm.exceptions.ExecutionException;
-import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.functions.MinimaFunction;
+import org.minima.kissvm.functions.string.CLEAN;
 import org.minima.kissvm.statements.StatementBlock;
 import org.minima.kissvm.statements.StatementParser;
 import org.minima.kissvm.tokens.ScriptToken;
@@ -85,6 +85,22 @@ public class Contract {
 	 * Maximum allowed number of KISSVM instructions
 	 */
 	public int MAX_INSTRUCTIONS = 1024;
+	
+	/**
+	 * The STACK depth - how deep can you go
+	 */
+	public static final int MAX_STACK_DEPTH = 64;
+	int mStackDepth = 0;
+	
+	/**
+	 * MAX Function params
+	 */
+	public static final int MAX_FUNCTION_PARAMS = 32;
+	
+	/**
+	 * MAX size of String or HEX value - 64k
+	 */
+	public static final int MAX_DATA_SIZE = 64 * 1024;
 	
 	/**
 	 * A complete log of the contract execution
@@ -177,7 +193,8 @@ public class Contract {
 			}
 		
 			//Convert this list of Tokens into a list of Statements
-			mBlock = StatementParser.parseTokens(tokens);
+			resetStackDepth();
+			mBlock = StatementParser.parseTokens(tokens, 0);
 			
 			traceLog("Script token parse OK.");
 			mParseOK = true;
@@ -273,7 +290,7 @@ public class Contract {
 	
 	public void traceLog(String zLog) {
 		if(isTrace()) {
-			MinimaLogger.log("INST["+mNumInstructions+"] - "+zLog);
+			MinimaLogger.log("INST["+mNumInstructions+"] STACK["+getStackDepth()+"] - "+zLog);
 		}
 		
 		//Store the complete Log
@@ -303,11 +320,33 @@ public class Contract {
 		MAX_INSTRUCTIONS = zMax;
 	}
 	
+	public void resetStackDepth() {
+		mStackDepth = 0;
+	}
+	
+	public int getStackDepth() {
+		return mStackDepth;
+	}
+	
+	public void incrementStackDepth() throws ExecutionException  {
+		mStackDepth++;
+		if(mStackDepth>MAX_STACK_DEPTH) {
+			throw new ExecutionException("Stack depth too deep! (MAX "+MAX_STACK_DEPTH+") "+mStackDepth);
+		}
+	}
+	
+	public void decrementStackDepth() {
+		mStackDepth--;
+	}
+	
 	public void run() {
 		if(!mParseOK) {
 			traceLog("Script parse FAILED. Please fix and retry.");
 			return;
 		}
+		
+		//Reset the Stack Depth
+		resetStackDepth();
 		
 		//Run the code block
 		try {
@@ -536,152 +575,50 @@ public class Contract {
 	}
 	
 	/**
-	 * Clean up a script..
-	 * 
-	 * @param zScript
-	 * @return The Converted Script
+	 * Forwading version
 	 */
 	public static String cleanScript(String zScript) {
-		return cleanScript(zScript, false);
-	}
-	
-	public static String cleanScript(String zScript, boolean zLog) {
-		
-		//The final result
-		StringBuffer ret = new StringBuffer();
-		
-		//Remove all the excess white space
-		String script = zScript.replaceAll("\\s+"," ").trim();
-		
-		//First CONVERT..
-		ScriptTokenizer tokz = new ScriptTokenizer(script, true);
-		try {
-			//Get the list of Tokens..
-			ArrayList<ScriptToken> tokens = tokz.tokenize();
-		
-			//Now add them correctly..
-			boolean first 		= true;
-			boolean whites 		= true;
-			ScriptToken prevtok = null;
-			for(ScriptToken tok : tokens) {
-				
-				if(zLog) {
-					MinimaLogger.log(tok.toString());
-				}
-				
-				if(tok.getTokenType() == ScriptToken.TOKEN_COMMAND) {
-					String command = tok.getToken();
-					if(first) {
-						ret.append(command+" ");
-						first = false;
-					}else {
-						ret.append(" "+command+" ");
-					}
-					
-					whites = true;
-					
-				}else if(ScriptTokenizer.BOOLEAN_TOKENS_LIST.contains(tok.getToken())) {
-					ret.append(" "+tok.getToken()+" ");
-				
-					whites = true;
-					
-				}else if(tok.getToken().startsWith("0x")) {
-					String hex = "0x"+tok.getToken().substring(2).toUpperCase();
-					
-					if(whites) {
-						ret.append(hex);
-					}else {
-						ret.append(" "+hex);
-					}
-					
-					whites = false;
-					
-				}else if(tok.getToken().startsWith("(") || tok.getToken().startsWith("[")) {
-					
-					String strtok = tok.getToken();
-					
-					if(whites) {
-						boolean isspacerequired = prevtok!=null 
-								&& (prevtok.getToken().endsWith(")") || prevtok.getToken().endsWith("]"));
-						
-						if(isspacerequired) {
-							ret.append(" "+strtok);
-						}else {
-							ret.append(strtok);
-						}
-						
-					}else {
-					
-						boolean isspacerequired = prevtok!=null 
-								&& (ScriptTokenizer.mAllEOW.contains(prevtok.getToken()));
-						
-						if(isspacerequired) {
-							ret.append(" "+strtok);
-						}else {
-							ret.append(strtok);
-						}
-					}
-					
-					whites=true;
-				
-				}else {
-					String strtok = tok.getToken();
-					
-					boolean islastclosebracket = prevtok!=null && (prevtok.getToken().endsWith(")") || prevtok.getToken().endsWith("]"));
-					
-					//Is it an end of word or whitespace..
-					if(islastclosebracket && !ScriptTokenizer.mAllAFTER.contains(strtok)) {
-						
-						ret.append(" "+strtok);
-						whites = false;
-						
-					}else if(ScriptTokenizer.isWhiteSpace(strtok) || ScriptTokenizer.mAllEOW.contains(strtok)) {
-						ret.append(strtok);
-						whites = true;
-					}else {
-						if(whites) {
-							ret.append(strtok);
-						}else {
-							ret.append(" "+strtok);
-						}
-						whites = false;
-					}
-				}
-				
-				//Keep the last letter of the previous token
-				prevtok = tok;
-			}
-		
-		} catch (MinimaParseException e) {
-			MinimaLogger.log("Clean Script Error @ "+zScript+" "+e);
-			return zScript;
-		}
-		
-		return ret.toString().trim();
+		return CLEAN.cleanScript(zScript);
 	}
 	
 	public static void main(String[] zArgs) {
 		
-//		String scr = new String("VERIFYOUT(@INPUT @AMOUNT PREVSTATE(2) @TOKENID FALSE)");
-//		String scr = new String("PREVSTATE(2) @GLOB FALSE");
-//		String scr = new String("@GLOB FALSE");
-//		String scr = new String("let g  = (1 * 3 + (45)+2)");
-
-//		String scr = new String("LET safehouse = [ LET pkcold = coldkey LET pkhot = HOT_KEY\r\n"
-//				+ "                  IF SIGNEDBY ( pkcold ) THEN RETURN TRUE ENDIF\r\n"
-//				+ "                  IF SIGNEDBY ( pkhot ) THEN IF @BLKDIFF GT 20 THEN\r\n"
-//				+ "                  RETURN VERIFYOUT ( @INPUT PREVSTATE ( 21 ) @AMOUNT @TOKENID TRUE ) ENDIF ENDIF ]");
-//		String scr = new String("[as]+(sd)buyer (amount/price) buyer (amount/price)buyer");
-		String scr = new String("let a  = ((sd+1*(12) (23)))buyer ");
-//		String scr = new String("INC((asas) (2323))");
-//		String scr = new String("ASSERT ( [hello][dd](ff) [sdsd](f) *[jjj]) LET f=   (  0  ) ");
-
-		MinimaLogger.log(scr);
 		
-		String clean = Contract.cleanScript(scr,true);
+//		String scr =  "LET a = [ LET returnvalue = $1 + $2 ] "
+//					+ "LET b = 2 "
+//					+ "LET c = 3 "
+//					+ "LET z = FUNCTION(a b c) "
+//					+ "return true";
 		
+//		String scr = "LET n=STATE(0) LET m=STATE(1) LET script=[RETURN MULTISIG(]+STRING(n) LET counter=0 WHILE counter LT m DO LET script=script+[ ]+STRING(PREVSTATE(counter+2)) LET counter=INC(counter) ENDWHILE LET script=script+[)] EXEC script";
+//		String scr = "WHILE  counter LT m DO  LET  script=script+[ ]+STRING(PREVSTATE(counter+2)) LET counter=INC(counter) ENDWHILE LET script=script+[)] EXEC script";
+//		String scr = "IF x LT 6 THEN LET y=5 ENDIF LET f=0";
+		//String scr = "LET func=[ LET g = $1 + $2 ] LET hh=REPLACEFIRST(func [$1] [$2] ) LET y=FUNCTION(func 1 2)";
+		
+		String scr = "LET g = CONCAT( 0xEE 0xDD)";
+		
+//		String scr = "LET a = [$1$1$1$1$1$1$1$1$1$1] // the script\r\n"
+//				+ "LET b = [$2$2$2$2$2$2$2$2$2$2] // first script parameter\r\n"
+//				+ "LET c = [$3$3$3$3$3$3$3$3$3$3]\r\n"
+//				+ "LET d = [$4$4$4$4$4$4$4$4$4$4]\r\n"
+//				+ "LET e = [$5$5$5$5$5$5$5$5$5$5]\r\n"
+//				+ "LET f = [$6$6$6$6$6$6$6$6$6$6]\r\n"
+//				+ "LET g = [$7$7$7$7$7$7$7$7$7$7]\r\n"
+//				+ "LET h = [$8$8$8$8$8$8$8$8$8$8] // last script parameter\r\n"
+//				+ "LET z = FUNCTION(a b c d e f g h)";
+		
+		//String scr = "LET a=0xFF WHILE TRUE DO LET a = a<<1000 ENDWHILE";
+		
+//		String scr = "LET a = 0xff<<10000";
+
 		MinimaLogger.log("");
-		MinimaLogger.log(clean);
+		MinimaLogger.log("Script:"+scr);
 		
+		String clean = CLEAN.cleanScript(scr,false);
+		MinimaLogger.log("Clean :"+clean);
+		
+		//Run it..
+		Contract ctr = new Contract(clean, new ArrayList<>(), new Witness(), new Transaction(), new ArrayList<>(),true);
+		ctr.run();
 	}
 }

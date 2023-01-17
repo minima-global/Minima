@@ -24,7 +24,6 @@ import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.system.sendpoll.SendPollManager;
-import org.minima.utils.BIP39;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.RPCClient;
@@ -104,6 +103,12 @@ public class Main extends MessageProcessor {
 	MiniData mOldTip 							= MiniData.ZERO_TXPOWID;
 	
 	/**
+	 * Create all the initial Keys
+	 */
+	public static final String MAIN_INIT_KEYS 	= "MAIN_INIT_KEYS";
+	long INIT_KEYS_TIMER = 1000 * 30;
+	
+	/**
 	 * Main loop to check various values every 180 seconds..
 	 */
 	long CHECKER_TIMER							= 1000 * 180;
@@ -114,14 +119,6 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_NEWBLOCK 	= "MAIN_NEWBLOCK";
 	public static final String MAIN_BALANCE 	= "MAIN_BALANCE";
 	public static final String MAIN_MINING 		= "MAIN_MINING";
-	
-	/**
-	 * Incentive Cash User ping..
-	 * 
-	 * Every 8 hours
-	 */
-	public static final String MAIN_INCENTIVE 	= "MAIN_INCENTIVE";
-	long IC_TIMER = 1000 * 60 * 60 * 8;
 	
 	/**
 	 * Main TxPoW Processor
@@ -201,28 +198,6 @@ public class Main extends MessageProcessor {
 		//Create the SSL Keystore..
 		SSLManager.makeKeyFile();
 		
-		//Set the Base Private seed if needed..
-		if(MinimaDB.getDB().getUserDB().getBasePrivateSeed().equals("")) {
-			MinimaLogger.log("Generating Base Private Seed Key");
-			
-			//Get a BIP39 phrase
-			String[] words = BIP39.getNewWordList();
-			
-			//Convert to a string
-			String phrase = BIP39.convertWordListToString(words);
-			
-			//Convert that into a seed..
-			MiniData seed = BIP39.convertStringToSeed(phrase);
-			
-			//Not set yet..
-			MinimaDB.getDB().getUserDB().setBasePrivatePhrase(phrase);
-			MinimaDB.getDB().getUserDB().setBasePrivateSeed(seed.to0xString());
-		}
-		
-		//Get the base private seed..
-		String basepriv = MinimaDB.getDB().getUserDB().getBasePrivateSeed();
-		MinimaDB.getDB().getWallet().initBaseSeed(new MiniData(basepriv));
-		
 		//Calculate the User hashrate.. start her up as seems to make a difference.. initialises..
 		TxPoWMiner.calculateHashRate(new MiniNumber(10000));
 		
@@ -278,12 +253,12 @@ public class Main extends MessageProcessor {
 		}
 		PostTimerMessage(new TimerMessage(60 * 1000, MAIN_CLEANDB_SQL));
 		
-		//Store the IC User - do fast first time - 30 seconds in.. then every 8 hours
-		PostTimerMessage(new TimerMessage(1000*30, MAIN_INCENTIVE));
-		
 		//Debug Checker
 		PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
 		
+		//Init Keys
+		PostTimerMessage(new TimerMessage(INIT_KEYS_TIMER, MAIN_INIT_KEYS));
+				
 		//Reset Network stats every 24 hours
 		PostTimerMessage(new TimerMessage(NETRESET_TIMER, MAIN_NETRESET));
 		
@@ -331,7 +306,7 @@ public class Main extends MessageProcessor {
 			//Stop the main TxPoW processor
 			MinimaLogger.log("Waiting for TxPoWProcessor shutdown");
 			mTxPoWProcessor.stopMessageProcessor();
-			mTxPoWProcessor.waitToShutDown(false);
+			mTxPoWProcessor.waitToShutDown();
 			
 			//Now backup the  databases
 			MinimaLogger.log("Saving all db");
@@ -342,7 +317,7 @@ public class Main extends MessageProcessor {
 			
 			//Wait for it..
 			MinimaLogger.log("Waiting for Main thread shutdown");
-			waitToShutDown(true);
+			waitToShutDown();
 		
 			MinimaLogger.log("Shut down completed OK..");
 			
@@ -361,7 +336,7 @@ public class Main extends MessageProcessor {
 		
 		//Stop the main TxPoW processor
 		mTxPoWProcessor.stopMessageProcessor();
-		mTxPoWProcessor.waitToShutDown(false);	
+		mTxPoWProcessor.waitToShutDown();	
 	}
 	
 	public void archiveResetReady(boolean zResetWallet) {
@@ -532,6 +507,14 @@ public class Main extends MessageProcessor {
 		MinimaDB.getDB().getTxPoWDB().setOnMainChain(genesis.getTxPoWID());
 	}
 	
+	public boolean getAllKeysCreated() {
+		return mInitKeysCreated;
+	}
+	
+	public int getAllDefaultKeysSize() {
+		return MinimaDB.getDB().getWallet().getDefaultKeysNumber();
+	}
+	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		//Are we shutting down
@@ -567,6 +550,9 @@ public class Main extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(MAIN_CLEANDB_RAM)) {
 			
+			//Do it again..
+			PostTimerMessage(new TimerMessage(CLEANDB_RAM_TIMER, MAIN_CLEANDB_RAM));
+			
 			//Clean up the RAM Memory
 			System.gc();
 			
@@ -576,44 +562,29 @@ public class Main extends MessageProcessor {
 			//Now save the state - in case system crashed..
 			MinimaDB.getDB().saveState();
 			
-			//Do it again..
-			PostTimerMessage(new TimerMessage(CLEANDB_RAM_TIMER, MAIN_CLEANDB_RAM));
-		
 		}else if(zMessage.getMessageType().equals(MAIN_CLEANDB_SQL)) {
-			
-			//Do some house keeping on the DB
-			MinimaDB.getDB().getTxPoWDB().cleanDBSQL();
-			
-			//Same with the ArchiveDB
-			MinimaDB.getDB().getArchive().cleanDB();
 			
 			//Do it again..
 			PostTimerMessage(new TimerMessage(CLEANDB_SQL_TIMER, MAIN_CLEANDB_SQL));
 			
+			//Do some house keeping on the DB
+			MinimaDB.getDB().getTxPoWDB().cleanDBSQL();
+			
+			//Same with the ArchiveDB - if not running an archive node
+			if(!GeneralParams.ARCHIVE) {
+				MinimaDB.getDB().getArchive().cleanDB();
+			}
+			
 		}else if(zMessage.getMessageType().equals(MAIN_PULSE)) {
+			
+			//And then wait again..
+			PostTimerMessage(new TimerMessage(GeneralParams.USER_PULSE_FREQ, MAIN_PULSE));
 			
 			//Create Pulse Message
 			Pulse pulse = Pulse.createPulse();
 		
 			//And send it to all your peers..
 			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_PULSE, pulse);
-			
-			//And then wait again..
-			PostTimerMessage(new TimerMessage(GeneralParams.USER_PULSE_FREQ, MAIN_PULSE));
-		
-		}else if(zMessage.getMessageType().equals(MAIN_INCENTIVE)) {
-			
-			//Do it agin..
-			PostTimerMessage(new TimerMessage(IC_TIMER, MAIN_INCENTIVE));
-			
-			//Get the User
-			String user = MinimaDB.getDB().getUserDB().getIncentiveCashUserID();
-			
-			//Make sure there is a User specified
-			if(!user.equals("")) {
-				//Call the RPC End point..
-				RPCClient.sendPUT("https://incentivecash.minima.global/api/ping/"+user+"?version="+GlobalParams.MINIMA_VERSION);
-			}
 			
 		}else if(zMessage.getMessageType().equals(MAIN_NEWBLOCK)) {
 			
@@ -655,6 +626,9 @@ public class Main extends MessageProcessor {
 
 		}else if(zMessage.getMessageType().equals(MAIN_AUTOBACKUP)) {
 			
+			//And Again..
+			PostTimerMessage(new TimerMessage(AUTOBACKUP_TIMER, MAIN_AUTOBACKUP));
+			
 			//Are we backing up..
 			if(MinimaDB.getDB().getUserDB().isAutoBackup()) {
 			
@@ -665,9 +639,6 @@ public class Main extends MessageProcessor {
 				MinimaLogger.log("AUTOBACKUP : "+res.toString());
 			
 			}
-			
-			//And Again..
-			PostTimerMessage(new TimerMessage(AUTOBACKUP_TIMER, MAIN_AUTOBACKUP));
 			
 		}else if(zMessage.getMessageType().equals(MAIN_NETRESET)) {
 			
@@ -680,16 +651,30 @@ public class Main extends MessageProcessor {
 		}else if(zMessage.getMessageType().equals(MAIN_SHUTDOWN)) {
 			
 			shutdown();
-			
-		}else if(zMessage.getMessageType().equals(MAIN_CHECKER)) {
+		
+		}else if(zMessage.getMessageType().equals(MAIN_INIT_KEYS)) {
 			
 			//Check the Default keys
 			if(!mInitKeysCreated) {
-				mInitKeysCreated = MinimaDB.getDB().getWallet().initDefaultKeys();
-				if(mInitKeysCreated) {
-					MinimaLogger.log("All default getaddress keys created..");
+				try {
+					mInitKeysCreated = MinimaDB.getDB().getWallet().initDefaultKeys(8);
+					if(mInitKeysCreated) {
+						MinimaLogger.log("All default getaddress keys created..");
+					}
+				}catch(Exception exc) {
+					MinimaLogger.log(exc);
 				}
 			}
+			
+			//Check again..
+			if(!mInitKeysCreated) {
+				PostTimerMessage(new TimerMessage(INIT_KEYS_TIMER, MAIN_INIT_KEYS));
+			}
+			
+		}else if(zMessage.getMessageType().equals(MAIN_CHECKER)) {
+			
+			//Check again..
+			PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
 			
 			//Get the Current Tip
 			TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
@@ -708,9 +693,6 @@ public class Main extends MessageProcessor {
 			
 			//A Ping Message.. The top TxPoWID
 			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_PING, tip.getTxPoW().getTxPoWIDData());
-			
-			//Check again..
-			PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
 		}
 	}
 	

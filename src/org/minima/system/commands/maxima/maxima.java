@@ -13,7 +13,6 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
-import org.minima.system.commands.network.connect;
 import org.minima.system.network.maxima.MaxMsgHandler;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaximaMessage;
@@ -56,9 +55,6 @@ public class maxima extends Command {
 				+ "data: (optional)\n"
 				+ "    The data to send. Can be HEX or a JSON object. Use with 'action:send'.\n"
 				+ "\n"
-				+ "logs: (optional)\n"
-				+ "    true or false, true turns on detailed logs for Maxima.\n"
-				+ "\n"
 				+ "poll: (optional)\n"
 				+ "    true or false, true will poll the send action until successful. Use with 'action:send'.\n"
 				+ "\n"
@@ -84,7 +80,7 @@ public class maxima extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"action","name","id","to",
-				"publickey","application","data","logs","poll","host"}));
+				"publickey","application","data","poll","host"}));
 	}
 	
 	@Override
@@ -102,15 +98,6 @@ public class maxima extends Command {
 		
 		MaximaDB maxdb = MinimaDB.getDB().getMaximaDB();
 		
-		//Enable Logs..
-		if(existsParam("logs")) {
-			if(getParam("logs").equals("true")) {
-				max.mMaximaLogs = true;
-			}else {
-				max.mMaximaLogs = false;
-			}
-		}
-		
 		JSONObject details = new JSONObject();
 		
 		if(func.equals("info")) {
@@ -119,12 +106,13 @@ public class maxima extends Command {
 			String fullhost = GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
 			
 			//Show details
-			details.put("logs", max.mMaximaLogs);
+			details.put("logs", GeneralParams.MAXIMA_LOGS);
 			details.put("name", MinimaDB.getDB().getUserDB().getMaximaName());
 			details.put("publickey", max.getPublicKey().to0xString());
 			details.put("staticmls", max.isStaticMLS());
 			details.put("mls", max.getMLSHost());
-			details.put("localidentity", max.getLocalMaximaAddress());
+			details.put("localidentity", max.getLocalMaximaAddress(false));
+			details.put("p2pidentity", max.getLocalMaximaAddress(true));
 			details.put("contact", max.getRandomMaximaAddress());
 			
 			ret.put("response", details);
@@ -132,13 +120,11 @@ public class maxima extends Command {
 		}else if(func.equals("staticmls")) {
 		
 			String host = getParam("host");
-			
-			//Check is valid..
-			Message conn = connect.createConnectMessage(host);
-			if(conn == null) {
-				throw new CommandException("Invalid host.. must be host:port : "+host);
+			if(!host.equals("clear") && !checkAddress(host)) {
+				throw new CommandException("Invalid MLS address : MUST be of type Mx..@host:port");
 			}
 			
+			//Check is valid..
 			if(host.equals("clear")) {
 				max.setStaticMLS(false, "");
 			}else {
@@ -148,6 +134,9 @@ public class maxima extends Command {
 			details.put("staticmls", max.isStaticMLS());
 			details.put("mls", max.getMLSHost());
 			ret.put("response", details);
+			
+			//Refresh
+			max.PostMessage(MaximaManager.MAXIMA_REFRESH);
 			
 		}else if(func.equals("setname")) {
 			
@@ -164,21 +153,6 @@ public class maxima extends Command {
 			
 			//Refresh
 			max.PostMessage(MaximaManager.MAXIMA_REFRESH);
-			
-		}else if(func.equals("statichost")) {
-			
-			String id = getParam("host");
-			if(id.equals("random")) {
-				details.put("static", false);
-				max.setStaticAddress(false, "");
-			}else {
-				details.put("static", true);
-				max.setStaticAddress(true, id);
-			}
-		
-			details.put("contact", max.getRandomMaximaAddress());
-			
-			ret.put("response", details);
 			
 		}else if(func.equals("hosts")) {
 			
@@ -391,7 +365,22 @@ public class maxima extends Command {
 		
 		return sender;
 	}
-	
+
+	//Check an MLS address
+	public static boolean checkAddress(String zMLS) {
+		
+		if(!zMLS.startsWith("Mx")) {
+			return false;
+		}
+		
+		int indexp 	= zMLS.indexOf("@");
+		int index 	= zMLS.indexOf(":");
+		if(indexp == -1 || index==-1) {
+			return false;
+		}
+		
+		return true;
+	}
 	
 	@Override
 	public Command getFunction() {

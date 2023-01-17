@@ -9,11 +9,8 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Random;
 
-import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
@@ -312,7 +309,8 @@ public class MMR implements Streamable {
 			MMREntry sibling = getEntry(entry.getRow(), entry.getSibling());
 			
 			//Create the new row - hash LEFT + RIGHT
-			MMRData parentdata = getParentMMRData(sibling, entry);
+			MMRData parentdata = MMRData.CreateMMRDataParentNode(sibling.getMMRData(), entry.getMMRData());
+//			MMRData parentdata = getParentMMRData(sibling, entry);
 						
 			//Set the Parent Entry
 			entry = setEntry(entry.getParentRow(),entry.getParentEntry(),parentdata);
@@ -357,9 +355,11 @@ public class MMR implements Streamable {
 			
 			//Calculate the parent
 			if(entry.isLeft()) {
-				parentdata = getParentMMRData(entry, sibling);
+				parentdata = MMRData.CreateMMRDataParentNode(entry.getMMRData(), sibling.getMMRData());
+//				parentdata = getParentMMRData(entry, sibling);
 			}else {
-				parentdata = getParentMMRData(sibling, entry);
+				parentdata = MMRData.CreateMMRDataParentNode(sibling.getMMRData(), entry.getMMRData());
+//				parentdata = getParentMMRData(sibling, entry);
 			}
 			
 			//Make the entry the parent..
@@ -467,7 +467,7 @@ public class MMR implements Streamable {
 	 * 
 	 * Can point to ROOT or to a PEAK
 	 */
-	public boolean checkProof(MMRData zMMRData, MMRProof zProof) {
+	private boolean checkProof(MMRData zMMRData, MMRProof zProof) {
 		//Calculate the final data unit
 		MMRData root = zProof.calculateProof(zMMRData);
 		
@@ -494,7 +494,7 @@ public class MMR implements Streamable {
 		//Get the Parent MMR at this time
 		MMR mmr = getParentAtTime(zProof.getBlockTime());
 		if(mmr == null) {
-			//We do not have this MMR - so cannot check..
+			//We do not have this MMR - so cannot check.. could be in future..
 			return false;
 		}
 		
@@ -597,28 +597,6 @@ public class MMR implements Streamable {
 		}
 
 		return null;
-	}
-	
-	/**
-	 * Return the Parent of 2 sibling children
-	 * @param zLeftChild
-	 * @param zRightChild
-	 * @return
-	 */
-	private MMRData getParentMMRData(MMREntry zLeftChild, MMREntry zRightChild) {
-		//Combine the Values..
-		MiniNumber sumvalue   = zLeftChild.getMMRData().getValue().add(zRightChild.getMMRData().getValue());
-		
-		//Make the unique MMRData Hash
-		MiniData combined = Crypto.getInstance().hashAllObjects( zLeftChild.getMMRData().getData(),
-																zRightChild.getMMRData().getData(),
-																sumvalue);
-		
-		//New MMRData
-		MMRData parent = new MMRData(combined, sumvalue);
-		
-		//Create a new data proof
-		return parent;
 	}
 	
 	/**
@@ -752,35 +730,35 @@ public class MMR implements Streamable {
 	 */
 	public static void main(String[] zArgs) {
 	
-		System.out.println("** MMR Tree Prune POC **");
-		
-		MMR mmr = new MMR();
-		
-		//First bit of data
-		MMRData zero 	= new MMRData(new MiniData("0x00"), new MiniNumber(0));
-		MMRData one 	= new MMRData(new MiniData("0x01"), new MiniNumber(1));
-		
-		//Add 16 entries..
-		for(int loop=0;loop<16;loop++) {
-			mmr.addEntry(one);
-		}
-		printmmrtree(mmr);
-		
-		//Set random values to Zero..
-		for(int zz=0;zz<24;zz++) {
-			int rand 				= new Random().nextInt(16);
-			MMREntryNumber entry 	= new MMREntryNumber(rand);
-			MMREntry ent = mmr.getEntry(0, entry);
-			if(ent.isEmpty() || ent.getMMRData().getValue().isEqual(MiniNumber.ZERO)) {
-				continue;
-			}
-			
-			System.out.println("\nSet entry "+rand+" to 0");
-			MMRProof proof 	= mmr.getProofToPeak(entry);
-			mmr.updateEntry(entry, proof, zero);
-			mmr.pruneTree();
-			printmmrtree(mmr);
-		}
+//		System.out.println("** MMR Tree Prune POC **");
+//		
+//		MMR mmr = new MMR();
+//		
+//		//First bit of data
+//		MMRData zero 	= new MMRData(new MiniData("0x00"), new MiniNumber(0));
+//		MMRData one 	= new MMRData(new MiniData("0x01"), new MiniNumber(1));
+//		
+//		//Add 16 entries..
+//		for(int loop=0;loop<16;loop++) {
+//			mmr.addEntry(one);
+//		}
+//		printmmrtree(mmr);
+//		
+//		//Set random values to Zero..
+//		for(int zz=0;zz<24;zz++) {
+//			int rand 				= new Random().nextInt(16);
+//			MMREntryNumber entry 	= new MMREntryNumber(rand);
+//			MMREntry ent = mmr.getEntry(0, entry);
+//			if(ent.isEmpty() || ent.getMMRData().getValue().isEqual(MiniNumber.ZERO)) {
+//				continue;
+//			}
+//			
+//			System.out.println("\nSet entry "+rand+" to 0");
+//			MMRProof proof 	= mmr.getProofToPeak(entry);
+//			mmr.updateEntry(entry, proof, zero);
+//			mmr.pruneTree();
+//			printmmrtree(mmr);
+//		}
 	}
 	
 	public static void printinfo(MMR zTree) {

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.mmr.MMRData;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
@@ -59,8 +60,16 @@ public class coincheck extends Command {
 		//Get the tip
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 		
+		//Get the Coin..
+		Coin txcoin = newcoinproof.getCoin();
+		
+		//Create the MMRData Leaf Node..
+		MMRData mmrcoin = MMRData.CreateMMRDataLeafNode(txcoin, txcoin.getAmount());
+		
 		//Check the MMR
-		boolean validmmr = tip.getMMR().checkProofTimeValid(newcoinproof.getCoin().getMMREntryNumber(), newcoinproof.getMMRData(), newcoinproof.getMMRProof());
+		boolean validmmr = tip.getMMR().checkProofTimeValid(newcoinproof.getCoin().getMMREntryNumber(), 
+															mmrcoin, 
+															newcoinproof.getMMRProof());
 		
 		//Add to response
 		JSONObject resp = new JSONObject();

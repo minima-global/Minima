@@ -12,6 +12,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.URLDecoder;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -62,7 +63,8 @@ public class MDSFileHandler implements Runnable {
 	/**
 	 * The STATIC SessionID used for all interactions with MiniHUB
 	 */
-	static private String mMainSessionID = MiniData.getRandomData(32).to0xString();
+	static private String mMainSessionID 	= MiniData.getRandomData(32).to0xString();
+	static private String mLoginID 			= MiniData.getRandomData(32).to0xString();
 	
 	/**
 	 * Main Constructor
@@ -81,6 +83,7 @@ public class MDSFileHandler implements Runnable {
 		String fileRequested		= "";
 		InputStream inputStream 	= null;
 		OutputStream outputStream 	= null;
+		DataOutputStream dos		= null;
 		
 		try {
 			
@@ -89,7 +92,7 @@ public class MDSFileHandler implements Runnable {
 	        outputStream 	= mSocket.getOutputStream();
 	         
 	        BufferedReader bufferedReader 	= new BufferedReader(new InputStreamReader(inputStream, MiniString.MINIMA_CHARSET));
-	        DataOutputStream dos 			= new DataOutputStream(outputStream);
+	        dos 							= new DataOutputStream(outputStream);
 	        
 	        // get first line of the request from the client
 	     	String input = bufferedReader.readLine();
@@ -126,6 +129,24 @@ public class MDSFileHandler implements Runnable {
 			
 			//And finally URL decode..
 			fileRequested 		= URLDecoder.decode(fileRequested,"UTF-8").trim();
+		
+			//Get all the headers
+			Hashtable<String, String> allheaders=new Hashtable<>();
+			
+			//Get the Headers
+			while(input != null && !input.trim().equals("")) {
+				int start    = input.indexOf(":");
+				if(start != -1) {
+					String name  = input.substring(0,start).trim();
+					String value = input.substring(start+1).trim();
+					
+					//Put it in the headers
+					allheaders.put(name, value);
+				}
+				
+				//Read the next line..	
+				input = bufferedReader.readLine();
+			}
 			
 			if(fileRequested.equals("") || fileRequested.equals("index.html")) {
 				
@@ -133,46 +154,65 @@ public class MDSFileHandler implements Runnable {
 				createNewSessionID();
 				
 				//Write the Main Login form
-				writeHTMLPage(dos, MDSHubLogon.createHubPage(mMainSessionID));
-						
-			}else if(fileRequested.startsWith("login.html")){
+				writeHTMLPage(dos, MDSHubLogon.createHubPage(mLoginID));
 				
-				//Check the password AND SessionID
-				Map params = checkPostPasswordSessionID(input, bufferedReader, inputStream);
+			}else if(fileRequested.startsWith("logoff.html")){
+				
+				//Reset all session IDs..
+				Main.getInstance().getMDSManager().PostMessage(MDSManager.MDS_MINIDAPPS_RESETSESSIONS);
+				
+				//Create a NEW SessionID
 				createNewSessionID();
 				
-				//Valid or Error
-				if(params == null) {
-					writeHTMLPage(dos, MDSHubError.createHubPage());
-				}else {
-					writeHTMLPage(dos, MDSHubLoggedOn.createHubPage(mMainSessionID));
+				//Write the Main Login form
+				writeHTMLPage(dos, MDSHubLogon.createHubPage(mLoginID));
+				
+			}else if(fileRequested.startsWith("login.html")){
+				
+				//Check the password
+				Map params = getPostParams(allheaders, bufferedReader);
+				
+				//Check the Password..
+				String password = "";
+				if(params.containsKey("password")) {
+					password = params.get("password").toString();
 				}
+				
+				if(!mMDS.checkMiniHUBPasword(password)) {
+					throw new IllegalArgumentException("Incorrect MDS Password");
+				}
+				
+				//Check the login id
+				String loginid = "";
+				if(params.containsKey("loginid")) {
+					loginid = params.get("loginid").toString();
+				}
+				
+				if(!loginid.equals(mLoginID)) {
+					throw new IllegalArgumentException("Incorrect MDS Password");
+				}
+				
+				//New LoginID
+				mLoginID = MiniData.getRandomData(32).to0xString();
+				
+				//New sessionID 
+				createNewSessionID();
+				
+				//Write the page
+				writeHTMLPage(dos, MDSHubLoggedOn.createHubPage(mMainSessionID));
 				
 			}else if(fileRequested.startsWith("main.html")){
 				
 				//Check the sessionID
-				Map params  = checkPostSessionID(input, bufferedReader, inputStream);
-				createNewSessionID();
+				checkPostSessionID(allheaders, bufferedReader);
 				
-				if(params == null) {
-					writeHTMLPage(dos, MDSHubError.createHubPage());
-				}else {
-					writeHTMLPage(dos, MDSHub.createHubPage(mMDS, mMainSessionID));
-				}
-	
+				//Write the page
+				writeHTMLPage(dos, MDSHub.createHubPage(mMDS, mMainSessionID));
+				
 			}else if(fileRequested.startsWith("install.html")){
 				
 				//get the POST data
-				int contentlength = 0;
-				while(input != null && !input.trim().equals("")) {
-					int ref = input.indexOf("Content-Length:"); 
-					if(ref != -1) {
-						//Get it..
-						int start     = input.indexOf(":");
-						contentlength = Integer.parseInt(input.substring(start+1).trim());
-					}	
-					input = bufferedReader.readLine();
-				}
+				int contentlength = Integer.parseInt(allheaders.get("Content-Length"));
 				
 				//Read the data..
 				byte[] alldata = new byte[contentlength];
@@ -202,6 +242,9 @@ public class MDSFileHandler implements Runnable {
 					MinimaLogger.log("Incorrect Install MiniDAPP SessionID : "+sessionid);
 					throw new IllegalArgumentException("Invalid SessionID");
 				}
+				
+				//New sessionID 
+				createNewSessionID();
 				
 				//Now read lines until we reach the data
 				line = dis.readLine();
@@ -258,26 +301,16 @@ public class MDSFileHandler implements Runnable {
 			}else if(fileRequested.startsWith("pending.html")){
 				
 				//Check the sessionID
-				Map params  = checkPostSessionID(input, bufferedReader, inputStream);
-				createNewSessionID();
-				
-				if(params == null) {
-					writeHTMLPage(dos, MDSHubError.createHubPage());
-				}else {
-					writeHTMLPage(dos, MDSHubPending.createHubPage(mMDS, mMainSessionID));
-				}
+				checkPostSessionID(allheaders, bufferedReader);
+
+				//Write the page
+				writeHTMLPage(dos, MDSHubPending.createHubPage(mMDS, mMainSessionID));
 							
 			}else if(fileRequested.startsWith("pendingaction.html")){
 				
 				//Check the sessionID
-				Map params  = checkPostSessionID(input, bufferedReader, inputStream);
-				createNewSessionID();
+				Map params  = checkPostSessionID(allheaders, bufferedReader);
 				
-				if(params == null) {
-					throw new IllegalArgumentException("Invalid Password");
-				}
-				
-				String sessionid = params.get("sessionid").toString();
 				String accept 	 = params.get("accept").toString();
 				String uid 		 = params.get("uid").toString();
 				
@@ -301,11 +334,7 @@ public class MDSFileHandler implements Runnable {
 			}else if(fileRequested.startsWith("delete.html")){
 				
 				//Check the sessionID
-				Map params = checkPostSessionID(input, bufferedReader, inputStream);
-				createNewSessionID();
-				if(params == null) {
-					throw new IllegalArgumentException("Invalid SessionID");
-				}
+				Map params  = checkPostSessionID(allheaders, bufferedReader);
 				
 				String uid 		 = params.get("uid").toString();
 				
@@ -339,11 +368,7 @@ public class MDSFileHandler implements Runnable {
 			}else if(fileRequested.startsWith("permissions.html")){
 				
 				//Check the sessionID
-				Map params = checkPostSessionID(input, bufferedReader, inputStream);
-				createNewSessionID();
-				if(params == null) {
-					throw new IllegalArgumentException("Invalid SessionID");
-				}
+				Map params  = checkPostSessionID(allheaders, bufferedReader);
 				
 				String uid 		 = params.get("uid").toString();
 				String perm 	 = params.get("permission").toString();
@@ -391,7 +416,7 @@ public class MDSFileHandler implements Runnable {
 				
 				if(!webfile.exists() || !ischild || webfile.isDirectory()) {
 		    		
-		    		//MinimaLogger.log("HTTP : unknown file requested "+fileRequested+" "+webfile.getAbsolutePath());
+		    		MinimaLogger.log("HTTP : unknown file requested "+fileRequested+" "+webfile.getAbsolutePath());
 		    		
 		    		dos.writeBytes("HTTP/1.0 404 OK\r\n");
 					dos.writeBytes("\r\n");
@@ -417,9 +442,14 @@ public class MDSFileHandler implements Runnable {
 		
 		}catch(SSLHandshakeException exc) {
 		}catch(SSLException exc) {
-		}catch(IllegalArgumentException exc) {
 		}catch(Exception exc) {
-			MinimaLogger.log(exc);
+			
+			//Write out an error page
+			if(dos !=null) {
+				try {
+					writeHTMLPage(dos, MDSHubError.createHubPage());
+				} catch (IOException e) {}
+			}
 			
 		}finally {
 			try {
@@ -432,7 +462,7 @@ public class MDSFileHandler implements Runnable {
 		}	
 	}	
 	
-	public static Map<String, String> getQueryMap(String query) {  
+	private static Map<String, String> getQueryMap(String query) {  
 	    String[] params 		= query.split("&");  
 	    Map<String, String> map = new HashMap<String, String>();
 
@@ -449,19 +479,10 @@ public class MDSFileHandler implements Runnable {
 	    return map;  
 	}
 	
-	public Map checkPostPasswordSessionID(String input, BufferedReader bufferedReader, InputStream inputStream) throws Exception {
-		//PASSWORD passed in POST data
-		int contentlength = 0;
-		while(input != null && !input.trim().equals("")) {
-			//MinimaLogger.log("RPC : "+input);
-			int ref = input.indexOf("Content-Length:"); 
-			if(ref != -1) {
-				//Get it..
-				int start     = input.indexOf(":");
-				contentlength = Integer.parseInt(input.substring(start+1).trim());
-			}	
-			input = bufferedReader.readLine();
-		}
+	private Map getPostParams(Hashtable<String, String> zHeaders, BufferedReader bufferedReader) throws Exception {
+		
+		//How much content
+		int contentlength = Integer.parseInt(zHeaders.get("Content-Length"));
 		
 		//How much data
 		char[] cbuf 	= new char[contentlength];
@@ -475,67 +496,30 @@ public class MDSFileHandler implements Runnable {
 			}
 		}
 		
-		//Here is the login attempt
-		Map params  	= getQueryMap(new String(cbuf));
-		
-		String password = "";
-		if(params.containsKey("password")) {
-			password = params.get("password").toString();
-		}
-		
-		if(!mMDS.checkMiniHUBPasword(password)) {
-			MinimaLogger.log("Incorrect MiniDAPP Password : "+password);
-			return null;
-		}
-		
-		//And check the SessionID
-		String sessionid = params.get("sessionid").toString();
-		if(!mMainSessionID.equals(sessionid)) {
-			MinimaLogger.log("Incorrect MiniHUB SessionID : "+sessionid);
-			return null;
-		}
+		//Get all the params
+		Map params  = getQueryMap(new String(cbuf));
 		
 		return params;
 	}
 	
-	public Map checkPostSessionID(String input, BufferedReader bufferedReader, InputStream inputStream) throws Exception {
-		int contentlength = 0;
-		while(input != null && !input.trim().equals("")) {
-			//MinimaLogger.log("RPC : "+input);
-			int ref = input.indexOf("Content-Length:"); 
-			if(ref != -1) {
-				//Get it..
-				int start     = input.indexOf(":");
-				contentlength = Integer.parseInt(input.substring(start+1).trim());
-			}	
-			input = bufferedReader.readLine();
-		}
+	private Map checkPostSessionID(Hashtable<String, String> zHeaders, BufferedReader bufferedReader) throws Exception {
 		
-		//How much data
-		char[] cbuf 	= new char[contentlength];
-		
-		//Read it ALL in
-		int len,total=0;
-		while( (len = bufferedReader.read(cbuf,total,contentlength-total)) != -1) {
-			total += len;
-			if(total == contentlength) {
-				break;
-			}
-		}
+		//Get all the POST params..
+		Map params = getPostParams(zHeaders, bufferedReader);
 		
 		//Here is the login attempt
-		Map params  		= getQueryMap(new String(cbuf));
 		if(!params.containsKey("sessionid")) {
-			MinimaLogger.log("Missing MiniHUB SessionID");
-			return null;
+			throw new IllegalArgumentException("Missing MDS SessionID");
 		}
 		
 		String sessionid 	= params.get("sessionid").toString();
 		
 		if(!mMainSessionID.equals(sessionid)) {
-			MinimaLogger.log("Incorrect MiniHUB SessionID : "+sessionid);
-			return null;
+			throw new IllegalArgumentException("Incorrect MDS SessionID");
 		}
+		
+		//Always use a new SessionID after a check
+		createNewSessionID();
 		
 		return params;
 	}

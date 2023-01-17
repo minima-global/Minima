@@ -1,7 +1,6 @@
 package org.minima.system.mds.handler;
 
 import org.minima.system.commands.Command;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -36,7 +35,7 @@ public class CMDcommand {
 			}
 			
 		}catch(Exception exc) {
-			MinimaLogger.log("ERROR CMDHANDLER : "+mCompleteCommand+" "+exc);
+			//MinimaLogger.log("ERROR CMDHANDLER : "+mCompleteCommand+" "+exc);
 			
 			//Add the error
 			statfalse.put("error", exc.toString());

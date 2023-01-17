@@ -8,6 +8,7 @@ import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
+import org.minima.objects.StateVariable;
 import org.minima.objects.Token;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
@@ -77,7 +78,7 @@ public class TxPoWSearcher {
 		}
 	}
 	
-	public static ArrayList<Coin> searchCoins(	TxPoWTreeNode zStartNode, boolean zRelevant, 
+	public static synchronized ArrayList<Coin> searchCoins(	TxPoWTreeNode zStartNode, boolean zRelevant, 
 												boolean zCheckCoinID, MiniData zCoinID,
 												boolean zCheckAmount, MiniNumber zAmount,
 												boolean zCheckAddress, MiniData zAddress,
@@ -169,29 +170,6 @@ public class TxPoWSearcher {
 			}
 		}
 		
-//		if(zSimpleOnly) {
-//			//Fresh List
-//			finalcoins = new ArrayList<>();
-//			
-//			//Get the wallet..
-//			Wallet wallet = MinimaDB.getDB().getWallet();
-//			
-//			//Get all the keys
-//			ArrayList<KeyRow> keys = wallet.getAllRelevant(false);
-//			
-//			//Now cycle through the coins
-//			for(Coin cc : coinentry) {
-//				for(KeyRow kr : keys) {
-//					//Is it a simple key
-//					if(!kr.getPublicKey().equals("")) {
-//						if(cc.getAddress().isEqual(new MiniData(kr.getAddress()))) {
-//							finalcoins.add(cc);
-//						}
-//					}
-//				}
-//			}
-//		}
-		
 		return finalcoins;
 	}	
 	
@@ -276,6 +254,29 @@ public class TxPoWSearcher {
 		return null;
 	}
 
+	public static TxPoWTreeNode searchChainForTxPoWBlock(MiniData zTxPoWID) {
+		
+		//Start node position
+		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+		
+		//Now cycle through and get all your coins..
+		while(tip != null) {
+
+			//The Block
+			TxPoW txblock = tip.getTxPoW();
+			
+			//Is this block the txn
+			if(txblock.getTxPoWIDData().isEqual(zTxPoWID)) {
+				return tip;
+			}
+			
+			//And move back up the tree
+			tip = tip.getParent();
+		}
+		
+		return null;
+	}
+	
 	public static ArrayList<TxPoW> searchTxPoWviaAddress(MiniData zAddress) {
 		
 		ArrayList<TxPoW> ret = new ArrayList<>();
@@ -355,6 +356,98 @@ public class TxPoWSearcher {
 		for(Coin cc : coins) {
 			if(cc.getAddress().isEqual(zAddress)) {
 				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public static boolean checkTxPoWRelevant(TxPoW zTxPoW, Wallet zWallet) {
+		
+		ArrayList<Coin> coins = zTxPoW.getTransaction().getAllInputs();
+		for(Coin cc : coins) {
+			String address = cc.getAddress().to0xString();
+			if(zWallet.isAddressRelevant(address)) {
+				return true;
+			}
+			
+			//Check the state vars
+			ArrayList<StateVariable> state = cc.getState();
+			for(StateVariable sv : state) {
+				
+				if(sv.getType().isEqual(StateVariable.STATETYPE_HEX)) {
+					String svstr = sv.toString();
+					
+					//Custom scripts have no public key..
+					if(zWallet.isAddressRelevant(svstr) || zWallet.isKeyRelevant(svstr)) {
+						return true;
+					}
+				}
+			}
+		}
+		
+		coins = zTxPoW.getBurnTransaction().getAllInputs();
+		for(Coin cc : coins) {
+			String address = cc.getAddress().to0xString();
+			if(zWallet.isAddressRelevant(address)) {
+				return true;
+			}
+			
+			//Check the state vars
+			ArrayList<StateVariable> state = cc.getState();
+			for(StateVariable sv : state) {
+				
+				if(sv.getType().isEqual(StateVariable.STATETYPE_HEX)) {
+					String svstr = sv.toString();
+					
+					//Custom scripts have no public key..
+					if(zWallet.isAddressRelevant(svstr) || zWallet.isKeyRelevant(svstr)) {
+						return true;
+					}
+				}
+			}
+		}
+		
+		coins = zTxPoW.getTransaction().getAllOutputs();
+		for(Coin cc : coins) {
+			String address = cc.getAddress().to0xString();
+			if(zWallet.isAddressRelevant(address)) {
+				return true;
+			}
+		}
+		
+		coins = zTxPoW.getBurnTransaction().getAllOutputs();
+		for(Coin cc : coins) {
+			String address = cc.getAddress().to0xString();
+			if(zWallet.isAddressRelevant(address)) {
+				return true;
+			}
+		}
+		
+		//And now check the state vars
+		ArrayList<StateVariable> state = zTxPoW.getTransaction().getCompleteState();
+		for(StateVariable sv : state) {
+			
+			if(sv.getType().isEqual(StateVariable.STATETYPE_HEX)) {
+				String svstr = sv.toString();
+				
+				//Custom scripts have no public key..
+				if(zWallet.isAddressRelevant(svstr) || zWallet.isKeyRelevant(svstr)) {
+					return true;
+				}
+			}
+		}
+		
+		state = zTxPoW.getBurnTransaction().getCompleteState();
+		for(StateVariable sv : state) {
+			
+			if(sv.getType().isEqual(StateVariable.STATETYPE_HEX)) {
+				String svstr = sv.toString();
+				
+				//Custom scripts have no public key..
+				if(zWallet.isAddressRelevant(svstr) || zWallet.isKeyRelevant(svstr)) {
+					return true;
+				}
 			}
 		}
 		

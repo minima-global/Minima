@@ -84,6 +84,10 @@ public class P2PManager extends MessageProcessor {
         return state.getKnownPeersCopy();
     }
 
+    public String getP2PAddress() {
+    	return state.getMyMinimaAddress().toString().replace("/", "");
+    }
+    
     public float getClients() {
         // Divided by number of connections clients haves to convert client connections into num clients
         return (float) state.getNoneP2PLinks().size() / P2PParams.MIN_NUM_CONNECTIONS;
@@ -148,21 +152,38 @@ public class P2PManager extends MessageProcessor {
     }
 
 
+    private long mLastNotifyNoPeers 	= 0;
+    private long NOTIFY_NOPEERS_TIMER 	= 1000 * 60 * 3;
     private void doDiscoveryPing(){
         
     	//Check how many nodes there are..
     	if(P2PParams.DEFAULT_NODE_LIST.size()==0) {
-    		MinimaLogger.log("There are NO DEFAULT PEERS - please use command 'peers' to add a valid peer..");
+    		
+    		//Only show the message every few minutes..
+    		long timenow = System.currentTimeMillis();
+    		if(timenow - mLastNotifyNoPeers > NOTIFY_NOPEERS_TIMER) {
+    			MinimaLogger.log("There are NO DEFAULT PEERS - please use command 'peers' to add a valid peer..");
+    			mLastNotifyNoPeers = timenow;
+    		}
+    		
     		return;
     	}
     	
+    	int attempts=0;
+    	
     	while (state.isDoingDiscoveryConnection() && isRunning()){
-            InetSocketAddress address = P2PParams.DEFAULT_NODE_LIST.get(rand.nextInt(P2PParams.DEFAULT_NODE_LIST.size()));
+            
+    		//Only check a few times - will try again later on next process loop
+    		if(attempts>=3) {
+    			MinimaLogger.log("Discovery node connection paused.. tried "+attempts+" times..");
+    			return;
+    		}
+    		
+    		InetSocketAddress address = P2PParams.DEFAULT_NODE_LIST.get(rand.nextInt(P2PParams.DEFAULT_NODE_LIST.size()));
             Greeting greet = NIOManager.sendPingMessage(address.getHostString(), address.getPort(), true);
             if (greet != null) {
                 JSONArray peersArrayList = (JSONArray) greet.getExtraData().get("peers-list");
                 if (peersArrayList != null){
-//                    MinimaLogger.log(peersArrayList.toString());
                     List<InetSocketAddress> peers = InetSocketAddressIO.addressesJSONArrayToList(peersArrayList);
                     Collections.shuffle(peers);
                     state.getKnownPeers().addAll(peers);
@@ -177,8 +198,11 @@ public class P2PManager extends MessageProcessor {
                     P2PFunctions.log_debug("Wait interrupted");
                 }
             }
+            
+            attempts++;
         }
     }
+    
     @Override
     protected void processMessage(Message zMessage) throws Exception {
     	

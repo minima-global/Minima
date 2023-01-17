@@ -1,5 +1,6 @@
 package org.minima.kissvm.values;
 
+import org.minima.kissvm.Contract;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 
@@ -11,14 +12,14 @@ public class HexValue extends Value {
 	protected MiniData mData;
 	
 	/**
-	 * Needed by ScriptValue to init
+	 * Convert a HEX String into a byte array
 	 */
-	protected HexValue() {}
+	public HexValue(String zHex) {
+		this(new MiniData(zHex));
+	}
 	
 	/**
 	 * Convert a MiniData byte array into a HEXValue
-	 * 
-	 * @param zData
 	 */
 	public HexValue(MiniData zData) {
 		this(zData.getBytes()); 
@@ -26,22 +27,16 @@ public class HexValue extends Value {
 	
 	/**
 	 * Convert a byte array into a HEXValue
-	 * 
-	 * @param zData
 	 */
 	public HexValue(byte[] zData) {
 		//It's a HEX value..
 		mData   = new MiniData(zData);
-	}
-	
-	/**
-	 * Convert a HEX String into a byte array
-	 * 
-	 * @param zHex
-	 */
-	public HexValue(String zHex) {
-		//HEX
-		mData 	= new MiniData(zHex);
+		
+		//Check Size
+		int len = mData.getLength();
+		if(len > Contract.MAX_DATA_SIZE) {
+			throw new IllegalArgumentException("MAX HEX value size reached : "+len+"/"+Contract.MAX_DATA_SIZE);
+		}
 	}
 	
 	/**
@@ -88,22 +83,6 @@ public class HexValue extends Value {
 	public boolean isEqual(HexValue zValue) {
 		return mData.isEqual(zValue.getMiniData());
 	}
-	
-//	public boolean isLess(HEXValue zValue) {
-//		return mData.isLess(zValue.getMiniData());
-//	}
-//	
-//	public boolean isLessEqual(HEXValue zValue) {
-//		return mData.isLessEqual(zValue.getMiniData());
-//	}
-//	
-//	public boolean isMore(HEXValue zValue) {
-//		return mData.isMore(zValue.getMiniData());
-//	}
-//	
-//	public boolean isMoreEqual(HEXValue zValue) {
-//		return mData.isMoreEqual(zValue.getMiniData());
-//	}
 	
 	@Override
 	public String toString() {

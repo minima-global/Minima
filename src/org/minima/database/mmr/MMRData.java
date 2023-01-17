@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.Crypto;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
@@ -21,11 +22,29 @@ public class MMRData implements Streamable{
 	 */
 	private MiniNumber mValue;
 	
-	private MMRData() {}
-	
-	public MMRData(MiniData zHash) {
-		this(zHash, MiniNumber.ZERO); 
+	public static MMRData CreateMMRDataLeafNode(Streamable zData, MiniNumber zSumValue) {
+		//Hash it.. USE 0 at start..
+		MiniData hash = Crypto.getInstance().hashAllObjects(MiniNumber.ZERO, zData, zSumValue);
+				
+		//Create a new piece of data to add
+		return new MMRData(hash, zSumValue);
 	}
+	
+	public static MMRData CreateMMRDataParentNode(MMRData zLeft, MMRData zRight) {
+		
+		//Combine the Values..
+		MiniNumber sumvalue   = zLeft.getValue().add(zRight.getValue());
+				
+		//Make the unique MMRData Hash - USE 1 at start
+		MiniData combinedhash = Crypto.getInstance().hashAllObjects(MiniNumber.ONE,
+																	zLeft.getData(),
+																	zRight.getData(),
+																	sumvalue);
+				
+		return new MMRData(combinedhash, sumvalue);
+	}
+	
+	private MMRData() {}
 	
 	public MMRData(MiniData zHash, MiniNumber zValue) {
 		mData = zHash;
@@ -58,13 +77,13 @@ public class MMRData implements Streamable{
 
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
-		mData.writeDataStream(zOut);
+		mData.writeHashToStream(zOut);
 		mValue.writeDataStream(zOut);
 	}
 
 	@Override
 	public void readDataStream(DataInputStream zIn) throws IOException {
-		mData 	= MiniData.ReadFromStream(zIn);
+		mData 	= MiniData.ReadHashFromStream(zIn);
 		mValue	= MiniNumber.ReadFromStream(zIn);
 	}
 	

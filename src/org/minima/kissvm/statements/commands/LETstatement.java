@@ -9,6 +9,7 @@ import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.Expression;
 import org.minima.kissvm.statements.Statement;
+import org.minima.kissvm.values.Value;
 
 /**
  * @author Spartacus Rex
@@ -73,7 +74,15 @@ public class LETstatement implements Statement{
 			
 			//Calculate all the expressions..
 			for(Expression exp : mArrayPos) {
-				pos += exp.getValue(zContract).toString().trim()+",";
+				
+				//MUST be a number
+				Value vv = exp.getValue(zContract);
+				if(vv.getValueType() != Value.VALUE_NUMBER) {
+					throw new ExecutionException("Incorrect Parameter type for LET - MUST be a NumberValue @ "+vv.toString().trim());
+				}
+				
+				//Add to total
+				pos += vv.toString().trim()+",";
 			}
 			
 			//Now ask the contract to set that array variable..

@@ -15,17 +15,19 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.backup;
+import org.minima.system.commands.backup.mysql;
 import org.minima.system.commands.backup.restore;
+import org.minima.system.commands.backup.vault;
 import org.minima.system.commands.base.automine;
 import org.minima.system.commands.base.balance;
 import org.minima.system.commands.base.burn;
+import org.minima.system.commands.base.checkaddress;
 import org.minima.system.commands.base.coincheck;
 import org.minima.system.commands.base.coinexport;
 import org.minima.system.commands.base.coinimport;
 import org.minima.system.commands.base.cointrack;
 import org.minima.system.commands.base.consolidate;
 import org.minima.system.commands.base.debugflag;
-import org.minima.system.commands.base.file;
 import org.minima.system.commands.base.getaddress;
 import org.minima.system.commands.base.hash;
 import org.minima.system.commands.base.hashtest;
@@ -42,15 +44,11 @@ import org.minima.system.commands.base.printmmr;
 import org.minima.system.commands.base.printtree;
 import org.minima.system.commands.base.quit;
 import org.minima.system.commands.base.random;
-import org.minima.system.commands.base.send;
-import org.minima.system.commands.base.sendpoll;
 import org.minima.system.commands.base.status;
 import org.minima.system.commands.base.test;
 import org.minima.system.commands.base.tokencreate;
 import org.minima.system.commands.base.tokenvalidate;
 import org.minima.system.commands.base.trace;
-import org.minima.system.commands.base.tutorial;
-import org.minima.system.commands.base.vault;
 import org.minima.system.commands.maxima.maxcontacts;
 import org.minima.system.commands.maxima.maxima;
 import org.minima.system.commands.maxima.maxsign;
@@ -70,12 +68,17 @@ import org.minima.system.commands.scripts.newscript;
 import org.minima.system.commands.scripts.runscript;
 import org.minima.system.commands.scripts.scripts;
 import org.minima.system.commands.search.coins;
+import org.minima.system.commands.search.history;
 import org.minima.system.commands.search.keys;
 import org.minima.system.commands.search.tokens;
 import org.minima.system.commands.search.txpow;
+import org.minima.system.commands.send.multisig;
+import org.minima.system.commands.send.send;
 import org.minima.system.commands.send.sendnosign;
+import org.minima.system.commands.send.sendpoll;
 import org.minima.system.commands.send.sendpost;
 import org.minima.system.commands.send.sendsign;
+import org.minima.system.commands.send.sendview;
 import org.minima.system.commands.signatures.sign;
 import org.minima.system.commands.signatures.verify;
 import org.minima.system.commands.txn.txnauto;
@@ -107,18 +110,17 @@ public abstract class Command {
 			new send(), new balance(), new tokencreate(), new tokenvalidate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
 			new incentivecash(), new webhooks(), new peers(), new p2pstate(), new nodecount(),
 
-			//Removed code..
-//			new sshtunnel(), 
-			
 			new mds(), new sendpoll(), new healthcheck(), new mempool(),
 			
-			new sendsign(), new sendnosign(), new sendpost(),
+			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(), new sendview(),
+			
+			new archive(), new logs(), new history(),
 			new magic(),
-			
+			new multisig(), new checkaddress(),
 			new maxsign(), new maxverify(),
-			new archive(), new logs(),
 			
-			new ping(), new random(),new file(),
+			new ping(), new random(), new mysql(),
+			//new file(),
 			
 			new vault(), new consolidate(),
 			new backup(), new restore(), new test(), 
@@ -289,6 +291,15 @@ public abstract class Command {
 			}
 		}
 		
+		//If it's an 0x address check converts to MiniData correctly
+		if(address.startsWith("0x")) {
+			try {
+				MiniData data = new MiniData(address);
+			}catch(Exception exc) {
+				throw new CommandException(exc.toString());
+			}
+		}
+		
 		return address;
 	}
 	
@@ -344,6 +355,7 @@ public abstract class Command {
 			
 			//Check the Parameters
 			ArrayList<String> validparams 	= cmd.getValidParams();
+			
 			JSONObject allparams 			=  cmd.getParams();
 			Set<String> keys 				= allparams.keySet(); 
 			
@@ -508,20 +520,20 @@ public abstract class Command {
 			
 			}else if(value.startsWith("[") && value.endsWith("]")) {
 				
+				//Is this a state variable
+				if(command.equals("txnstate")) {
+
+					//Could be a String variable.. add normal String parameter to..
+					comms.getParams().put(name, value);
+
+					continue;
+				}
+				
 				//It's a JSONArray..!
 				JSONArray json = null;
 				try {
 					json = (JSONArray) new JSONParser().parse(value);
 				} catch (ParseException e) {
-					
-					//Is this a state variable
-					if(command.equals("txnstate")) {
-						
-						//Could be a String variable.. add normal String parameter to..
-						comms.getParams().put(name, value);
-						
-						continue;
-					}
 					
 					//Otherwise is just a broken JSONArray
 					return new missingcmd(command,"Invalid JSON parameter for "+command+" @ "+token+" "+e.toString());
@@ -707,7 +719,7 @@ public abstract class Command {
 	 * Which Commands are allowed..
 	 */
 	private static final String[] ALL_WRITE_COMMANDS = 
-		{"send","sendpoll","tokencreate","consolidate","cointrack","sign","txnsign","mds","backup","restore","vault","archive"};
+		{"send","sendpoll","multisig","tokencreate","consolidate","cointrack","sign","txnsign","mds","backup","restore","vault","archive"};
 	
 	private static final ArrayList<String> ALL_WRITE_COMMANDS_ARRAY = new ArrayList<String>(Arrays.asList(ALL_WRITE_COMMANDS));
 	

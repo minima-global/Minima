@@ -52,7 +52,7 @@ public class MaximaDB extends SqlDB {
 
 		//Create hosts table
 		String hosts = "CREATE TABLE IF NOT EXISTS `hosts` ("
-						+ "  `id` IDENTITY PRIMARY KEY,"
+						+ "  `id` bigint auto_increment,"
 						+ "  `host` varchar(255) NOT NULL UNIQUE,"
 						+ "  `publickey` blob NOT NULL,"
 						+ "  `privatekey` blob NOT NULL,"
@@ -65,7 +65,7 @@ public class MaximaDB extends SqlDB {
 
 		//Create contacts table
 		String contacts = "CREATE TABLE IF NOT EXISTS `contacts` ("
-						+ "  `id` IDENTITY PRIMARY KEY,"
+						+ "  `id` bigint auto_increment,"
 						+ "  `extradata` blob NOT NULL,"
 						+ "  `publickey` varchar(512) NOT NULL UNIQUE,"
 						+ "  `currentaddress` varchar(512) NOT NULL,"

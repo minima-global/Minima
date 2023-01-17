@@ -138,6 +138,14 @@ public class JsonDB implements Streamable{
 		MiniFile.saveObject(zFile, this);
 	}
 	
+//	public void loadEncryptedDB(String zPassword, File zFile) {
+//		MiniFile.loadObjectEncrypted(zPassword, zFile, this);
+//	}
+//	
+//	public void saveEncryptedDB(String zPassword, File zFile) {
+//		MiniFile.saveObjectEncrypted(zPassword, zFile, this);
+//	}
+	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		MiniString data = new MiniString(mParams.toString());

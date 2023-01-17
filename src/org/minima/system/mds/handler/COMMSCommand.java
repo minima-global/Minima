@@ -47,6 +47,4 @@ public class COMMSCommand {
 		
 		return result;
 	}
-	
-
 }

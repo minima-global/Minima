@@ -351,48 +351,48 @@ public class LETstatementTests {
         //            new VariableExpression("d"));
         //    assertEquals("LET a = variable:d", ls.toString());
         //}
-        {
-            ArrayList<Expression> arl = new ArrayList<Expression>();
-            arl.add(new ConstantExpression(new BooleanValue(true)));
-            arl.add(new ConstantExpression(new NumberValue(1)));
-            arl.add(new ConstantExpression(new HexValue("0x12345678")));
-            arl.add(new ConstantExpression(new StringValue("RETURN TRUE")));
-            LETstatement ls = new LETstatement(arl,
-                    new ConstantExpression(new NumberValue(42)));
-
-            Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
-                ls.execute(ctr);
-                assertEquals("42", ((NumberValue) ctr.getVariable("TRUE,1,0x12345678,RETURN TRUE,")).toString());
-            } catch (ExecutionException ex) {
-                fail();
-            }
-        }
-        {
-            ArrayList<Expression> arl = new ArrayList<Expression>();
-            arl.add(new BooleanExpression(
-                    new ConstantExpression(new BooleanValue(true)),
-                    new ConstantExpression(new BooleanValue(true)),
-                    BooleanExpression.BOOLEAN_AND));
-            //arl.add(new FunctionExpression(new CHECKSIG()));
-            //arl.add(new GlobalExpression("@ADDRESS"));
-            arl.add(new OperatorExpression(
-                    new ConstantExpression(new NumberValue(5)),
-                    new ConstantExpression(new NumberValue(5)),
-                    OperatorExpression.OPERATOR_ADD));
-            //arl.add(new VariableExpression("b"));
-            LETstatement ls = new LETstatement(arl,
-                    new ConstantExpression(new NumberValue(42)));
-            //assertEquals("LET ( ( TRUE AND TRUE ) function:CHECKSIG, params:[] global:@ADDRESS ( 5 + 5 ) variable:b ) = 42", ls.toString());
-
-            Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
-            try {
-                ls.execute(ctr);
-                assertEquals("42", ((NumberValue) ctr.getVariable("TRUE,10,")).toString());
-            } catch (ExecutionException ex) {
-                fail();
-            }
-        }
+//        {
+//            ArrayList<Expression> arl = new ArrayList<Expression>();
+//            arl.add(new ConstantExpression(new BooleanValue(true)));
+//            arl.add(new ConstantExpression(new NumberValue(1)));
+//            arl.add(new ConstantExpression(new HexValue("0x12345678")));
+//            arl.add(new ConstantExpression(new StringValue("RETURN TRUE")));
+//            LETstatement ls = new LETstatement(arl,
+//                    new ConstantExpression(new NumberValue(42)));
+//
+//            Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
+//            try {
+//                ls.execute(ctr);
+//                assertEquals("42", ((NumberValue) ctr.getVariable("TRUE,1,0x12345678,RETURN TRUE,")).toString());
+//            } catch (ExecutionException ex) {
+//                fail();
+//            }
+//        }
+//        {
+//            ArrayList<Expression> arl = new ArrayList<Expression>();
+//            arl.add(new BooleanExpression(
+//                    new ConstantExpression(new BooleanValue(true)),
+//                    new ConstantExpression(new BooleanValue(true)),
+//                    BooleanExpression.BOOLEAN_AND));
+//            //arl.add(new FunctionExpression(new CHECKSIG()));
+//            //arl.add(new GlobalExpression("@ADDRESS"));
+//            arl.add(new OperatorExpression(
+//                    new ConstantExpression(new NumberValue(5)),
+//                    new ConstantExpression(new NumberValue(5)),
+//                    OperatorExpression.OPERATOR_ADD));
+//            //arl.add(new VariableExpression("b"));
+//            LETstatement ls = new LETstatement(arl,
+//                    new ConstantExpression(new NumberValue(42)));
+//            //assertEquals("LET ( ( TRUE AND TRUE ) function:CHECKSIG, params:[] global:@ADDRESS ( 5 + 5 ) variable:b ) = 42", ls.toString());
+//
+//            Contract ctr = new Contract("", "", new Witness(), new Transaction(), new ArrayList<>());
+//            try {
+//                ls.execute(ctr);
+//                assertEquals("42", ((NumberValue) ctr.getVariable("TRUE,10,")).toString());
+//            } catch (ExecutionException ex) {
+//                fail();
+//            }
+//        }
     }
 
 }

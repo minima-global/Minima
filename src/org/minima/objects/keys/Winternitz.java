@@ -1,13 +1,16 @@
 package org.minima.objects.keys;
 
-import org.bouncycastle.crypto.digests.KeccakDigest;
+import org.bouncycastle.crypto.digests.SHA3Digest;
 import org.bouncycastle.pqc.crypto.gmss.util.WinternitzOTSVerify;
 import org.bouncycastle.pqc.crypto.gmss.util.WinternitzOTSignature;
 import org.minima.objects.base.MiniData;
 
 public class Winternitz {
 
-	public static final int WINTERNITZ_VALUE = 8;
+	/**
+	 * The WINTERNITZ hash value.. 8 is fast
+	 */
+	private static final int WINTERNITZ_VALUE = 8;
 	
 	/**
 	 * The Winternitz key.. only create it once..
@@ -24,7 +27,7 @@ public class Winternitz {
 		//Create a random seed
 		mPrivateSeed = zPrivateSeed;
 		
-		mWOTS = new WinternitzOTSignature(mPrivateSeed.getBytes(), new KeccakDigest(256), WINTERNITZ_VALUE);
+		mWOTS = new WinternitzOTSignature(mPrivateSeed.getBytes(), new SHA3Digest(256), WINTERNITZ_VALUE);
 		
 		//Get the Public Key..
 		mPublicKey = new MiniData(mWOTS.getPublicKey());
@@ -44,7 +47,7 @@ public class Winternitz {
 
 	public static boolean verify(MiniData zPublicKey, MiniData zData, MiniData zSignature) {
 		//WOTS Verify
-		WinternitzOTSVerify wver = new WinternitzOTSVerify(new KeccakDigest(256), WINTERNITZ_VALUE);
+		WinternitzOTSVerify wver = new WinternitzOTSVerify(new SHA3Digest(256), WINTERNITZ_VALUE);
 		
 		//Do it.. get the pubkey..
 		byte[] pubkey = wver.Verify(zData.getBytes(), zSignature.getBytes());

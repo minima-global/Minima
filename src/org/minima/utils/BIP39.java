@@ -1,6 +1,7 @@
 package org.minima.utils;
 
 import java.security.SecureRandom;
+import java.util.StringTokenizer;
 
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
@@ -59,19 +60,73 @@ public class BIP39 {
 		return new MiniData(Crypto.getInstance().hashData(phrase.getData()));
 	}
 	
+	public static String cleanSeedPhrase(String zSeedPhrase) throws IllegalArgumentException {
+		
+		//First chop it up
+		String newwordlist = "";
+		StringTokenizer strtok = new StringTokenizer(zSeedPhrase.trim(), " ");
+		while(strtok.hasMoreTokens()) {
+			
+			//Get the lowercase version
+			String tok 	= strtok.nextToken().toLowerCase();
+			int len 	= tok.length();
+			
+			//Check min
+			if(len<3) {
+				throw new IllegalArgumentException("Word too short : "+tok);
+			}
+			
+			//First check if this is an actual word.. only for shorter words..
+			boolean found 	= false;
+			if(tok.length()<4) {
+				for(String word : WORD_LIST) {
+					//First check if this is the actual word..
+					if(tok.equals(word)) {
+						newwordlist += word+" ";
+						found = true;
+						break;
+					}
+				}
+			}else{
+				for(String word : WORD_LIST) {
+					//Do they start with this..
+					if(word.startsWith(tok)) {
+						newwordlist += word+" ";
+						found = true;
+						break;
+					}
+				}
+			}
+			
+			if(!found) {
+				throw new IllegalArgumentException("Unknown BIP39 word found! "+tok);
+			}
+		}
+		
+		//Now trim
+		newwordlist = newwordlist.trim().toUpperCase();
+		
+		return newwordlist;
+	}
+	
 	public static void main(String[] zArgs) {
 		
-		System.out.println(WORD_LIST.length);
+		String wordlist = "MEAt inve act THEM WAGO ALONE PURI AVER UNFA RESI AMUS SMOK SENS MILL DIAGRAM OBVIO";
+		String newlist  = cleanSeedPhrase(wordlist);
+		System.out.println(wordlist);
+		System.out.println(newlist);
 		
-		//Get the list
-		String[] words = getNewWordList();
-		
-		System.out.println(convertWordListToString(words));
-		
-		//Get the base seed
-		MiniData privseed = convertWordListToSeed(words);
-		
-		System.out.println("Seed : "+privseed.to0xString());
+//		System.out.println(WORD_LIST.length);
+//		
+//		//Get the list
+//		String[] words = getNewWordList();
+//		
+//		System.out.println(convertWordListToString(words));
+//		
+//		//Get the base seed
+//		MiniData privseed = convertWordListToSeed(words);
+//		
+//		System.out.println("Seed : "+privseed.to0xString());
 	}
 	
 	

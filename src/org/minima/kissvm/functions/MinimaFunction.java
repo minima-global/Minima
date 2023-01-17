@@ -36,7 +36,7 @@ import org.minima.kissvm.functions.number.MAX;
 import org.minima.kissvm.functions.number.MIN;
 import org.minima.kissvm.functions.number.POW;
 import org.minima.kissvm.functions.number.SIGDIG;
-import org.minima.kissvm.functions.sha.KECCAK;
+import org.minima.kissvm.functions.number.SQRT;
 import org.minima.kissvm.functions.sha.PROOF;
 import org.minima.kissvm.functions.sha.SHA2;
 import org.minima.kissvm.functions.sha.SHA3;
@@ -48,6 +48,7 @@ import org.minima.kissvm.functions.state.SAMESTATE;
 import org.minima.kissvm.functions.state.STATE;
 import org.minima.kissvm.functions.string.CLEAN;
 import org.minima.kissvm.functions.string.REPLACE;
+import org.minima.kissvm.functions.string.REPLACEFIRST;
 import org.minima.kissvm.functions.string.SUBSTR;
 import org.minima.kissvm.functions.txn.input.GETINADDR;
 import org.minima.kissvm.functions.txn.input.GETINAMT;
@@ -77,10 +78,10 @@ public abstract class MinimaFunction {
 				new CONCAT(), new LEN(), new REV(),new SUBSET(), new GET(), new EXISTS(), new ADDRESS(),
 				new BOOL(), new HEX(), new NUMBER(), new STRING(),new ASCII(),new UTF8(),
 				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(), 
-				new SIGDIG(), new POW(), new FUNCTION(),
+				new SIGDIG(), new POW(), new SQRT(), new FUNCTION(),
 				new SUMINPUTS(),new SUMOUTPUTS(), new CLEAN(), 
-				new REPLACE(), new SUBSTR(), new OVERWRITE(), 
-				new KECCAK(), new SHA2(), new SHA3(), new PROOF(), 
+				new REPLACE(),new REPLACEFIRST(), new SUBSTR(), new OVERWRITE(), 
+				new SHA2(), new SHA3(), new PROOF(),
 				new BITSET(), new BITGET(), new BITCOUNT(),
 				new SIGNEDBY(), new MULTISIG(), new CHECKSIG(),
 				new GETINADDR(), new GETINAMT(), new GETINID(), new GETINTOK(),new VERIFYIN(),
@@ -132,30 +133,11 @@ public abstract class MinimaFunction {
 		return mName;
 	}
 	
-	/**
-	 * Check all parameters are of the Type required
-	 * 
-	 * @param zType
-	 * @param zContract
-	 * @param zParams
-	 * @throws ExecutionException 
-	 */
-	protected void checkAllParamsType(int zType,Contract zContract) throws ExecutionException {
-		int count=0;
-		for(Expression exp : getAllParameters()) {
-			Value vv = exp.getValue(zContract);
-			if(vv.getValueType() != zType) {
-				throw new ExecutionException("Incorrect type in parameters @ "+count
-						+". Found "+Value.getValueTypeString(vv.getValueType())
-						+" expected "+Value.getValueTypeString(zType));
-			}
-			count++;
-		}
-	}
-	
 	protected void checkIsOfType(Value zValue, int zType) throws ExecutionException {
 		if((zValue.getValueType() & zType) == 0) {
-			throw new ExecutionException("Parameter is incorrect type in "+getName()+". Found "+Value.getValueTypeString(zValue.getValueType()));
+			throw new ExecutionException("Parameter is incorrect type in "+getName()
+			+" Found:"+Value.getValueTypeString(zValue.getValueType())
+			+" @ "+zValue.toString());
 		}
 	}
 	

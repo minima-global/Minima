@@ -57,14 +57,24 @@ public class keys extends Command {
 			//Get all the keys
 			ArrayList<KeyRow> keys = wallet.getAllKeys();
 			
-			JSONArray arr = new JSONArray();
+			JSONArray arr 	= new JSONArray();
+			int maxuses		= 0;
 			for(KeyRow kr : keys) {
+				if(kr.getUses()>maxuses) {
+					maxuses = kr.getUses(); 
+				}
 				JSONObject dets = kr.toJSON();
 				arr.add(dets);
 			}
 				
+			
+			JSONObject resp = new JSONObject();
+			resp.put("keys", arr);
+			resp.put("total", keys.size());
+			resp.put("maxuses", maxuses);
+			
 			//Put the details in the response..
-			ret.put("response", arr);
+			ret.put("response", resp);
 			
 		}else if(action.equals("new")) {
 			

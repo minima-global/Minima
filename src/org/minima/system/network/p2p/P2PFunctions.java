@@ -74,6 +74,20 @@ public class P2PFunctions {
     	return mLocalAddresses;
     }
     
+    /**
+     * An array of invalid IPs that you should not connect to..
+     */
+    public static ArrayList<String> mInvalidPeers = new ArrayList<>();
+    public static void addInvalidPeer(String zHostPost) {
+    	if(!mInvalidPeers.contains(zHostPost)) {
+    		MinimaLogger.log("INVALID PEER added to List! "+zHostPost);
+    		mInvalidPeers.add(zHostPost);
+    	}
+    }
+    public static boolean isInvalidPeer(String zHostPost) {
+    	return mInvalidPeers.contains(zHostPost);
+    }
+    
     public static boolean isIPLocal(String fullhost) {
     	return 	fullhost.startsWith("127.")  ||
     			fullhost.startsWith("localhost") ||
@@ -118,6 +132,12 @@ public class P2PFunctions {
         msg.addString("host", zHost);
         msg.addInteger("port", zPort);
 
+        //Check if added to naughty list
+        if(isInvalidPeer(zHost+":"+zPort)) {
+        	MinimaLogger.log("P2P CHECK CONNECT : Trying to connect to Invalid Peer - disallowed @ "+zHost+":"+zPort);
+        	return false;
+        }
+        
         boolean doConnect = true;
         try {
             boolean islocal = isIPLocal(zHost);
@@ -244,6 +264,5 @@ public class P2PFunctions {
         }
         return hostnames;
     }
-
 
 }

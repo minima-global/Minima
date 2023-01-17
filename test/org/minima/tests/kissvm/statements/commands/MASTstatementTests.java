@@ -15,6 +15,7 @@ import org.minima.kissvm.values.HexValue;
 import org.minima.objects.ScriptProof;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
+import org.minima.utils.MinimaLogger;
 
 public class MASTstatementTests {
 
@@ -47,7 +48,7 @@ public class MASTstatementTests {
                 }
                 assertEquals(false, ctr.isSuccessSet());
                 assertEquals(false, ctr.isSuccess());
-                assertEquals(0, ctr.getNumberOfInstructions());
+                assertEquals(1, ctr.getNumberOfInstructions());
             } catch (Exception e) {
                 fail();
             }
@@ -67,7 +68,7 @@ public class MASTstatementTests {
                 }
                 assertEquals(true, ctr.isSuccessSet());
                 assertEquals(true, ctr.isSuccess());
-                assertEquals(1, ctr.getNumberOfInstructions());
+                assertEquals(3, ctr.getNumberOfInstructions());
             } catch (Exception e) {
                 fail();
             }
@@ -87,7 +88,7 @@ public class MASTstatementTests {
                 }
                 assertEquals(true, ctr.isSuccessSet());
                 assertEquals(false, ctr.isSuccess());
-                assertEquals(1, ctr.getNumberOfInstructions());
+                assertEquals(3, ctr.getNumberOfInstructions());
             } catch (Exception e) {
                 fail();
             }
@@ -105,7 +106,7 @@ public class MASTstatementTests {
                 });
                 assertEquals(false, ctr.isSuccessSet());
                 assertEquals(false, ctr.isSuccess());
-                assertEquals(0, ctr.getNumberOfInstructions());
+                assertEquals(1, ctr.getNumberOfInstructions());
             } catch (Exception e) {
                 fail();
             }
@@ -122,7 +123,7 @@ public class MASTstatementTests {
                 });
                 assertEquals(false, ctr.isSuccessSet());
                 assertEquals(false, ctr.isSuccess());
-                assertEquals(0, ctr.getNumberOfInstructions());
+                assertEquals(1, ctr.getNumberOfInstructions());
             } catch (Exception e) {
                 fail();
             }
