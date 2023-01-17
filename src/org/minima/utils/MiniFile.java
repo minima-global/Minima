@@ -244,6 +244,10 @@ public class MiniFile {
 		long tot = 0;
 		
 		File[] files = zFolder.listFiles();
+		if(files == null) {
+			return 0;
+		}
+		
 		for(File file : files) {
 			if(file.isDirectory()) {
 				tot = tot + getTotalFileSize(file);
