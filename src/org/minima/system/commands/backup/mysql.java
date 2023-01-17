@@ -96,7 +96,7 @@ public class mysql extends Command {
 			
 			long startload 	= mysqllastblock; 
 			while(true) {
-				MinimaLogger.log("Verifying from : "+startload);
+				MinimaLogger.log("MySQL Verifying from : "+startload);
 				ArrayList<TxBlock> blocks = mysql.loadBlockRange(new MiniNumber(startload));
 				if(blocks.size()==0) {
 					//All blocks checked

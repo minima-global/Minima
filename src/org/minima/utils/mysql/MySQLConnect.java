@@ -17,7 +17,7 @@ import org.minima.utils.MinimaLogger;
 
 public class MySQLConnect {
 
-	public static final int MAX_SYNCBLOCKS = 20; 
+	public static final int MAX_SYNCBLOCKS = 250; 
 	
 	String mMySQLHost;
 	String mDatabase;
