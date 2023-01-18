@@ -902,6 +902,31 @@ public class MaximaManager extends MessageProcessor {
 				//Check the MLS service for this 
 				MLSPacketSET mlspack = mMLSService.getData(req.getPublicKey());
 				
+				//PERMANENT MLS
+				if(mlspack == null) {
+					
+					//Check is for US
+					//..
+					
+					
+					//Create a response..
+//					MLSPacketGETResp mlsget = new MLSPacketGETResp(req.getPublicKey(),mlspack.getMaximaAddress(),req.getRandomUID());
+					MLSPacketGETResp mlsget = new MLSPacketGETResp(
+												req.getPublicKey(),
+												getRandomMaximaAddress(),
+												req.getRandomUID());
+					
+					//Convert to a MiniData structure
+					MiniData mlsdata = MiniData.getMiniDataVersion(mlsget);
+					
+					//Send that
+					MinimaLogger.log("MLS UNKNOWN USER Req received : replying "+mlsget.toJSON());
+					
+					maximaMessageStatus(nioc,mlsdata);
+					
+					return;
+				}
+				
 				//Do we have data
 				if(mlspack == null) {
 					MinimaLogger.log("Unknown publickey in MLSService "+req.getPublicKey());

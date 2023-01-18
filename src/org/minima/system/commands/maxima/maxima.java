@@ -1,5 +1,13 @@
 package org.minima.system.commands.maxima;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -8,6 +16,7 @@ import org.minima.database.maxima.MaximaContact;
 import org.minima.database.maxima.MaximaDB;
 import org.minima.database.maxima.MaximaHost;
 import org.minima.objects.Address;
+import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
@@ -16,8 +25,11 @@ import org.minima.system.commands.CommandException;
 import org.minima.system.network.maxima.MaxMsgHandler;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaximaMessage;
+import org.minima.system.network.maxima.mls.MLSPacketGETReq;
+import org.minima.system.network.maxima.mls.MLSPacketGETResp;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -178,7 +190,7 @@ public class maxima extends Command {
 			
 		}else if(func.equals("new")) {
 			
-			throw new CommandException("Supported Soon..");
+			throw new CommandException("Not Supported yet..");
 			
 //			//Create a new Maxima Identity..
 //			max.createMaximaKeys();
@@ -187,7 +199,77 @@ public class maxima extends Command {
 //			String ident = max.getMaximaIdentity();  
 //			details.put("identity", ident);
 //			ret.put("response", details);
-
+			
+		}else if(func.equals("perm")) {
+			
+//			//Get the contact address
+//			String address 	= getParam("to");
+			
+			String pubkey 		= "0x30819F300D06092A864886F70D010101050003818D00308189028181009B7B3736C00402EA2803ACC6AD75CCFD5D1AADA85006071F78AB94446D7710714C936CE3E876C3A7D95D0972827BBD7C6923463EEC55AB6D55AEEE23852C214035D07ADB60C1D36A451AD909C75CF25DBFDC27DC9941B687EFA8278C3298122DD9D9C19D162A26D9BFCC98159F21130C2FDF874D39D02C5709B36092B9BA7D990203010001";
+			String MLSaddress 	= "MxG18HGG6FJ038614Y8CW46US6G20810K0070CD00Z83282G60G19ME9W1E1AHJVYWF2UDBKR3DQD6024HTGP0F116CWVW5BYBASYJ1NUH9VEFRZ1AQRE4BHRK9SB0FS64VM8BJUTEHGRC6DDM1EYNQ5YHR4HWK4EY6AGC05T108NH0SWFUN1MDEZE0MQJCM331SZ84NUYYKQTJ52CU0712ZS8GK39FSPWEBFFJTPYWQ91G2V1W75P7PPWHQ2RH4S10608007UYECW9@172.28.240.1:9001"; 
+			
+			//Create a Get req
+			MLSPacketGETReq req = new MLSPacketGETReq(pubkey, "0x00");
+			MiniData reqdata 	= MiniData.getMiniDataVersion(req);
+			
+			Message getreq 	= createSendMessage(MLSaddress,MaximaManager.MAXIMA_MLS_GETAPP,reqdata);
+			
+			//Who to..
+			String host 	= getreq.getString("tohost");
+			int port		= getreq.getInteger("toport");
+			
+			//Create the packet
+			MiniData maxpacket = MaxMsgHandler.constructMaximaData(getreq);
+			if(maxpacket == null) {
+				throw new CommandException("Could not build Maxima message in time..");
+			}
+			
+			//Now send that..
+			MLSPacketGETResp resp = sendMLSMaxPacket(host, port, maxpacket);
+			
+			//Now send it..
+			details.put("mlsreq", resp.toJSON());
+			ret.put("response", details);
+			
+			if(true) {
+				return ret;
+			}
+			
+			//Starts with MLS
+//			int pubkeystart = address.indexOf(":");
+//			int pubkeyend   = address.indexOf(":", pubkeystart+1);
+//				
+//			String pubkey 	  = address.substring(pubkeystart+1, pubkeyend);
+//			String MLSaddress = address.substring(pubkeyend+1);
+//			
+//			MinimaLogger.log("PUBKEY : "+pubkey);
+//			MinimaLogger.log("MLS    : "+MLSaddress);
+//			
+//			//Create a Get req
+//			MLSPacketGETReq req = new MLSPacketGETReq(pubkey, "0x00");
+//			
+//			//Get the data version
+//			MiniData reqdata = MiniData.getMiniDataVersion(req);
+//			
+//			Message getreq 	= createSendMessage(MLSaddress,MaximaManager.MAXIMA_MLS_GETAPP,reqdata);
+//			
+//			//Who to..
+//			String host 	= getreq.getString("tohost");
+//			int port		= getreq.getInteger("toport");
+//			
+//			//Create the packet
+//			MiniData maxpacket = MaxMsgHandler.constructMaximaData(getreq);
+//			if(maxpacket == null) {
+//				throw new CommandException("Could not build Maxima message in time..");
+//			}
+//			
+//			//Now send that..
+//			MLSPacketGETResp resp = sendMLSMaxPacket(host, port, maxpacket);
+//			
+//			//Now send it..
+//			details.put("mlsreq", resp.toJSON());
+			
+			
 		}else if(func.equals("send")) {
 			
 			if(!(existsParam("to") || existsParam("id")|| existsParam("publickey"))  || !existsParam("application") || !existsParam("data") ) {
@@ -382,6 +464,57 @@ public class maxima extends Command {
 		return true;
 	}
 	
+	public static MLSPacketGETResp sendMLSMaxPacket(String zHost, int zPort, MiniData zMaxMessage) throws IOException {
+		
+		//Open the socket..
+		Socket sock = new Socket();
+
+		//20 seconds to connect
+		sock.connect(new InetSocketAddress(zHost, zPort), 20000);
+		
+		//20 seconds to read
+		sock.setSoTimeout(20000);
+		
+		//Create the streams..
+		OutputStream out 		= sock.getOutputStream();
+		DataOutputStream dos 	= new DataOutputStream(out);
+		
+		InputStream in			= sock.getInputStream();
+		DataInputStream dis 	= new DataInputStream(in);
+		
+		//Write the data
+		zMaxMessage.writeDataStream(dos);
+		dos.flush();
+		
+		//Tell the NIO
+		Main.getInstance().getNIOManager().getTrafficListener().addWriteBytes(zMaxMessage.getLength());
+	
+		//Read the data
+		MiniData resp 	= MiniData.ReadFromStream(dis);
+		byte[] msgdata 	= resp.getBytes();
+		
+		//Tell the NIO
+		Main.getInstance().getNIOManager().getTrafficListener().addReadBytes(resp.getLength());
+		
+		ByteArrayInputStream bais 	= new ByteArrayInputStream(msgdata);
+		DataInputStream respdis 	= new DataInputStream(bais);
+		
+		//What Type..
+		MiniByte type = MiniByte.ReadFromStream(respdis);
+		MiniData data = MiniData.ReadFromStream(respdis);
+		
+		//Convert
+		MLSPacketGETResp mls = MLSPacketGETResp.convertMiniDataVersion(data);
+	
+		//Close the streams..
+		dis.close();
+		in.close();
+		dos.close();
+		out.close();
+		
+		return mls;
+	}
+
 	@Override
 	public Command getFunction() {
 		return new maxima();

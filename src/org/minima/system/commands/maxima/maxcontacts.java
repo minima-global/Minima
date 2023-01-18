@@ -64,7 +64,7 @@ public class maxcontacts extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","contact","id","publickey"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","contact","id","publickey","enable"}));
 	}
 	
 	@Override
@@ -147,7 +147,29 @@ public class maxcontacts extends Command {
 			
 			//Refresh
 			max.PostMessage(MaximaManager.MAXIMA_REFRESH);
+		
+		}else if(func.equals("clearallowed")) {
 			
+			max.getContactsManager().clearAllowedContactRequest();
+			details.put("allowed", "none");
+			
+		}else if(func.equals("addallowed")) {
+			
+			String pubkey = getParam("publickey");
+			max.getContactsManager().addValidContactRequest(pubkey);
+			
+			details.put("added", pubkey);
+			
+		}else if(func.equals("allallowed")) {
+			
+			boolean enable = getBooleanParam("enable");
+			
+			max.getContactsManager().outsideContactAllowed(enable);
+			
+			details.put("allcontactrequest", enable);
+			
+			ret.put("response", details);
+		
 		}else if(func.equals("add")) {
 			
 			//Get the contact address
@@ -160,7 +182,7 @@ public class maxcontacts extends Command {
 			
 			//Now convert into the correct message..
 			Message sender = maxima.createSendMessage(address, MaximaContactManager.CONTACT_APPLICATION, mdata);
-			
+					
 			//Get the message
 			MaximaMessage maxmessage = (MaximaMessage) sender.getObject("maxima");
 			
