@@ -151,7 +151,7 @@ public class mysql extends Command {
 			TxBlock lastblock = null;
 			while(!finished){
 			
-				long ender = startload+50;
+				long ender = startload+100;
 				MinimaLogger.log("Transfer from "+startload+" to "+(ender-1));
 				
 				//Load blocks from the archive
