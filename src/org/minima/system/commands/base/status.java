@@ -164,8 +164,8 @@ public class status extends Command {
 		database.put("userdb", MiniFormat.formatSize(MinimaDB.getDB().getUserDBFileSize()));
 		database.put("p2pdb", MiniFormat.formatSize(MinimaDB.getDB().getP2PFileSize()));
 		
-		long mdsfiles = MiniFile.getTotalFileSize(Main.getInstance().getMDSManager().getRootMDSFolder());
-		database.put("mds", MiniFormat.formatSize(mdsfiles));
+//		long mdsfiles = MiniFile.getTotalFileSize(Main.getInstance().getMDSManager().getRootMDSFolder());
+//		database.put("mds", MiniFormat.formatSize(mdsfiles));
 		
 		files.put("files", database);
 
