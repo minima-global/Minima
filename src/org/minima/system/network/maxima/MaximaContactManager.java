@@ -45,11 +45,11 @@ public class MaximaContactManager extends MessageProcessor {
 	/**
 	 * Are Users alklowed to add you as a contact without your say so..
 	 */
-	public boolean isAllowedContactRequest() {
+	public boolean isAllowedAll() {
 		return mEnableOutsideContactRequest;
 	}
 	
-	public void outsideContactAllowed(boolean zAllow) {
+	public void enableAllowAll(boolean zAllow) {
 		mEnableOutsideContactRequest = zAllow;
 	}
 	
@@ -63,6 +63,10 @@ public class MaximaContactManager extends MessageProcessor {
 	
 	public void clearAllowedContactRequest() {
 		mAllowedContacts.clear();
+	}
+	
+	public ArrayList<String> getAllowed(){
+		return mAllowedContacts;
 	}
 	
 	public JSONObject getMaximaContactInfo(boolean zIntro, boolean zDelete) {
@@ -129,10 +133,7 @@ public class MaximaContactManager extends MessageProcessor {
 			
 			//Convert to a JSON
 			MiniString datastr 		= new MiniString(dat.getBytes());
-			
 			JSONObject contactjson 	= (JSONObject) new JSONParser().parse(datastr.toString());
-			
-			MinimaLogger.log("MAXCONTACTS_RECMESSAGE CONTACT : "+contactjson.toString());
 			
 			//Process this special contacts message..
 			String contactkey = (String) contactjson.get("publickey"); 

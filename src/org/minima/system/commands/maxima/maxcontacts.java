@@ -123,6 +123,8 @@ public class maxcontacts extends Command {
 				//And add..
 				allcontacts.add(conjson);
 			}
+			
+			details.put("allowall", max.getContactsManager().isAllowedAll());
 			details.put("contacts", allcontacts);
 			
 		}else if(func.equals("mls")) {
@@ -155,21 +157,28 @@ public class maxcontacts extends Command {
 			
 		}else if(func.equals("addallowed")) {
 			
-			String pubkey = getParam("publickey");
-			max.getContactsManager().addValidContactRequest(pubkey);
+			MiniData pubkey = getDataParam("publickey");
+			max.getContactsManager().addValidContactRequest(pubkey.to0xString());
 			
 			details.put("added", pubkey);
 			
-		}else if(func.equals("allallowed")) {
+		}else if(func.equals("listallowed")) {
+			
+			ArrayList<String> allowed = max.getContactsManager().getAllowed();
+			JSONArray arr = new JSONArray();
+			for(String all : allowed) {
+				arr.add(all);
+			}
+			details.put("allowed", allowed);
+			
+		}else if(func.equals("allowall")) {
 			
 			boolean enable = getBooleanParam("enable");
 			
-			max.getContactsManager().outsideContactAllowed(enable);
+			max.getContactsManager().enableAllowAll(enable);
 			
 			details.put("allcontactrequest", enable);
 			
-			ret.put("response", details);
-		
 		}else if(func.equals("add")) {
 			
 			//Get the contact address
