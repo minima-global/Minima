@@ -7,8 +7,11 @@ import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.wallet.Wallet;
+import org.minima.objects.Coin;
+import org.minima.objects.CoinProof;
 import org.minima.objects.IBD;
 import org.minima.objects.TxBlock;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
@@ -16,6 +19,7 @@ import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.utils.BIP39;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.mysql.MySQLConnect;
 
@@ -27,7 +31,7 @@ public class mysql extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database","user","password","keys","keyuses","phrase"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database","user","password","keys","keyuses","phrase","address"}));
 	}
 	
 	@Override
@@ -58,21 +62,27 @@ public class mysql extends Command {
 			
 			TxBlock archlastblock 	= arch.loadLastBlock();
 			TxBlock archfirstblock	= arch.loadFirstBlock();
-			long archtotal 			= archfirstblock.getTxPoW().getBlockNumber().sub(archlastblock.getTxPoW().getBlockNumber()).getAsLong();
+			long archtotal 			= 0;
+			JSONObject archresp = new JSONObject();
+			archresp.put("archivestart", -1);
+			archresp.put("archiveend", -1);
+			archresp.put("archivetotal", 0);
+			
+			if(archlastblock != null || archfirstblock!=null) {
+				archtotal = archfirstblock.getTxPoW().getBlockNumber().sub(archlastblock.getTxPoW().getBlockNumber()).getAsLong();
+				archresp.put("archivestart", archlastblock.getTxPoW().getBlockNumber().getAsLong());
+				archresp.put("archiveend", archfirstblock.getTxPoW().getBlockNumber().getAsLong());
+				archresp.put("archivetotal", archtotal);
+			}
 			
 			JSONObject mysqlresp = new JSONObject();
 			mysqlresp.put("mysqlstart", lastblock);
 			mysqlresp.put("mysqlend", firstblock);
 			mysqlresp.put("mysqltotal", total);
 			
-			JSONObject archresp = new JSONObject();
-			archresp.put("archivestart", archlastblock.getTxPoW().getBlockNumber().getAsLong());
-			archresp.put("archiveend", archfirstblock.getTxPoW().getBlockNumber().getAsLong());
-			archresp.put("archivetotal", archtotal);
-			
 			JSONObject resp = new JSONObject();
-			resp.put("mysql", mysqlresp);
 			resp.put("archive", archresp);
+			resp.put("mysql", mysqlresp);
 			
 			ret.put("response", resp);
 		
@@ -132,6 +142,12 @@ public class mysql extends Command {
 			ret.put("response", resp);
 			
 		}else if(action.equals("update")) {
+			
+			//Do we have any block
+			int size = arch.getSize();
+			if(size==0) {
+				throw new CommandException("No blocks in ArchiveDB");
+			}
 			
 			//Load the files from Archive..
 			long firstarch			= arch.loadFirstBlock().getTxPoW().getBlockNumber().getAsLong();
@@ -212,8 +228,8 @@ public class mysql extends Command {
 			archresp.put("archivetotal", archtotal);
 			
 			JSONObject resp = new JSONObject();
-			resp.put("mysql", mysqlresp);
 			resp.put("archive", archresp);
+			resp.put("mysql", mysqlresp);
 			
 			ret.put("response", resp);
 			
@@ -385,6 +401,65 @@ public class mysql extends Command {
 			
 			//And NOW shut down..
 			Main.getInstance().stopMessageProcessor();
+			
+		}else if(action.equals("addresscheck")) {
+			
+			//Which address are we looking for
+			String address = getAddressParam("address");
+			
+			//Cycle through
+			JSONObject resp 	= new JSONObject();
+			JSONArray inarr 	= new JSONArray();
+			JSONArray outarr 	= new JSONArray();
+			MiniNumber firstStart   = MiniNumber.ZERO;
+			while(true) {
+				
+				//Create an IBD for the mysql data
+				ArrayList<TxBlock> mysqlblocks = mysql.loadBlockRange(firstStart);
+				if(mysqlblocks.size()==0) {
+					//No blocks left
+					break;
+				}
+				
+				for(TxBlock block : mysqlblocks) {
+					
+					TxPoW txp 			= block.getTxPoW();
+					long blocknumber 	= txp.getBlockNumber().getAsLong();
+					
+					//Created
+					ArrayList<Coin> outputs 		= block.getOutputCoins();
+					for(Coin cc : outputs) {
+						if(cc.getAddress().to0xString().equals(address)) {
+							MinimaLogger.log("BLOCK "+blocknumber+" CREATED COIN : "+cc.toString());
+							
+							JSONObject created = new JSONObject();
+							created.put("block", blocknumber);
+							created.put("coin", cc.toJSON());
+							outarr.add(created);
+						}
+					}
+					
+					//Spent
+					ArrayList<CoinProof> inputs  	= block.getInputCoinProofs();
+					for(CoinProof incoin : inputs) {
+						if(incoin.getCoin().getAddress().to0xString().equals(address)) {
+							MinimaLogger.log("BLOCK "+blocknumber+" SPENT COIN : "+incoin.getCoin().toString());
+							
+							JSONObject spent = new JSONObject();
+							spent.put("block", blocknumber);
+							spent.put("coin", incoin.getCoin().toJSON());
+							inarr.add(spent);
+						}
+					}
+					
+					//Start from here
+					firstStart = txp.getBlockNumber().increment();
+				}
+			}
+			
+			resp.put("created", outarr);
+			resp.put("spent", inarr);
+			ret.put("coins", resp);
 			
 		}else {
 			throw new CommandException("Invalid action : "+action);
