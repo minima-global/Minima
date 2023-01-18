@@ -153,7 +153,7 @@ public class maxcontacts extends Command {
 		}else if(func.equals("clearallowed")) {
 			
 			max.getContactsManager().clearAllowedContactRequest();
-			details.put("allowed", "none");
+			details.put("allowed", new JSONArray());
 			
 		}else if(func.equals("addallowed")) {
 			
