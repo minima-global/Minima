@@ -128,7 +128,7 @@ public class maxcontacts extends Command {
 				allcontacts.add(conjson);
 			}
 			
-			details.put("allowall", max.getContactsManager().isAllowedAll());
+			details.put("allowallcontacts", max.getContactsManager().isAllowedAll());
 			details.put("contacts", allcontacts);
 			
 		}else if(func.equals("mls")) {
@@ -200,7 +200,7 @@ public class maxcontacts extends Command {
 			
 			boolean enable = getBooleanParam("enable");
 			
-			max.getContactsManager().enableAllowAll(enable);
+			max.getContactsManager().setAllowContact(enable);
 			
 			details.put("allcontactrequest", enable);
 			

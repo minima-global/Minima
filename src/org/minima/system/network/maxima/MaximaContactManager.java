@@ -49,13 +49,16 @@ public class MaximaContactManager extends MessageProcessor {
 		return mEnableOutsideContactRequest;
 	}
 	
-	public void enableAllowAll(boolean zAllow) {
+	public void setAllowContact(boolean zAllow) {
 		mEnableOutsideContactRequest = zAllow;
+		
+		//Save to DB
+		MinimaDB.getDB().getUserDB().setMaximaAllowContacts(zAllow);
+		MinimaDB.getDB().saveUserDB();
 	}
 	
 	public void addValidContactRequest(String zPublicKey) {
 		MinimaLogger.log("Valid Contact Request added : "+zPublicKey);
-		
 		if(!mAllowedContacts.contains(zPublicKey)) {
 			mAllowedContacts.add(zPublicKey);
 		}

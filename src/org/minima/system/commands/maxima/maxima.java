@@ -222,8 +222,6 @@ public class maxima extends Command {
 			for(String all : allperm) {
 				arr.add(all);
 			}
-			
-			max.clearPermanentMaxima();
 			ret.put("response", arr);
 		
 		}else if(func.equals("getmlsaddress")) {
@@ -260,12 +258,21 @@ public class maxima extends Command {
 			
 			//Now send that..
 			MLSPacketGETResp resp = sendMLSMaxPacket(host, port, maxpacket);
+			details.put("publickey", pubkey);
+			details.put("mls", MLSaddress);
 			
-			//Now send it..
-			details.put("publickey", resp.toJSON());
-			details.put("mls", resp.toJSON());
-			details.put("mlsresponse", resp.toJSON());
-			ret.put("response", details);
+			if(resp == null) {
+				//Now send it..
+				details.put("success", false);
+				details.put("mlsresponse", "{}");
+				ret.put("response", details);
+				
+			}else {
+				//Now send it..
+				details.put("success", true);
+				details.put("mlsresponse", resp.toJSON());
+				ret.put("response", details);
+			}
 			
 		}else if(func.equals("send")) {
 			
