@@ -224,7 +224,7 @@ public class maxima extends Command {
 			}
 			ret.put("response", arr);
 		
-		}else if(func.equals("getmlsaddress")) {
+		}else if(func.equals("getaddress")) {
 			
 			//Get the contact permanent address
 			String address 	= getParam("permanent");
