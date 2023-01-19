@@ -92,7 +92,7 @@ public class maxima extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"action","name","id","to",
-				"publickey","application","data","poll","host","permanent"}));
+				"publickey","application","data","poll","host"}));
 	}
 	
 	@Override
@@ -132,7 +132,7 @@ public class maxima extends Command {
 		}else if(func.equals("staticmls")) {
 		
 			String host = getParam("host");
-			if(!host.equals("clear") && !checkAddress(host)) {
+			if(!host.equals("clear") && !checkValidMxAddress(host)) {
 				throw new CommandException("Invalid MLS address : MUST be of type Mx..@host:port");
 			}
 			
@@ -200,80 +200,6 @@ public class maxima extends Command {
 //			details.put("identity", ident);
 //			ret.put("response", details);
 	
-		}else if(func.equals("addpermanent")) {
-			MiniData pubkdat = getDataParam("publickey");
-			String publickey = pubkdat.to0xString();
-			max.addPermanentMaxima(publickey);
-			ret.put("response", "Added Permanent Maxima ID : "+publickey);
-		
-		}else if(func.equals("removepermanent")) {
-			MiniData pubkdat = getDataParam("publickey");
-			String publickey = pubkdat.to0xString();
-			max.removePermanentMaxima(publickey);
-			ret.put("response", "Removed Permanent Maxima ID : "+publickey);
-		
-		}else if(func.equals("clearpermanent")) {
-			max.clearPermanentMaxima();
-			ret.put("response", "Cleared ALL Permanent Maxima ID");
-		
-		}else if(func.equals("listpermanent")) {
-			ArrayList<String> allperm = max.getAllPermanent();
-			JSONArray arr = new JSONArray();
-			for(String all : allperm) {
-				arr.add(all);
-			}
-			ret.put("response", arr);
-		
-		}else if(func.equals("getaddress")) {
-			
-			//Get the contact permanent address
-			String address 	= getParam("permanent");
-			
-			if(!address.startsWith("MAXIMA#")) {
-				throw new CommandException("Permanent address MUST start with MAXIMA# .. format MAXIMA#PUBKEY#MLS_ADDRESS");
-			}
-			
-			//Starts with MLS
-			int pubkeystart = address.indexOf("#");
-			int pubkeyend   = address.indexOf("#", pubkeystart+1);
-				
-			String pubkey 	  = address.substring(pubkeystart+1, pubkeyend);
-			String MLSaddress = address.substring(pubkeyend+1);
-			
-			//Create a Get req
-			MLSPacketGETReq req = new MLSPacketGETReq(pubkey, "0x00");
-			MiniData reqdata 	= MiniData.getMiniDataVersion(req);
-			
-			Message getreq 	= createSendMessage(MLSaddress,MaximaManager.MAXIMA_MLS_GETAPP,reqdata);
-			
-			//Who to..
-			String host 	= getreq.getString("tohost");
-			int port		= getreq.getInteger("toport");
-			
-			//Create the packet
-			MiniData maxpacket = MaxMsgHandler.constructMaximaData(getreq);
-			if(maxpacket == null) {
-				throw new CommandException("Could not build Maxima message in time..");
-			}
-			
-			//Now send that..
-			MLSPacketGETResp resp = sendMLSMaxPacket(host, port, maxpacket);
-			details.put("publickey", pubkey);
-			details.put("mls", MLSaddress);
-			
-			if(resp == null) {
-				//Now send it..
-				details.put("success", false);
-				details.put("mlsresponse", "{}");
-				ret.put("response", details);
-				
-			}else {
-				//Now send it..
-				details.put("success", true);
-				details.put("mlsresponse", resp.toJSON());
-				ret.put("response", details);
-			}
-			
 		}else if(func.equals("send")) {
 			
 			if(!(existsParam("to") || existsParam("id")|| existsParam("publickey"))  || !existsParam("application") || !existsParam("data") ) {
@@ -453,7 +379,7 @@ public class maxima extends Command {
 	}
 
 	//Check an MLS address
-	public static boolean checkAddress(String zMLS) {
+	public boolean checkValidMxAddress(String zMLS) {
 		
 		if(!zMLS.startsWith("Mx")) {
 			return false;
@@ -468,60 +394,8 @@ public class maxima extends Command {
 		return true;
 	}
 	
-	public static MLSPacketGETResp sendMLSMaxPacket(String zHost, int zPort, MiniData zMaxMessage) throws IOException {
-		
-		//Open the socket..
-		Socket sock = new Socket();
-
-		//20 seconds to connect
-		sock.connect(new InetSocketAddress(zHost, zPort), 20000);
-		
-		//20 seconds to read
-		sock.setSoTimeout(20000);
-		
-		//Create the streams..
-		OutputStream out 		= sock.getOutputStream();
-		DataOutputStream dos 	= new DataOutputStream(out);
-		
-		InputStream in			= sock.getInputStream();
-		DataInputStream dis 	= new DataInputStream(in);
-		
-		//Write the data
-		zMaxMessage.writeDataStream(dos);
-		dos.flush();
-		
-		//Tell the NIO
-		Main.getInstance().getNIOManager().getTrafficListener().addWriteBytes(zMaxMessage.getLength());
-	
-		//Read the data
-		MiniData resp 	= MiniData.ReadFromStream(dis);
-		byte[] msgdata 	= resp.getBytes();
-		
-		//Tell the NIO
-		Main.getInstance().getNIOManager().getTrafficListener().addReadBytes(resp.getLength());
-		
-		ByteArrayInputStream bais 	= new ByteArrayInputStream(msgdata);
-		DataInputStream respdis 	= new DataInputStream(bais);
-		
-		//What Type..
-		MiniByte type = MiniByte.ReadFromStream(respdis);
-		MiniData data = MiniData.ReadFromStream(respdis);
-		
-		//Convert
-		MLSPacketGETResp mls = MLSPacketGETResp.convertMiniDataVersion(data);
-	
-		//Close the streams..
-		dis.close();
-		in.close();
-		dos.close();
-		out.close();
-		
-		return mls;
-	}
-
 	@Override
 	public Command getFunction() {
 		return new maxima();
 	}
-
 }

@@ -28,7 +28,7 @@ import org.minima.utils.messages.Message;
 public class maxcontacts extends Command {
 
 	public maxcontacts() {
-		super("maxcontacts","[action:list|mls|add|remove|search] (contact:) (id:) (publickey:) - Manage your Maxima contacts");
+		super("maxcontacts","[action:list|add|remove|search] (contact:) (id:) (publickey:) - Manage your Maxima contacts");
 	}
 	
 	@Override
@@ -39,7 +39,6 @@ public class maxcontacts extends Command {
 				+ "\n"
 				+ "action:\n"
 				+ "    list : List your Maxima contacts to see their id, address details, MLS and if they are on the same chain.\n"
-				+ "    mls : Send a message to your contacts to refresh your MLS (Minima Location Service) details.\n"
 				+ "    add : Add a new contact. Use with the 'contact' parameter.\n"
 				+ "    remove : Remove a Maxima contact. Will also remove you from their contacts. Use with the 'id' parameter.\n"
 				+ "    search : Search for a contact. Use with the 'id' or 'publickey' parameter.\n"
@@ -55,9 +54,9 @@ public class maxcontacts extends Command {
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
-				+ "maxcontacts action:list\n"
+				+ "maxcontacts\n"
 				+ "\n"
-				+ "maxcontacts action:mls\n"
+				+ "maxcontacts action:list\n"
 				+ "\n"
 				+ "maxcontacts action:add contact:MxG18H..\n"
 				+ "\n"
@@ -131,80 +130,15 @@ public class maxcontacts extends Command {
 			details.put("allowallcontacts", max.getContactsManager().isAllowedAll());
 			details.put("contacts", allcontacts);
 			
-		}else if(func.equals("mls")) {
-			
-			//Send a message refreshing the MLS details
-			Message mls = new Message(MaximaManager.MAXIMA_CHECK_MLS);
-			mls.addBoolean("force", true);
-			Main.getInstance().getMaxima().PostMessage(mls);
-
-			details.put("mls", "Refreshing all contacts via MLS service");
-			
-		}else if(func.equals("myname")) {
-			
-			String name = getParam("name");
-			name = name.replace("\"", "");
-			name = name.replace("'", "");
-			name = name.replace(";", "");
-			
-			MinimaDB.getDB().getUserDB().setMaximaName(name);
-			
-			details.put("name", name);
-			
-			//Refresh
-			max.PostMessage(MaximaManager.MAXIMA_REFRESH);
-		
-		}else if(func.equals("mlsinfo")) {
-			
-			JSONArray alldets = new JSONArray();
-			
-			MLSService serv = max.getMLSService();
-			
-			Hashtable<String, MLSPacketSET> allmls = serv.getCompleteMLS();
-			Enumeration<String> pubkeys = allmls.keys();
-			while(pubkeys.hasMoreElements()) {
-				
-				String pubkey 		= pubkeys.nextElement();
-				MLSPacketSET mls 	= allmls.get(pubkey);
-				
-				JSONObject entry = new JSONObject();
-				entry.put("publickey", pubkey);
-				entry.put("mlsallowed", mls.toJSON());
-				alldets.add(entry);
-			}
-			
-			details.put("mlsservice", alldets);
-			
-		}else if(func.equals("clearallowed")) {
-			
-			max.getContactsManager().clearAllowedContactRequest();
-			details.put("allowed", new JSONArray());
-			
-		}else if(func.equals("addallowed")) {
-			
-			MiniData pubkey = getDataParam("publickey");
-			max.getContactsManager().addValidContactRequest(pubkey.to0xString());
-			
-			details.put("added", pubkey);
-			
-		}else if(func.equals("listallowed")) {
-			
-			ArrayList<String> allowed = max.getContactsManager().getAllowed();
-			JSONArray arr = new JSONArray();
-			for(String all : allowed) {
-				arr.add(all);
-			}
-			details.put("allowed", allowed);
-			
-		}else if(func.equals("allowall")) {
-			
-			boolean enable = getBooleanParam("enable");
-			
-			max.getContactsManager().setAllowContact(enable);
-			
-			details.put("allcontactrequest", enable);
-			
 		}else if(func.equals("add")) {
+			
+			//Are we allowing users.. ?
+			if(!max.getContactsManager().isAllowedAll()) {
+				ArrayList<String> allowed = max.getContactsManager().getAllowed();
+				if(allowed.size()==0) {
+					throw new CommandException("You have disabled adding contacts and have not allowed any public keys - use maxextra action:addallowed.. ");
+				}
+			}
 			
 			//Get the contact address
 			String address 	= getParam("contact");

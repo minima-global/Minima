@@ -975,8 +975,6 @@ public class MaximaManager extends MessageProcessor {
 				MiniData mlsdata = MiniData.getMiniDataVersion(mlsget);
 				
 				//Send that
-				MinimaLogger.log("MLS Req received : replying "+mlsget.toJSON());
-				
 				maximaMessageStatus(nioc,mlsdata);
 				
 			}else {
