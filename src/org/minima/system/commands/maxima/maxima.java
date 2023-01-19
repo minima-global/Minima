@@ -229,8 +229,8 @@ public class maxima extends Command {
 			//Get the contact permanent address
 			String address 	= getParam("permanent");
 			
-			if(!address.startsWith("MLS#")) {
-				throw new CommandException("Permanent address MUST start with MLS:");
+			if(!address.startsWith("MAXIMA#")) {
+				throw new CommandException("Permanent address MUST start with MAXIMA# .. format MAXIMA#PUBKEY#MLS_ADDRESS");
 			}
 			
 			//Starts with MLS
