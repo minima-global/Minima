@@ -24,7 +24,6 @@ import org.minima.system.network.maxima.mls.MLSPacketGETReq;
 import org.minima.system.network.maxima.mls.MLSPacketGETResp;
 import org.minima.system.network.maxima.mls.MLSPacketSET;
 import org.minima.system.network.maxima.mls.MLSService;
-import org.minima.utils.encrypt.SignVerify;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
