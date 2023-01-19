@@ -2,6 +2,8 @@ package org.minima.system.commands.maxima;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.maxima.MaximaContact;
@@ -17,6 +19,8 @@ import org.minima.system.network.maxima.MaxMsgHandler;
 import org.minima.system.network.maxima.MaximaContactManager;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaximaMessage;
+import org.minima.system.network.maxima.mls.MLSPacketSET;
+import org.minima.system.network.maxima.mls.MLSService;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -150,6 +154,27 @@ public class maxcontacts extends Command {
 			//Refresh
 			max.PostMessage(MaximaManager.MAXIMA_REFRESH);
 		
+		}else if(func.equals("mlsinfo")) {
+			
+			JSONArray alldets = new JSONArray();
+			
+			MLSService serv = max.getMLSService();
+			
+			Hashtable<String, MLSPacketSET> allmls = serv.getCompleteMLS();
+			Enumeration<String> pubkeys = allmls.keys();
+			while(pubkeys.hasMoreElements()) {
+				
+				String pubkey 		= pubkeys.nextElement();
+				MLSPacketSET mls 	= allmls.get(pubkey);
+				
+				JSONObject entry = new JSONObject();
+				entry.put("publickey", pubkey);
+				entry.put("mlsallowed", mls.toJSON());
+				alldets.add(entry);
+			}
+			
+			details.put("mlsservice", alldets);
+			
 		}else if(func.equals("clearallowed")) {
 			
 			max.getContactsManager().clearAllowedContactRequest();

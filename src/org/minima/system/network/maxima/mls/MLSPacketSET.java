@@ -48,7 +48,7 @@ public class MLSPacketSET implements Streamable {
 	public JSONObject toJSON() {
 		JSONObject ret = new JSONObject();
 		
-		ret.put("maximaidentity", mMaximaIdentity);
+		ret.put("maximaidentity", mMaximaIdentity.toString());
 		
 		JSONArray valid = new JSONArray();
 		for(String vv : mValidPubKeys) {

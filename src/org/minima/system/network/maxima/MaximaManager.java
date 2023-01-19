@@ -130,6 +130,14 @@ public class MaximaManager extends MessageProcessor {
 	String mMaximaMLSAddress;
 	boolean mHaveContacts = false;
 	
+	/**
+	 * Permanent Maxima address Users..
+	 */
+	public ArrayList<String> mPermanentMaxima = new ArrayList<>();
+	
+	/**
+	 * Are we Inited
+	 */
 	private boolean mInited 	= false;
 
 	/**
@@ -234,6 +242,29 @@ public class MaximaManager extends MessageProcessor {
 		
 		//Save this..
 		MinimaDB.getDB().saveUserDB();
+	}
+	
+	public ArrayList<String> getAllPermanent(){
+		return mPermanentMaxima;
+	}
+	
+	public void addPermanentMaxima(String zPublicKey) {
+		MinimaLogger.log("Permanent Maxima Publickey Added! : "+zPublicKey);
+		if(!mPermanentMaxima.contains(zPublicKey)) {
+			mPermanentMaxima.add(zPublicKey);
+		}
+	}
+	
+	public void removePermanentMaxima(String zPublicKey) {
+		mPermanentMaxima.remove(zPublicKey);
+	}
+	
+	public void clearPermanentMaxima() {
+		mPermanentMaxima.clear();
+	}
+	
+	public MLSService getMLSService() {
+		return mMLSService;
 	}
 	
 	public String getMLSHost() {
@@ -902,31 +933,6 @@ public class MaximaManager extends MessageProcessor {
 				//Check the MLS service for this 
 				MLSPacketSET mlspack = mMLSService.getData(req.getPublicKey());
 				
-				//PERMANENT MLS
-				if(mlspack == null) {
-					
-					//Check is for US
-					//..
-					
-					
-					//Create a response..
-//					MLSPacketGETResp mlsget = new MLSPacketGETResp(req.getPublicKey(),mlspack.getMaximaAddress(),req.getRandomUID());
-					MLSPacketGETResp mlsget = new MLSPacketGETResp(
-												req.getPublicKey(),
-												getRandomMaximaAddress(),
-												req.getRandomUID());
-					
-					//Convert to a MiniData structure
-					MiniData mlsdata = MiniData.getMiniDataVersion(mlsget);
-					
-					//Send that
-					MinimaLogger.log("MLS UNKNOWN USER Req received : replying "+mlsget.toJSON());
-					
-					maximaMessageStatus(nioc,mlsdata);
-					
-					return;
-				}
-				
 				//Do we have data
 				if(mlspack == null) {
 					MinimaLogger.log("Unknown publickey in MLSService "+req.getPublicKey());
@@ -935,10 +941,17 @@ public class MaximaManager extends MessageProcessor {
 				}
 				
 				//Is THIS user allowed to see this data
-				if(!mlspack.isValidPublicKey(maxmsg.mFrom.to0xString())) {
+				boolean allowed 	= mlspack.isValidPublicKey(maxmsg.mFrom.to0xString());
+				boolean ispermanent = mPermanentMaxima.contains(req.getPublicKey());
+				
+				if(!allowed && !ispermanent) {
 					MinimaLogger.log("Invalid MLS request for "+req.getPublicKey()+" by "+maxmsg.mFrom.to0xString());
 					maximaMessageStatus(nioc,MAXIMA_UNKNOWN);
 					return;
+				}
+				
+				if(ispermanent) {
+					MinimaLogger.log("Request for Permanent Maxima ID : "+req.getPublicKey());
 				}
 				
 				//Create a response..

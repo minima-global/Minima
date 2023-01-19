@@ -92,7 +92,7 @@ public class maxima extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"action","name","id","to",
-				"publickey","application","data","poll","host"}));
+				"publickey","application","data","poll","host","permanent"}));
 	}
 	
 	@Override
@@ -199,14 +199,48 @@ public class maxima extends Command {
 //			String ident = max.getMaximaIdentity();  
 //			details.put("identity", ident);
 //			ret.put("response", details);
+	
+		}else if(func.equals("addpermanent")) {
+			MiniData pubkdat = getDataParam("publickey");
+			String publickey = pubkdat.to0xString();
+			max.addPermanentMaxima(publickey);
+			ret.put("response", "Added Permanent Maxima ID : "+publickey);
+		
+		}else if(func.equals("removepermanent")) {
+			MiniData pubkdat = getDataParam("publickey");
+			String publickey = pubkdat.to0xString();
+			max.removePermanentMaxima(publickey);
+			ret.put("response", "Removed Permanent Maxima ID : "+publickey);
+		
+		}else if(func.equals("clearpermanent")) {
+			max.clearPermanentMaxima();
+			ret.put("response", "Cleared ALL Permanent Maxima ID");
+		
+		}else if(func.equals("listpermanent")) {
+			ArrayList<String> allperm = max.getAllPermanent();
+			JSONArray arr = new JSONArray();
+			for(String all : allperm) {
+				arr.add(all);
+			}
 			
-		}else if(func.equals("perm")) {
+			max.clearPermanentMaxima();
+			ret.put("response", arr);
+		
+		}else if(func.equals("getmlsaddress")) {
 			
-//			//Get the contact address
-//			String address 	= getParam("to");
+			//Get the contact permanent address
+			String address 	= getParam("permanent");
 			
-			String pubkey 		= "0x30819F300D06092A864886F70D010101050003818D00308189028181009B7B3736C00402EA2803ACC6AD75CCFD5D1AADA85006071F78AB94446D7710714C936CE3E876C3A7D95D0972827BBD7C6923463EEC55AB6D55AEEE23852C214035D07ADB60C1D36A451AD909C75CF25DBFDC27DC9941B687EFA8278C3298122DD9D9C19D162A26D9BFCC98159F21130C2FDF874D39D02C5709B36092B9BA7D990203010001";
-			String MLSaddress 	= "MxG18HGG6FJ038614Y8CW46US6G20810K0070CD00Z83282G60G19ME9W1E1AHJVYWF2UDBKR3DQD6024HTGP0F116CWVW5BYBASYJ1NUH9VEFRZ1AQRE4BHRK9SB0FS64VM8BJUTEHGRC6DDM1EYNQ5YHR4HWK4EY6AGC05T108NH0SWFUN1MDEZE0MQJCM331SZ84NUYYKQTJ52CU0712ZS8GK39FSPWEBFFJTPYWQ91G2V1W75P7PPWHQ2RH4S10608007UYECW9@172.28.240.1:9001"; 
+			if(!address.startsWith("MLS#")) {
+				throw new CommandException("Permanent address MUST start with MLS:");
+			}
+			
+			//Starts with MLS
+			int pubkeystart = address.indexOf("#");
+			int pubkeyend   = address.indexOf("#", pubkeystart+1);
+				
+			String pubkey 	  = address.substring(pubkeystart+1, pubkeyend);
+			String MLSaddress = address.substring(pubkeyend+1);
 			
 			//Create a Get req
 			MLSPacketGETReq req = new MLSPacketGETReq(pubkey, "0x00");
@@ -228,47 +262,10 @@ public class maxima extends Command {
 			MLSPacketGETResp resp = sendMLSMaxPacket(host, port, maxpacket);
 			
 			//Now send it..
-			details.put("mlsreq", resp.toJSON());
+			details.put("publickey", resp.toJSON());
+			details.put("mls", resp.toJSON());
+			details.put("mlsresponse", resp.toJSON());
 			ret.put("response", details);
-			
-			if(true) {
-				return ret;
-			}
-			
-			//Starts with MLS
-//			int pubkeystart = address.indexOf(":");
-//			int pubkeyend   = address.indexOf(":", pubkeystart+1);
-//				
-//			String pubkey 	  = address.substring(pubkeystart+1, pubkeyend);
-//			String MLSaddress = address.substring(pubkeyend+1);
-//			
-//			MinimaLogger.log("PUBKEY : "+pubkey);
-//			MinimaLogger.log("MLS    : "+MLSaddress);
-//			
-//			//Create a Get req
-//			MLSPacketGETReq req = new MLSPacketGETReq(pubkey, "0x00");
-//			
-//			//Get the data version
-//			MiniData reqdata = MiniData.getMiniDataVersion(req);
-//			
-//			Message getreq 	= createSendMessage(MLSaddress,MaximaManager.MAXIMA_MLS_GETAPP,reqdata);
-//			
-//			//Who to..
-//			String host 	= getreq.getString("tohost");
-//			int port		= getreq.getInteger("toport");
-//			
-//			//Create the packet
-//			MiniData maxpacket = MaxMsgHandler.constructMaximaData(getreq);
-//			if(maxpacket == null) {
-//				throw new CommandException("Could not build Maxima message in time..");
-//			}
-//			
-//			//Now send that..
-//			MLSPacketGETResp resp = sendMLSMaxPacket(host, port, maxpacket);
-//			
-//			//Now send it..
-//			details.put("mlsreq", resp.toJSON());
-			
 			
 		}else if(func.equals("send")) {
 			
