@@ -100,6 +100,8 @@ public class multisig extends Command {
 				+ "\n"
 				+ "multisig action:sign file:multisig.txn\n"
 				+ "\n"
+				+ "multisig action:sign file:multisig.txn password:your_password\n"
+				+ "\n"
 				+ "multisig action:view file:multisig.txn\n"
 				+ "\n"
 				+ "multisig action:post file:signed_multispend_1673351592845.txn\n"
@@ -109,7 +111,8 @@ public class multisig extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id","action","root","required","file","publickeys","amount", "tokenid","coinid","address"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","action","root","required",
+				"file","publickeys","amount", "tokenid","coinid","address","password"}));
 	}
 	
 	@Override

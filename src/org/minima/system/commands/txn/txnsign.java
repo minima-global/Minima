@@ -52,6 +52,8 @@ public class txnsign extends Command {
 				+ "\n"
 				+ "txnsign id:simpletxn publickey:auto\n"
 				+ "\n"
+				+ "txnsign id:simpletxn publickey:auto password:your_password\n"
+				+ "\n"
 				+ "txnsign id:multisig publickey:0xFD8B..\n"
 				+ "\n"
 				+ "txnsign id:simpletxn publickey:auto txnpostauto:true\n";
