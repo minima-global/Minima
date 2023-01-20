@@ -197,6 +197,8 @@ public class MaximaContactManager extends MessageProcessor {
 					}
 				}
 				
+				MinimaLogger.log("ADDED NEW MAXIMA CONTACT : "+name);
+				
 				//New Contact
 				mxcontact.setname(name);
 				mxcontact.setMinimaAddress(mxaddress);
@@ -294,6 +296,7 @@ public class MaximaContactManager extends MessageProcessor {
 			}
 			
 			//Delete the contact
+			MinimaLogger.log("DELETED MAXIMA CONTACT : "+mcontact.getName());
 			maxdb.deleteContact(id);
 			
 			//Contacts have changed
