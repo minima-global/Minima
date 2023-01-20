@@ -54,6 +54,8 @@ public class backup extends Command {
 				+ "\n"
 				+ "backup password:Longsecurepassword456\n"
 				+ "\n"
+				+ "backup password:Longsecurepassword456 confirm:password:Longsecurepassword456\n"
+				+ "\n"
 				+ "backup password:Longsecurepassword456 file:my-backup-01-Jan-22.bak\n"
 				+ "\n"
 				+ "backup auto:true\n";

@@ -59,6 +59,8 @@ public class vault extends Command {
 				+ "\n"
 				+ "vault action:passwordlock password:your_password\n"
 				+ "\n"
+				+ "vault action:passwordlock password:your_password confirm:your_password\n"
+				+ "\n"
 				+ "vault action:passwordunlock password:your_password\n";
 	}
 	
