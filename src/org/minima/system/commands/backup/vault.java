@@ -139,6 +139,9 @@ public class vault extends Command {
 			
 			//Get the password
 			String password = getParam("password");
+			if(password.contains(";")) {
+				throw new CommandException("Cannot use ; in password");
+			}
 			
 			//Is there a confirm
 			if(existsParam("confirm")) {
