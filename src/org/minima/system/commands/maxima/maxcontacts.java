@@ -139,6 +139,11 @@ public class maxcontacts extends Command {
 			//Get the contact address
 			String address 	= getParam("contact");
 
+			//Check is a valid address
+			if(!maxextra.checkValidMxAddress(address)) {
+				throw new CommandException("Invalid MX address : "+address);
+			}
+			
 			//What data..
 			JSONObject contactinfo 	= max.getContactsManager().getMaximaContactInfo(true,false);
 			MiniString datastr 		= new MiniString(contactinfo.toString());

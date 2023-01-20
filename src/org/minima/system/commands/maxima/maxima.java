@@ -117,27 +117,6 @@ public class maxima extends Command {
 			
 			ret.put("response", details);
 		
-		}else if(func.equals("staticmls")) {
-		
-			String host = getParam("host");
-			if(!host.equals("clear") && !checkValidMxAddress(host)) {
-				throw new CommandException("Invalid MLS address : MUST be of type Mx..@host:port");
-			}
-			
-			//Check is valid..
-			if(host.equals("clear")) {
-				max.setStaticMLS(false, "");
-			}else {
-				max.setStaticMLS(true, host);
-			}
-			
-			details.put("staticmls", max.isStaticMLS());
-			details.put("mls", max.getMLSHost());
-			ret.put("response", details);
-			
-			//Refresh
-			max.PostMessage(MaximaManager.MAXIMA_REFRESH);
-			
 		}else if(func.equals("setname")) {
 			
 			String name = getParam("name");
@@ -198,6 +177,11 @@ public class maxima extends Command {
 			String fullto = null;
 			if(existsParam("to")) {
 				fullto 	= getParam("to");
+				
+				//Check is a valid address
+				if(!maxextra.checkValidMxAddress(fullto)) {
+					throw new CommandException("Invalid MX address : "+fullto);
+				}
 				
 			}else if(existsParam("publickey")) {
 				
@@ -375,22 +359,6 @@ public class maxima extends Command {
 		sender.addString("msgid", hash.to0xString());
 		
 		return sender;
-	}
-
-	//Check an MLS address
-	public boolean checkValidMxAddress(String zMLS) {
-		
-		if(!zMLS.startsWith("Mx")) {
-			return false;
-		}
-		
-		int indexp 	= zMLS.indexOf("@");
-		int index 	= zMLS.indexOf(":");
-		if(indexp == -1 || index==-1) {
-			return false;
-		}
-		
-		return true;
 	}
 	
 	@Override
