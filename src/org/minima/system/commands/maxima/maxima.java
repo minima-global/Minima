@@ -233,11 +233,22 @@ public class maxima extends Command {
 
 			//What data
 			MiniData mdata 	= null;
+			
+			
 			if(isParamJSONObject("data")) {
 				MiniString datastr = new MiniString(getJSONObjectParam("data").toString());
 				mdata = new MiniData(datastr.getData());
 			}else {
-				mdata = getDataParam("data");
+				
+				if(!getParam("data").startsWith("0x")) {
+				
+					String text 	= getParam("data");
+					MiniString str 	= new MiniString(text);
+					mdata 			= new MiniData(str.getData());
+					
+				}else {
+					mdata = getDataParam("data");
+				}
 			} 
 			
 			//Now convert into the correct message..
