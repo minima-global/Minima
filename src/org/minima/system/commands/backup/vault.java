@@ -64,7 +64,7 @@ public class vault extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","seed","phrase","password"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","seed","phrase","password","confirm"}));
 	}
 	
 	@Override
@@ -137,6 +137,14 @@ public class vault extends Command {
 			
 			//Get the password
 			String password = getParam("password");
+			
+			//Is there a confirm
+			if(existsParam("confirm")) {
+				String confirm = getParam("confirm");
+				if(!password.equals(confirm)) {
+					throw new CommandException("Passwords do NOT match!");
+				}
+			}
 			
 			passwordLockDB(password);
 			
