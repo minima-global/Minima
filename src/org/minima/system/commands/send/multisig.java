@@ -187,7 +187,13 @@ public class multisig extends Command {
 			stateparams +="}";
 			
 			//Now construct the complete send function
-			String sendfunction = "send tokenid:"+tokenid+" amount:"+amount.toString()+" address:"+msaddress+" state:"+stateparams;
+			String sendfunction ="";
+			if(existsParam("password")) {
+				String password=getParam("password");
+				sendfunction = "send password:"+password+" tokenid:"+tokenid+" amount:"+amount.toString()+" address:"+msaddress+" state:"+stateparams;
+			}else {
+				sendfunction = "send tokenid:"+tokenid+" amount:"+amount.toString()+" address:"+msaddress+" state:"+stateparams;
+			}
 			
 			//Now run this!..
 			JSONArray result 		= Command.runMultiCommand(sendfunction);
