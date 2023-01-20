@@ -183,6 +183,27 @@ public class maxextra extends Command {
 			details.put("allowallcontacts", enable);
 			ret.put("response", details);
 		
+		}else if(action.equals("staticmls")) {
+		
+			String host = getParam("host");
+			if(!host.equals("clear") && !checkValidMxAddress(host)) {
+				throw new CommandException("Invalid MLS address : MUST be of type Mx..@host:port");
+			}
+			
+			//Check is valid..
+			if(host.equals("clear")) {
+				max.setStaticMLS(false, "");
+			}else {
+				max.setStaticMLS(true, host);
+			}
+			
+			details.put("staticmls", max.isStaticMLS());
+			details.put("mls", max.getMLSHost());
+			ret.put("response", details);
+			
+			//Refresh
+			max.PostMessage(MaximaManager.MAXIMA_REFRESH);
+			
 		}else {
 			throw new CommandException("Unknown action : "+action);
 		}
@@ -239,6 +260,22 @@ public class maxextra extends Command {
 		out.close();
 		
 		return mls;
+	}
+	
+	//Check an MLS address
+	public static boolean checkValidMxAddress(String zMaximaAddress) {
+		
+		if(!zMaximaAddress.startsWith("Mx")) {
+			return false;
+		}
+		
+		int indexp 	= zMaximaAddress.indexOf("@");
+		int index 	= zMaximaAddress.indexOf(":");
+		if(indexp == -1 || index==-1) {
+			return false;
+		}
+		
+		return true;
 	}
 	
 	@Override
