@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Random;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
@@ -27,6 +28,7 @@ import org.minima.system.commands.CommandException;
 import org.minima.system.commands.network.connect;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
+import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.system.network.webhooks.NotifyManager;
 import org.minima.utils.BIP39;
 import org.minima.utils.MinimaLogger;
@@ -213,6 +215,22 @@ public class archive extends Command {
 			
 			//Get the host
 			String fullhost = getParam("host");
+			
+			//Is it auto
+			if(fullhost.equals("auto")) {
+				
+				//Choose one from our default list
+				int size  	= P2PParams.DEFAULT_ARCHIVENODE_LIST.size();
+				int rand  	= new Random().nextInt(size);
+				
+				InetSocketAddress archaddr = P2PParams.DEFAULT_ARCHIVENODE_LIST.get(rand);
+				String ip 	= archaddr.getHostString();
+				int port    = archaddr.getPort();
+				fullhost	= ip+":"+port;
+				
+				MinimaLogger.log("RANDOM ARCHIVE HOST : "+rand+" host:"+fullhost);
+			}
+			
 			Message connectdata = connect.createConnectMessage(fullhost);
 			
 			String host = connectdata.getString("host");
