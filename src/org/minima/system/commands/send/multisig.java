@@ -20,6 +20,7 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.backup.vault;
 import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -410,8 +411,26 @@ public class multisig extends Command {
 			txnsigner	+= "txnexport id:"+txnname+" file:"+txnname+";"
 						+  "txndelete id:"+txnname;
 			
+			//Unlock DB at the start - rather than every time you run txnsign
+			boolean passwordlock = false;
+			if(existsParam("password") && !MinimaDB.getDB().getWallet().isBaseSeedAvailable()) {
+				
+				//Lets unlock the DB
+				vault.passowrdUnlockDB(getParam("password"));
+				 
+				//Lock at the end..
+				passwordlock = true;
+			}
+			
 			//Run it..
 			result = Command.runMultiCommand(txnsigner);
+			
+			//Are we locking the DB
+			if(passwordlock) {
+				//Lock the Wallet DB
+				vault.passwordLockDB(getParam("password"));
+			}
+			
 			ret.put("response", result);
 		
 		}else if(action.equals("post")) {
