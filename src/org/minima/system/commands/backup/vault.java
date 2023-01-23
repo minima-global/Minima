@@ -164,8 +164,25 @@ public class vault extends Command {
 						
 			ret.put("response", "All private keys restored!");
 			
-			//NOT WORKING YET!
+		}else if(action.equals("testphrase")) {
+			
+			//Check for one or the other..
+			String initphrase = getParam("phrase");
+			
+			//Clean it up..
+			String cleanphrase = BIP39.cleanSeedPhrase(initphrase);
+			
+			//Convert to a data hash
+			MiniData seed = BIP39.convertStringToSeed(cleanphrase);
+			
+			JSONObject json = new JSONObject();
+			json.put("phrase", cleanphrase);
+			json.put("seed", seed.to0xString());
+			
+			ret.put("response", json);
+			
 		}else if(action.equals("keyreset")) {
+			//NOT WORKING YET!
 			
 //			//Get the seed phrase
 //			String phrase = getParam("phrase");
