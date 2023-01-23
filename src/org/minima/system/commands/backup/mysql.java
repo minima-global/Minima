@@ -246,6 +246,9 @@ public class mysql extends Command {
 			String phrase = getParam("phrase","");
 			if(!phrase.equals("")) {
 			
+				//Clean it up..
+				String cleanphrase = BIP39.cleanSeedPhrase(phrase);
+				
 				//reset ALL the default data
 				Main.getInstance().archiveResetReady(true);
 				
@@ -253,13 +256,13 @@ public class mysql extends Command {
 				MinimaLogger.log("Resetting all wallet private keys..");
 				
 				//Convert that into a seed..
-				seed = BIP39.convertStringToSeed(phrase);
+				seed = BIP39.convertStringToSeed(cleanphrase);
 				
 				//Get the Wallet
 				Wallet wallet = MinimaDB.getDB().getWallet();
 				
 				//Set it..
-				wallet.updateSeedRow(phrase, seed.to0xString());
+				wallet.updateSeedRow(cleanphrase, seed.to0xString());
 				
 				//Now cycle through all the default wallet keys..
 				MinimaLogger.log("Creating a total of "+keys+" keys / addresses..");
