@@ -1,5 +1,6 @@
 package org.minima.system.commands.backup;
 
+import java.math.BigInteger;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,13 +8,19 @@ import java.util.Arrays;
 import org.minima.database.MinimaDB;
 import org.minima.database.wallet.SeedRow;
 import org.minima.database.wallet.Wallet;
+import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
+import org.minima.objects.keys.TreeKey;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.utils.BIP39;
+import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.encrypt.PasswordCrypto;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class vault extends Command {
@@ -66,7 +73,7 @@ public class vault extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","seed","phrase","password","confirm"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","seed","phrase","password","confirm","numkeys"}));
 	}
 	
 	@Override
@@ -175,9 +182,37 @@ public class vault extends Command {
 			//Convert to a data hash
 			MiniData seed = BIP39.convertStringToSeed(cleanphrase);
 			
+			//Create some keys
+			int numkeys = getNumberParam("numkeys",new MiniNumber(4)).getAsInt();
+			JSONArray arr = new JSONArray();
+			for(int i=0;i<numkeys;i++) {
+				
+				MinimaLogger.log("Creating key : "+i);
+				
+				//Get the modifier
+				MiniData modifier 	= new MiniData(new BigInteger(Integer.toString(i)));
+
+				//Now create a random private seed using the modifier
+				MiniData privseed 	= Crypto.getInstance().hashObjects(seed, modifier);
+				
+				//Make the TreeKey
+				TreeKey treekey 	= TreeKey.createDefault(privseed);
+				
+				//Now create a simple address..
+				String script = new String("RETURN SIGNEDBY("+treekey.getPublicKey()+")");
+				
+				//Get the address
+				Address addr = new Address(script);
+				
+				//Add to our list
+				String mxaddr = Address.makeMinimaAddress(addr.getAddressData());
+				arr.add(mxaddr);
+			}
+			
 			JSONObject json = new JSONObject();
 			json.put("phrase", cleanphrase);
 			json.put("seed", seed.to0xString());
+			json.put("address", arr);
 			
 			ret.put("response", json);
 			
