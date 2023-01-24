@@ -206,6 +206,11 @@ public class vault extends Command {
 				
 				//Add to our list
 				String mxaddr = Address.makeMinimaAddress(addr.getAddressData());
+				
+				//Create a JSON
+				JSONObject json = new JSONObject();
+//				json.
+				
 				arr.add(mxaddr);
 			}
 			
