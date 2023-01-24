@@ -77,7 +77,7 @@ public class vault extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","seed","phrase","password","confirm","numkeys"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","seed","keyuses","phrase","password","confirm","numkeys"}));
 	}
 	
 	@Override
@@ -228,6 +228,9 @@ public class vault extends Command {
 			//Get the seed phrase
 			String phrase = getParam("phrase");
 			
+			//Set the key uses to this..
+			int keyuses = getNumberParam("keyuses", new MiniNumber(100)).getAsInt();
+			
 			//Clean it up..
 			String cleanphrase = BIP39.cleanSeedPhrase(phrase);
 			
@@ -259,6 +262,9 @@ public class vault extends Command {
 			
 			//Now create all the keys..
 			wallet.initDefaultKeys(Wallet.NUMBER_GETADDRESS_KEYS, true);
+			
+			//Now Update the USES - since they may have been used before - we don;t know.. 
+			wallet.updateAllKeyUses(keyuses);
 			
 			//Now save the Databases..
 			MinimaDB.getDB().saveSQL();
