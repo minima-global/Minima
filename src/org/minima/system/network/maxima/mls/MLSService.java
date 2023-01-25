@@ -22,6 +22,10 @@ public class MLSService {
 		mMLSSetTime 	= zMilliTime;
 	}
 	
+	public Hashtable<String, MLSPacketSET> getCompleteMLS() {
+		return mCurrentMLS;
+	}
+	
 	//Remove OLD data
 	public void flushList() {
 		Hashtable<String, MLSPacketSET> newMLS = new Hashtable<>();

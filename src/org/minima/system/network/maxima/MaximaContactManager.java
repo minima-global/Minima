@@ -1,5 +1,7 @@
 package org.minima.system.network.maxima;
 
+import java.util.ArrayList;
+
 import org.minima.database.MinimaDB;
 import org.minima.database.maxima.MaximaContact;
 import org.minima.database.maxima.MaximaDB;
@@ -31,10 +33,43 @@ public class MaximaContactManager extends MessageProcessor {
 	
 	MaximaManager mManager;
 	
+	public boolean mEnableOutsideContactRequest = true;
+	public ArrayList<String> mAllowedContacts 	= new ArrayList<>();
+	
 	public MaximaContactManager(MaximaManager zManager) {
 		super("MAXIMA_CONTACTS");
 		
 		mManager = zManager;
+	}
+	
+	/**
+	 * Are Users alklowed to add you as a contact without your say so..
+	 */
+	public boolean isAllowedAll() {
+		return mEnableOutsideContactRequest;
+	}
+	
+	public void setAllowContact(boolean zAllow) {
+		mEnableOutsideContactRequest = zAllow;
+		
+		//Save to DB
+		MinimaDB.getDB().getUserDB().setMaximaAllowContacts(zAllow);
+		MinimaDB.getDB().saveUserDB();
+	}
+	
+	public void addValidContactRequest(String zPublicKey) {
+		MinimaLogger.log("Valid Contact Request added : "+zPublicKey);
+		if(!mAllowedContacts.contains(zPublicKey)) {
+			mAllowedContacts.add(zPublicKey);
+		}
+	}
+	
+	public void clearAllowedContactRequest() {
+		mAllowedContacts.clear();
+	}
+	
+	public ArrayList<String> getAllowed(){
+		return mAllowedContacts;
 	}
 	
 	public JSONObject getMaximaContactInfo(boolean zIntro, boolean zDelete) {
@@ -101,7 +136,6 @@ public class MaximaContactManager extends MessageProcessor {
 			
 			//Convert to a JSON
 			MiniString datastr 		= new MiniString(dat.getBytes());
-			
 			JSONObject contactjson 	= (JSONObject) new JSONParser().parse(datastr.toString());
 			
 			//Process this special contacts message..
@@ -152,6 +186,19 @@ public class MaximaContactManager extends MessageProcessor {
 			mxcontact.setLastSeen(System.currentTimeMillis());
 			
 			if(checkcontact == null) {
+				
+				//Are we allowing all contact requests
+				if(!mEnableOutsideContactRequest) {
+					
+					//make sure we have ok'ed this
+					if(!mAllowedContacts.contains(publickey)) {
+						MinimaLogger.log("[!] NOT ALLOWED CONTACT REQUEST FROM : "+contactjson.toString());
+						return;
+					}
+				}
+				
+				MinimaLogger.log("ADDED NEW MAXIMA CONTACT : "+name);
+				
 				//New Contact
 				mxcontact.setname(name);
 				mxcontact.setMinimaAddress(mxaddress);
@@ -249,6 +296,7 @@ public class MaximaContactManager extends MessageProcessor {
 			}
 			
 			//Delete the contact
+			MinimaLogger.log("DELETED MAXIMA CONTACT : "+mcontact.getName());
 			maxdb.deleteContact(id);
 			
 			//Contacts have changed

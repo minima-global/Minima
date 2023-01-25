@@ -24,7 +24,7 @@ import org.minima.utils.messages.Message;
 public class maxcontacts extends Command {
 
 	public maxcontacts() {
-		super("maxcontacts","[action:list|mls|add|remove|search] (contact:) (id:) (publickey:) - Manage your Maxima contacts");
+		super("maxcontacts","[action:list|add|remove|search] (contact:) (id:) (publickey:) - Manage your Maxima contacts");
 	}
 	
 	@Override
@@ -35,7 +35,6 @@ public class maxcontacts extends Command {
 				+ "\n"
 				+ "action:\n"
 				+ "    list : List your Maxima contacts to see their id, address details, MLS and if they are on the same chain.\n"
-				+ "    mls : Send a message to your contacts to refresh your MLS (Minima Location Service) details.\n"
 				+ "    add : Add a new contact. Use with the 'contact' parameter.\n"
 				+ "    remove : Remove a Maxima contact. Will also remove you from their contacts. Use with the 'id' parameter.\n"
 				+ "    search : Search for a contact. Use with the 'id' or 'publickey' parameter.\n"
@@ -51,9 +50,9 @@ public class maxcontacts extends Command {
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
-				+ "maxcontacts action:list\n"
+				+ "maxcontacts\n"
 				+ "\n"
-				+ "maxcontacts action:mls\n"
+				+ "maxcontacts action:list\n"
 				+ "\n"
 				+ "maxcontacts action:add contact:MxG18H..\n"
 				+ "\n"
@@ -64,7 +63,7 @@ public class maxcontacts extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","contact","id","publickey"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","contact","id","publickey","enable"}));
 	}
 	
 	@Override
@@ -123,36 +122,28 @@ public class maxcontacts extends Command {
 				//And add..
 				allcontacts.add(conjson);
 			}
+			
+			details.put("allowallcontacts", max.getContactsManager().isAllowedAll());
 			details.put("contacts", allcontacts);
 			
-		}else if(func.equals("mls")) {
-			
-			//Send a message refreshing the MLS details
-			Message mls = new Message(MaximaManager.MAXIMA_CHECK_MLS);
-			mls.addBoolean("force", true);
-			Main.getInstance().getMaxima().PostMessage(mls);
-
-			details.put("mls", "Refreshing all contacts via MLS service");
-			
-		}else if(func.equals("myname")) {
-			
-			String name = getParam("name");
-			name = name.replace("\"", "");
-			name = name.replace("'", "");
-			name = name.replace(";", "");
-			
-			MinimaDB.getDB().getUserDB().setMaximaName(name);
-			
-			details.put("name", name);
-			
-			//Refresh
-			max.PostMessage(MaximaManager.MAXIMA_REFRESH);
-			
 		}else if(func.equals("add")) {
+			
+			//Are we allowing users.. ?
+			if(!max.getContactsManager().isAllowedAll()) {
+				ArrayList<String> allowed = max.getContactsManager().getAllowed();
+				if(allowed.size()==0) {
+					throw new CommandException("You have disabled adding contacts and have not allowed any public keys - use maxextra action:addallowed.. ");
+				}
+			}
 			
 			//Get the contact address
 			String address 	= getParam("contact");
 
+			//Check is a valid address
+			if(!maxextra.checkValidMxAddress(address)) {
+				throw new CommandException("Invalid MX address : "+address);
+			}
+			
 			//What data..
 			JSONObject contactinfo 	= max.getContactsManager().getMaximaContactInfo(true,false);
 			MiniString datastr 		= new MiniString(contactinfo.toString());
@@ -160,7 +151,7 @@ public class maxcontacts extends Command {
 			
 			//Now convert into the correct message..
 			Message sender = maxima.createSendMessage(address, MaximaContactManager.CONTACT_APPLICATION, mdata);
-			
+					
 			//Get the message
 			MaximaMessage maxmessage = (MaximaMessage) sender.getObject("maxima");
 			

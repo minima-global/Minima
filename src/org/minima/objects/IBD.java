@@ -364,6 +364,10 @@ public class IBD implements Streamable {
 		return mTxBlocks;
 	}
 	
+	public void setTxBlocks(ArrayList<TxBlock> zBlocks) {
+		mTxBlocks = zBlocks;
+	}
+	
 	//Check this IBD at least seems right..
 	public boolean checkValidData() {
 		

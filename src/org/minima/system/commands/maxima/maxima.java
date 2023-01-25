@@ -117,27 +117,6 @@ public class maxima extends Command {
 			
 			ret.put("response", details);
 		
-		}else if(func.equals("staticmls")) {
-		
-			String host = getParam("host");
-			if(!host.equals("clear") && !checkAddress(host)) {
-				throw new CommandException("Invalid MLS address : MUST be of type Mx..@host:port");
-			}
-			
-			//Check is valid..
-			if(host.equals("clear")) {
-				max.setStaticMLS(false, "");
-			}else {
-				max.setStaticMLS(true, host);
-			}
-			
-			details.put("staticmls", max.isStaticMLS());
-			details.put("mls", max.getMLSHost());
-			ret.put("response", details);
-			
-			//Refresh
-			max.PostMessage(MaximaManager.MAXIMA_REFRESH);
-			
 		}else if(func.equals("setname")) {
 			
 			String name = getParam("name");
@@ -178,7 +157,7 @@ public class maxima extends Command {
 			
 		}else if(func.equals("new")) {
 			
-			throw new CommandException("Supported Soon..");
+			throw new CommandException("Not Supported yet..");
 			
 //			//Create a new Maxima Identity..
 //			max.createMaximaKeys();
@@ -187,7 +166,7 @@ public class maxima extends Command {
 //			String ident = max.getMaximaIdentity();  
 //			details.put("identity", ident);
 //			ret.put("response", details);
-
+	
 		}else if(func.equals("send")) {
 			
 			if(!(existsParam("to") || existsParam("id")|| existsParam("publickey"))  || !existsParam("application") || !existsParam("data") ) {
@@ -198,6 +177,11 @@ public class maxima extends Command {
 			String fullto = null;
 			if(existsParam("to")) {
 				fullto 	= getParam("to");
+				
+				//Check is a valid address
+				if(!maxextra.checkValidMxAddress(fullto)) {
+					throw new CommandException("Invalid MX address : "+fullto);
+				}
 				
 			}else if(existsParam("publickey")) {
 				
@@ -233,11 +217,22 @@ public class maxima extends Command {
 
 			//What data
 			MiniData mdata 	= null;
+			
+			
 			if(isParamJSONObject("data")) {
 				MiniString datastr = new MiniString(getJSONObjectParam("data").toString());
 				mdata = new MiniData(datastr.getData());
 			}else {
-				mdata = getDataParam("data");
+				
+				if(!getParam("data").startsWith("0x")) {
+				
+					String text 	= getParam("data");
+					MiniString str 	= new MiniString(text);
+					mdata 			= new MiniData(str.getData());
+					
+				}else {
+					mdata = getDataParam("data");
+				}
 			} 
 			
 			//Now convert into the correct message..
@@ -365,26 +360,9 @@ public class maxima extends Command {
 		
 		return sender;
 	}
-
-	//Check an MLS address
-	public static boolean checkAddress(String zMLS) {
-		
-		if(!zMLS.startsWith("Mx")) {
-			return false;
-		}
-		
-		int indexp 	= zMLS.indexOf("@");
-		int index 	= zMLS.indexOf(":");
-		if(indexp == -1 || index==-1) {
-			return false;
-		}
-		
-		return true;
-	}
 	
 	@Override
 	public Command getFunction() {
 		return new maxima();
 	}
-
 }

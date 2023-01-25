@@ -97,4 +97,13 @@ public class P2PParams {
             );
     
 //    public static List<InetSocketAddress> DEFAULT_NODE_LIST = Arrays.asList();
+    
+    public static List<InetSocketAddress> DEFAULT_ARCHIVENODE_LIST = Arrays.asList(
+            
+    		new InetSocketAddress("34.124.218.35", 9001),
+            new InetSocketAddress("34.165.40.140", 9001),
+            new InetSocketAddress("35.246.125.190", 9001),
+            new InetSocketAddress("34.135.253.11", 9001)
+            );
+
 }

@@ -54,6 +54,8 @@ public class backup extends Command {
 				+ "\n"
 				+ "backup password:Longsecurepassword456\n"
 				+ "\n"
+				+ "backup password:Longsecurepassword456 confirm:Longsecurepassword456\n"
+				+ "\n"
 				+ "backup password:Longsecurepassword456 file:my-backup-01-Jan-22.bak\n"
 				+ "\n"
 				+ "backup auto:true\n";
@@ -61,7 +63,7 @@ public class backup extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"debug","password","file","auto"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"debug","password","file","auto","confirm"}));
 	}
 	
 	@Override
@@ -103,6 +105,14 @@ public class backup extends Command {
 		String password = getParam("password","minima"); 
 		if(password.equals("")) {
 			throw new CommandException("Cannot have a blank password");
+		}
+		
+		//Is there a confirm
+		if(existsParam("confirm")) {
+			String confirm = getParam("confirm");
+			if(!password.equals(confirm)) {
+				throw new CommandException("Passwords do NOT match!");
+			}
 		}
 		
 		boolean complete = getBooleanParam("complete", false);

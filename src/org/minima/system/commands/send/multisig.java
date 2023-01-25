@@ -20,6 +20,7 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.backup.vault;
 import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -99,6 +100,8 @@ public class multisig extends Command {
 				+ "\n"
 				+ "multisig action:sign file:multisig.txn\n"
 				+ "\n"
+				+ "multisig action:sign file:multisig.txn password:your_password\n"
+				+ "\n"
 				+ "multisig action:view file:multisig.txn\n"
 				+ "\n"
 				+ "multisig action:post file:signed_multispend_1673351592845.txn\n"
@@ -108,7 +111,8 @@ public class multisig extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id","action","root","required","file","publickeys","amount", "tokenid","coinid","address"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","action","root","required",
+				"file","publickeys","amount", "tokenid","coinid","address","password"}));
 	}
 	
 	@Override
@@ -183,7 +187,13 @@ public class multisig extends Command {
 			stateparams +="}";
 			
 			//Now construct the complete send function
-			String sendfunction = "send tokenid:"+tokenid+" amount:"+amount.toString()+" address:"+msaddress+" state:"+stateparams;
+			String sendfunction ="";
+			if(existsParam("password")) {
+				String password=getParam("password");
+				sendfunction = "send password:"+password+" tokenid:"+tokenid+" amount:"+amount.toString()+" address:"+msaddress+" state:"+stateparams;
+			}else {
+				sendfunction = "send tokenid:"+tokenid+" amount:"+amount.toString()+" address:"+msaddress+" state:"+stateparams;
+			}
 			
 			//Now run this!..
 			JSONArray result 		= Command.runMultiCommand(sendfunction);
@@ -410,8 +420,26 @@ public class multisig extends Command {
 			txnsigner	+= "txnexport id:"+txnname+" file:"+txnname+";"
 						+  "txndelete id:"+txnname;
 			
+			//Unlock DB at the start - rather than every time you run txnsign
+			boolean passwordlock = false;
+			if(existsParam("password") && !MinimaDB.getDB().getWallet().isBaseSeedAvailable()) {
+				
+				//Lets unlock the DB
+				vault.passowrdUnlockDB(getParam("password"));
+				 
+				//Lock at the end..
+				passwordlock = true;
+			}
+			
 			//Run it..
 			result = Command.runMultiCommand(txnsigner);
+			
+			//Are we locking the DB
+			if(passwordlock) {
+				//Lock the Wallet DB
+				vault.passwordLockDB(getParam("password"));
+			}
+			
 			ret.put("response", result);
 		
 		}else if(action.equals("post")) {

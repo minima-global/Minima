@@ -26,7 +26,6 @@ import org.minima.system.params.GlobalParams;
 import org.minima.system.sendpoll.SendPollManager;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.RPCClient;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;

@@ -9,6 +9,8 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import org.minima.database.MinimaDB;
+import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
@@ -50,6 +52,13 @@ public class MaxMsgHandler extends MessageProcessor {
 			String host 	= sendmessage.getString("tohost");
 			int port		= sendmessage.getInteger("toport");
 			
+			//Do we have a tip..
+			TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+			if(tip == null) {
+				//No TIP - cannot construct a MaxTxPoW..
+				return;
+			}
+			
 			try {
 				//Create the Maxima Message
 				MiniData maxmsg = constructMaximaData(sendmessage);
@@ -77,6 +86,7 @@ public class MaxMsgHandler extends MessageProcessor {
 			
 			} catch (Exception e) {
 				MinimaLogger.log(host+":"+port+" "+e.toString());
+				MinimaLogger.log(e);
 			}
 		}
 	}

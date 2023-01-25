@@ -18,6 +18,7 @@ import org.minima.objects.keys.Signature;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.backup.vault;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -51,6 +52,8 @@ public class txnsign extends Command {
 				+ "\n"
 				+ "txnsign id:simpletxn publickey:auto\n"
 				+ "\n"
+				+ "txnsign id:simpletxn publickey:auto password:your_password\n"
+				+ "\n"
 				+ "txnsign id:multisig publickey:0xFD8B..\n"
 				+ "\n"
 				+ "txnsign id:simpletxn publickey:auto txnpostauto:true\n";
@@ -58,7 +61,7 @@ public class txnsign extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id","publickey","txnpostauto","txnpostburn"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","publickey","txnpostauto","txnpostburn","password"}));
 	}
 	
 	@Override
@@ -94,6 +97,16 @@ public class txnsign extends Command {
 		
 		JSONObject resp = new JSONObject();
 		
+		boolean passwordlock = false;
+		if(existsParam("password") && !MinimaDB.getDB().getWallet().isBaseSeedAvailable()) {
+			
+			//Lets unlock the DB
+			vault.passowrdUnlockDB(getParam("password"));
+			 
+			//Lock at the end..
+			passwordlock = true;
+		}
+		
 		//Are we auto signing.. if all the coin inputs are simple
 		if(pubk.equals("auto")) {
 			
@@ -127,6 +140,13 @@ public class txnsign extends Command {
 			//Check we have it
 			KeyRow pubrow = walletdb.getKeyFromPublic(pubk);
 			if(pubrow == null) {
+				
+				//Are we locking the DB
+				if(passwordlock) {
+					//Lock the Wallet DB
+					vault.passwordLockDB(getParam("password"));
+				}
+				
 				throw new CommandException("Public Key not found : "+pubk);
 			}
 			
@@ -138,6 +158,12 @@ public class txnsign extends Command {
 				
 			//Add it..
 			wit.addSignature(signature);
+		}
+		
+		//Are we locking the DB
+		if(passwordlock) {
+			//Lock the Wallet DB
+			vault.passwordLockDB(getParam("password"));
 		}
 		
 		//The keys that were found and used

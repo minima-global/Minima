@@ -128,8 +128,15 @@ public class MaximaManager extends MessageProcessor {
 	MiniData mMLSPublic;
 	MiniData mMLSPrivate;
 	String mMaximaMLSAddress;
-	boolean mHaveContacts = false;
 	
+	/**
+	 * Permanent Maxima address Users..
+	 */
+	public ArrayList<String> mPermanentMaxima = new ArrayList<>();
+	
+	/**
+	 * Are we Inited
+	 */
 	private boolean mInited 	= false;
 
 	/**
@@ -236,6 +243,39 @@ public class MaximaManager extends MessageProcessor {
 		MinimaDB.getDB().saveUserDB();
 	}
 	
+	private void savePermanentUDB() {
+		MinimaDB.getDB().getUserDB().setMaximaPermanent(mPermanentMaxima);
+		MinimaDB.getDB().saveUserDB();
+	}
+	
+	public ArrayList<String> getAllPermanent(){
+		return mPermanentMaxima;
+	}
+	
+	public void addPermanentMaxima(String zPublicKey) {
+		MinimaLogger.log("Permanent Maxima Publickey Added! : "+zPublicKey);
+		if(!mPermanentMaxima.contains(zPublicKey)) {
+			mPermanentMaxima.add(zPublicKey);
+			savePermanentUDB();
+		}
+	}
+	
+	public void removePermanentMaxima(String zPublicKey) {
+		if(mPermanentMaxima.contains(zPublicKey)) {
+			mPermanentMaxima.remove(zPublicKey);
+			savePermanentUDB();
+		}
+	}
+	
+	public void clearPermanentMaxima() {
+		mPermanentMaxima.clear();
+		savePermanentUDB();
+	}
+	
+	public MLSService getMLSService() {
+		return mMLSService;
+	}
+	
 	public String getMLSHost() {
 		if(mIsStaticMLS) {
 			return mStaticMLS;
@@ -323,6 +363,12 @@ public class MaximaManager extends MessageProcessor {
 			//Get the UserDB
 			UserDB udb = MinimaDB.getDB().getUserDB();
 			
+			//Get the Permanent List
+			mPermanentMaxima = udb.getMaximaPermanent();
+			
+			//Are we allowed contact requests
+			mMaxContacts.setAllowContact(udb.getMaximaAllowContacts());
+			
 			//Do we have an account already..
 			if(!udb.exists(MAXIMA_PUBKEY)) {
 				createMaximaKeys();
@@ -362,6 +408,9 @@ public class MaximaManager extends MessageProcessor {
 			
 			//New Random UID for MLS GET Messages
 			MLS_RANDOM_UID = MiniData.getRandomData(32).to0xString();
+			
+			//Load the permanent address stuff if required
+//			udb.
 			
 			//We are inited
 			mInited = true;
@@ -910,7 +959,10 @@ public class MaximaManager extends MessageProcessor {
 				}
 				
 				//Is THIS user allowed to see this data
-				if(!mlspack.isValidPublicKey(maxmsg.mFrom.to0xString())) {
+				boolean allowed 	= mlspack.isValidPublicKey(maxmsg.mFrom.to0xString());
+				boolean ispermanent = mPermanentMaxima.contains(req.getPublicKey());
+				
+				if(!allowed && !ispermanent) {
 					MinimaLogger.log("Invalid MLS request for "+req.getPublicKey()+" by "+maxmsg.mFrom.to0xString());
 					maximaMessageStatus(nioc,MAXIMA_UNKNOWN);
 					return;
@@ -923,8 +975,6 @@ public class MaximaManager extends MessageProcessor {
 				MiniData mlsdata = MiniData.getMiniDataVersion(mlsget);
 				
 				//Send that
-				MinimaLogger.log("MLS Req received : replying "+mlsget.toJSON());
-				
 				maximaMessageStatus(nioc,mlsdata);
 				
 			}else {
@@ -997,6 +1047,7 @@ public class MaximaManager extends MessageProcessor {
 	 * Update the MLS servers
 	 */
 	public void updateMLSServers(){
+		
 		//A list of all your contacts public keys
 		ArrayList<String> validpubkeys = new ArrayList<>();
 		
@@ -1016,23 +1067,9 @@ public class MaximaManager extends MessageProcessor {
 		//Get the MiniData version
 		MiniData mlspackdata = MiniData.getMiniDataVersion(mlspack);
 		
-		//Refresh My MLS hosts..
-		if(allcontacts.size() > 0) {
-			//Send the message - to BOTH hosts.. old and new
-			PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SETAPP,mlspackdata));
-			if(!mIsStaticMLS) {
-				PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,mlspackdata));
-			}
-			mHaveContacts = true;
-		}else {
-			if(mHaveContacts) {
-				PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SETAPP,mlspackdata));
-				if(!mIsStaticMLS) {
-					PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,mlspackdata));
-				}
-			}
-			mHaveContacts = false;
-		}
+		//Refresh My MLS hosts.. both old and new
+		PostMessage(maxima.createSendMessage(getMLSHost(),MAXIMA_MLS_SETAPP,mlspackdata));
+		PostMessage(maxima.createSendMessage(getOldMLSHost(),MAXIMA_MLS_SETAPP,mlspackdata));
 	}
 	
 	/**

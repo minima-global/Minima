@@ -17,7 +17,7 @@ import org.minima.utils.MinimaLogger;
 
 public class MySQLConnect {
 
-	public static final int MAX_SYNCBLOCKS = 1000; 
+	public static final int MAX_SYNCBLOCKS = 250; 
 	
 	String mMySQLHost;
 	String mDatabase;
@@ -341,39 +341,39 @@ public class MySQLConnect {
 		return blocks;
 	}
 	
-	/**
-	 * Non Synchronized version of LoadBlockRange
-	 * @throws SQLException 
-	 */
-	public ArrayList<TxBlock> loadBlockRangeNoSync(MiniNumber zStartBlock) throws SQLException {
-		
-		ArrayList<TxBlock> blocks = new ArrayList<>();
-		
-		//Set Search params
-		SQL_SELECT_RANGE.clearParameters();
-		SQL_SELECT_RANGE.setLong(1,zStartBlock.getAsLong());
-		
-		//Run the query
-		ResultSet rs = SQL_SELECT_RANGE.executeQuery();
-		
-		//Multiple results
-		while(rs.next()) {
-			
-			//Get the details..
-			byte[] syncdata 	= rs.getBytes("syncdata");
-			
-			//Create MiniData version
-			MiniData minisync = new MiniData(syncdata);
-			
-			//Convert
-			TxBlock sb = TxBlock.convertMiniDataVersion(minisync);
-			
-			//Add to our list
-			blocks.add(sb);
-		}
-		
-		return blocks;
-	}
+//	/**
+//	 * Non Synchronized version of LoadBlockRange
+//	 * @throws SQLException 
+//	 */
+//	public ArrayList<TxBlock> loadBlockRangeNoSync(MiniNumber zStartBlock) throws SQLException {
+//		
+//		ArrayList<TxBlock> blocks = new ArrayList<>();
+//		
+//		//Set Search params
+//		SQL_SELECT_RANGE.clearParameters();
+//		SQL_SELECT_RANGE.setLong(1,zStartBlock.getAsLong());
+//		
+//		//Run the query
+//		ResultSet rs = SQL_SELECT_RANGE.executeQuery();
+//		
+//		//Multiple results
+//		while(rs.next()) {
+//			
+//			//Get the details..
+//			byte[] syncdata 	= rs.getBytes("syncdata");
+//			
+//			//Create MiniData version
+//			MiniData minisync = new MiniData(syncdata);
+//			
+//			//Convert
+//			TxBlock sb = TxBlock.convertMiniDataVersion(minisync);
+//			
+//			//Add to our list
+//			blocks.add(sb);
+//		}
+//		
+//		return blocks;
+//	}
 	
 	public static void main(String[] zArgs) throws SQLException {
 		

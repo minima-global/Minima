@@ -100,6 +100,10 @@ public class MDSManager extends MessageProcessor {
 		
 		mPollStack = new PollStack();
 		
+		//What is the root folder
+		mMDSRootFile = new File(GeneralParams.DATA_FOLDER,"mds");
+		
+		//Is MDS even enabled
 		if(!GeneralParams.MDS_ENABLED) {
 			MinimaLogger.log("MDS disabled");
 			return;
@@ -298,9 +302,6 @@ public class MDSManager extends MessageProcessor {
 		}
 		
 		if(zMessage.getMessageType().equals(MDS_INIT)) {
-			
-			//What is the root folder
-			mMDSRootFile = new File(GeneralParams.DATA_FOLDER,"mds");
 			
 			//Create an SSL server
 			mMDSFileServer = new HTTPSServer(GeneralParams.MDSFILE_PORT) {

@@ -50,6 +50,7 @@ import org.minima.system.commands.base.tokencreate;
 import org.minima.system.commands.base.tokenvalidate;
 import org.minima.system.commands.base.trace;
 import org.minima.system.commands.maxima.maxcontacts;
+import org.minima.system.commands.maxima.maxextra;
 import org.minima.system.commands.maxima.maxima;
 import org.minima.system.commands.maxima.maxsign;
 import org.minima.system.commands.maxima.maxverify;
@@ -117,7 +118,7 @@ public abstract class Command {
 			new archive(), new logs(), new history(),
 			new magic(),
 			new multisig(), new checkaddress(),
-			new maxsign(), new maxverify(),
+			new maxsign(), new maxverify(), new maxextra(),
 			
 			new ping(), new random(), new mysql(),
 			//new file(),

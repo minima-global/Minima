@@ -121,7 +121,6 @@ public class sendsign extends Command {
 		
 		//Are we locking the DB
 		if(passwordlock) {
-			
 			//Lock the Wallet DB
 			vault.passwordLockDB(getParam("password"));
 		}

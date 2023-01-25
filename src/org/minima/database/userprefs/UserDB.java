@@ -7,6 +7,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.JsonDB;
+import org.minima.utils.MiniUtil;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -189,5 +190,24 @@ public class UserDB extends JsonDB{
 	
 	public MiniData getEncryptedSeed() {
 		return getData("encrypted_seed", MiniData.ZERO_TXPOWID);
+	}
+	
+	/**
+	 * MAXIMA - settings
+	 */
+	public boolean getMaximaAllowContacts() {
+		return getBoolean("maxima_allowallcontacts", true);
+	}
+	
+	public void setMaximaAllowContacts(boolean zAllowContacts) {
+		setBoolean("maxima_allowallcontacts", zAllowContacts);
+	}
+	
+	public ArrayList<String> getMaximaPermanent() {
+		return MiniUtil.convertJSONArray(getJSONArray("maxima_permanent")) ;
+	}
+	
+	public void setMaximaPermanent(ArrayList<String> zPermanentList) {
+		setJSONArray("maxima_permanent",MiniUtil.convertArrayList(zPermanentList));
 	}
 }
