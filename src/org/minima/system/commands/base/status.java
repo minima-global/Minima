@@ -3,6 +3,7 @@ package org.minima.system.commands.base;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -14,6 +15,7 @@ import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.txpowtree.TxPowTree;
 import org.minima.database.wallet.Wallet;
+import org.minima.objects.Magic;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
@@ -23,6 +25,7 @@ import org.minima.system.commands.CommandException;
 import org.minima.system.network.NetworkManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
+import org.minima.utils.Crypto;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
@@ -91,25 +94,25 @@ public class status extends Command {
 		//Is the Wallet Locked..
 		details.put("locked", !MinimaDB.getDB().getWallet().isBaseSeedAvailable());
 		
-//		//How many Devices..
-//		BigDecimal blkweightdec 	= new BigDecimal(txptree.getTip().getTxPoW().getBlockDifficulty().getDataValue());
-//		BigDecimal blockWeight 		= Crypto.MAX_VALDEC.divide(blkweightdec, MathContext.DECIMAL32);
-//
-//		//What is the user hashrate..
-//		MiniNumber userhashrate 	= MinimaDB.getDB().getUserDB().getHashRate();
-//		if(userhashrate.isLess(Magic.MIN_HASHES)) {
-//			userhashrate = Magic.MIN_HASHES;
-//		}
-//		MiniNumber ratio 			= new MiniNumber(blockWeight).div(userhashrate);
-		
-//		MinimaLogger.log("blkweight    : "+blockWeight);
-//		MinimaLogger.log("userhashrate : "+userhashrate);
-//		MinimaLogger.log("ratio        : "+ratio.toString());
-//		MiniNumber pulsespeed 		= MiniNumber.THOUSAND.div(new MiniNumber(GeneralParams.USER_PULSE_FREQ));
-//		MiniNumber usersperpulse 	= MiniNumber.ONE.div(new MiniNumber(""+pulsespeed).div(GlobalParams.MINIMA_BLOCK_SPEED));
-//		MiniNumber totaldevs 		= usersperpulse.mult(ratio).floor();
-
-		//details.put("devices", ratio.ceil().toString());
+		//How many Devices..
+		if(complete) {
+			BigDecimal blkweightdec 	= new BigDecimal(txptree.getTip().getTxPoW().getBlockDifficulty().getDataValue());
+			BigDecimal blockWeight 		= Crypto.MAX_VALDEC.divide(blkweightdec, MathContext.DECIMAL32);
+	
+			//What is the user hashrate..
+			MiniNumber userhashrate 	= MinimaDB.getDB().getUserDB().getHashRate();
+			if(userhashrate.isLess(Magic.MIN_HASHES)) {
+				userhashrate = Magic.MIN_HASHES;
+			}
+			MiniNumber ratio 			= new MiniNumber(blockWeight).div(userhashrate);
+	//		MinimaLogger.log("blkweight    : "+blockWeight);
+	//		MinimaLogger.log("userhashrate : "+userhashrate);
+	//		MinimaLogger.log("ratio        : "+ratio.toString());
+			MiniNumber pulsespeed 		= MiniNumber.THOUSAND.div(new MiniNumber(GeneralParams.USER_PULSE_FREQ));
+			MiniNumber usersperpulse 	= MiniNumber.ONE.div(new MiniNumber(""+pulsespeed).div(GlobalParams.MINIMA_BLOCK_SPEED));
+			MiniNumber totaldevs 		= usersperpulse.mult(ratio).floor();
+			details.put("devices", ratio.ceil().toString());
+		}
 
 		//The Current total Length of the Minima Chain
 		BigInteger chainweight 	= BigInteger.ZERO;
@@ -256,30 +259,30 @@ public class status extends Command {
 			MinimaLogger.log("txpowdb done..");
 		}
 		
-		if(complete) {
-			//Archive DB data
-			JSONObject archdb 	= new JSONObject();
-			int size 			= arch.getSize();
-			Cascade archcasc 	= arch.loadCascade(); 
-			archdb.put("size", size);
-			if(size>0) {
-				archdb.put("start", arch.loadLastBlock().getTxPoW().getBlockNumber().toString());
-				archdb.put("startdate", new Date(arch.loadLastBlock().getTxPoW().getTimeMilli().getAsLong()).toString());
-				archdb.put("end", arch.loadFirstBlock().getTxPoW().getBlockNumber().toString());
-				if(archcasc!=null) {
-					archdb.put("cascadetip", archcasc.getTip().getTxPoW().getBlockNumber());	
-				}
-			}
-			database.put("archivedb", archdb);
-			if(debug) {
-				MinimaLogger.log("archivedb done..");
-			}
-		}else {
+//		if(complete) {
+//			//Archive DB data
+//			JSONObject archdb 	= new JSONObject();
+//			int size 			= arch.getSize();
+//			Cascade archcasc 	= arch.loadCascade(); 
+//			archdb.put("size", size);
+//			if(size>0) {
+//				archdb.put("start", arch.loadLastBlock().getTxPoW().getBlockNumber().toString());
+//				archdb.put("startdate", new Date(arch.loadLastBlock().getTxPoW().getTimeMilli().getAsLong()).toString());
+//				archdb.put("end", arch.loadFirstBlock().getTxPoW().getBlockNumber().toString());
+//				if(archcasc!=null) {
+//					archdb.put("cascadetip", archcasc.getTip().getTxPoW().getBlockNumber());	
+//				}
+//			}
+//			database.put("archivedb", archdb);
+//			if(debug) {
+//				MinimaLogger.log("archivedb done..");
+//			}
+//		}else {
 			database.put("archivedb", arch.getSize());
 			if(debug) {
 				MinimaLogger.log("archivedb done..");
 			}
-		}
+//		}
 		
 		//Add ther adatabse
 		details.put("txpow", database);
