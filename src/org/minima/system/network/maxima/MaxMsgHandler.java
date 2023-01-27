@@ -85,8 +85,7 @@ public class MaxMsgHandler extends MessageProcessor {
 				}
 			
 			} catch (Exception e) {
-				MinimaLogger.log(host+":"+port+" "+e.toString());
-				MinimaLogger.log(e);
+				MinimaLogger.log("MaxMsgHandler "+host+":"+port+" "+e.toString());
 			}
 		}
 	}
