@@ -21,6 +21,26 @@ public class sendview extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nsendview\n"
+				+ "\n"
+				+ "View a transaction ( signed or unsigned ).\n"
+				+ "\n"
+				+ "View the details of a txn created by the 'sendnosign' command by specifying its .txn file.\n"
+				+ "\n"
+				+ "file:\n"
+				+ "    Name of the transaction (.txn) file to view, located in the node's base folder.\n"
+				+ "    If not in the base folder, specify the full file path.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "sendview file:unsignedtransaction-1674907380057.txn\n"
+				+ "\n"
+				+ "sendview file:C:\\Users\\signedtransaction-1674907380057.txn\n"
+				+ "\n";
+	}
+	
+	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 	
