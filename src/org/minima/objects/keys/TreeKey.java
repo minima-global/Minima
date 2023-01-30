@@ -9,11 +9,16 @@ import org.minima.utils.MinimaLogger;
 
 public class TreeKey {
 
+	/**
+	 * Maximum Levels for any Key allowed
+	 */
+	public static final int MAX_KEY_LEVELS		 = 8;
+	
+	/**
+	 * Default Values
+	 */
 	public static final int DEFAULT_KEYSPERLEVEL = 64;
 	public static final int DEFAULT_LEVELS 		 = 3;
-	
-	public static final int MAX_KEY_LEVELS		= 8;
-	public static final int MAX_KEYSPERLEVEL	= (int) Math.pow(2, 16);
 	
 	public static TreeKey createDefault(MiniData zPrivateSeed) {
 		return new TreeKey(zPrivateSeed, DEFAULT_KEYSPERLEVEL, DEFAULT_LEVELS);
@@ -39,6 +44,11 @@ public class TreeKey {
 		//Levels and Keys
 		mLevels 		= zLevels;
 		mKeysPerLevel 	= zKeyNum;
+		
+		//Check maximum
+		if(mLevels>MAX_KEY_LEVELS) {
+			throw new IllegalArgumentException("Too many key Levels "+mLevels+" MAX:"+MAX_KEY_LEVELS);
+		}
 		
 		mUses			= 0; 
 		mMaxUses 		= (int) Math.pow(mKeysPerLevel, mLevels);
@@ -175,6 +185,11 @@ public class TreeKey {
 		
 		//Cycle through..
 		int total = zSignature.getAllSignatureProofs().size();
+		if(total>MAX_KEY_LEVELS) {
+			MinimaLogger.log("[!] INVALID KEY found with "+total+" levels MAX:"+MAX_KEY_LEVELS);
+			return false;
+		}
+		
 		for(int depth=0;depth<total;depth++) {
 			
 			//Get the signature
@@ -245,7 +260,8 @@ public class TreeKey {
 		int maxsigs = 5;
 		
 		long timenow = System.currentTimeMillis();
-		TreeKey kt = new TreeKey(seed, 256, 3);
+		TreeKey kt 	 = new TreeKey(seed, 4, 3);
+//		TreeKey kt 	 = TreeKey.createDefault(seed);
 		long timediff = System.currentTimeMillis() - timenow;
 		System.out.println("time "+timediff);
 		
