@@ -12,6 +12,9 @@ public class TreeKey {
 	public static final int DEFAULT_KEYSPERLEVEL = 64;
 	public static final int DEFAULT_LEVELS 		 = 3;
 	
+	public static final int MAX_KEY_LEVELS		= 8;
+	public static final int MAX_KEYSPERLEVEL	= (int) Math.pow(2, 16);
+	
 	public static TreeKey createDefault(MiniData zPrivateSeed) {
 		return new TreeKey(zPrivateSeed, DEFAULT_KEYSPERLEVEL, DEFAULT_LEVELS);
 	}
@@ -29,12 +32,9 @@ public class TreeKey {
 	MiniData mPrivateSeed;
 	MiniData mPublicKey;
 	
-	public TreeKey() {
-		super();
-	}
+	public TreeKey() {}
 	
 	public TreeKey(MiniData zPrivateSeed, int zKeyNum, int zLevels) {
-		super();
 		
 		//Levels and Keys
 		mLevels 		= zLevels;
