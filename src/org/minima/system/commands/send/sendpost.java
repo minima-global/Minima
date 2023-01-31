@@ -22,6 +22,26 @@ public class sendpost extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nsendpost\n"
+				+ "\n"
+				+ "Post a transaction previously created and signed using the 'sendnosign' and 'sendsign' commands.\n"
+				+ "\n"
+				+ "Must be posted from an online node within approximately 24 hours of creating to ensure MMR proofs are valid.\n"
+				+ "\n"
+				+ "file:\n"
+				+ "    Name of the signed transaction (.txn) file to post, located in the node's base folder.\n"
+				+ "    If not in the base folder, specify the full file path.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "sendpost file:signedtransaction-1674907380057.txn\n"
+				+ "\n"
+				+ "sendpost file:C:\\Users\\signedtransaction-1674907380057.txn\n"
+				+ "\n";
+	}
+	
+	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 	

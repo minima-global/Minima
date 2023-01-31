@@ -33,6 +33,35 @@ public class sendsign extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nsendsign\n"
+				+ "\n"
+				+ "Sign a transaction previously created by the 'sendnosign' command, by specifying its .txn file.\n"
+				+ "\n"
+				+ "Optionally, if the node is Vault password locked, provide the Vault password to decrypt the keys for signing,\n"
+				+ "\n"
+				+ "the keys will be automatically re-encrypted after signing.\n"
+				+ "\n"
+				+ "Can be signed on an offline node, then posted from an online node.\n"
+				+ "\n"
+				+ "Outputs a new .txn file for the signed txn, to be posted with the 'sendpost' command.\n"
+				+ "\n"
+				+ "file:\n"
+				+ "    Name of the unsigned transaction (.txn) file to sign, located in the node's base folder.\n"
+				+ "    If not in the base folder, specify the full file path.\n"
+				+ "\n"
+				+ "password:\n"
+				+ "    The Vault password, if the node is password locked.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "sendsign file:unsignedtransaction-1674907380057.txn\n"
+				+ "\n"
+				+ "sendsign file:C:\\Users\\unsignedtransaction-1674907380057.txn password:your_vaultpassword\n"
+				+ "\n";
+	}
+	
+	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 	

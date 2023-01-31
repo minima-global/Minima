@@ -463,7 +463,7 @@ public class MaximaManager extends MessageProcessor {
 					if(!mls.equals("")) {
 						
 						//Log it.. 
-						MinimaLogger.log("MLS check "+contact.getName()+" @ "+contact.getCurrentAddress()+" mls:"+mls);	
+						//MinimaLogger.log("MLS check "+contact.getName()+" @ "+contact.getCurrentAddress()+" mls:"+mls);	
 						
 						//Create a Get req
 						MLSPacketGETReq req = new MLSPacketGETReq(contact.getPublicKey(), MLS_RANDOM_UID);
