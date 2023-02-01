@@ -21,6 +21,7 @@ import org.minima.system.network.NetworkManager;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
+import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.system.sendpoll.SendPollManager;
@@ -638,6 +639,9 @@ public class Main extends MessageProcessor {
 				MinimaLogger.log("AUTOBACKUP : "+res.toString());
 			
 			}
+			
+			//Clear the Invalid Peers
+			P2PFunctions.clearInvalidPeers();
 			
 		}else if(zMessage.getMessageType().equals(MAIN_NETRESET)) {
 			
