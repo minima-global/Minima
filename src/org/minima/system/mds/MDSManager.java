@@ -453,7 +453,8 @@ public class MDSManager extends MessageProcessor {
 			//Reassign..
 			ArrayList<MiniDAPP> dapps = MinimaDB.getDB().getMDSDB().getAllMiniDAPPs();
 			for(MiniDAPP dapp : dapps) {
-				String sessionid = MiniData.getRandomData(32).to0xString();
+				//Use a 128 random value..  
+				String sessionid = MiniData.getRandomData(128).to0xString();
 				mSessionID.put(sessionid, dapp.getUID());
 			}
 			
