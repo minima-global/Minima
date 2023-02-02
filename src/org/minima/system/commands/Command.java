@@ -720,7 +720,9 @@ public abstract class Command {
 	 * Which Commands are allowed..
 	 */
 	private static final String[] ALL_WRITE_COMMANDS = 
-		{"send","sendpoll","multisig","tokencreate","consolidate","cointrack","sign","txnsign","mds","backup","restore","vault","archive"};
+		{"send","sendpoll","multisig","tokencreate","consolidate",
+		 "cointrack","sign","txnsign","mds","backup",
+		 "restore","vault","archive","maxsign","mysql"};
 	
 	private static final ArrayList<String> ALL_WRITE_COMMANDS_ARRAY = new ArrayList<String>(Arrays.asList(ALL_WRITE_COMMANDS));
 	
