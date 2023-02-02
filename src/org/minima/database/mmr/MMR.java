@@ -795,8 +795,8 @@ public class MMR implements Streamable {
 				}
 			}
 			
-			//The final char buffrer for the row
-			char[] str = new char[128];
+			//The final char buffer for the row
+			char[] str = new char[256];
 			for(int c=0;c<128;c++) {
 				str[c] = ' ';
 			}
