@@ -112,7 +112,10 @@ public class TxPoWTreeNode implements Streamable {
 		mMMR.setBlockTime(block);
 		
 		//Get the Wallet..
-		Wallet wallet = MinimaDB.getDB().getWallet();
+		Wallet wallet = null;
+		if(zFindRelevant){
+			wallet = MinimaDB.getDB().getWallet();
+		}
 		
 		//Add all the peaks..
 		ArrayList<MMREntry> peaks = mTxBlock.getPreviousPeaks();
@@ -147,12 +150,14 @@ public class TxPoWTreeNode implements Streamable {
 			mCoins.add(spentcoin);
 			
 			//Is this Relevant to us..
-			if(zFindRelevant && checkRelevant(spentcoin, wallet)) {
-				mRelevantMMRCoins.add(entrynumber);
-				
-				//Message..
-				MinimaLogger.log("NEW Spent Coin : "+spentcoin.toJSON());
-				balancechange = true;
+			if(zFindRelevant) {
+				if(checkRelevant(spentcoin, wallet)) {
+					mRelevantMMRCoins.add(entrynumber);
+					
+					//Message..
+					MinimaLogger.log("NEW Spent Coin : "+spentcoin.toJSON());
+					balancechange = true;
+				}
 			}
 		}
 		
@@ -179,12 +184,14 @@ public class TxPoWTreeNode implements Streamable {
 			mCoins.add(newcoin);
 			
 			//Is this Relevant to us..
-			if(zFindRelevant && checkRelevant(output, wallet)) {
-				mRelevantMMRCoins.add(entrynumber);
-				
-				//Message..
-				MinimaLogger.log("NEW Unspent Coin : "+newcoin.toJSON());
-				balancechange = true;
+			if(zFindRelevant){
+				if(checkRelevant(output, wallet)) {
+					mRelevantMMRCoins.add(entrynumber);
+					
+					//Message..
+					MinimaLogger.log("NEW Unspent Coin : "+newcoin.toJSON());
+					balancechange = true;
+				}
 			}
 		}
 		
