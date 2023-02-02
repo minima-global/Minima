@@ -77,15 +77,21 @@ public class P2PFunctions {
     /**
      * An array of invalid IPs that you should not connect to..
      */
-    public static ArrayList<String> mInvalidPeers = new ArrayList<>();
+    public static HashSet<String> mInvalidPeers = new HashSet<>();
     public static void addInvalidPeer(String zHostPost) {
     	if(!mInvalidPeers.contains(zHostPost)) {
     		MinimaLogger.log("INVALID PEER added to List! "+zHostPost);
     		mInvalidPeers.add(zHostPost);
     	}
     }
+    
     public static boolean isInvalidPeer(String zHostPost) {
     	return mInvalidPeers.contains(zHostPost);
+    }
+    
+    //Call this every 24 hours or so..
+    public static void clearInvalidPeers() {
+    	mInvalidPeers.clear();
     }
     
     public static boolean isIPLocal(String fullhost) {
