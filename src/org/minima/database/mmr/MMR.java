@@ -211,6 +211,10 @@ public class MMR implements Streamable {
 		return mSetEntries.size();
 	}
 	
+	public Hashtable<String, MMREntry> getAllEntries(){
+		return mSetEntries;
+	}
+	
 	private String getHashTableEntry(int zRow, MMREntryNumber zEntry) {
 		return zRow+":"+zEntry.toString();
 	}
