@@ -14,6 +14,20 @@ public class MegaMMR {
 
 	public static void main(String[] zArgs) {
 		
+		//The Massive MMR
+		MMR megammr = new MMR();
+		
+		//Now create some MMRs.. and squash them onto this MMR..
+		MMR tempmmr = new MMR();
+		
+		//Add some coins..
+		
+		
+		
+	}
+	
+	public static void pruneDemo() {
+		
 		System.out.println("** MMR Tree Prune POC **");
 		
 		MMR mmr = new MMR();
@@ -45,7 +59,6 @@ public class MegaMMR {
 			mmr.pruneTree();
 			MMR.printmmrtree(mmr);
 		}
-		
 	}
 	
 }
