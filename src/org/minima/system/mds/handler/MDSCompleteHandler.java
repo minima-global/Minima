@@ -292,7 +292,7 @@ public class MDSCompleteHandler implements Runnable {
 				out.println("Content-type: text/plain");
 				out.println("Content-length: " + finallength);
 				out.println("Access-Control-Allow-Origin: *");
-				out.println(""); // blank line between headers and content, very important !
+				out.println(); // blank line between headers and content, very important !
 				out.println(result);
 				out.flush(); // flush character output stream buffer
 			}
@@ -321,7 +321,7 @@ public class MDSCompleteHandler implements Runnable {
 		zOut.println("Date: " + new Date());
 		zOut.println("Content-type: text/plain");
 		zOut.println("Access-Control-Allow-Origin: *");
-		zOut.println(""); // blank line between headers and content, very important !
+		zOut.println(); // blank line between headers and content, very important !
 		zOut.flush(); // flush character output stream buffer
 	}
 }
