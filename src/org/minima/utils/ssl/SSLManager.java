@@ -39,31 +39,29 @@ public class SSLManager {
 		try {
 			
 			File sslfile = getKeystoreFile();
-			
-			if(!sslfile.exists()) {
-				MinimaLogger.log("Generating SSL Keystore.. "+KeyStore.getDefaultType());
-				
-				//Set a Random Key
-				String keystorepass = MiniData.getRandomData(32).to0xString(); 
-				MinimaDB.getDB().getUserDB().setString("sslkeystorepass", keystorepass);
-				
-				// Create Key
-		        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-		        keyPairGenerator.initialize(4096);
-		        KeyPair keyPair 			= keyPairGenerator.generateKeyPair();
-		        final X509Certificate cert 	= SelfSignedCertGenerator.generate(keyPair, "SHA256withRSA", "localhost", 730);
-		        KeyStore createkeystore 	= SelfSignedCertGenerator.createKeystore(cert, keyPair.getPrivate());
-
-		        // Save the File
-		        OutputStream fos = new FileOutputStream(sslfile);
-		        createkeystore.store(fos, keystorepass.toCharArray());
-		        fos.flush();
-		        fos.close();
-			}else {
-				MinimaLogger.log("Loading SSL Keystore.. ");
+			if(sslfile.exists()) {
+				sslfile.delete();
 			}
 			
-	        
+			MinimaLogger.log("Generating SSL Keystore.. "+KeyStore.getDefaultType());
+			
+			//Set a Random Key
+			String keystorepass = MiniData.getRandomData(32).to0xString(); 
+			MinimaDB.getDB().getUserDB().setString("sslkeystorepass", keystorepass);
+			
+			// Create Key
+	        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+	        keyPairGenerator.initialize(4096);
+	        KeyPair keyPair 			= keyPairGenerator.generateKeyPair();
+	        final X509Certificate cert 	= SelfSignedCertGenerator.generate(keyPair, "SHA256withRSA", "localhost", 730);
+	        KeyStore createkeystore 	= SelfSignedCertGenerator.createKeystore(cert, keyPair.getPrivate());
+
+	        // Save the File
+	        OutputStream fos = new FileOutputStream(sslfile);
+	        createkeystore.store(fos, keystorepass.toCharArray());
+	        fos.flush();
+	        fos.close();
+			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
 		}
