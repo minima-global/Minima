@@ -573,7 +573,7 @@ public class MDSManager extends MessageProcessor {
 		}
 		
 		//Now add a unique random SessionID
-		String sessionid = MiniData.getRandomData(32).to0xString();
+		String sessionid = MiniData.getRandomData(128).to0xString();
 		mSessionID.put(sessionid, zDAPP.getUID());
 	}
 	

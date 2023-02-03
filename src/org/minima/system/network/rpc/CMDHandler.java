@@ -145,13 +145,13 @@ public class CMDHandler implements Runnable {
 			int finallength = result.getBytes(MiniString.MINIMA_CHARSET).length; 
 			
 			// send HTTP Headers
-			out.println("HTTP/1.1 200 OK");
-			out.println("Server: HTTP RPC Server from Minima 1.3");
-			out.println("Date: " + new Date());
-			out.println("Content-type: text/plain");
-			out.println("Content-length: " + finallength);
-			out.println("Access-Control-Allow-Origin: *");
-			out.println(); // blank line between headers and content, very important !
+			out.println("HTTP/1.1 200 OK\r");
+			out.println("Server: HTTP RPC Server from Minima 1.3\r");
+			out.println("Date: " + new Date()+"\r");
+			out.println("Content-type: text/plain\r");
+			out.println("Content-length: " + finallength+"\r");
+			out.println("Access-Control-Allow-Origin: *\r");
+			out.println("\r"); // blank line between headers and content, very important !
 			out.println(result);
 			out.flush(); // flush character output stream buffer
 			
