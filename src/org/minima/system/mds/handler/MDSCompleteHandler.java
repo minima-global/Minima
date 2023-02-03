@@ -318,7 +318,7 @@ public class MDSCompleteHandler implements Runnable {
 		// send HTTP Headers
 		zOut.println("HTTP/1.1 500 OK");
 		zOut.println("Server: HTTP MDS Server from Minima 1.3");
-		zOut.println("Date: " + new Date()+"");
+		zOut.println("Date: " + new Date());
 		zOut.println("Content-type: text/plain");
 		zOut.println("Access-Control-Allow-Origin: *");
 		zOut.println(""); // blank line between headers and content, very important !
