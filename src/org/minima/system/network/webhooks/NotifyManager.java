@@ -97,7 +97,11 @@ public class NotifyManager extends MessageProcessor {
 			//Is some one listening directly
 			MessageListener minilistener = Main.getMinimaListener();
 			if(minilistener != null) {
-				minilistener.processMessage(zMessage);
+				try {
+					minilistener.processMessage(zMessage);
+				}catch(Exception exc) {
+					MinimaLogger.log(exc+ " : "+zMessage.toString());
+				}
 			}
 			
 			//Convert..
