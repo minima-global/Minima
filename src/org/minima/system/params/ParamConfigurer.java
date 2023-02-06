@@ -192,21 +192,36 @@ public class ParamConfigurer {
         rpcenable("rpcenable", "Enable rpc", (args, configurer) -> {
             if ("true".equals(args)) {
                 configurer.rpcenable = true;
+            }else {
+            	configurer.rpcenable = false;
+            }
+        }),
+        rpccrlf("rpccrlf", "USe CRLF at the end of the RPOC headers (NodeJS)", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.RPC_CRLF = true;
+            }else {
+            	GeneralParams.RPC_CRLF = false;
             }
         }),
         allowallip("allowallip", "Allow all IP for Maxima / Networking", (args, configurer) -> {
             if ("true".equals(args)) {
             	GeneralParams.ALLOW_ALL_IP = true;
+            }else {
+            	GeneralParams.ALLOW_ALL_IP = false;
             }
         }),
         archive("archive", "Run an Archive node - store all data / cascade for resync", (args, configurer) -> {
             if ("true".equals(args)) {
             	GeneralParams.ARCHIVE = true;
+            }else {
+            	GeneralParams.ARCHIVE = false;
             }
         }),
         mdsenable("mdsenable", "Enable MDS", (args, configurer) -> {
             if ("true".equals(args)) {
             	GeneralParams.MDS_ENABLED = true;
+            }else {
+            	GeneralParams.MDS_ENABLED = false;
             }
         }),
         mdspassword("mdspassword", "Specify the Minima MDS password", (arg, configurer) -> {

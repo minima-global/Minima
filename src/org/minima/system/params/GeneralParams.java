@@ -179,5 +179,9 @@ public class GeneralParams {
 	 */
 	public static boolean ARCHIVESYNC_LIMIT_BANDWIDTH = false;
 	
+	/**
+	 * NODEJS requires the RPC command to be CRLF
+	 */
+	public static boolean RPC_CRLF = false;
 	
 }

@@ -11,6 +11,7 @@ import java.util.StringTokenizer;
 
 import org.minima.objects.base.MiniString;
 import org.minima.system.commands.Command;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -144,25 +145,33 @@ public class CMDHandler implements Runnable {
 			//Calculate the size of the response
 			int finallength = result.getBytes(MiniString.MINIMA_CHARSET).length; 
 			
-			// send HTTP Headers
-//			out.println("HTTP/1.1 200 OK\r");
-//			out.println("Server: HTTP RPC Server from Minima 1.3\r");
-//			out.println("Date: " + new Date()+"\r");
-//			out.println("Content-type: text/plain\r");
-//			out.println("Content-length: " + finallength+"\r");
-//			out.println("Access-Control-Allow-Origin: *\r");
-//			out.println("\r"); // blank line between headers and content, very important !
-			
-			out.println("HTTP/1.1 200 OK");
-			out.println("Server: HTTP RPC Server from Minima 1.3");
-			out.println("Date: " + new Date());
-			out.println("Content-type: text/plain");
-			out.println("Content-length: " + finallength);
-			out.println("Access-Control-Allow-Origin: *");
-			out.println(); // blank line between headers and content, very important !
-			out.println(result);
-			out.flush(); // flush character output stream buffer
-			
+			//Are we using CRLF
+			if(GeneralParams.RPC_CRLF) {
+				
+				// send HTTP Headers
+				out.println("HTTP/1.1 200 OK\r");
+				out.println("Server: HTTP RPC Server from Minima 1.3\r");
+				out.println("Date: " + new Date()+"\r");
+				out.println("Content-type: text/plain\r");
+				out.println("Content-length: " + finallength+"\r");
+				out.println("Access-Control-Allow-Origin: *\r");
+				out.println("\r"); // blank line between headers and content, very important !
+				out.println(result);
+				out.flush(); // flush character output stream buffer
+				
+			}else {
+				
+				// send HTTP Headers
+				out.println("HTTP/1.1 200 OK");
+				out.println("Server: HTTP RPC Server from Minima 1.3");
+				out.println("Date: " + new Date());
+				out.println("Content-type: text/plain");
+				out.println("Content-length: " + finallength);
+				out.println("Access-Control-Allow-Origin: *");
+				out.println(); // blank line between headers and content, very important !
+				out.println(result);
+				out.flush(); // flush character output stream buffer
+			}
 			
 		} catch (Exception ioe) {
 			MinimaLogger.log("CMDHANDLER : "+ioe+" "+firstline);
