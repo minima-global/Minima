@@ -338,7 +338,7 @@ public class TxPoWMiner extends MessageProcessor {
 	/**
 	 * Calculate the Hash rate of this node...
 	 */
-	public static MiniNumber calculateHashRate(MiniNumber zHashes) {
+	public static MiniNumber calculateHashRateOld(MiniNumber zHashes) {
 		
 		int ihashes = zHashes.getAsInt();
 		
@@ -418,10 +418,10 @@ public class TxPoWMiner extends MessageProcessor {
 	
 	public static void main(String[] zArgs) {
 		
-		calculateHashRate(new MiniNumber(10000));
+		calculateHashRateOld(new MiniNumber(10000));
 		
 		//First method..
-		calculateHashRate(MiniNumber.MILLION);
+		calculateHashRateOld(MiniNumber.MILLION);
 		
 		calculateHashSpeed(MiniNumber.MILLION);
 		
