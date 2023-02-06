@@ -125,6 +125,7 @@ public class maxima extends Command {
 			name = name.replace(";", "");
 			
 			MinimaDB.getDB().getUserDB().setMaximaName(name);
+			MinimaDB.getDB().saveUserDB();
 			
 			details.put("name", name);
 			
