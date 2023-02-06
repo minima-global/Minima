@@ -29,7 +29,7 @@ public class SSLManager {
 		sslkeyfolder.mkdirs();
 		
 		//The actual Key Store..
-		File sslkeyfile 	= new File(sslkeyfolder,"sslkeystore"); 
+		File sslkeyfile = new File(sslkeyfolder,"sslkeystore"); 
 		
 		return sslkeyfile;
 	}
@@ -38,14 +38,16 @@ public class SSLManager {
 		
 		try {
 			
-			File sslfile = getKeystoreFile();
+			File sslfile 		 = getKeystoreFile();
+			String keystorecheck = MinimaDB.getDB().getUserDB().getString("sslkeystorepass", null);
 			
-			if(!sslfile.exists()) {
+			if(!sslfile.exists() || (keystorecheck==null)) {
 				MinimaLogger.log("Generating SSL Keystore.. "+KeyStore.getDefaultType());
 				
-				//Set a Random Key
+				//Set a Random Key - and save DB
 				String keystorepass = MiniData.getRandomData(32).to0xString(); 
 				MinimaDB.getDB().getUserDB().setString("sslkeystorepass", keystorepass);
+				MinimaDB.getDB().saveUserDB();
 				
 				// Create Key
 		        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
@@ -59,11 +61,11 @@ public class SSLManager {
 		        createkeystore.store(fos, keystorepass.toCharArray());
 		        fos.flush();
 		        fos.close();
+			
 			}else {
 				MinimaLogger.log("Loading SSL Keystore.. ");
 			}
 			
-	        
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
 		}

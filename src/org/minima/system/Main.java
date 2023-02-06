@@ -199,12 +199,11 @@ public class Main extends MessageProcessor {
 		SSLManager.makeKeyFile();
 		
 		//Calculate the User hashrate.. start her up as seems to make a difference.. initialises..
-		TxPoWMiner.calculateHashRate(new MiniNumber(10000));
+		TxPoWMiner.calculateHashRateOld(new MiniNumber(10000));
 		
 		//Now do the actual check..
-		MiniNumber hashcheck = new MiniNumber("250000");
-		MiniNumber hashrate_old = TxPoWMiner.calculateHashRate(hashcheck);
-		MiniNumber hashrate = TxPoWMiner.calculateHashSpeed(hashcheck);
+		MiniNumber hashcheck 	= new MiniNumber("250000");
+		MiniNumber hashrate 	= TxPoWMiner.calculateHashSpeed(hashcheck);
 		MinimaDB.getDB().getUserDB().setHashRate(hashrate);
 		MinimaLogger.log("Calculate device hash rate : "+hashrate.div(MiniNumber.MILLION).setSignificantDigits(4)+" MHs");
 		
@@ -262,8 +261,8 @@ public class Main extends MessageProcessor {
 		//Reset Network stats every 24 hours
 		PostTimerMessage(new TimerMessage(NETRESET_TIMER, MAIN_NETRESET));
 		
-		//AutoBackup - do one in 10 minutes then every 24 hours
-		PostTimerMessage(new TimerMessage(1000 * 60 * 10, MAIN_AUTOBACKUP));
+		//AutoBackup - do one in 5 minutes then every 24 hours
+		PostTimerMessage(new TimerMessage(1000 * 60 * 5, MAIN_AUTOBACKUP));
 		
 		//Quick Clean up..
 		System.gc();
@@ -637,11 +636,16 @@ public class Main extends MessageProcessor {
 				
 				//Output
 				MinimaLogger.log("AUTOBACKUP : "+res.toString());
-			
 			}
 			
 			//Clear the Invalid Peers
 			P2PFunctions.clearInvalidPeers();
+			
+			//Recalculate the hash speed..
+			MiniNumber hashcheck 	= new MiniNumber("250000");
+			MiniNumber hashrate 	= TxPoWMiner.calculateHashSpeed(hashcheck);
+			MinimaDB.getDB().getUserDB().setHashRate(hashrate);
+			MinimaLogger.log("Re-Calculate device hash rate : "+hashrate.div(MiniNumber.MILLION).setSignificantDigits(4)+" MHs");
 			
 		}else if(zMessage.getMessageType().equals(MAIN_NETRESET)) {
 			

@@ -287,7 +287,7 @@ public class MDSCompleteHandler implements Runnable {
 				
 				// send HTTP Headers
 				out.println("HTTP/1.1 200 OK");
-				out.println("Server: HTTP SQL Server from Minima : 1.3");
+				out.println("Server: HTTP SQL Server from Minima 1.3");
 				out.println("Date: " + new Date());
 				out.println("Content-type: text/plain");
 				out.println("Content-length: " + finallength);
@@ -299,42 +299,9 @@ public class MDSCompleteHandler implements Runnable {
 			
 		}catch(SSLHandshakeException exc) {
 		}catch(SSLException exc) {
-		
-		}catch(SocketException exc) {
-			
-			// send HTTP Headers
-			out.println("HTTP/1.1 500 OK");
-			out.println("Server: HTTP MDS Server from Minima : 1.3");
-			out.println("Date: " + new Date());
-			out.println("Content-type: text/plain");
-			out.println("Access-Control-Allow-Origin: *");
-			out.println(); // blank line between headers and content, very important !
-			out.flush(); // flush character output stream buffer
-		
-		}catch(IllegalArgumentException exc) {
-			MinimaLogger.log(exc.toString());
-			
-			// send HTTP Headers
-			out.println("HTTP/1.1 500 OK");
-			out.println("Server: HTTP MDS Server from Minima : 1.3");
-			out.println("Date: " + new Date());
-			out.println("Content-type: text/plain");
-			out.println("Access-Control-Allow-Origin: *");
-			out.println(); // blank line between headers and content, very important !
-			out.flush(); // flush character output stream buffer
-			
 		}catch(Exception ioe) {
-			MinimaLogger.log(ioe);
-			
-			// send HTTP Headers
-			out.println("HTTP/1.1 500 OK");
-			out.println("Server: HTTP MDS Server from Minima : 1.3");
-			out.println("Date: " + new Date());
-			out.println("Content-type: text/plain");
-			out.println("Access-Control-Allow-Origin: *");
-			out.println(); // blank line between headers and content, very important !
-			out.flush(); // flush character output stream buffer
-			
+			MinimaLogger.log("MDSCompleteHandler : "+ioe.toString());
+			outputError(out);
 			
 		} finally {
 			try {
@@ -345,5 +312,16 @@ public class MDSCompleteHandler implements Runnable {
 //				MinimaLogger.log(e);
 			} 	
 		}	
+	}
+	
+	private static void outputError(PrintWriter zOut) {
+		// send HTTP Headers
+		zOut.println("HTTP/1.1 500 OK");
+		zOut.println("Server: HTTP MDS Server from Minima 1.3");
+		zOut.println("Date: " + new Date());
+		zOut.println("Content-type: text/plain");
+		zOut.println("Access-Control-Allow-Origin: *");
+		zOut.println(); // blank line between headers and content, very important !
+		zOut.flush(); // flush character output stream buffer
 	}
 }

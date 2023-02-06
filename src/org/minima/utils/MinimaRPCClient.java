@@ -54,6 +54,8 @@ public class MinimaRPCClient {
 	            	//Now run this function..
 	    			String result = RPCClient.sendGET("http://"+host+"/"+input);
 	    			
+	    			//MinimaLogger.log(result);
+	    			
 	    			//Create a JSON
 	    			JSONObject json = (JSONObject) new JSONParser().parse(result);
 	    			

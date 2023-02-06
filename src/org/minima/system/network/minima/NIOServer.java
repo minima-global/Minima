@@ -90,7 +90,11 @@ public class NIOServer implements Runnable {
 	public void sendMessage(String zUID, MiniData zData) {
 		NIOClient client =  mClients.get(zUID);
 		if(client != null) {
-			client.sendData(zData);
+			try {
+				client.sendData(zData);
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
 		}
 	}
 	
@@ -99,7 +103,11 @@ public class NIOServer implements Runnable {
 		while(clients.hasMoreElements()) {
 			NIOClient nioc = clients.nextElement();
 			if(nioc.isValidGreeting()) {
-				nioc.sendData(zData);
+				try {
+					nioc.sendData(zData);
+				}catch(Exception exc) {
+					MinimaLogger.log(exc);
+				}
 			}
 		}
 	}

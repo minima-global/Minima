@@ -140,7 +140,7 @@ public class TxPoWGenerator {
 		if(minhash.isMore(txpowmagic.getMinTxPowWork())) {
 			
 			//Warn them..
-			MinimaLogger.log("WARNING : Your Hashrate is lower than the current Minimum allowed by the network");
+			//MinimaLogger.log("WARNING : Your Hashrate is lower than the current Minimum allowed by the network");
 			
 			//Add 10%.. to give yourself some space
 			BigDecimal hashes 	= txpowmagic.getMinTxPowWork().getDataValueDecimal();
