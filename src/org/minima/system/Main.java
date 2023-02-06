@@ -261,7 +261,7 @@ public class Main extends MessageProcessor {
 		//Reset Network stats every 24 hours
 		PostTimerMessage(new TimerMessage(NETRESET_TIMER, MAIN_NETRESET));
 		
-		//AutoBackup - do one in 10 minutes then every 24 hours
+		//AutoBackup - do one in 5 minutes then every 24 hours
 		PostTimerMessage(new TimerMessage(1000 * 60 * 5, MAIN_AUTOBACKUP));
 		
 		//Quick Clean up..
