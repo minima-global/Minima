@@ -183,7 +183,9 @@ public class GeneralParams {
 	 * NODEJS requires the RPC command to be CRLF
 	 */
 	public static boolean RPC_CRLF = false;
-
 	
+	/**
+	 * Authentication for RPC
+	 */
 	public boolean RPC_AUTHENTICATE = false;
 }
