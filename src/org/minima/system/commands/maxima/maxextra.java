@@ -36,7 +36,7 @@ public class maxextra extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","publickey","maxaddress","enable"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","publickey","maxaddress","enable","host"}));
 	}
 	
 	@Override
