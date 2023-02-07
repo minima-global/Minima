@@ -717,7 +717,7 @@ public abstract class Command {
 	}
 	
 	/**
-	 * Which Commands are allowed..
+	 * Which Commands are WRITE commands..
 	 */
 	private static final String[] ALL_WRITE_COMMANDS = 
 		{"send","sendpoll","sendsign","multisig","tokencreate","consolidate",
