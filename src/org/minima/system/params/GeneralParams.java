@@ -187,5 +187,10 @@ public class GeneralParams {
 	/**
 	 * Authentication for RPC
 	 */
-	public boolean RPC_AUTHENTICATE = false;
+	public static boolean RPC_ENABLED 		= false;
+	public static boolean RPC_AUTHENTICATE 	= false;
+	public static boolean RPC_SSL			= false;
+	public static String RPC_AUTHSTYLE 		= "basic";
+	public static String RPC_PASSWORD 		= "none";
+	
 }

@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Iterator;
 
-import org.minima.database.MinimaDB;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
@@ -135,7 +134,6 @@ public class Minima {
 		maindata.mkdirs();
 		
 		boolean daemon 			= configurer.isDaemon();
-		boolean rpcenable 		= configurer.isRpcenable();
 		boolean shutdownhook 	= configurer.isShutDownHook();
 
 		//Set the Ports.. If Minima port has changed
@@ -163,11 +161,10 @@ public class Minima {
 		//Main handler..
 		Main main = new Main();
 
-		//Are we enabling RPC..
-		if(rpcenable) {
-			MinimaDB.getDB().getUserDB().setRPCEnabled(true);
-			main.getNetworkManager().startRPC();
-		}
+//		//Are we enabling RPC..
+//		if(GeneralParams.RPC_ENABLED) {
+//			main.getNetworkManager().startRPC();
+//		}
 		
 		//A shutdown hook..
 		if(shutdownhook) {

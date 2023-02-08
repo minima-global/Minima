@@ -282,7 +282,7 @@ public class ArchiveServer extends HTTPServer {
 	    }
 		
 	    //Stop the Server
-	    server.stop();
+	    server.shutdown();
 
 	    MinimaLogger.log("Archive Server stopped", false);
 	}

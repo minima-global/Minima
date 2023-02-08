@@ -52,7 +52,8 @@ public class MinimaRPCClient {
 	            	input = URLEncoder.encode(input, MiniString.MINIMA_CHARSET);
 	            	
 	            	//Now run this function..
-	    			String result = RPCClient.sendGET("http://"+host+"/"+input);
+	    			//String result = RPCClient.sendGET("http://"+host+"/"+input);
+	    			String result = RPCClient.sendGETBasicAuth("http://"+host+"/"+input, "user","password");
 	    			
 	    			//MinimaLogger.log(result);
 	    			

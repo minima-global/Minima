@@ -3,7 +3,6 @@ package org.minima.system.commands.network;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.minima.database.MinimaDB;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.params.GeneralParams;
@@ -35,35 +34,51 @@ public class rpc extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"enable"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"enable","ssl","password"}));
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception{
 		JSONObject ret = getJSONReply();
 		
-		//Enable or Disable
-		String enable = getParam("enable");
+		if(existsParam("enable")) {
 		
-		if(enable.equals("true")) {
-			MinimaDB.getDB().getUserDB().setRPCEnabled(true);
-		}else {
-			MinimaDB.getDB().getUserDB().setRPCEnabled(false);
-		}
-		
-		//Save the state..
-		MinimaDB.getDB().saveUserDB();
-		
-		//Get the Network manager on it..
-		boolean enabled = MinimaDB.getDB().getUserDB().isRPCEnabled();
-		
-		if(enabled) {
-			Main.getInstance().getNetworkManager().startRPC();
-		}else {
+			//Enable or Disable
+			boolean enable = getBooleanParam("enable");
+			
+			//Stop the Old
 			Main.getInstance().getNetworkManager().stopRPC();
+			Thread.sleep(1000);
+		
+			//Store
+			GeneralParams.RPC_ENABLED = enable;
+			
+			//Are we setting a password or SSL
+			GeneralParams.RPC_SSL = getBooleanParam("ssl", false);
+	
+			//Is there a password
+			if(existsParam("password")) {
+				GeneralParams.RPC_PASSWORD = getParam("password");
+				GeneralParams.RPC_AUTHENTICATE = true;
+			}else {
+				GeneralParams.RPC_AUTHENTICATE = false;
+			}
+			
+			//Now start or stop..
+			if(enable) {
+				Main.getInstance().getNetworkManager().startRPC();
+			}else {
+				Main.getInstance().getNetworkManager().stopRPC();
+			}
 		}
 		
-		ret.put("response", "RPC enable : "+enabled);
+		JSONObject rpcdets = new JSONObject();
+		rpcdets.put("enabled", GeneralParams.RPC_ENABLED);
+		rpcdets.put("ssl", GeneralParams.RPC_SSL);
+		rpcdets.put("authenticate", GeneralParams.RPC_AUTHENTICATE);
+		rpcdets.put("password", "***");
+		
+		ret.put("response", rpcdets);
 		
 		return ret;
 	}

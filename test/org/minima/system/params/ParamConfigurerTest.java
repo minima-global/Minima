@@ -28,7 +28,6 @@ public class ParamConfigurerTest {
                 .configure();
 
         assertEquals(9001, GeneralParams.MINIMA_PORT);
-        assertFalse(configurer.isRpcenable());
         assertFalse(configurer.isDaemon());
     }
 
@@ -63,7 +62,7 @@ public class ParamConfigurerTest {
         assertFalse(GeneralParams.P2P_ENABLED);
         assertEquals("124.0.1.9", GeneralParams.P2P_ROOTNODE);
         assertEquals("124.0.1.9:7777", GeneralParams.CONNECT_LIST);
-        assertTrue(configurer.isRpcenable());
+        assertTrue(GeneralParams.RPC_ENABLED);
         assertTrue(configurer.isDaemon());
         assertTrue(GeneralParams.CLEAN);
 //        assertTrue(GeneralParams.PRIVATE_NETWORK);
@@ -110,7 +109,7 @@ public class ParamConfigurerTest {
         assertEquals(8888, GeneralParams.MINIMA_PORT);
         assertFalse(GeneralParams.NOCONNECT);
         assertEquals("124.0.1.9:7777", GeneralParams.CONNECT_LIST);
-        assertTrue(configurer.isRpcenable());
+        assertTrue(GeneralParams.RPC_ENABLED);
         assertTrue(configurer.isDaemon());
 
     }

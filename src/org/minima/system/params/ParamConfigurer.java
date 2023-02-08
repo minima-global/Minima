@@ -26,7 +26,7 @@ public class ParamConfigurer {
 
     private final Map<ParamKeys, String> paramKeysToArg = new HashMap<>();
     private boolean daemon = false;
-    private boolean rpcenable = false;
+    //private boolean rpcenable = false;
     private boolean mShutdownhook = true;
     
     public ParamConfigurer usingConfFile(String[] programArgs) {
@@ -123,9 +123,9 @@ public class ParamConfigurer {
         return daemon;
     }
 
-    public boolean isRpcenable() {
-        return rpcenable;
-    }
+//    public boolean isRpcenable() {
+//        return rpcenable;
+//    }
     
     public boolean isShutDownHook() {
         return mShutdownhook;
@@ -191,12 +191,23 @@ public class ParamConfigurer {
         }),
         rpcenable("rpcenable", "Enable rpc", (args, configurer) -> {
             if ("true".equals(args)) {
-                configurer.rpcenable = true;
+                GeneralParams.RPC_ENABLED = true;
             }else {
-            	configurer.rpcenable = false;
+            	GeneralParams.RPC_ENABLED = false;
             }
         }),
-        rpccrlf("rpccrlf", "USe CRLF at the end of the RPOC headers (NodeJS)", (args, configurer) -> {
+        rpcpassword("rpcpassword", "Set Basic Auth password for RPC calls ( Use with SSL / stununel )", (args, configurer) -> {
+        	GeneralParams.RPC_PASSWORD 		= args;
+        	GeneralParams.RPC_AUTHENTICATE 	= true;
+        }),
+        rpcssl("rpcssl", "Use Self Signed SSL cert to run RPC", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.RPC_SSL = true;
+            }else {
+            	GeneralParams.RPC_SSL = false;
+            }
+        }),
+        rpccrlf("rpccrlf", "Use CRLF at the end of the RPOC headers (NodeJS)", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.RPC_CRLF = true;
             }else {

@@ -80,10 +80,25 @@ public class CMDHandler implements Runnable {
 			//And finally URL decode..
 			fileRequested = URLDecoder.decode(fileRequested,"UTF-8").trim();
 			
+			//Are we Authorizing
+			boolean auth = true;
+			if(GeneralParams.RPC_AUTHENTICATE) {
+				auth = false;
+			}
+			
 			//Get the Headers..
 			int contentlength = 0;
 			while(input != null && !input.trim().equals("")) {
-				//MinimaLogger.log("RPC : "+input);
+				//MinimaLogger.log("RPC HEADER : "+input);
+				
+				//Check if Authorised
+				int authref = input.indexOf("Authorization:");
+				if(authref != -1) {
+					
+					//Check it..
+					auth = Authorizer.checkAuchCredentials(input);
+				}
+				
 				int ref = input.indexOf("Content-Length:"); 
 				if(ref != -1) {
 					//Get it..
@@ -92,6 +107,19 @@ public class CMDHandler implements Runnable {
 				}	
 				input = in.readLine();
 			}
+			
+			//Are we Authorised
+			if(!auth) {
+				
+				//Not allowed..
+				out.println("HTTP/1.1 401 Unauthorized");
+				out.println("Server: HTTP RPC Server from Minima 1.3");
+				out.println();
+				out.flush(); // flush character output stream buffer
+				
+				throw new IllegalArgumentException("Invalid Authentication at RPC");
+			}
+			
 			
 			//Is it a POST request
 			if(method.equals("POST")) {
@@ -175,7 +203,7 @@ public class CMDHandler implements Runnable {
 			
 		} catch (Exception ioe) {
 			MinimaLogger.log("CMDHANDLER : "+ioe+" "+firstline);
-			MinimaLogger.log(ioe);
+			//MinimaLogger.log(ioe);
 			
 		} finally {
 			try {
