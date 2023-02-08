@@ -11,7 +11,7 @@ import org.minima.utils.json.JSONObject;
 public class rpc extends Command {
 
 	public rpc() {
-		super("rpc","(enable:) (ssl:) (password) - Enable and disable RPC on port "+GeneralParams.RPC_PORT+" (default is off)");
+		super("rpc","(enable:) (ssl:) (password:) - Enable and disable RPC on port "+GeneralParams.RPC_PORT+" (default is off)");
 	}
 	
 	@Override
@@ -29,7 +29,7 @@ public class rpc extends Command {
 				+ "    true or false, true to enable Self signed SSL - you can use stunnel yourself.\n"
 				+ "\n"
 				+ "password:\n"
-				+ "    the Basic Auth password used in headers - only secure if used with SSL.\n"
+				+ "    the Basic Auth password used in headers - ONLY secure if used with SSL.\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
