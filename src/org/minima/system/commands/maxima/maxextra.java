@@ -161,7 +161,7 @@ public class maxextra extends Command {
 			MiniData pubkey = getDataParam("publickey");
 			max.getContactsManager().addValidContactRequest(pubkey.to0xString());
 			
-			details.put("added", pubkey);
+			details.put("added", pubkey.to0xString());
 			ret.put("response", details);
 			
 		}else if(action.equals("listallowed")) {
