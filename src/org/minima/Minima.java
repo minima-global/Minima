@@ -160,11 +160,6 @@ public class Minima {
 		
 		//Main handler..
 		Main main = new Main();
-
-//		//Are we enabling RPC..
-//		if(GeneralParams.RPC_ENABLED) {
-//			main.getNetworkManager().startRPC();
-//		}
 		
 		//A shutdown hook..
 		if(shutdownhook) {
