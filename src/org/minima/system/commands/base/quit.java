@@ -1,5 +1,8 @@
 package org.minima.system.commands.base;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.utils.json.JSONObject;
@@ -7,7 +10,7 @@ import org.minima.utils.json.JSONObject;
 public class quit extends Command {
 
 	public quit() {
-		super("quit","Shutdown Minima");
+		super("quit","(compact:) - Shutdown Minima. Compact the Databases if you want");
 	}
 	
 	@Override
@@ -20,14 +23,23 @@ public class quit extends Command {
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
-				+ "quit\n";
+				+ "quit\n"
+				+ "\n"
+				+ "quit compact:true\n";
 	}
 	
 	@Override
-	public JSONObject runCommand() {
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"compact"}));
+	}
+	
+	@Override
+	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
-		Main.getInstance().shutdown();
+		boolean compact = getBooleanParam("compact", false);
+		
+		Main.getInstance().shutdown(compact);
 		
 		ret.put("message", "Shutdown complete");
 		

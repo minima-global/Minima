@@ -339,16 +339,20 @@ public class MinimaDB {
 	}
 	
 	public void saveAllDB() {
+		saveAllDB(false);
+	}
+	
+	public void saveAllDB(boolean zCompact) {
 		MinimaLogger.log("Saving State..");
 		saveState();
 		
 		MinimaLogger.log("Saving SQL..");
-		saveSQL();
+		saveSQL(zCompact);
 		
 		MinimaLogger.log("All saved..");
 	}
 	
-	public void saveSQL() {
+	public void saveSQL(boolean zCompact) {
 		
 		//We need lock 
 		writeLock(true);
@@ -356,15 +360,15 @@ public class MinimaDB {
 		try {
 			//Clean shutdown of SQL DBs
 			MinimaLogger.log("Wallet shutdown..");
-			mWallet.saveDB();
+			mWallet.saveDB(zCompact);
 			MinimaLogger.log("Maxima shutdown..");
-			mMaximaDB.saveDB();
+			mMaximaDB.saveDB(zCompact);
 			MinimaLogger.log("MDSDB shutdown..");
-			mMDSDB.saveDB();
+			mMDSDB.saveDB(zCompact);
 			MinimaLogger.log("TxPowDB shutdown..");
-			mTxPoWDB.saveDB();
+			mTxPoWDB.saveDB(zCompact);
 			MinimaLogger.log("ArchiveDB shutdown..");
-			mArchive.saveDB();
+			mArchive.saveDB(zCompact);
 			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);

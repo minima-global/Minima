@@ -172,7 +172,7 @@ public abstract class SqlDB {
 		}
 	}
 	
-	public void saveDB() {
+	public void saveDB(boolean zCompact) {
 		try {
 		
 			//Are we already closed..
@@ -184,8 +184,11 @@ public abstract class SqlDB {
 			Statement stmt = mSQLConnection.createStatement();
 		
 			//Shut down.. this saves and closes all the data
-//			stmt.execute("SHUTDOWN COMPACT");
-			stmt.execute("SHUTDOWN");
+			if(zCompact) {
+				stmt.execute("SHUTDOWN COMPACT");
+			}else {
+				stmt.execute("SHUTDOWN");
+			}
 
 			//Close the connection
 			mSQLConnection.close();

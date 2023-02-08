@@ -239,10 +239,10 @@ public class vault extends Command {
 			
 			//Now delete the SQL DBs..
 			MinimaDB.getDB().getTxPoWDB().getSQLDB().wipeDB();
-			MinimaDB.getDB().getTxPoWDB().getSQLDB().saveDB();
+			MinimaDB.getDB().getTxPoWDB().getSQLDB().saveDB(false);
 			
 			//Wipe ArchiveDB	
-			MinimaDB.getDB().getArchive().saveDB();
+			MinimaDB.getDB().getArchive().saveDB(false);
 			MinimaDB.getDB().getArchive().getSQLFile().delete();
 			
 			File basedb = MinimaDB.getDB().getBaseDBFolder();
@@ -267,7 +267,7 @@ public class vault extends Command {
 			wallet.updateAllKeyUses(keyuses);
 			
 			//Now save the Databases..
-			MinimaDB.getDB().saveSQL();
+			MinimaDB.getDB().saveSQL(false);
 			
 			//Don't do the usual shutdown hook
 			Main.getInstance().setHasShutDown();
