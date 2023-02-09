@@ -13,10 +13,48 @@ public class MinimaRPCClient {
 
 	public static void main(String[] zArgs) throws IOException {		
 	
-		//Are there any Params..
-		String host = "127.0.0.1:9005";
-		if(zArgs.length>0) {
-			host = zArgs[0];
+		String host 	= "http://127.0.0.1:9005";
+		String password = "";
+		
+		//Are there any Args
+		int arglen 	= zArgs.length;
+		if(arglen > 0) {
+			int counter	= 0;
+			while(counter<arglen) {
+				String arg 	= zArgs[counter];
+				counter++;
+				
+				if(arg.equals("-host")) {
+					host = zArgs[counter++];
+					
+				}else if(arg.equals("-password")) {
+					password = zArgs[counter++];
+					
+				}else if(arg.equals("-help")) {
+					
+					System.out.println("MinimaRPCClient Help");
+					System.out.println(" -host       : Specify the host IP:PORT");
+					System.out.println(" -password   : Specify the RPC Basic AUTH password (use with SSL)");
+					System.out.println(" -help       : Print this help");
+					
+					System.exit(1);
+					
+				}else {
+					System.out.println("Unknown parameter : "+arg);
+					System.exit(1);
+				}
+			}
+		}
+		
+		//Are we in SSL mode..
+		boolean ssl = false;
+		if(host.startsWith("https://")) {
+			ssl = true;
+		}
+		
+		//make sure host
+		if(!host.endsWith("/")) {
+			host = host+"/";
 		}
 		
 		//Now lets go..
@@ -35,6 +73,7 @@ public class MinimaRPCClient {
 	    BufferedReader bis      = new BufferedReader(is);
 	    
 	    //Loop until finished..
+	    String result = null;
 	    while(true){
 	        try {
 	            //Get a line of input
@@ -52,12 +91,11 @@ public class MinimaRPCClient {
 	            	input = URLEncoder.encode(input, MiniString.MINIMA_CHARSET);
 	            	
 	            	//Now run this function..
-	    			//String result = RPCClient.sendGET("http://"+host+"/"+input);
-	    			
-	            	String result = RPCClient.sendGETBasicAuthSSL("https://"+host+"/"+input, "user","password");
-	    			//String result = RPCClient.sendGETBasicAuth("http://"+host+"/"+input, "user","password");
-	    			
-	    			//MinimaLogger.log(result);
+	            	if(ssl) {
+	            		result = RPCClient.sendGETBasicAuthSSL(host+input,"minima",password);
+	            	}else{
+	            		result = RPCClient.sendGETBasicAuth(host+input,"minima",password);
+	            	}
 	    			
 	    			//Create a JSON
 	    			JSONObject json = (JSONObject) new JSONParser().parse(result);
