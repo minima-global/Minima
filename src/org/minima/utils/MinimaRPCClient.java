@@ -53,7 +53,9 @@ public class MinimaRPCClient {
 	            	
 	            	//Now run this function..
 	    			//String result = RPCClient.sendGET("http://"+host+"/"+input);
-	    			String result = RPCClient.sendGETBasicAuth("http://"+host+"/"+input, "user","password");
+	    			
+	            	String result = RPCClient.sendGETBasicAuthSSL("https://"+host+"/"+input, "user","password");
+	    			//String result = RPCClient.sendGETBasicAuth("http://"+host+"/"+input, "user","password");
 	    			
 	    			//MinimaLogger.log(result);
 	    			
