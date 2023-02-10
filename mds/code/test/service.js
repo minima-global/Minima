@@ -12,9 +12,9 @@ MDS.init(function(msg){
 			
 		//MDS.log("MyTest inited");
 		
-		MDS.file.list("/",function(msg){
-			MDS.log("SERVICE FILE LIST "+JSON.stringify(msg));
-		});
+		//MDS.file.list("/",function(msg){
+		//	MDS.log("SERVICE FILE LIST "+JSON.stringify(msg));
+		//});
 		
 		//java.lang.System.out.println("THIIS IS FROM JAVA!!");
 					

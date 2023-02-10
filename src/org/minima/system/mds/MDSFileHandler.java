@@ -208,6 +208,27 @@ public class MDSFileHandler implements Runnable {
 				
 				//Write the page
 				writeHTMLPage(dos, MDSHub.createHubPage(mMDS, mMainSessionID));
+			
+			}else if(fileRequested.startsWith("fileupload.html")){
+				
+				//get the POST data
+				int contentlength = Integer.parseInt(allheaders.get("Content-Length"));
+				
+				//Read the data..
+				byte[] alldata = new byte[contentlength];
+				
+				//Read it ALL in
+				int len,total=0;
+				while( (len = inputStream.read(alldata,total,contentlength-total)) != -1) {
+					total += len;
+					if(total == contentlength) {
+						break;
+					}
+				}
+				
+				//Output for now..
+				MinimaLogger.log("FILE UPLOAD : "+new String(alldata));
+				
 				
 			}else if(fileRequested.startsWith("install.html")){
 				
