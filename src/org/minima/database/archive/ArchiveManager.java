@@ -692,7 +692,7 @@ public class ArchiveManager extends SqlDB {
 		System.out.println("Sync Range : "+blocks.size());
 		
 		//Shut down
-		arch.saveDB();
+		arch.saveDB(false);
 	}
 	
 }

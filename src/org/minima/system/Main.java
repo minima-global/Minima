@@ -284,12 +284,20 @@ public class Main extends MessageProcessor {
 	}
 	
 	public void shutdown() {
+		shutdown(false);
+	}
+	
+	public void shutdown(boolean zCompact) {
 		//Are we already shutting down..
 		if(mShuttingdown) {
 			return;
 		}
 		
-		MinimaLogger.log("Shut down started..");
+		if(zCompact) {
+			MinimaLogger.log("Shut down started.. Compacting All Databases");
+		}else {
+			MinimaLogger.log("Shut down started..");
+		}
 		
 		//we are shutting down
 		mShuttingdown = true;
@@ -309,7 +317,7 @@ public class Main extends MessageProcessor {
 			
 			//Now backup the  databases
 			MinimaLogger.log("Saving all db");
-			MinimaDB.getDB().saveAllDB();
+			MinimaDB.getDB().saveAllDB(zCompact);
 					
 			//Stop this..
 			stopMessageProcessor();
@@ -346,15 +354,15 @@ public class Main extends MessageProcessor {
 		shutdownGenProcs();
 		
 		//Delete old files.. and reset to new
-		MinimaDB.getDB().getTxPoWDB().getSQLDB().saveDB();
+		MinimaDB.getDB().getTxPoWDB().getSQLDB().saveDB(false);
 		MinimaDB.getDB().getTxPoWDB().getSQLDB().getSQLFile().delete();
 		
-		MinimaDB.getDB().getArchive().saveDB();
+		MinimaDB.getDB().getArchive().saveDB(false);
 		MinimaDB.getDB().getArchive().getSQLFile().delete();
 		
 		//Are we deleting the wallet..
 		if(zResetWallet) {
-			MinimaDB.getDB().getWallet().saveDB();
+			MinimaDB.getDB().getWallet().saveDB(false);
 			MinimaDB.getDB().getWallet().getSQLFile().delete();
 		}
 		
