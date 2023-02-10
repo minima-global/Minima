@@ -227,8 +227,74 @@ public class MDSFileHandler implements Runnable {
 				}
 				
 				//Output for now..
-				MinimaLogger.log("FILE UPLOAD : "+new String(alldata));
+				MinimaLogger.log("ALLDATA FILE UPLOAD : "+new String(alldata));
 				
+				//Create an input stream for the file..
+				ByteArrayInputStream bais 	= new ByteArrayInputStream(alldata);
+				DataInputStream dis 		= new DataInputStream(bais);
+				
+				//FIRST read in the password..
+				String line = dis.readLine();
+				while(!line.equals("")) {
+					line = dis.readLine();
+				}
+				
+				//MINIDAPPID
+				String minidappid = dis.readLine();
+				
+				//Now read lines until we reach the data
+				line = dis.readLine();
+				while(!line.equals("")) {
+					line = dis.readLine();
+				}
+				
+				//JUMPPAGE
+				String jumppage = dis.readLine();
+				
+				//Now read lines until we reach the data
+				line = dis.readLine();
+				while(!line.equals("")) {
+					line = dis.readLine();
+				}
+				
+				//Now read in the file..
+				byte[] datafile = dis.readAllBytes();
+				
+				//Make  a String..
+				String datastr = new String(datafile);
+				
+				//Now find the last boundary
+				int bend = datastr.lastIndexOf("------WebKitFormBoundary");
+				if(bend == -1) {
+					MinimaLogger.log("ERROR decding file in FILEUPLOAD.. ");
+					throw new Exception("ERROR decding file in FILEUPLOAD.. ");
+				}
+				datastr = datastr.substring(0,bend-2);
+				
+				//Now get the bytes..
+				byte[] databytes = datastr.getBytes();
+				
+				//Save these..
+				MiniFile.writeDataToFile(new File("tester.png"), databytes);
+				
+				MinimaLogger.log("MINIDAPPID : "+minidappid);
+				MinimaLogger.log("JUMPPAGE   : "+jumppage);
+				MinimaLogger.log("FILE       : "+datastr);
+				
+				dis.close();
+				bais.close();
+				
+				String webredirect = "<html>\r\n"
+						+ "  <head>\r\n"
+						+ "    <meta http-equiv=\"refresh\" content=\"0; url='https://www.w3docs.com'\" />\r\n"
+						+ "  </head>\r\n"
+						+ "  <body>\r\n"
+						+ "    <p>Please follow <a href=\"https://www.w3docs.com\">this link</a>.</p>\r\n"
+						+ "  </body>\r\n"
+						+ "</html>";
+				
+				//Write this redirect page..
+				writeHTMLPage(dos, webredirect);
 				
 			}else if(fileRequested.startsWith("install.html")){
 				
