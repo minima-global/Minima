@@ -19,6 +19,8 @@ public class MinimaRPCClient {
 	public static void main(String[] zArgs) throws IOException {		
 	
 		String host 	 = "http://127.0.0.1:9005";
+		
+		boolean bpass = false;
 		String password  = "password";
 		String sslpubkey = "";
 		
@@ -35,7 +37,8 @@ public class MinimaRPCClient {
 					
 				}else if(arg.equals("-password")) {
 					password = zArgs[counter++];
-				
+					bpass = true;
+					
 				}else if(arg.equals("-sslpubkey")) {
 					sslpubkey = zArgs[counter++];
 					
@@ -94,7 +97,13 @@ public class MinimaRPCClient {
 		MinimaLogger.log("*                                            *");
 		MinimaLogger.log("**********************************************");
 		MinimaLogger.log("Welcome to the Minima RPCClient - for assistance type help. Then press enter.");
-		MinimaLogger.log("To 'exit' this app use 'exit'. 'quit' will shutdown Minima");
+		
+		MinimaLogger.log("host        :"+host);
+		MinimaLogger.log("ssl         :"+ssl);
+		MinimaLogger.log("usepassword :"+bpass);
+		MinimaLogger.log("sslpubkey   :"+sslpubkey);
+		
+		MinimaLogger.log("To exit this app use 'exit'. 'quit' will shutdown Minima");
 		
 		//Listen for input
 		InputStreamReader is    = new InputStreamReader(System.in, MiniString.MINIMA_CHARSET);
