@@ -5,16 +5,22 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URLEncoder;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
+import org.minima.utils.ssl.MinimaTrustManager;
 
 public class MinimaRPCClient {
 
 	public static void main(String[] zArgs) throws IOException {		
 	
-		String host 	= "http://127.0.0.1:9005";
-		String password = "";
+		String host 	 = "http://127.0.0.1:9005";
+		String password  = "password";
+		String sslpubkey = "";
 		
 		//Are there any Args
 		int arglen 	= zArgs.length;
@@ -29,12 +35,16 @@ public class MinimaRPCClient {
 					
 				}else if(arg.equals("-password")) {
 					password = zArgs[counter++];
+				
+				}else if(arg.equals("-sslpubkey")) {
+					sslpubkey = zArgs[counter++];
 					
 				}else if(arg.equals("-help")) {
 					
 					System.out.println("MinimaRPCClient Help");
 					System.out.println(" -host       : Specify the host IP:PORT");
 					System.out.println(" -password   : Specify the RPC Basic AUTH password (use with SSL)");
+					System.out.println(" -sslpubkey  : The SSL public key from Minima rpc command ( if using SSL )");
 					System.out.println(" -help       : Print this help");
 					
 					System.exit(1);
@@ -48,8 +58,26 @@ public class MinimaRPCClient {
 		
 		//Are we in SSL mode..
 		boolean ssl = false;
+		SSLContext sslcontext = null;
 		if(host.startsWith("https://")) {
 			ssl = true;
+			
+			//Create the Trust Manager
+			TrustManager[] tm = null;
+			if(sslpubkey.equals("")) {
+				tm = MinimaTrustManager.getTrustManagers();
+			}else {
+				tm = MinimaTrustManager.getTrustManagers(new MiniData(sslpubkey));				
+			}
+			
+			//And now the SSL Context
+			try {
+				sslcontext = SSLContext.getInstance("SSL");
+				sslcontext.init(null, tm, new java.security.SecureRandom());
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+				System.exit(1);
+			}
 		}
 		
 		//make sure host
@@ -92,7 +120,7 @@ public class MinimaRPCClient {
 	            	
 	            	//Now run this function..
 	            	if(ssl) {
-	            		result = RPCClient.sendGETBasicAuthSSL(host+input,"minima",password);
+	            		result = RPCClient.sendGETBasicAuthSSL(host+input, "minima", password, sslcontext);
 	            	}else{
 	            		result = RPCClient.sendGETBasicAuth(host+input,"minima",password);
 	            	}

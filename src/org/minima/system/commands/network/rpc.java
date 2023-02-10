@@ -1,12 +1,15 @@
 package org.minima.system.commands.network;
 
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.json.JSONObject;
+import org.minima.utils.ssl.SSLManager;
 
 public class rpc extends Command {
 
@@ -82,9 +85,21 @@ public class rpc extends Command {
 			}
 		}
 		
+		
 		JSONObject rpcdets = new JSONObject();
 		rpcdets.put("enabled", GeneralParams.RPC_ENABLED);
 		rpcdets.put("ssl", GeneralParams.RPC_SSL);
+		
+		//Add the pub key
+		if(GeneralParams.RPC_SSL) {
+			//Get the Public Key..
+			Certificate cert 	= SSLManager.getSSLKeyStore().getCertificate("MINIMA_NODE");
+			MiniData pubk 		= new MiniData(cert.getPublicKey().getEncoded());
+			rpcdets.put("sslpubkey",pubk.to0xString());
+		}else {
+			rpcdets.put("sslpubkey","0x00");
+		}
+		
 		rpcdets.put("authenticate", GeneralParams.RPC_AUTHENTICATE);
 		rpcdets.put("password", "***");
 		

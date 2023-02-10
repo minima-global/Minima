@@ -15,38 +15,10 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 
 public class RPCClient {
-
-	private static TrustManager[] mTrustAllCerts = new TrustManager[] { 
-		    new X509TrustManager() {     
-		        public java.security.cert.X509Certificate[] getAcceptedIssuers() { 
-		            return new X509Certificate[0];
-		        } 
-		        public void checkClientTrusted( 
-		            java.security.cert.X509Certificate[] certs, String authType) {
-		            } 
-		        public void checkServerTrusted( 
-		            java.security.cert.X509Certificate[] certs, String authType) {
-		        }
-		    } 
-		};
-	
-	private static SSLContext mSSLContext = null;
-	private static SSLContext getSSLContext() {
-		if(mSSLContext == null) {
-			try {
-				mSSLContext = SSLContext.getInstance("SSL");
-				mSSLContext.init(null, mTrustAllCerts, new java.security.SecureRandom());
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} 
-		}
-		
-		return mSSLContext;
-	}
 	
 	public static String USER_AGENT = "Minima/1.0";
 	
@@ -96,10 +68,10 @@ public class RPCClient {
 	}
 	
 	public static String sendGETSSL(String zHost) throws IOException {
-		return sendGETBasicAuthSSL(zHost, "", "");
+		return sendGETBasicAuthSSL(zHost, "", "", null);
 	}
 	
-	public static String sendGETBasicAuthSSL(String zHost, String zUser, String zPassword) throws IOException {
+	public static String sendGETBasicAuthSSL(String zHost, String zUser, String zPassword, SSLContext zSSLContext) throws IOException {
 		//Create the URL
 		URL obj = new URL(zHost);
 		
@@ -109,7 +81,7 @@ public class RPCClient {
 		con.setRequestMethod("GET");
 		con.setRequestProperty("User-Agent", USER_AGENT);
 		con.setRequestProperty("Connection", "close");
-		con.setSSLSocketFactory(getSSLContext().getSocketFactory());
+		con.setSSLSocketFactory(zSSLContext.getSocketFactory());
 		
 		//Create the Authorisation header
 		if(!zPassword.equals("")) {
