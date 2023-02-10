@@ -90,15 +90,10 @@ public class rpc extends Command {
 		rpcdets.put("enabled", GeneralParams.RPC_ENABLED);
 		rpcdets.put("ssl", GeneralParams.RPC_SSL);
 		
-		//Add the pub key
-		if(GeneralParams.RPC_SSL) {
-			//Get the Public Key..
-			Certificate cert 	= SSLManager.getSSLKeyStore().getCertificate("MINIMA_NODE");
-			MiniData pubk 		= new MiniData(cert.getPublicKey().getEncoded());
-			rpcdets.put("sslpubkey",pubk.to0xString());
-		}else {
-			rpcdets.put("sslpubkey","0x00");
-		}
+		//Get the Public Key..
+		Certificate cert 	= SSLManager.getSSLKeyStore().getCertificate("MINIMA_NODE");
+		MiniData pubk 		= new MiniData(cert.getPublicKey().getEncoded());
+		rpcdets.put("sslpubkey",pubk.to0xString());
 		
 		rpcdets.put("authenticate", GeneralParams.RPC_AUTHENTICATE);
 		rpcdets.put("password", "***");
