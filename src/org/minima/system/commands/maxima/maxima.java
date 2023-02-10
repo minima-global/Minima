@@ -32,7 +32,7 @@ public class maxima extends Command {
 	public String getFullHelp() {
 		return "\nmaxima\n"
 				+ "\n"
-				+ "Check your Maxima details, send a message / data, enable logs.\n"
+				+ "Check your Maxima details, send a message / data.\n"
 				+ "\n"
 				+ "Maxima is an information transport layer running on top of Minima.\n"
 				+ "\n"
@@ -50,7 +50,7 @@ public class maxima extends Command {
 				+ "    The id, contact address or public key of the recipient of the message. Use with 'action:send'.\n"
 				+ "\n"
 				+ "application: (optional)\n"
-				+ "    The ip:port to send a message to. Use with 'action:send'.\n"
+				+ "    A string that identifies which application should process the message. Use with 'action:send'.\n"
 				+ "\n"
 				+ "data: (optional)\n"
 				+ "    The data to send. Can be HEX or a JSON object. Use with 'action:send'.\n"
@@ -66,15 +66,13 @@ public class maxima extends Command {
 				+ "\n"
 				+ "maxima action:hosts\n"
 				+ "\n"
-				+ "maxima action:send id:1 application:ip:port data:0xFED5..\n"
+				+ "maxima action:send id:1 application:appname data:0xFED5..\n"
 				+ "\n"
-				+ "maxima action:send to:MxG18H.. application:ip:port data:0xFED5..\n"
+				+ "maxima action:send to:MxG18H.. application:appname data:0xFED5..\n"
 				+ "\n"
 				+ "maxima action:send publickey:0xCD34.. application:ip:port data:0xFED5.. poll:true\n"
 				+ "\n"
-				+ "maxima action:refresh\n"
-				+ "\n"
-				+ "maxima logs:true\n";
+				+ "maxima action:refresh\n";
 	}
 	
 	@Override
