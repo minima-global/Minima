@@ -103,7 +103,13 @@ public class P2PParams {
     		new InetSocketAddress("34.124.218.35", 9001),
             new InetSocketAddress("34.165.40.140", 9001),
             new InetSocketAddress("35.246.125.190", 9001),
-            new InetSocketAddress("34.135.253.11", 9001)
-            );
+            new InetSocketAddress("34.135.253.11", 9001),
+            
+            new InetSocketAddress("35.200.57.74", 9001),
+            new InetSocketAddress("35.189.7.111", 9001),
+            new InetSocketAddress("34.65.2.203", 9001),
+            new InetSocketAddress("34.82.99.198", 9001)
+            
+    		);
 
 }
