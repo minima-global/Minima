@@ -45,9 +45,9 @@ public class TxPoWDB {
 		mSqlDB.hardCloseDB();
 	}
 	
-	public void saveDB() {
+	public void saveDB(boolean zCompact) {
 		//Shut down the SQL DB cleanly
-		mSqlDB.saveDB();
+		mSqlDB.saveDB(zCompact);
 	}
 	
 	/**

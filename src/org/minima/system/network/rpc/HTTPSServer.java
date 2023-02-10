@@ -1,6 +1,7 @@
 package org.minima.system.network.rpc;
 
 import java.io.IOException;
+import java.net.BindException;
 import java.security.KeyStore;
 
 import javax.net.ssl.KeyManager;
@@ -15,29 +16,21 @@ import javax.net.ssl.TrustManagerFactory;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.ssl.SSLManager;
  
-public abstract class HTTPSServer implements Runnable {
+public abstract class HTTPSServer extends Server implements Runnable {
     
-	public static int TYPE_FILE = 0;
-	public static int TYPE_RPC 	= 1;
-	
-	private int mPort 			= 9999;
-    private boolean mShutdown 	= false;
+	private boolean mShutdown 	= false;
     
     SSLServerSocket mSSLServerSocket = null;
     
     public HTTPSServer(int port){
-        //Port and type
-    	mPort 		= port;
+        super(port);
     	
         //Run it..
 		Thread tt = new Thread(this);
 		tt.start();
     }
     
-    public int getPort() {
-    	return mPort;
-    }
-    
+    @Override
     public void shutdown() {
     	try {
     		mShutdown = true;
@@ -55,13 +48,7 @@ public abstract class HTTPSServer implements Runnable {
     // Create the and initialize the SSLContext
     private SSLContext createSSLContext(){
         try{
-//            KeyStore keyStore = KeyStore.getInstance("JKS");
-//            keyStore.load(new FileInputStream("testkey.jks"),"password".toCharArray());
-//             
-//            // Create key manager
-//            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-//            keyManagerFactory.init(keyStore, "password".toCharArray());
-            
+        	
         	//Get the Key store
         	KeyStore keyStore = SSLManager.getSSLKeyStore();
         	
@@ -76,7 +63,7 @@ public abstract class HTTPSServer implements Runnable {
             trustManagerFactory.init(keyStore);
             TrustManager[] tm = trustManagerFactory.getTrustManagers();
              
-            // Initialize SSLContext
+            // Initialise SSLContext
             SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
             sslContext.init(km,  tm, null);
              
@@ -99,7 +86,7 @@ public abstract class HTTPSServer implements Runnable {
             // Create server socket
             mSSLServerSocket = (SSLServerSocket) sslServerSocketFactory.createServerSocket(this.mPort);
              
-            //MinimaLogger.log("SSL server started on port "+mPort);
+            MinimaLogger.log("SSL server started on port "+mPort);
             while(!mShutdown){
                 
             	//Get the socket
@@ -113,6 +100,11 @@ public abstract class HTTPSServer implements Runnable {
 				rpcthread.setDaemon(true);
 				rpcthread.start();
             }
+        
+        } catch (BindException e) {
+			//Socket shut down..
+			MinimaLogger.log("SSL Server @ Port "+mPort+" already in use!.. restart required..");
+		
         } catch (Exception ex){
         	if(!mShutdown) {
         		MinimaLogger.log(ex);

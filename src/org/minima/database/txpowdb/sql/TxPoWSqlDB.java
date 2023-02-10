@@ -359,6 +359,6 @@ public class TxPoWSqlDB extends SqlDB {
 //		System.out.println("File Size : "+db.getSQLFile().length());
 		
 		//Shutdown..
-		db.saveDB();
+		db.saveDB(false);
 	}
 }

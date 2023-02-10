@@ -9,7 +9,6 @@ import org.minima.system.params.GlobalParams;
 import org.minima.utils.JsonDB;
 import org.minima.utils.MiniUtil;
 import org.minima.utils.json.JSONArray;
-import org.minima.utils.json.JSONObject;
 
 public class UserDB extends JsonDB{
 
@@ -29,18 +28,6 @@ public class UserDB extends JsonDB{
 	}
 	
 	/**
-	 * Is RPC Enabled on this system..
-	 */
-	public boolean isRPCEnabled() {
-		return getBoolean("rpcenable", false);
-	}
-	
-	public void setRPCEnabled(boolean zEnabled) {
-		setBoolean("rpcenable", zEnabled);
-	}
-	
-
-	/**
 	 * The Incentive Cash User
 	 */
 	public String getIncentiveCashUserID() {
@@ -51,25 +38,6 @@ public class UserDB extends JsonDB{
 		setString("uid", zUID);
 	}
 	
-	/**
-	 * SSH Tunnel settings
-	 */
-	public boolean isSSHTunnelEnabled() {
-		return getBoolean("sshenabled", false);
-	}
-	
-	public void setSSHTunnelEnabled(boolean zEnabled) {		
-		setBoolean("sshenabled", zEnabled);
-	}	
-	
-	public void setSSHTunnelSettings(JSONObject zSettings) {
-		setJSON("sshtunnelsettings", zSettings);
-	}
-	
-	public JSONObject getSSHTunnelSettings() {
-		return getJSON("sshtunnelsettings", new JSONObject());
-	}
-
 	/**
 	 * Web Hooks
 	 */

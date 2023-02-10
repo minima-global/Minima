@@ -1,4 +1,4 @@
 #!/bin/sh
 
 #Start the Docker container Minima RPC Client 
-java -cp /usr/local/minima/minima.jar org.minima.utils.MinimaRPCClient
+java -cp /usr/local/minima/minima.jar org.minima.utils.MinimaRPCClient $*

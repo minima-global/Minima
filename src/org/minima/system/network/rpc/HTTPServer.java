@@ -8,10 +8,9 @@ import java.net.SocketException;
 
 import org.minima.utils.MinimaLogger;
 
-public abstract class HTTPServer implements Runnable{
+public abstract class HTTPServer extends Server implements Runnable{
 
 	ServerSocket mServerSocket;
-	int mPort;
 	
 	boolean mRunning = true;
 	
@@ -20,18 +19,15 @@ public abstract class HTTPServer implements Runnable{
 	}
 	
 	public HTTPServer(int zPort, boolean zAutoStart) {
-		mPort = zPort;
+		super(zPort);
 		
 		if(zAutoStart) {
 			start();
 		}
 	}
 	
-	public int getPort() {
-		return mPort;
-	}
-		
-	public void stop() {
+	@Override
+	public void shutdown() {
 		mRunning = false;
 		
 		try {
@@ -41,15 +37,11 @@ public abstract class HTTPServer implements Runnable{
 		} catch (Exception e) {
 			MinimaLogger.log(e);
 		}
-		
-		//MinimaLogger.log("HTTP Server stopped @ "+mPort);
 	}
 	
 	public void start() {
 		Thread runner = new Thread(this);
 		runner.start();
-		
-		MinimaLogger.log("HTTP Server started on port : "+mPort);
 	}
 	
 	public abstract Runnable getSocketHandler(Socket zSocket);
@@ -59,6 +51,8 @@ public abstract class HTTPServer implements Runnable{
 		try {
 			//Start a server Socket..
 			mServerSocket = new ServerSocket(mPort);
+			
+			MinimaLogger.log("Server started on port : "+mPort);
 			
 			//Keep listening..
 			while(mRunning) {
@@ -76,7 +70,7 @@ public abstract class HTTPServer implements Runnable{
 			
 		} catch (BindException e) {
 			//Socket shut down..
-			MinimaLogger.log("RPCServer : Port "+mPort+" already in use!.. restart required..");
+			MinimaLogger.log("Server @ Port "+mPort+" already in use!.. restart required..");
 			
 		} catch (SocketException e) {
 			if(mRunning) {

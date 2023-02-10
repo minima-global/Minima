@@ -5,7 +5,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.SocketException;
 import java.net.URLDecoder;
 import java.util.Date;
 import java.util.StringTokenizer;
@@ -316,7 +315,7 @@ public class MDSCompleteHandler implements Runnable {
 	
 	private static void outputError(PrintWriter zOut) {
 		// send HTTP Headers
-		zOut.println("HTTP/1.1 500 OK");
+		zOut.println("HTTP/1.1 500 Internal Server Error");
 		zOut.println("Server: HTTP MDS Server from Minima 1.3");
 		zOut.println("Date: " + new Date());
 		zOut.println("Content-type: text/plain");

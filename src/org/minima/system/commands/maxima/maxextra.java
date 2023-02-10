@@ -35,8 +35,81 @@ public class maxextra extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nmaxextra\n"
+				+ "\n"
+				+ "Perform extra functions on Maxima.\n"
+				+ "\n"
+				+ "Set your static mls host. Your mls shares your changing contact address with your existing contacts to ensure you remain connected.\n"
+				+ "\n"
+				+ "To permanently allow incoming messages over Maxima from non-contacts, you can allow 'getaddress' requests for your current contact address.\n"
+				+ "\n"
+				+ "'getaddress' requests require your permanent maxaddress (MAX#yourpubkey#yourmls) and are requested via your static mls.\n"
+				+ "\n"
+				+ "To set this up, on your static mls node, your Maxima public key must be added as permanent.\n"
+				+ "\n"
+				+ "To prevent public users adding you as a contact, you can disable adding new contacts.\n"
+				+ "\n"
+				+ "Optionally, you can explicitly allow specific Maxima public keys who can add you as a contact.\n"
+				+ "\n"
+				+ "action: \n"
+				+ "    staticmls : Set an unchanging Maxima Location Service (mls) host for yourself.\n"
+				+ "    addpermanent : On your static mls node, add your Maxima public key to allow 'getaddress' requests from anyone.\n"
+				+ "    removepermanent : On your static mls node, remove your Maxima public key to stop allowing 'getaddress' requests.\n"
+				+ "    listpermanent : On your static mls node, list all public keys currently allowing public requests for their contact address.\n"
+				+ "    clearpermanent : On your static mls node, remove ALL public keys currently allowing requests for their contact address.\n"
+				+ "    getaddress : Request the current contact address of a permanently accessible user from their static mls host.\n"
+				+ "    mlsinfo : List info about users using you as their mls and the public keys of their contacts.\n"
+				+ "    allowallcontacts : If you have shared your permanent maxaddress, you can disable/enable users adding you as a contact.\n"
+				+ "    addallowed : If 'allowallcontacts' is disabled, you can authorise specific users to add you as a contact. Stored in RAM.\n"
+				+ "    listallowed : List all the public keys which are allowed to add you as a Maxima contact.\n"
+				+ "    clearallowed : Remove the public keys of ALL users which are allowed to add you as a Maxima contact.\n"
+				+ "\n"
+				+ "publickey: (optional)\n"
+				+ "    The Maxima public key of the user who wants to share their permanent maxaddress to be publicly contactable over Maxima.\n"
+				+ "    Or the Maxima public key of a user who is allowed to add you as a contact.\n"
+				+ "\n"
+				+ "maxaddress: (optional)\n"
+				+ "    Used with 'action:getaddress' to get the contact address of a user using their permanent maxaddress.\n"
+				+ "    Their maxaddress must be in the format MAX#pubkey#staticmls, with their public key and static mls host address.\n "
+				+ "\n"
+				+ "enable: (optional)\n"
+				+ "    true or false, use with 'action:allowallcontacts' to enable or disable all new contacts.\n"
+				+ "\n"
+				+ "host: (optional)\n"
+				+ "    The 'p2pidentity' of a server node which is always online. \n"
+				+ "    Use with 'action:staticmls' to set the host of your static mls.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "maxextra action:staticmls host:Mx...@34.190.784.3:9001\n"
+				+ "\n"
+				+ "maxextra action:staticmls host:clear\n"
+				+ "\n"
+				+ "maxextra action:addpermanent publickey:0x3081..\n"
+				+ "\n"
+				+ "maxextra action:removepermanent publickey:0x3081..\n"
+				+ "\n"
+				+ "maxextra action:listpermanent\n"
+				+ "\n"
+				+ "maxextra action:clearpermanent\n"
+				+ "\n"
+				+ "maxextra action:getaddress maxaddress:MAX#0x3081..#Mx..@34.190.784.3:9001\n"
+				+ "\n"
+				+ "maxextra action:mlsinfo\n"
+				+ "\n"
+				+ "maxextra action:allowallcontacts enable:false\n"
+				+ "\n"
+				+ "maxextra action:addallowed publickey:0x2451..\n"
+				+ "\n"
+				+ "maxextra action:listallowed\n"
+				+ "\n"
+				+ "maxextra action:clearallowed\n";
+		}
+	
+	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","publickey","maxaddress","enable"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","publickey","maxaddress","enable","host"}));
 	}
 	
 	@Override
@@ -161,7 +234,7 @@ public class maxextra extends Command {
 			MiniData pubkey = getDataParam("publickey");
 			max.getContactsManager().addValidContactRequest(pubkey.to0xString());
 			
-			details.put("added", pubkey);
+			details.put("added", pubkey.to0xString());
 			ret.put("response", details);
 			
 		}else if(action.equals("listallowed")) {

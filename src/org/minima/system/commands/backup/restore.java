@@ -128,10 +128,10 @@ public class restore extends Command {
 		MinimaDB.getDB().getWallet().restoreFromFile(new File(restorefolder,"wallet.sql"));
 	
 		//Close
-		MinimaDB.getDB().getTxPoWDB().getSQLDB().saveDB();
+		MinimaDB.getDB().getTxPoWDB().getSQLDB().saveDB(false);
 		
 		//Wipe ArchiveDB	
-		MinimaDB.getDB().getArchive().saveDB();
+		MinimaDB.getDB().getArchive().saveDB(false);
 		MinimaDB.getDB().getArchive().getSQLFile().delete();
 	
 		//Close up shop..
@@ -154,7 +154,7 @@ public class restore extends Command {
 		ret.put("message", "Restart Minima for restore to take effect!");
 		
 		//Now save the Databases..
-		MinimaDB.getDB().saveSQL();
+		MinimaDB.getDB().saveSQL(false);
 		
 		//Don't do the usual shutdown hook
 		Main.getInstance().setHasShutDown();

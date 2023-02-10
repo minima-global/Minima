@@ -416,7 +416,7 @@ public class archive extends Command {
 		return ret;
 	}
 	
-	public void NotifyListener(MessageListener zListener, String zMessage) {
+	public void NotifyListener(MessageListener zListener, String zMessage) throws Exception {
 		//Notify
 		if(zListener != null) {
 			

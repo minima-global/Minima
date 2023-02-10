@@ -287,7 +287,7 @@ public class MDSManager extends MessageProcessor {
 		MiniDAPPDB db = mSqlDB.get(zMiniDAPPID);
 		
 		if(db != null) {
-			db.saveDB();
+			db.saveDB(false);
 		}
 		
 		mSqlDB.remove(zMiniDAPPID);
@@ -398,7 +398,7 @@ public class MDSManager extends MessageProcessor {
 			//Save all the DBs
 			Enumeration<MiniDAPPDB> dbs = mSqlDB.elements();
 			while(dbs.hasMoreElements()) {
-				dbs.nextElement().saveDB();
+				dbs.nextElement().saveDB(false);
 			}
 			
 			stopMessageProcessor();

@@ -8,13 +8,17 @@ import java.time.Duration;
 import java.util.Date;
 import java.util.Enumeration;
 
+import javax.net.ssl.SSLSocket;
+
 import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.UserDB;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.network.rpc.CMDHandler;
+import org.minima.system.network.rpc.HTTPSServer;
 import org.minima.system.network.rpc.HTTPServer;
+import org.minima.system.network.rpc.Server;
 import org.minima.system.network.webhooks.NotifyManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFormat;
@@ -38,7 +42,7 @@ public class NetworkManager {
 	/**
 	 * The RPC server
 	 */
-	HTTPServer mRPCServer = null;
+	Server mRPCServer = null;
 	
 	/**
 	 * The Web Hooks for Minima messages
@@ -69,11 +73,11 @@ public class NetworkManager {
 		mNIOManager = new NIOManager(this);
 		
 		//Do we start the RPC server
-		if(MinimaDB.getDB().getUserDB().isRPCEnabled()) {
+		if(GeneralParams.RPC_ENABLED) {
 			startRPC();
 		}
 		
-		//Notifucation of Events
+		//Notification of Events
 		mNotifyManager = new NotifyManager();
 	}
 	
@@ -130,22 +134,12 @@ public class NetworkManager {
 		stats.put("hostset", GeneralParams.IS_HOST_SET);
 		stats.put("port", GeneralParams.MINIMA_PORT);
 		
-		JSONObject sshsettings = udb.getSSHTunnelSettings();
-//		if(udb.isSSHTunnelEnabled()) {
-//			stats.put("host", sshsettings.get("host"));
-//			stats.put("port", sshsettings.get("remoteport"));
-//			
-//		}else {
-//			stats.put("host", GeneralParams.MINIMA_HOST);
-//			stats.put("port", GeneralParams.MINIMA_PORT);
-//		}
-		
 		stats.put("connecting", mNIOManager.getNumberOfConnnectingClients());
 		stats.put("connected", mNIOManager.getNumberOfConnectedClients());
 		
 		//RPC Stats
 		JSONObject rpcjson = new JSONObject();
-		rpcjson.put("enabled", MinimaDB.getDB().getUserDB().isRPCEnabled());
+		rpcjson.put("enabled", GeneralParams.RPC_ENABLED);
 		rpcjson.put("port", GeneralParams.RPC_PORT);
 		stats.put("rpc", rpcjson);
 		
@@ -176,37 +170,42 @@ public class NetworkManager {
 		stats.put("traffic", readwrite);
 		
 		
-//		//SSH Tunnel
-//		JSONObject ssh = new JSONObject();
-//		if(udb.isSSHTunnelEnabled()) {
-//			ssh.put("enabled", true);
-//			ssh.put("user", sshsettings.get("username")+"@"+sshsettings.get("host"));
-//			stats.put("sshtunnel", ssh);
-//		}else {
-//			ssh.put("enabled", false);
-//		}
-		
 		return stats;
 	}
 	
 	public void startRPC() {
 		if(mRPCServer == null) {
-			//Start The RPC server
-			mRPCServer = new HTTPServer(GeneralParams.RPC_PORT) {
-				
-				@Override
-				public Runnable getSocketHandler(Socket zSocket) {
-					return new CMDHandler(zSocket);
-				}
-			};
 			
+			//Are we SSL
+			if(GeneralParams.RPC_SSL) {
+				
+				//Start The RPC server
+				mRPCServer = new HTTPSServer(GeneralParams.RPC_PORT) {
+					
+					@Override
+					public Runnable getSocketHandler(SSLSocket zSocket) {
+						return new CMDHandler(zSocket);
+					}
+				};
+				
+			}else {
+				
+				//Start The RPC server
+				mRPCServer = new HTTPServer(GeneralParams.RPC_PORT) {
+					
+					@Override
+					public Runnable getSocketHandler(Socket zSocket) {
+						return new CMDHandler(zSocket);
+					}
+				};				
+			}
 		}
 	}
 	
 	public void stopRPC() {
 		if(mRPCServer != null) {
 			//Stop the RPC
-			mRPCServer.stop();
+			mRPCServer.shutdown();
 			mRPCServer = null;
 		}
 	}
