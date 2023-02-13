@@ -1,6 +1,7 @@
 package org.minima.system.mds.handler;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 
 import org.minima.objects.base.MiniData;
@@ -69,9 +70,12 @@ public class FILEcommand {
 				throw new Exception("Invalid file..");
 			}
 			
+			String canonical = getCanonicalPath(rootfiles,actualfile);
+			
 			JSONObject resp = new JSONObject();
 			resp.put("action", mFileCommand);
 			resp.put("file", mFile);
+			resp.put("canonical", canonical);
 			resp.put("data", mData);
 			resp.put("exists", actualfile.exists());
 			
@@ -260,6 +264,24 @@ public class FILEcommand {
 		
 		return result;
 	}
-	
+
+	public String getCanonicalPath(File zRoot, File zFile) throws IOException {
+		
+		String rootcan 	= zRoot.getCanonicalPath();
+		int rootlen 	= rootcan.length();
+		
+		String filecan 	= zFile.getCanonicalPath();
+		filecan 		= filecan.substring(rootlen);
+		filecan 		= filecan.replace("\\", "/");
+		
+		if(!filecan.startsWith("/")) {
+			filecan = "/"+filecan;
+		}
+		
+		//Double check
+		filecan = filecan.replace("//", "/");
+		
+		return filecan;
+	}
 
 }
