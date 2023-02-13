@@ -279,6 +279,30 @@ var MDS = {
 			
 			//Send via POST
 			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		},
+		
+		/**
+		 * Copy a file
+		 */
+		copy : function(filename, newfilename, callback){
+			
+			//Create the single line
+			var commsline = "copy&"+filename+"&"+newfilename;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		},
+		
+		/**
+		 * Move a file
+		 */
+		move : function(filename, newfilename, callback){
+			
+			//Create the single line
+			var commsline = "move&"+filename+"&"+newfilename;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
 		}
 		
 	}, 
