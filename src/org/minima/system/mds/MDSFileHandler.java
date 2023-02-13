@@ -234,6 +234,9 @@ public class MDSFileHandler implements Runnable {
 				
 				//Which MiniDAPP..
 				MultipartData minidappidpart = data.get("minidappuid");
+				if(minidappidpart==null) {
+					throw new IllegalArgumentException("NO minidappuid specified in form for uploadfile");
+				}
 				String minidappsessionid = minidappidpart.getTextData();
 				
 				//Check it..
@@ -244,6 +247,9 @@ public class MDSFileHandler implements Runnable {
 				
 				//Get the jumppage
 				MultipartData jumppagepart = data.get("jumppage");
+				if(jumppagepart==null) {
+					throw new IllegalArgumentException("NO jumppagh specified in form for uploadfile");
+				}
 				String jumppage = jumppagepart.getTextData();
 				
 				//Get the extradata
@@ -522,6 +528,17 @@ public class MDSFileHandler implements Runnable {
 		
 		}catch(SSLHandshakeException exc) {
 		}catch(SSLException exc) {
+		}catch(IllegalArgumentException exc) {
+			
+			MinimaLogger.log(exc);
+			
+			//Write out an error page
+			if(dos !=null) {
+				try {
+					writeHTMLPage(dos, MDSHubError.createHubPage());
+				} catch (IOException e) {}
+			}
+			
 		}catch(Exception exc) {
 			
 			//Write out an error page
@@ -530,6 +547,7 @@ public class MDSFileHandler implements Runnable {
 					writeHTMLPage(dos, MDSHubError.createHubPage());
 				} catch (IOException e) {}
 			}
+			
 			
 		}finally {
 			try {
