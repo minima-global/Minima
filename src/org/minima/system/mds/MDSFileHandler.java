@@ -233,7 +233,7 @@ public class MDSFileHandler implements Runnable {
 				Hashtable<String, MultipartData> data = MultipartParser.parseMultipartData(alldata);
 				
 				//Which MiniDAPP..
-				MultipartData minidappidpart = data.get("minidappid");
+				MultipartData minidappidpart = data.get("minidappuid");
 				String minidappsessionid = minidappidpart.getTextData();
 				
 				//Check it..
