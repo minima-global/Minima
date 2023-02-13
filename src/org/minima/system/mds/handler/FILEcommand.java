@@ -1,6 +1,7 @@
 package org.minima.system.mds.handler;
 
 import java.io.File;
+import java.util.Arrays;
 
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
@@ -81,6 +82,9 @@ public class FILEcommand {
 				if(files == null) {
 					files = new File[0];
 				}
+				
+				//Sort the list
+				Arrays.sort(files);
 				
 				JSONArray listfiles = new JSONArray();
 				for(File ff : files) {
