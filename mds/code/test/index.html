@@ -1,73 +1,173 @@
-
 <html>
 
 <head>
-    <title>MDS HUB</title>
-    
+    <title>MDS FILE UPLOAD DEMO</title>
     <script type="text/javascript" src="mds.js"></script>
-    
 </head>
 
 <body>
 
-<img src="news.png">
+<!--  
+<img id="myimage">
 <br><br>
-
-
+-->
 
 <script type="text/javascript">
+
+function hexToBase64(hexStr) {
+	  return btoa([...hexStr].reduce((acc, _, i) =>
+	    acc += !(i - 1 & 1) ? String.fromCharCode(parseInt(hexStr.substring(i - 1, i + 1), 16)) : "" 
+	  ,""));
+	}
 
 //Main message handler..
 MDS.init(function(msg){
 	
 	//Do initialisation
 	if(msg.event == "inited"){
-			
-		MDS.log("MyTest HTML inited");
 		
-		MDS.file.list("/",function(msg){
-			MDS.log("FILE LIST "+JSON.stringify(msg));
-		});
-		
-		MDS.file.save("/test.txt","hello",function(msg){
-			MDS.log("FILE SAVE "+JSON.stringify(msg));
+		//Is there an image..
+		/*var fup =  MDS.form.getParams("fileupload");
+		if(fup != null){
 			
-			MDS.file.load("/test.txt",function(msg){
-				MDS.log("FILE LOAD "+JSON.stringify(msg));
+			MDS.log("FileUpload : "+fup);
+			
+			//Load the data
+			MDS.file.loadbinary("/fileupload/"+fup,function(msg){
+				//MDS.log(JSON.stringify(msg));
+				
+				var imgdata = msg.response.load.data;
+				//MDS.log("DATA:"+imgdata);
+				
+				var img = document.getElementById("myimage");
+				var b64 = hexToBase64(imgdata.substring(2));
+				var src = 'data:image/png;base64,' + b64;
+				
+				img.src = src;
 			});
-		});
-		
-		MDS.file.save("/somefolder/newtest.txt","hello2",function(msg){
-			MDS.log("FILE SAVE "+JSON.stringify(msg));
 			
-			MDS.file.list("/somefolder",function(msg){
-				MDS.log("FILE LIST "+JSON.stringify(msg));
-			});
+		}else{
+			MDS.log("NO FileUpload");
+		}*/
+		
+		//What folder are we in
+		var folder = MDS.form.getParams("folder");
+		if(folder == null){
+			folder = "/";
+		}
+		
+		//List the contents..
+		MDS.file.list(folder,function(msg){
+			MDS.log(JSON.stringify(msg));
+			
+			var canonical = msg.response.canonical;
+			var allfiles  = msg.response.list;
+			
+			//Set the folder name
+			var folderdiv 		= document.getElementById("folderdiv");
+			folderdiv.innerHTML = canonical; 
+			
+			//Get the table
+			var rows = 0;
+			var table = document.getElementById("filestable");
+			
+			//Are we in root
+			if(canonical != "/"){
+				var row 	= table.insertRow(rows);
+				var cell1 	= row.insertCell(0);
+				var cell2 	= row.insertCell(1);
+				
+				var linkfolder;
+				if(canonical.endsWith("/")){
+					linkfolder 	= canonical+"..";
+				}else{
+					linkfolder 	= canonical+"/..";
+				}
+				var link = "<a href='index.html?uid="+MDS.minidappuid+"&folder="+linkfolder+"'>GO TO PARENT</a>"
+				
+				cell1.innerHTML = link;
+				cell2.innerHTML = "";
+				rows++
+			}
+			
+			//FIRST DIRECTORIES
+			for (var index = 0; index < allfiles.length; index++) {
+		        tmp = allfiles[index]
+		        
+		        if(allfiles[index].isdir){
+		        
+			        var row 	= table.insertRow(rows);
+			        var cell1 	= row.insertCell(0);
+					var cell2 	= row.insertCell(1);
+					
+					var name 		= allfiles[index].name;
+					var linkfolder;
+					if(canonical.endsWith("/")){
+						linkfolder 	= canonical+name;
+					}else{
+						linkfolder 	= canonical+"/"+name;
+					}
+					var link 		= "<a href='index.html?uid="+MDS.minidappuid+"&folder="+linkfolder+"'>"+name+"</a>"
+					
+					cell1.innerHTML = link;
+					cell2.innerHTML = "DIRECTORY";	
+					
+					rows++;
+		        }
+			}
+		
+			//NOW FILES
+			for (var index = 0; index < allfiles.length; index++) {
+		        tmp = allfiles[index]
+		        
+		        if(!allfiles[index].isdir){
+		        
+			        var row 		= table.insertRow(rows);
+			        var cell1 		= row.insertCell(0);
+					var cell2 		= row.insertCell(1);
+					cell1.innerHTML = allfiles[index].name;
+					cell2.innerHTML = allfiles[index].size;
+					
+					rows++;
+		        }
+			}
 		});
-		
-		
-	//Only interested in Maxima
-	}else if(msg.event == "MDSCOMMS"){
-		MDS.log("REC : "+JSON.stringify(msg));
 	}
 	
 });
 
-
-
 </script>
 
+<center>
 
-Upload a file..<br>
+<br>
+
+<h2>MINIFILEZ</h2>
+
+<div id="folderdiv">/</div><br>
+
+<table id="filestable" border=1 width=200>
+</table>
+
 <br>
 
 <form action="/fileupload.html" method=POST enctype='multipart/form-data'>
 
-	<input type=file name=filename id=myfile required />
+	<script type="text/javascript">
+		document.write("<input type='hidden' name='minidappuid' value='"+MDS.minidappuid+"' />");
+	</script>	
+	
+	<input type='hidden' name='jumppage' value="index.html" />
+	<input type='hidden' name='extradata' value="mydata" />
+	
+	<input type=file name="fileupload" required />
 	<input type=submit value='Upload' />
 
 </form>
 
+
+
+</center>
 
 </body>
 

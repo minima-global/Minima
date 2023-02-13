@@ -92,6 +92,22 @@ var MDS = {
 	},
 	
 	/**
+	 * Notify the User - on Phone it pops up in status bar. On desktop appears in Logs
+	 */
+	notify : function(output){
+		//Send via POST
+		httpPostAsync(MDS.mainhost+"notify?"+"uid="+MDS.minidappuid, output);
+	},
+	
+	/**
+	 * Cancel this MiniDAPPs notification
+	 */
+	notifycancel : function(){
+		//Send via POST
+		httpPostAsync(MDS.mainhost+"notifycancel?"+"uid="+MDS.minidappuid, "*");
+	},
+	
+	/**
 	 * Runs a function on the Minima Command Line - same format as MInima
 	 */
 	cmd : function(command, callback){
@@ -194,6 +210,18 @@ var MDS = {
 		},
 		
 		/**
+		 * Save Binary Data - supply as a HEX string
+		 */
+		savebinary : function(filename, hexdata, callback){
+			
+			//Create the single line
+			var commsline = "savebinary&"+filename+"&"+hexdata;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		},
+		
+		/**
 		 * Load text - can be text, a JSON in string format or hex encoded data
 		 */
 		load : function(filename, callback){
@@ -206,12 +234,72 @@ var MDS = {
 		},
 		
 		/**
+		 * Load Binary data - returns the HEX data
+		 */
+		loadbinary : function(filename, callback){
+			
+			//Create the single line
+			var commsline = "loadbinary&"+filename;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		},
+		
+		/**
 		 * Delete a file
 		 */
 		delete : function(filename, callback){
 			
 			//Create the single line
 			var commsline = "delete&"+filename;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		},
+		
+		/**
+		 * Get the full path - if you want to run a command on the file / import a txn / unsigned txn etc
+		 */
+		getpath : function(filename, callback){
+			
+			//Create the single line
+			var commsline = "getpath&"+filename;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		},
+		
+		/**
+		 * Make a directory
+		 */
+		makedir : function(filename, callback){
+			
+			//Create the single line
+			var commsline = "makedir&"+filename;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		},
+		
+		/**
+		 * Copy a file
+		 */
+		copy : function(filename, newfilename, callback){
+			
+			//Create the single line
+			var commsline = "copy&"+filename+"&"+newfilename;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		},
+		
+		/**
+		 * Move a file
+		 */
+		move : function(filename, newfilename, callback){
+			
+			//Create the single line
+			var commsline = "move&"+filename+"&"+newfilename;		
 			
 			//Send via POST
 			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
