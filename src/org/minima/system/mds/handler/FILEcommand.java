@@ -6,11 +6,15 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.mds.MDSManager;
 import org.minima.utils.MiniFile;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class FILEcommand {
 
+	/**
+	 * Base FILE Functions
+	 */
 	public static final String FILECOMMAND_LIST 		= "LIST";
 	public static final String FILECOMMAND_SAVE 		= "SAVE";
 	public static final String FILECOMMAND_LOAD 		= "LOAD";
@@ -19,6 +23,9 @@ public class FILEcommand {
 	public static final String FILECOMMAND_LOADBINARY 	= "LOAD_BINARY";
 	public static final String FILECOMMAND_GETPATH 		= "GETPATH";
 	public static final String FILECOMMAND_MAKEDIR 		= "MAKEDIR";
+	public static final String FILECOMMAND_COPY 		= "COPY";
+	public static final String FILECOMMAND_MOVE 		= "MOVE";
+	
 	
 	MDSManager mMDS;
 	
@@ -173,6 +180,64 @@ public class FILEcommand {
 				fdata.put("name", actualfile.getName());
 				
 				resp.put("makedir", fdata);
+				
+			}else if(mFileCommand.equals(FILECOMMAND_COPY)) {
+				
+				//The new file..
+				File newfile = new File(rootfiles,mData);
+				
+				//Check id child..
+				if(!MiniFile.isChild(rootfiles, newfile)) {
+					throw new Exception("Invalid file..");
+				}
+				
+				//Check not directory
+				if(actualfile.isDirectory()) {
+					throw new IllegalArgumentException("Cannot copy Directory");
+				}
+				
+				File parent = newfile.getParentFile();
+				if(!parent.exists()) {
+					parent.mkdirs();
+				}
+				
+				//Now copy the data
+				MiniFile.copyFile(actualfile, newfile);
+				
+				JSONObject fdata = new JSONObject();
+				fdata.put("origfile", mFile);
+				fdata.put("copyfile", mData);
+				
+				resp.put("copy", fdata);
+			
+			}else if(mFileCommand.equals(FILECOMMAND_MOVE)) {
+				
+				//The new file..
+				File newfile = new File(rootfiles,mData);
+				
+				//Check id child..
+				if(!MiniFile.isChild(rootfiles, newfile)) {
+					throw new Exception("Invalid file..");
+				}
+				
+				//Check not directory
+				if(actualfile.isDirectory()) {
+					throw new IllegalArgumentException("Cannot move Directory");
+				}
+				
+				File parent = newfile.getParentFile();
+				if(!parent.exists()) {
+					parent.mkdirs();
+				}
+				
+				//Now copy the data
+				actualfile.renameTo(newfile);
+				
+				JSONObject fdata = new JSONObject();
+				fdata.put("origfile", mFile);
+				fdata.put("movefile", mData);
+				
+				resp.put("move", fdata);
 			}
 			
 			JSONObject stattrue = new JSONObject();

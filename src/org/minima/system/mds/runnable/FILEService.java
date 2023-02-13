@@ -178,6 +178,45 @@ public class FILEService {
 		runCallback(zCallback, result);
 	}
 	
+	/**
+	 * COPY
+	 */
+	public void copy(String zFile, String zData) {
+		copy(zFile,zData,null);
+	}
+	
+	public void copy(String zFile, String zData, Function zCallback) {
+		
+		//Create a Command and run it..
+		FILEcommand fc = new FILEcommand(mMDS, mMiniDAPPID, 
+				FILEcommand.FILECOMMAND_COPY, zFile, zData);
+		String result = fc.runCommand();
+		
+		//Run the callback
+		runCallback(zCallback, result);
+	}
+	
+	/**
+	 * MOVE
+	 */
+	public void move(String zFile, String zData) {
+		move(zFile,zData,null);
+	}
+	
+	public void move(String zFile, String zData, Function zCallback) {
+		
+		//Create a Command and run it..
+		FILEcommand fc = new FILEcommand(mMDS, mMiniDAPPID, 
+				FILEcommand.FILECOMMAND_MOVE, zFile, zData);
+		String result = fc.runCommand();
+		
+		//Run the callback
+		runCallback(zCallback, result);
+	}
+	
+	/**
+	 * Used by all functions to send results back to JS
+	 */
 	private void runCallback(Function zCallback, String zResult) {
 		//Send Info Back
 		if(zCallback == null) {
