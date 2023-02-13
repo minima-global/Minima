@@ -5,10 +5,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Set;
 import java.util.StringTokenizer;
-
-import org.minima.utils.MinimaLogger;
 
 public class MultipartParser {
 
