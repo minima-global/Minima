@@ -44,20 +44,12 @@ public class FILEService {
 	public void list(String zFile, Function zCallback) {
 		
 		//Create a Command and run it..
-		FILEcommand fc = new FILEcommand(mMDS, mMiniDAPPID, FILEcommand.FILECOMMAND_LIST, 
-				zFile, "");
+		FILEcommand fc = new FILEcommand(mMDS, mMiniDAPPID, 
+				FILEcommand.FILECOMMAND_LIST, zFile, "");
 		String result = fc.runCommand();
 		
-		//Send Info Back
-		if(zCallback == null) {
-			return;
-		}
-		
-		//The arguments
-		Object[] args = { NativeJSON.parse(mContext, mScope, result, new NullCallable()) };
-		
-		//Call the main MDS Function in JS
-		zCallback.call(mContext, mScope, mScope, args);
+		//Run the callback
+		runCallback(zCallback, result);
 	}
 	
 	/**
@@ -70,20 +62,30 @@ public class FILEService {
 	public void save(String zFile, String zData, Function zCallback) {
 		
 		//Create a Command and run it..
-		FILEcommand fc = new FILEcommand(mMDS, mMiniDAPPID, FILEcommand.FILECOMMAND_SAVE, 
-				zFile, zData);
+		FILEcommand fc = new FILEcommand(mMDS, mMiniDAPPID, 
+				FILEcommand.FILECOMMAND_SAVE, zFile, zData);
 		String result = fc.runCommand();
 		
-		//Send Info Back
-		if(zCallback == null) {
-			return;
-		}
+		//Run the callback
+		runCallback(zCallback, result);
+	}
+	
+	/**
+	 * SAVE BINARY
+	 */
+	public void savebinary(String zFile, String zData) {
+		savebinary(zFile,zData,null);
+	}
+	
+	public void savebinary(String zFile, String zData, Function zCallback) {
 		
-		//The arguments
-		Object[] args = { NativeJSON.parse(mContext, mScope, result, new NullCallable()) };
+		//Create a Command and run it..
+		FILEcommand fc = new FILEcommand(mMDS, mMiniDAPPID, 
+				FILEcommand.FILECOMMAND_SAVEBINARY, zFile, zData);
+		String result = fc.runCommand();
 		
-		//Call the main MDS Function in JS
-		zCallback.call(mContext, mScope, mScope, args);
+		//Run the callback
+		runCallback(zCallback, result);
 	}
 	
 	/**
@@ -96,20 +98,30 @@ public class FILEService {
 	public void load(String zFile, Function zCallback) {
 		
 		//Create a Command and run it..
-		FILEcommand fc = new FILEcommand(mMDS, mMiniDAPPID, FILEcommand.FILECOMMAND_LOAD, 
-				zFile, "");
+		FILEcommand fc = new FILEcommand(mMDS, mMiniDAPPID, 
+				FILEcommand.FILECOMMAND_LOAD, zFile, "");
 		String result = fc.runCommand();
 		
-		//Send Info Back
-		if(zCallback == null) {
-			return;
-		}
+		//Run the callback
+		runCallback(zCallback, result);
+	}
+	
+	/**
+	 * LOAD BINARY
+	 */
+	public void loadbinary(String zFile) {
+		loadbinary(zFile,null);
+	}
+	
+	public void loadbinary(String zFile, Function zCallback) {
 		
-		//The arguments
-		Object[] args = { NativeJSON.parse(mContext, mScope, result, new NullCallable()) };
+		//Create a Command and run it..
+		FILEcommand fc = new FILEcommand(mMDS, mMiniDAPPID, 
+				FILEcommand.FILECOMMAND_LOADBINARY, zFile, "");
+		String result = fc.runCommand();
 		
-		//Call the main MDS Function in JS
-		zCallback.call(mContext, mScope, mScope, args);
+		//Run the callback
+		runCallback(zCallback, result);
 	}
 	
 	/**
@@ -122,17 +134,58 @@ public class FILEService {
 	public void delete(String zFile, Function zCallback) {
 		
 		//Create a Command and run it..
-		FILEcommand fc = new FILEcommand(mMDS, mMiniDAPPID, FILEcommand.FILECOMMAND_DELETE, 
-				zFile, "");
+		FILEcommand fc = new FILEcommand(mMDS, mMiniDAPPID, 
+				FILEcommand.FILECOMMAND_DELETE, zFile, "");
 		String result = fc.runCommand();
 		
+		//Run the callback
+		runCallback(zCallback, result);
+	}
+	
+	/**
+	 * GETPATH
+	 */
+	public void getpath(String zFile) {
+		getpath(zFile,null);
+	}
+	
+	public void getpath(String zFile, Function zCallback) {
+		
+		//Create a Command and run it..
+		FILEcommand fc = new FILEcommand(mMDS, mMiniDAPPID, 
+				FILEcommand.FILECOMMAND_GETPATH, zFile, "");
+		String result = fc.runCommand();
+		
+		//Run the callback
+		runCallback(zCallback, result);
+	}
+	
+	/**
+	 * MAKEDIR
+	 */
+	public void makedir(String zFile) {
+		makedir(zFile,null);
+	}
+	
+	public void makedir(String zFile, Function zCallback) {
+		
+		//Create a Command and run it..
+		FILEcommand fc = new FILEcommand(mMDS, mMiniDAPPID, 
+				FILEcommand.FILECOMMAND_MAKEDIR, zFile, "");
+		String result = fc.runCommand();
+		
+		//Run the callback
+		runCallback(zCallback, result);
+	}
+	
+	private void runCallback(Function zCallback, String zResult) {
 		//Send Info Back
 		if(zCallback == null) {
 			return;
 		}
 		
 		//The arguments
-		Object[] args = { NativeJSON.parse(mContext, mScope, result, new NullCallable()) };
+		Object[] args = { NativeJSON.parse(mContext, mScope, zResult, new NullCallable()) };
 		
 		//Call the main MDS Function in JS
 		zCallback.call(mContext, mScope, mScope, args);

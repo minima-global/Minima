@@ -2,6 +2,7 @@ package org.minima.system.mds.handler;
 
 import java.io.File;
 
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.mds.MDSManager;
 import org.minima.utils.MiniFile;
@@ -10,10 +11,14 @@ import org.minima.utils.json.JSONObject;
 
 public class FILEcommand {
 
-	public static final String FILECOMMAND_LIST 	= "LIST";
-	public static final String FILECOMMAND_SAVE 	= "SAVE";
-	public static final String FILECOMMAND_LOAD 	= "LOAD";
-	public static final String FILECOMMAND_DELETE 	= "DELETE";
+	public static final String FILECOMMAND_LIST 		= "LIST";
+	public static final String FILECOMMAND_SAVE 		= "SAVE";
+	public static final String FILECOMMAND_LOAD 		= "LOAD";
+	public static final String FILECOMMAND_DELETE 		= "DELETE";
+	public static final String FILECOMMAND_SAVEBINARY 	= "SAVE_BINARY";
+	public static final String FILECOMMAND_LOADBINARY 	= "LOAD_BINARY";
+	public static final String FILECOMMAND_GETPATH 		= "GETPATH";
+	public static final String FILECOMMAND_MAKEDIR 		= "MAKEDIR";
 	
 	MDSManager mMDS;
 	
@@ -97,6 +102,25 @@ public class FILEcommand {
 				fdata.put("size", actualfile.length());
 				
 				resp.put("save", fdata);
+				
+			}else if(mFileCommand.equals(FILECOMMAND_SAVEBINARY)) {
+				
+				File parent = actualfile.getParentFile();
+				if(!parent.exists()) {
+					parent.mkdirs();
+				}
+			
+				//Create the Binary data
+				MiniData bindata = new MiniData(mData);
+				
+				//Now Write data..
+				MiniFile.writeDataToFile(actualfile, bindata.getBytes());
+				
+				JSONObject fdata = new JSONObject();
+				fdata.put("name", actualfile.getName());
+				fdata.put("size", actualfile.length());
+				
+				resp.put("save", fdata);
 			
 			}else if(mFileCommand.equals(FILECOMMAND_LOAD)) {
 			
@@ -109,6 +133,20 @@ public class FILEcommand {
 				
 				resp.put("load", fdata);
 			
+			}else if(mFileCommand.equals(FILECOMMAND_LOADBINARY)) {
+				
+				byte[] data = MiniFile.readCompleteFile(actualfile);
+				
+				//Create the Binary data
+				MiniData bindata = new MiniData(data);
+				
+				JSONObject fdata = new JSONObject();
+				fdata.put("name", actualfile.getName());
+				fdata.put("size", data.length);
+				fdata.put("data", bindata.to0xString());
+				
+				resp.put("load", fdata);
+			
 			}else if(mFileCommand.equals(FILECOMMAND_DELETE)) {
 				
 				JSONObject fdata = new JSONObject();
@@ -117,6 +155,24 @@ public class FILEcommand {
 				actualfile.delete();
 				
 				resp.put("delete", fdata);
+
+			}else if(mFileCommand.equals(FILECOMMAND_GETPATH)) {
+				
+				JSONObject fdata = new JSONObject();
+				fdata.put("name", actualfile.getName());
+				fdata.put("path", actualfile.getAbsolutePath());
+				
+				resp.put("getpath", fdata);
+			
+			}else if(mFileCommand.equals(FILECOMMAND_MAKEDIR)) {
+				
+				//Make this Directory
+				actualfile.mkdirs();
+				
+				JSONObject fdata = new JSONObject();
+				fdata.put("name", actualfile.getName());
+				
+				resp.put("makedir", fdata);
 			}
 			
 			JSONObject stattrue = new JSONObject();

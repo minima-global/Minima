@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -36,6 +37,8 @@ import org.minima.system.mds.hub.MDSHubLogon;
 import org.minima.system.mds.hub.MDSHubPending;
 import org.minima.system.mds.hub.MDSHubPendingAction;
 import org.minima.system.mds.hub.MDSHubPermission;
+import org.minima.system.mds.multipart.MultipartData;
+import org.minima.system.mds.multipart.MultipartParser;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.ZipExtractor;
@@ -226,70 +229,60 @@ public class MDSFileHandler implements Runnable {
 					}
 				}
 				
-				//Output for now..
-				MinimaLogger.log("ALLDATA FILE UPLOAD : "+new String(alldata));
+				//Get the bits..
+				Hashtable<String, MultipartData> data = MultipartParser.parseMultipartData(alldata);
 				
-				//Create an input stream for the file..
-				ByteArrayInputStream bais 	= new ByteArrayInputStream(alldata);
-				DataInputStream dis 		= new DataInputStream(bais);
+				//Which MiniDAPP..
+				MultipartData minidappidpart = data.get("minidappid");
+				String minidappsessionid = minidappidpart.getTextData();
 				
-				//FIRST read in the password..
-				String line = dis.readLine();
-				while(!line.equals("")) {
-					line = dis.readLine();
+				//Check it..
+				String minidappid = mMDS.convertSessionID(minidappsessionid);
+				if(minidappid == null) {
+					throw new IllegalArgumentException("Invalid session id for uploadfile "+minidappsessionid);
 				}
 				
-				//MINIDAPPID
-				String minidappid = dis.readLine();
+				//Get the jumppage
+				MultipartData jumppagepart = data.get("jumppage");
+				String jumppage = jumppagepart.getTextData();
 				
-				//Now read lines until we reach the data
-				line = dis.readLine();
-				while(!line.equals("")) {
-					line = dis.readLine();
+				//Get the extradata
+				MultipartData extradatapart = data.get("extradata");
+				String extradata = "";
+				if(extradatapart!=null) {
+					extradata = URLEncoder.encode(extradatapart.getTextData(), MiniString.MINIMA_CHARSET);
 				}
 				
-				//JUMPPAGE
-				String jumppage = dis.readLine();
+				//Now.. save the file..
+				MultipartData filepart = data.get("fileupload"); 
+				String filename 	= URLEncoder.encode(filepart.getFileName(), MiniString.MINIMA_CHARSET);
+				String contenttype 	= URLEncoder.encode(filepart.getContentType(), MiniString.MINIMA_CHARSET);
 				
-				//Now read lines until we reach the data
-				line = dis.readLine();
-				while(!line.equals("")) {
-					line = dis.readLine();
+				//Save the data
+				byte[] filedata = filepart.getFileData();
+				File root = new File(mMDS.getMiniDAPPFileFolder(minidappid),"fileupload");
+				if(!root.exists()) {
+					root.mkdirs();
+				}
+				MiniFile.writeDataToFile(new File(root,filepart.getFileName()), filedata);
+				
+				//Jump to the correct page..
+				String base = "/"+minidappid+"/"+jumppage+"?uid="+minidappsessionid
+						+"&fileupload="+filename
+						+"&size="+filedata.length
+						+"&contenttype="+contenttype;
+				
+				if(!extradata.equals("")) {
+					base += "&extradata="+extradata;
 				}
 				
-				//Now read in the file..
-				byte[] datafile = dis.readAllBytes();
-				
-				//Make  a String..
-				String datastr = new String(datafile);
-				
-				//Now find the last boundary
-				int bend = datastr.lastIndexOf("------WebKitFormBoundary");
-				if(bend == -1) {
-					MinimaLogger.log("ERROR decding file in FILEUPLOAD.. ");
-					throw new Exception("ERROR decding file in FILEUPLOAD.. ");
-				}
-				datastr = datastr.substring(0,bend-2);
-				
-				//Now get the bytes..
-				byte[] databytes = datastr.getBytes();
-				
-				//Save these..
-				MiniFile.writeDataToFile(new File("tester.png"), databytes);
-				
-				MinimaLogger.log("MINIDAPPID : "+minidappid);
-				MinimaLogger.log("JUMPPAGE   : "+jumppage);
-				MinimaLogger.log("FILE       : "+datastr);
-				
-				dis.close();
-				bais.close();
-				
+				//Create the web redirect paghe
 				String webredirect = "<html>\r\n"
 						+ "  <head>\r\n"
-						+ "    <meta http-equiv=\"refresh\" content=\"0; url='https://www.w3docs.com'\" />\r\n"
+						+ "    <meta http-equiv='refresh' content=\"0; url='"+base+"\" />\r\n"
 						+ "  </head>\r\n"
 						+ "  <body>\r\n"
-						+ "    <p>Please follow <a href=\"https://www.w3docs.com\">this link</a>.</p>\r\n"
+						+ "    <p>Please follow <a href='"+base+"'>this link</a>.</p>\r\n"
 						+ "  </body>\r\n"
 						+ "</html>";
 				
@@ -630,5 +623,5 @@ public class MDSFileHandler implements Runnable {
 		zDos.write(file, 0, finallength);
 		zDos.flush();
 		
-	}
+	} 
 }

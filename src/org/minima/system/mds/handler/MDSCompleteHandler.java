@@ -220,23 +220,42 @@ public class MDSCompleteHandler implements Runnable {
 					//What was the data
 					FILEcommand fc = null;
 					if(action.equals("list")) {
-						fc = new FILEcommand(mMDS, minidappid, FILEcommand.FILECOMMAND_LIST, 
-								filedata, "");
+						fc = new FILEcommand(mMDS, minidappid, 
+								FILEcommand.FILECOMMAND_LIST, filedata, "");
 					
 					}else if(action.equals("save")) {
 						dataindex 			= filedata.indexOf("&");
 						String file 		= filedata.substring(0, dataindex);
 						String actualedata 	= filedata.substring(dataindex+1);
-						fc = new FILEcommand(mMDS, minidappid, FILEcommand.FILECOMMAND_SAVE, 
-								file, actualedata);
+						fc = new FILEcommand(mMDS, minidappid, 
+								FILEcommand.FILECOMMAND_SAVE, file, actualedata);
+					
+					}else if(action.equals("savebinary")) {
+						dataindex 			= filedata.indexOf("&");
+						String file 		= filedata.substring(0, dataindex);
+						String actualedata 	= filedata.substring(dataindex+1);
+						fc = new FILEcommand(mMDS, minidappid, 
+								FILEcommand.FILECOMMAND_SAVEBINARY, file, actualedata);
 					
 					}else if(action.equals("load")) {
-						fc = new FILEcommand(mMDS, minidappid, FILEcommand.FILECOMMAND_LOAD, 
-								filedata, "");
+						fc = new FILEcommand(mMDS, minidappid, 
+								FILEcommand.FILECOMMAND_LOAD, filedata, "");
+					
+					}else if(action.equals("loadbinary")) {
+						fc = new FILEcommand(mMDS, minidappid, 
+								FILEcommand.FILECOMMAND_LOADBINARY, filedata, "");
 					
 					}else if(action.equals("delete")) {
-						fc = new FILEcommand(mMDS, minidappid, FILEcommand.FILECOMMAND_DELETE, 
-								filedata, "");
+						fc = new FILEcommand(mMDS, minidappid, 
+								FILEcommand.FILECOMMAND_DELETE, filedata, "");
+					
+					}else if(action.equals("getpath")) {
+						fc = new FILEcommand(mMDS, minidappid, 
+								FILEcommand.FILECOMMAND_GETPATH, filedata, "");
+					
+					}else if(action.equals("makedir")) {
+						fc = new FILEcommand(mMDS, minidappid, 
+								FILEcommand.FILECOMMAND_MAKEDIR, filedata, "");
 					
 					}else {
 						throw new IllegalArgumentException("Invalid function");
