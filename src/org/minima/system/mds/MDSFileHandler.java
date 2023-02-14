@@ -233,7 +233,7 @@ public class MDSFileHandler implements Runnable {
 				Hashtable<String, MultipartData> data = MultipartParser.parseMultipartData(alldata);
 				
 				//Which MiniDAPP..
-				MultipartData minidappidpart = data.get("minidappuid");
+				MultipartData minidappidpart = data.get("uid");
 				if(minidappidpart==null) {
 					throw new IllegalArgumentException("NO minidappuid specified in form for uploadfile");
 				}
