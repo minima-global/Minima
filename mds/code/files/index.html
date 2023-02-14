@@ -1,0 +1,265 @@
+<html>
+
+<head>
+	<title>FILEZ</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script type="text/javascript" src="mds.js"></script>
+</head>
+
+<body>
+
+<style>
+
+	td {
+		white-space:nowrap;
+		background:#ddddff;
+		font-size:20px;
+	}
+
+	a {
+	  outline: none;
+	  text-decoration: none;
+	  padding: 2px 1px 0;
+	}
+	
+	a:link {
+	  color: #265301;
+	}
+	
+	a:visited {
+	  color: #437a16;
+	}
+	
+	a:focus {
+	  border-bottom: 1px solid;
+	  background: #bae498;
+	}
+	
+	a:hover {
+	  border-bottom: 1px solid;
+	  background: #cdfeaa;
+	}
+	
+	a:active {
+	  background: #265301;
+	  color: #cdfeaa;
+	}
+
+</style>
+
+<script type="text/javascript">
+
+	//Default Params
+	var tablerow	= 1;
+	
+	//What folder are we in
+	var folder = MDS.form.getParams("folder");
+	if(folder == null){
+		folder = "/";
+	}
+	
+	//Have we uploaded a file..
+	var extradata = MDS.form.getParams("extradata");
+	if(extradata != null){
+		folder = extradata;
+	}
+	
+	//Have we deleted a file..
+	var deletedata = MDS.form.getParams("delete");
+	
+	//Have we made a directory
+	var makedir = MDS.form.getParams("makedir");
+	
+	//Download af file given the raw byte data
+	function downloadFile(mdsfile, name){
+		
+		//Load the file..
+		MDS.file.loadbinary(mdsfile,function(msg){
+			
+			var filedata 	= msg.response.load.data.substring(2);
+			var b64 		= MDS.util.hexToBase64(filedata);
+			var binaryData 	= MDS.util.base64ToArrayBuffer(b64);
+			var blob 		= new Blob([binaryData], { type: 'application/octet-stream' });
+			
+			var url 		= URL.createObjectURL(blob);
+
+			// Create a link element
+			var link 		= document.createElement('a');
+			link.href 		= url;
+			link.download 	= name;
+			document.body.appendChild(link);
+			link.click();
+
+			URL.revokeObjectURL(url);
+		});
+	}
+	
+	//Create a ROW in the files table
+	function createTableRow(thetable,title,size,fileloc, folderloc){
+		var row 	= thetable.insertRow(tablerow);
+		var cell1 	= row.insertCell(0);
+		var cell2 	= row.insertCell(1);
+		var cell3 	= row.insertCell(2);
+		
+		if(size!="DIR" && size!=""){
+			
+			var ltit = title.toLowerCase();
+			if(	ltit.endsWith(".png") || 
+				ltit.endsWith(".jpg") ||
+				ltit.endsWith(".jfif") ||
+				ltit.endsWith(".bmp") || 
+				ltit.endsWith(".gif")){
+				
+				//Create link to viewer
+				var link = "<a href='docview.html?uid="+MDS.minidappuid+"&imageloc="+encodeURIComponent(fileloc)+"'>"+title+"</a>";
+				cell1.innerHTML = link;
+			}else{
+				cell1.innerHTML = title;	
+			}
+			
+			cell2.innerHTML = size;
+			
+			//Download Button
+			var download = "<button onclick='downloadFile(\""+fileloc+"\",\""+title+"\")'>DOWNLOAD</button>";
+			
+			//Create the Download Delete line
+			var actions = "<a onclick=\"return confirm('Are you sure you want to delete this file ?')\" href='index.html?uid="+MDS.minidappuid+"&folder="+folderloc+"&delete="+encodeURIComponent(fileloc)+"'>DELETE</a>"
+					+"&nbsp;&nbsp;&nbsp;"+download;
+			cell3.innerHTML = actions;
+		
+		}else if(size=="DIR"){ 
+			cell1.innerHTML = title;
+			cell2.innerHTML = size;
+			
+			//Create the Download Delete line
+			var actions = "<a onclick=\"return confirm('Are you sure you want to delete this folder ?')\" href='index.html?uid="+MDS.minidappuid+"&folder="+folderloc+"&delete="+encodeURIComponent(fileloc)+"'>DELETE</a>";
+			cell3.innerHTML = actions;
+			
+		}else{
+			cell1.innerHTML = title;		
+		}
+			
+		tablerow++;
+	}
+	
+	function createFileTable(currentfolder, files){
+		//Set the folder name
+		var folderdiv 		= document.getElementById("folderdiv");
+		folderdiv.innerHTML = currentfolder; 
+		
+		//Get the table
+		var rows = 0;
+		var table = document.getElementById("filestable");
+		
+		//Are we in root
+		if(currentfolder != "/"){
+			var linkfolder;
+			if(currentfolder.endsWith("/")){
+				linkfolder 	= currentfolder+"..";
+			}else{
+				linkfolder 	= currentfolder+"/..";
+			}
+			var link = "<a href='index.html?uid="+MDS.minidappuid+"&folder="+linkfolder+"'>GO TO PARENT</a>"
+			
+			createTableRow(table,link,"");
+		}
+		
+		//FIRST DIRECTORIES
+		for (var index = 0; index < files.length; index++) {
+	        if(files[index].isdir){
+	        	var name 		= files[index].name;
+				var linkfolder;
+				if(currentfolder.endsWith("/")){
+					linkfolder 	= currentfolder+name;
+				}else{
+					linkfolder 	= currentfolder+"/"+name;
+				}
+				var link 		= "<a href='index.html?uid="+MDS.minidappuid+"&folder="+linkfolder+"'>"+name+"</a>"
+				
+				createTableRow(table,link,"DIR",files[index].location,currentfolder);
+	        }
+		}
+	
+		//NOW FILES
+		for (var index = 0; index < files.length; index++) {
+	        if(!files[index].isdir){
+	        	createTableRow(table,files[index].name,files[index].size,files[index].location,currentfolder);
+	        }
+		}
+	}
+	
+	function loadFolder(folderloc){
+		MDS.file.list(folderloc,function(listmsg){
+			createFileTable(listmsg.response.canonical, listmsg.response.list);
+		});	
+	}
+
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			if(makedir!=null){
+				MDS.file.makedir(folder+"/"+makedir,function(){
+					loadFolder(folder);
+				});
+				
+			}else if(deletedata!=null){
+				MDS.file.delete(deletedata, function(){
+					loadFolder(folder);	
+				});
+				
+			}else if(extradata != null){
+				//Move the file to here
+				var filename = MDS.form.getParams("fileupload");
+				MDS.file.move("/fileupload/"+filename, folder+"/"+filename, function(movemsg){
+					loadFolder(folder);
+				});
+			
+			}else{
+				loadFolder(folder);	
+			}
+		}
+	});
+
+</script>
+
+<center>
+	<br>
+	<h2>FILEZ</h2>
+
+	<div id="folderdiv">/</div>
+	<br>
+
+	<table id="filestable" border=0 style="width: 400">
+		<tr>
+			<th>NAME</th>
+			<th>SIZE</th>
+			<th>ACTIONS</th>
+		</tr>
+	</table>
+	<br>
+
+	<form action="/fileupload.html" method=POST enctype='multipart/form-data'>
+		<script type="text/javascript">
+			document.write("<input type='hidden' name='uid' value='"+MDS.minidappuid+"' />");
+			document.write("<input type='hidden' name='extradata' value='"+folder+"' />");
+		</script>
+		<input type='hidden' name='jumppage' value="index.html" />
+		<input type=file name="fileupload" required /> <input type=submit value='Upload File' />
+	</form>
+	<br>
+	
+	<form action="index.html" method=GET>
+		<script type="text/javascript">
+			document.write("<input type='hidden' name='uid' value='"+MDS.minidappuid+"' />");
+			document.write("<input type='hidden' name='folder' value='"+folder+"' />");
+		</script>
+		<input type=text name="makedir" required /> <input type=submit value='Make Directory' />
+	</form>
+
+</center>
+
+</body>
+</html>
