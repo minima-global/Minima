@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 
+import org.minima.utils.MinimaLogger;
+
 public class MultipartParser {
 
 	public static MultipartData getTextData(String zName, String zData) {
@@ -138,17 +140,27 @@ public class MultipartParser {
 				mpd = getTextData(name, value);
 			}else {
 				
-				//Get the file data
-				byte[] allfiledata = dis.readAllBytes();
+				//How much is left
+				int available = dis.available();
 				
-				//Remove the last 2 bytes \r\n
-				byte[] filedata = new byte[allfiledata.length-2];
+				//Load everything up to the \r\n
+				byte[] availdata = new byte[available-2];
+				dis.read(availdata, 0, available-2);
 				
-				//Copy the data
-				System.arraycopy(allfiledata, 0, filedata, 0, filedata.length);
+				//Create the mpd
+				mpd = getFileData(name, filename, contenttype, availdata);
+				
+//				//Get the file data
+//				byte[] allfiledata = dis.readAllBytes();
+//				
+//				//Remove the last 2 bytes \r\n
+//				byte[] filedata = new byte[allfiledata.length-2];
+//				
+//				//Copy the data
+//				System.arraycopy(allfiledata, 0, filedata, 0, filedata.length);
 				
 				//And create the MultiPart
-				mpd = getFileData(name, filename, contenttype, filedata);
+//				mpd = getFileData(name, filename, contenttype, filedata);
 			}
 			
 			//Add to our list..

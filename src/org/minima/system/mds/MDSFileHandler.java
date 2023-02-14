@@ -256,13 +256,13 @@ public class MDSFileHandler implements Runnable {
 				MultipartData extradatapart = data.get("extradata");
 				String extradata = "";
 				if(extradatapart!=null) {
-					extradata = URLEncoder.encode(extradatapart.getTextData(), MiniString.MINIMA_CHARSET);
+					extradata = URLEncoder.encode(extradatapart.getTextData(), "UTF-8");
 				}
 				
 				//Now.. save the file..
 				MultipartData filepart = data.get("fileupload"); 
-				String filename 	= URLEncoder.encode(filepart.getFileName(), MiniString.MINIMA_CHARSET);
-				String contenttype 	= URLEncoder.encode(filepart.getContentType(), MiniString.MINIMA_CHARSET);
+				String filename 	= URLEncoder.encode(filepart.getFileName(), "UTF-8");
+				String contenttype 	= URLEncoder.encode(filepart.getContentType(), "UTF-8");
 				
 				//Save the data
 				byte[] filedata = filepart.getFileData();
