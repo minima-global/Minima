@@ -308,7 +308,7 @@ var MDS = {
 	}, 
 	
 	/**
-	 * Utility function for GET parameters..
+	 * Function for GET parameters..
 	 */
 	form : {
 		
@@ -324,6 +324,47 @@ var MDS = {
 			    }
 			    return result;
 		}		
+	},
+	
+	/**
+	 * UTILITY functions.. very useful
+	 */
+	util : {
+		
+		//Convert HEX to Base 64 - removes the 0x if necessary
+		hexToBase64(hexstring) {
+			//Check if starts with 0x
+			var thex = hexstring;
+			if(hexstring.startsWith("0x")){
+				thex = hexstring.substring(2);
+			}	
+			
+		    return btoa(thex.match(/\w{2}/g).map(function(a) {
+		        return String.fromCharCode(parseInt(a, 16));
+		    }).join(""));
+		},
+	
+		//Convert Base64 to HEX	
+		base64ToHex(str) {
+			const raw = atob(str);
+			let result = '';
+			for (let i = 0; i < raw.length; i++) {
+				const hex = raw.charCodeAt(i).toString(16);
+				result += (hex.length === 2 ? hex : '0' + hex);
+			}
+			return result.toUpperCase();
+		},
+		
+		//Convert Base64 to a Uint8Array - useful for Blobs
+		base64ToArrayBuffer(base64) {
+		    var binary_string = window.atob(base64);
+		    var len = binary_string.length;
+		    var bytes = new Uint8Array(len);
+		    for (var i = 0; i < len; i++) {
+		        bytes[i] = binary_string.charCodeAt(i);
+		    }
+		    return bytes.buffer;
+		}
 	}
 };
 
