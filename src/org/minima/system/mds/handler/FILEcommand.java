@@ -94,6 +94,7 @@ public class FILEcommand {
 				for(File ff : files) {
 					JSONObject fdata = new JSONObject();
 					fdata.put("name", ff.getName());
+					fdata.put("location", getCanonicalPath(rootfiles,ff));
 					fdata.put("size", ff.length());
 					fdata.put("isdir", ff.isDirectory());
 					fdata.put("isfile", ff.isFile());
@@ -167,7 +168,8 @@ public class FILEcommand {
 				JSONObject fdata = new JSONObject();
 				fdata.put("name", actualfile.getName());
 				
-				actualfile.delete();
+				MiniFile.deleteFileOrFolder(rootfiles.getAbsolutePath(), actualfile);
+				//actualfile.delete();
 				
 				resp.put("delete", fdata);
 
@@ -199,6 +201,11 @@ public class FILEcommand {
 					throw new Exception("Invalid file..");
 				}
 				
+				//Check exists
+				if(!actualfile.exists()) {
+					throw new IllegalArgumentException("File does not exist "+actualfile);
+				}
+				
 				//Check not directory
 				if(actualfile.isDirectory()) {
 					throw new IllegalArgumentException("Cannot copy Directory");
@@ -226,6 +233,11 @@ public class FILEcommand {
 				//Check id child..
 				if(!MiniFile.isChild(rootfiles, newfile)) {
 					throw new Exception("Invalid file..");
+				}
+				
+				//Check exists
+				if(!actualfile.exists()) {
+					throw new IllegalArgumentException("File does not exist "+actualfile);
 				}
 				
 				//Check not directory
