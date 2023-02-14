@@ -142,12 +142,10 @@ public class MultipartParser {
 				
 				//How much is left
 				int available = dis.available();
-				
-				//Load everything up to the \r\n
 				byte[] availdata = new byte[available-2];
 				dis.read(availdata, 0, available-2);
 				
-				//Create the mpd
+				//Create the Multipart
 				mpd = getFileData(name, filename, contenttype, availdata);
 				
 //				//Get the file data
