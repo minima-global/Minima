@@ -1,9 +1,10 @@
 <html>
 
 <head>
-	<title>FILEZ</title>
+	<title>CHATTER</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<script type="text/javascript" src="mds.js"></script>
+	<script type="text/javascript" src="rant.js"></script>
 </head>
 
 <body>
@@ -12,47 +13,49 @@
 
 	<br>
 
-	<h2>FILEZ</h2>
-
-	<div id="folderdiv"></div>
-	<br>
-	
-	<img id="myimage" style="max-width:800;">
+	<h2>CHAT</h2>
 
 <script type="text/javascript">
+
+	var replytree;
+	function walkchat(chatrow, depth){
+		//MDS.log(JSON.stringify(chatrow));
+		var user 	= chatrow.USERNAME;
+		var message	= decodeURIComponent(chatrow.MESSAGE);
+		var link 	= "&nbsp;<a href='reply.html?uid="+MDS.minidappuid+"&msgid="+chatrow.MSGID+"'>REPLY</a>"
+		
+		replytree.innerHTML += new Array(depth).join('&nbsp;&nbsp;&nbsp;&nbsp;')+user+" : "+message+link+"<br><br>";
+		
+		//Now walk through the replies..
+		var len = chatrow.replies.length;
+		for(var i=0;i<len;i++){
+			var reply = chatrow.replies[i];
+			walkchat(reply, depth+1)
+		}
+	}
 
 	//Main message handler..
 	MDS.init(function(msg){
 		
 		//Do initialisation
 		if(msg.event == "inited"){
-	
-			//Get the Image we are going to show..
-			var imageloc = MDS.form.getParams("imageloc");
 			
-			//Set the folder name
-			var folderdiv 		= document.getElementById("folderdiv");
-			folderdiv.innerHTML = imageloc;
+			//What RANT is this..
+			var baseid = MDS.form.getParams("baseid");
 			
-			//Load the data
-			MDS.file.loadbinary(imageloc,function(msg){
-				//MDS.log(JSON.stringify(msg));
-				
-				var imgdata = msg.response.load.data;
-				var img = document.getElementById("myimage");
-				var b64 = MDS.util.hexToBase64(imgdata.substring(2));
-				var src = 'data:image/*;base64,' + b64;
-				
-				img.src = src;
-			});
+			//Load it up..
+			var tree = createReplyTable(baseid,function(treemsg){
+				//MDS.log(JSON.stringify(treemsg,null,2));
+				replytree = document.getElementById("replytree");
+				walkchat(treemsg.toprant,1);
+			});			
 		}
 	});
 		
 </script>
 
+<div id="replytree" style="text-align:left;width:500"></div>
 
 </center>
-
 </body>
-
 </html>

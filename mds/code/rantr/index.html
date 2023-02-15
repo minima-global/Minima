@@ -1,9 +1,10 @@
 <html>
 
 <head>
-	<title>RANTR</title>
+	<title>CHATTER</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<script type="text/javascript" src="mds.js"></script>
+	<script type="text/javascript" src="rant.js"></script>
 </head>
 
 <body>
@@ -16,6 +17,37 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			
+			//MDS.sql("DROP table messages");
+			
+			//Create the DB if not exists
+			initsql = "CREATE TABLE IF NOT EXISTS `messages` ( "
+						+"  `id` bigint auto_increment, "
+						+"  `publickey` varchar(512) NOT NULL, "
+						+"  `username` varchar(160) NOT NULL, "
+						+"  `message` varchar(512) NOT NULL, "
+						+"  `msgid` varchar(160) NOT NULL, "
+						+"  `parentid` varchar(160) NOT NULL, "
+						+"  `baseid` varchar(160) NOT NULL, "
+						+"  `date` bigint NOT NULL "
+						+" )";
+						
+			//Run this..
+			MDS.sql(initsql,function(msg){
+				//MDS.log(JSON.stringify(msg));
+				
+				var msgjson = {};
+				msgjson.publickey 	= "0x03";
+				msgjson.username 	= "pxpx";
+				msgjson.message 	= "Another REPLY!";
+				msgjson.parentid 	= "0x7755F92789B7321A0324F0A2D7120D10B6F7CF80A0C23EABC04536FBD41775D0";
+				msgjson.baseid 		= "0x7755F92789B7321A0324F0A2D7120D10B6F7CF80A0C23EABC04536FBD41775D0";
+				msgjson.randomid 	= Math.random()+"";
+				
+				//addMessage(msgjson);
+				
+				//Load the table..
+				createMainTable();
+			});
 		}
 	});
 
@@ -23,9 +55,31 @@
 
 <center>
 	<br>
-	<h2>Rantr</h2>
+	<h2>CHATTER</h2>
 
+	<form action="index.html" method=GET>
+	
+		<script type="text/javascript">
+			document.write("<input type='hidden' name='uid' value='"+MDS.minidappuid+"' />");
+		</script>
+	
+		<textarea rows="4" cols="60" name="rant"></textarea>
+		<br>
+		<br>
+		<input type="Submit" value="Make a Rant" />
+	</form>
 
+<br>
+<br>
+	<table id="mainranttable" border=1 style="width: 600">
+		<tr>
+			<th>NAME</th>
+			<th>MESSAGE</th>
+			<th>DATE</th>
+			<th>REPLIES</th>
+			<th>VIEW</th>
+		</tr>
+	</table>
 	
 </center>
 
