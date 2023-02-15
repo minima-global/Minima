@@ -12,9 +12,9 @@ MDS.init(function(msg){
 			
 		//MDS.log("MyTest inited");
 		
-		MDS.file.list("/",function(msg){
-			MDS.log("SERVICE FILE LIST "+JSON.stringify(msg));
-		});
+		//MDS.file.list("/",function(msg){
+		//	MDS.log("SERVICE FILE LIST "+JSON.stringify(msg));
+		//});
 		
 		//java.lang.System.out.println("THIIS IS FROM JAVA!!");
 					
@@ -32,10 +32,10 @@ MDS.init(function(msg){
 	//	});
 	
 	}else if(msg.event == "MDSSHUTDOWN"){
-		MDS.log("service.js : SHUTDOWN "+JSON.stringify(msg));
+		//MDS.log("service.js : SHUTDOWN "+JSON.stringify(msg));
 	
 	}else if(msg.event == "MDSCOMMS"){
-		MDS.log("service.js : "+JSON.stringify(msg));
+		//MDS.log("service.js : "+JSON.stringify(msg));
 	}
 	
 });

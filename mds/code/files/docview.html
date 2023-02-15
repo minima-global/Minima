@@ -1,0 +1,58 @@
+<html>
+
+<head>
+	<title>FILEZ</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script type="text/javascript" src="mds.js"></script>
+</head>
+
+<body>
+
+<center>
+
+	<br>
+
+	<h2>FILEZ</h2>
+
+	<div id="folderdiv"></div>
+	<br>
+	
+	<img id="myimage" style="max-width:800;">
+
+<script type="text/javascript">
+
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+	
+			//Get the Image we are going to show..
+			var imageloc = MDS.form.getParams("imageloc");
+			
+			//Set the folder name
+			var folderdiv 		= document.getElementById("folderdiv");
+			folderdiv.innerHTML = imageloc;
+			
+			//Load the data
+			MDS.file.loadbinary(imageloc,function(msg){
+				//MDS.log(JSON.stringify(msg));
+				
+				var imgdata = msg.response.load.data;
+				var img = document.getElementById("myimage");
+				var b64 = MDS.util.hexToBase64(imgdata.substring(2));
+				var src = 'data:image/*;base64,' + b64;
+				
+				img.src = src;
+			});
+		}
+	});
+		
+</script>
+
+
+</center>
+
+</body>
+
+</html>

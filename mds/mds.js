@@ -210,12 +210,36 @@ var MDS = {
 		},
 		
 		/**
+		 * Save Binary Data - supply as a HEX string
+		 */
+		savebinary : function(filename, hexdata, callback){
+			
+			//Create the single line
+			var commsline = "savebinary&"+filename+"&"+hexdata;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		},
+		
+		/**
 		 * Load text - can be text, a JSON in string format or hex encoded data
 		 */
 		load : function(filename, callback){
 			
 			//Create the single line
 			var commsline = "load&"+filename;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		},
+		
+		/**
+		 * Load Binary data - returns the HEX data
+		 */
+		loadbinary : function(filename, callback){
+			
+			//Create the single line
+			var commsline = "loadbinary&"+filename;		
 			
 			//Send via POST
 			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
@@ -231,12 +255,60 @@ var MDS = {
 			
 			//Send via POST
 			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		},
+		
+		/**
+		 * Get the full path - if you want to run a command on the file / import a txn / unsigned txn etc
+		 */
+		getpath : function(filename, callback){
+			
+			//Create the single line
+			var commsline = "getpath&"+filename;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		},
+		
+		/**
+		 * Make a directory
+		 */
+		makedir : function(filename, callback){
+			
+			//Create the single line
+			var commsline = "makedir&"+filename;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		},
+		
+		/**
+		 * Copy a file
+		 */
+		copy : function(filename, newfilename, callback){
+			
+			//Create the single line
+			var commsline = "copy&"+filename+"&"+newfilename;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		},
+		
+		/**
+		 * Move a file
+		 */
+		move : function(filename, newfilename, callback){
+			
+			//Create the single line
+			var commsline = "move&"+filename+"&"+newfilename;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
 		}
 		
 	}, 
 	
 	/**
-	 * Utility function for GET parameters..
+	 * Function for GET parameters..
 	 */
 	form : {
 		
@@ -252,6 +324,47 @@ var MDS = {
 			    }
 			    return result;
 		}		
+	},
+	
+	/**
+	 * UTILITY functions.. very useful
+	 */
+	util : {
+		
+		//Convert HEX to Base 64 - removes the 0x if necessary
+		hexToBase64(hexstring) {
+			//Check if starts with 0x
+			var thex = hexstring;
+			if(hexstring.startsWith("0x")){
+				thex = hexstring.substring(2);
+			}	
+			
+		    return btoa(thex.match(/\w{2}/g).map(function(a) {
+		        return String.fromCharCode(parseInt(a, 16));
+		    }).join(""));
+		},
+	
+		//Convert Base64 to HEX	
+		base64ToHex(str) {
+			const raw = atob(str);
+			let result = '';
+			for (let i = 0; i < raw.length; i++) {
+				const hex = raw.charCodeAt(i).toString(16);
+				result += (hex.length === 2 ? hex : '0' + hex);
+			}
+			return result.toUpperCase();
+		},
+		
+		//Convert Base64 to a Uint8Array - useful for Blobs
+		base64ToArrayBuffer(base64) {
+		    var binary_string = window.atob(base64);
+		    var len = binary_string.length;
+		    var bytes = new Uint8Array(len);
+		    for (var i = 0; i < len; i++) {
+		        bytes[i] = binary_string.charCodeAt(i);
+		    }
+		    return bytes.buffer;
+		}
 	}
 };
 
