@@ -391,7 +391,7 @@ public class mds extends Command {
 			
 			ret.put("response", md.toJSON());
 			
-		}else if(action.equals("reload")) {
+		}else if(action.equals("reset")) {
 			
 			JSONArray arr = new JSONArray();
 			
@@ -410,6 +410,7 @@ public class mds extends Command {
 					
 					//Now create the JSON..
 					JSONObject jsonconf = (JSONObject) new JSONParser().parse(data.toString());
+					jsonconf.put("permission", "read");
 					
 					//Create the MiniDAPP
 					MiniDAPP md = new MiniDAPP(uid, jsonconf);
