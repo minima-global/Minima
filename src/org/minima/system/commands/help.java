@@ -30,6 +30,7 @@ import org.minima.system.commands.base.tokencreate;
 import org.minima.system.commands.base.tokenvalidate;
 import org.minima.system.commands.base.trace;
 import org.minima.system.commands.maxima.maxcontacts;
+import org.minima.system.commands.maxima.maxcreate;
 import org.minima.system.commands.maxima.maxima;
 import org.minima.system.commands.maxima.maxsign;
 import org.minima.system.commands.maxima.maxverify;
@@ -142,8 +143,6 @@ public class help extends Command {
 			addCommand(details, new hash());
 			addCommand(details, new random());
 			
-	//		addCommand(details, new file());
-			
 			addCommand(details, new scripts());
 			addCommand(details, new newscript());
 			addCommand(details, new runscript());
@@ -177,8 +176,11 @@ public class help extends Command {
 			addCommand(details, new network());
 			addCommand(details, new maxima());
 			addCommand(details, new maxcontacts());
+			
+			addCommand(details, new maxcreate());
 			addCommand(details, new maxsign());
 			addCommand(details, new maxverify());
+			
 			addCommand(details, new message());
 			addCommand(details, new connect());
 			addCommand(details, new disconnect());

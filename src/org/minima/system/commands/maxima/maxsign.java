@@ -13,7 +13,7 @@ import org.minima.utils.json.JSONObject;
 public class maxsign extends Command {
 
 	public maxsign() {
-		super("maxsign","[data:] - Sign a piece of data with your Maxima ID");
+		super("maxsign","[data:] (privatekey:) - Sign a piece of data with your Maxima ID or a maxcreate key");
 	}
 	
 	@Override
@@ -22,19 +22,24 @@ public class maxsign extends Command {
 				+ "\n"
 				+ "Sign a piece of data with your Maxima ID.\n"
 				+ "\n"
-				+ "Returns the signature of the data, signed with your Maxima private key.\n"
+				+ "Returns the signature of the data, signed with your Maxima private key or the specified key.\n"
 				+ "\n"
 				+ "data:\n"
 				+ "    The 0x HEX data to sign.\n"
 				+ "\n"
+				+ "privatekey: (optional)\n"
+				+ "    The 0x HEX data of the private key from maxcreate. Uses your Maxima ID otherwise.\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
-				+ "maxsign data:0xCD34..\n";
+				+ "maxsign data:0xCD34..\n"
+				+ "\n"
+				+ "maxsign data:0xCD34.. privatekey:0x30819..\n";
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"data"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"data","privatekey"}));
 	}
 	
 	@Override
@@ -43,10 +48,15 @@ public class maxsign extends Command {
 		
 		MiniData data = getDataParam("data");
 		
-		MaximaManager max = Main.getInstance().getMaxima();
+		MiniData priv = null;
 		
-		//get the Private Key..
-		MiniData priv = max.getPrivateKey();
+		//Are they specifying the Private key
+		if(existsParam("privatekey")) {
+			priv = getDataParam("privatekey");
+		}else {
+			MaximaManager max = Main.getInstance().getMaxima();
+			priv = max.getPrivateKey();
+		}
 		
 		byte[] sigBytes = SignVerify.sign(priv.getBytes(), data.getBytes());
 		MiniData sign = new MiniData(sigBytes);
