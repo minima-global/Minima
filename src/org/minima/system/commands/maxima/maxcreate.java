@@ -46,7 +46,7 @@ public class maxcreate extends Command {
 		
 		JSONObject resp = new JSONObject();
 		resp.put("publickey", pubk.to0xString());
-		resp.put("privatejey", privk.to0xString());
+		resp.put("privatekey", privk.to0xString());
 		
 		ret.put("response", resp);
 		
