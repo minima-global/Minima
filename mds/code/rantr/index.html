@@ -68,6 +68,12 @@
 				//Load the table..
 				createMainTable();	
 			}
+		}else if(msg.event == "MDSCOMMS"){
+			if(!msg.data.public){
+				if(msg.data.message == "NEWRANT"){
+					createMainTable();
+				}
+			}
 		}
 	});
 
@@ -83,14 +89,14 @@
 		createRant(text,"0x00","0x00",function(rant){
 			
 			//ok - now add this message to OUR DB
-			addRantToDB(rant,function(){
+			//addRantToDB(rant,function(){
 				
 				//And post over Maxima
 				postRant(rant)
 				
 				//And reload the main table
-				createMainTable();	
-			});
+				//createMainTable();	
+			//});
 		});
 	}
 	
