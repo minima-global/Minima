@@ -9,65 +9,16 @@
 
 <body>
 
-<script type="text/javascript">
-	
-	//Main message handler..
-	MDS.init(function(msg){
-		
-		//Do initialisation
-		if(msg.event == "inited"){
-			
-			//MDS.sql("DROP table messages");
-			
-			//Create the DB if not exists
-			initsql = "CREATE TABLE IF NOT EXISTS `messages` ( "
-						+"  `id` bigint auto_increment, "
-						+"  `publickey` varchar(512) NOT NULL, "
-						+"  `username` varchar(160) NOT NULL, "
-						+"  `message` varchar(512) NOT NULL, "
-						+"  `msgid` varchar(160) NOT NULL, "
-						+"  `parentid` varchar(160) NOT NULL, "
-						+"  `baseid` varchar(160) NOT NULL, "
-						+"  `date` bigint NOT NULL "
-						+" )";
-						
-			//Run this..
-			MDS.sql(initsql,function(msg){
-				//MDS.log(JSON.stringify(msg));
-				
-				var msgjson = {};
-				msgjson.publickey 	= "0x03";
-				msgjson.username 	= "pxpx";
-				msgjson.message 	= "Another REPLY!";
-				msgjson.parentid 	= "0x7755F92789B7321A0324F0A2D7120D10B6F7CF80A0C23EABC04536FBD41775D0";
-				msgjson.baseid 		= "0x7755F92789B7321A0324F0A2D7120D10B6F7CF80A0C23EABC04536FBD41775D0";
-				msgjson.randomid 	= Math.random()+"";
-				
-				//addMessage(msgjson);
-				
-				//Load the table..
-				createMainTable();
-			});
-		}
-	});
-
-</script>
-
 <center>
 	<br>
 	<h2>CHATTER</h2>
-
-	<form action="index.html" method=GET>
 	
-		<script type="text/javascript">
-			document.write("<input type='hidden' name='uid' value='"+MDS.minidappuid+"' />");
-		</script>
-	
-		<textarea rows="4" cols="60" name="rant"></textarea>
-		<br>
-		<br>
-		<input type="Submit" value="Make a Rant" />
-	</form>
+	<div id=userdetails></div>
+	<br>
+	<textarea rows="4" cols="60" name="rant" id="mainmessage"></textarea>
+	<br>
+	<br>
+	<button onclick="sendRant();">Make a Rant</button>
 
 <br>
 <br>
@@ -77,11 +28,73 @@
 			<th>MESSAGE</th>
 			<th>DATE</th>
 			<th>REPLIES</th>
-			<th>VIEW</th>
+			<th>ACTIONS</th>
 		</tr>
 	</table>
 	
 </center>
+
+<script type="text/javascript">
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//Run Maxima to get the User details..
+			MDS.cmd("maxima",function(msg){
+				MAXIMA_PUBLICKEY = msg.response.publickey;
+				MAXIMA_USERNAME  = msg.response.name;
+				MAXIMA_CONTACT	 = msg.response.contact;
+				
+				var userdets = document.getElementById("userdetails");
+				userdets.innerHTML = MAXIMA_USERNAME; 
+			});
+			
+			//MDS.sql("DROP table messages");
+			//return;
+			
+			//Are we deleting..
+			var del 	= MDS.form.getParams("delete");
+			var baseid 	= MDS.form.getParams("baseid");
+			if(del){
+				//Delete the whole thread..
+				deleteBaseID(baseid,function(){
+					createMainTable();
+				});
+				
+			}else{
+				//Load the table..
+				createMainTable();	
+			}
+		}
+	});
+
+	function sendRant(){
+		//Get the Text..
+		var text = document.getElementById("mainmessage").value;
+		document.getElementById("mainmessage").value = "";
+		if(text.trim() == ""){
+			return;
+		}
+		
+		//Create the Chatter message
+		createRant(text,"0x00","0x00",function(rant){
+			
+			//ok - now add this message to OUR DB
+			addRantToDB(rant,function(){
+				
+				//And post over Maxima
+				postRant(rant)
+				
+				//And reload the main table
+				createMainTable();	
+			});
+		});
+	}
+	
+</script>
 
 </body>
 </html>
