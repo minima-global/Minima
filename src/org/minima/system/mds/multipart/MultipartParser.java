@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 
-import org.minima.utils.MinimaLogger;
-
 public class MultipartParser {
 
 	public static MultipartData getTextData(String zName, String zData) {
