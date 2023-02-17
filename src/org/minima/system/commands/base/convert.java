@@ -67,21 +67,21 @@ public class convert extends Command {
 			throw new CommandException("Invalid FROM type : "+from);
 		}
 		
-		String tomx = null;
+		String todata = null;
 		if(to.equals("hex")) {
-			tomx = fromdata.to0xString();
+			todata = fromdata.to0xString();
 		}else if(to.equals("mx")) {
-			tomx = Address.makeMinimaAddress(fromdata);
+			todata = Address.makeMinimaAddress(fromdata);
 		}else if(to.equals("string")) {
-			tomx = new MiniString(fromdata.getBytes()).toString();
+			todata = new MiniString(fromdata.getBytes()).toString();
 		}else if(to.equals("base64")) {
-			tomx = Base64.getEncoder().encodeToString(fromdata.getBytes());
+			todata = Base64.getEncoder().encodeToString(fromdata.getBytes());
 		}else {
 			throw new CommandException("Invalid TO type : "+to);
 		}
 		
 		//Add to response
-		resp.put("conversion", tomx);
+		resp.put("conversion", todata);
 		ret.put("response", resp);
 				
 		return ret;
