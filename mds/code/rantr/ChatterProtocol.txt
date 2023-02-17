@@ -1,0 +1,69 @@
+
+Protocol Specification
+
+Maxima seamlessly deals with the sending and receiving messages. 
+
+Inside the message is a packet of data.
+
+Sending a message over Maxima to application "chatter"
+
+The data packet is a HEX encoded JSON. Once you convert to String.. and JSON parse.. 
+
+CHATTER MESSAGE
+---------------
+{
+	"type:":MESSAGE_TYPE,
+	"message":THE_MESSAGE,
+	"msgid":HASH_OF_A_MESSAGE,
+	"signature":HEX_SIGNATURE
+}
+
+MESSAGE_TYPE
+------------
+"MESSAGE" or "MESSAGE_REQUEST"
+
+THE_MESSAGE
+-----------
+{
+	"publickey":MAXIMA_PUBLICKEY,
+	"username":USERNAME,
+	"message":UTF8_STRING,
+	"parentid":THE MSGID OF THE PARENT - 0x00 if no parent (First message)
+	
+	//EXTRA PARAMS - the above are REQUIRED - these are optional
+	"usericon":HEX OF PNG Icon,
+	"filemimetype":If file data added - the mime type (image/png, image/jpg, application/pdf etc),
+	"file":The HEX of the file,
+	
+}
+
+If the message type is MESSAGE only use
+{
+	"type:":"MESSAGE",
+	"message":THE_MESSAGE,
+	"msgid":HASH_OF_A_MESSAGE,
+	"signature":HEX_SIGNATURE of MSGID
+}
+
+If the message type is MESSAGE_REQUEST only use
+{
+	"type:":"MESSAGE_REQUEST",
+	"msgid":HASH_OF_A_MESSAGE,
+}
+
+A message can have 1 file added.
+
+A MESSAGE_REQUEST expects a MESSAGE to be sent back to the user iof the MSGID if the user has it.
+
+HASH_OF_MESSAGE
+---------------
+Convert the message JSON to string and hash that.
+
+SIGNATURE
+---------
+Sign the MSGID - can use your default Maxima key or a made up one with maxcreate.
+
+maxsign data:HASH
+
+Must be the key used as publickey.
+
