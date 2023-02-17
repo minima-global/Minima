@@ -391,7 +391,7 @@ public class mds extends Command {
 			
 			ret.put("response", md.toJSON());
 			
-		}else if(action.equals("reset")) {
+		}else if(action.equals("reload")) {
 			
 			JSONArray arr = new JSONArray();
 			
