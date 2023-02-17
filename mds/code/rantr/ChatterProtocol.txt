@@ -3,6 +3,10 @@ Protocol Specification
 
 Maxima seamlessly deals with the sending and receiving messages. 
 
+Maximum max message size is 256k. 
+
+Since HEX in JSON is simple 0xFFE4.. etc notation - thats takes double the space. 2 chars per byte.
+
 Inside the message is a packet of data.
 
 Sending a message over Maxima to application "chatter"
@@ -28,11 +32,11 @@ THE_MESSAGE
 	"publickey":MAXIMA_PUBLICKEY,
 	"username":USERNAME,
 	"message":UTF8_STRING,
-	"parentid":THE MSGID OF THE PARENT - 0x00 if no parent (First message)
+	"parentid":THE MSGID OF THE PARENT - 0x00 if no parent (First message),
 	
 	//EXTRA PARAMS - the above are REQUIRED - these are optional
-	"usericon":HEX OF PNG Icon,
-	"filemimetype":If file data added - the mime type (image/png, image/jpg, application/pdf etc),
+	"usericon":HEX of PNG Icon,
+	"filemime":If file data added - the mime type (image/png, image/jpg, application/pdf etc),
 	"file":The HEX of the file,
 	
 }
