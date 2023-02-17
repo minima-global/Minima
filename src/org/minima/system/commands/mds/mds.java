@@ -403,6 +403,11 @@ public class mds extends Command {
 				
 					//Get the File name
 					String uid = dapp.getName();
+					
+					//Get the MiniDAPP
+					MiniDAPP mdorig = db.getMiniDAPP(uid);
+					String perm = mdorig.getPermission();
+					
 					db.deleteMiniDAPP(uid);
 					
 					//Load the conf file..
@@ -410,7 +415,7 @@ public class mds extends Command {
 					
 					//Now create the JSON..
 					JSONObject jsonconf = (JSONObject) new JSONParser().parse(data.toString());
-					jsonconf.put("permission", "read");
+					jsonconf.put("permission", perm);
 					
 					//Create the MiniDAPP
 					MiniDAPP md = new MiniDAPP(uid, jsonconf);
