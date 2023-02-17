@@ -14,6 +14,7 @@ import org.minima.system.commands.base.coinexport;
 import org.minima.system.commands.base.coinimport;
 import org.minima.system.commands.base.cointrack;
 import org.minima.system.commands.base.consolidate;
+import org.minima.system.commands.base.convert;
 import org.minima.system.commands.base.getaddress;
 import org.minima.system.commands.base.hash;
 import org.minima.system.commands.base.hashtest;
@@ -142,6 +143,7 @@ public class help extends Command {
 			
 			addCommand(details, new hash());
 			addCommand(details, new random());
+			addCommand(details, new convert());
 			
 			addCommand(details, new scripts());
 			addCommand(details, new newscript());

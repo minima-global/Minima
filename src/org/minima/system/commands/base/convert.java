@@ -19,23 +19,33 @@ import org.minima.utils.json.JSONObject;
 public class convert extends Command {
 
 	public convert() {
-		super("convert","[from:] [to:] [data:] - Convert between different data types");
+		super("convert","[from:] [to:] [data:] - Convert between different data types (String, HEX, Mx, Base64)");
 	}
 	
 	@Override
 	public String getFullHelp() {
-		return "\ncoincheck\n"
+		return "\nconvert\n"
 				+ "\n"
-				+ "Check a coin exists and is valid. Can only check unspent coins.\n"
+				+ "Convert between different data types\n"
 				+ "\n"
-				+ "Returns the coin details and whether the MMR proof is valid.\n"
+				+ "Returns converted data.\n"
+				+ "\n"
+				+ "from:\n"
+				+ "    The type of the data param.\n"
+				+ "\n"
+				+ "to:\n"
+				+ "    The type you want to convert to.\n"
 				+ "\n"
 				+ "data:\n"
-				+ "    The data of a coin. Can be found using the 'coinexport' command.\n"
+				+ "    The the data to convert.\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
-				+ "coincheck data:0x00000..\n";
+				+ "convert from:String to:HEX data:hello\n"
+				+ "\n"
+				+ "convert from:HEX to:Mx data:0XFFFF\n"
+				+ "\n"
+				+ "convert from:String to:Base64 data:hello\n";
 	}
 	
 	@Override
