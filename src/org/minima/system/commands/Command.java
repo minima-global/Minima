@@ -27,6 +27,7 @@ import org.minima.system.commands.base.coinexport;
 import org.minima.system.commands.base.coinimport;
 import org.minima.system.commands.base.cointrack;
 import org.minima.system.commands.base.consolidate;
+import org.minima.system.commands.base.convert;
 import org.minima.system.commands.base.debugflag;
 import org.minima.system.commands.base.getaddress;
 import org.minima.system.commands.base.hash;
@@ -116,7 +117,7 @@ public abstract class Command {
 			
 			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(), new sendview(),
 			
-			new archive(), new logs(), new history(),
+			new archive(), new logs(), new history(), new convert(),
 			new magic(),
 			new multisig(), new checkaddress(),
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
