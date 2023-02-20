@@ -73,10 +73,10 @@ public class maths extends Command {
 		String res = ctr.getVariable("returnvalue").toString();
 		
 		JSONObject resp = new JSONObject();
-		resp.put("result", res);
 		if(logs) {
 			resp.put("logs", ctr.getCompleteTraceLog());
 		}
+		resp.put("result", res);
 		
 		//Add to response
 		ret.put("response", resp);
