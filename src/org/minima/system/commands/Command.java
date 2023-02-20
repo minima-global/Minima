@@ -36,6 +36,7 @@ import org.minima.system.commands.base.healthcheck;
 import org.minima.system.commands.base.incentivecash;
 import org.minima.system.commands.base.logs;
 import org.minima.system.commands.base.magic;
+import org.minima.system.commands.base.maths;
 import org.minima.system.commands.base.mempool;
 import org.minima.system.commands.base.missingcmd;
 import org.minima.system.commands.base.mmrcreate;
@@ -117,7 +118,7 @@ public abstract class Command {
 			
 			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(), new sendview(),
 			
-			new archive(), new logs(), new history(), new convert(),
+			new archive(), new logs(), new history(), new convert(),new maths(),
 			new magic(),
 			new multisig(), new checkaddress(),
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),

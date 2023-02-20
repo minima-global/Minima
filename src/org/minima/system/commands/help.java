@@ -20,6 +20,7 @@ import org.minima.system.commands.base.hash;
 import org.minima.system.commands.base.hashtest;
 import org.minima.system.commands.base.incentivecash;
 import org.minima.system.commands.base.logs;
+import org.minima.system.commands.base.maths;
 import org.minima.system.commands.base.mmrcreate;
 import org.minima.system.commands.base.mmrproof;
 import org.minima.system.commands.base.newaddress;
@@ -144,6 +145,7 @@ public class help extends Command {
 			addCommand(details, new hash());
 			addCommand(details, new random());
 			addCommand(details, new convert());
+			addCommand(details, new maths());
 			
 			addCommand(details, new scripts());
 			addCommand(details, new newscript());
