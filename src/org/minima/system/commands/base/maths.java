@@ -26,7 +26,7 @@ import org.minima.utils.json.JSONObject;
 public class maths extends Command {
 
 	public maths() {
-		super("maths","[calculate:] (logs:)- Run maths with MiniNumber");
+		super("maths","[calculate:] (logs:)- Run maths with Minima precision MiniNumber");
 	}
 	
 	@Override
