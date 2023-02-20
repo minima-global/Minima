@@ -5,7 +5,7 @@ Maxima seamlessly deals with the sending and receiving messages.
 
 Maximum max message size is 256k. 
 
-Since HEX in JSON is simple 0xFFE4.. etc notation - thats takes double the space. 2 chars per byte.
+Since HEX in JSON is simple 0xFFE4.. etc notation - thats take double the space. 2 chars per byte.
 
 Inside the message is a packet of data.
 
@@ -18,7 +18,7 @@ CHATTER MESSAGE
 {
 	"type:":MESSAGE_TYPE,
 	"message":THE_MESSAGE,
-	"msgid":HASH_OF_A_MESSAGE,
+	"messageid":HASH_OF_A_MESSAGE,
 	"signature":HEX_SIGNATURE
 }
 
@@ -35,24 +35,14 @@ THE_MESSAGE
 	"parentid":THE MSGID OF THE PARENT - 0x00 if no parent (First message),
 	
 	//EXTRA PARAMS - the above are REQUIRED - these are optional
-	"usericon":HEX of PNG Icon,
 	"filemime":If file data added - the mime type (image/png, image/jpg, application/pdf etc),
 	"file":The HEX of the file,
-	
-}
-
-If the message type is MESSAGE only use
-{
-	"type:":"MESSAGE",
-	"message":THE_MESSAGE,
-	"msgid":HASH_OF_A_MESSAGE,
-	"signature":HEX_SIGNATURE of MSGID
 }
 
 If the message type is MESSAGE_REQUEST only use
 {
 	"type:":"MESSAGE_REQUEST",
-	"msgid":HASH_OF_A_MESSAGE,
+	"messageid":HASH_OF_A_MESSAGE,
 }
 
 A message can have 1 file added.
