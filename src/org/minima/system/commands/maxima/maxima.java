@@ -190,12 +190,22 @@ public class maxima extends Command {
 				//Load the contact
 				MaximaContact mcontact = maxdb.loadContactFromPublicKey(pubkey);
 				if(mcontact == null) {
-					throw new CommandException("No Contact found for publickey : "+pubkey);
+					
+					//Is it Our Own key..
+					if(pubkey.equals(max.getPublicKey().to0xString())) {
+						
+						//Get our own address
+						fullto = max.getRandomMaximaAddress();
+						
+					}else {
+						throw new CommandException("No Contact found for publickey : "+pubkey);
+					}
+				
+				}else {
+					//Get the address
+					fullto = mcontact.getCurrentAddress();
 				}
 				
-				//Get the address
-				fullto = mcontact.getCurrentAddress();
-			
 			}else {
 				
 				//Load the contact from the id..
