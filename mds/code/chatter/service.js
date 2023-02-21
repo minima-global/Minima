@@ -93,7 +93,11 @@ MDS.init(function(msg){
 					var msgid = rantjson.messageid;
 					
 					//Load the message
-					selectMessage(msgid,function(chatmsg){
+					selectMessage(msgid,function(found,chatmsg){
+						if(!found){
+							MDS.log("MESSAGE REQUEST for unknown msgid "+msgid);
+							return;
+						}
 						
 						//Get the original Chatter message
 						var chatter = decodeStringFromDB(chatmsg.CHATTER);

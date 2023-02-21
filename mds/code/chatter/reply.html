@@ -43,7 +43,12 @@
 			initChatter();
 			
 			//Get the message..
-			selectMessage(parentid,function(chatmsg){
+			selectMessage(parentid,function(found,chatmsg){
+				
+				if(!found){
+					replytree.innerHTML = "MESSAGE NOT FOUND!";
+					return;
+				}
 				
 				//Get the baseid
 				baseid = chatmsg.BASEID;

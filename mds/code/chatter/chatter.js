@@ -69,7 +69,12 @@ function selectRecentMessages(limit,callback){
  */
 function selectMessage(msgid,callback){
 	MDS.sql("SELECT * FROM MESSAGES WHERE messageid='"+msgid+"'", function(sqlmsg){
-		callback(sqlmsg.rows[0]);
+		//Did we find it..
+		if(sqlmsg.rows.length>0){
+			callback(true, sqlmsg.rows[0]);	
+		}else{
+			callback(false);
+		}
 	});
 }
 
@@ -238,7 +243,12 @@ function postMessageToPublickey(chatter,publickey,callback){
 
 function rechatter(msgid,callback){
 	//First load the message
-	selectMessage(msgid,function(chatmsg){
+	selectMessage(msgid,function(found,chatmsg){
+		if(!found){
+			MDS.log("RECHATTER unknown msgid : "+msgid);
+			return;
+		}
+		
 		//Get the original Chatter message
 		var chatter = decodeStringFromDB(chatmsg.CHATTER);
 		

@@ -9,6 +9,7 @@
  */
 function createMainTable(){
 	var table = document.getElementById("mainranttable");
+	table.innerHTML = "";
 	selectRecentMessages(20,function(sqlmsg){
 		drawCompleteMainTable(table,sqlmsg.rows);
 	});
