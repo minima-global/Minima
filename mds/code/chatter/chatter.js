@@ -211,8 +211,8 @@ function checkRant(chatter,callback){
  * Post a message Over Chatter
  */
 function postRant(rant,callback){
-	//var maxcmd = "maxima action:sendall application:chatter data:"+JSON.stringify(msgjson);
-	var maxcmd = "maxima action:send to:"+MAXIMA_CONTACT+" application:chatter data:"+JSON.stringify(rant);
+	var maxcmd = "maxima action:sendall application:chatter data:"+JSON.stringify(msgjson);
+	//var maxcmd = "maxima action:send to:"+MAXIMA_CONTACT+" application:chatter data:"+JSON.stringify(rant);
 	MDS.cmd(maxcmd,function(msg){
 		//MDS.log(JSON.stringify(msg));
 		if(callback){
@@ -225,8 +225,8 @@ function postRant(rant,callback){
  * Post a message to a Maxima Contact
  */
 function postMessageToPublickey(chatter,publickey,callback){
-	//var maxcmd = "maxima action:sendall application:chatter data:"+JSON.stringify(msgjson);
-	var maxcmd = "maxima action:send publickey:"+publickey+" application:chatter data:"+JSON.stringify(chatter);
+	var maxcmd = "maxima action:sendall application:chatter data:"+JSON.stringify(msgjson);
+	//var maxcmd = "maxima action:send publickey:"+publickey+" application:chatter data:"+JSON.stringify(chatter);
 	MDS.cmd(maxcmd,function(msg){
 		//MDS.log(JSON.stringify(msg));
 		if(callback){
