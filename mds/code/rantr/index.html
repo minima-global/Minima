@@ -48,17 +48,11 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			
-			//Run Maxima to get the User details..
-			MDS.cmd("maxima",function(msg){
-				MAXIMA_PUBLICKEY = msg.response.publickey;
-				MAXIMA_USERNAME  = msg.response.name;
-				
-				//Hack for now..
-				MAXIMA_CONTACT	 = msg.response.contact;
-				
+			//Init Chatter vars
+			initChatter(function(){
 				var userdets = document.getElementById("userdetails");
-				userdets.innerHTML = MAXIMA_USERNAME; 
-			
+				userdets.innerHTML = MAXIMA_USERNAME;
+				
 				//Insert a message
 				/*var chat = createRant("This is a reply 4","0x8B82B965101AE8CE9F9F6A67842852C29198E525196F70B4D0C0422FB59569BE","0xAD56F0635B2D204D990E3DAD846CDAA9AC06DC7D4A975D095D1493D8B1417501",function(chattermsg){
 					//Insert..
@@ -66,7 +60,6 @@
 						MDS.log(JSON.stringify(insertmsg,null,2));
 					})
 				});*/
-				
 			});
 			
 			/*MDS.sql("DROP table messages",function(){
@@ -89,7 +82,7 @@
 			}
 		}else if(msg.event == "MDSCOMMS"){
 			if(!msg.data.public){
-				if(msg.data.message == "NEWRANT"){
+				if(msg.data.message == "NEWCHATTER"){
 					createMainTable();
 				}
 			}
@@ -111,7 +104,7 @@
 			addRantToDB(rant,function(msg){
 				
 				//And post over Maxima
-				//postRant(rant)
+				postRant(rant)
 				
 				//And reload the main table
 				createMainTable();	

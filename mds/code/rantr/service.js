@@ -7,14 +7,6 @@
 //Load a file..
 MDS.load("chatter.js");
 
-//Convert HEX to UTF8
-function hexToUtf8(s){
-  return decodeURIComponent(
-     s.replace(/\s+/g, '') // remove spaces
-      .replace(/[0-9A-F]{2}/g, '%$&') // add '%' before each 2 characters
-  );
-}
-
 //Main message handler..
 MDS.init(function(msg){
 	
@@ -32,40 +24,92 @@ MDS.init(function(msg){
 		//Is it for maxsolo..
 		if(msg.data.application == "chatter"){
 			
-			//Maxima User 
-			var pubkey 	= msg.data.from;
-			
-			//remove the leading 0x
-			var datastr	= msg.data.data.substring(2);
-				
+			//The Maxima user that sent this request
+			var publickey = msg.data.from;
+											
 			//Convert the data..
-			var jsonstr = hexToUtf8(datastr);
+			MDS.cmd("convert from:HEX to:String data:"+msg.data.data,function(resp){
 			
-			//And create the actual JSON
-			var rantjson = JSON.parse(jsonstr);
-			MDS.log(JSON.stringify(rantjson,null,2));
-			
-			//Check this rant
-			checkRant(rantjson,function(valid){
-				//Only add valif rants
-				if(valid){
-					
-					//Do we already have it..
-					checkInDB(rantjson,function(indb){
-						if(!indb){
+				//And create the actual JSON
+				var rantjson = JSON.parse(resp.response.conversion);
+				
+				//What message type is this..
+				var messagetype = rantjson.type; 
+				
+				if(messagetype == "MESSAGE"){
+					//Check this rant
+					checkRant(rantjson,function(valid){
+						//Only add valif rants
+						if(valid){
 							
-							//Add it to the DB
-							addRantToDB(rantjson,function(){
-								//And reload the main table
-								MDS.comms.solo("NEWRANT");	
-							});	
+							//Do we have the parent..
+							var parentid = rantjson.message.parentid;
+							if(parentid!="0x00"){
+								
+								//Do we have it..
+								checkInDB(parentid,function(pindb){
+									if(!pindb){
+										//Ask for it!
+										MDS.log("REQUEST MESSAGE : "+parentid);
+										
+										//Create a request message						
+										createMessageRequest(parentid,function(chatterreq){
+											
+											//Post it normally over Maxima to JUST this user
+											postMessageToPublickey(chatterreq,publickey,function(postresp){
+												MDS.log("POSTREQ:"+JSON.stringify(postresp));
+											});	
+										});
+										
+									}else{
+										//Ask for it!
+										//MDS.log("DON'T REQUEST MESSAGE : "+parentid);
+									}	
+								});
+							}
 							
-						}else{
-							MDS.log("RANT Already in DB");
+							//Do we already have it..
+							checkInDB(rantjson.messageid,function(indb){
+								if(!indb){
+									
+									//Add it to the DB
+									addRantToDB(rantjson,function(){
+										//And reload the main table
+										MDS.comms.solo("NEWCHATTER");	
+									});	
+									
+								}else{
+									//MDS.log("CHATTER Message already in DB");
+								}
+							});
 						}
 					});
-				}
-			});				
+				
+				}else if(messagetype="MESSAGE_REQUEST"){
+					
+					//Send them this message..
+					//MDS.log("MESSAGE REQUEST REC : "+JSON.stringify(rantjson));
+					
+					var msgid = rantjson.messageid;
+					
+					//Load the message
+					selectMessage(msgid,function(chatmsg){
+						
+						//Get the original Chatter message
+						var chatter = decodeStringFromDB(chatmsg.CHATTER);
+
+						//Convert to JSON
+						var chatjson = JSON.parse(chatter);
+
+						postMessageToPublickey(chatjson,publickey,function(postresp){
+							//MDS.log("POSTREPLY:"+JSON.stringify(postresp));
+						});	
+					});
+					
+				}else{
+					MDS.log("INVALID Message type in Chatter message "+messagetype);
+				}		
+			});
 		}
 	}
 });

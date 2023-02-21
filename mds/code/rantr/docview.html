@@ -20,6 +20,8 @@
 
 	<h2>CHAT</h2>
 
+	<div id="replytree" style="text-align:left;width:500"></div>
+
 <script type="text/javascript">
 
 	var baseid = MDS.form.getParams("baseid");
@@ -59,7 +61,10 @@
 		
 		//Do initialisation
 		if(msg.event == "inited"){
-	
+			
+			//Initialise Chatter
+			initChatter();
+			
 			//Create the reply table
 			var tree = createReplyTable(baseid,function(treemsg){
 				//MDS.log(JSON.stringify(treemsg,null,2));
@@ -70,8 +75,6 @@
 	});
 		
 </script>
-
-<div id="replytree" style="text-align:left;width:500"></div>
 
 </center>
 </body>

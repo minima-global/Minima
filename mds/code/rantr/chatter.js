@@ -11,6 +11,24 @@ var MAXIMA_PUBLICKEY = "";
 var MAXIMA_USERNAME  = "";
 var MAXIMA_CONTACT   = "";
 
+/**
+ * Initilaise Username, Publickey - does not HAVE to be Maxima details..use maxcreate etc 
+ */
+function initChatter(callback){
+	//Run Maxima to get the User details..
+	MDS.cmd("maxima",function(msg){
+		MAXIMA_PUBLICKEY = msg.response.publickey;
+		MAXIMA_USERNAME  = msg.response.name;
+		
+		//Hack for now..
+		MAXIMA_CONTACT	 = msg.response.contact;
+		
+		if(callback){
+			callback();
+		}	
+	});
+}
+
 /** 
  * Create the main SQL DB
  */
@@ -43,6 +61,15 @@ function createDB(callback){
 function selectRecentMessages(limit,callback){
 	MDS.sql("SELECT * FROM MESSAGES ORDER BY id DESC LIMIT "+limit, function(sqlmsg){
 		callback(sqlmsg);
+	});
+}
+
+/**
+ * Select a single message
+ */
+function selectMessage(msgid,callback){
+	MDS.sql("SELECT * FROM MESSAGES WHERE messageid='"+msgid+"'", function(sqlmsg){
+		callback(sqlmsg.rows[0]);
 	});
 }
 
@@ -132,11 +159,28 @@ function createRant(message,parentid,baseid,callback){
 }
 
 /**
+ * Create message request
+ */
+function createMessageRequest(msgid,callback){
+	//Now the actual CHATTER message
+	var chatter  = {};
+	chatter.type		= "MESSAGE_REQUEST";	
+	chatter.messageid 	= msgid;
+	
+	//Now we have a RANT
+	if(callback){
+		callback(chatter);	
+	}
+}
+
+
+
+/**
  * Check a RANT 
  */
 function checkRant(chatter,callback){
 	//Convert to a string
-	var msgstr = JSON.stringify(chatter.rant);
+	var msgstr = JSON.stringify(chatter.message);
 	
 	//Calculate the msgid
 	MDS.cmd("hash data:"+msgstr,function(msg){
@@ -144,13 +188,13 @@ function checkRant(chatter,callback){
 		
 		//Check this is valid..
 		if(msgid != chatter.messageid){
-			MDS.log("INVALID RANTID in Chatter message "+JSON.stringify(chatter));
+			MDS.log("INVALID MESSAGEID in Chatter message "+JSON.stringify(chatter));
 			callback(false);
 			return;
 		}
 		
 		//Now verify the signature
-		MDS.cmd("maxverify data:"+msgid+" publickey:"+chatter.rant.publickey+" signature:"+chatter.signature,function(msg){
+		MDS.cmd("maxverify data:"+msgid+" publickey:"+chatter.message.publickey+" signature:"+chatter.signature,function(msg){
 			if(!msg.response.valid){
 				MDS.log("INVALID SIGNATURE in Chatter message "+JSON.stringify(chatter));
 				callback(false);
@@ -172,18 +216,56 @@ function postRant(rant,callback){
 	MDS.cmd(maxcmd,function(msg){
 		//MDS.log(JSON.stringify(msg));
 		if(callback){
-			callback();	
+			callback(msg);	
 		}	
 	});
 }
 
-/*
- * Do we already have this RANT
+/**
+ * Post a message to a Maxima Contact
  */
-function checkInDB(rant,callback){
-	MDS.sql("SELECT id FROM MESSAGES WHERE messageid='"+rant.rantid+"'", function(sqlmsg){
+function postMessageToPublickey(chatter,publickey,callback){
+	//var maxcmd = "maxima action:sendall application:chatter data:"+JSON.stringify(msgjson);
+	var maxcmd = "maxima action:send publickey:"+publickey+" application:chatter data:"+JSON.stringify(chatter);
+	MDS.cmd(maxcmd,function(msg){
+		//MDS.log(JSON.stringify(msg));
+		if(callback){
+			callback(msg);	
+		}	
+	});
+}
+
+function rechatter(msgid,callback){
+	//First load the message
+	selectMessage(msgid,function(chatmsg){
+		//Get the original Chatter message
+		var chatter = decodeStringFromDB(chatmsg.CHATTER);
+		
+		//Convert to JSON
+		var chatjson = JSON.parse(chatter);
+		
+		//And post as normal..
+		postRant(chatjson,function(msg){
+			//MDS.log("RERANT:"+JSON.stringify(msg));	
+		});
+	});	
+}
+
+/*
+ * Do we already have this Chatter message
+ */
+function checkInDB(msgid,callback){
+	MDS.sql("SELECT id FROM MESSAGES WHERE messageid='"+msgid+"'", function(sqlmsg){
 		callback(sqlmsg.count>0);
 	});
+}
+
+function encodeStringForDB(str){
+	return encodeURIComponent(str).replace("'", "%27");
+}
+
+function decodeStringFromDB(str){
+	return decodeURIComponent(str).replace("%27", "'");
 }
 
 /**
@@ -195,13 +277,13 @@ function addRantToDB(chatter,callback){
 	var rantstr = JSON.stringify(chatter);
 	
 	//Fully encoded to put in the DB
-	var encodedrant = encodeURIComponent(rantstr).replace("'", "%27");
+	var encodedrant = encodeStringForDB(rantstr);
 	
 	//Get the actual rant
 	var msgjson = chatter.message; 
 	
 	//URL encode the message 
-	var encodedmessage = encodeURIComponent(msgjson.message).replace("'", "%27");
+	var encodedmessage = encodeStringForDB(msgjson.message);
 	
 	//Date as of NOW
 	var recdate = new Date();

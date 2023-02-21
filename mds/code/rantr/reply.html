@@ -1,0 +1,87 @@
+<html>
+
+<head>
+	<title>CHATTER</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<script type="text/javascript" src="mds.js"></script>
+	<script type="text/javascript" src="chatter.js"></script>
+	<script type="text/javascript" src="rant.js"></script>
+	
+	<link rel="stylesheet" href="rant.css">
+	
+</head>
+
+<body>
+
+<center>
+
+	<br>
+
+	<h2>REPLY</h2>
+
+	<div id="replytree" style="text-align:left;width:500"></div>
+
+	<br>
+	<textarea rows="4" cols="60" name="rant" id="replymessage"></textarea>
+	<br>
+	<br>
+	<button onclick="replyRant();">&nbsp;Send Reply&nbsp;</button>
+	
+<script type="text/javascript">
+
+	var parentid = MDS.form.getParams("msgid");
+	var baseid;
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+	
+			//Initialise Chatter
+			initChatter();
+			
+			//Get the message..
+			selectMessage(parentid,function(chatmsg){
+				
+				//Get the baseid
+				baseid = chatmsg.BASEID;
+				
+				//Show the message you are replying to..
+				replytree.innerHTML = createMessageTable(chatmsg.rows[0],false);
+			});		
+		}
+	});
+		
+	function replyRant(){
+		//Get the Text..
+		var text = document.getElementById("replymessage").value;
+		document.getElementById("replymessage").value = "";
+		if(text.trim() == ""){
+			return;
+		}
+		
+		MDS.log("USERNAME:"+MAXIMA_USERNAME);
+		
+		//Create the Chatter message
+		createRant(text,parentid,baseid,function(rant){
+			
+			//ok - now add this message to OUR DB
+			addRantToDB(rant,function(msg){
+				
+				//And post over Maxima
+				postRant(rant)
+				
+				//And reload the main table
+				document.location.href = "index.html?uid="+MDS.minidappuid;	
+			});
+		});
+	}
+	
+</script>
+
+
+</center>
+</body>
+</html>

@@ -4,25 +4,17 @@
 * @spartacusrex
 */
 
-var maintablecounter=0;
+/**
+ * Draw the main Table view
+ */
 function createMainTable(){
-	
-	//Clear the table..
-	var table 		= document.getElementById("mainranttable");
-	var rowCount 	= table.rows.length;
-	for (var i=0;i<rowCount;i++) {
-		table.deleteRow(0);
-	}
-	
-	//Reset table rows..
-	maintablecounter=0;
-	selectRecentMessages(10,function(sqlmsg){
-		//Draw the table..
-		drawMainTable(table,sqlmsg.rows);
+	var table = document.getElementById("mainranttable");
+	selectRecentMessages(20,function(sqlmsg){
+		drawCompleteMainTable(table,sqlmsg.rows);
 	});
 }
 
-function drawMainTable(thetable,allrows){
+function drawCompleteMainTable(thetable,allrows){
 	var len = allrows.length;
 	for(var i=0;i<len;i++){
 		var tablerow 	= thetable.insertRow(i);
@@ -32,25 +24,35 @@ function drawMainTable(thetable,allrows){
 }
 
 function createMessageTable(messagerow,replymode){
-	var msg 	= decodeURIComponent(messagerow.MESSAGE).replaceAll("\n","<br>");
+	var msg 	= decodeStringFromDB(messagerow.MESSAGE).replaceAll("\n","<br>");
 	
 	var dd = new Date(+messagerow.DATE);
 	var datestr = dd.toDateString()+" "+dd.toLocaleTimeString()+"&nbsp;";
 	
 	var userline = "<table width=100%><tr><td>"+messagerow.USERNAME+"</td><td style='text-align:right;'>"+datestr+"</td></tr></table>";
 	
-	var msgtable	= "<table border=0 class=messagetable>"
-						+"<tr><td class=messagetableusername>"+userline+"</td></tr>"
-						+"<tr><td class=messagetablemessage>"+msg+"</td></tr>";
+	var msgtable = "<table border=0 class=messagetable>"
+					+"<tr><td class=messagetableusername>"+userline+"</td></tr>"
+					+"<tr><td class=messagetablemessage>"+msg+"</td></tr>";
 	
 	if(replymode){
+		
+		//The reply page
+		var replylink  = "<button onclick=\"document.location.href='reply.html?uid="+MDS.minidappuid+"&msgid="+messagerow.MESSAGEID+"'\">REPLY</button>";
+		
+		//Rerant link
+		var rerantlink = "<button onclick='requestReChatter(\""+messagerow.MESSAGEID+"\")'>RE-CHATTER</button>";
+		
 		if(messagerow.PARENTID == "0x00"){
+			
+			var dellink = "<button onclick='requestDelete(\""+messagerow.BASEID+"\")'>DELETE ALL</button>";
+			
 			//Show the DELETE
-			var actionline = "<table width=100%><tr><td>&nbsp;&nbsp;REPLY RE-RANT</td><td style='text-align:right;'>DELETE ALL&nbsp;&nbsp;</td></tr></table>";
+			var actionline = "<table width=100%><tr><td>&nbsp;&nbsp;"+replylink+" "+rerantlink+"</td><td style='text-align:right;'>"+dellink+"</td></tr></table>";
 			msgtable+= "<tr><td class=messagetableactions>"+actionline+"</td></tr>";				
 		}else{
 			//NO DELETE
-			var actionline = "<table width=100%><tr><td>&nbsp;&nbsp;REPLY RE-RANT</td><td style='text-align:right;'>&nbsp;</td></tr></table>";
+			var actionline = "<table width=100%><tr><td>&nbsp;&nbsp;"+replylink+" "+rerantlink+"</td><td style='text-align:right;'>&nbsp;</td></tr></table>";
 			msgtable+= "<tr><td class=messagetableactions>"+actionline+"</td></tr>";
 		}
 	}
@@ -67,11 +69,23 @@ function createMessageTable(messagerow,replymode){
 	//Add a break line
 	msgtable+="<br>";
 	
-	MDS.log("ROW:"+JSON.stringify(messagerow));
-	
 	return msgtable;
 }
 
+function requestReChatter(msgid){
+	if(confirm("This will post this to all your Maxima Contacts ?")){
+		rechatter(msgid);
+	}
+}
+
+function requestDelete(baseid){
+	if(confirm("This will delete the whole thread ?")){
+		deleteAllThread(baseid,function(){
+			//Jump to home..
+			document.location.href="index.html?uid="+MDS.minidappuid;
+		});
+	}
+}
 
 function createReplyTable(baseid, callback){
 	MDS.sql("SELECT * FROM MESSAGES WHERE baseid='"+baseid+"' ORDER BY date ASC", function(sqlmsg){
