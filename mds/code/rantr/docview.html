@@ -3,8 +3,13 @@
 <head>
 	<title>CHATTER</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
 	<script type="text/javascript" src="mds.js"></script>
 	<script type="text/javascript" src="rant.js"></script>
+	<script type="text/javascript" src="chatter.js"></script>
+	
+	<link rel="stylesheet" href="rant.css">
+	
 </head>
 
 <body>
@@ -17,14 +22,29 @@
 
 <script type="text/javascript">
 
+	var baseid = MDS.form.getParams("baseid");
+	var msgid  = MDS.form.getParams("msgid");
 	var replytree;
+	
 	function walkchat(chatrow, depth){
 		//MDS.log(JSON.stringify(chatrow));
 		var user 	= chatrow.USERNAME;
-		var message	= decodeURIComponent(chatrow.MESSAGE);
-		var link 	= "&nbsp;<a href='reply.html?uid="+MDS.minidappuid+"&msgid="+chatrow.MSGID+"'>REPLY</a>"
+		var message	= decodeURIComponent(chatrow.MESSAGE).replaceAll("\n","<br>");
+		var link 	= "&nbsp;<a href='reply.html?uid="+MDS.minidappuid+"&msgid="+chatrow.MESSAGEID+"'>REPLY</a>"
 		
-		replytree.innerHTML += new Array(depth).join('&nbsp;&nbsp;&nbsp;&nbsp;')+user+" : "+message+link+"<br><br>";
+		var gap 		= new Array(depth).join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+		var replymsg 	= createMessageTable(chatrow,true);
+		
+		//Create a table..
+		var viewindent;
+		if(chatrow.MESSAGEID == msgid){
+			viewindent = "***<table><tr><td>"+gap+"</td><td>"+replymsg+"</td></tr></table>";
+		}else{
+			viewindent = "<table><tr><td>"+gap+"</td><td>"+replymsg+"</td></tr></table>";
+		}
+		
+		//Add to thew total
+		replytree.innerHTML += viewindent;
 		
 		//Now walk through the replies..
 		var len = chatrow.replies.length;
@@ -33,17 +53,14 @@
 			walkchat(reply, depth+1)
 		}
 	}
-
+	
 	//Main message handler..
 	MDS.init(function(msg){
 		
 		//Do initialisation
 		if(msg.event == "inited"){
-			
-			//What RANT is this..
-			var baseid = MDS.form.getParams("baseid");
-			
-			//Load it up..
+	
+			//Create the reply table
 			var tree = createReplyTable(baseid,function(treemsg){
 				//MDS.log(JSON.stringify(treemsg,null,2));
 				replytree = document.getElementById("replytree");

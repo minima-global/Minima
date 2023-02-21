@@ -3,8 +3,12 @@
 <head>
 	<title>CHATTER</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
 	<script type="text/javascript" src="mds.js"></script>
+	<script type="text/javascript" src="chatter.js"></script>
 	<script type="text/javascript" src="rant.js"></script>
+	
+	<link rel="stylesheet" href="rant.css">
 </head>
 
 <body>
@@ -22,14 +26,16 @@
 
 <br>
 <br>
-	<table id="mainranttable" border=1 style="width: 600">
-		<tr>
+	<table id="mainranttable" border=0>
+		
+		<!--   <tr>
 			<th>NAME</th>
 			<th>MESSAGE</th>
 			<th>DATE</th>
 			<th>REPLIES</th>
 			<th>ACTIONS</th>
-		</tr>
+		</tr>-->
+		
 	</table>
 	
 </center>
@@ -46,14 +52,27 @@
 			MDS.cmd("maxima",function(msg){
 				MAXIMA_PUBLICKEY = msg.response.publickey;
 				MAXIMA_USERNAME  = msg.response.name;
+				
+				//Hack for now..
 				MAXIMA_CONTACT	 = msg.response.contact;
 				
 				var userdets = document.getElementById("userdetails");
 				userdets.innerHTML = MAXIMA_USERNAME; 
+			
+				//Insert a message
+				/*var chat = createRant("This is a reply 4","0x8B82B965101AE8CE9F9F6A67842852C29198E525196F70B4D0C0422FB59569BE","0xAD56F0635B2D204D990E3DAD846CDAA9AC06DC7D4A975D095D1493D8B1417501",function(chattermsg){
+					//Insert..
+					addRantToDB(chattermsg,function(insertmsg){
+						MDS.log(JSON.stringify(insertmsg,null,2));
+					})
+				});*/
+				
 			});
 			
-			//MDS.sql("DROP table messages");
-			//return;
+			/*MDS.sql("DROP table messages",function(){
+				MDS.log("SQL DB wiped");
+			});
+			return;*/
 			
 			//Are we deleting..
 			var del 	= MDS.form.getParams("delete");
@@ -89,14 +108,14 @@
 		createRant(text,"0x00","0x00",function(rant){
 			
 			//ok - now add this message to OUR DB
-			//addRantToDB(rant,function(){
+			addRantToDB(rant,function(msg){
 				
 				//And post over Maxima
-				postRant(rant)
+				//postRant(rant)
 				
 				//And reload the main table
-				//createMainTable();	
-			//});
+				createMainTable();	
+			});
 		});
 	}
 	

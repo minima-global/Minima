@@ -388,6 +388,7 @@ function PollListener(){
 	var polldata = "series="+PollSeries+"&counter="+PollCounter;
 	
 	httpPostAsyncPoll(pollhost,polldata,function(msg){
+		//MDS.log(JSON.stringify(msg));
 		
 		//Are we on the right Series..
 		if(PollSeries != msg.series){

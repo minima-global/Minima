@@ -1,0 +1,39 @@
+
+.messagetable {
+	width:500;
+	 border: 2px solid black;
+	border-radius: 10px;
+}
+
+.messagetableusername {
+	vertical-align:top;
+	width:50;
+	background:#ff00ff;
+	padding:10;
+	border-radius: 10px;
+	white-space: nowrap;
+}
+
+.messagetablemessage {
+	vertical-align:top;
+	width:100%;
+	background:#ff0099;
+	padding:10;
+	border-radius: 10px;
+}
+
+.messagetabledate {
+	text-align:right;
+	width:100%;
+	border-radius: 10px;
+	padding:2;
+	background:#aaaaff;
+}
+
+.messagetableactions {
+	vertical-align:middle;
+	width:100%;
+	border-radius: 10px;
+	padding:2;
+	background:#ddddff;
+}
