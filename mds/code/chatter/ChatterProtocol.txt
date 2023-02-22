@@ -1,10 +1,8 @@
 
-Protocol Specification
-----------------------
+Chatter Protocol
+----------------
 
-Sending a message over Maxima to application "chatter"
-
-The data packet is a HEX encoded JSON. Once you convert to String.. and JSON parse.. 
+Sending a JSON message over Maxima to application "chatter" 
 
 CHATTER MESSAGE
 ---------------
@@ -22,13 +20,13 @@ MESSAGE_TYPE
 THE_MESSAGE
 -----------
 {
-	"publickey":MAXIMA_PUBLICKEY,
-	"username":USERNAME,
-	"message":UTF8_STRING,
-	"parentid":THE MSGID OF THE PARENT - 0x00 if no parent (First message),
-	"baseid":THE MSGID OF THE TOP MESSAGE IN THIS THREAD - 0x00 if no parent (First message),
-	"date":TIME MILLI,
-	"randomid":A RANDOM NUMBER (So the hash is always different)
+	"publickey":The main RSA public key of the User,
+	"username":The Username - this can change but not the publickey,
+	"message":The message,
+	"parentid":The MSGID of the parent message if this is a reply - 0x00 if no parent (First message),
+	"baseid":The MSGID of the TOP message in this thread - 0x00 if this is the first message,
+	"date":Milli time when you made the message,
+	"randomid":A random number (So the hash is always different)
 }
 
 If the message type is MESSAGE_REQUEST only use
@@ -37,9 +35,7 @@ If the message type is MESSAGE_REQUEST only use
 	"messageid":HASH_OF_A_MESSAGE,
 }
 
-A message can have 1 file added.
-
-A MESSAGE_REQUEST expects a MESSAGE to be sent back to the user iof the MSGID if the user has it.
+A MESSAGE_REQUEST expects a MESSAGE to be sent back to the user if the user has it.
 
 HASH_OF_MESSAGE
 ---------------
@@ -49,7 +45,30 @@ SIGNATURE
 ---------
 Sign the MSGID - can use your default Maxima key or a made up one with maxcreate.
 
-maxsign data:HASH
+Example 
+-------
 
-Must be the key used as publickey.
+For a MESSAGE :
+
+{
+  "type": "MESSAGE",
+  "message": {
+    "publickey": "0x30819F300D06092A864886F70D010101050003818D0030818902818100CE298DC7DC775DDB30B824DCA9D53EDEAB81EC0760AFD3CEA2C2175433BAD78D14BFE74A275294F071814370A5B0CF32150F5899515860790B3FDDF4CA940BC111107ABE707A81847D0A265EA656F09F1682C34206116B87F15FB92982DEE461C5C1022642047431E604D8B5F006B632DC9395143D208616D89DC9F6014FB54B0203010001",
+    "username": "Spartacus",
+    "message": "Hello World!",
+    "parentid": "0x00",
+    "baseid": "0x00",
+    "date": 1677061985652,
+    "randomid": "0.6885980262908247"
+  },
+  "messageid": "0x1E207736EBF6390A3F751215F3242A0E39130F4E93B488DA34ABD7F7BADDB37D",
+  "signature": "0x1E9C4E3C34302BE91084B73D99408CF76E14A9A71DBB754C92931E6CC165BFF274829B84439BFDA6F5CC0EC5AAC978B14FD87BAB9B631B182E65D1D953B7C684D81B8FF5CA91560872A2EEBFAA07425CBB734F3C19C1441A786BA37044CB321B514559F77C3E880AF4D6705E561DC357744ED42C39EE2DC68CE5161E1AB0D8A0"
+}
+
+OR for a MESSAGE_REQUEST
+
+{
+  "type": "MESSAGE_REQUEST",
+  "messageid": "0x1E207736EBF6390A3F751215F3242A0E39130F4E93B488DA34ABD7F7BADDB37D"
+}
 
