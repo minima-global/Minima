@@ -27,7 +27,7 @@ function drawCompleteMainTable(thetable,allrows){
 function createMessageTable(messagerow,showactions){
 	var msg 	= decodeStringFromDB(messagerow.MESSAGE).replaceAll("\n","<br>");
 	
-	var dd = new Date(+messagerow.DATE);
+	var dd 		= new Date(+messagerow.RECDATE);
 	var datestr = dd.toDateString()+" "+dd.toLocaleTimeString()+"&nbsp;";
 	
 	var userline = "<table width=100%><tr><td>"+decodeStringFromDB(messagerow.USERNAME)+"</td><td style='text-align:right;'>"+datestr+"</td></tr></table>";
