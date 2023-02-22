@@ -67,6 +67,11 @@
   	white-space: nowrap;
 }
 
+img {
+	max-width:500;
+	max-height:500;
+}
+
 a:link {
   text-decoration: none;
   font-size: 1.2em;
