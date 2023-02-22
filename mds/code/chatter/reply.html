@@ -14,24 +14,28 @@
 
 <body>
 
+<div id="homebutton" class=homediv><button onclick="gohome();" class=solobutton>&nbsp;&nbsp;CHATTER&nbsp;&nbsp;</button></div>
+
 <center>
-
 	<br>
-
 	<h2>REPLY</h2>
 
-	<div id="replytree" style="text-align:left;width:500"></div>
+	<div id="replytree" style="text-align:left;width:100%"></div>
 
 	<br>
-	<textarea rows="4" cols="60" name="rant" id="replymessage"></textarea>
+	<textarea class=messagetextarea name="rant" id="replymessage"></textarea>
 	<br>
 	<br>
-	<button onclick="replyRant();">&nbsp;Send Reply&nbsp;</button>
+	<button class=solobutton onclick="replyRant();">&nbsp;Send Reply&nbsp;</button>
 	
 <script type="text/javascript">
 
 	var parentid = MDS.form.getParams("msgid");
 	var baseid;
+	
+	function gohome(){
+		window.location.href="index.html?uid="+MDS.form.getParams("uid");
+	}
 	
 	//Main message handler..
 	MDS.init(function(msg){

@@ -14,19 +14,23 @@
 
 <body>
 
+<div id="homebutton" class=homediv><button onclick="gohome();" class=solobutton>&nbsp;&nbsp;CHATTER&nbsp;&nbsp;</button></div>
+
 <center>
-
 	<br>
-
 	<h2>CHAT</h2>
 
-	<div id="replytree" style="text-align:left;width:500"></div>
-
+	<div id="replytree"></div>
+	
 <script type="text/javascript">
 
 	var baseid = MDS.form.getParams("baseid");
 	var msgid  = MDS.form.getParams("msgid");
 	var replytree;
+	
+	function gohome(){
+		window.location.href="index.html?uid="+MDS.form.getParams("uid");
+	}
 	
 	function walkchat(chatrow, depth){
 		//MDS.log(JSON.stringify(chatrow));
@@ -40,9 +44,9 @@
 		//Create a table..
 		var viewindent;
 		if(chatrow.MESSAGEID == msgid){
-			viewindent = "***<table><tr><td>"+gap+"</td><td>"+replymsg+"</td></tr></table>";
+			viewindent = "<b>****</b><table width=100%><tr><td>"+gap+"</td><td>"+replymsg+"</td></tr></table>";
 		}else{
-			viewindent = "<table><tr><td>"+gap+"</td><td>"+replymsg+"</td></tr></table>";
+			viewindent = "<table width=100%><tr><td>"+gap+"</td><td>"+replymsg+"</td></tr></table>";
 		}
 		
 		//Add to thew total

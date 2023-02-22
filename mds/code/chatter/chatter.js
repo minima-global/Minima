@@ -44,6 +44,7 @@ function createDB(callback){
 				+"  `messageid` varchar(160) NOT NULL, "
 				+"  `parentid` varchar(160) NOT NULL, "
 				+"  `baseid` varchar(160) NOT NULL, "
+				+"  `rechatter` int NOT NULL default 0, "
 				+"  `date` bigint NOT NULL "
 				+" )";
 				
@@ -101,6 +102,15 @@ function deleteAllThread(baseid,callback){
 }
 
 /**
+ * Select All the recent messages
+ */
+function updateRechatter(msgid,callback){
+	MDS.sql("UPDATE MESSAGES SET rechatter=1 WHERE messageid='"+msgid+"'", function(sqlmsg){
+		callback(sqlmsg);
+	});
+}
+
+/**
  * Find the base message for a given message
  */
 function findbasemsg(msgid,callback){
@@ -119,6 +129,13 @@ function findbasemsg(msgid,callback){
  * Create a Chatter message
  */
 function createRant(message,parentid,baseid,callback){
+	
+	if(message.length > 500){
+		MDS.log("MESSAGE TOO LONG! for createRant..");
+		//Too long..
+		callback(null);
+		return;	
+	}
 	
 	//Construct the base message JSON..
 	var msgjson = {};
@@ -177,8 +194,6 @@ function createMessageRequest(msgid,callback){
 		callback(chatter);	
 	}
 }
-
-
 
 /**
  * Check a RANT 
@@ -246,6 +261,7 @@ function rechatter(msgid,callback){
 	selectMessage(msgid,function(found,chatmsg){
 		if(!found){
 			MDS.log("RECHATTER unknown msgid : "+msgid);
+			callback(null);
 			return;
 		}
 		
@@ -257,7 +273,10 @@ function rechatter(msgid,callback){
 		
 		//And post as normal..
 		postRant(chatjson,function(msg){
-			//MDS.log("RERANT:"+JSON.stringify(msg));	
+			//MDS.log("RERANT:"+JSON.stringify(msg));
+			if(callback){
+				callback(msg);
+			}	
 		});
 	});	
 }

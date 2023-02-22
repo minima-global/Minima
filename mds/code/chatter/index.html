@@ -17,26 +17,16 @@
 	<br>
 	<h2>CHATTER</h2>
 	
-	<div id=userdetails></div>
+	<h3 id=userdetails></h3>
 	<br>
-	<textarea rows="4" cols="60" name="rant" id="mainmessage"></textarea>
+	<textarea class=messagetextarea name="rant" id="mainmessage"></textarea>
 	<br>
 	<br>
-	<button onclick="sendRant();">Make a Rant</button>
+	<button class=solobutton onclick="sendRant();">Start a Chat</button>
 
 <br>
 <br>
-	<table id="mainranttable" border=0>
-		
-		<!--   <tr>
-			<th>NAME</th>
-			<th>MESSAGE</th>
-			<th>DATE</th>
-			<th>REPLIES</th>
-			<th>ACTIONS</th>
-		</tr>-->
-		
-	</table>
+	<table id="mainranttable" class=maincontainer></table>
 	
 </center>
 
@@ -48,38 +38,18 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			
+			//HACK to RESET
+			/*MDS.sql("DROP table messages",function(){MDS.log("SQL DB wiped");});return;*/
+			
 			//Init Chatter vars
 			initChatter(function(){
 				var userdets = document.getElementById("userdetails");
 				userdets.innerHTML = MAXIMA_USERNAME;
-				
-				//Insert a message
-				/*var chat = createRant("This is a reply 4","0x8B82B965101AE8CE9F9F6A67842852C29198E525196F70B4D0C0422FB59569BE","0xAD56F0635B2D204D990E3DAD846CDAA9AC06DC7D4A975D095D1493D8B1417501",function(chattermsg){
-					//Insert..
-					addRantToDB(chattermsg,function(insertmsg){
-						MDS.log(JSON.stringify(insertmsg,null,2));
-					})
-				});*/
 			});
 			
-			/*MDS.sql("DROP table messages",function(){
-				MDS.log("SQL DB wiped");
-			});
-			return;*/
+			//Load the table..
+			createMainTable();
 			
-			//Are we deleting..
-			var del 	= MDS.form.getParams("delete");
-			var baseid 	= MDS.form.getParams("baseid");
-			if(del){
-				//Delete the whole thread..
-				deleteBaseID(baseid,function(){
-					createMainTable();
-				});
-				
-			}else{
-				//Load the table..
-				createMainTable();	
-			}
 		}else if(msg.event == "MDSCOMMS"){
 			if(!msg.data.public){
 				if(msg.data.message == "NEWCHATTER"){
@@ -92,12 +62,21 @@
 	function sendRant(){
 		//Get the Text..
 		var text = document.getElementById("mainmessage").value;
-		document.getElementById("mainmessage").value = "";
 		if(text.trim() == ""){
 			return;
 		}
 		
+		//Check Length
+		if(text.length>500){
+			alert("Message too Long! Max 500 characters..");
+			return;
+		}
+		
+		//Can't have ;
+		text = text.replaceAll(";",":");
+		
 		//Create the Chatter message
+		document.getElementById("mainmessage").value = "";
 		createRant(text,"0x00","0x00",function(rant){
 			
 			//ok - now add this message to OUR DB

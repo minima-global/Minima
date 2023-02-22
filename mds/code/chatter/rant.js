@@ -20,11 +20,11 @@ function drawCompleteMainTable(thetable,allrows){
 	for(var i=0;i<len;i++){
 		var tablerow 	= thetable.insertRow(i);
 		var cell1 	 	= tablerow.insertCell(0);
-		cell1.innerHTML = createMessageTable(allrows[i],false);	
+		cell1.innerHTML = createMessageTable(allrows[i],true);	
 	}
 }
 
-function createMessageTable(messagerow,replymode){
+function createMessageTable(messagerow,showactions){
 	var msg 	= decodeStringFromDB(messagerow.MESSAGE).replaceAll("\n","<br>");
 	
 	var dd = new Date(+messagerow.DATE);
@@ -34,37 +34,33 @@ function createMessageTable(messagerow,replymode){
 	
 	var msgtable = "<table border=0 class=messagetable>"
 					+"<tr><td class=messagetableusername>"+userline+"</td></tr>"
-					+"<tr><td class=messagetablemessage>"+msg+"</td></tr>";
+					+"<tr><td class=messagetablemessage>"+msg+"</td></tr>"
+					+"</table>";
 	
-	if(replymode){
-		
+	//Make it all a link
+	var viewlink 	= "<a href='docview.html?uid="+MDS.minidappuid+"&baseid="+messagerow.BASEID+"&msgid="+messagerow.MESSAGEID+"'>";
+	msgtable 		= viewlink+msgtable+"</a>";
+	
+	//Are we showing the actions..
+	if(showactions){
 		//The reply page
-		var replylink  = "<button onclick=\"document.location.href='reply.html?uid="+MDS.minidappuid+"&msgid="+messagerow.MESSAGEID+"'\">REPLY</button>";
+		var replybutton  = "<button class=solobutton onclick=\"document.location.href='reply.html?uid="+MDS.minidappuid+"&msgid="+messagerow.MESSAGEID+"'\">REPLY</button>";
 		
 		//Rerant link
-		var rerantlink = "<button onclick='requestReChatter(\""+messagerow.MESSAGEID+"\")'>RE-CHATTER</button>";
-		
-		if(messagerow.PARENTID == "0x00"){
-			
-			var dellink = "<button onclick='requestDelete(\""+messagerow.BASEID+"\")'>DELETE ALL</button>";
-			
-			//Show the DELETE
-			var actionline = "<table width=100%><tr><td>&nbsp;&nbsp;"+replylink+" "+rerantlink+"</td><td style='text-align:right;'>"+dellink+"</td></tr></table>";
-			msgtable+= "<tr><td class=messagetableactions>"+actionline+"</td></tr>";				
-		}else{
-			//NO DELETE
-			var actionline = "<table width=100%><tr><td>&nbsp;&nbsp;"+replylink+" "+rerantlink+"</td><td style='text-align:right;'>&nbsp;</td></tr></table>";
-			msgtable+= "<tr><td class=messagetableactions>"+actionline+"</td></tr>";
+		var remsg = "RE-CHATTER";
+		if(messagerow.RECHATTER !=0 ){
+			remsg = "RE-CHATTER [X]";
 		}
-	}
-										
-	msgtable+="</table>";
-	
-	//Are we in reply mode..
-	if(!replymode){
-		//Make it all a link
-		var viewlink 	= "<a href='docview.html?uid="+MDS.minidappuid+"&baseid="+messagerow.BASEID+"&msgid="+messagerow.MESSAGEID+"'>";
-		msgtable = viewlink+msgtable+"</a>"; 	
+		var rerantbutton = "<button class=solobutton onclick='requestReChatter(\""+messagerow.MESSAGEID+"\")'>"+remsg+"</button>";
+		
+		var delbutton = "";
+		if(messagerow.PARENTID == "0x00"){
+			delbutton 	 = "<button class=solobutton onclick='requestDelete(\""+messagerow.BASEID+"\")'>DELETE ALL</button>";
+		}	
+				
+		//Actions..
+		msgtable += "<table class=messagetableactions><tr><td>"+replybutton+" "+rerantbutton+"</td>"
+					+"<td style='text-align:right;'>"+delbutton+"</td></tr></table>";	
 	}
 	
 	//Add a break line
@@ -75,7 +71,12 @@ function createMessageTable(messagerow,replymode){
 
 function requestReChatter(msgid){
 	if(confirm("This will post this to all your Maxima Contacts ?")){
-		rechatter(msgid);
+		updateRechatter(msgid,function(){
+			rechatter(msgid,function(){
+				//refresh the page
+				window.location.reload();				
+			});
+		});
 	}
 }
 

@@ -44,26 +44,21 @@ MDS.init(function(msg){
 							
 							//Do we have the parent..
 							var parentid = rantjson.message.parentid;
-							if(parentid!="0x00"){
+							if(parentid != "0x00"){
 								
 								//Do we have it..
 								checkInDB(parentid,function(pindb){
 									if(!pindb){
 										//Ask for it!
-										MDS.log("REQUEST MESSAGE : "+parentid);
+										//MDS.log("REQUEST MESSAGE : "+parentid);
 										
 										//Create a request message						
 										createMessageRequest(parentid,function(chatterreq){
-											
 											//Post it normally over Maxima to JUST this user
 											postMessageToPublickey(chatterreq,publickey,function(postresp){
-												MDS.log("POSTREQ:"+JSON.stringify(postresp));
+												//MDS.log("POSTREQ:"+JSON.stringify(postresp));
 											});	
 										});
-										
-									}else{
-										//Ask for it!
-										//MDS.log("DON'T REQUEST MESSAGE : "+parentid);
 									}	
 								});
 							}
@@ -75,7 +70,10 @@ MDS.init(function(msg){
 									//Add it to the DB
 									addRantToDB(rantjson,function(){
 										//And reload the main table
-										MDS.comms.solo("NEWCHATTER");	
+										MDS.comms.solo("NEWCHATTER");
+										
+										//And Send a Notification
+										MDS.notify(rantjson.message.username+":"+rantjson.message.message);	
 									});	
 									
 								}else{

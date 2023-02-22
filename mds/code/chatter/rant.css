@@ -1,6 +1,33 @@
 
+.maincontainer {
+	width:100%;
+}
+
+.homediv {
+  position: fixed;
+  top: 20;
+  left: 20;
+}
+
+.messagetextarea {
+  width: 80%;
+  max-width:800;
+  height: 130px;
+  padding: 12px 20px;
+  box-sizing: border-box;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background-color: #f8f8f8;
+  font-size: 14px;
+  resize: none;
+}
+
 .messagetable {
-	width:500;
+	width:80%;
+	max-width:800;
+	min-width:400;
+	margin-left: auto;
+  	margin-right: auto;
 	border: 2px solid black;
 	border-radius: 10px;
 }
@@ -28,14 +55,16 @@
 	border-radius: 10px;
 	padding:2;
 	background:#aaaaff;
+	white-space: nowrap;
 }
 
 .messagetableactions {
-	vertical-align:middle;
-	width:100%;
-	border-radius: 10px;
-	padding:2;
-	background:#ddddff;
+	width:80%;
+	max-width:800;
+	margin-left: auto;
+  	margin-right: auto;
+  	min-width:400;
+  	white-space: nowrap;
 }
 
 a:link {
@@ -52,4 +81,32 @@ a:hover {
 
 a:active {
   text-decoration: none;
+}
+
+.solobutton {
+    background-color: #eee;
+    border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	font-size: 14px;
+}
+.solobutton-edit {
+	background: #fff;
+}
+.solobutton-edit:focus {
+	border: 0.5px solid #EDEDED;
+}
+
+.solobutton:hover {
+	cursor: pointer;
+    color: #fff;
+	background-color: #16181C;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+	border-color: #16181C;
+}
+
+.solobutton:active {
+  	opacity: 0.8;
+	font-style: italic;
 }
