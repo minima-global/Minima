@@ -73,7 +73,9 @@ MDS.init(function(msg){
 										MDS.comms.solo("NEWCHATTER");
 										
 										//And Send a Notification
-										MDS.notify(rantjson.message.username+":"+rantjson.message.message);	
+										var usen = decodeStringFromDB(rantjson.message.username);
+										var msg  = decodeStringFromDB(rantjson.message.message);
+										MDS.notify(usen+":"+msg);	
 									});	
 									
 								}else{
@@ -85,9 +87,6 @@ MDS.init(function(msg){
 				
 				}else if(messagetype="MESSAGE_REQUEST"){
 					
-					//Send them this message..
-					//MDS.log("MESSAGE REQUEST REC : "+JSON.stringify(rantjson));
-					
 					var msgid = rantjson.messageid;
 					
 					//Load the message
@@ -97,11 +96,8 @@ MDS.init(function(msg){
 							return;
 						}
 						
-						//Get the original Chatter message
-						var chatter = decodeStringFromDB(chatmsg.CHATTER);
-
 						//Convert to JSON
-						var chatjson = JSON.parse(chatter);
+						var chatjson = JSON.parse(chatmsg.CHATTER);
 
 						postMessageToPublickey(chatjson,publickey,function(postresp){
 							//MDS.log("POSTREPLY:"+JSON.stringify(postresp));

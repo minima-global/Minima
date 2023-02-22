@@ -39,7 +39,7 @@
 		if(msg.event == "inited"){
 			
 			//HACK to RESET
-			/*MDS.sql("DROP table messages",function(){MDS.log("SQL DB wiped");});return;*/
+			//MDS.sql("DROP table messages",function(){MDS.log("SQL DB wiped");});return;
 			
 			//Init Chatter vars
 			initChatter(function(){
@@ -67,13 +67,10 @@
 		}
 		
 		//Check Length
-		if(text.length>500){
-			alert("Message too Long! Max 500 characters..");
+		if(text.length>4000){
+			alert("Message too Long! Max 4000 characters..");
 			return;
 		}
-		
-		//Can't have ;
-		text = text.replaceAll(";",":");
 		
 		//Create the Chatter message
 		document.getElementById("mainmessage").value = "";

@@ -37,15 +37,16 @@ function createDB(callback){
 	//Create the DB if not exists
 	var initsql = "CREATE TABLE IF NOT EXISTS `messages` ( "
 				+"  `id` bigint auto_increment, "
-				+"  `chatter` clob(256K) NOT NULL, "
+				+"  `chatter` clob(16K) NOT NULL, "
 				+"  `publickey` varchar(512) NOT NULL, "
 				+"  `username` varchar(160) NOT NULL, "
-				+"  `message` varchar(512) NOT NULL, "
+				+"  `message` varchar(4096) NOT NULL, "
 				+"  `messageid` varchar(160) NOT NULL, "
 				+"  `parentid` varchar(160) NOT NULL, "
 				+"  `baseid` varchar(160) NOT NULL, "
 				+"  `rechatter` int NOT NULL default 0, "
-				+"  `date` bigint NOT NULL "
+				+"  `msgdate` bigint NOT NULL, "
+				+"  `recdate` bigint NOT NULL "
 				+" )";
 				
 	//Run this..
@@ -128,9 +129,13 @@ function findbasemsg(msgid,callback){
 /**
  * Create a Chatter message
  */
-function createRant(message,parentid,baseid,callback){
+function createRant(basemessage,parentid,baseid,callback){
 	
-	if(message.length > 500){
+	//URL Encode everything..
+	var message  = encodeStringForDB(basemessage);
+	var username = encodeStringForDB(MAXIMA_USERNAME);
+	
+	if(message.length > 4000){
 		MDS.log("MESSAGE TOO LONG! for createRant..");
 		//Too long..
 		callback(null);
@@ -141,7 +146,7 @@ function createRant(message,parentid,baseid,callback){
 	var msgjson = {};
 	
 	msgjson.publickey 	= MAXIMA_PUBLICKEY;
-	msgjson.username 	= MAXIMA_USERNAME;
+	msgjson.username 	= username;
 	msgjson.message 	= message;
 	msgjson.parentid 	= parentid;
 	msgjson.baseid 		= baseid;
@@ -171,6 +176,8 @@ function createRant(message,parentid,baseid,callback){
 			chatter.message		= msgjson;
 			chatter.messageid 	= msgid;
 			chatter.signature 	= signature;
+			
+			//MDS.log("CHATTER:"+JSON.stringify(chatter,null,2));
 			
 			//Now we have a RANT
 			if(callback){
@@ -265,11 +272,8 @@ function rechatter(msgid,callback){
 			return;
 		}
 		
-		//Get the original Chatter message
-		var chatter = decodeStringFromDB(chatmsg.CHATTER);
-		
 		//Convert to JSON
-		var chatjson = JSON.parse(chatter);
+		var chatjson = JSON.parse(chatmsg.CHATTER);
 		
 		//And post as normal..
 		postRant(chatjson,function(msg){
@@ -291,11 +295,13 @@ function checkInDB(msgid,callback){
 }
 
 function encodeStringForDB(str){
-	return encodeURIComponent(str).replaceAll("'", "%27");
+	return encodeURIComponent(str).split("'").join("%27");
+	//return encodeURIComponent(str).replaceAll("'", "%27");
 }
 
 function decodeStringFromDB(str){
-	return decodeURIComponent(str).replaceAll("%27", "'");
+	return decodeURIComponent(str).split("%27").join("'");
+	//return decodeURIComponent(str).replaceAll("%27", "'");
 }
 
 /**
@@ -304,16 +310,10 @@ function decodeStringFromDB(str){
 function addRantToDB(chatter,callback){
 	
 	//What is the striung of the message
-	var rantstr = JSON.stringify(chatter);
-	
-	//Fully encoded to put in the DB
-	var encodedrant = encodeStringForDB(rantstr);
+	var fullchat = JSON.stringify(chatter);
 	
 	//Get the actual rant
 	var msgjson = chatter.message; 
-	
-	//URL encode the message 
-	var encodedmessage = encodeStringForDB(msgjson.message);
 	
 	//Date as of NOW
 	var recdate = new Date();
@@ -325,15 +325,15 @@ function addRantToDB(chatter,callback){
 	}
 	
 	//The SQL to insert
-	var insertsql = "INSERT INTO messages(chatter,publickey,username,message,messageid,parentid,baseid,date) VALUES "+
-						"('"+encodedrant+"','"
+	var insertsql = "INSERT INTO messages(chatter,publickey,username,message,messageid,parentid,baseid,msgdate,recdate) VALUES "+
+						"('"+fullchat+"','"
 							+msgjson.publickey+"','"
 							+msgjson.username+"','"
-							+encodedmessage+"','"
+							+msgjson.message+"','"
 							+chatter.messageid+"','"
 							+msgjson.parentid+"','"
 							+baseid+"',"
-							+msgjson.date+")";
+							+msgjson.date+","+recdate.getTime()+")";
 	
 	MDS.sql(insertsql, function(sqlmsg){
 		if(callback){

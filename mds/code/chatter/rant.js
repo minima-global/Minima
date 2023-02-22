@@ -30,19 +30,19 @@ function createMessageTable(messagerow,showactions){
 	var dd = new Date(+messagerow.DATE);
 	var datestr = dd.toDateString()+" "+dd.toLocaleTimeString()+"&nbsp;";
 	
-	var userline = "<table width=100%><tr><td>"+messagerow.USERNAME+"</td><td style='text-align:right;'>"+datestr+"</td></tr></table>";
+	var userline = "<table width=100%><tr><td>"+decodeStringFromDB(messagerow.USERNAME)+"</td><td style='text-align:right;'>"+datestr+"</td></tr></table>";
 	
 	var msgtable = "<table border=0 class=messagetable>"
 					+"<tr><td class=messagetableusername>"+userline+"</td></tr>"
 					+"<tr><td class=messagetablemessage>"+msg+"</td></tr>"
 					+"</table>";
 	
-	//Make it all a link
-	var viewlink 	= "<a href='docview.html?uid="+MDS.minidappuid+"&baseid="+messagerow.BASEID+"&msgid="+messagerow.MESSAGEID+"'>";
-	msgtable 		= viewlink+msgtable+"</a>";
-	
 	//Are we showing the actions..
 	if(showactions){
+	
+		//The VIEW buton
+		var viewbutton 	= "<button class=solobutton onclick=\"document.location.href='docview.html?uid="+MDS.minidappuid+"&baseid="+messagerow.BASEID+"&msgid="+messagerow.MESSAGEID+"'\">VIEW ALL</button>";
+		
 		//The reply page
 		var replybutton  = "<button class=solobutton onclick=\"document.location.href='reply.html?uid="+MDS.minidappuid+"&msgid="+messagerow.MESSAGEID+"'\">REPLY</button>";
 		
@@ -59,7 +59,7 @@ function createMessageTable(messagerow,showactions){
 		}	
 				
 		//Actions..
-		msgtable += "<table class=messagetableactions><tr><td>"+replybutton+" "+rerantbutton+"</td>"
+		msgtable += "<table class=messagetableactions><tr><td>"+viewbutton+" "+replybutton+" "+rerantbutton+"</td>"
 					+"<td style='text-align:right;'>"+delbutton+"</td></tr></table>";	
 	}
 	
@@ -90,7 +90,7 @@ function requestDelete(baseid){
 }
 
 function createReplyTable(baseid, callback){
-	MDS.sql("SELECT * FROM MESSAGES WHERE baseid='"+baseid+"' ORDER BY date ASC", function(sqlmsg){
+	MDS.sql("SELECT * FROM MESSAGES WHERE baseid='"+baseid+"' ORDER BY recdate ASC", function(sqlmsg){
 		//The complete Chat object
 		var treechat = {};
 		
