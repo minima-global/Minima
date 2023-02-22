@@ -291,11 +291,11 @@ function checkInDB(msgid,callback){
 }
 
 function encodeStringForDB(str){
-	return encodeURIComponent(str).replace("'", "%27");
+	return encodeURIComponent(str).replaceAll("'", "%27");
 }
 
 function decodeStringFromDB(str){
-	return decodeURIComponent(str).replace("%27", "'");
+	return decodeURIComponent(str).replaceAll("%27", "'");
 }
 
 /**
