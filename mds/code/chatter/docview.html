@@ -24,6 +24,7 @@
 	
 <script type="text/javascript">
 
+	var allsuperchatters = [];
 	var baseid = MDS.form.getParams("baseid");
 	var msgid  = MDS.form.getParams("msgid");
 	var replytree;
@@ -39,7 +40,7 @@
 		var link 	= "&nbsp;<a href='reply.html?uid="+MDS.minidappuid+"&msgid="+chatrow.MESSAGEID+"'>REPLY</a>"
 		
 		var gap 		= new Array(depth).join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
-		var replymsg 	= createMessageTable(chatrow,true);
+		var replymsg 	= createMessageTable(chatrow,allsuperchatters,true);
 		
 		//Create a table..
 		var viewindent;
@@ -69,11 +70,14 @@
 			//Initialise Chatter
 			initChatter();
 			
-			//Create the reply table
-			var tree = createReplyTable(baseid,function(treemsg){
-				//MDS.log(JSON.stringify(treemsg,null,2));
-				replytree = document.getElementById("replytree");
-				walkchat(treemsg.toprant,1);
+			selectAllSuperChatters(function(supers){
+				allsuperchatters = supers;
+				
+				//Create the reply table
+				var tree = createReplyTable(baseid,function(treemsg){
+					replytree = document.getElementById("replytree");
+					walkchat(treemsg.toprant,1);
+				});	
 			});			
 		}
 	});

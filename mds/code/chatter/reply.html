@@ -30,6 +30,7 @@
 	
 <script type="text/javascript">
 
+	var allsuperchatters = [];
 	var parentid = MDS.form.getParams("msgid");
 	var baseid;
 	
@@ -57,8 +58,10 @@
 				//Get the baseid
 				baseid = chatmsg.BASEID;
 				
-				//Show the message you are replying to..
-				replytree.innerHTML = createMessageTable(chatmsg,false);
+				selectAllSuperChatters(function(supers){
+					//Show the message you are replying to..
+					replytree.innerHTML = createMessageTable(chatmsg,supers,false);	
+				});
 			});		
 		}
 	});

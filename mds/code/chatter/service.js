@@ -69,13 +69,32 @@ MDS.init(function(msg){
 									
 									//Add it to the DB
 									addRantToDB(rantjson,function(){
-										//And reload the main table
-										MDS.comms.solo("NEWCHATTER");
 										
-										//And Send a Notification
-										var usen = decodeStringFromDB(rantjson.message.username);
-										var msg  = decodeStringFromDB(rantjson.message.message);
-										MDS.notify(usen+":"+msg);	
+										//Send a Notification
+										var usen  = decodeStringFromDB(rantjson.message.username);
+										var msg   = decodeStringFromDB(rantjson.message.message);
+										var notif = usen+":"+msg;
+										MDS.notify(notif);
+										
+										//Are they a SUPER CHATTER
+										isSuperChatter(rantjson.message.publickey,function(found){
+											
+											if(found){
+												//Rerant it..
+												MDS.log("SUPERCHATTER RE-RANT "+notif);
+												
+												updateRechatter(rantjson.messageid,function(){
+													MDS.comms.solo("NEWCHATTER");
+													
+													//And rerant
+													rechatter(rantjson.messageid,function(){});
+												});	
+												
+											}else{
+												//And reload the main table
+												MDS.comms.solo("NEWCHATTER");	
+											}
+										});
 									});	
 									
 								}else{

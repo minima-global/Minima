@@ -39,7 +39,7 @@ function createDB(callback){
 				+"  `id` bigint auto_increment, "
 				+"  `chatter` clob(16K) NOT NULL, "
 				+"  `publickey` varchar(512) NOT NULL, "
-				+"  `username` varchar(160) NOT NULL, "
+				+"  `username` varchar(512) NOT NULL, "
 				+"  `message` varchar(4096) NOT NULL, "
 				+"  `messageid` varchar(160) NOT NULL, "
 				+"  `parentid` varchar(160) NOT NULL, "
@@ -51,9 +51,45 @@ function createDB(callback){
 				
 	//Run this..
 	MDS.sql(initsql,function(msg){
-		if(callback){
-			callback(msg);
+		
+		//Create the Super Chatter table
+		var initsuper = "CREATE TABLE IF NOT EXISTS `superchatter` ( "
+						+"  `id` bigint auto_increment, "
+						+"  `publickey` varchar(512) NOT NULL, "
+						+"  `username` varchar(512) NOT NULL, "
+						+"  `rechat` int NOT NULL default 0 "
+						+" )";
+		
+		MDS.sql(initsuper,function(msg){
+			if(callback){
+				callback(msg);
+			}	
+		});
+	});
+}
+
+/**
+ * Select All Unique Users
+ */
+function selectSuperChatter(publickey,callback){
+	MDS.sql("SELECT publickey,username FROM SUPERCHATTER WHERE publickey='"+publickey+"'", function(sqlmsg){
+		callback(sqlmsg);
+	});
+}
+
+function isSuperChatter(publickey,callback){
+	MDS.sql("SELECT publickey FROM SUPERCHATTER WHERE publickey='"+publickey+"'", function(sqlmsg){
+		if(sqlmsg.count>0){
+			callback(true);	
+		}else{
+			callback(false);
 		}
+	});
+}
+
+function selectAllSuperChatters(callback){
+	MDS.sql("SELECT publickey FROM SUPERCHATTER", function(sqlmsg){
+		callback(sqlmsg.rows);
 	});
 }
 
@@ -107,7 +143,9 @@ function deleteAllThread(baseid,callback){
  */
 function updateRechatter(msgid,callback){
 	MDS.sql("UPDATE MESSAGES SET rechatter=1 WHERE messageid='"+msgid+"'", function(sqlmsg){
-		callback(sqlmsg);
+		if(callback){
+			callback(sqlmsg);	
+		}
 	});
 }
 
@@ -268,7 +306,9 @@ function rechatter(msgid,callback){
 	selectMessage(msgid,function(found,chatmsg){
 		if(!found){
 			MDS.log("RECHATTER unknown msgid : "+msgid);
-			callback(null);
+			if(callback){
+				callback(null);	
+			}
 			return;
 		}
 		

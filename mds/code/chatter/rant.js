@@ -16,26 +16,54 @@ function createMainTable(){
 }
 
 function drawCompleteMainTable(thetable,allrows){
-	var len = allrows.length;
-	for(var i=0;i<len;i++){
-		var tablerow 	= thetable.insertRow(i);
-		var cell1 	 	= tablerow.insertCell(0);
-		cell1.innerHTML = createMessageTable(allrows[i],true);	
-	}
+	
+	//Get all the super chatters
+	selectAllSuperChatters(function(superchatters){
+		var len = allrows.length;
+		for(var i=0;i<len;i++){
+			var tablerow 	= thetable.insertRow(i);
+			var cell1 	 	= tablerow.insertCell(0);
+			cell1.innerHTML = createMessageTable(allrows[i], superchatters, true);	
+		}
+	});
 }
 
-function createMessageTable(messagerow,showactions){
+function createMessageTable(messagerow, allsuperchatters, showactions){
 	var msg 	= decodeStringFromDB(messagerow.MESSAGE).replaceAll("\n","<br>");
 	
 	var dd 		= new Date(+messagerow.RECDATE);
 	var datestr = dd.toDateString()+" "+dd.toLocaleTimeString()+"&nbsp;";
 	
-	var userline = "<table width=100%><tr><td>"+decodeStringFromDB(messagerow.USERNAME)+"</td><td style='text-align:right;'>"+datestr+"</td></tr></table>";
+	//Are they a SUPER CHATTER
+	var username;
+	if(checkInSuperChatters(messagerow.PUBLICKEY,allsuperchatters)){
+		username = "[*] "+decodeStringFromDB(messagerow.USERNAME);
+	}else{
+		username = decodeStringFromDB(messagerow.USERNAME);
+	}
+	var userline = "<table width=100%><tr><td><a href='superchatter.html?uid="+MDS.minidappuid
+					+"&username="+messagerow.USERNAME
+					+"&publickey="+messagerow.PUBLICKEY+"'>"+username+"</a></td><td style='text-align:right;'>"+datestr+"</td></tr></table>";
 	
 	var msgtable = "<table border=0 class=messagetable>"
 					+"<tr><td class=messagetableusername>"+userline+"</td></tr>"
-					+"<tr><td class=messagetablemessage>"+msg+"</td></tr>"
-					+"</table>";
+					+"<tr><td class=messagetablemessage>"+msg+"</td></tr>";
+	
+	//Is this a reply..
+	var parentid = messagerow.PARENTID+"";
+	if(parentid != "0x00"){
+		
+		//Creatge a unique id..
+		var uniqueid = parentid+Math.random();
+		
+		//Add a reply row..
+		msgtable += "<tr><td class=messagetablereply id="+uniqueid+">"+msg+"</td></tr>";
+		
+		fillInReply(uniqueid,parentid);
+	}
+	
+	//Finish up the table
+	msgtable += "</table>";
 	
 	//Are we showing the actions..
 	if(showactions){
@@ -67,6 +95,37 @@ function createMessageTable(messagerow,showactions){
 	msgtable+="<br>";
 	
 	return msgtable;
+}
+
+function checkInSuperChatters(publickey,all){
+	var len = all.length;
+	for(var i=0;i<len;i++){
+		var pubk = all[i].PUBLICKEY;
+		if(pubk == publickey){
+			return true;
+		}
+	}
+	return false;
+}
+
+function fillInReply(htmlid,parentid){
+	//Now run this async - is fine as does not interact withj anything else
+	selectMessage(parentid,function(found,sqlrow){
+		var tabletd = document.getElementById(htmlid);
+		if(found){
+			var reply = "In reply to.. "+decodeStringFromDB(sqlrow.USERNAME)+":"+decodeStringFromDB(sqlrow.MESSAGE);
+			
+			//Strip tags..
+			reply = reply.replace(/(<([^>]+)>)/gi, "");
+
+			if(reply.length > 180){
+				reply = reply.substring(0,180)+"..";
+			}
+			tabletd.innerHTML=reply;	
+		}else{
+			tabletd.innerHTML="Reply not found..";	
+		}
+	});	
 }
 
 function requestReChatter(msgid){
