@@ -41,7 +41,7 @@ function createMessageTable(messagerow, allsuperchatters, showactions){
 	}else{
 		username = decodeStringFromDB(messagerow.USERNAME);
 	}
-	var userline = "<table width=100%><tr><td><a href='superchatter.html?uid="+MDS.minidappuid
+	var userline = "<table width=100%><tr><td class=namefont><a href='superchatter.html?uid="+MDS.minidappuid
 					+"&username="+messagerow.USERNAME
 					+"&publickey="+messagerow.PUBLICKEY+"'>"+username+"</a></td><td style='text-align:right;'>"+datestr+"</td></tr></table>";
 	

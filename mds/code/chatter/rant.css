@@ -28,25 +28,30 @@
 	min-width:400;
 	margin-left: auto;
   	margin-right: auto;
-	border: 2px solid black;
+	border: 2px solid #0000ff;
 	border-radius: 10px;
 }
 
 .messagetableusername {
 	vertical-align:top;
 	width:50;
-	background:#ff00ff;
+	background:#ccccff;
 	padding:10;
 	border-radius: 10px;
 	white-space: nowrap;
 }
 
+.namefont {
+	font-size: 1.2em;
+}
+
 .messagetablemessage {
 	vertical-align:top;
 	width:100%;
-	background:#ff0099;
+	background:#aaaaff;
 	padding:10;
 	border-radius: 10px;
+	font-size: 1.1em;
 }
 
 .messagetablereply {
@@ -55,6 +60,7 @@
 	padding:2;
 	padding-left:10;
 	background:#ddddff;
+	font-size: 0.9em;
 }
 
 .messagetableactions {
@@ -73,19 +79,22 @@ img {
 
 a:link {
   text-decoration: none;
-  font-size: 1.2em;
+  color: blue;
 }
 
 a:visited {
   text-decoration: none;
+  color: blue;
 }
 
 a:hover {
   text-decoration: none;
+  color: blue;
 }
 
 a:active {
   text-decoration: none;
+  color: blue;
 }
 
 .solobutton {
@@ -105,7 +114,7 @@ a:active {
 .solobutton:hover {
 	cursor: pointer;
     color: #fff;
-	background-color: #16181C;
+	background-color: #0000ff;
   	border-radius: 8px;
   	padding: 8px 8px;
 	border-color: #16181C;
