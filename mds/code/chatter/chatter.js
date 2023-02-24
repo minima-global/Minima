@@ -61,9 +61,17 @@ function createDB(callback){
 						+" )";
 		
 		MDS.sql(initsuper,function(msg){
-			if(callback){
-				callback(msg);
-			}	
+			
+			//Delete OLD messages
+			var timenow  = (new Date()).getTime();
+			var monthago = timenow - (1000 * 60 * 60 * 24 * 50);
+			
+			MDS.sql("DELETE FROM messages WHERE recdate < "+monthago,function(sqlmsg){
+				//MDS.log(JSON.stringify(sqlmsg));
+				if(callback){
+					callback(msg);
+				}		
+			});
 		});
 	});
 }

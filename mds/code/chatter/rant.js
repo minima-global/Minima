@@ -10,7 +10,7 @@
 function createMainTable(){
 	var table = document.getElementById("mainranttable");
 	table.innerHTML = "";
-	selectRecentMessages(20,function(sqlmsg){
+	selectRecentMessages(100,function(sqlmsg){
 		drawCompleteMainTable(table,sqlmsg.rows);
 	});
 }
@@ -77,7 +77,7 @@ function createMessageTable(messagerow, allsuperchatters, showactions){
 		//Rerant link
 		var remsg = "RE-CHATTER";
 		if(messagerow.RECHATTER !=0 ){
-			remsg = "RE-CHATTER [X]";
+			remsg = "[X] RE-CHATTER";
 		}
 		var rerantbutton = "<button class=solobutton onclick='requestReChatter(\""+messagerow.MESSAGEID+"\")'>"+remsg+"</button>";
 		

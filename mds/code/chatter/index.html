@@ -22,7 +22,12 @@
 	<textarea class=messagetextarea name="rant" id="mainmessage"></textarea>
 	<br>
 	<br>
-	<button class=solobutton onclick="sendRant();">Start a Chat</button>
+	
+	<table class=widthcontainer><tr>
+		<td style="text-align:left;"><button class=solobutton onclick="previewRant();">Preview</button></td>
+		<td style="text-align:right;"><button class=solobutton onclick="sendRant();">&nbsp;&nbsp;&nbsp;Start a Chat&nbsp;&nbsp;&nbsp;</button></td>
+	</tr></table>
+	
 
 <br>
 <br>
@@ -59,15 +64,40 @@
 		}
 	});
 
-	function sendRant(){
+	function previewRant(){
+		
 		//Get the Text..
 		var text = document.getElementById("mainmessage").value;
 		if(text.trim() == ""){
+			alert("Blank message!");
 			return;
 		}
 		
 		//Check Length
-		if(text.length>4000){
+		var checklen = encodeStringForDB(text); 
+		if(checklen.length>4000){
+			alert("Message too Long! Max 4000 characters..");
+			return;
+		}
+		
+		//Now jump to the preview page
+		var prevlink="preview.html?uid="+MDS.minidappuid+"&message="+encodeURIComponent(text);
+		document.location.href=prevlink;
+		return;
+	}
+	
+	function sendRant(){
+		
+		//Get the Text..
+		var text = document.getElementById("mainmessage").value;
+		if(text.trim() == ""){
+			alert("Blank message!");
+			return;
+		}
+		
+		//Check Length
+		var checklen = encodeStringForDB(text); 
+		if(checklen.length>4000){
 			alert("Message too Long! Max 4000 characters..");
 			return;
 		}

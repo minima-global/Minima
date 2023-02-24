@@ -9,6 +9,11 @@
   left: 20;
 }
 
+.widthcontainer{
+	width: 80%;
+  	max-width:800;
+}
+
 .messagetextarea {
   width: 80%;
   max-width:800;

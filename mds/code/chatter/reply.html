@@ -20,19 +20,26 @@
 	<br>
 	<h2>REPLY</h2>
 
-	<div id="replytree" style="text-align:left;width:100%"></div>
+	<div id="replywindow" style="text-align:left;width:100%"></div>
 
 	<br>
 	<textarea class=messagetextarea name="rant" id="replymessage"></textarea>
 	<br>
 	<br>
-	<button class=solobutton onclick="replyRant();">&nbsp;Send Reply&nbsp;</button>
+	
+	<table class=widthcontainer><tr>
+		<td style="text-align:left;"><button class=solobutton onclick="previewRant();">Preview</button></td>
+		<td style="text-align:right;"><button class=solobutton onclick="replyRant();">&nbsp;&nbsp;&nbsp;Reply&nbsp;&nbsp;&nbsp;</button></td>
+	</tr></table>
+	
 	
 <script type="text/javascript">
 
 	var allsuperchatters = [];
 	var parentid = MDS.form.getParams("msgid");
 	var baseid;
+	
+	var replytree = document.getElementById("replywindow");
 	
 	function gohome(){
 		window.location.href="index.html?uid="+MDS.form.getParams("uid");
@@ -65,16 +72,44 @@
 			});		
 		}
 	});
+	
+	function previewRant(){
 		
-	function replyRant(){
 		//Get the Text..
 		var text = document.getElementById("replymessage").value;
-		document.getElementById("replymessage").value = "";
 		if(text.trim() == ""){
+			alert("Blank message!");
 			return;
 		}
 		
-		MDS.log("USERNAME:"+MAXIMA_USERNAME);
+		//Check Length
+		var checklen = encodeStringForDB(text); 
+		if(checklen.length>4000){
+			alert("Message too Long! Max 4000 characters..");
+			return;
+		}
+		
+		//Now jump to the preview page
+		var prevlink="preview.html?uid="+MDS.minidappuid+"&message="+encodeURIComponent(text);
+		document.location.href=prevlink;
+		return;
+	}
+	
+	function replyRant(){
+		
+		//Get the Text..
+		var text = document.getElementById("replymessage").value;
+		if(text.trim() == ""){
+			alert("Blank message!");
+			return;
+		}
+		
+		//Check Length
+		var checklen = encodeStringForDB(text); 
+		if(checklen.length>4000){
+			alert("Message too Long! Max 4000 characters..");
+			return;
+		}
 		
 		//Create the Chatter message
 		createRant(text,parentid,baseid,function(rant){

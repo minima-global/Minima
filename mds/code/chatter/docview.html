@@ -20,7 +20,7 @@
 	<br>
 	<h2>CHAT</h2>
 
-	<div id="replytree"></div>
+	<div id="replywindow"></div>
 	
 <script type="text/javascript">
 
@@ -75,7 +75,7 @@
 				
 				//Create the reply table
 				var tree = createReplyTable(baseid,function(treemsg){
-					replytree = document.getElementById("replytree");
+					replytree = document.getElementById("replywindow");
 					walkchat(treemsg.toprant,1);
 				});	
 			});			
