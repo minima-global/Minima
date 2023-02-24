@@ -7,15 +7,18 @@
 /**
  * Draw the main Table view
  */
-function createMainTable(){
+var MESSAGE_MAXTIME = 0;
+var MESSAGE_NUMBER  = 0;
+var VIEW_NUMBER  	= 30;
+function createMainTable(maxtime,callback){
 	var table = document.getElementById("mainranttable");
 	table.innerHTML = "";
-	selectRecentMessages(50,function(sqlmsg){
-		drawCompleteMainTable(table,sqlmsg.rows);
+	selectRecentMessages(maxtime,VIEW_NUMBER,function(sqlmsg){
+		drawCompleteMainTable(table,sqlmsg.rows,callback);
 	});
 }
 
-function drawCompleteMainTable(thetable,allrows){
+function drawCompleteMainTable(thetable,allrows,callback){
 	
 	//Get all the super chatters
 	selectAllSuperChatters(function(superchatters){
@@ -24,6 +27,10 @@ function drawCompleteMainTable(thetable,allrows){
 			var tablerow 	= thetable.insertRow(i);
 			var cell1 	 	= tablerow.insertCell(0);
 			cell1.innerHTML = createMessageTable(allrows[i], superchatters, true);	
+		}
+		
+		if(callback){
+			callback();
 		}
 	});
 }
@@ -93,6 +100,10 @@ function createMessageTable(messagerow, allsuperchatters, showactions){
 	
 	//Add a break line
 	msgtable+="<br>";
+	
+	//Store the latest time
+	MESSAGE_MAXTIME = messagerow.RECDATE;
+	MESSAGE_NUMBER++;
 	
 	return msgtable;
 }

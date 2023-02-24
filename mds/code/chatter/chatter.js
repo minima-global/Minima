@@ -104,8 +104,8 @@ function selectAllSuperChatters(callback){
 /**
  * Select All the recent messages
  */
-function selectRecentMessages(limit,callback){
-	MDS.sql("SELECT * FROM MESSAGES ORDER BY id DESC LIMIT "+limit, function(sqlmsg){
+function selectRecentMessages(maxtime, limit,callback){
+	MDS.sql("SELECT * FROM MESSAGES WHERE recdate<"+maxtime+" ORDER BY recdate DESC LIMIT "+limit, function(sqlmsg){
 		callback(sqlmsg);
 	});
 }

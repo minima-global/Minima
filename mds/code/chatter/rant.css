@@ -125,6 +125,16 @@ a:active {
 	border-color: #16181C;
 }
 
+.solobutton[disabled]:hover {
+	cursor: default;
+    color: #fff;
+    background-color: #eee;
+    border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	font-size: 14px;
+}
+
 .solobutton:active {
   	opacity: 0.8;
 	font-style: italic;
