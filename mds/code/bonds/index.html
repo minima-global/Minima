@@ -1,15 +1,44 @@
 <html>
 
 <head>
-	<title>BONDS</title>
+	<title>BAZ BONDS</title>
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
 	<script type="text/javascript" src="mds.js"></script>
+	<script type="text/javascript" src="bonds.js"></script>
 	
 </head>
 
 <body>
+
+<center>
+
+	<br>
+
+	<h2>BAZ BONDS</h2>
+
+You can request a Minima Staking Bond here<br>
+<br>
+
+<select name="bondtype" id="idbondtype">
+  <option value="1">3 months @ 1%</option>
+  <option value="3">6 months @ 3%</option>
+  <option value="10" selected>1 year @ 10%</option>
+</select>
+
+<input type=number value=10 id=idbondamount>
+
+<button onclick="starttBond();">Continue</button>	
+
+<br><br>
+Your current requests.. when accepted the amounts will appear in Future Cash
+
+<table id=idbondtable>
+	
+</table>
+
+</center>
 
 <script type="text/javascript">
 	
@@ -19,20 +48,51 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			
+			populateTable();
+			
+		}else if(msg.event == "NEWBALANCE"){
+			
+			populateTable();
+			
 		}
 		
 	});
 
-</script>
-
-<center>
-
-	<br>
-
-	<h2>BONDS</h2>
-
+	function populateTable(){
+		
+		MDS.cmd("coins relevant:true address:MxG084WU2W8JUFFKWP4WUSYKGMY1VZTR1MUY7KP9AAMAG85Q7W10NQ80R2A15PU",function(resp){
+			var coins = resp.response; 
+			
+			var btable = document.getElementById("idbondtable");
+			btable.innerHTML="";
+			var len = coins.length;
+			for(var i=0;i<len;i++){
+				var coin 		= coins[i]; 
+				var tablerow 	= btable.insertRow(i);
+				var cell1 	 	= tablerow.insertCell(0);
+				var cell2 	 	= tablerow.insertCell(1);
+				
+				//Get the pubkey..
+				var pubk = MDS.util.getStateVariable(coin,"100");
+				
+				cell1.innerHTML = "COIN FOUND.. "+coin.amount;
+				cell2.innerHTML = "<button onclick=\"cancelBond('"+coin.coinid+"','"+coin.amount+"','"+pubk+"')\">CANCEL</button>"
+			}
+			
+		});
+	}
 	
-</center>
+	function starttBond(){
+		
+		var amount   = document.getElementById("idbondamount").value;
+		var bondtype = document.getElementById("idbondtype").value;
+		
+		MDS.log("REQ: "+amount+" @ "+bondtype);
+	
+		requestBond(amount,bondtype);
+	}
+	
+</script>
 
 </body>
 
