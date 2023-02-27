@@ -68,33 +68,39 @@ MDS.init(function(msg){
 								if(!indb){
 									
 									//Add it to the DB
-									addRantToDB(rantjson,function(){
+									addRantToDB(rantjson,function(sqlmsg){
 										
-										//Send a Notification
-										var usen  = decodeStringFromDB(rantjson.message.username);
-										var msg   = decodeStringFromDB(rantjson.message.message);
-										var notif = usen+":"+msg;
-										MDS.notify(notif);
-										
-										//Are they a SUPER CHATTER
-										isSuperChatter(rantjson.message.publickey,function(found){
+										//Did it work..
+										if(sqlmsg.status){
 											
-											if(found){
-												//Rerant it..
-												MDS.log("SUPERCHATTER RE-RANT "+notif);
-												
-												updateRechatter(rantjson.messageid,function(){
-													MDS.comms.solo("NEWCHATTER");
-													
-													//And rerant
-													rechatter(rantjson.messageid,function(){});
-												});	
-												
-											}else{
-												//And reload the main table
-												MDS.comms.solo("NEWCHATTER");	
+											//Send a Notification
+											var usen  = decodeStringFromDB(rantjson.message.username);
+											var msg   = decodeStringFromDB(rantjson.message.message);
+											if(msg.length > 100){
+												msg = msg.substring(0,100)+"..";
 											}
-										});
+											var notif = usen+":"+msg;
+											
+											//Are they a SUPER CHATTER
+											isSuperChatter(rantjson.message.publickey,function(found){
+												
+												if(found){
+													//Rerant it..
+													MDS.log("SUPERCHATTER RE-RANT "+notif);
+													
+													updateRechatter(rantjson.messageid,function(){
+														MDS.comms.solo("NEWCHATTER");
+														
+														//And rerant
+														rechatter(rantjson.messageid,function(){});
+													});	
+													
+												}else{
+													//And reload the main table
+													MDS.comms.solo("NEWCHATTER");	
+												}
+											});
+										}
 									});	
 									
 								}else{

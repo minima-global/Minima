@@ -13,7 +13,15 @@
 
 <body>
 
-<div id="homebutton" class=homediv><button onclick="gohome();" class=solobutton>&nbsp;&nbsp;CHATTER&nbsp;&nbsp;</button></div>
+<div id="homebutton" class=homediv><button onclick="gohome();" class=solobutton>&nbsp;&nbsp;HOME&nbsp;&nbsp;</button></div>
+
+<div id="blackoutwindow" class=blackout>&nbsp;</div>
+
+<div id="previewwindow" class=previewdiv>
+	<button onclick="hidePreview();" class=solobutton> HIDE PREVIEW </button>
+	<br><br>
+	<div id="previewmessage" ></div>	
+</div>
 
 <center>
 	<br>
@@ -26,15 +34,15 @@
 	<br>
 	
 	<table class=widthcontainer><tr>
-		<td style="text-align:left;"><button class=solobutton onclick="previewRant();">Preview</button></td>
-		<td style="text-align:right;"><button class=solobutton onclick="sendRant();">&nbsp;&nbsp;&nbsp;Start a Chat&nbsp;&nbsp;&nbsp;</button></td>
+		<td style="text-align:left;"><button class=solobutton onclick="showPreview();">Preview</button></td>
+		<td style="text-align:right;"><button class=solobutton onclick="embedFile();"> File / Image </button>&nbsp;&nbsp;<button class=solobutton onclick="sendRant();">&nbsp;&nbsp;&nbsp;Start a Chat&nbsp;&nbsp;&nbsp;</button></td>
 	</tr></table>
 	
 <br>
 <br>
 	<table id="mainranttable" class=maincontainer></table>
 	
-	<table width=200><tr>
+	<table ><tr>
 		<td style="text-align:left;"><button id=prevbutton class=solobutton onclick="previous();">Previous</button></td>
 		<td style="text-align:right;"><button id=nextbutton class=solobutton onclick="next();">&nbsp;&nbsp;&nbsp;Next&nbsp;&nbsp;&nbsp;</button></td>
 	</tr></table>
@@ -90,7 +98,12 @@
 		}
 	});
 
-	function previewRant(){
+	function hidePreview(){
+		document.getElementById("blackoutwindow").style.display = "none";
+		document.getElementById("previewwindow").style.display = "none";
+	}
+	
+	function showPreview(){
 		
 		//Get the Text..
 		var text = document.getElementById("mainmessage").value;
@@ -101,14 +114,24 @@
 		
 		//Check Length
 		var checklen = encodeStringForDB(text); 
-		if(checklen.length>4000){
-			alert("Message too Long! Max 4000 characters..");
+		if(checklen.length>MAX_MESSAGE_LENGTH){
+			alert("Message too Long! Max "+MAX_MESSAGE_LENGTH+" characters.. "+checklen.length);
 			return;
 		}
 		
-		//Now jump to the preview page
-		var prevlink="preview.html?uid="+MDS.minidappuid+"&message="+encodeURIComponent(text);
-		document.location.href=prevlink;
+		var msgrow = {};
+		msgrow.MESSAGE 	= encodeStringForDB(text);
+		msgrow.USERNAME = MAXIMA_USERNAME;
+		msgrow.RECDATE  = (new Date()).getTime();
+		msgrow.PARENTID = "0x00";
+		
+		//Show the message
+		var preview = document.getElementById("previewmessage");
+		preview.innerHTML = createMessageTable(msgrow,[],false);
+		
+		document.getElementById("blackoutwindow").style.display = "block";
+		document.getElementById("previewwindow").style.display = "block";
+		
 		return;
 	}
 	
@@ -123,8 +146,8 @@
 		
 		//Check Length
 		var checklen = encodeStringForDB(text); 
-		if(checklen.length>4000){
-			alert("Message too Long! Max 4000 characters..");
+		if(checklen.length>MAX_MESSAGE_LENGTH){
+			alert("Message too Long! Max "+MAX_MESSAGE_LENGTH+" characters.. "+checklen.length);
 			return;
 		}
 		

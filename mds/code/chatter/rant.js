@@ -54,7 +54,7 @@ function createMessageTable(messagerow, allsuperchatters, showactions){
 	
 	var msgtable = "<table border=0 class=messagetable>"
 					+"<tr><td class=messagetableusername>"+userline+"</td></tr>"
-					+"<tr><td class=messagetablemessage>"+msg+"</td></tr>";
+					+"<tr><td class=messagetablemessage><div class=messagetablemessagediv>"+msg+"</div></td></tr>";
 	
 	//Is this a reply..
 	var parentid = messagerow.PARENTID+"";
@@ -197,4 +197,108 @@ function findRows(allrows,parentid){
 	}
 	
 	return retarray;
+}
+
+var MAX_IMAGE_SIZE = 350;
+function scaleImageFile(file,callback){
+	
+	//What to do when file is loaded	
+	let reader = new FileReader();
+	reader.onload = function() {
+		
+		var image = new Image();
+        image.onload = function (imageEvent) {
+
+            // Resize the image
+            var canvas 		= document.createElement('canvas'),
+                max_size 	= MAX_IMAGE_SIZE,
+                width 		= image.width,
+                height 		= image.height;
+			
+			
+			//New width and height
+			if(width>MAX_IMAGE_SIZE || height>MAX_IMAGE_SIZE){
+	            if (width > height) {
+	                if (width > max_size) {
+	                    height *= max_size / width;
+	                    width = max_size;
+	                }
+	            } else {
+	                if (height > max_size) {
+	                    width *= max_size / height;
+	                    height = max_size;
+	                }
+	            }
+			}
+			
+			//Set the size and draw
+            canvas.width  = width;
+            canvas.height = height;
+            canvas.getContext('2d').drawImage(image, 0, 0, width, height);
+            
+			//Send this RESIZED image
+			callback(canvas.toDataURL("image/jpeg",0.5));
+        }
+
+		//Set the Image src
+        image.src = reader.result;
+	};
+	
+	reader.onerror = function() {
+		console.log(reader.error);
+	};
+
+	//Read the file..
+	reader.readAsDataURL(file);
+}
+
+function embedFile(){
+	input = document.createElement('input');
+	input.type = 'file';
+	input.onchange = function(){
+		files 	= Array.from(input.files);
+		file 	= files[0]; 
+		
+		//Is it an image..
+		MDS.log(file.name);
+		var mmessage = document.getElementById("mainmessage");
+		var filename = file.name.toLowerCase(); 
+		if(filename.endsWith(".png")   || 
+			filename.endsWith(".gif")  || 
+			filename.endsWith(".jpg")  ||
+			filename.endsWith(".jfif") ||
+			filename.endsWith(".bmp")){
+			
+			scaleImageFile(file,function(imagedata){
+				MDS.log("IMAGE SIZE:"+imagedata.length);
+				mmessage.value 	= mmessage.value+"<img src='"+imagedata+"'>";
+				//Move to the end
+			    mmessage.focus();
+			    mmessage.setSelectionRange(mmessage.value.length,mmessage.value.length);
+			});
+		}else{
+			
+			//Check size..
+			if(file.size >= MAX_MESSAGE_LENGTH){
+				alert("File too big ("+file.size+")! MAX:"+MAX_MESSAGE_LENGTH+" ");
+				return;
+			}
+			
+			var reader = new FileReader();
+		    reader.readAsDataURL(file);
+		    reader.onload = function () {
+		      console.log(reader.result);
+		      var link = "<a download='"+filename+"' href='"+reader.result+"'>"+filename+"</a>";
+		      mmessage.value = mmessage.value+" "+link;
+		      
+		      //Move to the end
+		      mmessage.focus();
+		      mmessage.setSelectionRange(mmessage.value.length,mmessage.value.length);
+		    };
+		    reader.onerror = function (error) {
+		      console.log('Error: ', error);
+		    };
+		}
+	};
+	input.click();
 }

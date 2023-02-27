@@ -11,6 +11,8 @@ var MAXIMA_PUBLICKEY = "";
 var MAXIMA_USERNAME  = "";
 var MAXIMA_CONTACT   = "";
 
+var MAX_MESSAGE_LENGTH = 65536;
+
 /**
  * Initilaise Username, Publickey - does not HAVE to be Maxima details..use maxcreate etc 
  */
@@ -37,10 +39,10 @@ function createDB(callback){
 	//Create the DB if not exists
 	var initsql = "CREATE TABLE IF NOT EXISTS `messages` ( "
 				+"  `id` bigint auto_increment, "
-				+"  `chatter` clob(16K) NOT NULL, "
+				+"  `chatter` clob(256K) NOT NULL, "
 				+"  `publickey` varchar(512) NOT NULL, "
 				+"  `username` varchar(512) NOT NULL, "
-				+"  `message` varchar(4096) NOT NULL, "
+				+"  `message` varchar(65536) NOT NULL, "
 				+"  `messageid` varchar(160) NOT NULL, "
 				+"  `parentid` varchar(160) NOT NULL, "
 				+"  `baseid` varchar(160) NOT NULL, "
@@ -181,7 +183,7 @@ function createRant(basemessage,parentid,baseid,callback){
 	var message  = encodeStringForDB(basemessage);
 	var username = encodeStringForDB(MAXIMA_USERNAME);
 	
-	if(message.length > 4000){
+	if(message.length > MAX_MESSAGE_LENGTH){
 		MDS.log("MESSAGE TOO LONG! for createRant..");
 		//Too long..
 		callback(null);

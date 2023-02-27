@@ -1,4 +1,8 @@
 
+body { 
+    margin: 0;   /* Remove body margins */
+}
+
 .maincontainer {
 	width:100%;
 }
@@ -9,6 +13,29 @@
   left: 20;
 }
 
+.blackout {
+  display:none;
+  position: fixed;
+  width:100%;
+  height:100%;
+  background-color: #aaaaaaaa;
+  z-index: 5;
+}
+
+.previewdiv {
+  position: fixed;
+  display:none;
+  text-align:center; 
+  left: 0; 
+  right: 0;
+  top:50;
+  bottom:0; 
+  margin-left: auto;
+  margin-right: auto; 
+  width: 100%;
+  z-index: 10;
+}
+
 .widthcontainer{
 	width: 80%;
   	max-width:800;
@@ -17,6 +44,8 @@
 .messagetextarea {
   width: 80%;
   max-width:800;
+  min-width:400;
+  min-height:160;
   height: 130px;
   padding: 12px 20px;
   box-sizing: border-box;
@@ -24,7 +53,7 @@
   border-radius: 4px;
   background-color: #f8f8f8;
   font-size: 14px;
-  resize: none;
+  resize: vertical;
 }
 
 .messagetable {
@@ -35,6 +64,7 @@
   	margin-right: auto;
 	border: 2px solid #0000ff;
 	border-radius: 10px;
+	background-color: #fff;
 }
 
 .messagetableusername {
@@ -57,6 +87,11 @@
 	padding:10;
 	border-radius: 10px;
 	font-size: 1.1em;
+}
+
+.messagetablemessagediv {
+	max-height:400;
+	overflow-y:auto;
 }
 
 .messagetablereply {
