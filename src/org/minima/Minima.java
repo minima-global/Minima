@@ -171,7 +171,7 @@ public class Minima {
 						return;
 					}
 					
-					//Shutdowen hook called..
+					//Shutdown hook called..
 					MinimaLogger.log("[!] Shutdown Hook..");
 					
 					//Shut down the whole system
