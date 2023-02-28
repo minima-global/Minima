@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Random;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -12,6 +14,7 @@ import org.minima.objects.Coin;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
+import org.minima.system.commands.base.newaddress;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.RPCClient;
@@ -120,7 +123,7 @@ public class BondServer {
 		
 		//First - set up the contract and scan for it..
 		try {
-			JSONObject addscript = runCommand("newscript script:\""+BOND_SCRIPT+"\" trackall:true");
+			JSONObject addscript = runSingleCommand("newscript script:\""+BOND_SCRIPT+"\" trackall:true");
 			if((boolean)addscript.get("status") != true) {
 				MinimaLogger.log(addscript.toString());
 				System.exit(1);
@@ -131,14 +134,15 @@ public class BondServer {
 			System.exit(1);
 		}
 		
-		
 	    //Loop until finished..
 	    String result = null;
 	    String input="status";
 	    
+	    MiniNumber tenpercent = new MiniNumber("0.1");
+	    
 	    //Keep going until finished..
 	    while(mRunning) {
-	    	mRunning = false;
+	    	//mRunning = false;
 	    	
 	    	try {
 	    		//The command results
@@ -146,16 +150,23 @@ public class BondServer {
 	    		
 	    		//What block are we on..
 	    		String blockcheck 	= "status";
-	    		jsonres 			= runCommand(blockcheck);
+	    		jsonres 			= runSingleCommand(blockcheck);
 	    		JSONObject response = (JSONObject)jsonres.get("response");
 	    		JSONObject chain 	= (JSONObject)response.get("chain");
 	    		MiniNumber block 	= new MiniNumber((long)chain.get("block"));
 	    		MinimaLogger.log("Current block : "+block.toString());
 	    		
+	    		//Get an address we can use for change
+	    		String getaddress 	= "getaddress";
+	    		jsonres 			= runSingleCommand(getaddress);
+	    		response 			= (JSONObject)jsonres.get("response");
+	    		String ouraddress	= response.getString("miniaddress");
+	    		
 	    		//First scan for any available coins..
 	    		String coincheck 	= "coins address:MxG084WU2W8JUFFKWP4WUSYKGMY1VZTR1MUY7KP9AAMAG85Q7W10NQ80R2A15PU";
-	    		jsonres 			= runCommand(coincheck);
+	    		jsonres 			= runSingleCommand(coincheck);
 	    		JSONArray allcoins 	= (JSONArray) jsonres.get("response");
+	    		//MinimaLogger.log(MiniFormat.JSONPretty(allcoins));
 	    		
 	    		int len = allcoins.size();
 	    		MinimaLogger.log("Found : "+len+" Bond Request coin..");
@@ -165,24 +176,85 @@ public class BondServer {
 	    			//Get the coin..
 	    			JSONObject coinobj = (JSONObject) allcoins.get(i);
 	    			
+	    			//What is the coinid
+	    			String coinid = coinobj.getString("coinid");
+	    			
 	    			//When was this coin created
 	    			MiniNumber created = new MiniNumber(coinobj.getString("created"));
 	    			
 	    			//Check the coin age..
 	    			MiniNumber coinage = block.sub(created);
-	    			MinimaLogger.log("Coin: "+i+" coinid:"+coinobj.getString("coinid")+" coinage:"+coinage.toString());
 	    			if(coinage.isLess(MiniNumber.TEN)) {
-	    				continue;
+	    				MinimaLogger.log("[NOT OLD ENOUGH YET] Coin: "+i+" coinid:"+coinid+" coinage:"+coinage.toString());
+		    			continue;
 	    			}
 	    			
+	    			MiniNumber coinamount 	= new MiniNumber(coinobj.getString("amount"));
+	    			MiniNumber reqamount  	= coinamount.mult(tenpercent);
+	    			MiniNumber totaltouser  = coinamount.add(reqamount);
+	    			
+	    			MinimaLogger.log("[VALID] coinid:"+coinid+" coinage:"+coinage.toString()+" amount:"+coinamount.toString()+" interest:"+reqamount.toString());
+	    			
 	    			//Spend it..
-	    			String spendable 	 = "coins sendable:true tokenid:0x00";
-		    		jsonres 			 = runCommand(spendable);
+	    			String spendable 	 = "coins sendable:true tokenid:0x00 checkmempool:true";
+		    		jsonres 			 = runSingleCommand(spendable);
 		    		JSONArray spendcoins = (JSONArray) jsonres.get("response");
 		    		
-		    		MinimaLogger.log("Found : "+spendcoins.size()+" spenable coins.. ");
+		    		MinimaLogger.log("Found : "+spendcoins.size()+" spenable coins not in mempool.. ");
 		    		
-	    			
+		    		JSONObject ourcoin = getCoin(spendcoins, reqamount);
+		    		if(ourcoin == null) {
+		    			MinimaLogger.log("[WARNING] Could not find single large enough coin! "+reqamount.toString());
+		    			continue;
+		    		}
+		    		
+		    		//Construct the txn..
+		    		String useraddress			= getStateVar(coinobj, 102);
+		    		String ourcoinid			= ourcoin.getString("coinid");
+		    		MiniNumber ourcoinamount 	= new MiniNumber(ourcoin.getString("amount"));
+		    		MiniNumber ourchange 	 	= ourcoinamount.sub(reqamount);
+
+		    		//Construct the FC params
+		    		String fcaddress		= "MxG087AH0HPWAYJPQTQGYEMG03F1K2R1H43HVWYH19NB0RTW3SZWY7Q2F79810N"; 
+		    		String fcusercaddress	= useraddress; 
+		    		MiniNumber fcblock 		= block.add(MiniNumber.TEN);
+		    		MiniNumber fccoinage 	= MiniNumber.ONE;
+		    		long fcmillitime		= System.currentTimeMillis();
+		    		
+		    		//Check the fc vars are within the range allowed..
+		    		//..
+		    		
+		    		String randid 	  = MiniData.getRandomData(32).to0xString();
+		    		String txnbuilder = "txncreate id:"+randid;
+		    		
+		    		//Set the inputs
+		    		txnbuilder 		 += ";txninput id:"+randid+" coinid:"+coinid;
+		    		txnbuilder 		 += ";txninput id:"+randid+" coinid:"+ourcoinid;
+		    		
+		    		//Send the user his funds..
+		    		txnbuilder 		 += ";txnoutput id:"+randid+" amount:"+totaltouser+" address:"+fcaddress+" tokenid:0x00";
+		    		
+		    		//Is there any change
+		    		if(ourchange.isMore(MiniNumber.ZERO)) {
+		    			txnbuilder 	 += ";txnoutput id:"+randid+" amount:"+ourchange+" address:"+ouraddress+" tokenid:0x00";
+		    		}
+		    		
+		    		//Now add ther FC statevars..
+		    		txnbuilder 		 += ";txnstate id:"+randid+" port:1 value:"+fcblock;
+		    		txnbuilder 		 += ";txnstate id:"+randid+" port:2 value:"+fcusercaddress;
+		    		txnbuilder 		 += ";txnstate id:"+randid+" port:3 value:"+fcmillitime;
+		    		txnbuilder 		 += ";txnstate id:"+randid+" port:4 value:"+fccoinage;
+		    		
+		    		//Now sign and post! the txn..
+		    		txnbuilder 		 += ";txnsign id:"+randid+" publickey:auto txnpostauto:true";
+		    		
+		    		//And finally delete
+		    		txnbuilder 		 += ";txndelete id:"+randid;
+		    		
+		    		//Run it..
+		    		JSONArray res = runMultiCommand(txnbuilder);
+		    		MinimaLogger.log(MiniFormat.JSONPretty(res));
+		    		
 	    		}
 	    		
 			} catch (Exception e) {
@@ -194,7 +266,7 @@ public class BondServer {
 	    }
 	}
 	
-	public static JSONObject runCommand(String zCommand) throws IOException, ParseException {
+	public static JSONObject runSingleCommand(String zCommand) throws IOException, ParseException {
 		
 		//URLEncode..
     	String input 	= URLEncoder.encode(zCommand, MiniString.MINIMA_CHARSET);
@@ -211,5 +283,53 @@ public class BondServer {
     	JSONObject json = (JSONObject) new JSONParser().parse(result);
     	
     	return json;
+	}
+	
+	public static JSONArray runMultiCommand(String zCommand) throws IOException, ParseException {
+		
+		//URLEncode..
+    	String input 	= URLEncoder.encode(zCommand, MiniString.MINIMA_CHARSET);
+		String full 	= mHost+input;
+		
+		//Now run this function..
+		String result = null;
+    	if(mSSL) {
+    		result = RPCClient.sendGETBasicAuthSSL(full, "minima", mPassword, mSSLContext);
+		}else{
+    		result = RPCClient.sendGETBasicAuth(full,"minima",mPassword);
+    	}
+    	
+    	JSONArray json = (JSONArray) new JSONParser().parse(result);
+    	
+    	return json;
+	}
+	
+	public static JSONObject getCoin(JSONArray zSpendableCoins, MiniNumber zAmount) {
+		
+		//Cycle through
+		for(Object obj : zSpendableCoins) {
+			JSONObject coin = (JSONObject)obj;
+			
+			//Get the amount..
+			MiniNumber amount = new MiniNumber(coin.getString("amount"));
+			if(amount.isMoreEqual(zAmount)) {
+				return coin;
+			}
+		}
+		
+		return null;
+	}
+	
+	public static String getStateVar(JSONObject zCoin, long zPort) {
+		JSONArray statevars = (JSONArray)zCoin.get("state");
+		for(Object obj : statevars) {
+			JSONObject statevar = (JSONObject)obj;
+			
+			//Which port..
+			if((long)statevar.get("port") == zPort) {
+				return statevar.getString("data");
+			}
+		}
+		return null;
 	}
 }
