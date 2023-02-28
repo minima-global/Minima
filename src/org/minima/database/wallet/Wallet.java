@@ -48,6 +48,7 @@ public class Wallet extends SqlDB {
 	 * Scripts SQL
 	 */
 	PreparedStatement SQL_ADD_SCRIPT 			= null;
+	PreparedStatement SQL_REMOVE_SCRIPT 		= null;
 	PreparedStatement SQL_LIST_ALL_SCRIPTS 		= null;
 	PreparedStatement SQL_LIST_SIMPLE_SCRIPTS 	= null;
 	PreparedStatement SQL_LIST_TRACK_SCRIPTS 	= null;
@@ -151,6 +152,7 @@ public class Wallet extends SqlDB {
 		
 		//ScriptsDB
 		SQL_ADD_SCRIPT				= mSQLConnection.prepareStatement("INSERT IGNORE INTO scripts ( script, address, simple, defaultaddress, publickey, track ) VALUES ( ? , ? , ? , ? , ? , ? )");
+		SQL_REMOVE_SCRIPT			= mSQLConnection.prepareStatement("DELETE FROM scripts WHERE address=?");
 		SQL_LIST_ALL_SCRIPTS		= mSQLConnection.prepareStatement("SELECT * FROM scripts");
 		SQL_LIST_SIMPLE_SCRIPTS		= mSQLConnection.prepareStatement("SELECT * FROM scripts WHERE simple<>0");
 		SQL_LIST_TRACK_SCRIPTS		= mSQLConnection.prepareStatement("SELECT * FROM scripts WHERE track<>0");
@@ -521,6 +523,27 @@ public class Wallet extends SqlDB {
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Remove a script
+	 */
+	public synchronized void removeScript(String zAddress) {
+		//Now put all this in the DB
+		try {
+		
+			//Get the Query ready
+			SQL_REMOVE_SCRIPT.clearParameters();
+		
+			//Set main params
+			SQL_REMOVE_SCRIPT.setString(1, zAddress);
+			
+			//Do it.
+			SQL_REMOVE_SCRIPT.execute();
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
 	}
 
 	/**

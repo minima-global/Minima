@@ -44,6 +44,7 @@ import org.minima.system.commands.network.network;
 import org.minima.system.commands.network.rpc;
 import org.minima.system.commands.network.webhooks;
 import org.minima.system.commands.scripts.newscript;
+import org.minima.system.commands.scripts.removescript;
 import org.minima.system.commands.scripts.runscript;
 import org.minima.system.commands.scripts.scripts;
 import org.minima.system.commands.search.coins;
@@ -150,6 +151,7 @@ public class help extends Command {
 			addCommand(details, new scripts());
 			addCommand(details, new newscript());
 			addCommand(details, new runscript());
+			addCommand(details, new removescript());
 			addCommand(details, new tutorial());
 			
 			addCommand(details, new mmrcreate());

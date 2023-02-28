@@ -69,6 +69,7 @@ import org.minima.system.commands.network.ping;
 import org.minima.system.commands.network.rpc;
 import org.minima.system.commands.network.webhooks;
 import org.minima.system.commands.scripts.newscript;
+import org.minima.system.commands.scripts.removescript;
 import org.minima.system.commands.scripts.runscript;
 import org.minima.system.commands.scripts.scripts;
 import org.minima.system.commands.search.coins;
@@ -129,7 +130,7 @@ public abstract class Command {
 			new vault(), new consolidate(),
 			new backup(), new restore(), new test(), 
 			new runscript(), new tutorial(),new keys(),
-			new scripts(), new newscript(),
+			new scripts(), new newscript(), new removescript(),
 			new burn(),
 			
 			new txnbasics(),new txncreate(), new txninput(),new txnlist(), new txnclear(),
@@ -724,7 +725,7 @@ public abstract class Command {
 	 */
 	private static final String[] ALL_WRITE_COMMANDS = 
 		{"send","sendpoll","sendsign","multisig","tokencreate","consolidate",
-		 "cointrack","sign","txnsign","mds","backup",
+		 "cointrack","sign","txnsign","mds","backup","removescript",
 		 "restore","vault","archive","mysql","rpc","magic"};
 	
 	private static final ArrayList<String> ALL_WRITE_COMMANDS_ARRAY = new ArrayList<String>(Arrays.asList(ALL_WRITE_COMMANDS));
