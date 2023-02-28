@@ -48,12 +48,15 @@ Your current requests.. when accepted the amounts will appear in Future Cash
 		//Do initialisation
 		if(msg.event == "inited"){
 			
-			populateTable();
+			//Add the script - do NOT trackk all of them - just the ones relevant to you
+			MDS.cmd("newscript script:\""+BOND_SCRIPT+"\" trackall:true",function(resp){
+				MDS.log(JSON.stringify(resp));
+			
+				populateTable();
+			});
 			
 		}else if(msg.event == "NEWBALANCE"){
-			
 			populateTable();
-			
 		}
 		
 	});
