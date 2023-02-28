@@ -72,20 +72,16 @@ public class newscript extends Command {
 		//Load it...
 		ScriptRow scr = wallet.getScriptFromAddress(addr.getAddressData().to0xString());
 		
-		//Is it's the sdasme script and the same TRACK
-		if(scr!=null && (scr.isTrack()==track)) {
-			
-			//Put the details in the response..
-			ret.put("response", "Script allready added!");
-			
-		}else {
-		
-			//Now add it to the DB
-			ScriptRow krow = wallet.addScript(script, false, false, "0x00", track);
-			
-			//Put the details in the response..
-			ret.put("response", krow.toJSON());
+		//If we have it remove it first
+		if(scr!=null) {
+			wallet.removeScript(addr.getAddressData().to0xString());
 		}
+		
+		//Now add it to the DB
+		ScriptRow krow = wallet.addScript(script, false, false, "0x00", track);
+		
+		//Put the details in the response..
+		ret.put("response", krow.toJSON());
 		
 		return ret;
 	}
