@@ -578,27 +578,21 @@ public class Wallet extends SqlDB {
 	 * Is this KEY one of our keys
 	 */
 	public synchronized boolean isKeyRelevant(String zPublicKey) {
-		boolean ourkey = mAllKeys.contains(zPublicKey);
-//		MinimaLogger.log("[WALLET] isKeyRelevant : "+zPublicKey+" "+ourkey);
-		return ourkey;
+		return mAllKeys.contains(zPublicKey);
 	}
 	
 	/**
 	 * Is this ADDRESS relevant to us - are we tracking it
 	 */
 	public synchronized boolean isAddressRelevant(String zAddress) {
-		boolean tracked = mAllTrackedAddress.contains(zAddress);
-//		MinimaLogger.log("[WALLET] isAddressRelevant : "+zAddress+" "+tracked);
-		return tracked;
+		return mAllTrackedAddress.contains(zAddress);
 	}
 	
 	/**
 	 * Is this ADDRESS a simple address
 	 */
 	public synchronized boolean isAddressSimple(String zAddress) {
-		boolean simple = mAllSimpleAddress.contains(zAddress);
-//		MinimaLogger.log("[WALLET] isAddressSimple : "+zAddress+" "+simple);
-		return simple;
+		return mAllSimpleAddress.contains(zAddress);
 	}
 	
 	/**
