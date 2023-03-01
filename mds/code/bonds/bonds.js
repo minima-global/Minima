@@ -1,42 +1,68 @@
 
-var BOND_SCRIPT = "LET yourkey=PREVSTATE(100) IF SIGNEDBY(yourkey) THEN RETURN TRUE ENDIF LET maxblock=PREVSTATE(101) LET youraddress=PREVSTATE(102) LET maxcoinage=PREVSTATE(104) LET fcfinish=STATE(1) LET fcpayout=STATE(2) LET fcmilli=STATE(3) LET fccoinage=STATE(4) ASSERT fcpayout EQ youraddress ASSERT fcfinish LTE maxblock ASSERT fccoinage LTE maxcoinage LET fcaddress=0xEA8823992AB3CEBBA855D68006F0D05B0C4838FE55885375837D90F98954FA13 LET fullvalue=@AMOUNT*1.1 RETURN VERIFYOUT(@INPUT fcaddress fullvalue @TOKENID TRUE)";
+/**
+ * Base Values
+ */
+var BOND_SCRIPT  = "LET yourkey=PREVSTATE(100) IF SIGNEDBY(yourkey) THEN RETURN TRUE ENDIF LET maxblock=PREVSTATE(101) LET youraddress=PREVSTATE(102) LET maxcoinage=PREVSTATE(104) LET yourrate=PREVSTATE(105) LET rate=STATE(0) ASSERT yourrate EQ rate LET fcfinish=STATE(1) LET fcpayout=STATE(2) LET fcmilli=STATE(3) LET fccoinage=STATE(4) ASSERT fcpayout EQ youraddress ASSERT fcfinish LTE maxblock ASSERT fccoinage LTE maxcoinage LET fcaddress=0xEA8823992AB3CEBBA855D68006F0D05B0C4838FE55885375837D90F98954FA13 LET fullvalue=@AMOUNT*rate RETURN VERIFYOUT(@INPUT fcaddress fullvalue @TOKENID TRUE)";
+var BOND_ADDRESS = "MxG0805BSAC65KGC4EGR62JTCGY8691130T77Z0HJNYSMP09P5UAP6E5DN4C61F";
 
-function requestBond(amount,bondtype){
+function requestBond(currentblock, amount, bondtype){
 	
+	//Calculate the max values - these are all double checked on the server
+	var days = 365;
+	if(bondtype == "1.01"){
+		days = 1;
+	}else if(bondtype == "1.035"){
+		days = 30;
+	}else if(bondtype == "1.08"){
+		days = 90;
+	}else if(bondtype == "1.13"){
+		days = 270;
+	}else if(bondtype == "1.18"){
+		days = 365;
+	}else{
+		alert("Invalid Rate amount!");
+		return;
+	}
+	
+	//How many blocks in a day
+	var dayofblocks = 1728;
+	
+	//Now calculate the max coin age - with a day extra for leeway
+	var maxcoinage = (days * dayofblocks) + dayofblocks; 
+	
+	//The max block
+	var maxblock = +currentblock + maxcoinage;
+	
+	//MDS.log("CurrentBlock:"+currentblock+" MAXCOINAGE:"+maxcoinage+" MAXblock:"+maxblock);
+	//return;
 	
 	//Get one of your addresses
-	MDS.cmd("getaddress;status",function(resp){
+	MDS.cmd("getaddress",function(resp){
 		//MDS.log(JSON.stringify(resp));	
 		
-		//What is the current block
-		var block = resp[1].response.chain.block;
-		
-		//Calculate the max values..
-		var maxblock 	= block+100000;
-		var maxcoinage 	= 100000;
-		var timemilli 	= (new Date()).getTime();
-		
-		var address 	= resp[0].response.miniaddress;
-		var pubkey  	= resp[0].response.publickey;
+		var address 	= resp.response.miniaddress;
+		var pubkey  	= resp.response.publickey;
 		 
 		var statevars = "{\"100\":\""+pubkey+"\","
 						+"\"101\":\""+maxblock+"\","
 						+"\"102\":\""+address+"\","
-						+"\"103\":\""+timemilli+"\","
 						+"\"104\":\""+maxcoinage+"\","
 						+"\"105\":\""+bondtype+"\""
 						+"}";	
 			
 		var cmd = "send amount:"+amount
-				+" address:MxG084WU2W8JUFFKWP4WUSYKGMY1VZTR1MUY7KP9AAMAG85Q7W10NQ80R2A15PU "
+				+" address:"+BOND_ADDRESS
 				+" state:"+statevars;	
 		
 		MDS.cmd(cmd,function(resp){
-			//MDS.log(JSON.stringify(resp));
-			
+			if(resp.pending){
+				alert("This command is now Pending!\n\nPlease accept it to continue..");
+			}else if(!resp.status){
+				alert("Something went wrong : "+resp.error);
+				MDS.log(JSON.stringify(resp));
+			}
 		});
 	});
-	
 }
 
 function cancelBond(coinid,amount,pubkey){
@@ -59,7 +85,6 @@ function cancelBond(coinid,amount,pubkey){
 				
 		MDS.cmd(txn,function(resp){
 			MDS.log(JSON.stringify(resp));
-			
 		});			
 	});
 	

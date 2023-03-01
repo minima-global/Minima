@@ -12,7 +12,10 @@ LET youraddress = PREVSTATE(102)
 LET maxcoinage = PREVSTATE(104)
 
 /*what rate you want*/
-LET rate = PREVSTATE(105)
+LET yourrate = PREVSTATE(105)
+LET rate = STATE(0)
+
+ASSERT yourrate EQ rate
 
 /*Check that the FC Details are available*/
 LET fcfinish  = STATE(1)

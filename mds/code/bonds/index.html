@@ -16,7 +16,7 @@
 
 <center>
 
-	<h2>BAZ BONDS</h2>
+	<h2>MINIMA BONDS</h2>
 
 You can request a Minima Staking Bond here<br>
 <br>
@@ -53,19 +53,15 @@ A coin must be 10 blocks deep before the contract is activated..<br>
 		if(msg.event == "inited"){
 			
 			//Add the script - do NOT trackk all of them - just the ones relevant to you
-			MDS.cmd("newscript script:\""+BOND_SCRIPT+"\" trackall:true",function(resp){
-				//MDS.log(JSON.stringify(resp));
-				
+			MDS.cmd("newscript script:\""+BOND_SCRIPT+"\" trackall:false",function(resp){
 				//Now get the current block
 				MDS.cmd("block",function(resp){
-					var block = resp.response.block;
-					populateTable(block);	
+					populateTable(resp.response.block);	
 				});
 			});
 		
 		}else if(msg.event == "NEWBLOCK"){
-			var block = msg.data.txpow.header.block; 
-			populateTable(block);
+			populateTable(msg.data.txpow.header.block);
 			
 		}else if(msg.event == "NEWBALANCE"){
 			//Disable the button
@@ -73,15 +69,14 @@ A coin must be 10 blocks deep before the contract is activated..<br>
 			
 			//Now get the current block
 			MDS.cmd("block",function(resp){
-				var block = resp.response.block;
-				populateTable(block);	
+				populateTable(resp.response.block);	
 			});
 		}
 	});
 
 	function populateTable(block){
 		
-		MDS.cmd("coins relevant:true address:MxG084WU2W8JUFFKWP4WUSYKGMY1VZTR1MUY7KP9AAMAG85Q7W10NQ80R2A15PU",function(resp){
+		MDS.cmd("coins relevant:true address:"+BOND_ADDRESS,function(resp){
 			var coins = resp.response; 
 			
 			var btable = document.getElementById("idbondtable");
@@ -105,9 +100,9 @@ A coin must be 10 blocks deep before the contract is activated..<br>
 				//Get the desired Rate..
 				var rate = MDS.util.getStateVariable(coin,"105");
 				
-				cell1.innerHTML = "<div class=niceinput>RATE:"+rate+"</div>";
-				cell2.innerHTML = "<div class=niceinput>AMOUNT:"+coin.amount+"</div>";
-				cell3.innerHTML = "<div class=niceinput>COINAGE:"+coinage+" / 10</div>";
+				cell1.innerHTML = "<div class=niceinput>RATE : "+rate+"</div>";
+				cell2.innerHTML = "<div class=niceinput>AMOUNT : "+coin.amount+"</div>";
+				cell3.innerHTML = "<div class=niceinput>COINAGE : "+coinage+" / 10</div>";
 				
 				//Sort the status
 				cell4.innerHTML = "<button class=solobutton onclick=\"this.disabled=true;cancelBond('"+coin.coinid+"','"+coin.amount+"','"+pubk+"')\">CANCEL</button>"
@@ -117,13 +112,25 @@ A coin must be 10 blocks deep before the contract is activated..<br>
 	
 	function starttBond(){
 		
+		if(!confirm("You are about to request a Minima bond.\n\nAre you sure ?")){
+			return;
+		}
+		
 		var amount   = document.getElementById("idbondamount").value;
 		var bondtype = document.getElementById("idbondtype").value;
 		
 		//Disable the button
 		document.getElementById("idstartbond").disabled=true;
 		
-		requestBond(amount,bondtype);
+		MDS.cmd("block",function(resp){
+			if(resp.status){
+				requestBond(resp.response.block,amount,bondtype);	
+			}else{
+				alert("Something went wrong - check console logs..");
+				MDS.log(JSON>stringify(resp));
+			}
+		});
+		
 	}
 	
 </script>

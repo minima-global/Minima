@@ -26,7 +26,8 @@ import org.minima.utils.ssl.MinimaTrustManager;
 
 public class BondServer {
 
-	public static final String BOND_SCRIPT = "LET yourkey=PREVSTATE(100) IF SIGNEDBY(yourkey) THEN RETURN TRUE ENDIF LET maxblock=PREVSTATE(101) LET youraddress=PREVSTATE(102) LET maxcoinage=PREVSTATE(104) LET fcfinish=STATE(1) LET fcpayout=STATE(2) LET fcmilli=STATE(3) LET fccoinage=STATE(4) ASSERT fcpayout EQ youraddress ASSERT fcfinish LTE maxblock ASSERT fccoinage LTE maxcoinage LET fcaddress=0xEA8823992AB3CEBBA855D68006F0D05B0C4838FE55885375837D90F98954FA13 LET fullvalue=@AMOUNT*1.1 RETURN VERIFYOUT(@INPUT fcaddress fullvalue @TOKENID TRUE)";
+	public static final String BOND_SCRIPT  = "LET yourkey=PREVSTATE(100) IF SIGNEDBY(yourkey) THEN RETURN TRUE ENDIF LET maxblock=PREVSTATE(101) LET youraddress=PREVSTATE(102) LET maxcoinage=PREVSTATE(104) LET yourrate=PREVSTATE(105) LET rate=STATE(0) ASSERT yourrate EQ rate LET fcfinish=STATE(1) LET fcpayout=STATE(2) LET fcmilli=STATE(3) LET fccoinage=STATE(4) ASSERT fcpayout EQ youraddress ASSERT fcfinish LTE maxblock ASSERT fccoinage LTE maxcoinage LET fcaddress=0xEA8823992AB3CEBBA855D68006F0D05B0C4838FE55885375837D90F98954FA13 LET fullvalue=@AMOUNT*rate RETURN VERIFYOUT(@INPUT fcaddress fullvalue @TOKENID TRUE)";
+	public static final String BOND_ADDRESS = "MxG0805BSAC65KGC4EGR62JTCGY8691130T77Z0HJNYSMP09P5UAP6E5DN4C61F";
 	
 	public static boolean mRunning 			= true;
 	public static boolean mSSL 				= false;
@@ -149,11 +150,10 @@ public class BondServer {
 	    		JSONObject jsonres = null;
 	    		
 	    		//What block are we on..
-	    		String blockcheck 	= "status";
+	    		String blockcheck 	= "block";
 	    		jsonres 			= runSingleCommand(blockcheck);
 	    		JSONObject response = (JSONObject)jsonres.get("response");
-	    		JSONObject chain 	= (JSONObject)response.get("chain");
-	    		MiniNumber block 	= new MiniNumber((long)chain.get("block"));
+	    		MiniNumber block 	= new MiniNumber(response.getString("block"));
 	    		MinimaLogger.log("Current block : "+block.toString());
 	    		
 	    		//Get an address we can use for change
@@ -163,7 +163,7 @@ public class BondServer {
 	    		String ouraddress	= response.getString("miniaddress");
 	    		
 	    		//First scan for any available coins..
-	    		String coincheck 	= "coins address:MxG084WU2W8JUFFKWP4WUSYKGMY1VZTR1MUY7KP9AAMAG85Q7W10NQ80R2A15PU";
+	    		String coincheck 	= "coins address:"+BOND_ADDRESS;
 	    		jsonres 			= runSingleCommand(coincheck);
 	    		JSONArray allcoins 	= (JSONArray) jsonres.get("response");
 	    		//MinimaLogger.log(MiniFormat.JSONPretty(allcoins));
@@ -217,13 +217,42 @@ public class BondServer {
 		    		//Construct the FC params
 		    		String fcaddress		= "MxG087AH0HPWAYJPQTQGYEMG03F1K2R1H43HVWYH19NB0RTW3SZWY7Q2F79810N"; 
 		    		String fcusercaddress	= useraddress; 
-		    		MiniNumber fcblock 		= block.add(MiniNumber.TEN);
-		    		MiniNumber fccoinage 	= MiniNumber.ONE;
+		    		
+		    		//Now get the details given the rate..
+		    		String rate	= getStateVar(coinobj, 105);
+		    		
+		    		int days = 365;
+		    		if(rate.equals("1.01") ){
+		    			days = 1;
+		    		}else if(rate.equals("1.035") ){
+		    			days = 30;
+		    		}else if(rate.equals("1.08") ){
+		    			days = 90;
+		    		}else if(rate.equals("1.13") ){
+		    			days = 270;
+		    		}else if(rate.equals("1.18") ){
+		    			days = 365;
+		    		}else{
+		    			MinimaLogger.log("Invalid Rate amount! "+rate+" @ coindid:"+coinid);
+		    			continue;
+		    		}
+		    		
+		    		//How many blocks in a day
+		    		int dayofblocks = 1728;
+		    		
+		    		//Now calculate the max coin age - with a day extra for leeway
+		    		int fccoinage = (days * dayofblocks) + dayofblocks; 
+		    		
+		    		//The max block
+		    		int fcblock = block.getAsInt() + fccoinage;
+		    		
+		    		//And the time..
 		    		long fcmillitime		= System.currentTimeMillis();
 		    		
 		    		//Check the fc vars are within the range allowed..
 		    		//..
 		    		
+		    		//Now construct the spend txn
 		    		String randid 	  = MiniData.getRandomData(32).to0xString();
 		    		String txnbuilder = "txncreate id:"+randid;
 		    		
@@ -240,6 +269,7 @@ public class BondServer {
 		    		}
 		    		
 		    		//Now add ther FC statevars..
+		    		txnbuilder 		 += ";txnstate id:"+randid+" port:0 value:"+rate;
 		    		txnbuilder 		 += ";txnstate id:"+randid+" port:1 value:"+fcblock;
 		    		txnbuilder 		 += ";txnstate id:"+randid+" port:2 value:"+fcusercaddress;
 		    		txnbuilder 		 += ";txnstate id:"+randid+" port:3 value:"+fcmillitime;
@@ -251,10 +281,14 @@ public class BondServer {
 		    		//And finally delete
 		    		txnbuilder 		 += ";txndelete id:"+randid;
 		    		
+		    		//MinimaLogger.log(txnbuilder);
+		    		
 		    		//Run it..
 		    		JSONArray res = runMultiCommand(txnbuilder);
 		    		MinimaLogger.log(MiniFormat.JSONPretty(res));
 		    		
+		    		//Pause..
+			    	try {Thread.sleep(10000);} catch (InterruptedException e) {}
 	    		}
 	    		
 			} catch (Exception e) {
@@ -262,7 +296,7 @@ public class BondServer {
 			}
 	    	
 	    	//Pause..
-	    	try {Thread.sleep(5000);} catch (InterruptedException e) {}
+	    	try {Thread.sleep(10000);} catch (InterruptedException e) {}
 	    }
 	}
 	
