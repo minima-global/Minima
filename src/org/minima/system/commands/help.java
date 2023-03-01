@@ -8,6 +8,7 @@ import org.minima.system.commands.backup.backup;
 import org.minima.system.commands.backup.restore;
 import org.minima.system.commands.backup.vault;
 import org.minima.system.commands.base.balance;
+import org.minima.system.commands.base.block;
 import org.minima.system.commands.base.burn;
 import org.minima.system.commands.base.checkaddress;
 import org.minima.system.commands.base.coinexport;
@@ -115,6 +116,7 @@ public class help extends Command {
 			addCommand(details, new whitepaper());
 			
 			addCommand(details, new status());
+			addCommand(details, new block());
 			addCommand(details, new printtree());
 			addCommand(details, new burn());
 			addCommand(details, new trace());

@@ -20,6 +20,7 @@ import org.minima.system.commands.backup.restore;
 import org.minima.system.commands.backup.vault;
 import org.minima.system.commands.base.automine;
 import org.minima.system.commands.base.balance;
+import org.minima.system.commands.base.block;
 import org.minima.system.commands.base.burn;
 import org.minima.system.commands.base.checkaddress;
 import org.minima.system.commands.base.coincheck;
@@ -115,7 +116,7 @@ public abstract class Command {
 			new send(), new balance(), new tokencreate(), new tokenvalidate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
 			new incentivecash(), new webhooks(), new peers(), new p2pstate(), new nodecount(),
 
-			new mds(), new sendpoll(), new healthcheck(), new mempool(),
+			new mds(), new sendpoll(), new healthcheck(), new mempool(), new block(),
 			
 			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(), new sendview(),
 			
