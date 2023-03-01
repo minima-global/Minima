@@ -379,7 +379,7 @@ var MDS = {
 				} 	
 			}
 			
-			return "undefined";
+			return undefined;
 		}
 	}
 };

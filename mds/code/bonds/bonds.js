@@ -2,19 +2,19 @@
 /**
  * Base Values
  */
-var BOND_SCRIPT  = "LET yourkey=PREVSTATE(100) IF SIGNEDBY(yourkey) THEN RETURN TRUE ENDIF LET maxblock=PREVSTATE(101) LET youraddress=PREVSTATE(102) LET maxcoinage=PREVSTATE(104) LET yourrate=PREVSTATE(105) LET rate=STATE(0) ASSERT yourrate EQ rate LET fcfinish=STATE(1) LET fcpayout=STATE(2) LET fcmilli=STATE(3) LET fccoinage=STATE(4) ASSERT fcpayout EQ youraddress ASSERT fcfinish LTE maxblock ASSERT fccoinage LTE maxcoinage LET fcaddress=0xEA8823992AB3CEBBA855D68006F0D05B0C4838FE55885375837D90F98954FA13 LET fullvalue=@AMOUNT*rate RETURN VERIFYOUT(@INPUT fcaddress fullvalue @TOKENID TRUE)";
-var BOND_ADDRESS = "MxG0805BSAC65KGC4EGR62JTCGY8691130T77Z0HJNYSMP09P5UAP6E5DN4C61F";
+var BOND_SCRIPT  = "LET yourkey=PREVSTATE(100) IF SIGNEDBY(yourkey) THEN RETURN TRUE ENDIF LET maxblock=PREVSTATE(101) LET youraddress=PREVSTATE(102) LET maxcoinage=PREVSTATE(104) LET yourrate=PREVSTATE(105) LET fcfinish=STATE(1) LET fcpayout=STATE(2) LET fcmilli=STATE(3) LET fccoinage=STATE(4) LET rate=STATE(5) ASSERT yourrate EQ rate ASSERT fcpayout EQ youraddress ASSERT fcfinish LTE maxblock ASSERT fccoinage LTE maxcoinage LET fcaddress=0xEA8823992AB3CEBBA855D68006F0D05B0C4838FE55885375837D90F98954FA13 LET fullvalue=@AMOUNT*rate RETURN VERIFYOUT(@INPUT fcaddress fullvalue @TOKENID TRUE)";
+var BOND_ADDRESS = "MxG0861MPQ3ZQTM4GFTZ0UJA74Y48A4GDPYM1NTVKDTU0B34BFDV86G5A0PD21N";
 
 function requestBond(currentblock, amount, bondtype){
 	
 	//Calculate the max values - these are all double checked on the server
 	var days = 365;
 	if(bondtype == "1.01"){
-		days = 1;
-	}else if(bondtype == "1.035"){
 		days = 30;
-	}else if(bondtype == "1.08"){
+	}else if(bondtype == "1.035"){
 		days = 90;
+	}else if(bondtype == "1.08"){
+		days = 180;
 	}else if(bondtype == "1.13"){
 		days = 270;
 	}else if(bondtype == "1.18"){
@@ -56,10 +56,15 @@ function requestBond(currentblock, amount, bondtype){
 		
 		MDS.cmd(cmd,function(resp){
 			if(resp.pending){
+				
 				alert("This command is now Pending!\n\nPlease accept it to continue..");
 			}else if(!resp.status){
-				alert("Something went wrong : "+resp.error);
+				
+				alert("Something went wrong : "+resp.message);
 				MDS.log(JSON.stringify(resp));
+			}else if(resp.status){
+				
+				alert("Coins sent - pls wait for coin to confirm on-chain..");
 			}
 		});
 	});
@@ -85,6 +90,7 @@ function cancelBond(coinid,amount,pubkey){
 				
 		MDS.cmd(txn,function(resp){
 			MDS.log(JSON.stringify(resp));
+			alert("Request cancelled - pls wait for coin to confirm on-chain..");
 		});			
 	});
 	

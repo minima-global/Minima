@@ -1,20 +1,14 @@
 package org.minima.utils.bondserver;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Random;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
-import org.minima.objects.Coin;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
-import org.minima.system.commands.base.newaddress;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.RPCClient;
@@ -26,8 +20,8 @@ import org.minima.utils.ssl.MinimaTrustManager;
 
 public class BondServer {
 
-	public static final String BOND_SCRIPT  = "LET yourkey=PREVSTATE(100) IF SIGNEDBY(yourkey) THEN RETURN TRUE ENDIF LET maxblock=PREVSTATE(101) LET youraddress=PREVSTATE(102) LET maxcoinage=PREVSTATE(104) LET yourrate=PREVSTATE(105) LET rate=STATE(0) ASSERT yourrate EQ rate LET fcfinish=STATE(1) LET fcpayout=STATE(2) LET fcmilli=STATE(3) LET fccoinage=STATE(4) ASSERT fcpayout EQ youraddress ASSERT fcfinish LTE maxblock ASSERT fccoinage LTE maxcoinage LET fcaddress=0xEA8823992AB3CEBBA855D68006F0D05B0C4838FE55885375837D90F98954FA13 LET fullvalue=@AMOUNT*rate RETURN VERIFYOUT(@INPUT fcaddress fullvalue @TOKENID TRUE)";
-	public static final String BOND_ADDRESS = "MxG0805BSAC65KGC4EGR62JTCGY8691130T77Z0HJNYSMP09P5UAP6E5DN4C61F";
+	public static final String BOND_SCRIPT  = "LET yourkey=PREVSTATE(100) IF SIGNEDBY(yourkey) THEN RETURN TRUE ENDIF LET maxblock=PREVSTATE(101) LET youraddress=PREVSTATE(102) LET maxcoinage=PREVSTATE(104) LET yourrate=PREVSTATE(105) LET fcfinish=STATE(1) LET fcpayout=STATE(2) LET fcmilli=STATE(3) LET fccoinage=STATE(4) LET rate=STATE(5) ASSERT yourrate EQ rate ASSERT fcpayout EQ youraddress ASSERT fcfinish LTE maxblock ASSERT fccoinage LTE maxcoinage LET fcaddress=0xEA8823992AB3CEBBA855D68006F0D05B0C4838FE55885375837D90F98954FA13 LET fullvalue=@AMOUNT*rate RETURN VERIFYOUT(@INPUT fcaddress fullvalue @TOKENID TRUE)";
+	public static final String BOND_ADDRESS = "MxG0861MPQ3ZQTM4GFTZ0UJA74Y48A4GDPYM1NTVKDTU0B34BFDV86G5A0PD21N";
 	
 	public static boolean mRunning 			= true;
 	public static boolean mSSL 				= false;
@@ -139,8 +133,6 @@ public class BondServer {
 	    String result = null;
 	    String input="status";
 	    
-	    MiniNumber tenpercent = new MiniNumber("0.1");
-	    
 	    //Keep going until finished..
 	    while(mRunning) {
 	    	//mRunning = false;
@@ -185,12 +177,17 @@ public class BondServer {
 	    			//Check the coin age..
 	    			MiniNumber coinage = block.sub(created);
 	    			if(coinage.isLess(MiniNumber.TEN)) {
+	    			//if(coinage.isLess(new MiniNumber(4))) {
 	    				MinimaLogger.log("[NOT OLD ENOUGH YET] Coin: "+i+" coinid:"+coinid+" coinage:"+coinage.toString());
 		    			continue;
 	    			}
 	    			
+	    			//Now get the details given the rate..
+		    		String rate			= getStateVar(coinobj, 105);
+		    		MiniNumber ratenum 	= new MiniNumber(rate).sub(MiniNumber.ONE);
+		    		
 	    			MiniNumber coinamount 	= new MiniNumber(coinobj.getString("amount"));
-	    			MiniNumber reqamount  	= coinamount.mult(tenpercent);
+	    			MiniNumber reqamount  	= coinamount.mult(ratenum);
 	    			MiniNumber totaltouser  = coinamount.add(reqamount);
 	    			
 	    			MinimaLogger.log("[VALID] coinid:"+coinid+" coinage:"+coinage.toString()+" amount:"+coinamount.toString()+" interest:"+reqamount.toString());
@@ -218,16 +215,13 @@ public class BondServer {
 		    		String fcaddress		= "MxG087AH0HPWAYJPQTQGYEMG03F1K2R1H43HVWYH19NB0RTW3SZWY7Q2F79810N"; 
 		    		String fcusercaddress	= useraddress; 
 		    		
-		    		//Now get the details given the rate..
-		    		String rate	= getStateVar(coinobj, 105);
-		    		
-		    		int days = 365;
+		    		long days = 365;
 		    		if(rate.equals("1.01") ){
-		    			days = 1;
-		    		}else if(rate.equals("1.035") ){
 		    			days = 30;
-		    		}else if(rate.equals("1.08") ){
+		    		}else if(rate.equals("1.035") ){
 		    			days = 90;
+		    		}else if(rate.equals("1.08") ){
+		    			days = 180;
 		    		}else if(rate.equals("1.13") ){
 		    			days = 270;
 		    		}else if(rate.equals("1.18") ){
@@ -237,17 +231,21 @@ public class BondServer {
 		    			continue;
 		    		}
 		    		
+		    		//HACK
+		    		//days = 0;
+		    		
 		    		//How many blocks in a day
-		    		int dayofblocks = 1728;
+		    		long dayofblocks = 1728;
 		    		
 		    		//Now calculate the max coin age - with a day extra for leeway
-		    		int fccoinage = (days * dayofblocks) + dayofblocks; 
+		    		long fccoinage = (days * dayofblocks); 
 		    		
 		    		//The max block
-		    		int fcblock = block.getAsInt() + fccoinage;
+		    		long fcblock = block.getAsLong() + fccoinage;
 		    		
 		    		//And the time..
-		    		long fcmillitime		= System.currentTimeMillis();
+		    		long oneday = 1000 * 60 * 60 * 24;
+		    		long fcmillitime = System.currentTimeMillis() + (days * oneday);
 		    		
 		    		//Check the fc vars are within the range allowed..
 		    		//..
@@ -265,15 +263,15 @@ public class BondServer {
 		    		
 		    		//Is there any change
 		    		if(ourchange.isMore(MiniNumber.ZERO)) {
-		    			txnbuilder 	 += ";txnoutput id:"+randid+" amount:"+ourchange+" address:"+ouraddress+" tokenid:0x00";
+		    			txnbuilder 	 += ";txnoutput id:"+randid+" amount:"+ourchange+" address:"+ouraddress+" tokenid:0x00 storestate:false";
 		    		}
 		    		
 		    		//Now add ther FC statevars..
-		    		txnbuilder 		 += ";txnstate id:"+randid+" port:0 value:"+rate;
 		    		txnbuilder 		 += ";txnstate id:"+randid+" port:1 value:"+fcblock;
 		    		txnbuilder 		 += ";txnstate id:"+randid+" port:2 value:"+fcusercaddress;
 		    		txnbuilder 		 += ";txnstate id:"+randid+" port:3 value:"+fcmillitime;
 		    		txnbuilder 		 += ";txnstate id:"+randid+" port:4 value:"+fccoinage;
+		    		txnbuilder 		 += ";txnstate id:"+randid+" port:5 value:"+rate;
 		    		
 		    		//Now sign and post! the txn..
 		    		txnbuilder 		 += ";txnsign id:"+randid+" publickey:auto txnpostauto:true";
