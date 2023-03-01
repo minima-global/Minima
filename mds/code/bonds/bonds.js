@@ -23,7 +23,7 @@ function requestBond(amount,bondtype){
 						+"\"101\":\""+maxblock+"\","
 						+"\"102\":\""+address+"\","
 						+"\"103\":\""+timemilli+"\","
-						+"\"104\":\""+msxcoinage+"\","
+						+"\"104\":\""+maxcoinage+"\","
 						+"\"105\":\""+bondtype+"\""
 						+"}";	
 			
