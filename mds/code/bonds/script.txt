@@ -11,6 +11,9 @@ LET youraddress = PREVSTATE(102)
 /* Max coinage wait */
 LET maxcoinage = PREVSTATE(104)
 
+/*what rate you want*/
+LET rate = PREVSTATE(105)
+
 /*Check that the FC Details are available*/
 LET fcfinish  = STATE(1)
 LET fcpayout  = STATE(2)
@@ -26,7 +29,7 @@ ASSERT fccoinage LTE maxcoinage
 LET fcaddress = 0xEA8823992AB3CEBBA855D68006F0D05B0C4838FE55885375837D90F98954FA13
 
 /* The amount that needs to be sent */
-LET fullvalue = @AMOUNT * 1.1 
+LET fullvalue = @AMOUNT * rate 
 
 /* Check Valid */
 RETURN VERIFYOUT(@INPUT fcaddress fullvalue @TOKENID TRUE)

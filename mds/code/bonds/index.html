@@ -22,14 +22,16 @@ You can request a Minima Staking Bond here<br>
 <br>
 
 <select name="bondtype" id="idbondtype">
-  <option value="1">3 months @ 1%</option>
-  <option value="3">6 months @ 3%</option>
-  <option value="10" selected>1 year @ 10%</option>
+  <option value="1.01">1 months @ 1%</option>
+  <option value="1.035">3 months @ 3.5%</option>
+  <option value="1.08">6 months @ 8%</option>
+  <option value="1.13">9 months @ 13%</option>
+  <option value="1.18" selected>1 year @ 18%</option>
 </select>
 
 <input type=number value=10 id=idbondamount>
 
-<button onclick="starttBond();">Continue</button>	
+<button onclick="starttBond();" id=idstartbond>Continue</button>	
 
 <br><br>
 Your current requests.. when accepted the amounts will appear in Future Cash
@@ -50,15 +52,17 @@ Your current requests.. when accepted the amounts will appear in Future Cash
 			
 			//Add the script - do NOT trackk all of them - just the ones relevant to you
 			MDS.cmd("newscript script:\""+BOND_SCRIPT+"\" trackall:true",function(resp){
-				MDS.log(JSON.stringify(resp));
+				//MDS.log(JSON.stringify(resp));
 			
 				populateTable();
 			});
 			
 		}else if(msg.event == "NEWBALANCE"){
+			//Disable the button
+			document.getElementById("idstartbond").disabled=false;
+			
 			populateTable();
 		}
-		
 	});
 
 	function populateTable(){
@@ -79,7 +83,7 @@ Your current requests.. when accepted the amounts will appear in Future Cash
 				var pubk = MDS.util.getStateVariable(coin,"100");
 				
 				cell1.innerHTML = "COIN FOUND.. "+coin.amount;
-				cell2.innerHTML = "<button onclick=\"cancelBond('"+coin.coinid+"','"+coin.amount+"','"+pubk+"')\">CANCEL</button>"
+				cell2.innerHTML = "<button onclick=\"this.disabled=true;cancelBond('"+coin.coinid+"','"+coin.amount+"','"+pubk+"')\">CANCEL</button>"
 			}
 			
 		});
@@ -90,8 +94,9 @@ Your current requests.. when accepted the amounts will appear in Future Cash
 		var amount   = document.getElementById("idbondamount").value;
 		var bondtype = document.getElementById("idbondtype").value;
 		
-		MDS.log("REQ: "+amount+" @ "+bondtype);
-	
+		//Disable the button
+		document.getElementById("idstartbond").disabled=true;
+		
 		requestBond(amount,bondtype);
 	}
 	

@@ -3,6 +3,7 @@ var BOND_SCRIPT = "LET yourkey=PREVSTATE(100) IF SIGNEDBY(yourkey) THEN RETURN T
 
 function requestBond(amount,bondtype){
 	
+	
 	//Get one of your addresses
 	MDS.cmd("getaddress;status",function(resp){
 		//MDS.log(JSON.stringify(resp));	
@@ -10,18 +11,20 @@ function requestBond(amount,bondtype){
 		//What is the current block
 		var block = resp[1].response.chain.block;
 		
-		//Calculate the max block..
-		block = block+100000
+		//Calculate the max values..
+		var maxblock 	= block+100000;
+		var maxcoinage 	= 100000;
+		var timemilli 	= (new Date()).getTime();
 		
 		var address 	= resp[0].response.miniaddress;
 		var pubkey  	= resp[0].response.publickey;
-		var millitime	= (new Date()).getTime();
 		 
 		var statevars = "{\"100\":\""+pubkey+"\","
-						+"\"101\":\""+block+"\","
+						+"\"101\":\""+maxblock+"\","
 						+"\"102\":\""+address+"\","
-						+"\"103\":\""+millitime+"\","
-						+"\"104\":\""+100000+"\""
+						+"\"103\":\""+timemilli+"\","
+						+"\"104\":\""+msxcoinage+"\","
+						+"\"105\":\""+bondtype+"\""
 						+"}";	
 			
 		var cmd = "send amount:"+amount
@@ -29,7 +32,7 @@ function requestBond(amount,bondtype){
 				+" state:"+statevars;	
 		
 		MDS.cmd(cmd,function(resp){
-			MDS.log(JSON.stringify(resp));
+			//MDS.log(JSON.stringify(resp));
 			
 		});
 	});
@@ -43,13 +46,16 @@ function cancelBond(coinid,amount,pubkey){
 		//Get an address
 		var address = resp.response.miniaddress;
 	
+		//Random ID
+		var randid = Math.floor(Math.random() * 1000000000)+"";
+		
 		//Construct and spend back txn..
-		var txn = "txncreate id:bondcancel"
-				 +";txninput id:bondcancel coinid:"+coinid
-				 +";txnoutput id:bondcancel address:"+address+" amount:"+amount
-				 +";txnsign id:bondcancel publickey:"+pubkey
-				 +";txnpost id:bondcancel auto:true"
-				 +";txndelete id:bondcancel";
+		var txn = "txncreate  id:"+randid
+				 +";txninput  id:"+randid+" coinid:"+coinid
+				 +";txnoutput id:"+randid+" address:"+address+" amount:"+amount+" storestate:false"
+				 +";txnsign   id:"+randid+" publickey:"+pubkey
+				 +";txnpost   id:"+randid+" auto:true"
+				 +";txndelete id:"+randid;
 				
 		MDS.cmd(txn,function(resp){
 			MDS.log(JSON.stringify(resp));
