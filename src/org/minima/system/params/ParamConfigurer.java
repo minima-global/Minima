@@ -132,7 +132,7 @@ public class ParamConfigurer {
     }
     
     enum ParamKeys {
-    	data("data", "Specify the data folder (defaults to .minima/ under user home", (args, configurer) -> {
+    	data("data", "Specify the data folder ( defaults to ~/.minima )", (args, configurer) -> {
     		//Get that folder
     		File dataFolder = new File(args);
 
@@ -207,7 +207,7 @@ public class ParamConfigurer {
             	GeneralParams.RPC_SSL = false;
             }
         }),
-        rpccrlf("rpccrlf", "Use CRLF at the end of the RPOC headers (NodeJS)", (args, configurer) -> {
+        rpccrlf("rpccrlf", "Use CRLF at the end of the RPC headers (NodeJS)", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.RPC_CRLF = true;
             }else {
@@ -289,7 +289,7 @@ public class ParamConfigurer {
         noshutdownhook("noshutdownhook", "Do not use the shutdown hook (Android)", (args, configurer) -> {
         	configurer.mShutdownhook = false;
         }),
-        noconnect("noconnect", "Stops the P2P system from connecting to other nodes until it's been connected too", (args, configurer) -> {
+        noconnect("noconnect", "Stops the P2P system from connecting to other nodes until it's been connected to", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.NOCONNECT = true;
             }
@@ -300,7 +300,7 @@ public class ParamConfigurer {
         p2ploglevelinfo("p2p-log-level-info", "Set the P2P log level to info", (args, configurer) -> {
             P2PParams.LOG_LEVEL = P2PFunctions.Level.INFO;
         }),
-        p2plogleveldebug("p2p-log-level-debug", "Set the P2P log level to info", (args, configurer) -> {
+        p2plogleveldebug("p2p-log-level-debug", "Set the P2P log level to debug", (args, configurer) -> {
             P2PParams.LOG_LEVEL = P2PFunctions.Level.DEBUG;
         }),
         connect("connect", "Disable the p2p and manually connect to this list of host:port", (args, configurer) -> {

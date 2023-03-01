@@ -190,12 +190,22 @@ public class maxima extends Command {
 				//Load the contact
 				MaximaContact mcontact = maxdb.loadContactFromPublicKey(pubkey);
 				if(mcontact == null) {
-					throw new CommandException("No Contact found for publickey : "+pubkey);
+					
+					//Is it Our Own key..
+					if(pubkey.equals(max.getPublicKey().to0xString())) {
+						
+						//Get our own address
+						fullto = max.getRandomMaximaAddress();
+						
+					}else {
+						throw new CommandException("No Contact found for publickey : "+pubkey);
+					}
+				
+				}else {
+					//Get the address
+					fullto = mcontact.getCurrentAddress();
 				}
 				
-				//Get the address
-				fullto = mcontact.getCurrentAddress();
-			
 			}else {
 				
 				//Load the contact from the id..
@@ -309,6 +319,50 @@ public class maxima extends Command {
 				ret.put("response", json);
 			}
 		
+		}else if(func.equals("sendall")) {
+			
+			if(!existsParam("application") || !existsParam("data") ) {
+				throw new CommandException("MUST specify application and data for a sendall command");
+			}
+			
+			//Which application
+			String application 	= getParam("application");
+
+			//What data
+			MiniData mdata 	= null;
+			
+			if(isParamJSONObject("data")) {
+				MiniString datastr = new MiniString(getJSONObjectParam("data").toString());
+				mdata = new MiniData(datastr.getData());
+			}else {
+				
+				if(!getParam("data").startsWith("0x")) {
+				
+					String text 	= getParam("data");
+					MiniString str 	= new MiniString(text);
+					mdata 			= new MiniData(str.getData());
+					
+				}else {
+					mdata = getDataParam("data");
+				}
+			} 
+			
+			//Now send to all of them - poll message
+			ArrayList<MaximaContact> contacts = maxdb.getAllContacts();
+			for(MaximaContact contact : contacts) {
+				
+				//The actual address
+				String fullto = contact.getCurrentAddress();
+			
+				//Now convert into the correct message..
+				Message sender = createSendMessage(fullto, application, mdata);
+				
+				//Add it to our Polling list of sends..
+				max.PostMessage(sender);
+			}
+			
+			ret.put("response", "Message added to send stack for all contacts");
+			
 		}else {
 			throw new CommandException("Unknown Action : "+func);
 		}

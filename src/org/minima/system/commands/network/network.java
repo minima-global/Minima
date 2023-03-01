@@ -7,6 +7,7 @@ import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.network.minima.NIOClientInfo;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -25,6 +26,7 @@ public class network extends Command {
 				+ "action: (optional)\n"
 				+ "    list : List the direct peers you are connected to. The default.\n"
 				+ "    reset : Restart the traffic counter from 0.\n"
+				+ "    recalculateip : Reset your IP - when you move to a different WiFi.\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
@@ -71,6 +73,15 @@ public class network extends Command {
 			
 			Main.getInstance().getNIOManager().getTrafficListener().reset();
 			ret.put("response", "Traffic counter restarted..");
+		
+		}else if(action.equals("recalculateip")) {
+			
+			Main.getInstance().getNetworkManager().calculateHostIP();
+			
+			JSONObject ip = new JSONObject();
+			ip.put("ip", GeneralParams.MINIMA_HOST);
+			
+			ret.put("response", ip);
 			
 		}else if(action.equals("restart")) {
 			

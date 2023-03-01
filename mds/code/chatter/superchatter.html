@@ -1,0 +1,106 @@
+<html>
+
+<head>
+	<title>CHATTER</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<script type="text/javascript" src="mds.js"></script>
+	<script type="text/javascript" src="chatter.js"></script>
+	<script type="text/javascript" src="rant.js"></script>
+	
+	<link rel="stylesheet" href="rant.css">
+	
+</head>
+
+<body>
+
+<div id="homebutton" class=homediv><button onclick="gohome();" class=solobutton>&nbsp;&nbsp;HOME&nbsp;&nbsp;</button></div>
+
+<center>
+	<br>
+	<h2>SUPER CHATTERS</h2>
+
+	<br>
+	<div id="superchatter" style="text-align:center;width:100%"></div>
+	
+	<br>
+	<button class=solobutton onclick="superchat();" id="superbutton">DO IT</button>	
+	<br><br><br>
+	When you receive a message from a Super Chatter you automatically re-chatter the message..
+	<br>
+	<br>
+	You should make ANYONE you know ( and trust.. ) a Super Chatter.. this will increase their social graph.
+	<br><br>
+	When you receive a message from someone else.. if you like it, just Re-Chatter it, this forwards it to your contacts. 
+	<br><br>
+	Once they have shown themselves to regularly write good posts - also make them a Super Chatter..
+	
+<script type="text/javascript">
+
+	function gohome(){
+		window.location.href="index.html?uid="+MDS.form.getParams("uid");
+	}
+	
+	var issuperchatter = false;
+	var username = MDS.form.getParams("username");
+	var pubkey 	 = MDS.form.getParams("publickey");
+	
+	function superchat(){
+		if(!issuperchatter){
+			//Add them
+			var sql = "INSERT INTO superchatter (publickey,username) VALUES ('"+pubkey+"','"+username+"')";
+			MDS.sql(sql,function(sqlmsg){
+				//refresh
+				window.location.reload(true);
+			});
+		}else{
+			//Remove them
+			var sql = "DELETE FROM superchatter WHERE publickey='"+pubkey+"'";
+			//Remove them..
+			MDS.sql(sql,function(sqlmsg){
+				//refresh
+				window.location.reload(true);
+			});
+		}
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+	
+			//Initialise Chatter
+			initChatter();
+			
+			//The data fields
+			var divdata = document.getElementById("superchatter");
+			var sbutton = document.getElementById("superbutton");
+			
+			//in the db ?
+			isSuperChatter(pubkey,function(found){
+				
+				//Did we find him..
+				if(!found){
+					issuperchatter = false;
+					
+					//No user yet..
+					divdata.innerHTML = username+" is NOT a Super Chatter";					
+					sbutton.innerHTML ="Make Super Chatter";
+					
+				}else{
+					issuperchatter = true;
+					
+					//They are in..
+					divdata.innerHTML = username+" IS a Super Chatter";
+					sbutton.innerHTML ="Remove Super Chatter";
+				}
+			});
+		}
+	});
+	
+</script>
+
+</center>
+</body>
+</html>

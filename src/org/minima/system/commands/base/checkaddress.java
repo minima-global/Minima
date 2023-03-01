@@ -3,6 +3,8 @@ package org.minima.system.commands.base;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.minima.database.MinimaDB;
+import org.minima.database.wallet.Wallet;
 import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;
@@ -36,12 +38,19 @@ public class checkaddress extends Command {
 			throw new CommandException("Address does not start with 0x or Mx");
 		}
 		
-		MiniData data = new MiniData(address);
+		//Check if this is one of out address
+		Wallet wallet = MinimaDB.getDB().getWallet();
+		
+		
+		MiniData data 	= new MiniData(address);
+		String datastr 	= data.to0xString(); 
 		
 		JSONObject res = new JSONObject();
 		res.put("original", address);
-		res.put("0x", data.to0xString());
+		res.put("0x", datastr);
 		res.put("Mx", Address.makeMinimaAddress(data));
+		res.put("relevant", wallet.isAddressRelevant(datastr));
+		res.put("simple", wallet.isAddressSimple(datastr));
 		
 		ret.put("response", res);
 		

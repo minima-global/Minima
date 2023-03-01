@@ -18,6 +18,7 @@ import org.minima.system.mds.handler.CMDcommand;
 import org.minima.system.mds.pending.PendingCommand;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.ZipExtractor;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -403,22 +404,36 @@ public class mds extends Command {
 				
 					//Get the File name
 					String uid = dapp.getName();
-					db.deleteMiniDAPP(uid);
 					
-					//Load the conf file..
-					MiniString data = new MiniString(MiniFile.readCompleteFile(new File(dapp,"dapp.conf"))); 	
-					
-					//Now create the JSON..
-					JSONObject jsonconf = (JSONObject) new JSONParser().parse(data.toString());
-					
-					//Create the MiniDAPP
-					MiniDAPP md = new MiniDAPP(uid, jsonconf);
-					
-					//Now add to the DB
-					db.insertMiniDAPP(md);
-					
-					//Add to the final array
-					arr.add(md.toJSON());
+					//Get the MiniDAPP
+					MiniDAPP mdorig = db.getMiniDAPP(uid);
+					if(mdorig != null) {
+						String perm = mdorig.getPermission();
+						
+						db.deleteMiniDAPP(uid);
+						
+						//Load the conf file..
+						MiniString data = new MiniString(MiniFile.readCompleteFile(new File(dapp,"dapp.conf"))); 	
+						
+						//Now create the JSON..
+						JSONObject jsonconf = (JSONObject) new JSONParser().parse(data.toString());
+						jsonconf.put("permission", perm);
+						
+						//Create the MiniDAPP
+						MiniDAPP md = new MiniDAPP(uid, jsonconf);
+						
+						//Now add to the DB
+						db.insertMiniDAPP(md);
+						
+						//Add to the final array
+						arr.add(md.toJSON());
+					}else {
+						
+						MinimaLogger.log("EMPTY MiniDAPP folder deleted : "+dapp.getAbsolutePath());
+						
+						//Delete it..
+						MiniFile.deleteFileOrFolder(dapp.getAbsolutePath(), dapp);
+					}
 				}
 			}
 			

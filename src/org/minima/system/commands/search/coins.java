@@ -4,19 +4,23 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Coin;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.Main;
+import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class coins extends Command {
 
 	public coins() {
-		super("coins","(relevant:true) (sendable:true) (coinid:) (amount:) (address:) (tokenid:) - Search for coins");
+		super("coins","(relevant:true) (sendable:true) (coinid:) (amount:) (address:) (tokenid:) (checkmempool:) - Search for coins");
 	}
 	
 	@Override
@@ -47,6 +51,9 @@ public class coins extends Command {
 				+ "tokenid: (optional)\n"
 				+ "    A tokenid, to search for coins of a specific token. Minima is 0x00.\n"
 				+ "\n"
+				+ "checkmempool: (optional)\n"
+				+ "    Check if the coin is in the mempool.\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "coins\n"
@@ -66,7 +73,7 @@ public class coins extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"relevant","sendable","coinid","amount","address","tokenid"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"relevant","sendable","coinid","amount","address","tokenid","checkmempool"}));
 	}
 	
 	@Override
@@ -121,9 +128,38 @@ public class coins extends Command {
 															saddress, address, 
 															stokenid, tokenid, simple);
 		
+		//Are we checking if they are in the mempool
+		boolean checkmempool = getBooleanParam("checkmempool", false);
+		ArrayList<Coin> finalcoins = null;
+		if(checkmempool) {
+			
+			//Get the TxPoWDB
+			TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
+			TxPoWMiner txminer 	= Main.getInstance().getTxPoWMiner();
+			
+			finalcoins = new ArrayList<>();
+			for(Coin coin : coins) {
+				
+				//Check if we are already using thewm in another Transaction that is being mined
+				if(txminer.checkForMiningCoin(coin.getCoinID().to0xString())) {
+					continue;
+				}
+				
+				//Check if in mempool..
+				if(txpdb.checkMempoolCoins(coin.getCoinID())) {
+					continue;
+				}
+				
+				finalcoins.add(coin);
+			}
+			
+		}else {
+			finalcoins = coins;
+		}
+		
 		//Put it all in an array
 		JSONArray coinarr = new JSONArray();
-		for(Coin cc : coins) {
+		for(Coin cc : finalcoins) {
 			coinarr.add(cc.toJSON());
 		}
 		

@@ -229,6 +229,9 @@ public class runscript extends Command {
 		
 		resp.put("trace", contract.getCompleteTraceLog());
 		
+		//Add all the variables
+		resp.put("variables", contract.getAllVariables());
+		
 		resp.put("parseok", parse);
 		resp.put("monotonic", monotonic);
 		resp.put("success", success);

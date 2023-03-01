@@ -8,17 +8,20 @@ import org.minima.system.commands.backup.backup;
 import org.minima.system.commands.backup.restore;
 import org.minima.system.commands.backup.vault;
 import org.minima.system.commands.base.balance;
+import org.minima.system.commands.base.block;
 import org.minima.system.commands.base.burn;
 import org.minima.system.commands.base.checkaddress;
 import org.minima.system.commands.base.coinexport;
 import org.minima.system.commands.base.coinimport;
 import org.minima.system.commands.base.cointrack;
 import org.minima.system.commands.base.consolidate;
+import org.minima.system.commands.base.convert;
 import org.minima.system.commands.base.getaddress;
 import org.minima.system.commands.base.hash;
 import org.minima.system.commands.base.hashtest;
 import org.minima.system.commands.base.incentivecash;
 import org.minima.system.commands.base.logs;
+import org.minima.system.commands.base.maths;
 import org.minima.system.commands.base.mmrcreate;
 import org.minima.system.commands.base.mmrproof;
 import org.minima.system.commands.base.newaddress;
@@ -30,6 +33,7 @@ import org.minima.system.commands.base.tokencreate;
 import org.minima.system.commands.base.tokenvalidate;
 import org.minima.system.commands.base.trace;
 import org.minima.system.commands.maxima.maxcontacts;
+import org.minima.system.commands.maxima.maxcreate;
 import org.minima.system.commands.maxima.maxima;
 import org.minima.system.commands.maxima.maxsign;
 import org.minima.system.commands.maxima.maxverify;
@@ -41,6 +45,7 @@ import org.minima.system.commands.network.network;
 import org.minima.system.commands.network.rpc;
 import org.minima.system.commands.network.webhooks;
 import org.minima.system.commands.scripts.newscript;
+import org.minima.system.commands.scripts.removescript;
 import org.minima.system.commands.scripts.runscript;
 import org.minima.system.commands.scripts.scripts;
 import org.minima.system.commands.search.coins;
@@ -111,6 +116,7 @@ public class help extends Command {
 			addCommand(details, new whitepaper());
 			
 			addCommand(details, new status());
+			addCommand(details, new block());
 			addCommand(details, new printtree());
 			addCommand(details, new burn());
 			addCommand(details, new trace());
@@ -141,12 +147,13 @@ public class help extends Command {
 			
 			addCommand(details, new hash());
 			addCommand(details, new random());
-			
-	//		addCommand(details, new file());
+			addCommand(details, new convert());
+			addCommand(details, new maths());
 			
 			addCommand(details, new scripts());
 			addCommand(details, new newscript());
 			addCommand(details, new runscript());
+			addCommand(details, new removescript());
 			addCommand(details, new tutorial());
 			
 			addCommand(details, new mmrcreate());
@@ -177,8 +184,11 @@ public class help extends Command {
 			addCommand(details, new network());
 			addCommand(details, new maxima());
 			addCommand(details, new maxcontacts());
+			
+			addCommand(details, new maxcreate());
 			addCommand(details, new maxsign());
 			addCommand(details, new maxverify());
+			
 			addCommand(details, new message());
 			addCommand(details, new connect());
 			addCommand(details, new disconnect());

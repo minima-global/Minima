@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniString;
 import org.minima.system.commands.Command;
 import org.minima.utils.encrypt.SignVerify;
 import org.minima.utils.json.JSONObject;
@@ -43,7 +44,23 @@ public class maxverify extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
-		MiniData data = getDataParam("data");
+		//Is it a JSON
+		String datastr = null;
+		if(isParamJSONObject("data")) {
+			datastr = getJSONObjectParam("data").toString();
+		}else if(isParamJSONArray("data")) {
+			datastr = getJSONArrayParam("data").toString();
+		}else {
+			datastr = getParam("data");
+		}
+		
+		MiniData data = null;
+		if(datastr.startsWith("0x")) {
+			data = new MiniData(datastr);
+		}else {
+			data = new MiniData(new MiniString(datastr).getData());
+		}
+		
 		MiniData pubk = getDataParam("publickey");
 		MiniData sign = getDataParam("signature");
 		

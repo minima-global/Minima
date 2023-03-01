@@ -1,0 +1,187 @@
+<html>
+
+<head>
+	<title>CHATTER</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<script type="text/javascript" src="mds.js"></script>
+	<script type="text/javascript" src="chatter.js"></script>
+	<script type="text/javascript" src="rant.js"></script>
+	
+	<link rel="stylesheet" href="rant.css">
+</head>
+
+<body>
+
+<div id="homebutton" class=homediv><button onclick="gohome();" class=solobutton>&nbsp;&nbsp;HOME&nbsp;&nbsp;</button></div>
+
+<div id="blackoutwindow" class=blackout>&nbsp;</div>
+
+<div id="previewwindow" class=previewdiv>
+	<button onclick="hidePreview();" class=solobutton> HIDE PREVIEW </button>
+	<br><br>
+	<div id="previewmessage" ></div>	
+</div>
+
+<center>
+	<br>
+	<h2>CHATTER</h2>
+	
+	<h3 id=userdetails></h3>
+	<br>
+	<textarea class=messagetextarea name="rant" id="mainmessage"></textarea>
+	<br>
+	<br>
+	
+	<table class=widthcontainer><tr>
+		<td style="text-align:left;"><button class=solobutton onclick="showPreview();">Preview</button></td>
+		<td style="text-align:right;"><button class=solobutton onclick="embedFile();"> File / Image </button>&nbsp;&nbsp;<button class=solobutton onclick="sendRant();">&nbsp;&nbsp;&nbsp;Start a Chat&nbsp;&nbsp;&nbsp;</button></td>
+	</tr></table>
+	
+<br>
+<br>
+	<table id="mainranttable" class=maincontainer></table>
+	
+	<table ><tr>
+		<td style="text-align:left;"><button id=prevbutton class=solobutton onclick="previous();">Previous</button></td>
+		<td style="text-align:right;"><button id=nextbutton class=solobutton onclick="next();">&nbsp;&nbsp;&nbsp;Next&nbsp;&nbsp;&nbsp;</button></td>
+	</tr></table>
+	
+</center>
+
+<script type="text/javascript">
+	
+	//Maximium time for Message
+	var maxtime;
+	
+	function gohome(){
+		window.location.href="index.html?uid="+MDS.form.getParams("uid");
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//HACK to RESET
+			//MDS.sql("DROP table messages",function(){MDS.log("SQL DB wiped");});return;
+		
+			//Is there a maxtime
+			maxtime = MDS.form.getParams("next");
+			if(!maxtime){
+				maxtime = (new Date()).getTime() + (1000 * 60 * 60 * 24 * 30);
+				document.getElementById("prevbutton").disabled = true;
+			}
+			
+			//Init Chatter vars
+			initChatter(function(){
+				var userdets = document.getElementById("userdetails");
+				userdets.innerHTML = MAXIMA_USERNAME;
+			});
+			
+			//Load the table..
+			createMainTable(maxtime,function(){
+				//Check we found any..
+				if(MESSAGE_NUMBER != VIEW_NUMBER){
+					document.getElementById("nextbutton").disabled = true;
+				}
+			});
+			
+		}else if(msg.event == "MDSCOMMS"){
+			if(!msg.data.public){
+				if(msg.data.message == "NEWCHATTER"){
+					maxtime = (new Date()).getTime() + (1000 * 60 * 60 * 24 * 30);
+					createMainTable(maxtime);
+				}
+			}
+		}
+	});
+
+	function hidePreview(){
+		document.getElementById("blackoutwindow").style.display = "none";
+		document.getElementById("previewwindow").style.display = "none";
+	}
+	
+	function showPreview(){
+		
+		//Get the Text..
+		var text = document.getElementById("mainmessage").value;
+		if(text.trim() == ""){
+			alert("Blank message!");
+			return;
+		}
+		
+		//Check Length
+		var checklen = encodeStringForDB(text); 
+		if(checklen.length>MAX_MESSAGE_LENGTH){
+			alert("Message too Long! Max "+MAX_MESSAGE_LENGTH+" characters.. "+checklen.length);
+			return;
+		}
+		
+		var msgrow = {};
+		msgrow.MESSAGE 	= encodeStringForDB(text);
+		msgrow.USERNAME = MAXIMA_USERNAME;
+		msgrow.RECDATE  = (new Date()).getTime();
+		msgrow.PARENTID = "0x00";
+		
+		//Show the message
+		var preview = document.getElementById("previewmessage");
+		preview.innerHTML = createMessageTable(msgrow,[],false);
+		
+		document.getElementById("blackoutwindow").style.display = "block";
+		document.getElementById("previewwindow").style.display = "block";
+		
+		return;
+	}
+	
+	function sendRant(){
+		
+		//Get the Text..
+		var text = document.getElementById("mainmessage").value;
+		if(text.trim() == ""){
+			alert("Blank message!");
+			return;
+		}
+		
+		//Check Length
+		var checklen = encodeStringForDB(text); 
+		if(checklen.length>MAX_MESSAGE_LENGTH){
+			alert("Message too Long! Max "+MAX_MESSAGE_LENGTH+" characters.. "+checklen.length);
+			return;
+		}
+		
+		//Create the Chatter message
+		document.getElementById("mainmessage").value = "";
+		createRant(text,"0x00","0x00",function(rant){
+			
+			//ok - now add this message to OUR DB
+			addRantToDB(rant,function(msg){
+				
+				//And post over Maxima
+				postRant(rant)
+				
+				//And reload the main table
+				createMainTable(maxtime,function(){
+					//Check we found any..
+					if(MESSAGE_MAXTIME == 0){
+						document.getElementById("nextbutton").style.display = "none";
+					}
+				});
+			});
+		});
+	}
+	
+	function previous(){
+		history.back();
+	}
+	
+	function next(){
+		var prevlink="index.html?uid="+MDS.minidappuid+"&next="+MESSAGE_MAXTIME;
+		document.location.href=prevlink;
+	}
+	
+</script>
+
+</body>
+</html>

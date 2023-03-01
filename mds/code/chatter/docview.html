@@ -1,0 +1,89 @@
+<html>
+
+<head>
+	<title>CHATTER</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<script type="text/javascript" src="mds.js"></script>
+	<script type="text/javascript" src="rant.js"></script>
+	<script type="text/javascript" src="chatter.js"></script>
+	
+	<link rel="stylesheet" href="rant.css">
+	
+</head>
+
+<body>
+
+<div id="homebutton" class=homediv><button onclick="gohome();" class=solobutton>&nbsp;&nbsp;HOME&nbsp;&nbsp;</button></div>
+
+<center>
+	<br>
+	<h2>CHAT</h2>
+
+	<div id="replywindow"></div>
+	
+<script type="text/javascript">
+
+	var allsuperchatters = [];
+	var baseid = MDS.form.getParams("baseid");
+	var msgid  = MDS.form.getParams("msgid");
+	var replytree;
+	
+	function gohome(){
+		window.location.href="index.html?uid="+MDS.form.getParams("uid");
+	}
+	
+	function walkchat(chatrow, depth){
+		//MDS.log(JSON.stringify(chatrow));
+		var user 	= chatrow.USERNAME;
+		var message	= decodeURIComponent(chatrow.MESSAGE).replaceAll("\n","<br>");
+		var link 	= "&nbsp;<a href='reply.html?uid="+MDS.minidappuid+"&msgid="+chatrow.MESSAGEID+"'>REPLY</a>"
+		
+		var gap 		= new Array(depth).join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+		var replymsg 	= createMessageTable(chatrow,allsuperchatters,true);
+		
+		//Create a table..
+		var viewindent;
+		if(chatrow.MESSAGEID == msgid){
+			viewindent = "<b>****</b><table width=100%><tr><td>"+gap+"</td><td>"+replymsg+"</td></tr></table>";
+		}else{
+			viewindent = "<table width=100%><tr><td>"+gap+"</td><td>"+replymsg+"</td></tr></table>";
+		}
+		
+		//Add to thew total
+		replytree.innerHTML += viewindent;
+		
+		//Now walk through the replies..
+		var len = chatrow.replies.length;
+		for(var i=0;i<len;i++){
+			var reply = chatrow.replies[i];
+			walkchat(reply, depth+1)
+		}
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//Initialise Chatter
+			initChatter();
+			
+			selectAllSuperChatters(function(supers){
+				allsuperchatters = supers;
+				
+				//Create the reply table
+				var tree = createReplyTable(baseid,function(treemsg){
+					replytree = document.getElementById("replywindow");
+					walkchat(treemsg.toprant,1);
+				});	
+			});			
+		}
+	});
+		
+</script>
+
+</center>
+</body>
+</html>

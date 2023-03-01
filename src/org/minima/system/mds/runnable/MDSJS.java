@@ -1,8 +1,13 @@
 package org.minima.system.mds.runnable;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.minima.objects.base.MiniString;
 import org.minima.system.mds.MDSManager;
 import org.minima.system.mds.handler.CMDcommand;
 import org.minima.system.mds.handler.NOTIFYcommand;
+import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.mozilla.javascript.Context;
@@ -198,6 +203,34 @@ public class MDSJS {
 		//Create a Command
 		NOTIFYcommand notify = new NOTIFYcommand(mMiniDAPPID, "", "", false);
 		notify.runCommand();
+	}
+	
+	/**
+	 * Load a JS file
+	 */
+	public void load(String zFile) {
+		
+		//Get base folder..
+		File base = mMDS.getMiniDAPPWebFolder(mMiniDAPPID);
+		
+		//Load a file..
+		File loadfile = new File(base,zFile);
+		
+		//Load the code..
+		byte[] codedata;
+		try {
+			codedata = MiniFile.readCompleteFile(loadfile);
+		} catch (IOException e) {
+			//File not found..
+			MinimaLogger.log(e.toString());
+			return;
+		}
+		
+		//Convert to CODE..
+		String code = new String(codedata, MiniString.MINIMA_CHARSET);
+		
+		//Run in scope..
+		mContext.evaluateString(mScope, code, "<mds_"+mMiniDAPPID+"_loaded_"+zFile+">", 1, null);
 	}
 	
 	/**

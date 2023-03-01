@@ -20,6 +20,7 @@ import org.minima.system.commands.backup.restore;
 import org.minima.system.commands.backup.vault;
 import org.minima.system.commands.base.automine;
 import org.minima.system.commands.base.balance;
+import org.minima.system.commands.base.block;
 import org.minima.system.commands.base.burn;
 import org.minima.system.commands.base.checkaddress;
 import org.minima.system.commands.base.coincheck;
@@ -27,6 +28,7 @@ import org.minima.system.commands.base.coinexport;
 import org.minima.system.commands.base.coinimport;
 import org.minima.system.commands.base.cointrack;
 import org.minima.system.commands.base.consolidate;
+import org.minima.system.commands.base.convert;
 import org.minima.system.commands.base.debugflag;
 import org.minima.system.commands.base.getaddress;
 import org.minima.system.commands.base.hash;
@@ -35,6 +37,7 @@ import org.minima.system.commands.base.healthcheck;
 import org.minima.system.commands.base.incentivecash;
 import org.minima.system.commands.base.logs;
 import org.minima.system.commands.base.magic;
+import org.minima.system.commands.base.maths;
 import org.minima.system.commands.base.mempool;
 import org.minima.system.commands.base.missingcmd;
 import org.minima.system.commands.base.mmrcreate;
@@ -50,6 +53,7 @@ import org.minima.system.commands.base.tokencreate;
 import org.minima.system.commands.base.tokenvalidate;
 import org.minima.system.commands.base.trace;
 import org.minima.system.commands.maxima.maxcontacts;
+import org.minima.system.commands.maxima.maxcreate;
 import org.minima.system.commands.maxima.maxextra;
 import org.minima.system.commands.maxima.maxima;
 import org.minima.system.commands.maxima.maxsign;
@@ -66,6 +70,7 @@ import org.minima.system.commands.network.ping;
 import org.minima.system.commands.network.rpc;
 import org.minima.system.commands.network.webhooks;
 import org.minima.system.commands.scripts.newscript;
+import org.minima.system.commands.scripts.removescript;
 import org.minima.system.commands.scripts.runscript;
 import org.minima.system.commands.scripts.scripts;
 import org.minima.system.commands.search.coins;
@@ -111,14 +116,14 @@ public abstract class Command {
 			new send(), new balance(), new tokencreate(), new tokenvalidate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
 			new incentivecash(), new webhooks(), new peers(), new p2pstate(), new nodecount(),
 
-			new mds(), new sendpoll(), new healthcheck(), new mempool(),
+			new mds(), new sendpoll(), new healthcheck(), new mempool(), new block(),
 			
 			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(), new sendview(),
 			
-			new archive(), new logs(), new history(),
+			new archive(), new logs(), new history(), new convert(),new maths(),
 			new magic(),
 			new multisig(), new checkaddress(),
-			new maxsign(), new maxverify(), new maxextra(),
+			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
 			
 			new ping(), new random(), new mysql(),
 			//new file(),
@@ -126,7 +131,7 @@ public abstract class Command {
 			new vault(), new consolidate(),
 			new backup(), new restore(), new test(), 
 			new runscript(), new tutorial(),new keys(),
-			new scripts(), new newscript(),
+			new scripts(), new newscript(), new removescript(),
 			new burn(),
 			
 			new txnbasics(),new txncreate(), new txninput(),new txnlist(), new txnclear(),
@@ -721,8 +726,8 @@ public abstract class Command {
 	 */
 	private static final String[] ALL_WRITE_COMMANDS = 
 		{"send","sendpoll","sendsign","multisig","tokencreate","consolidate",
-		 "cointrack","sign","txnsign","mds","backup",
-		 "restore","vault","archive","maxsign","mysql","rpc","magic"};
+		 "cointrack","sign","txnsign","mds","backup","removescript",
+		 "restore","vault","archive","mysql","rpc","magic"};
 	
 	private static final ArrayList<String> ALL_WRITE_COMMANDS_ARRAY = new ArrayList<String>(Arrays.asList(ALL_WRITE_COMMANDS));
 	

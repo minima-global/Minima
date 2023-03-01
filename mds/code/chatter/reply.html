@@ -1,0 +1,156 @@
+<html>
+
+<head>
+	<title>CHATTER</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<script type="text/javascript" src="mds.js"></script>
+	<script type="text/javascript" src="chatter.js"></script>
+	<script type="text/javascript" src="rant.js"></script>
+	
+	<link rel="stylesheet" href="rant.css">
+	
+</head>
+
+<body>
+
+<div id="homebutton" class=homediv><button onclick="gohome();" class=solobutton>&nbsp;&nbsp;HOME&nbsp;&nbsp;</button></div>
+
+<div id="blackoutwindow" class=blackout>&nbsp;</div>
+
+<div id="previewwindow" class=previewdiv>
+	<button onclick="hidePreview();" class=solobutton> HIDE PREVIEW </button>
+	<br><br>
+	<div id="previewmessage" ></div>	
+</div>
+
+<center>
+	<br>
+	<h2>REPLY</h2>
+
+	<div id="replywindow" style="text-align:left;width:100%"></div>
+
+	<br>
+	<textarea class=messagetextarea name="rant" id="mainmessage"></textarea>
+	<br>
+	<br>
+	
+	<table class=widthcontainer><tr>
+		<td style="text-align:left;"><button class=solobutton onclick="showPreview();">Preview</button></td>
+		<td style="text-align:right;"><button class=solobutton onclick="embedFile();"> File / Image </button>&nbsp;&nbsp;<button class=solobutton onclick="replyRant();">&nbsp;&nbsp;&nbsp;Reply&nbsp;&nbsp;&nbsp;</button></td>
+	</tr></table>
+	
+<script type="text/javascript">
+
+	var allsuperchatters = [];
+	var parentid = MDS.form.getParams("msgid");
+	var baseid;
+	
+	var replytree = document.getElementById("replywindow");
+	
+	function gohome(){
+		window.location.href="index.html?uid="+MDS.form.getParams("uid");
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+	
+			//Initialise Chatter
+			initChatter();
+			
+			//Get the message..
+			selectMessage(parentid,function(found,chatmsg){
+				
+				if(!found){
+					replytree.innerHTML = "MESSAGE NOT FOUND!";
+					return;
+				}
+				
+				//Get the baseid
+				baseid = chatmsg.BASEID;
+				
+				selectAllSuperChatters(function(supers){
+					//Show the message you are replying to..
+					replytree.innerHTML = createMessageTable(chatmsg,supers,false);	
+				});
+			});		
+		}
+	});
+	
+	function hidePreview(){
+		document.getElementById("blackoutwindow").style.display = "none";
+		document.getElementById("previewwindow").style.display = "none";
+	}
+	
+	function showPreview(){
+		
+		//Get the Text..
+		var text = document.getElementById("mainmessage").value;
+		if(text.trim() == ""){
+			alert("Blank message!");
+			return;
+		}
+		
+		//Check Length
+		var checklen = encodeStringForDB(text); 
+		if(checklen.length>MAX_MESSAGE_LENGTH){
+			alert("Message too Long! Max "+MAX_MESSAGE_LENGTH+" characters..");
+			return;
+		}
+		
+		var msgrow = {};
+		msgrow.MESSAGE 	= encodeStringForDB(text);
+		msgrow.USERNAME = MAXIMA_USERNAME;
+		msgrow.RECDATE  = (new Date()).getTime();
+		msgrow.PARENTID = "0x00";
+		
+		//Show the message
+		var preview = document.getElementById("previewmessage");
+		preview.innerHTML = createMessageTable(msgrow,[],false);
+		
+		document.getElementById("blackoutwindow").style.display = "block";
+		document.getElementById("previewwindow").style.display = "block";
+		
+		return;
+	}
+	
+	function replyRant(){
+		
+		//Get the Text..
+		var text = document.getElementById("mainmessage").value;
+		if(text.trim() == ""){
+			alert("Blank message!");
+			return;
+		}
+		
+		//Check Length
+		var checklen = encodeStringForDB(text); 
+		if(checklen.length>MAX_MESSAGE_LENGTH){
+			alert("Message too Long! Max "+MAX_MESSAGE_LENGTH+" characters..");
+			return;
+		}
+		
+		//Create the Chatter message
+		createRant(text,parentid,baseid,function(rant){
+			
+			//ok - now add this message to OUR DB
+			addRantToDB(rant,function(msg){
+				
+				//And post over Maxima
+				postRant(rant)
+				
+				//And reload the main table
+				document.location.href = "index.html?uid="+MDS.minidappuid;	
+			});
+		});
+	}
+	
+</script>
+
+
+</center>
+</body>
+</html>

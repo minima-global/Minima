@@ -1,0 +1,107 @@
+<html>
+
+<head>
+	<title>BAZ BONDS</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<script type="text/javascript" src="mds.js"></script>
+	<script type="text/javascript" src="bonds.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+
+	<br>
+
+	<h2>BAZ BONDS</h2>
+
+You can request a Minima Staking Bond here<br>
+<br>
+
+<select name="bondtype" id="idbondtype">
+  <option value="1.01">1 months @ 1%</option>
+  <option value="1.035">3 months @ 3.5%</option>
+  <option value="1.08">6 months @ 8%</option>
+  <option value="1.13">9 months @ 13%</option>
+  <option value="1.18" selected>1 year @ 18%</option>
+</select>
+
+<input type=number value=10 id=idbondamount>
+
+<button onclick="starttBond();" id=idstartbond>Continue</button>	
+
+<br><br>
+Your current requests.. when accepted the amounts will appear in Future Cash
+
+<table id=idbondtable>
+	
+</table>
+
+</center>
+
+<script type="text/javascript">
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//Add the script - do NOT trackk all of them - just the ones relevant to you
+			MDS.cmd("newscript script:\""+BOND_SCRIPT+"\" trackall:true",function(resp){
+				//MDS.log(JSON.stringify(resp));
+			
+				populateTable();
+			});
+			
+		}else if(msg.event == "NEWBALANCE"){
+			//Disable the button
+			document.getElementById("idstartbond").disabled=false;
+			
+			populateTable();
+		}
+	});
+
+	function populateTable(){
+		
+		MDS.cmd("coins relevant:true address:MxG084WU2W8JUFFKWP4WUSYKGMY1VZTR1MUY7KP9AAMAG85Q7W10NQ80R2A15PU",function(resp){
+			var coins = resp.response; 
+			
+			var btable = document.getElementById("idbondtable");
+			btable.innerHTML="";
+			var len = coins.length;
+			for(var i=0;i<len;i++){
+				var coin 		= coins[i]; 
+				var tablerow 	= btable.insertRow(i);
+				var cell1 	 	= tablerow.insertCell(0);
+				var cell2 	 	= tablerow.insertCell(1);
+				
+				//Get the pubkey..
+				var pubk = MDS.util.getStateVariable(coin,"100");
+				
+				cell1.innerHTML = "COIN FOUND.. "+coin.amount;
+				cell2.innerHTML = "<button onclick=\"this.disabled=true;cancelBond('"+coin.coinid+"','"+coin.amount+"','"+pubk+"')\">CANCEL</button>"
+			}
+			
+		});
+	}
+	
+	function starttBond(){
+		
+		var amount   = document.getElementById("idbondamount").value;
+		var bondtype = document.getElementById("idbondtype").value;
+		
+		//Disable the button
+		document.getElementById("idstartbond").disabled=true;
+		
+		requestBond(amount,bondtype);
+	}
+	
+</script>
+
+</body>
+
+</html>

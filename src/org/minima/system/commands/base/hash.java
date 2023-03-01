@@ -48,7 +48,16 @@ public class hash extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
-		String datastr = getParam("data");
+		String datastr = null;
+		
+		//Is it a JSON
+		if(isParamJSONObject("data")) {
+			datastr = getJSONObjectParam("data").toString();
+		}else if(isParamJSONArray("data")) {
+			datastr = getJSONArrayParam("data").toString();
+		}else {
+			datastr = getParam("data");
+		}
 		
 		MiniData data = null;
 		if(datastr.startsWith("0x")) {

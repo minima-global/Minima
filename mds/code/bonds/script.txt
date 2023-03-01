@@ -1,0 +1,36 @@
+/*Escape*/
+LET yourkey = PREVSTATE(100)
+IF SIGNEDBY(yourkey) THEN RETURN TRUE ENDIF
+
+/* Max block you will accept */
+LET maxblock = PREVSTATE(101)
+
+/* Where to send the Future Cash */
+LET youraddress = PREVSTATE(102)
+
+/* Max coinage wait */
+LET maxcoinage = PREVSTATE(104)
+
+/*what rate you want*/
+LET rate = PREVSTATE(105)
+
+/*Check that the FC Details are available*/
+LET fcfinish  = STATE(1)
+LET fcpayout  = STATE(2)
+LET fcmilli   = STATE(3)
+LET fccoinage = STATE(4)
+
+/*Check we are sending to the right address*/
+ASSERT fcpayout EQ youraddress
+ASSERT fcfinish LTE maxblock
+ASSERT fccoinage LTE maxcoinage
+
+/* The actual FC Contract address */
+LET fcaddress = 0xEA8823992AB3CEBBA855D68006F0D05B0C4838FE55885375837D90F98954FA13
+
+/* The amount that needs to be sent */
+LET fullvalue = @AMOUNT * rate 
+
+/* Check Valid */
+RETURN VERIFYOUT(@INPUT fcaddress fullvalue @TOKENID TRUE)
+
