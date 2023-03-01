@@ -68,7 +68,7 @@ function createMessageTable(messagerow, allsuperchatters, showactions){
 		var uniqueid = parentid+Math.random();
 		
 		//Add a reply row..
-		msgtable += "<tr><td class=messagetablereply id="+uniqueid+">"+msg+"</td></tr>";
+		msgtable += "<tr><td class=messagetablereply id="+uniqueid+"></td></tr>";
 		
 		fillInReply(uniqueid,parentid);
 	}
@@ -130,6 +130,9 @@ function fillInReply(htmlid,parentid){
 		if(found){
 			var reply = "In reply to.. "+decodeStringFromDB(sqlrow.USERNAME)+":"+decodeStringFromDB(sqlrow.MESSAGE);
 			
+			//Sanitize it..
+			reply = DOMPurify.sanitize(reply);
+		
 			//Strip tags..
 			reply = reply.replace(/(<([^>]+)>)/gi, "");
 
