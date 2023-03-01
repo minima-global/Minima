@@ -90,7 +90,7 @@ body {
 }
 
 .messagetablemessagediv {
-	max-height:400;
+	max-height:500;
 	overflow-y:auto;
 }
 

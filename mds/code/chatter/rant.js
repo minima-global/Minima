@@ -52,9 +52,13 @@ function createMessageTable(messagerow, allsuperchatters, showactions){
 					+"&username="+messagerow.USERNAME
 					+"&publickey="+messagerow.PUBLICKEY+"'>"+username+"</a></td><td style='text-align:right;'>"+datestr+"</td></tr></table>";
 	
+	//PURIFY the message
+	var pureuser 	= DOMPurify.sanitize(userline);
+	var puremsg 	= DOMPurify.sanitize(msg);
+	
 	var msgtable = "<table border=0 class=messagetable>"
-					+"<tr><td class=messagetableusername>"+userline+"</td></tr>"
-					+"<tr><td class=messagetablemessage><div class=messagetablemessagediv>"+msg+"</div></td></tr>";
+					+"<tr><td class=messagetableusername>"+pureuser+"</td></tr>"
+					+"<tr><td class=messagetablemessage><div class=messagetablemessagediv>"+puremsg+"</div></td></tr>";
 	
 	//Is this a reply..
 	var parentid = messagerow.PARENTID+"";
@@ -199,7 +203,7 @@ function findRows(allrows,parentid){
 	return retarray;
 }
 
-var MAX_IMAGE_SIZE = 350;
+var MAX_IMAGE_SIZE = 400;
 function scaleImageFile(file,callback){
 	
 	//What to do when file is loaded	
@@ -237,7 +241,7 @@ function scaleImageFile(file,callback){
             canvas.getContext('2d').drawImage(image, 0, 0, width, height);
             
 			//Send this RESIZED image
-			callback(canvas.toDataURL("image/jpeg",0.5));
+			callback(canvas.toDataURL("image/jpeg",0.9));
         }
 
 		//Set the Image src
@@ -264,18 +268,38 @@ function embedFile(){
 		var mmessage = document.getElementById("mainmessage");
 		var filename = file.name.toLowerCase(); 
 		if(filename.endsWith(".png")   || 
-			filename.endsWith(".gif")  || 
 			filename.endsWith(".jpg")  ||
+			filename.endsWith(".webp")  ||
 			filename.endsWith(".jfif") ||
 			filename.endsWith(".bmp")){
 			
 			scaleImageFile(file,function(imagedata){
-				MDS.log("IMAGE SIZE:"+imagedata.length);
-				mmessage.value 	= mmessage.value+"<img src='"+imagedata+"'>";
+				MDS.log("IMAGE:"+file.name+" SIZE:"+imagedata.length);
+				mmessage.value 	= mmessage.value+"<div style='width:100%;text-align:center;'><img src='"+imagedata+"'></div>";
 				//Move to the end
 			    mmessage.focus();
 			    mmessage.setSelectionRange(mmessage.value.length,mmessage.value.length);
 			});
+		
+		}
+		
+		/*else if(filename.endsWith(".gif")){
+			
+			var reader = new FileReader();
+		    reader.readAsDataURL(file);
+		    reader.onload = function () {
+		      console.log(reader.result);
+		      var link = "<div style='width:100%;text-align:center;'><img src='"+imagedata+"'></div>";
+		      mmessage.value = mmessage.value+" "+link;
+		      
+		      //Move to the end
+		      mmessage.focus();
+		      mmessage.setSelectionRange(mmessage.value.length,mmessage.value.length);
+		    };
+		    reader.onerror = function (error) {
+		      console.log('Error: ', error);
+		    };
+		
 		}else{
 			
 			//Check size..
@@ -298,7 +322,8 @@ function embedFile(){
 		    reader.onerror = function (error) {
 		      console.log('Error: ', error);
 		    };
-		}
+		}*/
+		
 	};
 	input.click();
 }
