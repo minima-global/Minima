@@ -11,7 +11,7 @@ var MAXIMA_PUBLICKEY = "";
 var MAXIMA_USERNAME  = "";
 var MAXIMA_CONTACT   = "";
 
-var MAX_MESSAGE_LENGTH = 200000;
+var MAX_MESSAGE_LENGTH = 250000;
 
 /**
  * Initilaise Username, Publickey - does not HAVE to be Maxima details..use maxcreate etc 
@@ -42,7 +42,7 @@ function createDB(callback){
 				+"  `chatter` clob(256K) NOT NULL, "
 				+"  `publickey` varchar(512) NOT NULL, "
 				+"  `username` varchar(512) NOT NULL, "
-				+"  `message` varchar(200000) NOT NULL, "
+				+"  `message` varchar(250000) NOT NULL, "
 				+"  `messageid` varchar(160) NOT NULL, "
 				+"  `parentid` varchar(160) NOT NULL, "
 				+"  `baseid` varchar(160) NOT NULL, "

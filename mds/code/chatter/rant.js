@@ -36,32 +36,39 @@ function drawCompleteMainTable(thetable,allrows,callback){
 }
 
 function createMessageTable(messagerow, allsuperchatters, showactions){
-	var msg 	= decodeStringFromDB(messagerow.MESSAGE).replaceAll("\n","<br>");
+
+	//Sanitize and clean the input	
+	var msg 		= DOMPurify.sanitize(decodeStringFromDB(messagerow.MESSAGE).replaceAll("\n","<br>"));
+	var parentid 	= DOMPurify.sanitize(messagerow.PARENTID+"");
+	var baseid 		= DOMPurify.sanitize(messagerow.BASEID+"");
+	var messageid	= DOMPurify.sanitize(messagerow.MESSAGEID+"");
+	var publickey	= DOMPurify.sanitize(messagerow.PUBLICKEY+"");
 	
 	var dd 		= new Date(+messagerow.RECDATE);
 	var datestr = dd.toDateString()+" "+dd.toLocaleTimeString()+"&nbsp;";
 	
 	//Are they a SUPER CHATTER
-	var username;
-	if(checkInSuperChatters(messagerow.PUBLICKEY,allsuperchatters)){
-		username = "[*] "+decodeStringFromDB(messagerow.USERNAME);
-	}else{
-		username = decodeStringFromDB(messagerow.USERNAME);
-	}
-	var userline = "<table width=100%><tr><td class=namefont><a href='superchatter.html?uid="+MDS.minidappuid
-					+"&username="+messagerow.USERNAME
-					+"&publickey="+messagerow.PUBLICKEY+"'>"+username+"</a></td><td style='text-align:right;'>"+datestr+"</td></tr></table>";
+	var un = decodeStringFromDB(messagerow.USERNAME);
+	var usernameorig = DOMPurify.sanitize(un);
 	
-	//PURIFY the message
-	var pureuser 	= DOMPurify.sanitize(userline);
-	var puremsg 	= DOMPurify.sanitize(msg);
+	var username;
+	if(checkInSuperChatters(publickey,allsuperchatters)){
+		username = "[*] "+un;
+	}else{
+		username = un;
+	}
+	username = DOMPurify.sanitize(username+"");
+	
+	//Now start making the Table..
+	var userline = "<table width=100%><tr><td class=namefont><a href='superchatter.html?uid="+MDS.minidappuid
+					+"&username="+usernameorig
+					+"&publickey="+publickey+"'>"+username+"</a></td><td style='text-align:right;'>"+datestr+"</td></tr></table>";
 	
 	var msgtable = "<table border=0 class=messagetable>"
-					+"<tr><td class=messagetableusername>"+pureuser+"</td></tr>"
-					+"<tr><td class=messagetablemessage><div class=messagetablemessagediv>"+puremsg+"</div></td></tr>";
+					+"<tr><td class=messagetableusername>"+userline+"</td></tr>"
+					+"<tr><td class=messagetablemessage><div class=messagetablemessagediv>"+msg+"</div></td></tr>";
 	
 	//Is this a reply..
-	var parentid = messagerow.PARENTID+"";
 	if(parentid != "0x00"){
 		
 		//Creatge a unique id..
@@ -80,21 +87,23 @@ function createMessageTable(messagerow, allsuperchatters, showactions){
 	if(showactions){
 	
 		//The VIEW buton
-		var viewbutton 	= "<button class=solobutton onclick=\"document.location.href='docview.html?uid="+MDS.minidappuid+"&baseid="+messagerow.BASEID+"&msgid="+messagerow.MESSAGEID+"'\">VIEW ALL</button>";
+		var viewbutton 	= "<button class=solobutton onclick=\"document.location.href='docview.html?uid="
+						+MDS.minidappuid+"&baseid="+baseid+"&msgid="+messageid+"'\">VIEW ALL</button>";
 		
 		//The reply page
-		var replybutton  = "<button class=solobutton onclick=\"document.location.href='reply.html?uid="+MDS.minidappuid+"&msgid="+messagerow.MESSAGEID+"'\">REPLY</button>";
+		var replybutton  = "<button class=solobutton onclick=\"document.location.href='reply.html?uid="
+						+MDS.minidappuid+"&msgid="+messageid+"'\">REPLY</button>";
 		
 		//Rerant link
 		var remsg = "RE-CHATTER";
 		if(messagerow.RECHATTER !=0 ){
 			remsg = "[X] RE-CHATTER";
 		}
-		var rerantbutton = "<button class=solobutton onclick='requestReChatter(\""+messagerow.MESSAGEID+"\")'>"+remsg+"</button>";
+		var rerantbutton = "<button class=solobutton onclick='requestReChatter(\""+messageid+"\")'>"+remsg+"</button>";
 		
 		var delbutton = "";
-		if(messagerow.PARENTID == "0x00"){
-			delbutton 	 = "<button class=solobutton onclick='requestDelete(\""+messagerow.BASEID+"\")'>DELETE ALL</button>";
+		if(parentid == "0x00"){
+			delbutton 	 = "<button class=solobutton onclick='requestDelete(\""+baseid+"\")'>DELETE ALL</button>";
 		}	
 				
 		//Actions..
