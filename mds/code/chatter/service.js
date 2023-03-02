@@ -81,6 +81,9 @@ MDS.init(function(msg){
 											}
 											var notif = usen+":"+msg;
 											
+											//Notify..
+											MDS.notify(notif);
+											
 											//Are they a SUPER CHATTER
 											isSuperChatter(rantjson.message.publickey,function(found){
 												
