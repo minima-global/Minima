@@ -19,6 +19,19 @@ public class TimerMessage extends Message {
 		mTimer = System.currentTimeMillis() + zDelay;
 	}
 	
+	public TimerMessage(long zDelay, Message zMessage) {
+		super(zMessage.getMessageType());
+		
+		//Set the values..
+		mContents = zMessage.getAllContents();
+		
+		//Store for run
+		mDelay = zDelay;
+		
+		//Add the time.
+		mTimer = System.currentTimeMillis() + zDelay;
+	}
+	
 	public void setProcessor(MessageProcessor zProcessor) {
 		mProcessor = zProcessor;
 	}
