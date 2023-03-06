@@ -64,15 +64,25 @@ function createDB(callback){
 		
 		MDS.sql(initsuper,function(msg){
 			
-			//Delete OLD messages
-			var timenow  = (new Date()).getTime();
-			var monthago = timenow - (1000 * 60 * 60 * 24 * 50);
+			//Create the Super Chatter table
+			var rechatter = "CREATE TABLE IF NOT EXISTS `rechatter` ( "
+							+"  `id` bigint auto_increment, "
+							+"  `messageid` varchar(160) NOT NULL, "
+							+"  `recdate` bigint NOT NULL "
+							+" )";
 			
-			MDS.sql("DELETE FROM messages WHERE recdate < "+monthago,function(sqlmsg){
-				//MDS.log(JSON.stringify(sqlmsg));
-				if(callback){
-					callback(msg);
-				}		
+			MDS.sql(rechatter,function(msg){
+			
+				//Delete OLD messages
+				var timenow  = (new Date()).getTime();
+				var monthago = timenow - (1000 * 60 * 60 * 24 * 50);
+				
+				MDS.sql("DELETE FROM messages WHERE recdate < "+monthago,function(sqlmsg){
+					//MDS.log(JSON.stringify(sqlmsg));
+					if(callback){
+						callback(msg);
+					}		
+				});	
 			});
 		});
 	});
@@ -149,7 +159,7 @@ function deleteAllThread(baseid,callback){
 }
 
 /**
- * Select All the recent messages
+ * Update message details
  */
 function updateRechatter(msgid,callback){
 	MDS.sql("UPDATE MESSAGES SET rechatter=1 WHERE messageid='"+msgid+"'", function(sqlmsg){
@@ -160,16 +170,103 @@ function updateRechatter(msgid,callback){
 }
 
 /**
+ * Select All the recent messages
+ */
+function selectRechatterMessages(callback){
+	MDS.sql("SELECT * FROM RECHATTER ORDER BY recdate ASC", function(sqlmsg){
+		if(callback){
+			callback(sqlmsg);	
+		}
+	});
+}
+
+function deleteRechatter(messageid, callback){
+	MDS.sql("DELETE FROM RECHATTER WHERE messageid='"+messageid+"'", function(sqlmsg){
+		if(callback){
+			callback(sqlmsg);	
+		}
+	});
+}
+
+/**
  * Find the base message for a given message
  */
-function findbasemsg(msgid,callback){
+function havebasemsg(msgid,callback){
 	MDS.sql("SELECT * FROM MESSAGES WHERE messageid='"+msgid+"'", function(sqlmsg){
-		var messagerow 	= sqlmsg.rows[0];
-		var parentid 	= messagerow.PARENTID; 
-		if(parentid == "0x00"){
-			callback(messagerow);
+		
+		//Did we find it
+		if(sqlmsg.count>0){
+			var messagerow 	= sqlmsg.rows[0];
+			var parentid 	= messagerow.PARENTID; 
+			if(parentid == "0x00"){
+				callback(true);
+			}else{
+				havebasemsg(parentid,callback)
+			}	
 		}else{
-			findbasemsg(parentid,callback)
+			//Not found..
+			callback(false);	
+		}
+	});
+}
+
+/**
+ * Insert a message into the rechatter table
+ */
+function insertReChatter(messageid,callback){
+	
+	//Date as of NOW
+	var recdate = new Date();
+	
+	//The SQL to insert
+	var insertsql = "INSERT INTO rechatter(messageid,recdate) VALUES ('"+messageid+"',"+recdate.getTime()+")";
+	
+	MDS.sql(insertsql, function(sqlmsg){
+		if(callback){
+			callback(sqlmsg);
+		}
+	});
+}
+
+/**
+ * REchatter valid messages 
+ */
+function doRechatter(){
+	
+	//The cut off date - try for 5 mins..
+	var timenow  	= (new Date()).getTime();
+	var minsago 	= timenow - (1000 * 60 * 5);
+	
+	//First delete the old messages
+	MDS.sql("DELETE FROM RECHATTER WHERE recdate<"+minsago,function(sqlmsg){
+		
+		//Fits get all the messages
+		selectRechatterMessages(function(rechats){
+			//MDS.log(JSON.stringify(rechats));
+			
+			var len = rechats.rows.length;
+			for(var i=0;i<len;i++){
+				
+				//Are we ready to rechatter - do we have the base msg
+				checkReadyRechatter(rechats.rows[i].MESSAGEID);		
+			}
+		});	
+	});
+}
+
+function checkReadyRechatter(messageid){
+	//Do we have the baseid..
+	havebasemsg(messageid,function(basemsg){
+		
+		//Did we find it..
+		if(basemsg){
+			
+			//We can rechatter ther message
+			rechatter(messageid,function(sqlmsg){
+				
+				//Now delete it..
+				deleteRechatter(messageid,function(){});
+			});
 		}
 	});
 }

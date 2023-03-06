@@ -158,7 +158,8 @@ function fillInReply(htmlid,parentid){
 function requestReChatter(msgid){
 	if(confirm("This will post this to all your Maxima Contacts ?")){
 		updateRechatter(msgid,function(){
-			rechatter(msgid,function(){
+			insertReChatter(msgid,function(){
+				
 				//refresh the page
 				window.location.reload();				
 			});

@@ -7,6 +7,9 @@
 //Load a file..
 MDS.load("chatter.js");
 
+//Are we logging data
+var logs = false;
+
 //Main message handler..
 MDS.init(function(msg){
 	
@@ -18,6 +21,12 @@ MDS.init(function(msg){
 			MDS.log("SQL DB inited");
 		});
 	
+	//Check rechatter messages
+	}else if(msg.event == "MDS_TIMER_10SECONDS"){
+		
+		//Check the rechatter table
+		doRechatter();
+		
 	//Only interested in Maxima
 	}else if(msg.event == "MAXIMA"){
 		
@@ -49,14 +58,15 @@ MDS.init(function(msg){
 								//Do we have it..
 								checkInDB(parentid,function(pindb){
 									if(!pindb){
-										//Ask for it!
-										//MDS.log("REQUEST MESSAGE : "+parentid);
 										
 										//Create a request message						
 										createMessageRequest(parentid,function(chatterreq){
+											
 											//Post it normally over Maxima to JUST this user
 											postMessageToPublickey(chatterreq,publickey,function(postresp){
-												//MDS.log("POSTREQ:"+JSON.stringify(postresp));
+												if(logs){
+													MDS.log("POST REQUEST:"+JSON.stringify(postresp));
+												}	
 											});	
 										});
 									}	
@@ -89,13 +99,11 @@ MDS.init(function(msg){
 												
 												if(found){
 													//Rerant it..
-													MDS.log("SUPERCHATTER RE-RANT "+notif);
-													
 													updateRechatter(rantjson.messageid,function(){
 														MDS.comms.solo("NEWCHATTER");
 														
-														//And rerant
-														rechatter(rantjson.messageid,function(){});
+														//And rechatter to db
+														insertReChatter(rantjson.messageid,function(sqlmsg){});
 													});	
 													
 												}else{
@@ -107,7 +115,9 @@ MDS.init(function(msg){
 									});	
 									
 								}else{
-									//MDS.log("CHATTER Message already in DB");
+									if(logs){
+										MDS.log("CHATTER Message already in DB "+rantjson.messageid);
+									}	
 								}
 							});
 						}
@@ -128,7 +138,9 @@ MDS.init(function(msg){
 						var chatjson = JSON.parse(chatmsg.CHATTER);
 
 						postMessageToPublickey(chatjson,publickey,function(postresp){
-							//MDS.log("POSTREPLY:"+JSON.stringify(postresp));
+							if(logs){
+								MDS.log("POST REQUEST REPLY:"+JSON.stringify(postresp));	
+							}
 						});	
 					});
 					
