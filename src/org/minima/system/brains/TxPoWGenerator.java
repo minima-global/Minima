@@ -164,7 +164,9 @@ public class TxPoWGenerator {
 		});
 		
 		//MAX number of transactions in mempool.. 1 hrs worth of blocks..
-		int max 					= tip.getTxPoW().getMagic().getMaxNumTxns().getAsInt() * 12 * 6;
+		//int max 					= tip.getTxPoW().getMagic().getMaxNumTxns().getAsInt() * 12 * 6;
+		int max 					= 5000;
+		
 		int counter					= 0;
 		ArrayList<TxPoW> newmempool = new ArrayList<>();
 		TxPoWDB txpdb 				= MinimaDB.getDB().getTxPoWDB();
