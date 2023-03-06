@@ -51,7 +51,8 @@ public class MDSManager extends MessageProcessor {
 	/**
 	 * Timer Message sent every 10 seconds to MDS apps - frontend / backend
 	 */
-	public static final String MDS_TIMER_10SECONDS		= "MDS_TIMER_10SECONDS"; 
+	public static final String MDS_TIMER_10SECONDS		= "MDS_TIMER_10SECONDS";
+	public static final String MDS_TIMER_60SECONDS		= "MDS_TIMER_60SECONDS";
 	
 	//The Main File and Command server
 	HTTPSServer mMDSFileServer;
@@ -368,6 +369,7 @@ public class MDSManager extends MessageProcessor {
 		
 			//Post another Message
 			PostTimerMessage(new TimerMessage(10000, MDS_TIMER_10SECONDS));
+			PostTimerMessage(new TimerMessage(60000, MDS_TIMER_60SECONDS));
 			
 		}else if(zMessage.getMessageType().equals(MDS_SHUTDOWN)) {
 
@@ -414,6 +416,18 @@ public class MDSManager extends MessageProcessor {
 			
 			//Post another Message
 			PostTimerMessage(new TimerMessage(10000, MDS_TIMER_10SECONDS));
+			
+		}else if(zMessage.getMessageType().equals(MDS_TIMER_60SECONDS)) {
+
+			//Create a datat object
+			JSONObject data = new JSONObject();
+			data.put("timemilli", Long.toString(System.currentTimeMillis()));
+			
+			//Send a POLL message.. 
+			Main.getInstance().PostNotifyEvent(MDS_TIMER_60SECONDS, data);
+			
+			//Post another Message
+			PostTimerMessage(new TimerMessage(60000, MDS_TIMER_60SECONDS));
 			
 		}else if(zMessage.getMessageType().equals(MDS_POLLMESSAGE)) {
 
