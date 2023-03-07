@@ -4,12 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 
-import org.minima.database.MinimaDB;
-import org.minima.database.mmr.MMRData;
-import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Address;
-import org.minima.objects.Coin;
-import org.minima.objects.CoinProof;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.commands.Command;

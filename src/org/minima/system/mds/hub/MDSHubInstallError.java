@@ -1,6 +1,5 @@
 package org.minima.system.mds.hub;
 
-import org.minima.database.minidapps.MiniDAPP;
 import org.minima.system.mds.MDSManager;
 
 public class MDSHubInstallError {

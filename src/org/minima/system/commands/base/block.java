@@ -1,18 +1,12 @@
 package org.minima.system.commands.base;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.txpowtree.TxPowTree;
 import org.minima.objects.TxPoW;
-import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniString;
 import org.minima.system.commands.Command;
-import org.minima.system.commands.CommandException;
-import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONObject;
 
 public class block extends Command {
