@@ -32,6 +32,7 @@ import org.minima.system.mds.hub.MDSHub;
 import org.minima.system.mds.hub.MDSHubDelete;
 import org.minima.system.mds.hub.MDSHubError;
 import org.minima.system.mds.hub.MDSHubInstall;
+import org.minima.system.mds.hub.MDSHubInstallError;
 import org.minima.system.mds.hub.MDSHubLoggedOn;
 import org.minima.system.mds.hub.MDSHubLogon;
 import org.minima.system.mds.hub.MDSHubPending;
@@ -348,41 +349,50 @@ public class MDSFileHandler implements Runnable {
 				}
 				boolean mk = dest.mkdirs();
 				
-				//Send it to the extractor..
-				ZipExtractor.unzip(dis, dest);
-				bais.close();
+				try {
 				
-				//Is there a conf file..
-				File conf = new File(dest,"dapp.conf");
-				if(!conf.exists()) {
+					//Send it to the extractor..
+					ZipExtractor.unzip(dis, dest);
+					bais.close();
+					
+					//Is there a conf file..
+					File conf = new File(dest,"dapp.conf");
+					if(!conf.exists()) {
+						throw new CommandException("No dapp.conf file found @ "+conf.getAbsolutePath());
+					}
+					
+					//Load the Conf file.. to get the data
+					MiniString data = new MiniString(MiniFile.readCompleteFile(conf)); 	
+					
+					//Now create the JSON..
+					JSONObject jsonconf = (JSONObject) new JSONParser().parse(data.toString());
+					
+					//ALWAYS starts with only READ Permission
+					jsonconf.put("permission", "read");
+					
+					//Create the MiniDAPP
+					MiniDAPP md = new MiniDAPP(rand, jsonconf);
+					
+					//Now add to the DB
+					MDSDB db = MinimaDB.getDB().getMDSDB();
+					db.insertMiniDAPP(md);
+					
+					//There has been a change
+					Message installed = new Message(MDSManager.MDS_MINIDAPPS_INSTALLED);
+					installed.addObject("minidapp", md);
+					Main.getInstance().getMDSManager().PostMessage(installed);
+					
+					//Create the webpage
+					writeHTMLPage(dos, MDSHubInstall.createHubPage(mMDS,md,mMainSessionID));
+					
+				}catch(Exception exc) {
+					
 					//Delete the install
-					MiniFile.deleteFileOrFolder(dest.getAbsolutePath(), dest);	
-					throw new CommandException("No dapp.conf file found @ "+conf.getAbsolutePath());
+					MiniFile.deleteFileOrFolder(dest.getAbsolutePath(), dest);
+					
+					//Something went wrong..
+					writeHTMLPage(dos, MDSHubInstallError.createHubPage(mMDS,mMainSessionID,exc.toString()));
 				}
-				
-				//Load the Conf file.. to get the data
-				MiniString data = new MiniString(MiniFile.readCompleteFile(conf)); 	
-				
-				//Now create the JSON..
-				JSONObject jsonconf = (JSONObject) new JSONParser().parse(data.toString());
-				
-				//ALWAYS starts with only READ Permission
-				jsonconf.put("permission", "read");
-				
-				//Create the MiniDAPP
-				MiniDAPP md = new MiniDAPP(rand, jsonconf);
-				
-				//Now add to the DB
-				MDSDB db = MinimaDB.getDB().getMDSDB();
-				db.insertMiniDAPP(md);
-				
-				//There has been a change
-				Message installed = new Message(MDSManager.MDS_MINIDAPPS_INSTALLED);
-				installed.addObject("minidapp", md);
-				Main.getInstance().getMDSManager().PostMessage(installed);
-				
-				//Create the webpage
-				writeHTMLPage(dos, MDSHubInstall.createHubPage(mMDS,md,mMainSessionID));
 				
 			}else if(fileRequested.startsWith("pending.html")){
 				
@@ -538,6 +548,12 @@ public class MDSFileHandler implements Runnable {
 					writeHTMLPage(dos, MDSHubError.createHubPage());
 				} catch (IOException e) {}
 			}
+		
+		}catch(CommandException exc) {
+			
+			//Error installing minidapp..
+			MinimaLogger.log(exc);
+			
 			
 		}catch(Exception exc) {
 			
@@ -547,7 +563,6 @@ public class MDSFileHandler implements Runnable {
 					writeHTMLPage(dos, MDSHubError.createHubPage());
 				} catch (IOException e) {}
 			}
-			
 			
 		}finally {
 			try {
