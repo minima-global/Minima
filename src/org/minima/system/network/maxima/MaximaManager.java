@@ -241,9 +241,6 @@ public class MaximaManager extends MessageProcessor {
 		
 		//Save this..
 		MinimaDB.getDB().saveUserDB();
-		
-		//Update the MLS servers and all your contacts
-		PostMessage(MAXIMA_REFRESH);
 	}
 	
 	private void savePermanentUDB() {
