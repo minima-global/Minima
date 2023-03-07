@@ -387,6 +387,9 @@ public class MDSFileHandler implements Runnable {
 					
 				}catch(Exception exc) {
 					
+					//Can log this..
+					MinimaLogger.log(exc);
+					
 					//Delete the install
 					MiniFile.deleteFileOrFolder(dest.getAbsolutePath(), dest);
 					
@@ -548,12 +551,6 @@ public class MDSFileHandler implements Runnable {
 					writeHTMLPage(dos, MDSHubError.createHubPage());
 				} catch (IOException e) {}
 			}
-		
-		}catch(CommandException exc) {
-			
-			//Error installing minidapp..
-			MinimaLogger.log(exc);
-			
 			
 		}catch(Exception exc) {
 			
