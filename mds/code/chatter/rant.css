@@ -63,6 +63,7 @@ video {
   border: 2px solid #ccc;
   border-radius: 4px;
   background-color: #f8f8f8;
+  font-family: Manrope; 
   font-size: 14px;
   resize: vertical;
 }
