@@ -1,6 +1,6 @@
 package org.minima.utils.megammr;
 
-import org.minima.database.mmr.MMR;
+import org.minima.database.mmr.*;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Coin;
 import org.minima.objects.TxBlock;
@@ -25,7 +25,7 @@ public class SqlMMR {
             + ")";
     static final String INSERT_MMR = "INSERT INTO `mmr`" +
             " (`id`, `row`, `entry`, `value`, `data` ) "
-            + "VALUES (?, ? ,? ,?, ?) "
+            + "VALUES (? ,?, ?, ?, ?) "
             + "ON DUPLICATE KEY "
             + "UPDATE `row`=VALUES(`row`), `entry`=VALUES(`entry`), `value`=VALUES(`value`), `data`=VALUES(`data`)";
     static final String COIN_TABLE = "CREATE TABLE IF NOT EXISTS `coin` ("
@@ -37,35 +37,87 @@ public class SqlMMR {
             + ")";
     static final String INSERT_COIN = "INSERT INTO `coin`" +
             " (`mmr_entry`, `id`, `address`, `amount`, `spent` ) "
-            + "VALUES (?, ? ,? ,?, ?) "
+            + "VALUES (?, ?, ?, ?, ?) "
             + "ON DUPLICATE KEY "
             + "UPDATE `id`=VALUES(`id`), `address`=VALUES(`address`), `amount`=VALUES(`amount`), `spent`=VALUES(`spent`)";
+    private static final String FIND_MMR = "SELECT `data`, `value` from `mmr` where `id`=?";
+    private static final MMREntry emptyMMR = new MMREntry(-1, new MMREntryNumber(-1));
 
     public static void main(String[] args) {
         String mMySQLHost = "localhost:3307";
         String mDatabase = "archivedb";
-        String mUsername = "archiveuser";
-        String mPassword = "archivepassword";
+        String username = "archiveuser";
+        String password = "archivepassword";
 
-        final String mysqldb = "jdbc:mysql://" + mMySQLHost + "/" + mDatabase + "?autoReconnect=true";
-        //&logger=com.mysql.cj.log.StandardLogger&profileSQL=true";
-        try (Connection connection = DriverManager.getConnection(mysqldb, mUsername, mPassword)) {
-            prepareDB(connection);
+        final String mysqldb = "jdbc:mysql://" + mMySQLHost + "/" + mDatabase
+                + "?autoReconnect=true"
+                + "&logger=com.mysql.cj.log.StandardLogger&profileSQL=true";
+        try (Connection connection = DriverManager.getConnection(mysqldb, username, password)) {
+//            syncMMR(connection);
+//            MinimaLogger.log("entry: " + getEntry(connection, 0, new MMREntryNumber(100)));
+            MinimaLogger.log("proof: " + proofToPeak(connection, 0, new MMREntryNumber(100)));
+        } catch (SQLException e) {
+            MinimaLogger.log(e);
+        }
+    }
 
-            // start reading
-            MiniNumber startblock = MiniNumber.ZERO;
-            while (true) {
-                final List<TxBlock> blocks = loadBlockRange(connection, startblock);
-                if (blocks.isEmpty()) {
-                    break;
-                }
-                for (TxBlock block : blocks) {
-                    processBlock(connection, block);
-                    startblock = block.getTxPoW().getBlockNumber().increment();
-                }
+    private static MMRProof proofToPeak(Connection conn, int row, MMREntryNumber number) {
+        final MMRProof proof = new MMRProof();
+
+        final MMREntry entry = getEntry(conn, row, number);
+        if (entry.isEmpty()) {
+            MinimaLogger.log(
+                    String.format("entry not found while calculating proof, row[%s] number[%s]", row, number)
+            );
+            return proof;
+        }
+
+        MMREntry sibling = getEntry(conn, entry.getRow(), entry.getSibling());
+        while (!sibling.isEmpty()) {
+            //Add to our Proof..
+            proof.addProofChunk(sibling.isLeft(), sibling.getMMRData());
+
+            //Now get the Parent.. just need a reference even if is empty. To find the sibling.
+            MMREntry parent = new MMREntry(sibling.getParentRow(), sibling.getParentEntry());
+
+            //And get the Sibling of the Parent..
+            sibling = getEntry(conn, parent.getRow(), parent.getSibling());
+        }
+
+        return proof;
+    }
+
+    static MMREntry getEntry(Connection conn, int row, MMREntryNumber number) {
+        try (final PreparedStatement statement = conn.prepareStatement(FIND_MMR)) {
+            statement.setString(1, row + ":" + number.getBigDecimal().intValue());
+            final ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                MMRData data = new MMRData(
+                        new MiniData(resultSet.getBytes(1)),
+                        new MiniNumber(resultSet.getLong(2))
+                );
+                return new MMREntry(row, number, data);
             }
         } catch (SQLException e) {
             MinimaLogger.log(e);
+        }
+        return emptyMMR;
+    }
+
+    private static void syncMMR(Connection connection) {
+        prepareDB(connection);
+
+        // start reading
+        MiniNumber startblock = MiniNumber.ZERO;
+        while (true) {
+            final List<TxBlock> blocks = loadBlockRange(connection, startblock);
+            if (blocks.isEmpty()) {
+                break;
+            }
+            for (TxBlock block : blocks) {
+                processBlock(connection, block);
+                startblock = block.getTxPoW().getBlockNumber().increment();
+            }
         }
     }
 
