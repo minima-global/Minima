@@ -45,9 +45,17 @@ function createMessageTable(messagerow, allsuperchatters, showactions){
 	var baseid 		= DOMPurify.sanitize(messagerow.BASEID+"");
 	var messageid	= DOMPurify.sanitize(messagerow.MESSAGEID+"");
 	var publickey	= DOMPurify.sanitize(messagerow.PUBLICKEY+"");
+	var recdate		= DOMPurify.sanitize(messagerow.RECDATE+"");
+	var msgdate		= DOMPurify.sanitize(messagerow.MSGDATE+"");
 	
-	var dd 		= new Date(+messagerow.RECDATE);
-	var datestr = dd.toDateString()+" "+dd.toLocaleTimeString()+"&nbsp;";
+	var dd 			= new Date(+recdate);
+	var datestr 	= dd.toDateString()+" "+dd.toLocaleTimeString()+"&nbsp;";
+	
+	var msgdd 		= new Date(+msgdate);
+	var msgdatestr 	= msgdd.toDateString()+" "+msgdd.toLocaleTimeString()+"&nbsp;";
+	
+	var datetable = "<table border=0 width=100% style='border-spacing: 0px;padding:0px;'><tr><td style='text-align:right;font-size:1.0em;'>"+datestr+"</td></tr>"
+					+"<tr><td style='text-align:right; font-size:0.8em; color:888888;'>"+msgdatestr+"</td></tr></table>"
 	
 	//Are they a SUPER CHATTER
 	var un = decodeStringFromDB(messagerow.USERNAME);
@@ -62,9 +70,9 @@ function createMessageTable(messagerow, allsuperchatters, showactions){
 	username = DOMPurify.sanitize(username+"");
 	
 	//Now start making the Table..
-	var userline = "<table width=100%><tr><td class=namefont><a href='superchatter.html?uid="+MDS.minidappuid
+	var userline = "<table border=0 width=100%><tr><td class=namefont><a href='superchatter.html?uid="+MDS.minidappuid
 					+"&username="+usernameorig
-					+"&publickey="+publickey+"'>"+username+"</a></td><td style='text-align:right;'>"+datestr+"</td></tr></table>";
+					+"&publickey="+publickey+"'>"+username+"</a></td><td>"+datetable+"</td></tr></table>";
 	
 	var msgtable = "<table border=0 class=messagetable>"
 					+"<tr><td class=messagetableusername>"+userline+"</td></tr>"
