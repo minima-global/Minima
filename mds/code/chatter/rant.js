@@ -37,8 +37,10 @@ function drawCompleteMainTable(thetable,allrows,callback){
 
 function createMessageTable(messagerow, allsuperchatters, showactions){
 
-	//Sanitize and clean the input	
-	var msg 		= DOMPurify.sanitize(decodeStringFromDB(messagerow.MESSAGE).replaceAll("\n","<br>"));
+	//Sanitize and clean the input - allow our custom youtube tag
+	var dbmsg 		= decodeStringFromDB(messagerow.MESSAGE).replaceAll("\n","<br>");
+	var msg 		= DOMPurify.sanitize(dbmsg,{ ADD_TAGS: ["youtube"]});
+	
 	var parentid 	= DOMPurify.sanitize(messagerow.PARENTID+"");
 	var baseid 		= DOMPurify.sanitize(messagerow.BASEID+"");
 	var messageid	= DOMPurify.sanitize(messagerow.MESSAGEID+"");
@@ -118,6 +120,9 @@ function createMessageTable(messagerow, allsuperchatters, showactions){
 	MESSAGE_MAXTIME = messagerow.RECDATE;
 	MESSAGE_NUMBER++;
 	
+	//Convert youtube tags
+	msgtable = convertYouTube(msgtable);
+	
 	return msgtable;
 }
 
@@ -174,6 +179,21 @@ function requestDelete(baseid){
 			document.location.href="index.html?uid="+MDS.minidappuid;
 		});
 	}
+}
+
+function convertYouTube(msg){
+	
+	//Search and replace the youtube tags..
+	var actual =  msg.replaceAll("<youtube>",
+			"<div class='youtubecontainer'><iframe src='https://www.youtube.com/embed/");
+	
+	//And the end tags
+	actual =  actual.replaceAll("</youtube>","' title='YouTube video player' frameborder='0'"
+				+" allow='accelerometer; autoplay; clipboard-write; encrypted-media; "
+				+"gyroscope; picture-in-picture; web-share' allowfullscreen class='youtubevideo'>"
+				+"</iframe></div>");
+	
+	return actual;
 }
 
 function createReplyTable(baseid, callback){
