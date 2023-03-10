@@ -9,7 +9,7 @@
  */
 var MESSAGE_MAXTIME = 0;
 var MESSAGE_NUMBER  = 0;
-var VIEW_NUMBER  	= 30;
+var VIEW_NUMBER  	= 25;
 function createMainTable(maxtime,callback){
 	var table = document.getElementById("mainranttable");
 	table.innerHTML = "";
@@ -39,7 +39,7 @@ function createMessageTable(messagerow, allsuperchatters, showactions){
 
 	//Sanitize and clean the input - allow our custom youtube tag
 	var dbmsg 		= decodeStringFromDB(messagerow.MESSAGE).replaceAll("\n","<br>");
-	var msg 		= DOMPurify.sanitize(dbmsg,{ ADD_TAGS: ["youtube"]});
+	var msg 		= DOMPurify.sanitize(dbmsg,{ ADD_TAGS: ["youtube","spotify_track","spotify_artist","spotify_album","spotify_playlist"]});
 	
 	var parentid 	= DOMPurify.sanitize(messagerow.PARENTID+"");
 	var baseid 		= DOMPurify.sanitize(messagerow.BASEID+"");
@@ -120,8 +120,14 @@ function createMessageTable(messagerow, allsuperchatters, showactions){
 	MESSAGE_MAXTIME = messagerow.RECDATE;
 	MESSAGE_NUMBER++;
 	
-	//Convert youtube tags
+	//Convert SPECIAL tags
 	msgtable = convertYouTube(msgtable);
+	
+	//Sptify
+	msgtable = convertSpotify("track",msgtable);
+	msgtable = convertSpotify("artist",msgtable);
+	msgtable = convertSpotify("album",msgtable);
+	msgtable = convertSpotify("playlist",msgtable);
 	
 	return msgtable;
 }
@@ -181,6 +187,9 @@ function requestDelete(baseid){
 	}
 }
 
+/**
+ * Convert youtube tags
+ */
 function convertYouTube(msg){
 	
 	//Search and replace the youtube tags..
@@ -192,6 +201,29 @@ function convertYouTube(msg){
 				+" allow='accelerometer; autoplay; clipboard-write; encrypted-media; "
 				+"gyroscope; picture-in-picture; web-share' allowfullscreen class='youtubevideo'>"
 				+"</iframe></div>");
+	
+	return actual;
+}
+
+/**
+ * Works with track,artist,album,playlist
+ */
+function convertSpotify(type,msg){
+	
+	//Which tag
+	var tag = "spotify_"+type;
+	
+	//Search and replace the youtube tags..
+	var starttag 	= "<"+tag+">";
+	var endtag 		= "</"+tag+">";
+	
+	var actual =  msg.replaceAll(starttag,
+			"<iframe style='border-radius:12px' src='https://open.spotify.com/embed/"+type+"/");
+	
+	//And the end tags
+	actual =  actual.replaceAll(endtag,"?utm_source=generator' width='100%' height='352' "
+			+"frameBorder='0' allowfullscreen=''; allow='clipboard-write; encrypted-media; "
+			+"fullscreen; picture-in-picture' loading='lazy'></iframe>");
 	
 	return actual;
 }

@@ -51,6 +51,12 @@
 		<td style="text-align:left;"><button id=prevbutton class=solobutton onclick="previous();">Previous</button></td>
 		<td style="text-align:right;"><button id=nextbutton class=solobutton onclick="next();">&nbsp;&nbsp;&nbsp;Next&nbsp;&nbsp;&nbsp;</button></td>
 	</tr></table>
+
+
+<br>
+<button class=solobutton onclick="help();">&nbsp;&nbsp;Help&nbsp;&nbsp;</button>
+<br>
+<br>
 	
 </center>
 
@@ -61,6 +67,10 @@
 	
 	function gohome(){
 		window.location.href="index.html?uid="+MDS.form.getParams("uid");
+	}
+	
+	function help(){
+		window.location.href="help.html?uid="+MDS.form.getParams("uid");
 	}
 	
 	//Main message handler..
