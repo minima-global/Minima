@@ -38,7 +38,7 @@ public class logs extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"scripts","mining","maxima"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"scripts","mining","maxima","blocks"}));
 	}
 	
 	@Override
