@@ -3,6 +3,7 @@ package org.minima.system.commands.base;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.minima.system.brains.TimedChecker;
 import org.minima.system.commands.Command;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.json.JSONObject;
@@ -74,10 +75,21 @@ public class logs extends Command {
 			}
 		}
 		
+		//Are we logging blocks
+		if(existsParam("blocks")) {
+			String mining = getParam("blocks", "false");
+			if(mining.equals("true")) {
+				TimedChecker.LOG_BLOCK_CHECK_TIME = true;
+			}else {
+				TimedChecker.LOG_BLOCK_CHECK_TIME = false;
+			}
+		}
+		
 		JSONObject resp = new JSONObject();
 		resp.put("scripts", GeneralParams.SCRIPTLOGS);
 		resp.put("mining", GeneralParams.MINING_LOGS);
 		resp.put("maxima", GeneralParams.MAXIMA_LOGS);
+		resp.put("blocks", TimedChecker.LOG_BLOCK_CHECK_TIME);
 		
 		//Add balance..
 		ret.put("response", resp);

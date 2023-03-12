@@ -595,7 +595,8 @@ public class Contract {
 //		String scr = "IF x LT 6 THEN LET y=5 ENDIF LET f=0";
 		//String scr = "LET func=[ LET g = $1 + $2 ] LET hh=REPLACEFIRST(func [$1] [$2] ) LET y=FUNCTION(func 1 2)";
 		
-		String scr = "LET g = CONCAT( 0xEE 0xDD)";
+		String scr = "LET func=[ hello hello hello ] LET hh=REPLACE(func [hello] [goo] )";
+		//String scr = "LET g = CONCAT( 0xEE 0xDD)";
 		
 //		String scr = "LET a = [$1$1$1$1$1$1$1$1$1$1] // the script\r\n"
 //				+ "LET b = [$2$2$2$2$2$2$2$2$2$2] // first script parameter\r\n"
