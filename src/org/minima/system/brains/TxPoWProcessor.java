@@ -156,8 +156,12 @@ public class TxPoWProcessor extends MessageProcessor {
 						//Do we have them all
 						if(alltrans.size() == numtxns) {
 						
+							//Is this a vliad block..
+//							boolean validblock = TxPoWChecker.checkTxPoWBlock(parentnode, txpow, alltrans);
+							boolean validblock = TxPoWChecker.checkTxPoWBlockTimed(parentnode, txpow, alltrans);
+							
 							//OK - Lets check this block
-							if(TxPoWChecker.checkTxPoWBlock(parentnode, txpow, alltrans)) {
+							if(validblock) {
 								
 								//Create a TxBlock..
 								TxBlock txblock = new TxBlock(parentnode.getMMR(), txpow, alltrans);
