@@ -17,6 +17,7 @@ import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.StringValue;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 
 public class OperatorExpressionTests {
@@ -31,6 +32,12 @@ public class OperatorExpressionTests {
         ConstantExpression ceHexEmpty = new ConstantExpression(new HexValue(""));
         ConstantExpression ceHex00 = new ConstantExpression(new HexValue("0x00"));
         ConstantExpression ceHex01 = new ConstantExpression(new HexValue("0x01"));
+        
+        ConstantExpression ceHexFF = new ConstantExpression(new HexValue("0xFF"));
+        ConstantExpression ceHexFFFF = new ConstantExpression(new HexValue("0xFFFF"));
+        ConstantExpression ceHexFFFF00 = new ConstantExpression(new HexValue("0xFFFF00"));
+        ConstantExpression ceHex00FFFF = new ConstantExpression(new HexValue("0x00FFFF"));
+        
         ConstantExpression ceHex0100 = new ConstantExpression(new HexValue("0x0100"));
         ConstantExpression ceHexDefault = new ConstantExpression(new HexValue("0x12345678"));
         ConstantExpression ceHex01L16 = new ConstantExpression(new HexValue("0x0101010101010101"));
@@ -200,6 +207,12 @@ public class OperatorExpressionTests {
         assertEquals("0x0101010101010101", ((HexValue) (new OperatorExpression(ceHex01L16, ceHex00, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
         assertEquals("0x1010101010101011", ((HexValue) (new OperatorExpression(ceHex10L16, ceHex01, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
         assertEquals("0x1010101010101010", ((HexValue) (new OperatorExpression(ceHex10L16, ceHex00, OperatorExpression.OPERATOR_XOR)).getValue(ctr)).toString());
+
+        assertEquals("0x00", ((HexValue) (new OperatorExpression(ceHexFF, OperatorExpression.OPERATOR_NOT)).getValue(ctr)).toString());
+        assertEquals("0x00", ((HexValue) (new OperatorExpression(ceHexFFFF, OperatorExpression.OPERATOR_NOT)).getValue(ctr)).toString());
+        assertEquals("0xFF", ((HexValue) (new OperatorExpression(ceHex00, OperatorExpression.OPERATOR_NOT)).getValue(ctr)).toString());
+        assertEquals("0xFF0000", ((HexValue) (new OperatorExpression(ceHex00FFFF, OperatorExpression.OPERATOR_NOT)).getValue(ctr)).toString());
+        assertEquals("0xFF", ((HexValue) (new OperatorExpression(ceHexFFFF00, OperatorExpression.OPERATOR_NOT)).getValue(ctr)).toString());
 
         // Invalid
         assertThrows(ExecutionException.class, () -> { // IllegalArgumentException maybe, as all others
