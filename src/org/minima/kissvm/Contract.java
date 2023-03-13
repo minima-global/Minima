@@ -24,6 +24,7 @@ import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.commands.base.newaddress;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
@@ -101,6 +102,11 @@ public class Contract {
 	 * MAX size of String or HEX value - 64k
 	 */
 	public static final int MAX_DATA_SIZE = 64 * 1024;
+	
+	/**
+	 * MAX Shift for HEX
+	 */
+	public static final MiniNumber MAX_BITSHIFT = new MiniNumber(1024);
 	
 	/**
 	 * A complete log of the contract execution
@@ -720,7 +726,8 @@ public class Contract {
 //		String scr = "IF x LT 6 THEN LET y=5 ENDIF LET f=0";
 		//String scr = "LET func=[ LET g = $1 + $2 ] LET hh=REPLACEFIRST(func [$1] [$2] ) LET y=FUNCTION(func 1 2)";
 		
-		String scr = "LET g = ~0xFF00EE";
+		//String scr = "LET g = 0xFF << 1000";
+		String scr = "LET g = NEG NEG 2";
 //		String scr = "~0xFF ~(0x00)";
 		
 //		String scr = "LET a = [$1$1$1$1$1$1$1$1$1$1] // the script\r\n"

@@ -156,11 +156,11 @@ public class OperatorExpression implements Expression{
 				NumberValue rnv = (NumberValue)rval;
 				
 				//Can only SHIFT max amount..
-				if(rnv.getNumber().isMore(MiniNumber.TWOFIVESIX)) {
-					throw new ExecutionException("Can only SHIFTLEFT 256 bits MAX");
+				if(rnv.getNumber().isMore(Contract.MAX_BITSHIFT)) {
+					throw new ExecutionException("Can only SHIFTLEFT "+Contract.MAX_BITSHIFT+" bits MAX");
 				}
 				
-				ret = new HexValue( lhv.getMiniData().shiftl(rnv.getNumber().getAsInt()).to0xString() );
+				ret = new HexValue( lhv.getMiniData().shiftl(rnv.getNumber().getAsInt()) );
 			}
 			break;
 		case OPERATOR_SHIFTR :
@@ -171,11 +171,11 @@ public class OperatorExpression implements Expression{
 				NumberValue rnv = (NumberValue)rval;
 				
 				//Can only SHIFT max amount..
-				if(rnv.getNumber().isMore(MiniNumber.TWOFIVESIX)) {
-					throw new ExecutionException("Can only SHIFTRIGHT 256 bits MAX");
+				if(rnv.getNumber().isMore(Contract.MAX_BITSHIFT)) {
+					throw new ExecutionException("Can only SHIFTRIGHT "+Contract.MAX_BITSHIFT+" bits MAX");
 				}
 				
-				ret = new HexValue( lhv.getMiniData().shiftr(rnv.getNumber().getAsInt()).to0xString() );
+				ret = new HexValue( lhv.getMiniData().shiftr(rnv.getNumber().getAsInt()) );
 			}
 			break;
 			
