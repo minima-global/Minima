@@ -12,6 +12,7 @@ import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 
 /**
@@ -189,10 +190,13 @@ public class OperatorExpression implements Expression{
 				HexValue lhv  = (HexValue)lval;
 				HexValue rhv  = (HexValue)rval;
 				
-				BigInteger lbig = lhv.getMiniData().getDataValue();
-				BigInteger rbig = rhv.getMiniData().getDataValue();
+//				BigInteger lbig = lhv.getMiniData().getDataValue();
+//				BigInteger rbig = rhv.getMiniData().getDataValue();
+//				ret = new HexValue ( lbig.and(rbig).toString(16) );
 				
-				ret = new HexValue ( lbig.and(rbig).toString(16) );
+				MiniData result = andFastHEX(lhv.getMiniData(), rhv.getMiniData());
+				ret = new HexValue ( result );
+				
 			}
 			break;
 		case OPERATOR_OR :
@@ -281,4 +285,98 @@ public class OperatorExpression implements Expression{
 		return "( "+mLeft + " "+ret+" " + mRight+" )";
 	}
 	
+	public static void main(String[] zArgs) {
+		
+		long timenow 	= System.currentTimeMillis(); 
+		
+		//Create 2 MiniData structure..
+		MiniData s1 = new MiniData("0x00");
+		MiniData s2 = new MiniData("0x01");
+		
+//		int tot = 65536;
+//		MiniData s1 = MiniData.getRandomData(tot);
+//		MiniData s2 = MiniData.getRandomData(tot);
+		
+		//Do it..
+		MiniData minires = andFastHEX(s1, s2);
+		
+		long timediff = System.currentTimeMillis() - timenow; 
+		
+		
+		System.out.println("S1   : "+s1.to0xString());
+		System.out.println("S2   : "+s2.to0xString());
+		System.out.println("RES  : "+minires.to0xString());
+		System.out.println("Time : "+timediff+"ms");
+		
+	}
+	
+	public static MiniData andFastHEX(MiniData zHex1, MiniData zHex2) {
+		
+		//Get the bytes
+		byte[] bytesh1 = zHex1.getBytes();
+		byte[] bytesh2 = zHex2.getBytes();
+		
+		//Get the lengths
+		int len1 = bytesh1.length;
+		int len2 = bytesh2.length;
+		
+		//First find the smallest
+		boolean hex1shorter = true;
+		int minlen = len1;
+		if(len2 < minlen) {
+			minlen = len2;
+			hex1shorter = false;
+		}
+		
+		//Create the working sets
+		byte[] pbytes1 	= new byte[minlen];
+		byte[] pbytes2 	= new byte[minlen];
+		
+		//The result..
+		int counter=0;
+		byte[] result 	= new byte[minlen];
+		
+		//Now copy the 2 datasets into correctly sized data structures
+		if(hex1shorter) {
+			
+			//Copy data
+			System.arraycopy(bytesh1, 0, pbytes1, 0, minlen);
+			System.arraycopy(bytesh2, len2 - minlen, pbytes2, 0, minlen);
+			
+		}else {
+			
+			//Copy data
+			System.arraycopy(bytesh1, len1 - minlen, pbytes1, 0, minlen);
+			System.arraycopy(bytesh2, 0, pbytes2, 0, minlen);
+		}
+		
+		//Now AND everything
+		boolean nonzerofound = false;
+		for(int i=0;i<minlen;i++) {
+			
+			//Do the AND
+			byte bres = (byte) (pbytes1[i] & pbytes2[i]);
+			
+			//Skip leading ZEROs
+			if(nonzerofound) {
+				result[counter++] = bres;
+			}else {
+				if(bres != 0) {
+					nonzerofound 		= true;
+					result[counter++] 	= bres;
+				}
+			}
+		}
+
+		//If NONE added return 0
+		if(counter==0) {
+			return new MiniData("0x00");
+		}
+		
+		//Now copy the data..
+		byte[] finalresult = new byte[counter];
+		System.arraycopy(result, 0, finalresult, 0, counter);
+		
+		return new MiniData(finalresult);
+	}
 }
