@@ -6,7 +6,7 @@ import java.util.Arrays;
 import org.minima.database.MinimaDB;
 import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
-import org.minima.kissvm.functions.string.CLEAN;
+import org.minima.kissvm.Contract;
 import org.minima.objects.Address;
 import org.minima.system.commands.Command;
 import org.minima.utils.json.JSONObject;
@@ -63,7 +63,7 @@ public class newscript extends Command {
 		
 		//Clean the script
 		if(clean) {
-			script = CLEAN.cleanScript(script);
+			script = Contract.cleanScript(script);
 		}
 		
 		//Do we have this script already..

@@ -194,6 +194,9 @@ public class ExpressionParser {
 		}else if(tok.getToken().equals("NEG")) {
 			exp = new OperatorExpression(getPrimary(zTokens), OperatorExpression.OPERATOR_NEG);
 		
+		}else if(tok.getToken().equals("~")) {
+			exp = new OperatorExpression(getPrimary(zTokens), OperatorExpression.OPERATOR_NOT);
+		
 		}else {
 			zTokens.goBackToken();
 			exp = getBaseUnit(zTokens);
@@ -212,7 +215,7 @@ public class ExpressionParser {
 		if(tok.getTokenType() == ScriptToken.TOKEN_VALUE) {
 			exp = new ConstantExpression( Value.getValue(tok.getToken()) ); 
 		
-			//Negative NUmbers handled here..
+			//Negative Numbers handled here..
 		}else if(tok.getToken().equals("-")) {
 			//The next token MUST be a number
 			ScriptToken num = zTokens.getNextToken();

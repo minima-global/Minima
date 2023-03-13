@@ -34,7 +34,7 @@ public class OperatorExpression implements Expression{
 	public static final int OPERATOR_AND   		= 8;
 	public static final int OPERATOR_OR   		= 9;
 	public static final int OPERATOR_XOR   		= 10;
-	
+	public static final int OPERATOR_NOT   		= 11;
 	
 	int mOperatorType;
 	
@@ -226,6 +226,17 @@ public class OperatorExpression implements Expression{
 			}
 			break;
 			
+		case OPERATOR_NOT :
+		{
+			lval.verifyType(Value.VALUE_HEX);
+			HexValue lhv  = (HexValue)lval;
+			
+			//NOT the data
+			MiniData result = notFastHEX(lhv.getMiniData());
+			ret = new HexValue ( result );
+		}
+		break;
+			
 		default :
 			throw new ExecutionException("UNKNOWN operator");		
 		}
@@ -282,6 +293,8 @@ public class OperatorExpression implements Expression{
 		case OPERATOR_XOR :
 			ret = "^";
 			break;
+		case OPERATOR_NOT :
+			return " ~ ( "+mLeft+" )";
 		}
 		
 		return "( "+mLeft + " "+ret+" " + mRight+" )";
@@ -435,6 +448,46 @@ public class OperatorExpression implements Expression{
 			}
 		}
 
+		//If NONE added return 0
+		if(counter==0) {
+			return new MiniData("0x00");
+		}
+		
+		//Now copy the data..
+		byte[] finalresult = new byte[counter];
+		System.arraycopy(result, 0, finalresult, 0, counter);
+		
+		return new MiniData(finalresult);
+	}
+	
+	public MiniData notFastHEX(MiniData zHex1) {
+		//Get the bytes
+		byte[] bytesh1 = zHex1.getBytes();
+		
+		//Get the lengths
+		int len 		= bytesh1.length;
+		byte[] result 	= new byte[len];
+		
+		//Now AND everything
+		boolean nonzerofound = false;
+		int counter 		 = 0;
+		
+		for(int i=0;i<len;i++) {
+			
+			//Do the NOT
+			byte bres = (byte) (~bytesh1[i]);
+			
+			//Skip leading ZEROs
+			if(nonzerofound) {
+				result[counter++] = bres;
+			}else {
+				if(bres != 0) {
+					nonzerofound 		= true;
+					result[counter++] 	= bres;
+				}
+			}
+		}
+		
 		//If NONE added return 0
 		if(counter==0) {
 			return new MiniData("0x00");
