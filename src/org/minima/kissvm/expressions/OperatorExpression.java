@@ -3,8 +3,6 @@
  */
 package org.minima.kissvm.expressions;
 
-import java.math.BigInteger;
-
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.values.BooleanValue;
@@ -289,32 +287,7 @@ public class OperatorExpression implements Expression{
 		return "( "+mLeft + " "+ret+" " + mRight+" )";
 	}
 	
-	public static void main(String[] zArgs) {
-		
-		long timenow 	= System.currentTimeMillis(); 
-		
-		//Create 2 MiniData structure..
-		MiniData s1 = new MiniData("0xFF01");
-		MiniData s2 = new MiniData("0x1001");
-		
-//		int tot = 65536;
-//		MiniData s1 = MiniData.getRandomData(tot);
-//		MiniData s2 = MiniData.getRandomData(tot);
-		
-		//Do it..
-		MiniData minires = orFastHEX(s1, s2, 0);
-		
-		long timediff = System.currentTimeMillis() - timenow; 
-		
-		
-		System.out.println("S1   : "+s1.to0xString());
-		System.out.println("S2   : "+s2.to0xString());
-		System.out.println("RES  : "+minires.to0xString());
-		System.out.println("Time : "+timediff+"ms");
-		
-	}
-	
-	public static MiniData andFastHEX(MiniData zHex1, MiniData zHex2) {
+	public MiniData andFastHEX(MiniData zHex1, MiniData zHex2) {
 		
 		//Get the bytes
 		byte[] bytesh1 = zHex1.getBytes();
@@ -384,7 +357,7 @@ public class OperatorExpression implements Expression{
 		return new MiniData(finalresult);
 	}
 	
-	public static MiniData orFastHEX(MiniData zHex1, MiniData zHex2, int zType) {
+	public MiniData orFastHEX(MiniData zHex1, MiniData zHex2, int zType) {
 		
 		//Get the bytes
 		byte[] bytesh1 = zHex1.getBytes();
@@ -431,7 +404,7 @@ public class OperatorExpression implements Expression{
 		if(zType==0) {
 			for(int i=0;i<maxlen;i++) {
 				
-				//Do the AND
+				//Do the OR
 				byte bres = (byte) (pbytes1[i] | pbytes2[i]);
 				
 				//Skip leading ZEROs
@@ -447,7 +420,7 @@ public class OperatorExpression implements Expression{
 		}else {
 			for(int i=0;i<maxlen;i++) {
 				
-				//Do the AND
+				//Do the XOR
 				byte bres = (byte) (pbytes1[i] ^ pbytes2[i]);
 				
 				//Skip leading ZEROs
