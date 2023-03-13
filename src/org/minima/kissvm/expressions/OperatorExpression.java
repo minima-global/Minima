@@ -205,10 +205,12 @@ public class OperatorExpression implements Expression{
 				HexValue lhv  = (HexValue)lval;
 				HexValue rhv  = (HexValue)rval;
 				
-				BigInteger lbig = lhv.getMiniData().getDataValue();
-				BigInteger rbig = rhv.getMiniData().getDataValue();
+//				BigInteger lbig = lhv.getMiniData().getDataValue();
+//				BigInteger rbig = rhv.getMiniData().getDataValue();
+//				ret = new HexValue ( lbig.or(rbig).toString(16) );
 				
-				ret = new HexValue ( lbig.or(rbig).toString(16) );
+				MiniData result = orFastHEX(lhv.getMiniData(), rhv.getMiniData(),0);
+				ret = new HexValue ( result );
 			}
 			break;
 		case OPERATOR_XOR :
@@ -217,10 +219,12 @@ public class OperatorExpression implements Expression{
 				HexValue lhv  = (HexValue)lval;
 				HexValue rhv  = (HexValue)rval;
 				
-				BigInteger lbig = lhv.getMiniData().getDataValue();
-				BigInteger rbig = rhv.getMiniData().getDataValue();
+//				BigInteger lbig = lhv.getMiniData().getDataValue();
+//				BigInteger rbig = rhv.getMiniData().getDataValue();
+//				ret = new HexValue ( lbig.xor(rbig).toString(16) );
 				
-				ret = new HexValue ( lbig.xor(rbig).toString(16) );
+				MiniData result = orFastHEX(lhv.getMiniData(), rhv.getMiniData(),1);
+				ret = new HexValue ( result );
 			}
 			break;
 			
@@ -290,15 +294,15 @@ public class OperatorExpression implements Expression{
 		long timenow 	= System.currentTimeMillis(); 
 		
 		//Create 2 MiniData structure..
-		MiniData s1 = new MiniData("0x00");
-		MiniData s2 = new MiniData("0x01");
+		MiniData s1 = new MiniData("0xFF01");
+		MiniData s2 = new MiniData("0x1001");
 		
 //		int tot = 65536;
 //		MiniData s1 = MiniData.getRandomData(tot);
 //		MiniData s2 = MiniData.getRandomData(tot);
 		
 		//Do it..
-		MiniData minires = andFastHEX(s1, s2);
+		MiniData minires = orFastHEX(s1, s2, 0);
 		
 		long timediff = System.currentTimeMillis() - timenow; 
 		
@@ -364,6 +368,96 @@ public class OperatorExpression implements Expression{
 				if(bres != 0) {
 					nonzerofound 		= true;
 					result[counter++] 	= bres;
+				}
+			}
+		}
+
+		//If NONE added return 0
+		if(counter==0) {
+			return new MiniData("0x00");
+		}
+		
+		//Now copy the data..
+		byte[] finalresult = new byte[counter];
+		System.arraycopy(result, 0, finalresult, 0, counter);
+		
+		return new MiniData(finalresult);
+	}
+	
+	public static MiniData orFastHEX(MiniData zHex1, MiniData zHex2, int zType) {
+		
+		//Get the bytes
+		byte[] bytesh1 = zHex1.getBytes();
+		byte[] bytesh2 = zHex2.getBytes();
+		
+		//Get the lengths
+		int len1 = bytesh1.length;
+		int len2 = bytesh2.length;
+		
+		//First find the smallest
+		boolean hex1longer = true;
+		int maxlen = len1;
+		if(len2 > maxlen) {
+			maxlen = len2;
+			hex1longer = false;
+		}
+		
+		//Create the working sets
+		byte[] pbytes1 	= new byte[maxlen];
+		byte[] pbytes2 	= new byte[maxlen];
+		
+		//The result..
+		int counter=0;
+		byte[] result 	= new byte[maxlen];
+		
+		//Now copy the 2 datasets into correctly sized data structures
+		if(hex1longer) {
+			
+			//Copy data
+			System.arraycopy(bytesh1, 0, pbytes1, 0, maxlen);
+			System.arraycopy(bytesh2, 0, pbytes2, maxlen - len2, len2);
+			
+		}else {
+			
+			//Copy data
+			System.arraycopy(bytesh1, 0, pbytes1, maxlen - len1, len1);
+			System.arraycopy(bytesh2, 0, pbytes2, 0, maxlen);
+		}
+		
+		//Now AND everything
+		boolean nonzerofound = false;
+		
+		//Is it OR or XOR
+		if(zType==0) {
+			for(int i=0;i<maxlen;i++) {
+				
+				//Do the AND
+				byte bres = (byte) (pbytes1[i] | pbytes2[i]);
+				
+				//Skip leading ZEROs
+				if(nonzerofound) {
+					result[counter++] = bres;
+				}else {
+					if(bres != 0) {
+						nonzerofound 		= true;
+						result[counter++] 	= bres;
+					}
+				}
+			}
+		}else {
+			for(int i=0;i<maxlen;i++) {
+				
+				//Do the AND
+				byte bres = (byte) (pbytes1[i] ^ pbytes2[i]);
+				
+				//Skip leading ZEROs
+				if(nonzerofound) {
+					result[counter++] = bres;
+				}else {
+					if(bres != 0) {
+						nonzerofound 		= true;
+						result[counter++] 	= bres;
+					}
 				}
 			}
 		}
