@@ -24,6 +24,9 @@ public class TimedChecker {
 	
 	public boolean checkTxPoWBlock(TxPoWTreeNode zParentNode, TxPoW zTxPoW, ArrayList<TxPoW> zTransactions) {
 		
+		long timenow  = System.currentTimeMillis();
+		long timediff = 0;
+		
 		try {
 			
 			//Start a thread that does the checking..
@@ -31,9 +34,6 @@ public class TimedChecker {
 				
 				@Override
 				public void run() {
-					
-					//When does it start
-					long timenow = System.currentTimeMillis();
 					
 					try {
 						
@@ -43,12 +43,6 @@ public class TimedChecker {
 					} catch (Exception e) {
 						MinimaLogger.log("Block failed to process : "+e.toString());
 						mValidBlock = false;
-					}
-					
-					//Are we logging this
-					if(LOG_BLOCK_CHECK_TIME) {
-						long timediff = System.currentTimeMillis() - timenow;
-						MinimaLogger.log("[VALID:"+mValidBlock+"] Block checker time : "+timediff+"ms @ "+zTxPoW.getBlockNumber()+" "+zTxPoW.getTxPoWID());
 					}
 					
 					//We have finished
@@ -61,12 +55,10 @@ public class TimedChecker {
 			mCheckerThread.start();
 			
 			//Now check..
-			long timenow  = System.currentTimeMillis();
-			long timediff = 0;
 			while(timediff < MAX_CHECKTIME) {
 				
 				//Wait a second..
-				Thread.sleep(250);
+				Thread.sleep(50);
 				
 				//Has the previous thread finished..
 				if(mFinishedRunning) {
@@ -82,7 +74,13 @@ public class TimedChecker {
 			
 		} catch (Exception e) {
 			MinimaLogger.log(e);
-			return false;
+			mValidBlock = false;
+		}
+		
+		//Are we logging this
+		if(LOG_BLOCK_CHECK_TIME) {
+			timediff = System.currentTimeMillis() - timenow;
+			MinimaLogger.log("[VALID:"+mValidBlock+"] Block checker time : "+timediff+"ms @ "+zTxPoW.getBlockNumber()+" "+zTxPoW.getTxPoWID());
 		}
 		
 		return mValidBlock;
