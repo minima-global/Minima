@@ -8,7 +8,7 @@ import org.minima.utils.MinimaLogger;
 
 public class TimedChecker {
 
-	public static final long MAX_CHECKTIME = 30000;
+	public static final long MAX_CHECKTIME = 120000;
 	
 	public static boolean LOG_BLOCK_CHECK_TIME = false;
 	
