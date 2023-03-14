@@ -1,7 +1,7 @@
 <html>
 
 <head>
-	<title>BAZ BONDS</title>
+	<title>MINIMA BONDS</title>
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
@@ -38,14 +38,27 @@ You can request a Minima Staking Bond here<br>
 Your current requests.. when accepted the amounts will appear in Future Cash<br>
 <br>
 A coin must be 10 blocks deep before the contract is activated..<br>
+<Br>
+There may be many coins in the queue - so please be patient..<br>
 <br>
-
+Max : 0.001 &nbsp;&nbsp;&nbsp; Min : 0.00001<br>
+ <br>
+ 
 <table id=idbondtable></table>
+
+<br>
+<button onclick="gohelp();" class=solobutton>&nbsp;&nbsp;HELP&nbsp;&nbsp;</button>
 
 </center>
 
 <script type="text/javascript">
 	
+	var maxamt = 0.001;
+	var minamt = 0.00001;
+	
+	function gohelp(){
+		window.location.href="help.html?uid="+MDS.form.getParams("uid");
+	}
 	//Main message handler..
 	MDS.init(function(msg){
 		
@@ -110,14 +123,28 @@ A coin must be 10 blocks deep before the contract is activated..<br>
 		});
 	}
 	
+	function toFixedIfNecessary( value, dp ){
+	  return +parseFloat(value).toFixed( dp );
+	}
+
 	function starttBond(){
 		
-		if(!confirm("You are about to request a Minima bond.\n\nAre you sure ?")){
+		var amount   = document.getElementById("idbondamount").value;
+		amount 		 = toFixedIfNecessary(amount,5);
+		
+		if(!confirm("You are about to request a Minima bond.\n\nYou are sending "+amount+"\n\nAre you sure ?")){
 			return;
 		}
 		
 		var amount   = document.getElementById("idbondamount").value;
+		amount 		 = toFixedIfNecessary(amount,5);
+		
 		var bondtype = document.getElementById("idbondtype").value;
+		
+		if(amount < minamt || amount > maxamt){
+			alert("Invalid Amount!");
+			return;
+		}
 		
 		//Disable the button
 		document.getElementById("idstartbond").disabled=true;

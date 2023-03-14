@@ -1,7 +1,9 @@
 package org.minima.utils.bondserver;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.Hashtable;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -9,6 +11,7 @@ import javax.net.ssl.TrustManager;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
+import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.RPCClient;
@@ -29,6 +32,14 @@ public class BondServer {
 	public static String mHost 				= "http://127.0.0.1:9005";
 	public static SSLContext mSSLContext 	= null;
 	
+	public static String mFile 				= "bonds.json";
+	public static boolean mTest 			= false;
+	
+	public static MiniNumber mMin 			= MiniNumber.ZERO;
+	public static MiniNumber mMax 			= MiniNumber.ZERO;
+	
+	public static MiniNumber mMinCoinage 	= MiniNumber.TEN;
+	
 	public static void main(String[] zArgs) {
 		
 		//Are there any Args
@@ -48,6 +59,21 @@ public class BondServer {
 					
 				}else if(arg.equals("-sslpubkey")) {
 					sslpubkey = zArgs[counter++];
+				
+				}else if(arg.equals("-config")) {
+					mFile = zArgs[counter++];
+				
+				}else if(arg.equals("-mincoinage")) {
+					mMinCoinage = new MiniNumber(zArgs[counter++]);
+					
+				}else if(arg.equals("-min")) {
+					mMin = new MiniNumber(zArgs[counter++]);
+				
+				}else if(arg.equals("-max")) {
+					mMax = new MiniNumber(zArgs[counter++]);
+				
+				}else if(arg.equals("-test")) {
+					mTest = true;
 					
 				}else if(arg.equals("-help")) {
 					
@@ -55,6 +81,10 @@ public class BondServer {
 					System.out.println(" -host       : Specify the host IP:PORT");
 					System.out.println(" -password   : Specify the RPC Basic AUTH password (use with SSL)");
 					System.out.println(" -sslpubkey  : The SSL public key from Minima rpc command ( if using SSL )");
+					System.out.println(" -min        : Minimum amount allowed");
+					System.out.println(" -max        : Maximum amount allowed");
+					System.out.println(" -mincoinage : Minimum coin age before accepting - default to 10");
+					System.out.println(" -config     : Location of bonds file");
 					System.out.println(" -help       : Print this help");
 					
 					System.exit(1);
@@ -129,6 +159,47 @@ public class BondServer {
 			System.exit(1);
 		}
 		
+		//Load a JSON file for the values..
+		JSONArray bondjson = null;
+		Hashtable<String, MiniNumber> bondrates = new Hashtable<>();
+		try {
+			byte[] bondvalues = MiniFile.readCompleteFile(new File(mFile));
+			String bondsstr	  = new String(bondvalues);
+			
+			//Convert to JSON
+			bondjson = (JSONArray) new JSONParser().parse(bondsstr);
+			
+		} catch (Exception e1) {
+			e1.printStackTrace();
+			System.exit(1);
+		}
+	
+		//Convert to the hashtable
+		for(Object obj : bondjson) {
+			JSONObject json = (JSONObject)obj;
+			
+			String duration = json.getString("duration");
+			String rate 	= json.getString("rate");
+			
+			//Add to table
+			bondrates.put(rate, new MiniNumber(duration));
+		}
+		
+		if(mTest) {
+			System.out.println("TEST MODE ACTIVE - DURATION IN BLOCKS NOT DAYS");	
+		}
+		
+		System.out.println("BOND RATES   : "+MiniFormat.JSONPretty(bondjson));
+		System.out.println("TABLE        : "+bondrates.toString());
+		System.out.println("MINIMUM      : "+mMin.toString());
+		System.out.println("MAXIMUM      : "+mMax.toString());
+		System.out.println("MIN COIN AGE : "+mMinCoinage.toString());
+		
+//		if(true) {
+//			mRunning = false;
+//			return;
+//		}
+		
 	    //Loop until finished..
 	    String result = null;
 	    String input="status";
@@ -173,12 +244,12 @@ public class BondServer {
 	    			
 	    			//When was this coin created
 	    			MiniNumber created = new MiniNumber(coinobj.getString("created"));
+	    			MiniNumber coinamount 	= new MiniNumber(coinobj.getString("amount"));
 	    			
 	    			//Check the coin age..
 	    			MiniNumber coinage = block.sub(created);
-	    			if(coinage.isLess(MiniNumber.TEN)) {
-	    			//if(coinage.isLess(new MiniNumber(4))) {
-	    				MinimaLogger.log("[NOT OLD ENOUGH YET] Coin: "+i+" coinid:"+coinid+" coinage:"+coinage.toString());
+	    			if(coinage.isLess(mMinCoinage)) {
+	    				MinimaLogger.log("[NOT OLD ENOUGH YET] Coin: "+i+" amount:"+coinamount+" coinid:"+coinid+" coinage:"+coinage.toString());
 		    			continue;
 	    			}
 	    			
@@ -186,7 +257,13 @@ public class BondServer {
 		    		String rate			= getStateVar(coinobj, 105);
 		    		MiniNumber ratenum 	= new MiniNumber(rate).sub(MiniNumber.ONE);
 		    		
-	    			MiniNumber coinamount 	= new MiniNumber(coinobj.getString("amount"));
+		    		//Check amount
+	    			if(coinamount.isLess(mMin) || coinamount.isMore(mMax)) {
+	    				MinimaLogger.log("[INVALID] Coin amount is outside allowed range "+coinamount.toString()+" coinid:"+coinid);
+		    			continue;
+	    			}
+	    			
+	    			
 	    			MiniNumber reqamount  	= coinamount.mult(ratenum);
 	    			MiniNumber totaltouser  = coinamount.add(reqamount);
 	    			
@@ -216,26 +293,40 @@ public class BondServer {
 		    		String fcusercaddress	= useraddress; 
 		    		
 		    		long days = 365;
-		    		if(rate.equals("1.01") ){
-		    			days = 30;
-		    		}else if(rate.equals("1.035") ){
-		    			days = 90;
-		    		}else if(rate.equals("1.08") ){
-		    			days = 180;
-		    		}else if(rate.equals("1.13") ){
-		    			days = 270;
-		    		}else if(rate.equals("1.18") ){
-		    			days = 365;
-		    		}else{
+		    		
+		    		//Get the rate..
+		    		MiniNumber duration = bondrates.get(rate);
+		    		if(duration == null) {
 		    			MinimaLogger.log("Invalid Rate amount! "+rate+" @ coindid:"+coinid);
 		    			continue;
 		    		}
+		    		
+		    		//How many days
+		    		days = duration.getAsInt();
+		    		
+//		    		if(rate.equals("1.01") ){
+//		    			days = 30;
+//		    		}else if(rate.equals("1.035") ){
+//		    			days = 90;
+//		    		}else if(rate.equals("1.08") ){
+//		    			days = 180;
+//		    		}else if(rate.equals("1.13") ){
+//		    			days = 270;
+//		    		}else if(rate.equals("1.18") ){
+//		    			days = 365;
+//		    		}else{
+//		    			MinimaLogger.log("Invalid Rate amount! "+rate+" @ coindid:"+coinid);
+//		    			continue;
+//		    		}
 		    		
 		    		//HACK
 		    		//days = 0;
 		    		
 		    		//How many blocks in a day
 		    		long dayofblocks = 1728;
+		    		if(mTest) {
+		    			dayofblocks = 1;
+		    		}
 		    		
 		    		//Now calculate the max coin age - with a day extra for leeway
 		    		long fccoinage = (days * dayofblocks); 

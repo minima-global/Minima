@@ -1,0 +1,97 @@
+<html>
+
+<head>
+	<title>MINIMA BONDS</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<script type="text/javascript" src="mds.js"></script>
+	<script type="text/javascript" src="bonds.js"></script>
+	
+	<link rel="stylesheet" href="bonds.css">
+	
+</head>
+
+<body>
+
+<center>
+
+	<h2>HELP</h2>
+
+<p style="text-align:left;max-width:700;padding:20;">
+Minima Bonds are a completely non-custodial yield mechanism.<br>
+<br>
+You lock up funds for a period of time, and in return get more sent back to you after a certain delay via Future Cash.<br>
+<br> 
+At no stage do you 'send' the funds to anyone who can take them.<br>
+<br>
+You send funds to a contract that will ONLY allow the funds to be sent back to you with the correct Rate and Duration.<br>
+<br>
+The values are checked at the client and the server.<br>
+<br>
+At any stage - before your request is accepted - you can cancel and send the funds back to yourself<br>
+<br>
+
+Here is the contract for the more technically minded :<br>
+<div style="font-family: Courier;font-size: 14px;text-align:left;max-width:700;">
+
+/*Escape*/<br>
+LET yourkey = PREVSTATE(100)<br>
+IF SIGNEDBY(yourkey) THEN RETURN TRUE ENDIF<br>
+<br>
+/* Max block you will accept */<br>
+LET maxblock = PREVSTATE(101)<br>
+<br>
+/* Where to send the Future Cash */<br>
+LET youraddress = PREVSTATE(102)<br>
+<br>
+/* Max coinage wait */<br>
+LET maxcoinage = PREVSTATE(104)<br>
+<br>
+/*what rate you want*/<br>
+LET yourrate = PREVSTATE(105)<br>
+<br>
+/*Check that the FC Details are available*/<br>
+LET fcfinish  = STATE(1)<br>
+LET fcpayout  = STATE(2)<br>
+LET fcmilli   = STATE(3)<br>
+LET fccoinage = STATE(4)<br>
+LET rate      = STATE(5)<br>
+<br>
+/* Make sure you are getting the correct rate */<br>
+ASSERT yourrate EQ rate<br>
+<br>
+/*Check we are sending to the right address*/<br>
+ASSERT fcpayout EQ youraddress<br>
+ASSERT fcfinish LTE maxblock<br>
+ASSERT fccoinage LTE maxcoinage<br>
+<br>
+/* The actual FC Contract address */<br>
+LET fcaddress = 0xEA8823992AB3CEBBA855D68006F0D05B0C4838FE55885375837D90F98954FA13<br>
+<br>
+/* The amount that needs to be sent */<br>
+LET fullvalue = @AMOUNT * rate <br>
+<br>
+/* Check Valid */<br>
+RETURN VERIFYOUT(@INPUT fcaddress fullvalue @TOKENID TRUE)<br>
+</div>
+ <br>
+ 
+<button onclick="gohome();" class=solobutton>&nbsp;&nbsp;HOME&nbsp;&nbsp;</button>
+
+<script type="text/javascript">
+	function gohome(){
+		window.location.href="index.html?uid="+MDS.form.getParams("uid");
+	}
+</script>
+<br>
+
+</p>
+
+<br>
+<br>
+
+</center>
+</body>
+
+</html>
