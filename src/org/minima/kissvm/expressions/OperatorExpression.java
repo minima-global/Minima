@@ -74,21 +74,18 @@ public class OperatorExpression implements Expression{
 			 */
 		case OPERATOR_ADD :
 			{
+				//Check same on both sides
+				Value.checkSameType(lval, rval);
+				
 				if(lval.getValueType() == Value.VALUE_NUMBER) {
-					Value.checkSameType(lval, rval);
 					NumberValue lnv = (NumberValue)lval;
 					NumberValue rnv = (NumberValue)rval;
-					MiniNumber ans = lnv.getNumber().add(rnv.getNumber());
-					return new NumberValue(ans);
+					return new NumberValue(lnv.getNumber().add(rnv.getNumber()));
 					
 				}else if(lval.getValueType() == Value.VALUE_SCRIPT) {
-					Value.checkSameType(lval, rval);
 					StringValue lnv = (StringValue)lval;
 					StringValue rnv = (StringValue)rval;
-					
-					StringValue res = lnv.add(rnv);
-					
-					return res;
+					return lnv.add(rnv);
 				
 				}else {
 					throw new ExecutionException("Invalid type in ADD. MUST be Number or String "+lval.toString());
@@ -156,8 +153,8 @@ public class OperatorExpression implements Expression{
 				NumberValue rnv = (NumberValue)rval;
 				
 				//Can only SHIFT max amount..
-				if(rnv.getNumber().isMore(Contract.MAX_BITSHIFT)) {
-					throw new ExecutionException("Can only SHIFTLEFT "+Contract.MAX_BITSHIFT+" bits MAX");
+				if(rnv.getNumber().abs().isMore(Contract.MAX_BITSHIFT)) {
+					throw new ExecutionException("Can only SHIFTLEFT "+Contract.MAX_BITSHIFT+" bits MAX "+rnv.getNumber().toString());
 				}
 				
 				ret = new HexValue( lhv.getMiniData().shiftl(rnv.getNumber().getAsInt()) );
@@ -171,8 +168,8 @@ public class OperatorExpression implements Expression{
 				NumberValue rnv = (NumberValue)rval;
 				
 				//Can only SHIFT max amount..
-				if(rnv.getNumber().isMore(Contract.MAX_BITSHIFT)) {
-					throw new ExecutionException("Can only SHIFTRIGHT "+Contract.MAX_BITSHIFT+" bits MAX");
+				if(rnv.getNumber().abs().isMore(Contract.MAX_BITSHIFT)) {
+					throw new ExecutionException("Can only SHIFTRIGHT "+Contract.MAX_BITSHIFT+" bits MAX "+rnv.getNumber().toString());
 				}
 				
 				ret = new HexValue( lhv.getMiniData().shiftr(rnv.getNumber().getAsInt()) );
@@ -468,7 +465,7 @@ public class OperatorExpression implements Expression{
 		int len 		= bytesh1.length;
 		byte[] result 	= new byte[len];
 		
-		//Now AND everything
+		//Now NOT everything
 		boolean nonzerofound = false;
 		int counter 		 = 0;
 		

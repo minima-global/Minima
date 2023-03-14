@@ -106,7 +106,7 @@ public class Contract {
 	/**
 	 * MAX Shift for HEX
 	 */
-	public static final MiniNumber MAX_BITSHIFT = new MiniNumber(1024);
+	public static final MiniNumber MAX_BITSHIFT = MiniNumber.TWOFIVESIX;
 	
 	/**
 	 * A complete log of the contract execution
@@ -727,7 +727,7 @@ public class Contract {
 		//String scr = "LET func=[ LET g = $1 + $2 ] LET hh=REPLACEFIRST(func [$1] [$2] ) LET y=FUNCTION(func 1 2)";
 		
 		//String scr = "LET g = 0xFF << 1000";
-		String scr = "LET g = NEG NEG 2";
+		String scr = "LET g = 0xFF << -1";
 //		String scr = "~0xFF ~(0x00)";
 		
 //		String scr = "LET a = [$1$1$1$1$1$1$1$1$1$1] // the script\r\n"
