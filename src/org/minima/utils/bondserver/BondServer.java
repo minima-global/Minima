@@ -226,7 +226,7 @@ public class BondServer {
 	    		String ouraddress	= response.getString("miniaddress");
 	    		
 	    		//First scan for any available coins..
-	    		String coincheck 	= "coins address:"+BOND_ADDRESS;
+	    		String coincheck 	= "coins order:asc address:"+BOND_ADDRESS;
 	    		jsonres 			= runSingleCommand(coincheck);
 	    		JSONArray allcoins 	= (JSONArray) jsonres.get("response");
 	    		//MinimaLogger.log(MiniFormat.JSONPretty(allcoins));
