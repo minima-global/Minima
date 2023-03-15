@@ -226,7 +226,7 @@ public class BondServer {
 	    		String ouraddress	= response.getString("miniaddress");
 	    		
 	    		//First scan for any available coins..
-	    		String coincheck 	= "coins order:asc address:"+BOND_ADDRESS;
+	    		String coincheck 	= "coins checkmempool:true order:asc address:"+BOND_ADDRESS;
 	    		jsonres 			= runSingleCommand(coincheck);
 	    		JSONArray allcoins 	= (JSONArray) jsonres.get("response");
 	    		//MinimaLogger.log(MiniFormat.JSONPretty(allcoins));
@@ -365,7 +365,7 @@ public class BondServer {
 		    		txnbuilder 		 += ";txnstate id:"+randid+" port:5 value:"+rate;
 		    		
 		    		//Now sign and post! the txn..
-		    		txnbuilder 		 += ";txnsign id:"+randid+" publickey:auto txnpostauto:true";
+		    		txnbuilder 		 += ";txnsign id:"+randid+" publickey:auto txnpostauto:true txnpostmine:true";
 		    		
 		    		//And finally delete
 		    		txnbuilder 		 += ";txndelete id:"+randid;
