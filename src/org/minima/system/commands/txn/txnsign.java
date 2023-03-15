@@ -25,7 +25,7 @@ import org.minima.utils.json.JSONObject;
 public class txnsign extends Command {
 
 	public txnsign() {
-		super("txnsign","[id:] [publickey:0x..|auto] (txnpostauto:) (txnpostburn:) (txnpostmine:) - Sign a transaction");
+		super("txnsign","[id:] [publickey:0x..|auto] (txnpostauto:) (txnpostburn:) (txnpostmine:) (txndelete:) - Sign a transaction");
 	}
 	
 	@Override
@@ -50,6 +50,9 @@ public class txnsign extends Command {
 				+ "\n"
 				+ "txnpostmine: (optional)\n"
 				+ "    If you also post this transaction, do you want to mine it immediately.\n"
+				+ "\n"
+				+ "txndelete: (optional)\n"
+				+ "    true or false - delete this txn after signing AND posting.\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
