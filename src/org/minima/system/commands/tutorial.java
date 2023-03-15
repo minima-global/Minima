@@ -91,7 +91,7 @@ public class tutorial extends Command {
 				  + "SETLEN ( NUMBER HEX )\n"
 				  + "Set the length of a HEX value, trims if too large or pads with 0 if too short\n"
 				  + "\n"
-				 + "OVERWRITE ( HEX NUMBER HEX NUMBER NUMBER)\n"
+				  + "OVERWRITE ( HEX NUMBER HEX NUMBER NUMBER)\n"
 				  + "Copy bytes from the first HEX and pos to the second HEX and pos, length the last NUMBER\n"
 				  + "\n"
 				  + "GET ( VALUE1 VALUE2 .. VALUEn )\n"
