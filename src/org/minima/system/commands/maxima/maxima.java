@@ -119,6 +119,10 @@ public class maxima extends Command {
 			details.put("p2pidentity", max.getLocalMaximaAddress(true));
 			details.put("contact", max.getRandomMaximaAddress());
 			
+			//get the messages on the stack
+			int msgnum = max.getMaxSender().getSize();
+			details.put("poll", msgnum);
+			
 			ret.put("response", details);
 		
 		}else if(func.equals("setname")) {
