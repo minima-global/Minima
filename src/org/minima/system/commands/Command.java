@@ -58,6 +58,7 @@ import org.minima.system.commands.maxima.maxextra;
 import org.minima.system.commands.maxima.maxima;
 import org.minima.system.commands.maxima.maxsign;
 import org.minima.system.commands.maxima.maxverify;
+import org.minima.system.commands.mds.checkpending;
 import org.minima.system.commands.mds.mds;
 import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.disconnect;
@@ -121,7 +122,7 @@ public abstract class Command {
 			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(), new sendview(),
 			
 			new archive(), new logs(), new history(), new convert(),new maths(),
-			new magic(),
+			new magic(), new checkpending(),
 			new multisig(), new checkaddress(),
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
 			
@@ -409,13 +410,14 @@ public abstract class Command {
 					if(md.getPermission().equals("read")) {
 					
 						//Add to pending..
-						Main.getInstance().getMDSManager().addPendingCommand(md, command);
+						String puid = Main.getInstance().getMDSManager().addPendingCommand(md, command);
 						
 						//And return..
 						result=  new JSONObject();
 						result.put("command", command);
 						result.put("status", false);
 						result.put("pending", true);
+						result.put("pendinguid", puid);
 						result.put("error", "This command needs to be confirmed and is now pending..");
 						
 						//Add to the List..
