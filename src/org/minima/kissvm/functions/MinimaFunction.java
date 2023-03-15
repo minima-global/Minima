@@ -26,6 +26,7 @@ import org.minima.kissvm.functions.hex.CONCAT;
 import org.minima.kissvm.functions.hex.LEN;
 import org.minima.kissvm.functions.hex.OVERWRITE;
 import org.minima.kissvm.functions.hex.REV;
+import org.minima.kissvm.functions.hex.SETLEN;
 import org.minima.kissvm.functions.hex.SUBSET;
 import org.minima.kissvm.functions.number.ABS;
 import org.minima.kissvm.functions.number.CEIL;
@@ -78,7 +79,7 @@ public abstract class MinimaFunction {
 				new BOOL(), new HEX(), new NUMBER(), new STRING(),new ASCII(),new UTF8(),
 				new ABS(), new CEIL(), new FLOOR(),new MAX(), new MIN(), new DEC(), new INC(), 
 				new SIGDIG(), new POW(), new SQRT(), new FUNCTION(),
-				new SUMINPUTS(),new SUMOUTPUTS(), 
+				new SUMINPUTS(),new SUMOUTPUTS(), new SETLEN(),
 				new REPLACE(),new REPLACEFIRST(), new SUBSTR(), new OVERWRITE(), 
 				new SHA2(), new SHA3(), new PROOF(),
 				new BITSET(), new BITGET(), new BITCOUNT(),

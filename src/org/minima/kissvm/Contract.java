@@ -727,7 +727,7 @@ public class Contract {
 		//String scr = "LET func=[ LET g = $1 + $2 ] LET hh=REPLACEFIRST(func [$1] [$2] ) LET y=FUNCTION(func 1 2)";
 		
 		//String scr = "LET g = 0xFF << 1000";
-		String scr = "LET g = 0xFF << -1";
+		String scr = "LET g = SETLEN(3 0x1122334400)";
 //		String scr = "~0xFF ~(0x00)";
 		
 //		String scr = "LET a = [$1$1$1$1$1$1$1$1$1$1] // the script\r\n"
