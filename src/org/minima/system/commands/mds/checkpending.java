@@ -2,12 +2,7 @@ package org.minima.system.commands.mds;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 
-import org.minima.database.MinimaDB;
-import org.minima.database.txpowtree.TxPoWTreeNode;
-import org.minima.database.txpowtree.TxPowTree;
-import org.minima.objects.TxPoW;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.mds.pending.PendingCommand;
@@ -23,7 +18,7 @@ public class checkpending extends Command {
 	public String getFullHelp() {
 		return  "checkpending\n"
 				+ "\n"
-				+ "Show if a UID is in the pending list\n"
+				+ "Show if a pending transaction UID is in the pending list\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"

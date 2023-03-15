@@ -37,6 +37,7 @@ import org.minima.system.commands.maxima.maxcreate;
 import org.minima.system.commands.maxima.maxima;
 import org.minima.system.commands.maxima.maxsign;
 import org.minima.system.commands.maxima.maxverify;
+import org.minima.system.commands.mds.checkpending;
 import org.minima.system.commands.mds.mds;
 import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.disconnect;
@@ -196,6 +197,7 @@ public class help extends Command {
 			addCommand(details, new webhooks());
 			
 			addCommand(details, new mds());
+			addCommand(details, new checkpending());
 			
 			addCommand(details, new backup());
 			addCommand(details, new restore());
