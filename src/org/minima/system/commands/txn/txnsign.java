@@ -25,7 +25,7 @@ import org.minima.utils.json.JSONObject;
 public class txnsign extends Command {
 
 	public txnsign() {
-		super("txnsign","[id:] [publickey:0x..|auto] (txnpostauto:) (txnpostburn:) - Sign a transaction");
+		super("txnsign","[id:] [publickey:0x..|auto] (txnpostauto:) (txnpostburn:) (txnpostmine:) - Sign a transaction");
 	}
 	
 	@Override
@@ -42,11 +42,14 @@ public class txnsign extends Command {
 				+ "publickey:\n"
 				+ "    The public key specified in a custom script, or 'auto' for transactions with simple inputs.\n"
 				+ "\n"
-				+ "txnpostauto:\n"
+				+ "txnpostauto: (optional)\n"
 				+ "    Do you want to post this transaction. Use the same values as you would for txnpost auto(sort MMR and Scripts)\n"
 				+ "\n"
-				+ "txnpostburn:\n"
+				+ "txnpostburn: (optional)\n"
 				+ "    If you also post this transaction, do you want to add a burn transaction.\n"
+				+ "\n"
+				+ "txnpostmine: (optional)\n"
+				+ "    If you also post this transaction, do you want to mine it immediately.\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
@@ -61,7 +64,7 @@ public class txnsign extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id","publickey","txnpostauto","txnpostburn","password"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","publickey","txnpostauto","txnpostburn","txnpostmine","password"}));
 	}
 	
 	@Override
@@ -188,8 +191,11 @@ public class txnsign extends Command {
 			//Get the burn
 			MiniNumber burn 	= getNumberParam("txnpostburn", MiniNumber.ZERO);
 			
+			//Are we Mining synchronously
+			boolean minesync 	= getBooleanParam("txnpostmine", false);
+			
 			//And POst it..
-			TxPoW txp 			= txnpost.postTxn(id, burn, postauto);
+			TxPoW txp 			= txnpost.postTxn(id, burn, postauto,minesync);
 			
 			resp.put("txnpost", true);
 			resp.put("txnpostauto", postauto);
