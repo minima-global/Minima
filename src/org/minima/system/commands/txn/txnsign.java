@@ -64,7 +64,7 @@ public class txnsign extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id","publickey","txnpostauto","txnpostburn","txnpostmine","password"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","publickey","txndelete","txnpostauto","txnpostburn","txnpostmine","password"}));
 	}
 	
 	@Override
@@ -202,6 +202,16 @@ public class txnsign extends Command {
 			resp.put("txnpostburn", burn.toString());
 			resp.put("txnpostmine", minesync);
 			resp.put("txpow", txp.toJSON());
+			
+			//Are we auto-deleting
+			boolean autodelete = getBooleanParam("txndelete", false);
+			if(autodelete) {
+				//Get the Transaction..
+				boolean found = db.deleteTransaction(id);
+				resp.put("delete", true);
+			}else {
+				resp.put("delete", false);
+			}
 			
 		}else {
 			resp.put("txnpost", false);
