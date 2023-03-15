@@ -204,10 +204,15 @@ public class MDSManager extends MessageProcessor {
 		return "";
 	}
 	
-	public void addPendingCommand(MiniDAPP zMiniDAPP, String zCommand) {
+	public String addPendingCommand(MiniDAPP zMiniDAPP, String zCommand) {
+		
+		//Create a new pending command
+		PendingCommand pc = new PendingCommand(zMiniDAPP.toJSON(), zCommand);
 		
 		//New Pending Command
-		mPending.add(new PendingCommand(zMiniDAPP.toJSON(), zCommand));
+		mPending.add(pc);
+		
+		return pc.getUID();
 	}
 	
 	public ArrayList<PendingCommand> getAllPending(){
