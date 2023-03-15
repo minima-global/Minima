@@ -21,17 +21,28 @@
 You can request a Minima Staking Bond here<br>
 <br>
 
-<select name="bondtype" id="idbondtype" class="minimal">
-  <option value="1.01">1 months @ 1%</option>
-  <option value="1.035">3 months @ 3.5%</option>
-  <option value="1.08">6 months @ 8%</option>
-  <option value="1.13">9 months @ 13%</option>
-  <option value="1.18" selected>1 year @ 18%</option>
-</select>
-
-<input type=number value=10 id=idbondamount class=niceinput>
-
-<button onclick="starttBond();" id=idstartbond class=solobutton>Continue</button>	
+<table>
+	<tr>
+		<td>
+		<select name="bondtype" id="idbondtype" class="minimal">
+		  <option value="1.01">1 months @ 1%</option>
+		  <option value="1.035">3 months @ 3.5%</option>
+		  <option value="1.08">6 months @ 8%</option>
+		  <option value="1.13">9 months @ 13%</option>
+		  <option value="1.18" selected>1 year @ 18%</option>
+		</select>
+		</td>
+		
+		<td>
+			<input type=number value=10 id=idbondamount class=niceinput>		
+		</td>
+		
+		<td>
+			<button onclick="starttBond();" id=idstartbond class=solobutton>Continue</button>		
+		</td>
+	</tr>
+</table>
+	
 
 <br>
 <br>
@@ -42,7 +53,7 @@ A coin must be 10 blocks deep before the contract is activated..<br>
 There may be many coins in the queue - so please be patient..<br>
 <br>
 Max : 0.001 &nbsp;&nbsp;&nbsp; Min : 0.00001<br>
- <br>
+<br>
  
 <table id=idbondtable></table>
 
