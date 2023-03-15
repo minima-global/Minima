@@ -200,6 +200,8 @@ public class txnsign extends Command {
 			resp.put("txnpost", true);
 			resp.put("txnpostauto", postauto);
 			resp.put("txnpostburn", burn.toString());
+			resp.put("txnpostmine", minesync);
+			resp.put("txpow", txp.toJSON());
 			
 		}else {
 			resp.put("txnpost", false);
