@@ -370,14 +370,22 @@ public class BondServer {
 		    		//And finally delete
 		    		txnbuilder 		 += ";txndelete id:"+randid;
 		    		
-		    		//MinimaLogger.log(txnbuilder);
-		    		
 		    		//Run it..
 		    		JSONArray res = runMultiCommand(txnbuilder);
-		    		MinimaLogger.log(MiniFormat.JSONPretty(res));
+		    		
+		    		//Was it a success
+		    		int arraylen 		= res.size();
+		    		JSONObject delete 	= (JSONObject) res.get(arraylen-1);
+		    		boolean status 		= (boolean) delete.get("status"); 
+		    		if(status) {
+		    			MinimaLogger.log("[SUCCESS SEND] : "+totaltouser.toString()+" rate:"+rate+" address:"+fcusercaddress);
+		    		}else {
+		    			MinimaLogger.log("[!] ERROR :");
+		    			MinimaLogger.log(MiniFormat.JSONPretty(res));
+		    		}
 		    		
 		    		//Pause..
-			    	try {Thread.sleep(10000);} catch (InterruptedException e) {}
+			    	try {Thread.sleep(5000);} catch (InterruptedException e) {}
 	    		}
 	    		
 			} catch (Exception e) {
