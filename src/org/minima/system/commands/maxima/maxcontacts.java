@@ -23,6 +23,8 @@ import org.minima.utils.messages.Message;
 
 public class maxcontacts extends Command {
 
+	public static int MAX_CONTACT_NUMBER = 30;
+	
 	public maxcontacts() {
 		super("maxcontacts","[action:list|add|remove|search] (contact:) (id:) (publickey:) - Manage your Maxima contacts");
 	}
@@ -142,6 +144,11 @@ public class maxcontacts extends Command {
 			//Check is a valid address
 			if(!maxextra.checkValidMxAddress(address)) {
 				throw new CommandException("Invalid MX address : "+address);
+			}
+			
+			//Check max number
+			if(maxdb.getAllContacts().size()>=MAX_CONTACT_NUMBER) {
+				throw new CommandException("Curently there is a limit of "+MAX_CONTACT_NUMBER+" contacts..");
 			}
 			
 			//What data..
