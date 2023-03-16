@@ -173,9 +173,6 @@ public class txnpost extends Command {
 			Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txpow);
 		}
 		
-		//Send it to the Miner..
-		Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txpow);
-		
 		return txpow;
 	}
 
