@@ -39,6 +39,7 @@ public class BondServer {
 	public static MiniNumber mMax 			= MiniNumber.ZERO;
 	
 	public static MiniNumber mMinCoinage 	= MiniNumber.TEN;
+	public static MiniNumber mMaxCoinage 	= MiniNumber.THOUSAND;
 	
 	public static void main(String[] zArgs) {
 		
@@ -243,7 +244,7 @@ public class BondServer {
 	    			String coinid = coinobj.getString("coinid");
 	    			
 	    			//When was this coin created
-	    			MiniNumber created = new MiniNumber(coinobj.getString("created"));
+	    			MiniNumber created 		= new MiniNumber(coinobj.getString("created"));
 	    			MiniNumber coinamount 	= new MiniNumber(coinobj.getString("amount"));
 	    			
 	    			//Check the coin age..
@@ -251,7 +252,10 @@ public class BondServer {
 	    			if(coinage.isLess(mMinCoinage)) {
 	    				MinimaLogger.log("[NOT OLD ENOUGH YET] Coin: "+i+" amount:"+coinamount+" coinid:"+coinid+" coinage:"+coinage.toString());
 		    			continue;
-	    			}
+	    			}else if(coinage.isMore(mMaxCoinage)) {
+	    				MinimaLogger.log("[COIN TOO OLD] Coin: "+i+" amount:"+coinamount+" coinid:"+coinid+" coinage:"+coinage.toString());
+		    			continue;
+	    			} 
 	    			
 	    			//Now get the details given the rate..
 		    		String rate			= getStateVar(coinobj, 105);
