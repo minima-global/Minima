@@ -432,7 +432,9 @@ function PollListener(){
 
 function postMDSFail(command, params, status){
 	//Some error..
-	//console.log("** An error occurred during an MDS command!");
+	if(MDS.logging){
+		MDS.log("** An error occurred during an MDS command!");
+	}
 	
 	//Create the message
 	var errormsg = {};
@@ -462,20 +464,25 @@ function httpPostAsync(theUrl, params, callback){
 
 	var xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = function() { 
-        if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
-			//Do we log it..
-        	if(MDS.logging){
-        		MDS.log("RESPONSE:"+xmlHttp.responseText);
-        	}
-
-        	//Send it to the callback function..
-        	if(callback){
-        		callback(JSON.parse(xmlHttp.responseText));
-        	}
         
-		}else{
-			//Some error..
-			postMDSFail(theUrl,params,xmlHttp.status);
+		var status = xmlHttp.status;
+		if (xmlHttp.readyState == XMLHttpRequest.DONE){
+			if (status === 0 || (status >= 200 && status < 400)) {
+			
+				//Do we log it..
+	        	if(MDS.logging){
+	        		MDS.log("RESPONSE:"+xmlHttp.responseText);
+	        	}
+	
+	        	//Send it to the callback function..
+	        	if(callback){
+	        		callback(JSON.parse(xmlHttp.responseText));
+	        	}
+	        
+			}else{
+				//Some error..
+				postMDSFail(theUrl,params,xmlHttp.status);
+			}
 		}
     }
     xmlHttp.open("POST", theUrl, true); // true for asynchronous 
@@ -487,35 +494,8 @@ function httpPostAsync(theUrl, params, callback){
 }
 
 /**
- * Utility function for GET request (UNUSED for now..)
- * 
- * @param theUrl
- * @param callback
- * @returns
+ * POLLING Call
  */
-/*function httpGetAsync(theUrl, callback)
-{	
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = function() { 
-        if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
-        	if(MDS.logging){
-				console.log("RPC      : "+theUrl);
-				console.log("RESPONSE : "+xmlHttp.responseText);
-			}
-
-			//Always a JSON ..
-        	var rpcjson = JSON.parse(xmlHttp.responseText);
-        	
-        	//Send it to the callback function..
-        	if(callback){
-        		callback(rpcjson);
-        	}
-        }
-    }
-	xmlHttp.open("GET", theUrl, true); // true for asynchronous 
-    xmlHttp.send(null);
-}*/
-
 function httpPostAsyncPoll(theUrl, params, callback){
 	//Do we log it..
 	if(MDS.logging){
@@ -524,19 +504,24 @@ function httpPostAsyncPoll(theUrl, params, callback){
 
 	var xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = function() { 
-        if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
-			//Do we log it..
-        	if(MDS.logging){
-        		MDS.log("RESPONSE:"+xmlHttp.responseText);
-        	}
-
-        	//Send it to the callback function..
-        	if(callback){
-        		callback(JSON.parse(xmlHttp.responseText));
-        	}
-        }else{
-			//Some error..
-			postMDSFail("POLL",params,xmlHttp.status);
+        var status = xmlHttp.status;
+		if (xmlHttp.readyState == XMLHttpRequest.DONE){
+			if (status === 0 || (status >= 200 && status < 400)) {
+			
+				//Do we log it..
+	        	if(MDS.logging){
+	        		MDS.log("RESPONSE:"+xmlHttp.responseText);
+	        	}
+	
+	        	//Send it to the callback function..
+	        	if(callback){
+	        		callback(JSON.parse(xmlHttp.responseText));
+	        	}
+	        
+			}else{
+				//Some error..
+				postMDSFail(theUrl,params,xmlHttp.status);
+			}
 		}
     }
     xmlHttp.addEventListener('error', function(ev){
