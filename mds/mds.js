@@ -430,6 +430,22 @@ function PollListener(){
 	});
 }
 
+function postMDSFail(command, params, status){
+	//Some error..
+	//console.log("** An error occurred during an MDS command!");
+	
+	//Create the message
+	var errormsg = {};
+	errormsg.event = "MDSFAIL";
+	errormsg.data = {};
+	errormsg.data.command 	= command;
+	errormsg.data.params 	= params;
+	errormsg.data.error 	= status;
+				
+	//Post it to the stack			
+	MDSPostMessage(errormsg);
+}
+
 /**
  * Utility function for GET request
  * 
@@ -456,13 +472,18 @@ function httpPostAsync(theUrl, params, callback){
         	if(callback){
         		callback(JSON.parse(xmlHttp.responseText));
         	}
-        }
+        
+		}else{
+			//Some error..
+			postMDSFail(theUrl,params,xmlHttp.status);
+		}
     }
     xmlHttp.open("POST", theUrl, true); // true for asynchronous 
 	xmlHttp.overrideMimeType('text/plain; charset=UTF-8');
-    //xmlHttp.setRequestHeader('Content-Type', 'application/json');    
-	xmlHttp.send(encodeURIComponent(params));
-	//xmlHttp.send(params);
+    xmlHttp.send(encodeURIComponent(params));
+	//xmlHttp.onerror = function () {
+	//  console.log("** An error occurred during the transaction");
+	//};
 }
 
 /**
@@ -513,7 +534,10 @@ function httpPostAsyncPoll(theUrl, params, callback){
         	if(callback){
         		callback(JSON.parse(xmlHttp.responseText));
         	}
-        }
+        }else{
+			//Some error..
+			postMDSFail("POLL",params,xmlHttp.status);
+		}
     }
     xmlHttp.addEventListener('error', function(ev){
 		MDS.log("Error Polling - reconnect in 10s");
