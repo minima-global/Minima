@@ -148,7 +148,7 @@ public class BondServer {
 		
 		//First - set up the contract and scan for it..
 		try {
-			JSONObject addscript = runSingleCommand("newscript script:\""+BOND_SCRIPT+"\" trackall:true");
+			JSONObject addscript = runSingleCommand("newscript script:\""+BOND_SCRIPT+"\" trackall:false");
 			if((boolean)addscript.get("status") != true) {
 				MinimaLogger.log(addscript.toString());
 				System.exit(1);

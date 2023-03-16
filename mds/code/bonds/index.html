@@ -20,7 +20,11 @@
 
 You can request a Minima Staking Bond here<br>
 <br>
+<script type="text/javascript">
+	document.write("Max : "+MAX_BOND+" &nbsp;&nbsp;&nbsp; Min : "+MIN_BOND+"<br>");
+</script>
 
+<br>
 <table>
 	<tr>
 		<td>
@@ -34,7 +38,7 @@ You can request a Minima Staking Bond here<br>
 		</td>
 		
 		<td>
-			<input type=number value=10 id=idbondamount class=niceinput>		
+			<input type=number value=10 id=idbondamount class=niceinput style='font-size:1.0em;'>		
 		</td>
 		
 		<td>
@@ -42,19 +46,13 @@ You can request a Minima Staking Bond here<br>
 		</td>
 	</tr>
 </table>
-	
 
 <br>
+
+<div id="totalpending">0</div> <br>
+
+Here are YOUR Pending requests : <br>
 <br>
-Your current requests.. when accepted the amounts will appear in Future Cash<br>
-<br>
-A coin must be 10 blocks deep before the contract is activated..<br>
-<Br>
-There may be many coins in the queue - so please be patient..<br>
-<br>
-Max : 0.001 &nbsp;&nbsp;&nbsp; Min : 0.00001<br>
-<br>
- 
 <table id=idbondtable></table>
 
 <br>
@@ -63,9 +61,6 @@ Max : 0.001 &nbsp;&nbsp;&nbsp; Min : 0.00001<br>
 </center>
 
 <script type="text/javascript">
-	
-	var maxamt = 0.001;
-	var minamt = 0.00001;
 	
 	function gohelp(){
 		window.location.href="help.html?uid="+MDS.form.getParams("uid");
@@ -85,6 +80,9 @@ Max : 0.001 &nbsp;&nbsp;&nbsp; Min : 0.00001<br>
 			});
 		
 		}else if(msg.event == "NEWBLOCK"){
+			//Disable the button
+			document.getElementById("idstartbond").disabled=false;
+			
 			populateTable(msg.data.txpow.header.block);
 			
 		}else if(msg.event == "NEWBALANCE"){
@@ -100,37 +98,50 @@ Max : 0.001 &nbsp;&nbsp;&nbsp; Min : 0.00001<br>
 
 	function populateTable(block){
 		
-		MDS.cmd("coins relevant:true address:"+BOND_ADDRESS,function(resp){
-			var coins = resp.response; 
+		MDS.cmd("coins address:"+BOND_ADDRESS,function(resp){
+			var allcoins = resp.response;
+			var totalsize = allcoins.length;
 			
-			var btable = document.getElementById("idbondtable");
-			btable.innerHTML="";
-			var len = coins.length;
-			for(var i=0;i<len;i++){
-				var coin 		= coins[i]; 
-				var tablerow 	= btable.insertRow(i);
-				var cell1 	 	= tablerow.insertCell(0);
-				var cell2 	 	= tablerow.insertCell(1);
-				var cell3 	 	= tablerow.insertCell(2);
-				var cell4 	 	= tablerow.insertCell(3);
-				
-				//Get the pubkey..
-				var pubk = MDS.util.getStateVariable(coin,"100");
-				
-				//Get the coin age
-				var created  = coin.created;
-				var coinage  = block - created; 
-				
-				//Get the desired Rate..
-				var rate = MDS.util.getStateVariable(coin,"105");
-				
-				cell1.innerHTML = "<div class=niceinput>RATE : "+rate+"</div>";
-				cell2.innerHTML = "<div class=niceinput>AMOUNT : "+coin.amount+"</div>";
-				cell3.innerHTML = "<div class=niceinput>COINAGE : "+coinage+" / 10</div>";
-				
-				//Sort the status
-				cell4.innerHTML = "<button class=solobutton onclick=\"this.disabled=true;cancelBond('"+coin.coinid+"','"+coin.amount+"','"+pubk+"')\">CANCEL</button>"
+			var tpend = document.getElementById("totalpending");
+			tpend.innerHTML = "<a href='checkall.html?uid="+MDS.form.getParams("uid")+"'>Total Pending for ALL Users</a> : "+totalsize+"";
+			
+			//Are we under Heavy load
+			if(totalsize>HEAVY_LOAD){
+				tpend.innerHTML += "<br><br><div class='heavyload'>SERVER UNDER HEAVY LOAD - PLS WAIT - DO NOT REQUEST BONDS..</div>"
 			}
+			
+			MDS.cmd("coins order:asc relevant:true address:"+BOND_ADDRESS,function(resp){
+				var coins = resp.response; 
+				
+				var btable = document.getElementById("idbondtable");
+				btable.innerHTML="";
+				var len = coins.length;
+				for(var i=0;i<len;i++){
+					var coin 		= coins[i]; 
+					var tablerow 	= btable.insertRow(i);
+					var cell1 	 	= tablerow.insertCell(0);
+					var cell2 	 	= tablerow.insertCell(1);
+					var cell3 	 	= tablerow.insertCell(2);
+					var cell4 	 	= tablerow.insertCell(3);
+					
+					//Get the pubkey..
+					var pubk = MDS.util.getStateVariable(coin,"100");
+					
+					//Get the coin age
+					var created  = coin.created;
+					var coinage  = block - created; 
+					
+					//Get the desired Rate..
+					var rate = MDS.util.getStateVariable(coin,"105");
+					
+					cell1.innerHTML = "<div class=niceinput>RATE : "+rate+"</div>";
+					cell2.innerHTML = "<div class=niceinput>AMOUNT : "+coin.amount+"</div>";
+					cell3.innerHTML = "<div class=niceinput>COINAGE : "+coinage+" / 10</div>";
+					
+					//Sort the status
+					cell4.innerHTML = "<button class=solobutton onclick=\"this.disabled=true;cancelBond('"+coin.coinid+"','"+coin.amount+"','"+pubk+"')\">CANCEL</button>"
+				}
+			});
 		});
 	}
 	
@@ -152,7 +163,7 @@ Max : 0.001 &nbsp;&nbsp;&nbsp; Min : 0.00001<br>
 		
 		var bondtype = document.getElementById("idbondtype").value;
 		
-		if(amount < minamt || amount > maxamt){
+		if(amount < MIN_BOND || amount > MAX_BOND){
 			alert("Invalid Amount!");
 			return;
 		}

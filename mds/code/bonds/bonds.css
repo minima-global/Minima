@@ -11,12 +11,32 @@ body {
 .niceinput {
 
 	/* styling */
+  width:150;
+  white-space: nowrap;
   background-color: white;
   border: thin solid blue;
   border-radius: 4px;
   display: inline-block;
   font: inherit;
+  font-size:0.8em;
   line-height: 1.5em;
+  padding: 0.5em 1em 0.5em 1em;
+	
+}
+
+.heavyload {
+
+	/* styling */
+  white-space: nowrap;
+  background-color: white;
+  border: thin solid red;
+  border-radius: 4px;
+  display: inline-block;
+  font: inherit;
+  font-size:1.0em;
+  line-height: 1.5em;
+  color : #ff0000;
+  font-style:bold;
   padding: 0.5em 1em 0.5em 1em;
 	
 }
