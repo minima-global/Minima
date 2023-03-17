@@ -1,0 +1,136 @@
+<html>
+
+<head>
+	<title>MINIMA BONDS</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<script type="text/javascript" src="mds.js"></script>
+	<script type="text/javascript" src="bonds.js"></script>
+	
+	<link rel="stylesheet" href="bonds.css">
+	
+</head>
+
+<body>
+
+<center>
+
+	<h2>ALL PENDING REQUESTS</h2>
+
+Here is the on-chain data for all current pending requests..<br>
+<br>
+
+<div id="totalpending">0</div> <br>
+<table id=reqbondtable></table>
+
+<br>
+
+<button onclick="gohome();" class=solobutton>&nbsp;&nbsp;HOME&nbsp;&nbsp;</button>
+
+</center>
+
+<script type="text/javascript">
+	
+</script>
+<br>
+
+
+<script type="text/javascript">
+	
+	function gohome(){
+		window.location.href="index.html?uid="+MDS.form.getParams("uid");
+	}
+
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			MDS.cmd("block",function(resp){
+				populateTable(resp.response.block);	
+			});
+		
+		}else if(msg.event == "NEWBLOCK"){
+			populateTable(msg.data.txpow.header.block);	
+		}
+	});
+
+	function populateTable(block){
+		
+		MDS.cmd("coins order:asc address:"+BOND_ADDRESS,function(resp){
+			var coins = resp.response; 
+		
+			var tpend = document.getElementById("totalpending");
+			tpend.innerHTML = "Total Pending : "+coins.length+" ( Only Show 50 max )";
+		
+			var btable = document.getElementById("reqbondtable");
+			btable.innerHTML="";
+			var len = coins.length;
+			if(len>50){
+				len = 50;
+			}
+			for(var i=0;i<len;i++){
+				var coin 		= coins[i]; 
+				var tablerow 	= btable.insertRow(i);
+				
+				var cell1 	 	= tablerow.insertCell(0);
+				var cell2 	 	= tablerow.insertCell(1);
+				var cell3 	 	= tablerow.insertCell(2);
+				
+				//Get the coin age
+				var created  = coin.created;
+				var coinage  = block - created; 
+				var rate = MDS.util.getStateVariable(coin,"105");
+				
+				cell1.innerHTML = "<div class=niceinput>RATE : "+rate+"</div>";
+				cell2.innerHTML = "<div class=niceinput>AMOUNT : "+coin.amount+"</div>";
+				cell3.innerHTML = "<div class=niceinput>COINAGE : "+coinage+" / 10</div>";
+				
+			}
+		});
+	}
+	
+	function toFixedIfNecessary( value, dp ){
+	  return +parseFloat(value).toFixed( dp );
+	}
+
+	function starttBond(){
+		
+		var amount   = document.getElementById("idbondamount").value;
+		amount 		 = toFixedIfNecessary(amount,5);
+		
+		if(!confirm("You are about to request a Minima bond.\n\nYou are sending "+amount+"\n\nAre you sure ?")){
+			return;
+		}
+		
+		var amount   = document.getElementById("idbondamount").value;
+		amount 		 = toFixedIfNecessary(amount,5);
+		
+		var bondtype = document.getElementById("idbondtype").value;
+		
+		if(amount < minamt || amount > maxamt){
+			alert("Invalid Amount!");
+			return;
+		}
+		
+		//Disable the button
+		document.getElementById("idstartbond").disabled=true;
+		
+		MDS.cmd("block",function(resp){
+			if(resp.status){
+				requestBond(resp.response.block,amount,bondtype);	
+			}else{
+				alert("Something went wrong - check console logs..");
+				MDS.log(JSON>stringify(resp));
+			}
+		});
+		
+	}
+	
+</script>
+
+</body>
+
+</html>

@@ -2,6 +2,8 @@ package org.minima.system.commands.search;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowdb.TxPoWDB;
@@ -13,14 +15,13 @@ import org.minima.system.Main;
 import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class coins extends Command {
 
 	public coins() {
-		super("coins","(relevant:true) (sendable:true) (coinid:) (amount:) (address:) (tokenid:) (checkmempool:) - Search for coins");
+		super("coins","(relevant:true) (sendable:true) (coinid:) (amount:) (address:) (tokenid:) (checkmempool:) (order:) - Search for coins");
 	}
 	
 	@Override
@@ -54,6 +55,9 @@ public class coins extends Command {
 				+ "checkmempool: (optional)\n"
 				+ "    Check if the coin is in the mempool.\n"
 				+ "\n"
+				+ "order: (optional)\n"
+				+ "    Order asc or desc (Ascending or Decending).\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "coins\n"
@@ -73,7 +77,7 @@ public class coins extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"relevant","sendable","coinid","amount","address","tokenid","checkmempool"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"relevant","sendable","coinid","amount","address","tokenid","checkmempool","order"}));
 	}
 	
 	@Override
@@ -155,6 +159,17 @@ public class coins extends Command {
 			
 		}else {
 			finalcoins = coins;
+		}
+		
+		//Sort the coins..
+		String order = getParam("order", "desc");
+		if(order.equals("asc")) {
+			Collections.sort(finalcoins, new Comparator<Coin>() {
+				@Override
+				public int compare(Coin o1, Coin o2) {
+					return o1.getBlockCreated().compareTo(o2.getBlockCreated());
+				}
+			});
 		}
 		
 		//Put it all in an array

@@ -185,6 +185,10 @@ public class MaximaManager extends MessageProcessor {
 		return mInited;
 	}
 	
+	public MaxMsgHandler getMaxSender() {
+		return mMaxSender;
+	}
+	
 	public String getMaximaIdentity() {
 		return mMaximaAddress;
 	}

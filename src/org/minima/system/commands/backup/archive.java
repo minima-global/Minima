@@ -245,7 +245,7 @@ public class archive extends Command {
 			//Before we start deleting - check connection..
 			IBD ibdtest = sendArchiveReq(host, port, MiniNumber.MINUSONE);
 			if(ibdtest == null) {
-				throw new CommandException("Could Not connect to Archive host!");
+				throw new CommandException("Could not connect to Archive host! @ "+host+":"+port);
 			}
 			
 			//Are we resetting the wallet too ?
@@ -301,7 +301,10 @@ public class archive extends Command {
 				
 				//Send him a message..
 				IBD ibd = sendArchiveReq(host, port, startblock);
-			
+				if(ibd == null) {
+					throw new CommandException("Connection error @ "+host+":"+port);
+				}
+				
 				//Is there a cascade..
 				if(startblock.isEqual(MiniNumber.ZERO) && ibd.hasCascade()) {
 					MinimaLogger.log("Cascade Received.. "+ibd.getCascade().getTip().getTxPoW().getBlockNumber());
@@ -503,7 +506,7 @@ public class archive extends Command {
 			bais.close();
 		
 		}catch(Exception exc){
-			MinimaLogger.log(exc);
+			MinimaLogger.log("Archive connection : "+exc+" @ "+zHost+":"+zPort);
 			
 			ibd= null;
 		}

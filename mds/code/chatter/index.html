@@ -4,16 +4,23 @@
 	<title>CHATTER</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
+	<script type="text/javascript" src="purify.min.js"></script>
+	
 	<script type="text/javascript" src="mds.js"></script>
 	<script type="text/javascript" src="chatter.js"></script>
 	<script type="text/javascript" src="rant.js"></script>
 	
 	<link rel="stylesheet" href="rant.css">
+	
+	<link rel="icon" type="image/x-icon" href="./favicon.ico">
+	
 </head>
 
 <body>
 
-<div id="homebutton" class=homediv><button onclick="gohome();" class=solobutton>&nbsp;&nbsp;HOME&nbsp;&nbsp;</button></div>
+<div id="homebutton" class=homediv>
+	<button onclick="gohome();" class=solobutton>&nbsp;&nbsp;HOME&nbsp;&nbsp;</button>	
+</div>
 
 <div id="blackoutwindow" class=blackout>&nbsp;</div>
 
@@ -35,7 +42,8 @@
 	
 	<table class=widthcontainer><tr>
 		<td style="text-align:left;"><button class=solobutton onclick="showPreview();">Preview</button></td>
-		<td style="text-align:right;"><button class=solobutton onclick="embedFile();"> File / Image </button>&nbsp;&nbsp;<button class=solobutton onclick="sendRant();">&nbsp;&nbsp;&nbsp;Start a Chat&nbsp;&nbsp;&nbsp;</button></td>
+		<td style="text-align:center;" nowrap><input type=checkbox id=autoupdate checked><label for="autoupdate">Auto Refresh</label></td>
+		<td style="text-align:right;" nowrap><button class=solobutton onclick="embedFile();"> Image </button>&nbsp;&nbsp;<button class=solobutton onclick="sendRant();">&nbsp;&nbsp;&nbsp;Start a Chat&nbsp;&nbsp;&nbsp;</button></td>
 	</tr></table>
 	
 <br>
@@ -46,6 +54,12 @@
 		<td style="text-align:left;"><button id=prevbutton class=solobutton onclick="previous();">Previous</button></td>
 		<td style="text-align:right;"><button id=nextbutton class=solobutton onclick="next();">&nbsp;&nbsp;&nbsp;Next&nbsp;&nbsp;&nbsp;</button></td>
 	</tr></table>
+
+
+<br>
+<button class=solobutton onclick="help();">&nbsp;&nbsp;Help&nbsp;&nbsp;</button>
+<br>
+<br>
 	
 </center>
 
@@ -56,6 +70,10 @@
 	
 	function gohome(){
 		window.location.href="index.html?uid="+MDS.form.getParams("uid");
+	}
+	
+	function help(){
+		window.location.href="help.html?uid="+MDS.form.getParams("uid");
 	}
 	
 	//Main message handler..
@@ -91,8 +109,12 @@
 		}else if(msg.event == "MDSCOMMS"){
 			if(!msg.data.public){
 				if(msg.data.message == "NEWCHATTER"){
-					maxtime = (new Date()).getTime() + (1000 * 60 * 60 * 24 * 30);
-					createMainTable(maxtime);
+					
+					//Is the auto update checked..
+					if(document.getElementById("autoupdate").checked){
+						maxtime = (new Date()).getTime() + (1000 * 60 * 60 * 24 * 30);
+						createMainTable(maxtime);	
+					}
 				}
 			}
 		}

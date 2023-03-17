@@ -41,6 +41,18 @@ public class TxPoWChecker {
 	public static MiniNumber MAX_TIME_FUTURE = new MiniNumber(1000 * 60 * 60 * 24); 
 	
 	/**
+	 * MAX Time block checker..
+	 */
+	public static boolean checkTxPoWBlockTimed(TxPoWTreeNode zParentNode, TxPoW zTxPoW, ArrayList<TxPoW> zTransactions) {
+		
+		//Create new checker..
+		TimedChecker tc = new TimedChecker();
+		
+		//Run it in a timed environment
+		return tc.checkTxPoWBlock(zParentNode, zTxPoW, zTransactions);
+	}
+	
+	/**
 	 * Parallel check all the transactions in this block
 	 */
 	public static boolean checkTxPoWBlock(TxPoWTreeNode zParentNode, TxPoW zTxPoW, ArrayList<TxPoW> zTransactions) {

@@ -9,6 +9,7 @@ import org.minima.database.maxima.MaximaDB;
 import org.minima.database.maxima.MaximaHost;
 import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
@@ -21,11 +22,12 @@ import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.TimerMessage;
 
 public class maxima extends Command {
 
 	public maxima() {
-		super("maxima","[action:info|setname|hosts|send|refresh] (name:) (id:)|(to:)|(publickey:) (application:) (data:) (logs:true|false) (poll:true|false) - Check your Maxima details, send a message / data, enable logs");
+		super("maxima","[action:info|setname|hosts|send|refresh] (name:) (id:)|(to:)|(publickey:) (application:) (data:) (poll:) (delay:) - Check your Maxima details, send a message / data, enable logs");
 	}
 	
 	@Override
@@ -41,6 +43,7 @@ public class maxima extends Command {
 				+ "    setname : Set your Maxima name so your contacts recognise you. Default 'noname'.\n"
 				+ "    hosts : List your Maxima hosts and see their Maxima public key, contact address, last seen time and if you are connected.\n"
 				+ "    send : Send a message to a contact. Must specify 'id|to|publickey', 'application' and 'data' parameters.\n"
+				+ "    sendall : Send a message to ALL your contacts. Must specify 'application' and 'data' parameters.\n"
 				+ "    refresh : Refresh your contacts by sending them a network message. \n"
 				+ "\n"
 				+ "name: (optional)\n"
@@ -57,6 +60,9 @@ public class maxima extends Command {
 				+ "\n"
 				+ "poll: (optional)\n"
 				+ "    true or false, true will poll the send action until successful. Use with 'action:send'.\n"
+				+ "\n"
+				+ "delay: (optional)\n"
+				+ "    Only used with poll or with sendall. Delay sending the message by this many milliseconds\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
@@ -78,7 +84,7 @@ public class maxima extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"action","name","id","to",
-				"publickey","application","data","poll","host"}));
+				"publickey","application","data","poll","host","delay"}));
 	}
 	
 	@Override
@@ -112,6 +118,10 @@ public class maxima extends Command {
 			details.put("localidentity", max.getLocalMaximaAddress(false));
 			details.put("p2pidentity", max.getLocalMaximaAddress(true));
 			details.put("contact", max.getRandomMaximaAddress());
+			
+			//get the messages on the stack
+			int msgnum = max.getMaxSender().getSize();
+			details.put("poll", msgnum);
 			
 			ret.put("response", details);
 		
@@ -260,13 +270,30 @@ public class maxima extends Command {
 			//Are we polling..
 			boolean pollsend = getBooleanParam("poll", false);
 			json.put("poll", pollsend);
+			json.put("delay", 0);
 			
 			if(pollsend) {
 				
-				//Add it to our Polling list of sends..
-				max.PostMessage(sender);
+				//You can add a delay when poll sending..
+				MiniNumber delay = getNumberParam("delay", MiniNumber.ZERO);
+				json.put("delay", delay.getAsLong());
 				
-				json.put("message", "Message added to send stack..");
+				if(delay.isEqual(MiniNumber.ZERO)) {
+					//Add it to our Polling list of sends..
+					max.PostMessage(sender);
+				
+					json.put("message", "Message added to send stack..");
+					
+				}else {
+					
+					//Create a timed message
+					TimerMessage timedsend = new TimerMessage(delay.getAsLong(), sender);
+					
+					//Post  timer message
+					max.PostTimerMessage(timedsend);
+					
+					json.put("message", "Message added to send stack with a delay..");
+				}
 				
 				ret.put("response", json);
 				
@@ -347,6 +374,9 @@ public class maxima extends Command {
 				}
 			} 
 			
+			//You can add a delay when poll sending..
+			MiniNumber delay = getNumberParam("delay", MiniNumber.ZERO);
+			
 			//Now send to all of them - poll message
 			ArrayList<MaximaContact> contacts = maxdb.getAllContacts();
 			for(MaximaContact contact : contacts) {
@@ -357,11 +387,27 @@ public class maxima extends Command {
 				//Now convert into the correct message..
 				Message sender = createSendMessage(fullto, application, mdata);
 				
-				//Add it to our Polling list of sends..
-				max.PostMessage(sender);
+				//Is there a delay
+				if(delay.isEqual(MiniNumber.ZERO)) {
+					
+					//Add it to our Polling list of sends..
+					max.PostMessage(sender);
+					
+				}else {
+					
+					//Create a timed message
+					TimerMessage timedsend = new TimerMessage(delay.getAsLong(), sender);
+					
+					//Post  timer message
+					max.PostTimerMessage(timedsend);
+				}
 			}
 			
-			ret.put("response", "Message added to send stack for all contacts");
+			if(delay.isEqual(MiniNumber.ZERO)) {
+				ret.put("response", "Message added to send stack for all contacts");
+			}else {
+				ret.put("response", "Message added to send stack for all contacts with a delay of "+delay.toString());
+			}
 			
 		}else {
 			throw new CommandException("Unknown Action : "+func);

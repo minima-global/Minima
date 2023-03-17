@@ -2,25 +2,11 @@ package org.minima.system.commands.base;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 
-import org.minima.database.MinimaDB;
-import org.minima.database.mmr.MMRData;
-import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.kissvm.Contract;
-import org.minima.kissvm.expressions.ConstantExpression;
-import org.minima.kissvm.functions.general.FUNCTION;
-import org.minima.kissvm.values.StringValue;
-import org.minima.kissvm.values.Value;
-import org.minima.objects.Address;
-import org.minima.objects.Coin;
-import org.minima.objects.CoinProof;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
-import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniString;
 import org.minima.system.commands.Command;
-import org.minima.system.commands.CommandException;
 import org.minima.utils.json.JSONObject;
 
 public class maths extends Command {

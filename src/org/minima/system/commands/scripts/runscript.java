@@ -5,7 +5,6 @@ import java.util.Arrays;
 
 import org.minima.database.mmr.MMRProof;
 import org.minima.kissvm.Contract;
-import org.minima.kissvm.functions.string.CLEAN;
 import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
 import org.minima.objects.Address;
@@ -222,7 +221,7 @@ public class runscript extends Command {
 		resp.put("script", scriptnormal);
 		
 		JSONObject scriptclean 	= new JSONObject();
-		String cleanscript 		= CLEAN.cleanScript(script);
+		String cleanscript 		= Contract.cleanScript(script);
 		scriptclean.put("script", cleanscript);
 		scriptclean.put("address", new Address(cleanscript).getAddressData().to0xString());
 		resp.put("clean", scriptclean);

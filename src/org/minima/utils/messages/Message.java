@@ -19,12 +19,12 @@ public class Message {
 	 * 
 	 * ALL messages have a message type.
 	 */
-	private String mMessageType;
+	protected String mMessageType;
 	
 	/**
 	 * The Contents of the Message
 	 */
-	private HashMap<String, Object> mContents;
+	protected HashMap<String, Object> mContents;
 	
 	/**
 	 * Main constructor
@@ -69,12 +69,16 @@ public class Message {
 	
 	/**
 	 * Check if the message is of a certain type
-	 * 
-	 * @param zMessageType
-	 * @return
 	 */
 	public boolean isMessageType(String zMessageType){
 		return (zMessageType.equals(mMessageType));
+	}
+	
+	/**
+	 * Get ALL the contents
+	 */
+	public HashMap<String, Object> getAllContents() {
+		return mContents;
 	}
 	
 	/**

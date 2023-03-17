@@ -6,8 +6,8 @@ import java.util.Hashtable;
 import java.util.List;
 
 import org.minima.kissvm.exceptions.ExecutionException;
+import org.minima.kissvm.exceptions.MinimaParseException;
 import org.minima.kissvm.functions.MinimaFunction;
-import org.minima.kissvm.functions.string.CLEAN;
 import org.minima.kissvm.statements.StatementBlock;
 import org.minima.kissvm.statements.StatementParser;
 import org.minima.kissvm.tokens.ScriptToken;
@@ -101,6 +101,11 @@ public class Contract {
 	 * MAX size of String or HEX value - 64k
 	 */
 	public static final int MAX_DATA_SIZE = 64 * 1024;
+	
+	/**
+	 * MAX Shift for HEX
+	 */
+	public static final MiniNumber MAX_BITSHIFT = MiniNumber.TWOFIVESIX;
 	
 	/**
 	 * A complete log of the contract execution
@@ -575,10 +580,135 @@ public class Contract {
 	}
 	
 	/**
-	 * Forwading version
+	 * Clean up a script..
+	 * 
+	 * @param zScript
+	 * @return The Converted Script
 	 */
 	public static String cleanScript(String zScript) {
-		return CLEAN.cleanScript(zScript);
+		return cleanScript(zScript, false);
+	}
+	
+	public static String cleanScript(String zScript, boolean zLog) {
+		
+		//The final result
+		StringBuffer ret = new StringBuffer();
+		
+		//Remove all the excess white space
+		String script = zScript.replaceAll("\\s+"," ").trim();
+		
+		//Remove all \
+//		script = script.replaceAll("\\\\","").trim();
+		
+		//First CONVERT..
+		ScriptTokenizer tokz = new ScriptTokenizer(script, true);
+		try {
+			//Get the list of Tokens..
+			ArrayList<ScriptToken> tokens = tokz.tokenize();
+		
+			//Now add them correctly..
+			boolean whites 		= true;
+			ScriptToken prevtok = null;
+			for(ScriptToken tok : tokens) {
+				
+				if(zLog) {
+					MinimaLogger.log(tok.toString());
+				}
+				
+				if(tok.getTokenType() == ScriptToken.TOKEN_COMMAND) {
+					String command = tok.getToken();
+
+					//Always a space before and after a COMMAND
+					if(ret.toString().endsWith(" ")) {
+						ret.append(command+" ");
+					}else {
+						ret.append(" "+command+" ");
+					}
+					
+					whites = true;
+					
+				}else if(ScriptTokenizer.BOOLEAN_TOKENS_LIST.contains(tok.getToken())) {
+					ret.append(" "+tok.getToken()+" ");
+				
+					whites = true;
+					
+				}else if(tok.getToken().startsWith("0x")) {
+					String hex = "0x"+tok.getToken().substring(2).toUpperCase();
+					
+					if(prevtok!=null && prevtok.getToken().endsWith(")")) {
+						ret.append(" "+hex);
+					}else {
+						if(whites) {
+							ret.append(hex);
+						}else {
+							ret.append(" "+hex);
+						}
+					}
+					
+					whites = false;
+					
+				}else if(tok.getToken().startsWith("(") || tok.getToken().startsWith("[")) {
+					
+					String strtok = tok.getToken();
+					
+					if(whites) {
+						boolean isspacerequired = prevtok!=null 
+								&& (prevtok.getToken().endsWith(")") || prevtok.getToken().endsWith("]"));
+						
+						if(isspacerequired) {
+							ret.append(" "+strtok);
+						}else {
+							ret.append(strtok);
+						}
+						
+					}else {
+					
+						boolean isspacerequired = prevtok!=null 
+								&& (ScriptTokenizer.mAllEOW.contains(prevtok.getToken()));
+						
+						if(isspacerequired) {
+							ret.append(" "+strtok);
+						}else {
+							ret.append(strtok);
+						}
+					}
+					
+					whites=true;
+				
+				}else {
+					String strtok = tok.getToken();
+					
+					boolean islastclosebracket = prevtok!=null && (prevtok.getToken().endsWith(")") || prevtok.getToken().endsWith("]"));
+					
+					//Is it an end of word or whitespace..
+					if(islastclosebracket && !ScriptTokenizer.mAllAFTER.contains(strtok)) {
+						
+						ret.append(" "+strtok);
+						whites = false;
+						
+					}else if(ScriptTokenizer.isWhiteSpace(strtok) || ScriptTokenizer.mAllEOW.contains(strtok)) {
+						ret.append(strtok);
+						whites = true;
+					}else {
+						if(whites) {
+							ret.append(strtok);
+						}else {
+							ret.append(" "+strtok);
+						}
+						whites = false;
+					}
+				}
+				
+				//Keep the last letter of the previous token
+				prevtok = tok;
+			}
+		
+		} catch (MinimaParseException e) {
+			MinimaLogger.log("Clean Script Error @ "+zScript+" "+e);
+			return zScript;
+		}
+		
+		return ret.toString().trim();
 	}
 	
 	public static void main(String[] zArgs) {
@@ -595,7 +725,9 @@ public class Contract {
 //		String scr = "IF x LT 6 THEN LET y=5 ENDIF LET f=0";
 		//String scr = "LET func=[ LET g = $1 + $2 ] LET hh=REPLACEFIRST(func [$1] [$2] ) LET y=FUNCTION(func 1 2)";
 		
-		String scr = "LET g = CONCAT( 0xEE 0xDD)";
+		String scr = "LET g = 0xFF << -8";
+		//String scr = "LET g = SETLEN(12 0x1122334400)";
+//		String scr = "~0xFF ~(0x00)";
 		
 //		String scr = "LET a = [$1$1$1$1$1$1$1$1$1$1] // the script\r\n"
 //				+ "LET b = [$2$2$2$2$2$2$2$2$2$2] // first script parameter\r\n"
@@ -614,7 +746,7 @@ public class Contract {
 		MinimaLogger.log("");
 		MinimaLogger.log("Script:"+scr);
 		
-		String clean = CLEAN.cleanScript(scr,false);
+		String clean = cleanScript(scr,false);
 		MinimaLogger.log("Clean :"+clean);
 		
 		//Run it..

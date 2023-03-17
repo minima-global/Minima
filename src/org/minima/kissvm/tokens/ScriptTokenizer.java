@@ -25,7 +25,7 @@ public class ScriptTokenizer {
 	 * Number operators - << and >> and dealt with separately
 	 */
 	public static final String[] TOKENS_NUMBER_OPERATOR = 
-		{"+","-","/","*","%","&","|","^","="};
+		{"+","-","/","*","%","&","|","^","~","="};
 
 	/**
 	 * Boolean Operators
@@ -41,7 +41,7 @@ public class ScriptTokenizer {
 	 * Words end when they encounter 
 	 */
 	public static final String[] TOKENS_ENDOFWORD   = 
-		{"+","-","/","*","%","&","|","^","=","(",")","[","]","<",">","<<",">>"};
+		{"+","-","/","*","%","&","|","^","~","=","(",")","[","]","<",">","<<",">>"};
 	public static final List<String> mAllEOW  = Arrays.asList(TOKENS_ENDOFWORD);
 	
 	/**

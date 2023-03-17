@@ -1,0 +1,66 @@
+<html>
+
+<head>
+	<title>HELP</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<link rel="stylesheet" href="rant.css">
+	
+	<link rel="icon" type="image/x-icon" href="./favicon.ico">
+	
+</head>
+
+<body>
+
+<div id="homebutton" class=homediv><button onclick="gohome();" class=solobutton>&nbsp;&nbsp;HOME&nbsp;&nbsp;</button></div>
+
+<script type="text/javascript">
+
+	function gohome(){
+		window.location.href="index.html?uid="+MDS.form.getParams("uid");
+	}
+	
+</script>
+
+<center>
+	<br>
+	<h2>HELP</h2>
+
+<p style="text-align:left;max-width:700;padding:20;">
+<b>Welcome</b><br>
+<br>
+Chatter is an open decentralised censorship-resistant messaging network<br>
+<br>
+Your messages are sent to your direct Maxima contacts<br>
+<br>
+They can then choose to forward (re-chatter) those messages to their contacts.. and so on..<br>
+<br>
+You can click on a Username and make them a <b>Super Chatter</b><br>
+<br>
+This means you automatically re-chatter messages they send<br>
+<br>
+When you re-chatter a reply - they can request all the messages up the stack<br>
+<br>
+You can use <b>HTML</b> in your messages.. so &lt;b&gt;BOLD&lt;/b&gt; etc..<br>
+<br>
+You can also embed images and certain other media..<br>
+<br>
+&lt;youtube&gt;video_id&lt;/youtube&gt;<br>
+&lt;spotify_track&gt;spotify_id&lt;/spotify_track&gt;<br>
+&lt;spotify_artist&gt;spotify_id&lt;/spotify_artist&gt;<br>
+&lt;spotify_album&gt;spotify_id&lt;/spotify_album&gt;<br>
+&lt;spotify_playlist&gt;spotify_id&lt;/spotify_playlist&gt;<br>
+<br>
+You can <b>PREVIEW</b> your messages before you send them to see how they look<br>
+<br>
+Happy Chatting!<br>
+<br>
+</p>
+<br>
+<br>
+
+</center>
+</body>
+</html>

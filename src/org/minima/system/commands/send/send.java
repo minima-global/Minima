@@ -109,6 +109,9 @@ public class send extends Command {
 				+ "dryrun: (optional)\n"
 				+ "    true or false, true will simulate the send transaction but not execute it.\n"
 				+ "\n"
+				+ "mine: (optional)\n"
+				+ "    true or false - should you mine the transaction immediately.\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "send address:0xFF.. amount:10\n"
@@ -602,7 +605,7 @@ public class send extends Command {
 				vault.passwordLockDB(getParam("password"));
 			}
 			
-			//Sync or Asyn mining..
+			//Sync or Async mining..
 			if(minesync) {
 				boolean success = Main.getInstance().getTxPoWMiner().MineMaxTxPoW(false, txpow, 120000);
 				

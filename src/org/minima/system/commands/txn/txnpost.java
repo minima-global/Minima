@@ -20,7 +20,7 @@ import org.minima.utils.json.JSONObject;
 public class txnpost extends Command {
 
 	public txnpost() {
-		super("txnpost","[id:] (auto:true) (burn:) - Post a transaction. Automatically set the Scripts and MMR");
+		super("txnpost","[id:] (auto:true) (burn:) (mine:) (txndelete:)- Post a transaction. Automatically set the Scripts and MMR");
 	}
 	
 	@Override
@@ -40,6 +40,12 @@ public class txnpost extends Command {
 				+ "burn: (optional)\n"
 				+ "    Amount in Minima to burn with the transaction.\n"
 				+ "\n"
+				+ "mine: (optional)\n"
+				+ "    true or false - should you mine the transaction immediately.\n"
+				+ "\n"
+				+ "txndelete: (optional)\n"
+				+ "    true or false - delete this txn after posting.\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "txnpost id:simpletxn\n"
@@ -51,7 +57,7 @@ public class txnpost extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id","auto","burn"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","auto","burn","mine","txndelete"}));
 	}
 	
 	@Override
@@ -63,8 +69,19 @@ public class txnpost extends Command {
 		MiniNumber burn = getNumberParam("burn", MiniNumber.ZERO);
 		boolean auto 	= getBooleanParam("auto", false);
 		
+		//Are we Mining synchronously
+		boolean minesync = getBooleanParam("mine", false);
+		
 		//Post the Txn..
-		TxPoW txpow = postTxn(id, burn, auto);
+		TxPoW txpow = postTxn(id, burn, auto, minesync);
+		
+		//Are we auto-deleting
+		boolean autodelete = getBooleanParam("txndelete", false);
+		if(autodelete) {
+			TxnDB db = MinimaDB.getDB().getCustomTxnDB();
+			
+			boolean found = db.deleteTransaction(id);
+		}
 		
 		//Add to response..
 		ret.put("response", txpow.toJSON());
@@ -80,7 +97,7 @@ public class txnpost extends Command {
 	/**
 	 * Also used by TxnSign if autopost set
 	 */
-	public static TxPoW postTxn(String zID, MiniNumber zBurn, boolean zAuto) throws Exception {
+	public static TxPoW postTxn(String zID, MiniNumber zBurn, boolean zAuto, boolean zMineSync) throws Exception {
 		
 		//Get the TXN DB
 		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
@@ -143,9 +160,18 @@ public class txnpost extends Command {
 		
 		//Calculate the size..
 		txpow.calculateTXPOWID();
-				
-		//Send it to the Miner..
-		Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txpow);
+		
+		//Sync or Async mining..
+		if(zMineSync) {
+			boolean success = Main.getInstance().getTxPoWMiner().MineMaxTxPoW(false, txpow, 120000);
+			
+			if(!success) {
+				throw new CommandException("FAILED TO MINE txn in 120 seconds !?");
+			}
+			
+		}else {
+			Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txpow);
+		}
 		
 		return txpow;
 	}

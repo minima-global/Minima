@@ -1,20 +1,17 @@
 package org.minima.utils.bondserver;
 
-import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Random;
+import java.util.Hashtable;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
-import org.minima.objects.Coin;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
-import org.minima.system.commands.base.newaddress;
+import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.RPCClient;
@@ -26,13 +23,23 @@ import org.minima.utils.ssl.MinimaTrustManager;
 
 public class BondServer {
 
-	public static final String BOND_SCRIPT = "LET yourkey=PREVSTATE(100) IF SIGNEDBY(yourkey) THEN RETURN TRUE ENDIF LET maxblock=PREVSTATE(101) LET youraddress=PREVSTATE(102) LET maxcoinage=PREVSTATE(104) LET fcfinish=STATE(1) LET fcpayout=STATE(2) LET fcmilli=STATE(3) LET fccoinage=STATE(4) ASSERT fcpayout EQ youraddress ASSERT fcfinish LTE maxblock ASSERT fccoinage LTE maxcoinage LET fcaddress=0xEA8823992AB3CEBBA855D68006F0D05B0C4838FE55885375837D90F98954FA13 LET fullvalue=@AMOUNT*1.1 RETURN VERIFYOUT(@INPUT fcaddress fullvalue @TOKENID TRUE)";
+	public static final String BOND_SCRIPT  = "LET yourkey=PREVSTATE(100) IF SIGNEDBY(yourkey) THEN RETURN TRUE ENDIF LET maxblock=PREVSTATE(101) LET youraddress=PREVSTATE(102) LET maxcoinage=PREVSTATE(104) LET yourrate=PREVSTATE(105) LET fcfinish=STATE(1) LET fcpayout=STATE(2) LET fcmilli=STATE(3) LET fccoinage=STATE(4) LET rate=STATE(5) ASSERT yourrate EQ rate ASSERT fcpayout EQ youraddress ASSERT fcfinish LTE maxblock ASSERT fccoinage LTE maxcoinage LET fcaddress=0xEA8823992AB3CEBBA855D68006F0D05B0C4838FE55885375837D90F98954FA13 LET fullvalue=@AMOUNT*rate RETURN VERIFYOUT(@INPUT fcaddress fullvalue @TOKENID TRUE)";
+	public static final String BOND_ADDRESS = "MxG0861MPQ3ZQTM4GFTZ0UJA74Y48A4GDPYM1NTVKDTU0B34BFDV86G5A0PD21N";
 	
 	public static boolean mRunning 			= true;
 	public static boolean mSSL 				= false;
 	public static String mPassword 			= "";
 	public static String mHost 				= "http://127.0.0.1:9005";
 	public static SSLContext mSSLContext 	= null;
+	
+	public static String mFile 				= "bonds.json";
+	public static boolean mTest 			= false;
+	
+	public static MiniNumber mMin 			= MiniNumber.ZERO;
+	public static MiniNumber mMax 			= MiniNumber.ZERO;
+	
+	public static MiniNumber mMinCoinage 	= MiniNumber.TEN;
+	public static MiniNumber mMaxCoinage 	= MiniNumber.THOUSAND;
 	
 	public static void main(String[] zArgs) {
 		
@@ -53,6 +60,21 @@ public class BondServer {
 					
 				}else if(arg.equals("-sslpubkey")) {
 					sslpubkey = zArgs[counter++];
+				
+				}else if(arg.equals("-config")) {
+					mFile = zArgs[counter++];
+				
+				}else if(arg.equals("-mincoinage")) {
+					mMinCoinage = new MiniNumber(zArgs[counter++]);
+					
+				}else if(arg.equals("-min")) {
+					mMin = new MiniNumber(zArgs[counter++]);
+				
+				}else if(arg.equals("-max")) {
+					mMax = new MiniNumber(zArgs[counter++]);
+				
+				}else if(arg.equals("-test")) {
+					mTest = true;
 					
 				}else if(arg.equals("-help")) {
 					
@@ -60,6 +82,10 @@ public class BondServer {
 					System.out.println(" -host       : Specify the host IP:PORT");
 					System.out.println(" -password   : Specify the RPC Basic AUTH password (use with SSL)");
 					System.out.println(" -sslpubkey  : The SSL public key from Minima rpc command ( if using SSL )");
+					System.out.println(" -min        : Minimum amount allowed");
+					System.out.println(" -max        : Maximum amount allowed");
+					System.out.println(" -mincoinage : Minimum coin age before accepting - default to 10");
+					System.out.println(" -config     : Location of bonds file");
 					System.out.println(" -help       : Print this help");
 					
 					System.exit(1);
@@ -123,7 +149,7 @@ public class BondServer {
 		
 		//First - set up the contract and scan for it..
 		try {
-			JSONObject addscript = runSingleCommand("newscript script:\""+BOND_SCRIPT+"\" trackall:true");
+			JSONObject addscript = runSingleCommand("newscript script:\""+BOND_SCRIPT+"\" trackall:false");
 			if((boolean)addscript.get("status") != true) {
 				MinimaLogger.log(addscript.toString());
 				System.exit(1);
@@ -134,11 +160,50 @@ public class BondServer {
 			System.exit(1);
 		}
 		
+		//Load a JSON file for the values..
+		JSONArray bondjson = null;
+		Hashtable<String, MiniNumber> bondrates = new Hashtable<>();
+		try {
+			byte[] bondvalues = MiniFile.readCompleteFile(new File(mFile));
+			String bondsstr	  = new String(bondvalues);
+			
+			//Convert to JSON
+			bondjson = (JSONArray) new JSONParser().parse(bondsstr);
+			
+		} catch (Exception e1) {
+			e1.printStackTrace();
+			System.exit(1);
+		}
+	
+		//Convert to the hashtable
+		for(Object obj : bondjson) {
+			JSONObject json = (JSONObject)obj;
+			
+			String duration = json.getString("duration");
+			String rate 	= json.getString("rate");
+			
+			//Add to table
+			bondrates.put(rate, new MiniNumber(duration));
+		}
+		
+		if(mTest) {
+			System.out.println("TEST MODE ACTIVE - DURATION IN BLOCKS NOT DAYS");	
+		}
+		
+		System.out.println("BOND RATES   : "+MiniFormat.JSONPretty(bondjson));
+		System.out.println("TABLE        : "+bondrates.toString());
+		System.out.println("MINIMUM      : "+mMin.toString());
+		System.out.println("MAXIMUM      : "+mMax.toString());
+		System.out.println("MIN COIN AGE : "+mMinCoinage.toString());
+		
+//		if(true) {
+//			mRunning = false;
+//			return;
+//		}
+		
 	    //Loop until finished..
 	    String result = null;
 	    String input="status";
-	    
-	    MiniNumber tenpercent = new MiniNumber("0.1");
 	    
 	    //Keep going until finished..
 	    while(mRunning) {
@@ -149,11 +214,10 @@ public class BondServer {
 	    		JSONObject jsonres = null;
 	    		
 	    		//What block are we on..
-	    		String blockcheck 	= "status";
+	    		String blockcheck 	= "block";
 	    		jsonres 			= runSingleCommand(blockcheck);
 	    		JSONObject response = (JSONObject)jsonres.get("response");
-	    		JSONObject chain 	= (JSONObject)response.get("chain");
-	    		MiniNumber block 	= new MiniNumber((long)chain.get("block"));
+	    		MiniNumber block 	= new MiniNumber(response.getString("block"));
 	    		MinimaLogger.log("Current block : "+block.toString());
 	    		
 	    		//Get an address we can use for change
@@ -163,7 +227,7 @@ public class BondServer {
 	    		String ouraddress	= response.getString("miniaddress");
 	    		
 	    		//First scan for any available coins..
-	    		String coincheck 	= "coins address:MxG084WU2W8JUFFKWP4WUSYKGMY1VZTR1MUY7KP9AAMAG85Q7W10NQ80R2A15PU";
+	    		String coincheck 	= "coins checkmempool:true order:asc address:"+BOND_ADDRESS;
 	    		jsonres 			= runSingleCommand(coincheck);
 	    		JSONArray allcoins 	= (JSONArray) jsonres.get("response");
 	    		//MinimaLogger.log(MiniFormat.JSONPretty(allcoins));
@@ -180,17 +244,31 @@ public class BondServer {
 	    			String coinid = coinobj.getString("coinid");
 	    			
 	    			//When was this coin created
-	    			MiniNumber created = new MiniNumber(coinobj.getString("created"));
+	    			MiniNumber created 		= new MiniNumber(coinobj.getString("created"));
+	    			MiniNumber coinamount 	= new MiniNumber(coinobj.getString("amount"));
 	    			
 	    			//Check the coin age..
 	    			MiniNumber coinage = block.sub(created);
-	    			if(coinage.isLess(MiniNumber.TEN)) {
-	    				MinimaLogger.log("[NOT OLD ENOUGH YET] Coin: "+i+" coinid:"+coinid+" coinage:"+coinage.toString());
+	    			if(coinage.isLess(mMinCoinage)) {
+	    				MinimaLogger.log("[NOT OLD ENOUGH YET] Coin: "+i+" amount:"+coinamount+" coinid:"+coinid+" coinage:"+coinage.toString());
+		    			continue;
+	    			}else if(coinage.isMore(mMaxCoinage)) {
+	    				MinimaLogger.log("[COIN TOO OLD] Coin: "+i+" amount:"+coinamount+" coinid:"+coinid+" coinage:"+coinage.toString());
+		    			continue;
+	    			} 
+	    			
+	    			//Now get the details given the rate..
+		    		String rate			= getStateVar(coinobj, 105);
+		    		MiniNumber ratenum 	= new MiniNumber(rate).sub(MiniNumber.ONE);
+		    		
+		    		//Check amount
+	    			if(coinamount.isLess(mMin) || coinamount.isMore(mMax)) {
+	    				MinimaLogger.log("[INVALID] Coin amount is outside allowed range "+coinamount.toString()+" coinid:"+coinid);
 		    			continue;
 	    			}
 	    			
-	    			MiniNumber coinamount 	= new MiniNumber(coinobj.getString("amount"));
-	    			MiniNumber reqamount  	= coinamount.mult(tenpercent);
+	    			
+	    			MiniNumber reqamount  	= coinamount.mult(ratenum);
 	    			MiniNumber totaltouser  = coinamount.add(reqamount);
 	    			
 	    			MinimaLogger.log("[VALID] coinid:"+coinid+" coinage:"+coinage.toString()+" amount:"+coinamount.toString()+" interest:"+reqamount.toString());
@@ -217,13 +295,57 @@ public class BondServer {
 		    		//Construct the FC params
 		    		String fcaddress		= "MxG087AH0HPWAYJPQTQGYEMG03F1K2R1H43HVWYH19NB0RTW3SZWY7Q2F79810N"; 
 		    		String fcusercaddress	= useraddress; 
-		    		MiniNumber fcblock 		= block.add(MiniNumber.TEN);
-		    		MiniNumber fccoinage 	= MiniNumber.ONE;
-		    		long fcmillitime		= System.currentTimeMillis();
+		    		
+		    		long days = 365;
+		    		
+		    		//Get the rate..
+		    		MiniNumber duration = bondrates.get(rate);
+		    		if(duration == null) {
+		    			MinimaLogger.log("Invalid Rate amount! "+rate+" @ coindid:"+coinid);
+		    			continue;
+		    		}
+		    		
+		    		//How many days
+		    		days = duration.getAsInt();
+		    		
+//		    		if(rate.equals("1.01") ){
+//		    			days = 30;
+//		    		}else if(rate.equals("1.035") ){
+//		    			days = 90;
+//		    		}else if(rate.equals("1.08") ){
+//		    			days = 180;
+//		    		}else if(rate.equals("1.13") ){
+//		    			days = 270;
+//		    		}else if(rate.equals("1.18") ){
+//		    			days = 365;
+//		    		}else{
+//		    			MinimaLogger.log("Invalid Rate amount! "+rate+" @ coindid:"+coinid);
+//		    			continue;
+//		    		}
+		    		
+		    		//HACK
+		    		//days = 0;
+		    		
+		    		//How many blocks in a day
+		    		long dayofblocks = 1728;
+		    		if(mTest) {
+		    			dayofblocks = 1;
+		    		}
+		    		
+		    		//Now calculate the max coin age - with a day extra for leeway
+		    		long fccoinage = (days * dayofblocks); 
+		    		
+		    		//The max block
+		    		long fcblock = block.getAsLong() + fccoinage;
+		    		
+		    		//And the time..
+		    		long oneday = 1000 * 60 * 60 * 24;
+		    		long fcmillitime = System.currentTimeMillis() + (days * oneday);
 		    		
 		    		//Check the fc vars are within the range allowed..
 		    		//..
 		    		
+		    		//Now construct the spend txn
 		    		String randid 	  = MiniData.getRandomData(32).to0xString();
 		    		String txnbuilder = "txncreate id:"+randid;
 		    		
@@ -236,7 +358,7 @@ public class BondServer {
 		    		
 		    		//Is there any change
 		    		if(ourchange.isMore(MiniNumber.ZERO)) {
-		    			txnbuilder 	 += ";txnoutput id:"+randid+" amount:"+ourchange+" address:"+ouraddress+" tokenid:0x00";
+		    			txnbuilder 	 += ";txnoutput id:"+randid+" amount:"+ourchange+" address:"+ouraddress+" tokenid:0x00 storestate:false";
 		    		}
 		    		
 		    		//Now add ther FC statevars..
@@ -244,17 +366,30 @@ public class BondServer {
 		    		txnbuilder 		 += ";txnstate id:"+randid+" port:2 value:"+fcusercaddress;
 		    		txnbuilder 		 += ";txnstate id:"+randid+" port:3 value:"+fcmillitime;
 		    		txnbuilder 		 += ";txnstate id:"+randid+" port:4 value:"+fccoinage;
+		    		txnbuilder 		 += ";txnstate id:"+randid+" port:5 value:"+rate;
 		    		
 		    		//Now sign and post! the txn..
-		    		txnbuilder 		 += ";txnsign id:"+randid+" publickey:auto txnpostauto:true";
+		    		txnbuilder 		 += ";txnsign id:"+randid+" publickey:auto txnpostauto:true txnpostmine:true";
 		    		
 		    		//And finally delete
 		    		txnbuilder 		 += ";txndelete id:"+randid;
 		    		
 		    		//Run it..
 		    		JSONArray res = runMultiCommand(txnbuilder);
-		    		MinimaLogger.log(MiniFormat.JSONPretty(res));
 		    		
+		    		//Was it a success
+		    		int arraylen 		= res.size();
+		    		JSONObject delete 	= (JSONObject) res.get(arraylen-1);
+		    		boolean status 		= (boolean) delete.get("status"); 
+		    		if(status) {
+		    			MinimaLogger.log("[SUCCESS SEND] : "+totaltouser.toString()+" rate:"+rate+" address:"+fcusercaddress);
+		    		}else {
+		    			MinimaLogger.log("[!] ERROR :");
+		    			MinimaLogger.log(MiniFormat.JSONPretty(res));
+		    		}
+		    		
+		    		//Pause..
+			    	try {Thread.sleep(5000);} catch (InterruptedException e) {}
 	    		}
 	    		
 			} catch (Exception e) {
@@ -262,7 +397,7 @@ public class BondServer {
 			}
 	    	
 	    	//Pause..
-	    	try {Thread.sleep(5000);} catch (InterruptedException e) {}
+	    	try {Thread.sleep(10000);} catch (InterruptedException e) {}
 	    }
 	}
 	

@@ -9,7 +9,7 @@
  */
 var MESSAGE_MAXTIME = 0;
 var MESSAGE_NUMBER  = 0;
-var VIEW_NUMBER  	= 30;
+var VIEW_NUMBER  	= 25;
 function createMainTable(maxtime,callback){
 	var table = document.getElementById("mainranttable");
 	table.innerHTML = "";
@@ -36,35 +36,56 @@ function drawCompleteMainTable(thetable,allrows,callback){
 }
 
 function createMessageTable(messagerow, allsuperchatters, showactions){
-	var msg 	= decodeStringFromDB(messagerow.MESSAGE).replaceAll("\n","<br>");
+
+	//Sanitize and clean the input - allow our custom youtube tag
+	var dbmsg 		= decodeStringFromDB(messagerow.MESSAGE).replaceAll("\n","<br>");
+	var msg 		= DOMPurify.sanitize(dbmsg,{ ADD_TAGS: ["youtube","spotify_track","spotify_artist","spotify_album","spotify_playlist"]});
 	
-	var dd 		= new Date(+messagerow.RECDATE);
-	var datestr = dd.toDateString()+" "+dd.toLocaleTimeString()+"&nbsp;";
+	var parentid 	= DOMPurify.sanitize(messagerow.PARENTID+"");
+	var baseid 		= DOMPurify.sanitize(messagerow.BASEID+"");
+	var messageid	= DOMPurify.sanitize(messagerow.MESSAGEID+"");
+	var publickey	= DOMPurify.sanitize(messagerow.PUBLICKEY+"");
+	var recdate		= DOMPurify.sanitize(messagerow.RECDATE+"");
+	var msgdate		= DOMPurify.sanitize(messagerow.MSGDATE+"");
+	
+	var dd 			= new Date(+recdate);
+	var datestr 	= dd.toDateString()+" "+dd.toLocaleTimeString()+"&nbsp;";
+	
+	var msgdd 		= new Date(+msgdate);
+	var msgdatestr 	= msgdd.toDateString()+" "+msgdd.toLocaleTimeString()+"&nbsp;";
+	
+	var datetable = "<table border=0 width=100% style='border-spacing: 0px;padding:0px;'><tr><td style='text-align:right;font-size:1.0em;'>"+datestr+"</td></tr>"
+					+"<tr><td style='text-align:right; font-size:0.8em; color:888888;'>"+msgdatestr+"</td></tr></table>"
 	
 	//Are they a SUPER CHATTER
+	var un = decodeStringFromDB(messagerow.USERNAME);
+	var usernameorig = DOMPurify.sanitize(un);
+	
 	var username;
-	if(checkInSuperChatters(messagerow.PUBLICKEY,allsuperchatters)){
-		username = "[*] "+decodeStringFromDB(messagerow.USERNAME);
+	if(checkInSuperChatters(publickey,allsuperchatters)){
+		username = "[*] "+un;
 	}else{
-		username = decodeStringFromDB(messagerow.USERNAME);
+		username = un;
 	}
-	var userline = "<table width=100%><tr><td class=namefont><a href='superchatter.html?uid="+MDS.minidappuid
-					+"&username="+messagerow.USERNAME
-					+"&publickey="+messagerow.PUBLICKEY+"'>"+username+"</a></td><td style='text-align:right;'>"+datestr+"</td></tr></table>";
+	username = DOMPurify.sanitize(username+"");
+	
+	//Now start making the Table..
+	var userline = "<table border=0 width=100%><tr><td class=namefont><a href='superchatter.html?uid="+MDS.minidappuid
+					+"&username="+usernameorig
+					+"&publickey="+publickey+"'>"+username+"</a></td><td>"+datetable+"</td></tr></table>";
 	
 	var msgtable = "<table border=0 class=messagetable>"
 					+"<tr><td class=messagetableusername>"+userline+"</td></tr>"
 					+"<tr><td class=messagetablemessage><div class=messagetablemessagediv>"+msg+"</div></td></tr>";
 	
 	//Is this a reply..
-	var parentid = messagerow.PARENTID+"";
 	if(parentid != "0x00"){
 		
 		//Creatge a unique id..
 		var uniqueid = parentid+Math.random();
 		
 		//Add a reply row..
-		msgtable += "<tr><td class=messagetablereply id="+uniqueid+">"+msg+"</td></tr>";
+		msgtable += "<tr><td class=messagetablereply id="+uniqueid+"></td></tr>";
 		
 		fillInReply(uniqueid,parentid);
 	}
@@ -76,21 +97,23 @@ function createMessageTable(messagerow, allsuperchatters, showactions){
 	if(showactions){
 	
 		//The VIEW buton
-		var viewbutton 	= "<button class=solobutton onclick=\"document.location.href='docview.html?uid="+MDS.minidappuid+"&baseid="+messagerow.BASEID+"&msgid="+messagerow.MESSAGEID+"'\">VIEW ALL</button>";
+		var viewbutton 	= "<button class=solobutton onclick=\"document.location.href='docview.html?uid="
+						+MDS.minidappuid+"&baseid="+baseid+"&msgid="+messageid+"'\">VIEW ALL</button>";
 		
 		//The reply page
-		var replybutton  = "<button class=solobutton onclick=\"document.location.href='reply.html?uid="+MDS.minidappuid+"&msgid="+messagerow.MESSAGEID+"'\">REPLY</button>";
+		var replybutton  = "<button class=solobutton onclick=\"document.location.href='reply.html?uid="
+						+MDS.minidappuid+"&msgid="+messageid+"'\">REPLY</button>";
 		
 		//Rerant link
 		var remsg = "RE-CHATTER";
 		if(messagerow.RECHATTER !=0 ){
 			remsg = "[X] RE-CHATTER";
 		}
-		var rerantbutton = "<button class=solobutton onclick='requestReChatter(\""+messagerow.MESSAGEID+"\")'>"+remsg+"</button>";
+		var rerantbutton = "<button class=solobutton onclick='requestReChatter(\""+messageid+"\")'>"+remsg+"</button>";
 		
 		var delbutton = "";
-		if(messagerow.PARENTID == "0x00"){
-			delbutton 	 = "<button class=solobutton onclick='requestDelete(\""+messagerow.BASEID+"\")'>DELETE ALL</button>";
+		if(parentid == "0x00"){
+			delbutton 	 = "<button class=solobutton onclick='requestDelete(\""+baseid+"\")'>DELETE ALL</button>";
 		}	
 				
 		//Actions..
@@ -104,6 +127,15 @@ function createMessageTable(messagerow, allsuperchatters, showactions){
 	//Store the latest time
 	MESSAGE_MAXTIME = messagerow.RECDATE;
 	MESSAGE_NUMBER++;
+	
+	//Convert SPECIAL tags
+	msgtable = convertYouTube(msgtable);
+	
+	//Sptify
+	msgtable = convertSpotify("track",msgtable);
+	msgtable = convertSpotify("artist",msgtable);
+	msgtable = convertSpotify("album",msgtable);
+	msgtable = convertSpotify("playlist",msgtable);
 	
 	return msgtable;
 }
@@ -126,6 +158,9 @@ function fillInReply(htmlid,parentid){
 		if(found){
 			var reply = "In reply to.. "+decodeStringFromDB(sqlrow.USERNAME)+":"+decodeStringFromDB(sqlrow.MESSAGE);
 			
+			//Sanitize it..
+			reply = DOMPurify.sanitize(reply);
+		
 			//Strip tags..
 			reply = reply.replace(/(<([^>]+)>)/gi, "");
 
@@ -142,7 +177,8 @@ function fillInReply(htmlid,parentid){
 function requestReChatter(msgid){
 	if(confirm("This will post this to all your Maxima Contacts ?")){
 		updateRechatter(msgid,function(){
-			rechatter(msgid,function(){
+			insertReChatter(msgid,function(){
+				
 				//refresh the page
 				window.location.reload();				
 			});
@@ -157,6 +193,47 @@ function requestDelete(baseid){
 			document.location.href="index.html?uid="+MDS.minidappuid;
 		});
 	}
+}
+
+/**
+ * Convert youtube tags
+ */
+function convertYouTube(msg){
+	
+	//Search and replace the youtube tags..
+	var actual =  msg.replaceAll("<youtube>",
+			"<div class='youtubecontainer'><iframe src='https://www.youtube.com/embed/");
+	
+	//And the end tags
+	actual =  actual.replaceAll("</youtube>","' title='YouTube video player' frameborder='0'"
+				+" allow='accelerometer; autoplay; clipboard-write; encrypted-media; "
+				+"gyroscope; picture-in-picture; web-share' allowfullscreen class='youtubevideo'>"
+				+"</iframe></div>");
+	
+	return actual;
+}
+
+/**
+ * Works with track,artist,album,playlist
+ */
+function convertSpotify(type,msg){
+	
+	//Which tag
+	var tag = "spotify_"+type;
+	
+	//Search and replace the youtube tags..
+	var starttag 	= "<"+tag+">";
+	var endtag 		= "</"+tag+">";
+	
+	var actual =  msg.replaceAll(starttag,
+			"<iframe style='border-radius:12px' src='https://open.spotify.com/embed/"+type+"/");
+	
+	//And the end tags
+	actual =  actual.replaceAll(endtag,"?utm_source=generator' width='100%' height='352' "
+			+"frameBorder='0' allowfullscreen=''; allow='clipboard-write; encrypted-media; "
+			+"fullscreen; picture-in-picture' loading='lazy'></iframe>");
+	
+	return actual;
 }
 
 function createReplyTable(baseid, callback){
@@ -199,7 +276,7 @@ function findRows(allrows,parentid){
 	return retarray;
 }
 
-var MAX_IMAGE_SIZE = 350;
+var MAX_IMAGE_SIZE = 400;
 function scaleImageFile(file,callback){
 	
 	//What to do when file is loaded	
@@ -237,7 +314,7 @@ function scaleImageFile(file,callback){
             canvas.getContext('2d').drawImage(image, 0, 0, width, height);
             
 			//Send this RESIZED image
-			callback(canvas.toDataURL("image/jpeg",0.5));
+			callback(canvas.toDataURL("image/jpeg",0.9));
         }
 
 		//Set the Image src
@@ -264,18 +341,38 @@ function embedFile(){
 		var mmessage = document.getElementById("mainmessage");
 		var filename = file.name.toLowerCase(); 
 		if(filename.endsWith(".png")   || 
-			filename.endsWith(".gif")  || 
 			filename.endsWith(".jpg")  ||
+			filename.endsWith(".webp")  ||
 			filename.endsWith(".jfif") ||
 			filename.endsWith(".bmp")){
 			
 			scaleImageFile(file,function(imagedata){
-				MDS.log("IMAGE SIZE:"+imagedata.length);
-				mmessage.value 	= mmessage.value+"<img src='"+imagedata+"'>";
+				MDS.log("IMAGE:"+file.name+" SIZE:"+imagedata.length);
+				mmessage.value 	= mmessage.value+"<div style='width:100%;text-align:center;'><img src='"+imagedata+"'></div>";
 				//Move to the end
 			    mmessage.focus();
 			    mmessage.setSelectionRange(mmessage.value.length,mmessage.value.length);
 			});
+		
+		}
+		
+		/*else if(filename.endsWith(".gif")){
+			
+			var reader = new FileReader();
+		    reader.readAsDataURL(file);
+		    reader.onload = function () {
+		      console.log(reader.result);
+		      var link = "<div style='width:100%;text-align:center;'><img src='"+imagedata+"'></div>";
+		      mmessage.value = mmessage.value+" "+link;
+		      
+		      //Move to the end
+		      mmessage.focus();
+		      mmessage.setSelectionRange(mmessage.value.length,mmessage.value.length);
+		    };
+		    reader.onerror = function (error) {
+		      console.log('Error: ', error);
+		    };
+		
 		}else{
 			
 			//Check size..
@@ -298,7 +395,8 @@ function embedFile(){
 		    reader.onerror = function (error) {
 		      console.log('Error: ', error);
 		    };
-		}
+		}*/
+		
 	};
 	input.click();
 }

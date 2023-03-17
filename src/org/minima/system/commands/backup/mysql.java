@@ -17,6 +17,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.BIP39;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -104,6 +105,11 @@ public class mysql extends Command {
 	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
+		
+		//Are we on mobile..
+		if(GeneralParams.IS_MOBILE) {
+			throw new CommandException("Sorry - MySQL does not work on Android..");
+		}
 		
 		//Get the details
 		String host 		= getParam("host");
