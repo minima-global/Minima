@@ -467,7 +467,7 @@ public class ArchiveManager extends SqlDB {
 			SQL_SELECT_SYNC_LIST.setLong(1,zStartBlock.getAsLong());
 			
 			//The end block
-			MiniNumber endblock = zStartBlock.sub(MiniNumber.TWOFIVESIX);
+			MiniNumber endblock = zStartBlock.sub(MiniNumber.FIVEONE12);
 			if(endblock.isLessEqual(MiniNumber.ONE)) {
 				endblock = MiniNumber.ONE;
 			}

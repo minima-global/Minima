@@ -283,6 +283,10 @@ public class Main extends MessageProcessor {
 		return mRestoring;
 	}
 	
+	public boolean isShuttongDownOrRestoring() {
+		return mShuttingdown || mRestoring;
+	}
+	
 	public void shutdown() {
 		shutdown(false);
 	}

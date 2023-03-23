@@ -288,7 +288,7 @@ public class IBD implements Streamable {
 			}
 			
 			//Load the block range..
-			MiniNumber end = startcount.add(MiniNumber.TWOFIVESIX);
+			MiniNumber end = startcount.add(MiniNumber.FIVEONE12);
 			ArrayList<TxBlock> blocks = arch.loadBlockRange(startcount.decrement(),end, false);
 			for(TxBlock block : blocks) {
 				mTxBlocks.add(block);

@@ -50,6 +50,12 @@ public class TxPoWProcessor extends MessageProcessor {
 	 * Main entry point for a TxPoW into the system
 	 */
 	public void postProcessTxPoW(TxPoW zTxPoW) {
+		
+		//Are we shutting down
+		if(Main.getInstance().isShuttongDownOrRestoring()) {
+			return;
+		}
+		
 		//Add / Update last access to the DB
 		MinimaDB.getDB().getTxPoWDB().addTxPoW(zTxPoW);
 		
@@ -61,6 +67,12 @@ public class TxPoWProcessor extends MessageProcessor {
 	 * Main Entry point for IBD messages
 	 */
 	public void postProcessIBD(IBD zIBD, String zClientUID) {
+		
+		//Are we shutting down
+		if(Main.getInstance().isShuttongDownOrRestoring()) {
+			return;
+		}
+		
 		//Post a message on the single threaded stack
 		PostMessage(new Message(TXPOWPROCESSOR_PROCESS_IBD).addObject("ibd", zIBD).addString("uid", zClientUID));
 	}
