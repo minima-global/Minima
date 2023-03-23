@@ -8,7 +8,7 @@ public class GlobalParams {
 	 * Which Version fo Minima are we running
 	 */
 	public static String MINIMA_BASE_VERSION 	= "1.0";
-	public static String MINIMA_BUILD_NUMBER 	= "22";
+	public static String MINIMA_BUILD_NUMBER 	= "23";
 	public static String MINIMA_VERSION 		= MINIMA_BASE_VERSION+"."+MINIMA_BUILD_NUMBER;
 	
 	/**
