@@ -135,7 +135,7 @@ public class JsonDB implements Streamable{
 	}
 	
 	public void saveDB(File zFile) {
-		MiniFile.saveObject(zFile, this);
+		MiniFile.saveObjectDirect(zFile, this);
 	}
 	
 //	public void loadEncryptedDB(String zPassword, File zFile) {

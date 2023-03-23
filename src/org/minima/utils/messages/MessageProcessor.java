@@ -136,8 +136,14 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
                     }
                     
                 }catch(Error noclass){
-                	MinimaLogger.log("**SERIOUS SETUP ERROR "+msg.getMessageType()+" "+noclass.toString());
+                	MinimaLogger.log("**SERIOUS ERROR "+msg.getMessageType()+" "+noclass.toString());
                 	
+                	//Now the Stack Trace
+            		for(StackTraceElement stack : noclass.getStackTrace()) {
+            			//Print it..
+            			MinimaLogger.log("     "+stack.toString());
+            		}
+            		
                 }catch(Exception exc){
                 	MinimaLogger.log("MESSAGE PROCESSING ERROR @ "+msg.getMessageType());
                 	MinimaLogger.log(exc);

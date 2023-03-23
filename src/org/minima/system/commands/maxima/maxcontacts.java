@@ -113,12 +113,17 @@ public class maxcontacts extends Command {
 				conjson.put("chaintip", topblock.toString());
 				
 				//Check it..
-				TxPoWTreeNode checknode = tip.getPastNode(checkblock);
-				if(checknode != null) {
-					MiniData nodehash		= checknode.getTxPoW().getTxPoWIDData();
-					conjson.put("samechain", nodehash.isEqual(checkhash));
-				}else {
+				if(tip == null) {
 					conjson.put("samechain", false);
+					
+				}else {
+					TxPoWTreeNode checknode = tip.getPastNode(checkblock);
+					if(checknode != null) {
+						MiniData nodehash		= checknode.getTxPoW().getTxPoWIDData();
+						conjson.put("samechain", nodehash.isEqual(checkhash));
+					}else {
+						conjson.put("samechain", false);
+					}
 				}
 				
 				//And add..
