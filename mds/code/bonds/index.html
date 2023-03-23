@@ -16,7 +16,7 @@
 
 <center>
 
-	<h2>MINIMA BONDS</h2>
+	<h2>MAXIMISE</h2>
 
 You can request a Minima Staking Bond here<br>
 <br>
@@ -115,10 +115,21 @@ Here are YOUR Pending requests : <br>
 				
 				var btable = document.getElementById("idbondtable");
 				btable.innerHTML="";
+				
+				// Create an empty <thead> element and add it to the table:
+				var header 	= btable.createTHead();
+				var row 	= header.insertRow(0);    
+				var header1 = row.insertCell(0);
+				var header2 = row.insertCell(1);
+				var header3 = row.insertCell(2);
+				header1.innerHTML="MINIMA";
+				header2.innerHTML="RATE";
+				header3.innerHTML="COINAGE";
+				
 				var len = coins.length;
 				for(var i=0;i<len;i++){
 					var coin 		= coins[i]; 
-					var tablerow 	= btable.insertRow(i);
+					var tablerow 	= btable.insertRow(i+1);
 					var cell1 	 	= tablerow.insertCell(0);
 					var cell2 	 	= tablerow.insertCell(1);
 					var cell3 	 	= tablerow.insertCell(2);
@@ -134,9 +145,9 @@ Here are YOUR Pending requests : <br>
 					//Get the desired Rate..
 					var rate = MDS.util.getStateVariable(coin,"105");
 					
-					cell1.innerHTML = "<div class=niceinput>RATE : "+rate+"</div>";
-					cell2.innerHTML = "<div class=niceinput>AMOUNT : "+coin.amount+"</div>";
-					cell3.innerHTML = "<div class=niceinput>COINAGE : "+coinage+" / 10</div>";
+					cell1.innerHTML = "<div class=niceinput>"+coin.amount+"</div>";
+					cell2.innerHTML = "<div class=niceinput style='width:60;'>"+rate+"</div>";
+					cell3.innerHTML = "<div class=niceinput style='width:60;'>"+coinage+" / 10</div>";
 					
 					//Sort the status
 					cell4.innerHTML = "<button class=solobutton onclick=\"this.disabled=true;cancelBond('"+coin.coinid+"','"+coin.amount+"','"+pubk+"')\">CANCEL</button>"
