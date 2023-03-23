@@ -485,7 +485,7 @@ public class NIOMessage implements Runnable {
 				}
 				
 				//Check all the Transactions.. if it's a block
-				if(txpow.isBlock()) {
+				if(txpow.isBlock() && !beforecascade) {
 					ArrayList<MiniData> txns = txpow.getBlockTransactions();
 					for(MiniData txn : txns) {
 						exists = MinimaDB.getDB().getTxPoWDB().exists(txn.to0xString());
@@ -500,47 +500,45 @@ public class NIOMessage implements Runnable {
 					TxPoW current 				= txpow;
 					
 					int counter = 0;
-					if(!beforecascade) {
-						while(counter<512) {
-							
-							//What height are we at
-							if(current.getBlockNumber().isLessEqual(cascadeblock)) {
-								//Far enough
-								break;
-							}
-							
-							//What is the parent
-							MiniData parentid = current.getParentID();
-							
-							//Is this onchain already
-							TxPoWTreeNode node = TxPoWSearcher.searchChainForTxPoWBlock(parentid);
-							if(node!=null) {
-								//we'll search the tree next
-								break;
-							}
-							
-							//Get the parent
-							TxPoW parent = txpdb.getTxPoW(current.getParentID().to0xString());
-							if(parent == null) {
-								//Send a message for it and break..
-								NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, current.getParentID());
-								break;
-							}
-							
-							//Check all the transactions in the block..
-							ArrayList<MiniData> ptxns = parent.getBlockTransactions();
-							for(MiniData txn : ptxns) {
-								exists = MinimaDB.getDB().getTxPoWDB().exists(txn.to0xString());
-								if(!exists) {
-									//request it.. 
-									NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txn);
-								}
-							}
-							
-							//And make the parent current
-							current = parent;
-							counter++;
+					while(counter<512) {
+						
+						//What height are we at
+						if(current.getBlockNumber().isLessEqual(cascadeblock)) {
+							//Far enough
+							break;
 						}
+						
+						//What is the parent
+						MiniData parentid = current.getParentID();
+						
+						//Is this onchain already
+						TxPoWTreeNode node = TxPoWSearcher.searchChainForTxPoWBlock(parentid);
+						if(node!=null) {
+							//we'll search the tree next
+							break;
+						}
+						
+						//Get the parent
+						TxPoW parent = txpdb.getTxPoW(current.getParentID().to0xString());
+						if(parent == null) {
+							//Send a message for it and break..
+							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, current.getParentID());
+							break;
+						}
+						
+						//Check all the transactions in the block..
+						ArrayList<MiniData> ptxns = parent.getBlockTransactions();
+						for(MiniData txn : ptxns) {
+							exists = MinimaDB.getDB().getTxPoWDB().exists(txn.to0xString());
+							if(!exists) {
+								//request it.. 
+								NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, txn);
+							}
+						}
+						
+						//And make the parent current
+						current = parent;
+						counter++;
 					}
 					
 					//Now scan the whole tree - unless you already have per block
