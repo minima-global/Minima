@@ -459,8 +459,8 @@ public class NIOMessage implements Runnable {
 				//How long did all that take..
 				long timefinish = System.currentTimeMillis();
 				long timediff 	= timefinish - timestart;
-				if(timediff > 1000) {
-					MinimaLogger.log("Message took a long time ("+timediff+"ms) to process @ "+txpow.getTxPoWID());
+				if(timediff > 10000) {
+					MinimaLogger.log("Message took a long time ("+timediff+"ms) to process @ txpowid:"+txpow.getTxPoWID()+" transaction:"+txpow.getTransaction().toJSON());
 					fullyvalid = false;
 				}
 				
