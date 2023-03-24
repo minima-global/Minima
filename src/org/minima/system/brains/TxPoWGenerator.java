@@ -272,7 +272,7 @@ public class TxPoWGenerator {
 				
 					//Check against the Magic Numbers
 					if(memtxp.getSizeinBytesWithoutBlockTxns() > txpowmagic.getMaxTxPoWSize().getAsLong()) {
-						MinimaLogger.log("Mempool txn too big.. "+memtxp.getTxPoWID());
+						MinimaLogger.log("Mempool txn too big.. "+memtxp.getTxPoWID()+" size:"+memtxp.getSizeinBytesWithoutBlockTxns()+" max:"+txpowmagic.getMaxTxPoWSize().getAsLong());
 						valid = false;
 					}else if(memtxp.getTxnDifficulty().isMore(txpowmagic.getMinTxPowWork())) {
 						MinimaLogger.log("Mempool txn TxPoW too low.. "+memtxp.getTxPoWID());
