@@ -150,7 +150,7 @@ public class archive extends Command {
 				}
 				
 				//Use batches of 256
-				MiniNumber end = start.add(MiniNumber.FIVEONE12);
+				MiniNumber end = start.add(MiniNumber.TWOFIVESIX);
 				
 				//Get some blocks
 				ArrayList<TxBlock> blocks = arch.loadBlockRange(start.decrement(),end,false); 
