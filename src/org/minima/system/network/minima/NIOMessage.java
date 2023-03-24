@@ -137,7 +137,7 @@ public class NIOMessage implements Runnable {
 		
 		//Are we shutting down
 		if(Main.getInstance().isShuttongDownOrRestoring()) {
-			MinimaLogger.log("Minima Shutting down - no new NIOMessages");
+			//MinimaLogger.log("Minima Shutting down - no new NIOMessages");
 			return;
 		}
 		

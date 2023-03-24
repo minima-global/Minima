@@ -74,6 +74,9 @@ public class restore extends Command {
 			throw new Exception("Restore file doesn't exist : "+restorefile.getAbsolutePath());
 		}
 		
+		//Clean up the memory
+		System.gc();
+		
 		///Base folder
 		File restorefolder = new File(GeneralParams.DATA_FOLDER, "restore");
 		restorefolder.mkdirs();

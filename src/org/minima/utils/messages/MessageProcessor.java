@@ -82,8 +82,10 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     	while(!isShutdownComplete()) {
 			try {Thread.sleep(250);} catch (InterruptedException e) {}
 			timewaited +=250;
-			if(timewaited>10000) {
+			if(timewaited>15000) {
 				MinimaLogger.log("Failed to shutdown in 10 secs for "+mName);
+				mMainThread.interrupt();
+				return;
 			}
 		}
     }
