@@ -248,7 +248,7 @@ public class Main extends MessageProcessor {
 			//Do sooner as stores the genesis Txn..
 			PostTimerMessage(new TimerMessage(10 * 1000, MAIN_CLEANDB_RAM));
 		}else {
-			PostTimerMessage(new TimerMessage(60 * 1000, MAIN_CLEANDB_RAM));
+			PostTimerMessage(new TimerMessage(2 * 60 * 1000, MAIN_CLEANDB_RAM));
 		}
 		PostTimerMessage(new TimerMessage(60 * 1000, MAIN_CLEANDB_SQL));
 		
@@ -281,6 +281,10 @@ public class Main extends MessageProcessor {
 	
 	public boolean isRestoring() {
 		return mRestoring;
+	}
+	
+	public boolean isShuttongDownOrRestoring() {
+		return mShuttingdown || mRestoring;
 	}
 	
 	public void shutdown() {

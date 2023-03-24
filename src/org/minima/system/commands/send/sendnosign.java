@@ -59,13 +59,13 @@ public class sendnosign extends Command {
 	}
 	
 	public sendnosign() {
-		super("sendnosign","(address:Mx..|0x..) (amount:) (multi:[address:amount,..]) (tokenid:) (state:{}) (burn:) (split:) (debug:) - Create a txn but don't sign it");
+		super("sendnosign","(address:Mx..|0x..) (amount:) (multi:[address:amount,..]) (tokenid:) (state:{}) (burn:) (split:) (file:) (debug:) - Create a txn but don't sign it");
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"address","amount","multi",
-				"tokenid","state","burn","split","debug","dryrun"}));
+				"tokenid","state","burn","split","debug","dryrun","file"}));
 	}
 	
 	@Override
@@ -106,6 +106,9 @@ public class sendnosign extends Command {
 				+ "    The amount being sent will be split into multiple coins of equal value.\n"
 				+ "    You can split your own coins by sending to your own address.\n"
 				+ "    Useful if you want to send multiple transactions without waiting for change to be confirmed.\n"
+				+ "\n"
+				+ "file: (optional)\n"
+				+ "    Specify the file to output otherwise default chosen\n"
 				+ "\n"
 				+ "debug: (optional)\n"
 				+ "    true or false, true will print more detailed logs.\n"
@@ -543,8 +546,13 @@ public class sendnosign extends Command {
 		//Calculate the txpowid / size..
 		txpow.calculateTXPOWID();
 				
-		//Create the file..
-		File txnfile = MiniFile.createBaseFile("unsignedtransaction-"+System.currentTimeMillis()+".txn");
+		//Did they specify a file..
+		File txnfile = null;
+		if(existsParam("file")) {
+			txnfile = MiniFile.createBaseFile(getParam("file"));
+		}else {
+			txnfile = MiniFile.createBaseFile("unsignedtransaction-"+System.currentTimeMillis()+".txn");
+		}
 				
 		//Write it to a file..
 		MiniFile.writeObjectToFile(txnfile, txpow);

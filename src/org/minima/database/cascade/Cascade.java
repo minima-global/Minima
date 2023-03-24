@@ -174,7 +174,8 @@ public class Cascade implements Streamable {
 	}
 	
 	public void saveDB(File zFile) {
-		MiniFile.saveObject(zFile, this);
+		//MiniFile.saveObject(zFile, this);
+		MiniFile.saveObjectDirect(zFile, this);
 	}
 	
 	@Override

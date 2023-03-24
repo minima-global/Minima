@@ -248,12 +248,37 @@ public class MinimaDB {
 				mTxPoWDB.loadSQLDB(new File(txpowsqlfolder,"txpow"));
 			}
 			
-			//Load the MaximaDB
+			//Load the Maxima DB
 			File maxsqlfolder = new File(basedb,"maximasql");
-			if(!GeneralParams.IS_MAIN_DBPASSWORD_SET) {
-				mMaximaDB.loadDB(new File(maxsqlfolder,"maxima"));
-			}else {
-				mMaximaDB.loadEncryptedSQLDB(new File(maxsqlfolder,"maxima"),GeneralParams.MAIN_DBPASSWORD);
+			try {
+				
+				if(!GeneralParams.IS_MAIN_DBPASSWORD_SET) {
+					mMaximaDB.loadDB(new File(maxsqlfolder,"maxima"));
+				}else {
+					mMaximaDB.loadEncryptedSQLDB(new File(maxsqlfolder,"maxima"),GeneralParams.MAIN_DBPASSWORD);
+				}
+				
+			}catch(Exception exc) {
+				
+				//Log the complete error
+				MinimaLogger.log(exc);
+				
+				//There wqas an issue.. wipe it.. and resync..
+				MinimaLogger.log("ERROR loading MaximaDB.. WIPE and RESTART.. ");
+				
+				//Close the DB
+				mMaximaDB.hardCloseDB();
+				
+				//Delete the ArchiveDB folder
+				MiniFile.deleteFileOrFolder(maxsqlfolder.getAbsolutePath(), maxsqlfolder);
+				
+				//And reload..
+				mMaximaDB	= new MaximaDB();
+				if(!GeneralParams.IS_MAIN_DBPASSWORD_SET) {
+					mMaximaDB.loadDB(new File(maxsqlfolder,"maxima"));
+				}else {
+					mMaximaDB.loadEncryptedSQLDB(new File(maxsqlfolder,"maxima"),GeneralParams.MAIN_DBPASSWORD);
+				}
 			}
 			
 			//Load the MDS DB

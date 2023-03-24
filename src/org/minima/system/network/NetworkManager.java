@@ -30,6 +30,11 @@ import org.minima.utils.messages.MessageProcessor;
 public class NetworkManager {
 
 	/**
+	 * Have we shut this down..
+	 */
+	public boolean mShuttingDown = false;
+	
+	/**
 	 * NIO Manager
 	 */
 	NIOManager mNIOManager;
@@ -50,6 +55,10 @@ public class NetworkManager {
 	NotifyManager mNotifyManager;
 	
 	public NetworkManager() {
+		
+		//Not shutting down
+		mShuttingDown = false;
+		
 		//Calculate the local host
 		calculateHostIP();
 		
@@ -211,6 +220,9 @@ public class NetworkManager {
 	}
 	
 	public void shutdownNetwork() {
+		//We are trying toi shutdown
+		mShuttingDown = true;
+		
 		//And the RPC
 		stopRPC();
 		
@@ -227,6 +239,10 @@ public class NetworkManager {
 		
 		//And the notify Manager
 		mNotifyManager.shutDown();
+	}
+	
+	public boolean isShuttingDowen() {
+		return mShuttingDown;
 	}
 	
 	public boolean isShutDownComplete() {

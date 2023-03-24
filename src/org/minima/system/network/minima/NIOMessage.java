@@ -135,6 +135,12 @@ public class NIOMessage implements Runnable {
 		//Convert the MiniData into a valid net message
 		byte[] data = mData.getBytes();
 		
+		//Are we shutting down
+		if(Main.getInstance().isShuttongDownOrRestoring()) {
+			//MinimaLogger.log("Minima Shutting down - no new NIOMessages");
+			return;
+		}
+		
 		//Convert..
 		ByteArrayInputStream bais 	= new ByteArrayInputStream(data);
 		DataInputStream dis 		= new DataInputStream(bais);
@@ -277,6 +283,7 @@ public class NIOMessage implements Runnable {
 				NIOManager.sendNetworkMessage(mClientUID, MSG_IBD, ibd);
 				
 			}else if(type.isEqual(MSG_IBD)) {
+				
 				//IBD received..
 				IBD ibd = IBD.ReadFromStream(dis);
 				
@@ -308,6 +315,7 @@ public class NIOMessage implements Runnable {
 				Main.getInstance().getTxPoWProcessor().postProcessIBD(ibd, mClientUID);
 				
 			}else if(type.isEqual(MSG_TXPOWID)) {
+				
 				//Read in the txpowid
 				MiniData txpowid = MiniData.ReadFromStream(dis);
 				
@@ -321,6 +329,7 @@ public class NIOMessage implements Runnable {
 				}
 				
 			}else if(type.isEqual(MSG_TXPOWREQ)) {
+				
 				//Read in the txpowid
 				MiniData txpowid = MiniData.ReadFromStream(dis);
 				
@@ -402,10 +411,12 @@ public class NIOMessage implements Runnable {
 					fullyvalid = false;
 				}
 				
+				boolean beforecascade = false;
 				if(block.isLessEqual(cascadeblock)) {
 					//Block before cascade
 					MinimaLogger.log("Received block before cascade.. "+block+" / "+cascadeblock+" difficulty:"+blockdiffratio+" from "+mClientUID);
-					fullyvalid = false;
+					fullyvalid 		= false;
+					beforecascade 	= true;
 				}
 				
 				//Check the Scripts - could fail.. 
@@ -434,7 +445,7 @@ public class NIOMessage implements Runnable {
 				//Check for mempool coins..
 				if(TxPoWChecker.checkMemPoolCoins(txpow)) {
 					//Same coins in different transaction - could have been requested by us from branch
-					MinimaLogger.log("TxPoW with existing mempoolcoins from client : "+mClientUID+" "+txpow.getTxPoWID());
+					//MinimaLogger.log("TxPoW with existing mempoolcoins from client : "+mClientUID+" "+txpow.getTxPoWID());
 					fullyvalid = false;
 				}
 				
@@ -459,8 +470,8 @@ public class NIOMessage implements Runnable {
 				//How long did all that take..
 				long timefinish = System.currentTimeMillis();
 				long timediff 	= timefinish - timestart;
-				if(timediff > 1000) {
-					MinimaLogger.log("Message took a long time ("+timediff+"ms) to process @ "+txpow.getTxPoWID());
+				if(timediff > 10000) {
+					MinimaLogger.log("Message took a long time ("+timediff+"ms) to process @ txpowid:"+txpow.getTxPoWID());
 					fullyvalid = false;
 				}
 				
@@ -474,7 +485,7 @@ public class NIOMessage implements Runnable {
 				}
 				
 				//Check all the Transactions.. if it's a block
-				if(txpow.isBlock()) {
+				if(txpow.isBlock() && !beforecascade) {
 					ArrayList<MiniData> txns = txpow.getBlockTransactions();
 					for(MiniData txn : txns) {
 						exists = MinimaDB.getDB().getTxPoWDB().exists(txn.to0xString());

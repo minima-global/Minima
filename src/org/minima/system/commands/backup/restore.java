@@ -74,12 +74,12 @@ public class restore extends Command {
 			throw new Exception("Restore file doesn't exist : "+restorefile.getAbsolutePath());
 		}
 		
+		//Clean up the memory
+		System.gc();
+		
 		///Base folder
 		File restorefolder = new File(GeneralParams.DATA_FOLDER, "restore");
 		restorefolder.mkdirs();
-		
-		//First stop everything.. and get ready to restore the files..
-		Main.getInstance().restoreReady();
 		
 		//Open the file..
 		byte[] restoredata = MiniFile.readCompleteFile(restorefile);
@@ -123,6 +123,9 @@ public class restore extends Command {
 		for(TxPoW txp : txplist.mTxPoWs) {
 			txpsqldb.addTxPoW(txp, true);
 		}
+		
+		//If it hasnot stopped - First stop everything.. and get ready to restore the files..
+		Main.getInstance().restoreReady();
 		
 		//Now load the sql
 		MinimaDB.getDB().getWallet().restoreFromFile(new File(restorefolder,"wallet.sql"));

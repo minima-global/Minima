@@ -11,7 +11,7 @@ body {
 .niceinput {
 
 	/* styling */
-  width:150;
+  width:100;
   white-space: nowrap;
   background-color: white;
   border: thin solid blue;

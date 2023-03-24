@@ -228,7 +228,7 @@ public class TxPoWGenerator {
 				//Check how many times we have checked this TxPoW - and rejected it
 				if(memtxp.getCheckRejectNumber()>3) {
 					//No good..
-					MinimaLogger.log("TxPoW checked too many times.. "+memtxp.getTxPoWID());
+					//MinimaLogger.log("TxPoW checked too many times.. "+memtxp.getTxPoWID());
 					valid = false;
 				}
 				
@@ -317,7 +317,7 @@ public class TxPoWGenerator {
 			//Was it valid
 			if(!valid) {
 				//Invalid TxPoW - remove from mempool
-				MinimaLogger.log("Invalid TxPoW in mempool.. removing.. "+memtxp.getTxPoWID());
+				//MinimaLogger.log("Invalid TxPoW in mempool.. removing.. "+memtxp.getTxPoWID());
 				MinimaDB.getDB().getTxPoWDB().removeMemPoolTxPoW(memtxp.getTxPoWID());
 			}
 			

@@ -1,6 +1,7 @@
 package org.minima.utils;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -170,6 +171,43 @@ public class MiniFile {
 			
 			//save to disk
 			MiniFile.writeDataToFile(zFile, casc.getBytes());
+			
+		}catch(IOException exc) {
+			MinimaLogger.log(exc);
+		}
+	}
+	
+	public static void saveObjectDirect(File zFile, Streamable zObject) {
+		//Check Parent
+		File parent = zFile.getAbsoluteFile().getParentFile();
+		if(!parent.exists()) {
+			parent.mkdirs();
+		}
+		
+		try {
+		
+			//Delete the old..
+			if(zFile.exists()) {
+				zFile.delete();
+				zFile.createNewFile();
+			}
+			
+			//Write it out..
+			FileOutputStream fos 		= new FileOutputStream(zFile, false);
+			BufferedOutputStream bos 	= new BufferedOutputStream(fos, 32768);
+			DataOutputStream fdos 		= new DataOutputStream(bos);
+			
+			//And write it..
+			zObject.writeDataStream(fdos);
+			
+			//flush
+			fdos.flush();
+			bos.flush();
+			fos.flush();
+			
+			fdos.close();
+			bos.close();
+			fos.close();
 			
 		}catch(IOException exc) {
 			MinimaLogger.log(exc);

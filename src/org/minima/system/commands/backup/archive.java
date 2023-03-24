@@ -297,7 +297,17 @@ public class archive extends Command {
 			boolean firstrun 		= true;
 			MiniNumber firstStart   = MiniNumber.ZERO;
 			
+			int counter = 0;
+			MinimaLogger.log("System clean..");
+			System.gc();
 			while(true) {
+				
+				//Clean system counter
+				counter++;
+				if(counter % 20 == 0) {
+					MinimaLogger.log("System clean..");
+					System.gc();
+				}
 				
 				//Send him a message..
 				IBD ibd = sendArchiveReq(host, port, startblock);
