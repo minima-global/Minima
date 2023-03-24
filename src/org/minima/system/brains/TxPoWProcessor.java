@@ -423,6 +423,9 @@ public class TxPoWProcessor extends MessageProcessor {
 				return;
 			}
 			
+			//How big is it..
+			MinimaLogger.log("Processing main IBD length : "+ibd.getTxBlocks().size());
+			
 			//Does it have a cascade
 			if(ibd.hasCascade()) {
 				
