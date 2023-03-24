@@ -307,6 +307,8 @@ public class archive extends Command {
 				if(counter % 20 == 0) {
 					MinimaLogger.log("System clean..");
 					System.gc();
+					
+					MinimaDB.getDB().ShutdownRestartTxpArchiveDB();
 				}
 				
 				//Send him a message..
@@ -359,23 +361,24 @@ public class archive extends Command {
 					Thread.sleep(250);
 					tip = MinimaDB.getDB().getTxPoWTree().getTip();
 					attempts++;
-					if(attempts>16) {
+					if(attempts>128) {
 						error = true;
 						break;
 					}
 				}
 				
 				if(error) {
-					MinimaLogger.log("ERROR : There was an error processing that IBD");
+					MinimaLogger.log("ERROR : There was an error processing that FIRST IBD");
 					break;
 				}
 				
 				//Now wait to catch up..
+				long timenow = System.currentTimeMillis();
 				MinimaLogger.log("Waiting for chain to catch up.. please wait");
 				attempts = 0;
 				while(foundsome) {
 					if(!tip.getBlockNumber().isEqual(endblock)) {
-						Thread.sleep(100);
+						Thread.sleep(250);
 					}else {
 						break;
 					}
@@ -383,14 +386,16 @@ public class archive extends Command {
 					tip = MinimaDB.getDB().getTxPoWTree().getTip();
 					
 					attempts++;
-					if(attempts>100) {
+					if(attempts>1024) {
 						error = true;
 						break;
 					}
 				}
+				long timediff = System.currentTimeMillis() - timenow;
+				MinimaLogger.log("IBD Processed.. time :"+timediff+"ms");
 				
 				if(error) {
-					MinimaLogger.log("ERROR : There was an error processing that IBD");
+					MinimaLogger.log("ERROR : There was an error processing that IBD - took too long");
 					break;
 				}
 				

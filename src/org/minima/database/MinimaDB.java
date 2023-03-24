@@ -1,6 +1,7 @@
 package org.minima.database;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -397,6 +398,38 @@ public class MinimaDB {
 			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
+		}
+		
+		//Release the krakken
+		writeLock(false);
+	}
+	
+	public void ShutdownRestartTxpArchiveDB() {
+		
+		//We need lock 
+		writeLock(true);
+				
+		try {
+			
+			//Shut them down
+			mTxPoWDB.saveDB(false);
+			mArchive.saveDB(false);
+			
+			//Get the base Database folder
+			File basedb = getBaseDBFolder();
+			
+			//Set the Archive folder
+			mArchive			= new ArchiveManager();
+			File archsqlfolder 	= new File(basedb,"archivesql");
+			mArchive.loadDB(new File(archsqlfolder,"archive"));
+			
+			//Load the SQL DB
+			mTxPoWDB			= new TxPoWDB();
+			File txpowsqlfolder = new File(basedb,"txpowsql");
+			mTxPoWDB.loadSQLDB(new File(txpowsqlfolder,"txpow"));
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 		
 		//Release the krakken
