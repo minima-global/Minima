@@ -317,10 +317,11 @@ public class mysql extends Command {
 			//Are we resetting the wallet too ?
 			MiniData seed 		= null;
 			String phrase = getParam("phrase","");
-			if(!phrase.equals("")) {
 			
-				//Clean it up..
-				String cleanphrase = BIP39.cleanSeedPhrase(phrase);
+			//Clean it up..
+			String cleanphrase = BIP39.cleanSeedPhrase(phrase);
+			
+			if(!phrase.equals("")) {
 				
 				//reset ALL the default data
 				Main.getInstance().archiveResetReady(true);
@@ -464,6 +465,12 @@ public class mysql extends Command {
 			resp.put("message", "Archive sync completed.. shutting down now.. please restart after");
 			resp.put("start", firstStart.toString());
 			resp.put("end", endblock.toString());
+			
+			if(!phrase.equals("")) {
+				resp.put("phrase", phrase);
+				resp.put("clean", cleanphrase);
+			}
+			
 			ret.put("response", resp);
 			
 			//And NOW shut down..
