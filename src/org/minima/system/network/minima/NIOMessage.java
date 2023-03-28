@@ -442,7 +442,7 @@ public class NIOMessage implements Runnable {
 					}
 				}
 				
-				//Check szie
+				//Check size
 				long size = txpow.getSizeinBytesWithoutBlockTxns();
 				if(size > tip.getTxPoW().getMagic().getMaxTxPoWSize().getAsLong()) {
 					MinimaLogger.log("TxPoW received size too large.. "+size+" "+txpow.getTxPoWID());
