@@ -442,6 +442,13 @@ public class NIOMessage implements Runnable {
 					}
 				}
 				
+				//Check szie
+				long size = txpow.getSizeinBytesWithoutBlockTxns();
+				if(size > tip.getTxPoW().getMagic().getMaxTxPoWSize().getAsLong()) {
+					MinimaLogger.log("TxPoW received size too large.. "+size+" "+txpow.getTxPoWID());
+					fullyvalid = false;
+				}
+				
 				//Check for mempool coins..
 				if(TxPoWChecker.checkMemPoolCoins(txpow)) {
 					//Same coins in different transaction - could have been requested by us from branch

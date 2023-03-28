@@ -596,6 +596,17 @@ public class send extends Command {
 		//Calculate the txpowid / size..
 		txpow.calculateTXPOWID();
 		
+		//Check Size is acceptable..
+		long size = txpow.getSizeinBytesWithoutBlockTxns();
+		long max  = tip.getTxPoW().getMagic().getMaxTxPoWSize().getAsLong();
+		if(debug) {
+			MinimaLogger.log("TxPoW size "+size+" max:"+max);
+		}
+		
+		if(size > max) {
+			throw new CommandException("TxPoW size too large.. "+size+"/"+max);
+		}
+		
 		if(!dryrun) {
 		
 			//Are we locking the DB
