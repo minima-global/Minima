@@ -274,7 +274,7 @@ public class BondServer {
 	    			MinimaLogger.log("[VALID] coinid:"+coinid+" coinage:"+coinage.toString()+" amount:"+coinamount.toString()+" interest:"+reqamount.toString());
 	    			
 	    			//Spend it..
-	    			String spendable 	 = "coins sendable:true tokenid:0x00 checkmempool:true";
+	    			String spendable 	 = "coins coinage:10 sendable:true tokenid:0x00 checkmempool:true";
 		    		jsonres 			 = runSingleCommand(spendable);
 		    		JSONArray spendcoins = (JSONArray) jsonres.get("response");
 		    		
