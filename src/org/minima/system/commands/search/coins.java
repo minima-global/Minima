@@ -15,13 +15,15 @@ import org.minima.system.Main;
 import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
+import org.minima.system.params.GlobalParams;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class coins extends Command {
 
 	public coins() {
-		super("coins","(relevant:true) (sendable:true) (coinid:) (amount:) (address:) (tokenid:) (checkmempool:) (order:) - Search for coins");
+		super("coins","(relevant:true) (sendable:true) (coinid:) (amount:) (address:) (tokenid:) (coinage:) (checkmempool:) (order:) - Search for coins");
 	}
 	
 	@Override
@@ -55,6 +57,9 @@ public class coins extends Command {
 				+ "checkmempool: (optional)\n"
 				+ "    Check if the coin is in the mempool.\n"
 				+ "\n"
+				+ "coinage: (optional)\n"
+				+ "    How old does the coin have to be.\n"
+				+ "\n"
 				+ "order: (optional)\n"
 				+ "    Order asc or desc (Ascending or Decending).\n"
 				+ "\n"
@@ -77,7 +82,8 @@ public class coins extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"relevant","sendable","coinid","amount","address","tokenid","checkmempool","order"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"relevant","sendable","coinid","amount",
+				"address","tokenid","checkmempool","order","coinage"}));
 	}
 	
 	@Override
@@ -122,6 +128,10 @@ public class coins extends Command {
 			tokenid = new MiniData(getParam("tokenid", "0x01"));
 		}
 		
+		
+		//How old do the coins need to be.. used by consolidate
+		MiniNumber coinage = getNumberParam("coinage", MiniNumber.ZERO);
+		
 		//Get the tree tip..
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 		
@@ -131,6 +141,20 @@ public class coins extends Command {
 															samount,amount,
 															saddress, address, 
 															stokenid, tokenid, simple);
+		
+		//Make sure coins old enough..
+		ArrayList<Coin> agecoins = new ArrayList<>();
+		
+		//Now make sure they are old enough
+		MiniNumber mincoinblock = tip.getBlockNumber().sub(coinage);
+		for(Coin relc : coins) {
+			if(relc.getBlockCreated().isLessEqual(mincoinblock)) {
+				agecoins.add(relc);
+			}
+		}
+		
+		//Re-assign
+		coins = agecoins;
 		
 		//Are we checking if they are in the mempool
 		boolean checkmempool = getBooleanParam("checkmempool", false);
