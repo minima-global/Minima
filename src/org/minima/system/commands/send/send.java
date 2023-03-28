@@ -604,6 +604,14 @@ public class send extends Command {
 		}
 		
 		if(size > max) {
+			
+			//Are we locking the DB
+			if(!dryrun && passwordlock) {
+				
+				//Lock the Wallet DB
+				vault.passwordLockDB(getParam("password"));
+			}
+			
 			throw new CommandException("TxPoW size too large.. "+size+"/"+max);
 		}
 		
