@@ -555,6 +555,9 @@ public class TxPoWProcessor extends MessageProcessor {
 			//And now recalculate tree
 			recalculateTree();
 			
+			//How big is it..
+			MinimaLogger.log("Processing main IBD finished");
+			
 			//we are not syncing..
 			Main.getInstance().setSyncIBD(false);
 			
