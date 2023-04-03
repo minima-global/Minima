@@ -570,38 +570,52 @@ public class TxPoWProcessor extends MessageProcessor {
 			//Get the ArchiveDB
 			ArchiveManager arch = MinimaDB.getDB().getArchive();
 			
-			//Get the last block I have..
-			TxBlock lastblock 	= arch.loadLastBlock();
-			TxPoW lastpow 		= null;
-			if(lastblock == null) {
-				//Use the TxPoWTree
-				lastpow = MinimaDB.getDB().getTxPoWTree().getRoot().getTxPoW();
-			}else {
-				lastpow = lastblock.getTxPoW();
-			}
+			//we are syncing..
+			Main.getInstance().setSyncIBD(true);
 			
-			//Cycle through and add..
-			for(TxBlock block : blocks) {
-				
-				//What is the last current block number we know of..
-				MiniNumber lastnum = lastpow.getBlockNumber();
-				
-				//Check the block number is correct.. could be an asynchronous miss-alignment
-				if(block.getTxPoW().getBlockNumber().isEqual(lastnum.decrement())) {
-				
-					//Check the parent hash is correct
-					if(block.getTxPoW().getTxPoWIDData().isEqual(lastpow.getParentID())) {
-						//We can store it..
-						arch.saveBlock(block);
-					}else {
-						MinimaLogger.log("[-] Invalid block parent in TxBlock sync.. @ "+block.getTxPoW().getBlockNumber()+" from "+uid);
-						return;
-					}
+			try {
+				//Get the last block I have..
+				TxBlock lastblock 	= arch.loadLastBlock();
+				TxPoW lastpow 		= null;
+				if(lastblock == null) {
+					//Use the TxPoWTree
+					lastpow = MinimaDB.getDB().getTxPoWTree().getRoot().getTxPoW();
+				}else {
+					lastpow = lastblock.getTxPoW();
 				}
 				
-				//we have a new last pow..
-				lastpow = block.getTxPoW();
+				//Cycle through and add..
+				for(TxBlock block : blocks) {
+					
+					//What is the last current block number we know of..
+					MiniNumber lastnum = lastpow.getBlockNumber();
+					
+					//Check the block number is correct.. could be an asynchronous miss-alignment
+					if(block.getTxPoW().getBlockNumber().isEqual(lastnum.decrement())) {
+					
+						//Check the parent hash is correct
+						if(block.getTxPoW().getTxPoWIDData().isEqual(lastpow.getParentID())) {
+							//We can store it..
+							arch.saveBlock(block);
+						}else {
+							//we are not syncing..
+							Main.getInstance().setSyncIBD(false);
+							
+							MinimaLogger.log("[-] Invalid block parent in TxBlock sync.. @ "+block.getTxPoW().getBlockNumber()+" from "+uid);
+							return;
+						}
+					}
+					
+					//we have a new last pow..
+					lastpow = block.getTxPoW();
+				}
+			}catch(Exception exc) {
+				//Something went wrontg..
+				MinimaLogger.log(exc);
 			}
+			
+			//we are not syncing..
+			Main.getInstance().setSyncIBD(false);
 			
 			//Ask to sync the TxBlocks
 			askToSyncTxBlocks(uid);

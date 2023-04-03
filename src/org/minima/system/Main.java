@@ -161,6 +161,11 @@ public class Main extends MessageProcessor {
 	boolean mRestoring = false;
 	
 	/**
+	 * Are we syncing an IBD
+	 */
+	boolean mSyncIBD = false;
+	
+	/**
 	 * Timer for the automine message
 	 */
 	public long AUTOMINE_TIMER = 1000 * 50;
@@ -266,6 +271,17 @@ public class Main extends MessageProcessor {
 		
 		//Quick Clean up..
 		System.gc();
+	}
+	
+	/**
+	 * Are we syncing an IBD
+	 */
+	public void setSyncIBD(boolean zSync) {
+		mSyncIBD = zSync;
+	}
+	
+	public boolean isSyncIBD() {
+		return mSyncIBD;
 	}
 	
 	/**

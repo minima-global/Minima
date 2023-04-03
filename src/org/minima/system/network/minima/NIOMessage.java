@@ -150,6 +150,15 @@ public class NIOMessage implements Runnable {
 			//What Type..
 			MiniByte type = MiniByte.ReadFromStream(dis);
 			
+			//Are we syncing an IBD
+			if(Main.getInstance().isSyncIBD()) {
+				if(type.isEqual(MSG_TXPOW) || type.isEqual(MSG_TXPOWID) || type.isEqual(MSG_TXPOWREQ)) {
+					//Ignore until finished..
+					MinimaLogger.log("Ignoring NIOmessage during IBD Sync.. type:"+convertMessageType(type));
+					return;
+				}
+			}
+			
 			//Output some info
 			String tracemsg = "[NIOMessage] uid:"+mClientUID+" type:"+convertMessageType(type)+" size:"+MiniFormat.formatSize(data.length);
 			if(mTrace && tracemsg.contains(mFilter)) {
