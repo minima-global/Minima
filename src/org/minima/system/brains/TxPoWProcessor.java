@@ -533,13 +533,18 @@ public class TxPoWProcessor extends MessageProcessor {
 					requestMissingTxns(uid,block);
 					
 					//If we've added a lot of blocks..
-					if(additions > 1000) {
+					if(additions > 256) {
 						
 						//recalculate the Tree..
 						recalculateTree();
 						
+						//Clean memory
+						System.gc();
+						
 						//Reset these
 						additions = 0;
+						
+						MinimaLogger.log("[!] Processed IBD block @ "+block.getTxPoW().getBlockNumber().toString());
 					}
 					
 				}catch(Exception exc) {

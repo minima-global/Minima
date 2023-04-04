@@ -276,7 +276,7 @@ public class TxPoWSqlDB extends SqlDB {
 			return rs.next();
 			
 		} catch (SQLException e) {
-			MinimaLogger.log(e);
+			//MinimaLogger.log(e);
 		}
 		
 		return false;

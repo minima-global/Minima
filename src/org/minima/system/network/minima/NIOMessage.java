@@ -152,7 +152,7 @@ public class NIOMessage implements Runnable {
 			
 			//Are we syncing an IBD
 			if(Main.getInstance().isSyncIBD()) {
-				if(type.isEqual(MSG_TXPOW) || type.isEqual(MSG_TXPOWID) || type.isEqual(MSG_TXPOWREQ)) {
+				if(type.isEqual(MSG_TXPOWID) || type.isEqual(MSG_PULSE)) {
 					//Ignore until finished..
 					MinimaLogger.log("Ignoring NIOmessage during IBD Sync.. type:"+convertMessageType(type));
 					return;
@@ -293,8 +293,14 @@ public class NIOMessage implements Runnable {
 				
 			}else if(type.isEqual(MSG_IBD)) {
 				
+				//Log it..
+				MinimaLogger.log("Received IBD size:"+MiniFormat.formatSize(data.length));
+				
 				//IBD received..
 				IBD ibd = IBD.ReadFromStream(dis);
+				
+				//Log it..
+				MinimaLogger.log("Received IBD blocks:"+ibd.getTxBlocks().size());
 				
 				//Check Seems Valid..
 				if(!ibd.checkValidData()) {
@@ -304,6 +310,9 @@ public class NIOMessage implements Runnable {
 					
 					return;
 				}
+				
+				//Log it..
+				MinimaLogger.log("Received IBD is valid..");
 				
 				//Is it a complete IBD even though we have a cascade
 				if(MinimaDB.getDB().getCascade().getLength()>0 && ibd.hasCascadeWithBlocks()) {
@@ -316,7 +325,7 @@ public class NIOMessage implements Runnable {
 					
 					return;
 				}
-				
+								
 				//A small message..
 				MinimaLogger.log("[+] Connected to the blockchain Initial Block Download received. size:"+MiniFormat.formatSize(data.length)+" blocks:"+ibd.getTxBlocks().size());
 				
