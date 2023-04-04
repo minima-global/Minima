@@ -1,0 +1,62 @@
+<html>
+
+<head>
+	<title>DUMB TERMINAL</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script type="text/javascript" src="mds.js"></script>
+</head>
+
+<body>
+
+
+<script type="text/javascript">
+
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			MDS.log("MDS inited..");
+			
+		}
+	});
+
+	function activateEnergy(){
+		
+		//Get the ACT
+		var act = document.getElementById("actwindow").value;
+		
+		//Now check it..
+		console.log("ACT:"+act);
+		
+		
+		
+	}
+	
+	
+</script>
+
+<center>
+
+	<br>
+
+	<h2>ENERGY TERMINAL</h2>
+
+Terminal ID : <b>0x0001</b><br>
+<br>
+
+To activate energy release pls copy in your <b>Access Control Token</b> here :<br>
+<br>
+<textarea rows="5" cols="50" id="actwindow"></textarea><br>
+<br>
+<button onclick='activateEnergy();'>ACTIVATE</button>
+
+
+	
+</center>
+
+</body>
+
+</html>

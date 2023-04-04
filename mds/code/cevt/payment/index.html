@@ -1,0 +1,79 @@
+<html>
+
+<head>
+	<title>KJ PAYMENT</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script type="text/javascript" src="mds.js"></script>
+</head>
+
+<body>
+
+<center>
+
+	<br>
+
+	<h2>KJ PAYMENT DAPP</h2>
+<br>
+<div id="kjbalance">Current balance</div><br>
+<br>
+<div id="kjtokens">Current ACTs</div><br>
+
+
+<script type="text/javascript">
+
+	//Some static variables
+	const KJ_TOKENID 		= "0x050D2DD42E2EC376E06B2AB5731E7DF550371B286B9FB4C9E1197A667BB28F8B";
+	const KJ_ACT_TOKENID 	= "0x14350C289B7A5BF0BE2BFADDB7766DF75C153C0365E9A3D4E2236894C014CAE6";
+	const PAY_ADDRESS 		= "MxG0866UJHK16J9304ETBSUGZMTB6R5YA7PRS1QRZGRSMR2FZYFYA66JT2V8QZG";
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			var kjbaldiv 	= document.getElementById("kjbalance");
+			var actbaldiv 	= document.getElementById("kjtokens");
+			
+			//The Energy base token..
+			MDS.cmd("balance tokenid:"+KJ_TOKENID,function(result){
+				MDS.log(JSON.stringify(result));
+				
+				if(result.response.length > 0){
+					kjbaldiv.innerHTML = "Current KJ balance : "+result.response[0].sendable;
+				}else{
+					kjbaldiv.innerHTML = "No KJ Energy..";	
+				}
+			});
+			
+			//The ACT tokens
+			MDS.cmd("coins relevant:true tokenid:"+KJ_ACT_TOKENID,function(result){
+				MDS.log(JSON.stringify(result));
+				
+				var coinlen = result.response.length;
+				
+				if(coinlen==0){
+					actbaldiv.innerHTML = "No Acces Control Tokens..";
+				}else{
+					var output = "";	
+					for(var i=0;i<coinlen;i++){
+						var coin = result.response[i];
+						
+						output +="CoinID : "+coin.coinid+"<br><br>";
+						
+					}
+					
+					actbaldiv.innerHTML = output;
+				}
+			});
+			
+		}
+	});
+
+</script>
+	
+</center>
+
+</body>
+
+</html>
