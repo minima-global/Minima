@@ -1,0 +1,36 @@
+<html>
+
+<head>
+	<title>DUMB TERMINAL</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script type="text/javascript" src="mds.js"></script>
+</head>
+
+<body>
+
+<script type="text/javascript">
+
+	function gohome(){
+		window.location.href="index.html?uid="+MDS.form.getParams("uid");
+	}
+
+</script>
+
+<center>
+	<br>
+	<h2>ACTIVATE!</h2>
+
+ENERGY IS GOOOOO!..
+<br><br>
+
+<script type="text/javascript">
+	document.write("AMOUNT : "+MDS.form.getParams("amount"));
+</script>
+<br><br>
+
+<button onclick='gohome();'>BACK HOME</button>	
+</center>
+
+</body>
+
+</html>
