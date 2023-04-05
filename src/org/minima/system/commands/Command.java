@@ -222,9 +222,16 @@ public abstract class Command {
 		return pp;
 	}
 	
-	public String getParam(String zParamName, String zDefault) {
+	public String getParam(String zParamName, String zDefault) throws CommandException {
 		if(existsParam(zParamName)) {
-			return (String) mParams.get(zParamName);
+			//Check for blank
+			String pp = (String)mParams.get(zParamName);
+			pp = pp.trim();
+			if(pp.equals("")) {
+				throw new CommandException("BLANK param not allowed : "+zParamName);
+			}
+			
+			return pp;
 		}
 		
 		return zDefault;
