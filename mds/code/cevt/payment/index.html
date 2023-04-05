@@ -19,7 +19,7 @@
 <table>
 	<tr>
 		<td>Terminal ID:</td>
-		<td><input type=text id=terminalid value="0x0001"> </td>
+		<td><input type=text id=terminalid> </td>
 	</tr>
 	<tr>
 		<td>Amount:</td>
@@ -38,6 +38,7 @@
 <script type="text/javascript">
 
 	//Some static variables
+	const CEVT_PUBKEY		= "0x30819F300D06092A864886F70D010101050003818D0030818902818100AECB70FAD27C2F88AAA2DCB908D4EE89E0C6D0D92C6EAEE9CD1332708CAA618BF5C0ED54180BE1D1957B027DFEEC142561269A4B1EACFC985FFAB8BA653EAFC3FACFCC090E7FB62E0435CD13C81CC2B2383E41E3FD999A5EF91EFE7F7E357C9D72C16D773667098D145F0F08F7EF2F6D29B1328C83BFABCF60AE2F88B2FDB2030203010001";
 	const KJ_TOKENID 		= "0x050D2DD42E2EC376E06B2AB5731E7DF550371B286B9FB4C9E1197A667BB28F8B";
 	const KJ_ACT_TOKENID 	= "0x14350C289B7A5BF0BE2BFADDB7766DF75C153C0365E9A3D4E2236894C014CAE6";
 	const PAY_ADDRESS 		= "MxG0866UJHK16J9304ETBSUGZMTB6R5YA7PRS1QRZGRSMR2FZYFYA66JT2V8QZG";
@@ -51,8 +52,6 @@
 	function removeSpent(id){
 		if(confirm("Are you sure ?")){
 			MDS.cmd("cointrack enable:false coinid:"+id,function(result){
-				MDS.log(JSON.stringify(result));
-				
 				updateViews();
 			});	
 		}
@@ -66,17 +65,68 @@
 		var tokenview = "";
 		
 		//Get the details..
-		var tid 		= MDS.util.getStateVariable(coin,0);
-		var tokamount 	= MDS.util.getStateVariable(coin,2);
+		var terminalid 		= MDS.util.getStateVariable(coin,0);
+		var userpubkey 		= MDS.util.getStateVariable(coin,1);
+		var tokamount 		= MDS.util.getStateVariable(coin,2);
+		var coinid 			= MDS.util.getStateVariable(coin,3);
+		var hash 			= MDS.util.getStateVariable(coin,4);
+		var signature		= MDS.util.getStateVariable(coin,5);
 		
-		tokenview +="<table border=1>";
+		//Check UserPub key is correct..
+		var error 		= false;
+		var errormsg 	= "no error";
+		if(userpubkey!=USER_PUBKEY){
+			error = true;
+			errormsg = "Incorrect User Pub Key !? Found:"+userpubkey+" expected:"+USER_PUBKEY;
+			MDS.log(errormsg);
+		}
 		
-		tokenview +="<tr><td>Terminal:</td><td>"+tid+"</td></tr>";
+		//Create the check string..
+		var checkstring = "#:"+terminalid+":"+userpubkey+":"+tokamount+":"+coinid;
+		
+		//Make the table..
+		tokenview +="<table border=1 width=400>";
+		tokenview +="<tr><td>Terminal:</td><td>"+terminalid+"</td></tr>";
 		tokenview +="<tr><td>Amount:</td><td>"+tokamount+"</td></tr>";
-		tokenview +="<tr><td>"+coin.coinid+"</td></tr>";
-		tokenview +="<tr><td style='text-align:right;'><button onclick='removeSpent(\""+coin.coinid+"\")'>REMOVE SPENT</button></td></tr>";
-		
+		tokenview +="<tr><td colspan=2><div style='overflow-wrap: break-word;max-width:400; font-size:9;' id="+coinid+">DATA</div></td></tr>";
+		tokenview +="<tr><td colspan=2 style='text-align:right;'><button onclick='removeSpent(\""+coin.coinid+"\")'>REMOVE SPENT</button></td></tr>";
 		tokenview +="</table>";
+		
+		//And now run some synchronous stuff..
+		MDS.cmd("hash data:"+checkstring,function(result){
+			var checkhash = result.response.hash;
+			if(checkhash!=hash){
+				error = true;
+				errormsg = "Incorrect data HASH!";
+				MDS.log(errormsg);
+			}
+			
+			//Now check the CEVT signature..
+			MDS.cmd("maxverify data:"+hash+" publickey:"+CEVT_PUBKEY+" signature:"+signature,function(result){
+				var valid = result.response.valid;
+				if(!valid){
+					error = true;
+					errormsg = "INVALID CEVT Signature";
+					MDS.log(errormsg);
+				}
+				
+				//Ok now THIS user signs the data 
+				MDS.cmd("maxsign data:"+hash,function(result){
+					var usersig = result.response.signature;
+					
+					//Now create the final data packet..
+					var datapacket = checkstring+":"+signature+":"+usersig+":#";
+					
+					//And put it in the div..
+					var divelem = document.getElementById(coinid); 
+					if(error){
+						divelem.innerHTML = errormsg;
+					}else{
+						divelem.innerHTML = datapacket;	
+					} 
+				});
+			});
+		});
 		
 		return tokenview;	
 	}
@@ -84,6 +134,7 @@
 	/**
 	 * Update the Balance Views
 	 */
+	var last_coin_len = -1; 
 	function updateViews(){
 		
 		var kjbaldiv 	= document.getElementById("kjbalance");
@@ -101,8 +152,14 @@
 		//The ACT tokens
 		MDS.cmd("coins relevant:true tokenid:"+KJ_ACT_TOKENID,function(result){
 			
-			//How many coins
+			//How many coins - check if changed
 			var coinlen = result.response.length;
+			if(last_coin_len == coinlen){
+				return;
+			}
+			last_coin_len = coinlen;
+			
+			//Print details..
 			if(coinlen==0){
 				actbaldiv.innerHTML = "No Acces Control Tokens..";
 			}else{
@@ -133,6 +190,7 @@
 		if(conf){
 			//Blank it..
 			document.getElementById("reqamount").value = "";
+			document.getElementById("terminalid").value = "";
 			
 			//And now send the funds with the correct state variables..
 			//var state="{\"0\":\""+USER_ADDRESS+"\",\"1\":\""+terminal+"\",}";
@@ -141,10 +199,10 @@
 			var sendfunc = "send amount:"+amount+" address:"+PAY_ADDRESS+" tokenid:"+KJ_TOKENID+" state:"+state;
 			
 			MDS.cmd(sendfunc,function(result){
-				MDS.log(JSON.stringify(result));
+				//MDS.log(JSON.stringify(result));
 				
 				if(result.status){
-					alert("Request Sent!");	
+					alert("Request Sent! Please wait for the token to be sent to you.. can take a minute..");	
 				}else if(result.pending){
 					alert("Pending Transaction! Pls confirm..");	
 				}else{

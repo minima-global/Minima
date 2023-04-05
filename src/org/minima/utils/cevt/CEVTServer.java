@@ -142,20 +142,7 @@ public class CEVTServer {
 				+ "");
 		
 		System.out.println("Welcome to the CEVT Server");
-		
-//		//First - set up the contract and scan for it..
-//		try {
-//			JSONObject addscript = runSingleCommand("newscript script:\""+BOND_SCRIPT+"\" trackall:false");
-//			if((boolean)addscript.get("status") != true) {
-//				MinimaLogger.log(addscript.toString());
-//				System.exit(1);
-//			}
-//			
-//		} catch (IOException | ParseException e1) {
-//			e1.printStackTrace();
-//			System.exit(1);
-//		}
-				
+						
 	    //Loop until finished..
 	    String result = null;
 	    String input="status";
@@ -223,6 +210,8 @@ public class CEVTServer {
 	    			response 	= (JSONObject)jsonres.get("response");
 	    			String hash = response.getString("hash");
 	    			
+	    			MinimaLogger.log(response.toString());
+	    			
 	    			//Sign that hash..
 	    			jsonres 			= runSingleCommand("maxsign data:"+hash+" privatekey:"+CEVT_PRIVATE_KEY);
 	    			response 			= (JSONObject)jsonres.get("response");
@@ -270,7 +259,8 @@ public class CEVTServer {
 		    		txnbuilder 		 += ";txnstate id:"+randid+" port:1 value:"+userpubkey;
 		    		txnbuilder 		 += ";txnstate id:"+randid+" port:2 value:"+tokenamount;
 		    		txnbuilder 		 += ";txnstate id:"+randid+" port:3 value:"+coinid;
-		    		txnbuilder 		 += ";txnstate id:"+randid+" port:4 value:"+signature;
+		    		txnbuilder 		 += ";txnstate id:"+randid+" port:4 value:"+hash;
+		    		txnbuilder 		 += ";txnstate id:"+randid+" port:5 value:"+signature;
 		    		
 		    		//Now sign and post! the txn..
 		    		txnbuilder 		 += ";txnsign id:"+randid+" publickey:auto txnpostauto:true txnpostmine:true";
