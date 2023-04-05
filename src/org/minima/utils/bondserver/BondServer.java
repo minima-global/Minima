@@ -259,6 +259,10 @@ public class BondServer {
 	    			
 	    			//Now get the details given the rate..
 		    		String rate			= getStateVar(coinobj, 105);
+		    		if(rate == null) {
+		    			MinimaLogger.log("INAVLID RATE NULL Coin: "+i+" amount:"+coinamount+" coinid:"+coinid+" coinage:"+coinage.toString());
+		    			continue;
+		    		}
 		    		MiniNumber ratenum 	= new MiniNumber(rate).sub(MiniNumber.ONE);
 		    		
 		    		//Check amount
@@ -288,6 +292,11 @@ public class BondServer {
 		    		
 		    		//Construct the txn..
 		    		String useraddress			= getStateVar(coinobj, 102);
+		    		if(useraddress == null) {
+		    			MinimaLogger.log("INAVLID USER ADDRESS NULL Coin: "+i+" amount:"+coinamount+" coinid:"+coinid+" coinage:"+coinage.toString());
+		    			continue;
+		    		}
+		    		
 		    		String ourcoinid			= ourcoin.getString("coinid");
 		    		MiniNumber ourcoinamount 	= new MiniNumber(ourcoin.getString("amount"));
 		    		MiniNumber ourchange 	 	= ourcoinamount.sub(reqamount);
