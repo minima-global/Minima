@@ -314,7 +314,8 @@ public class archive extends Command {
 				//Send him a message..
 				IBD ibd = sendArchiveReq(host, port, startblock);
 				if(ibd == null) {
-					throw new CommandException("Connection error @ "+host+":"+port);
+					ibd = new IBD();
+					//throw new CommandException("Connection error @ "+host+":"+port);
 				}
 				
 				//Is there a cascade..
@@ -434,7 +435,7 @@ public class archive extends Command {
 		return ret;
 	}
 	
-	public void NotifyListener(MessageListener zListener, String zMessage) throws Exception {
+	public static void NotifyListener(MessageListener zListener, String zMessage) throws Exception {
 		//Notify
 		if(zListener != null) {
 			
@@ -463,7 +464,7 @@ public class archive extends Command {
 	/**
 	 * A special PING message to  check a valid connection..
 	 */
-	public IBD sendArchiveReq(String zHost, int zPort, MiniNumber zStartBlock) {
+	public static IBD sendArchiveReq(String zHost, int zPort, MiniNumber zStartBlock) {
 		
 		IBD ibd= null;
 		
@@ -528,4 +529,5 @@ public class archive extends Command {
 		
 		return ibd;
 	}
+	
 }

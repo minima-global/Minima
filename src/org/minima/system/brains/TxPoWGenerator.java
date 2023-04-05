@@ -80,10 +80,10 @@ public class TxPoWGenerator {
 		MiniNumber mintime 	= getMedianTimeBlock(tip, GlobalParams.MEDIAN_BLOCK_CALC*2).getTxPoW().getTimeMilli();
 		MiniNumber maxtime 	= mintime.add(TxPoWChecker.MAX_TIME_FUTURE); 
 		if(millitime.isLess(mintime)) {
-			MinimaLogger.log("NEW TxPoW time too far back.. setting minimum");
+			//MinimaLogger.log("NEW TxPoW time too far back.. setting minimum");
 			millitime = mintime.add(new MiniNumber(1000*50));
 		}else if(millitime.isMore(maxtime)) {
-			MinimaLogger.log("NEW TxPoW time too far in future.. setting maximum");
+			//MinimaLogger.log("NEW TxPoW time too far in future.. setting maximum");
 			millitime = maxtime;
 		}
 		

@@ -364,6 +364,52 @@ public class MinimaDB {
 		writeLock(false);
 	}
 	
+	public void loadDBsForRestoreSync() {
+		
+		//We need read lock 
+		writeLock(true);
+		
+		try {
+			
+			//Get the base Database folder
+			File basedb = getBaseDBFolder();
+			
+			//Wallet
+			mWallet					= new Wallet();
+			File walletsqlfolder 	= new File(basedb,"walletsql");
+			if(!GeneralParams.IS_MAIN_DBPASSWORD_SET) {
+				mWallet.loadDB(new File(walletsqlfolder,"wallet"));
+			}else {
+				mWallet.loadEncryptedSQLDB(new File(walletsqlfolder,"wallet"),GeneralParams.MAIN_DBPASSWORD);
+			}
+			
+			//Set the Archive folder
+			mArchive			= new ArchiveManager();
+			File archsqlfolder 	= new File(basedb,"archivesql");
+			mArchive.loadDB(new File(archsqlfolder,"archive"));
+			
+			//Load the SQL DB
+			mTxPoWDB			= new TxPoWDB();
+			File txpowsqlfolder = new File(basedb,"txpowsql");
+			mTxPoWDB.loadSQLDB(new File(txpowsqlfolder,"txpow"));
+			
+			//Load the Cascade
+			mCascade = new Cascade();
+			mCascade.loadDB(new File(basedb,"cascade.db"));
+			
+			//Load the TxPoWTree
+			mTxPoWTree = new TxPowTree();
+			mTxPoWTree.loadDB(new File(basedb,"chaintree.db"));
+			
+		}catch(Exception exc) {
+			MinimaLogger.log("SERIOUS ERROR loadDBsForRestoreSync");
+			MinimaLogger.log(exc);
+		}
+		
+		//Release the krakken
+		writeLock(false);
+	}
+	
 	public void saveAllDB() {
 		saveAllDB(false);
 	}

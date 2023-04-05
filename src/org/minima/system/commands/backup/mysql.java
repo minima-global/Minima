@@ -317,10 +317,11 @@ public class mysql extends Command {
 			//Are we resetting the wallet too ?
 			MiniData seed 		= null;
 			String phrase = getParam("phrase","");
-			if(!phrase.equals("")) {
 			
-				//Clean it up..
-				String cleanphrase = BIP39.cleanSeedPhrase(phrase);
+			//Clean it up..
+			String cleanphrase = BIP39.cleanSeedPhrase(phrase);
+			
+			if(!phrase.equals("")) {
 				
 				//reset ALL the default data
 				Main.getInstance().archiveResetReady(true);
@@ -363,7 +364,19 @@ public class mysql extends Command {
 			boolean firstrun 		= true;
 			MiniNumber firstStart   = MiniNumber.ZERO;
 			
+			int counter = 0;
+			MinimaLogger.log("System clean..");
+			System.gc();
 			while(true) {
+				
+				//Clean system counter
+				counter++;
+				if(counter % 20 == 0) {
+					MinimaLogger.log("System clean..");
+					System.gc();
+					
+					MinimaDB.getDB().ShutdownRestartTxpArchiveDB();
+				}
 				
 				//Create an IBD for the mysql data
 				ArrayList<TxBlock> mysqlblocks = mysql.loadBlockRange(startblock);
@@ -415,7 +428,7 @@ public class mysql extends Command {
 					Thread.sleep(250);
 					tip = MinimaDB.getDB().getTxPoWTree().getTip();
 					attempts++;
-					if(attempts>16) {
+					if(attempts>128) {
 						error = true;
 						break;
 					}
@@ -431,7 +444,7 @@ public class mysql extends Command {
 				attempts = 0;
 				while(foundsome) {
 					if(!tip.getBlockNumber().isEqual(endblock)) {
-						Thread.sleep(100);
+						Thread.sleep(250);
 					}else {
 						break;
 					}
@@ -439,7 +452,7 @@ public class mysql extends Command {
 					tip = MinimaDB.getDB().getTxPoWTree().getTip();
 					
 					attempts++;
-					if(attempts>100) {
+					if(attempts>1024) {
 						error = true;
 						break;
 					}
@@ -464,6 +477,12 @@ public class mysql extends Command {
 			resp.put("message", "Archive sync completed.. shutting down now.. please restart after");
 			resp.put("start", firstStart.toString());
 			resp.put("end", endblock.toString());
+			
+			if(!phrase.equals("")) {
+				resp.put("phrase", phrase);
+				resp.put("clean", cleanphrase);
+			}
+			
 			ret.put("response", resp);
 			
 			//And NOW shut down..

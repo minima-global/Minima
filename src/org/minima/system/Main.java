@@ -161,6 +161,11 @@ public class Main extends MessageProcessor {
 	boolean mRestoring = false;
 	
 	/**
+	 * Are we syncing an IBD
+	 */
+	boolean mSyncIBD = false;
+	
+	/**
 	 * Timer for the automine message
 	 */
 	public long AUTOMINE_TIMER = 1000 * 50;
@@ -269,6 +274,17 @@ public class Main extends MessageProcessor {
 	}
 	
 	/**
+	 * Are we syncing an IBD
+	 */
+	public void setSyncIBD(boolean zSync) {
+		mSyncIBD = zSync;
+	}
+	
+	public boolean isSyncIBD() {
+		return mSyncIBD;
+	}
+	
+	/**
 	 * Used after a Restore
 	 */
 	public void setHasShutDown() {
@@ -350,7 +366,21 @@ public class Main extends MessageProcessor {
 		mTxPoWProcessor.waitToShutDown();	
 	}
 	
+	public void restoreReadyForSync() {
+		
+		//Restart the Processor
+		mTxPoWProcessor = new TxPoWProcessor();
+		
+		//Reload the DBs..
+		MinimaDB.getDB().loadDBsForRestoreSync();
+				
+	}
+	
 	public void archiveResetReady(boolean zResetWallet) {
+		archiveResetReady(zResetWallet, true);
+	}
+	
+	public void archiveResetReady(boolean zResetWallet, boolean zResetCascadeTree) {
 		//we are about to restore..
 		mRestoring = true;
 				
@@ -359,7 +389,9 @@ public class Main extends MessageProcessor {
 		
 		//Delete old files.. and reset to new
 		MinimaDB.getDB().getTxPoWDB().getSQLDB().saveDB(false);
-		MinimaDB.getDB().getTxPoWDB().getSQLDB().getSQLFile().delete();
+		if(zResetCascadeTree) {
+			MinimaDB.getDB().getTxPoWDB().getSQLDB().getSQLFile().delete();
+		}
 		
 		MinimaDB.getDB().getArchive().saveDB(false);
 		MinimaDB.getDB().getArchive().getSQLFile().delete();
@@ -373,8 +405,10 @@ public class Main extends MessageProcessor {
 		//Reload the SQL dbs
 		MinimaDB.getDB().loadArchiveAndTxPoWDB(zResetWallet);
 		
-		//Reset these 
-		MinimaDB.getDB().resetCascadeAndTxPoWTree();
+		if(zResetCascadeTree) {
+			//Reset these 
+			MinimaDB.getDB().resetCascadeAndTxPoWTree();
+		}
 	}
 	
 	private void shutdownGenProcs() {

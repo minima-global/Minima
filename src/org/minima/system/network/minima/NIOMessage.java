@@ -150,6 +150,15 @@ public class NIOMessage implements Runnable {
 			//What Type..
 			MiniByte type = MiniByte.ReadFromStream(dis);
 			
+			//Are we syncing an IBD
+			if(Main.getInstance().isSyncIBD()) {
+				if(type.isEqual(MSG_TXPOWID) || type.isEqual(MSG_PULSE)) {
+					//Ignore until finished..
+					MinimaLogger.log("Ignoring NIOmessage during IBD Sync.. type:"+convertMessageType(type));
+					return;
+				}
+			}
+			
 			//Output some info
 			String tracemsg = "[NIOMessage] uid:"+mClientUID+" type:"+convertMessageType(type)+" size:"+MiniFormat.formatSize(data.length);
 			if(mTrace && tracemsg.contains(mFilter)) {
@@ -284,8 +293,14 @@ public class NIOMessage implements Runnable {
 				
 			}else if(type.isEqual(MSG_IBD)) {
 				
+				//Log it..
+				MinimaLogger.log("Received IBD size:"+MiniFormat.formatSize(data.length));
+				
 				//IBD received..
 				IBD ibd = IBD.ReadFromStream(dis);
+				
+				//Log it..
+				MinimaLogger.log("Received IBD blocks:"+ibd.getTxBlocks().size());
 				
 				//Check Seems Valid..
 				if(!ibd.checkValidData()) {
@@ -295,6 +310,9 @@ public class NIOMessage implements Runnable {
 					
 					return;
 				}
+				
+				//Log it..
+				MinimaLogger.log("Received IBD is valid..");
 				
 				//Is it a complete IBD even though we have a cascade
 				if(MinimaDB.getDB().getCascade().getLength()>0 && ibd.hasCascadeWithBlocks()) {
@@ -307,7 +325,7 @@ public class NIOMessage implements Runnable {
 					
 					return;
 				}
-				
+								
 				//A small message..
 				MinimaLogger.log("[+] Connected to the blockchain Initial Block Download received. size:"+MiniFormat.formatSize(data.length)+" blocks:"+ibd.getTxBlocks().size());
 				
@@ -442,6 +460,13 @@ public class NIOMessage implements Runnable {
 					}
 				}
 				
+				//Check size
+				long size = txpow.getSizeinBytesWithoutBlockTxns();
+				if(size > tip.getTxPoW().getMagic().getMaxTxPoWSize().getAsLong()) {
+					MinimaLogger.log("TxPoW received size too large.. "+size+" "+txpow.getTxPoWID());
+					fullyvalid = false;
+				}
+				
 				//Check for mempool coins..
 				if(TxPoWChecker.checkMemPoolCoins(txpow)) {
 					//Same coins in different transaction - could have been requested by us from branch
@@ -470,7 +495,7 @@ public class NIOMessage implements Runnable {
 				//How long did all that take..
 				long timefinish = System.currentTimeMillis();
 				long timediff 	= timefinish - timestart;
-				if(timediff > 10000) {
+				if(timediff > 20000) {
 					MinimaLogger.log("Message took a long time ("+timediff+"ms) to process @ txpowid:"+txpow.getTxPoWID());
 					fullyvalid = false;
 				}

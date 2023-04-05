@@ -17,6 +17,7 @@ import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.backup;
 import org.minima.system.commands.backup.mysql;
 import org.minima.system.commands.backup.restore;
+import org.minima.system.commands.backup.restoresync;
 import org.minima.system.commands.backup.vault;
 import org.minima.system.commands.base.automine;
 import org.minima.system.commands.base.balance;
@@ -122,7 +123,7 @@ public abstract class Command {
 			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(), new sendview(),
 			
 			new archive(), new logs(), new history(), new convert(),new maths(),
-			new magic(), new checkpending(),
+			new magic(), new checkpending(), new restoresync(),
 			new multisig(), new checkaddress(),
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
 			
@@ -211,12 +212,26 @@ public abstract class Command {
 			throw new CommandException("param not specified : "+zParamName);
 		}
 		
-		return (String) mParams.get(zParamName);
+		//Check for blank
+		String pp = (String)mParams.get(zParamName);
+		pp = pp.trim();
+		if(pp.equals("")) {
+			throw new CommandException("BLANK param not allowed : "+zParamName);
+		}
+		
+		return pp;
 	}
 	
-	public String getParam(String zParamName, String zDefault) {
+	public String getParam(String zParamName, String zDefault) throws CommandException {
 		if(existsParam(zParamName)) {
-			return (String) mParams.get(zParamName);
+			//Check for blank
+			String pp = (String)mParams.get(zParamName);
+			pp = pp.trim();
+			if(pp.equals("")) {
+				throw new CommandException("BLANK param not allowed : "+zParamName);
+			}
+			
+			return pp;
 		}
 		
 		return zDefault;

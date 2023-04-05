@@ -423,6 +423,9 @@ public class TxPoWProcessor extends MessageProcessor {
 				return;
 			}
 			
+			//we are syncing..
+			Main.getInstance().setSyncIBD(true);
+			
 			//How big is it..
 			MinimaLogger.log("Processing main IBD length : "+ibd.getTxBlocks().size());
 			
@@ -502,6 +505,9 @@ public class TxPoWProcessor extends MessageProcessor {
 					if(txptree.getTip().getTxPoW().getTimeMilli().sub(timenow).abs().isLess(notxblocktimediff)) {
 						MinimaLogger.log("Your chain tip is up to date - no TxBlocks accepted - only FULL TxPoW");
 						
+						//we are not syncing..
+						Main.getInstance().setSyncIBD(false);
+						
 						//Ask to sync the TxBlocks
 						askToSyncTxBlocks(uid);
 						
@@ -527,13 +533,18 @@ public class TxPoWProcessor extends MessageProcessor {
 					requestMissingTxns(uid,block);
 					
 					//If we've added a lot of blocks..
-					if(additions > 1000) {
+					if(additions > 256) {
 						
 						//recalculate the Tree..
 						recalculateTree();
 						
+						//Clean memory
+						System.gc();
+						
 						//Reset these
 						additions = 0;
+						
+						MinimaLogger.log("[!] Processed IBD block @ "+block.getTxPoW().getBlockNumber().toString());
 					}
 					
 				}catch(Exception exc) {
@@ -548,6 +559,12 @@ public class TxPoWProcessor extends MessageProcessor {
 			
 			//And now recalculate tree
 			recalculateTree();
+			
+			//How big is it..
+			MinimaLogger.log("Processing main IBD finished");
+			
+			//we are not syncing..
+			Main.getInstance().setSyncIBD(false);
 			
 			//Ask to sync the TxBlocks
 			askToSyncTxBlocks(uid);
@@ -602,6 +619,7 @@ public class TxPoWProcessor extends MessageProcessor {
 				//we have a new last pow..
 				lastpow = block.getTxPoW();
 			}
+		
 			
 			//Ask to sync the TxBlocks
 			askToSyncTxBlocks(uid);

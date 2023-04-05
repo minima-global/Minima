@@ -1,0 +1,177 @@
+<html>
+
+<head>
+	<title>DUMB TERMINAL</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script type="text/javascript" src="mds.js"></script>
+</head>
+
+<body>
+
+
+<script type="text/javascript">
+
+	const CEVT_PUBKEY		= "0x30819F300D06092A864886F70D010101050003818D0030818902818100AECB70FAD27C2F88AAA2DCB908D4EE89E0C6D0D92C6EAEE9CD1332708CAA618BF5C0ED54180BE1D1957B027DFEEC142561269A4B1EACFC985FFAB8BA653EAFC3FACFCC090E7FB62E0435CD13C81CC2B2383E41E3FD999A5EF91EFE7F7E357C9D72C16D773667098D145F0F08F7EF2F6D29B1328C83BFABCF60AE2F88B2FDB2030203010001";
+	var TERMINAL_ID			= "";
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			MDS.log("MDS inited..");
+
+			//Check if file exists..
+			MDS.file.load("uniqueid.txt",function(result){
+				MDS.log(JSON.stringify(result));
+				
+				//Exists?
+				if(!result.status){
+					//Create the file..
+					var id = "0x"+Math.floor(Math.random()*16777215).toString(16).toUpperCase();
+					MDS.file.save("uniqueid.txt",id,function(result){
+						TERMINAL_ID = id;
+						setTerminalID();
+					});
+					
+				}else{
+					TERMINAL_ID = result.response.load.data;
+					setTerminalID();
+				}
+			});
+			
+			//Create the DB if not exists
+			var initsql = "CREATE TABLE IF NOT EXISTS `usedtokens` ( "
+						+"  `id` bigint auto_increment, "
+						+"  `hash` varchar(160) NOT NULL "
+						+" )";
+			
+			MDS.sql(initsql,function(result){
+				//MDS.log(JSON.stringify(result));	
+			});
+		}
+	});
+
+	function checkUsed(hash,callback){
+		MDS.sql("SELECT * FROM usedtokens WHERE hash='"+hash+"'",function(result){
+			MDS.log(JSON.stringify(result));
+			if(result.count>0){
+				callback(true);
+			}else{
+				callback(false);
+			}
+		});
+	}
+	
+	function setUsed(hash,callback){
+		MDS.sql("INSERT INTO usedtokens(hash) VALUES ('"+hash+"')",function(result){
+			MDS.log(JSON.stringify(result));
+			callback();
+		});
+	}
+	
+	function setTerminalID(){
+		var term = document.getElementById("terminalid");
+		term.innerHTML = "Terminal ID : "+TERMINAL_ID;
+	}
+	
+	function activateEnergy(){
+		
+		//Get the ACT
+		var act = document.getElementById("actwindow").value;
+		
+		//Split it up..
+		var parts = act.split(":");
+		
+		var len = parts.length;
+		if(len != 8){
+			alert("Error wrong number of parts.. !");
+			return;
+		}
+		
+		//Check starts and ends withj #
+		if(parts[0].trim()!='#' || parts[7].trim()!='#'){
+			alert("Error must start and end with #.. !");
+			return;
+		}	
+		
+		//Get the data..
+		var terminalid 	= parts[1];
+		var userpubkey 	= parts[2];
+		var tokamount  	= parts[3];
+		var coinid  	= parts[4];
+		
+		//And the sigs..
+		var cevtsig 	= parts[5];
+		var usersig 	= parts[6];
+		
+		//Check Terminal ID
+		if(terminalid != TERMINAL_ID){
+			alert("Incorrect Terminal ID!");
+			return;
+		}
+		
+		//Check the sigs..
+		var checkstring = "#:"+terminalid+":"+userpubkey+":"+tokamount+":"+coinid;
+		
+		//And now run some synchronous stuff..
+		MDS.cmd("hash data:"+checkstring,function(result){
+			var hash = result.response.hash;
+			
+			//Check not allready used..
+			checkUsed(hash,function(used){
+				if(used){
+					alert("Token already used!");
+					return;
+				}
+			
+				//Now check the CEVT signature..
+				MDS.cmd("maxverify data:"+hash+" publickey:"+CEVT_PUBKEY+" signature:"+cevtsig,function(result){
+					var valid = result.response.valid;
+					if(!valid){
+						alert("Error Incorrect CEVT Signature.. !");
+						return;
+					}
+					
+					//Now check the user signature
+					MDS.cmd("maxverify data:"+hash+" publickey:"+userpubkey+" signature:"+usersig,function(result){
+						var valid = result.response.valid;
+						if(!valid){
+							alert("Error Incorrect USER Signature.. !");
+							return;
+						}
+						
+						//OK - VALID!
+						setUsed(hash,function(){
+							//Jump to a new page
+							window.location.href="activate.html?uid="+MDS.form.getParams("uid")+"&amount="+tokamount;
+						});
+					});
+				});
+			});
+		});
+	}
+	
+</script>
+
+<center>
+
+	<br>
+
+	<h2>ENERGY TERMINAL</h2>
+
+<div id=terminalid>...</div><br>
+<br>
+
+To activate energy release pls copy in your <b>Access Control Token</b> here :<br>
+<br>
+<textarea rows="12" cols="100" id="actwindow" style="font-size:10;"></textarea><br>
+<br>
+<button onclick='activateEnergy();'>ACTIVATE</button>
+	
+</center>
+
+</body>
+
+</html>

@@ -6,6 +6,7 @@ import java.util.Arrays;
 import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.backup;
 import org.minima.system.commands.backup.restore;
+import org.minima.system.commands.backup.restoresync;
 import org.minima.system.commands.backup.vault;
 import org.minima.system.commands.base.balance;
 import org.minima.system.commands.base.block;
@@ -201,6 +202,7 @@ public class help extends Command {
 			
 			addCommand(details, new backup());
 			addCommand(details, new restore());
+			addCommand(details, new restoresync());
 			addCommand(details, new archive());
 			addCommand(details, new vault());
 			

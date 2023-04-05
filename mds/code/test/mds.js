@@ -115,6 +115,11 @@ var MDS = {
 		httpPostAsync(MDS.mainhost+"cmd?"+"uid="+MDS.minidappuid, command, callback);
 	},
 	
+	cmdsync : function(command){
+		//Send via POST
+		return httpPostSync(MDS.mainhost+"cmd?"+"uid="+MDS.minidappuid, command);
+	},
+	
 	/**
 	 * Runs a SQL command on this MiniDAPPs SQL Database
 	 */
@@ -447,6 +452,36 @@ function httpPostAsync(theUrl, params, callback){
     //xmlHttp.setRequestHeader('Content-Type', 'application/json');    
 	xmlHttp.send(encodeURIComponent(params));
 	//xmlHttp.send(params);
+}
+
+/**
+ * Utility function for GET request
+ * 
+ * @param theUrl
+ * @param callback
+ * @param params
+ * @returns
+ */
+function httpPostSync(theUrl, params){
+	return new Promise((resolve, reject) => {
+		var status = xmlHttp.status;
+		if (xmlHttp.readyState == XMLHttpRequest.DONE){
+			if (status === 0 || (status >= 200 && status < 400)) {
+			
+				//Do we log it..
+	        	if(MDS.logging){
+	        		MDS.log("RESPONSE:"+xmlHttp.responseText);
+	        	}
+	
+	        	//Send it to the callback function..
+	        	resolve(JSON.parse(xmlHttp.responseText));
+	        	
+			}else{
+				//Some error..
+				reject("ERROR");
+			}
+		}
+	});
 }
 
 /**
