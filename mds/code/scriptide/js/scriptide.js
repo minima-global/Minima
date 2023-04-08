@@ -32,7 +32,7 @@ function runScript(){
 	if(sigs != ""){sigs = "signatures:"+sigs;}
 	
 	var scripts    = document.getElementById("mastscripts").value.trim();
-	if(scripts != ""){scripts = "extrascripts:"+sigs;}
+	if(scripts != ""){scripts = "extrascripts:"+scripts;}
 	
 	MDS.cmd("runscript script:\""+script+"\" "+state+" "+prevstate+" "+globals+" "+sigs+" "+scripts,function(json){
 		
