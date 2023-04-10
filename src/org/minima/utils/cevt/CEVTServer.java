@@ -73,13 +73,32 @@ public class CEVTServer {
 					
 				}else if(arg.equals("-sslpubkey")) {
 					sslpubkey = zArgs[counter++];
-					
+				
+				}else if(arg.equals("-mainaddress")) {
+					CEVT_ADDRESS = zArgs[counter++];
+				
+				}else if(arg.equals("-changeaddress")) {
+					CEVT_CHANGE_ADDRESS = zArgs[counter++];
+				
+				}else if(arg.equals("-kjtoken")) {
+					KJ_TOKENID = zArgs[counter++];
+				
+				}else if(arg.equals("-kjreceipt")) {
+					KJ_RECEIPT_TOKENID = zArgs[counter++];
+				
 				}else if(arg.equals("-help")) {
 					
 					System.out.println("CEVT Server Help");
-					System.out.println(" -host       : Specify the host IP:PORT");
-					System.out.println(" -password   : Specify the RPC Basic AUTH password (use with SSL)");
-					System.out.println(" -sslpubkey  : The SSL public key from Minima rpc command ( if using SSL )");
+					System.out.println(" -host           : Specify the host IP:PORT");
+					System.out.println(" -password       : Specify the RPC Basic AUTH password (use with SSL)");
+					System.out.println(" -sslpubkey      : The SSL public key from Minima rpc command ( if using SSL )");
+					
+					System.out.println(" -mainaddress    : The MAIN address to check for KJ sends");
+					System.out.println(" -changeaddress  : The change address to use when sending funds");
+					
+					System.out.println(" -kjtoken        : The Killer Joules tokenid");
+					System.out.println(" -kjreceipt      : The NFT tokenid when sending back the ACT");
+					
 					System.out.println(" -help       : Print this help");
 					
 					System.exit(1);
@@ -142,7 +161,12 @@ public class CEVTServer {
 				+ "");
 		
 		System.out.println("Welcome to the CEVT Server");
-						
+		
+		System.out.println("Main Address    : "+CEVT_ADDRESS);
+		System.out.println("Change Address  : "+CEVT_CHANGE_ADDRESS);
+		System.out.println("KJ TokenID      : "+KJ_TOKENID);
+		System.out.println("KJ RECEIPT NFT  : "+KJ_RECEIPT_TOKENID);
+		
 	    //Loop until finished..
 	    String result = null;
 	    String input="status";
