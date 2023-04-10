@@ -180,11 +180,17 @@ public class restoresync extends Command {
 		long timediff   = System.currentTimeMillis() - timemilli;
 		long maxtime 	= 1000 * 60 * 60 * 24 * 2;
 		
+		//How many keyuses
+		int keyuses = getNumberParam("keyuses", new MiniNumber(256)).getAsInt();
+				
 		//Do we even need to do a sync..
-		if(timediff < maxtime) {
+		if(true || timediff < maxtime) {
 			
 			MinimaLogger.log("No Sync required as new backup");
 
+			//Update key uses
+			MinimaDB.getDB().getWallet().updateIncrementAllKeyUses(keyuses);
+			
 			//And NOW shut down..
 			Main.getInstance().getTxPoWProcessor().stopMessageProcessor();
 			
@@ -216,11 +222,8 @@ public class restoresync extends Command {
 		//Is there a host
 		String host = getParam("host", "auto");
 		
-		//How many keyuses
-		int keyuses = getNumberParam("keyuses", new MiniNumber(1000)).getAsInt();
-		
 		//Now do a resync..
-		performResync(	host, keyuses, startblock);
+		performResync(	host, keyuses, startblock, true);
 		
 		//Get the TxPowTree
 		tip = MinimaDB.getDB().getTxPoWTree().getTip();
@@ -270,7 +273,7 @@ public class restoresync extends Command {
 	 * Perform a resync
 	 * @throws Exception 
 	 */
-	public JSONObject performResync(String zHost, int zKeyUses, MiniNumber zStartBlock) throws Exception {
+	public JSONObject performResync(String zHost, int zKeyUses, MiniNumber zStartBlock, boolean zIncrementKeys) throws Exception {
 		
 		//Get the Minima Listener..
 		MessageListener minimalistener = Main.getInstance().getMinimaListener();
@@ -315,8 +318,12 @@ public class restoresync extends Command {
 		//Get the Wallet
 		Wallet wallet = MinimaDB.getDB().getWallet();
 		
-		//Now Update the USES - since they may have been used before - we don;t know.. 
-		wallet.updateAllKeyUses(zKeyUses);
+		//Now Update the USES - since they may have been used before - we don;t know..
+		if(zIncrementKeys) {
+			wallet.updateIncrementAllKeyUses(zKeyUses);
+		}else {
+			wallet.updateAllKeyUses(zKeyUses);
+		}
 		
 		//Now cycle through the chain..
 		MiniNumber startblock 	= zStartBlock;
