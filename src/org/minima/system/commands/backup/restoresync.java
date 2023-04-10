@@ -56,6 +56,9 @@ public class restoresync extends Command {
 				+ "password: (optional)\n"
 				+ "    Enter the password of the backup \n"
 				+ "\n"
+				+ "keyuses: (optional)\n"
+				+ "    Increment (not set) the number of key uses per key. \n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "restore file:my-full-backup-01-Jan-22 password:Longsecurepassword456\n";
@@ -183,7 +186,7 @@ public class restoresync extends Command {
 		int keyuses = getNumberParam("keyuses", new MiniNumber(256)).getAsInt();
 				
 		//Do we even need to do a sync..
-		if(true || timediff < maxtime) {
+		if(timediff < maxtime) {
 			
 			MinimaLogger.log("No Sync required as new backup");
 
