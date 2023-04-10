@@ -145,6 +145,20 @@ public class keys extends Command {
 		return ret;
 	}
 
+	public static boolean checkKey(String zPublicKey) {
+		MiniData pubkey = new MiniData(zPublicKey);
+		KeyRow kr 		= MinimaDB.getDB().getWallet().getKeyFromPublic(zPublicKey);
+		
+		//Check the address
+		TreeKey tk = new TreeKey( new MiniData(kr.getPrivateKey()), kr.getSize(), kr.getDepth());
+		MiniData actualkey 	= tk.getPublicKey();
+		if(!pubkey.isEqual(actualkey)) {
+			return false;
+		}
+		
+		return true;
+	}
+	
 	@Override
 	public Command getFunction() {
 		return new keys();
