@@ -255,6 +255,27 @@ public class TreeKey {
 	
 	public static void main(String[] zArgs) {
 		
+		
+		MiniData priv 	= new MiniData("0x51D9F403271E267229B6C2A95C5EAED527846A1AF89F8B1CF5574B0E79A49CF1");
+		
+		MiniData pub 	= new MiniData("0x61B23ACB575490ACEAC2C4F24A78B1E28AF10D9E209EAA49F2CC75292089551F");
+		
+		TreeKey tester 	= new TreeKey(priv, 64, 3);
+		
+		MiniData pktest = tester.getPublicKey();
+		
+		System.out.println(pktest);
+		
+		
+		
+		
+		
+		
+		
+		if(true) {
+			return;
+		}
+		
 		MiniData seed = new MiniData("0x000102");
 		
 		int maxsigs = 5;

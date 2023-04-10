@@ -6,15 +6,18 @@ import java.util.Arrays;
 import org.minima.database.MinimaDB;
 import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
+import org.minima.objects.base.MiniData;
+import org.minima.objects.keys.TreeKey;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class keys extends Command {
 
 	public keys() {
-		super("keys","(action:list|new) - Get a list of all your public keys or create a new key");
+		super("keys","(action:list|new) (publickey:) - Get a list of all your public keys or create a new key");
 	}
 	
 	@Override
@@ -29,18 +32,23 @@ public class keys extends Command {
 				+ "    list : List your existing public keys. The default.\n"
 				+ "    new : Create a new key pair.\n"
 				+ "\n"
+				+ "publickey: (optional)\n"
+				+ "    Search for a specific public key.\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "keys\n"
 				+ "\n"
 				+ "keys action:list\n"
 				+ "\n"
+				+ "keys action:list publickey:0xFFEE56..\n"
+				+ "\n"
 				+ "keys action:new\n";
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","publickey"}));
 	}
 	
 	@Override
@@ -54,6 +62,13 @@ public class keys extends Command {
 		
 		if(action.equals("list")) {
 			
+			//Are we searching for a psecific key
+			boolean searchkey 	= false;
+			String pubkey 		= getParam("publickey", "");
+			if(!pubkey.equals("")) {
+				searchkey = true;
+			}
+			
 			//Get all the keys
 			ArrayList<KeyRow> keys = wallet.getAllKeys();
 			
@@ -64,14 +79,55 @@ public class keys extends Command {
 					maxuses = kr.getUses(); 
 				}
 				JSONObject dets = kr.toJSON();
-				arr.add(dets);
+				
+				if(searchkey) {
+					if(dets.getString("publickey").equals(pubkey)) {
+						arr.add(dets);
+					}
+				}else {
+					arr.add(dets);
+				}
 			}
 				
-			
 			JSONObject resp = new JSONObject();
 			resp.put("keys", arr);
 			resp.put("total", keys.size());
 			resp.put("maxuses", maxuses);
+			
+			//Put the details in the response..
+			ret.put("response", resp);
+			
+		}else if(action.equals("checkkeys")) {
+			
+			//Get all the keys
+			ArrayList<KeyRow> keys = wallet.getAllKeys();
+			
+			JSONArray arr 	= new JSONArray();
+			int maxuses		= 0;
+			int correct		= 0;
+			int wrong		= 0;
+					
+			for(KeyRow kr : keys) {
+				if(kr.getUses()>maxuses) {
+					maxuses = kr.getUses(); 
+				}
+				
+				TreeKey tk = new TreeKey( new MiniData(kr.getPrivateKey()), kr.getSize(), kr.getDepth());
+				MiniData pubk 		= new MiniData(kr.getPublicKey());
+				MiniData actualkey 	= tk.getPublicKey();
+				if(!pubk.isEqual(actualkey)) {
+					MinimaLogger.log("[!] INCORRECT Public key : "+pubk+" / "+actualkey);
+					wrong++;
+				}else {
+					MinimaLogger.log("CORRECT Public key : "+pubk);
+					correct++;
+				}
+			}
+				
+			JSONObject resp = new JSONObject();
+			resp.put("allkeys", arr.size());
+			resp.put("correct", correct);
+			resp.put("wrong", wrong);
 			
 			//Put the details in the response..
 			ret.put("response", resp);

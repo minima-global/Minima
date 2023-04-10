@@ -49,7 +49,7 @@ public class restoresync extends Command {
 	public String getFullHelp() {
 		return "\nrestore\n"
 				+ "\n"
-				+ "Restore your node from a backup and then sync with archive node the rest of the data.\n"
+				+ "Restore your node from a backup and then sync with archive node the rest of the data. You MUST wait until all your original keys are created before this is allowed.\n"
 				+ "\n"
 				+ "file:\n"
 				+ "    Specify the filename or local path of the backup to restore\n"
@@ -71,6 +71,9 @@ public class restoresync extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
+		//Can only do this if all keys created..
+		vault.checkAllKeysCreated();
+				
 		String file = getParam("file","");
 		if(file.equals("")) {
 			throw new Exception("MUST specify a file to restore from");

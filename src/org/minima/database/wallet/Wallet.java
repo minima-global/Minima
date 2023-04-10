@@ -164,6 +164,11 @@ public class Wallet extends SqlDB {
 		SQL_INSERT_SEED				= mSQLConnection.prepareStatement("INSERT INTO seed ( id, phrase, seed ) VALUES ( 1 , ? , ? )");				
 		SQL_UPDATE_SEED				= mSQLConnection.prepareStatement("UPDATE seed SET phrase=?, seed=? WHERE id=1");				
 		
+		//Reset
+		mAllKeys 			= new HashSet<>();
+		mAllTrackedAddress 	= new HashSet<>();
+		mAllSimpleAddress 	= new HashSet<>();
+		
 		//Now load up the caches..
 		ArrayList<KeyRow> allkeys = getAllKeys();
 		for(KeyRow key : allkeys) {
