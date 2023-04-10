@@ -102,16 +102,10 @@ public class keys extends Command {
 			//Get all the keys
 			ArrayList<KeyRow> keys = wallet.getAllKeys();
 			
-			JSONArray arr 	= new JSONArray();
-			int maxuses		= 0;
 			int correct		= 0;
 			int wrong		= 0;
 					
 			for(KeyRow kr : keys) {
-				if(kr.getUses()>maxuses) {
-					maxuses = kr.getUses(); 
-				}
-				
 				TreeKey tk = new TreeKey( new MiniData(kr.getPrivateKey()), kr.getSize(), kr.getDepth());
 				MiniData pubk 		= new MiniData(kr.getPublicKey());
 				MiniData actualkey 	= tk.getPublicKey();
@@ -125,7 +119,7 @@ public class keys extends Command {
 			}
 				
 			JSONObject resp = new JSONObject();
-			resp.put("allkeys", arr.size());
+			resp.put("allkeys", keys.size());
 			resp.put("correct", correct);
 			resp.put("wrong", wrong);
 			
