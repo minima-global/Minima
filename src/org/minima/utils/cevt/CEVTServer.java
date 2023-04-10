@@ -1,10 +1,7 @@
 package org.minima.utils.cevt;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.HashSet;
-import java.util.Hashtable;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -12,7 +9,6 @@ import javax.net.ssl.TrustManager;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
-import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.RPCClient;

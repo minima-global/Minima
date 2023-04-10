@@ -30,7 +30,6 @@ import org.minima.system.commands.CommandException;
 import org.minima.system.commands.network.connect;
 import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.system.params.GeneralParams;
-import org.minima.utils.BIP39;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.encrypt.GenerateKey;
