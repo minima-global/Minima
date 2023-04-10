@@ -483,8 +483,10 @@ public class send extends Command {
 			ScriptRow newwalletaddress = MinimaDB.getDB().getWallet().getDefaultAddress();
 			
 			//THIS is a fix for an issue where backup saved with wrong seed phrase
-			if(!keys.checkKey(newwalletaddress.getPublicKey())) {
-				throw new CommandException("[!] SERIOUS ERROR - INCORRECT Public key : "+newwalletaddress.getPublicKey());
+			if(MinimaDB.getDB().getWallet().isBaseSeedAvailable()) {
+				if(!keys.checkKey(newwalletaddress.getPublicKey())) {
+					throw new CommandException("[!] SERIOUS ERROR - INCORRECT Public key : "+newwalletaddress.getPublicKey());
+				}
 			}
 			
 			MiniData chgaddress = new MiniData(newwalletaddress.getAddress());
