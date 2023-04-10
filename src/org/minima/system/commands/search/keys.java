@@ -17,7 +17,7 @@ import org.minima.utils.json.JSONObject;
 public class keys extends Command {
 
 	public keys() {
-		super("keys","(action:list|new) (publickey:) - Get a list of all your public keys or create a new key");
+		super("keys","(action:list|new|checkkeys) (publickey:) - Get a list of all your public keys or create a new key");
 	}
 	
 	@Override
@@ -30,6 +30,7 @@ public class keys extends Command {
 				+ "\n"
 				+ "action: (optional)\n"
 				+ "    list : List your existing public keys. The default.\n"
+				+ "    checkkeys : Checks if your Public and Private keys are correct.\n"
 				+ "    new : Create a new key pair.\n"
 				+ "\n"
 				+ "publickey: (optional)\n"
@@ -40,6 +41,8 @@ public class keys extends Command {
 				+ "keys\n"
 				+ "\n"
 				+ "keys action:list\n"
+				+ "\n"
+				+ "keys action:checkkeys\n"
 				+ "\n"
 				+ "keys action:list publickey:0xFFEE56..\n"
 				+ "\n"
@@ -98,6 +101,11 @@ public class keys extends Command {
 			ret.put("response", resp);
 			
 		}else if(action.equals("checkkeys")) {
+			
+			//Only unlocked will work
+			if(!MinimaDB.getDB().getWallet().isBaseSeedAvailable()) {
+				throw new CommandException("Cannot check keys of locked DB..");
+			}
 			
 			//Get all the keys
 			ArrayList<KeyRow> keys = wallet.getAllKeys();
