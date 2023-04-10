@@ -133,6 +133,9 @@ public class restore extends Command {
 		//Now load the sql
 		MinimaDB.getDB().getWallet().restoreFromFile(new File(restorefolder,"wallet.sql"));
 	
+		//Increment Key Uses
+		MinimaDB.getDB().getWallet().updateIncrementAllKeyUses(256);
+		
 		//Close
 		MinimaDB.getDB().getTxPoWDB().getSQLDB().saveDB(false);
 		
