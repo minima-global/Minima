@@ -29,7 +29,8 @@
 <br>
 <button onclick="requestToken();">REQUEST TOKEN</button><br>
 
-<br>
+<div id="kjawaiting"></div><br>
+
 <br>
 <br>
 <div id="kjtokens">Current ACTs</div><br>
@@ -37,12 +38,17 @@
 
 <script type="text/javascript">
 
-	//Some static variables
+	//Some static variables - THIS need not change.. but can
 	const CEVT_PUBKEY		= "0x30819F300D06092A864886F70D010101050003818D0030818902818100AECB70FAD27C2F88AAA2DCB908D4EE89E0C6D0D92C6EAEE9CD1332708CAA618BF5C0ED54180BE1D1957B027DFEEC142561269A4B1EACFC985FFAB8BA653EAFC3FACFCC090E7FB62E0435CD13C81CC2B2383E41E3FD999A5EF91EFE7F7E357C9D72C16D773667098D145F0F08F7EF2F6D29B1328C83BFABCF60AE2F88B2FDB2030203010001";
-	const KJ_TOKENID 		= "0x050D2DD42E2EC376E06B2AB5731E7DF550371B286B9FB4C9E1197A667BB28F8B";
-	const KJ_ACT_TOKENID 	= "0x14350C289B7A5BF0BE2BFADDB7766DF75C153C0365E9A3D4E2236894C014CAE6";
-	const PAY_ADDRESS 		= "MxG0866UJHK16J9304ETBSUGZMTB6R5YA7PRS1QRZGRSMR2FZYFYA66JT2V8QZG";
 	
+	//The Tokens - these need to be specified
+	const KJ_TOKENID 		= "0xEB9BF579FBED353678692E02539E6412138F0333F36A6FE60DA3251CD9CAF85A";
+	const KJ_ACT_TOKENID 	= "0xBFC1684DFF428A2908CB736D0186E150A4CE7370B2ADF379680AA37C0D376E7B";
+	
+	//The address to pay to - needs to be specified
+	const PAY_ADDRESS 		= "MxG0874450QJ4HHSPEFZYBFM3678UHEAQZTBBDBRBUCTF3GZ8F2AH3J3AJ9EMKG";
+	
+	//These are filled in by the Dapp
 	var USER_ADDRESS 		= "";
 	var USER_PUBKEY 		= "";
 	
@@ -101,6 +107,14 @@
 				MDS.log(errormsg);
 			}
 			
+			//Check defined..
+			console.log("HASH:"+hash);
+			if(hash === undefined){
+				error = true;
+				errormsg = "Incorrect HASH undefined!";
+				MDS.log(errormsg);
+			}
+			
 			//Now check the CEVT signature..
 			MDS.cmd("maxverify data:"+hash+" publickey:"+CEVT_PUBKEY+" signature:"+signature,function(result){
 				var valid = result.response.valid;
@@ -134,11 +148,13 @@
 	/**
 	 * Update the Balance Views
 	 */
-	var last_coin_len = -1; 
+	var last_coin_len  = -1;
+	var last_await_len = -1;
 	function updateViews(){
 		
 		var kjbaldiv 	= document.getElementById("kjbalance");
 		var actbaldiv 	= document.getElementById("kjtokens");
+		var awaitdiv 	= document.getElementById("kjawaiting");
 		
 		//The Energy base token..
 		MDS.cmd("balance tokenid:"+KJ_TOKENID,function(result){
@@ -146,6 +162,34 @@
 				kjbaldiv.innerHTML = "Current KJ balance : "+result.response[0].sendable;
 			}else{
 				kjbaldiv.innerHTML = "No KJ Energy..";	
+			}
+		});
+		
+		//Awaiting for collection..
+		MDS.cmd("coins relevant:true address:"+PAY_ADDRESS,function(result){
+			
+			//How many coins - check if changed
+			var awaitcoinlen = result.response.length;
+			if(last_await_len == awaitcoinlen){
+				return;
+			}
+			last_await_len = awaitcoinlen;
+			
+			//Print details..
+			if(awaitcoinlen==0){
+				awaitdiv.innerHTML = "";
+			}else{
+				var output = "";	
+				for(var i=0;i<awaitcoinlen;i++){
+					var coin = result.response[i];
+					
+					//Get the ACT data..
+					//output +=printToken(coin)+"<br><br>";
+					output += "Awaiting collection.. "+coin.tokenamount
+							+" @ "+MDS.util.getStateVariable(coin,1)+"<br>";
+				}
+				
+				awaitdiv.innerHTML = "<br><br>"+output;
 			}
 		});
 		
