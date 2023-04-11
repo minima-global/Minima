@@ -107,6 +107,12 @@ public class keys extends Command {
 				throw new CommandException("Cannot check keys of locked DB..");
 			}
 			
+			//First check all the private keys are correct
+			boolean privok = MinimaDB.getDB().getWallet().checkPrivateKeys();
+			if(!privok) {
+				MinimaLogger.log("[!] SERIOUS ERROR - Some Private keys do not match seed + modifier!");
+			}
+			
 			//Get all the keys
 			ArrayList<KeyRow> keys = wallet.getAllKeys();
 			
@@ -130,6 +136,7 @@ public class keys extends Command {
 			resp.put("allkeys", keys.size());
 			resp.put("correct", correct);
 			resp.put("wrong", wrong);
+			resp.put("privatekeysok", privok);
 			
 			//Put the details in the response..
 			ret.put("response", resp);
