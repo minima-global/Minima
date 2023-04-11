@@ -107,12 +107,6 @@ public class keys extends Command {
 				throw new CommandException("Cannot check keys of locked DB..");
 			}
 			
-			//First check all the private keys are correct
-			boolean privok = MinimaDB.getDB().getWallet().checkPrivateKeys();
-			if(!privok) {
-				MinimaLogger.log("[!] SERIOUS ERROR - Some Private keys do not match seed + modifier!");
-			}
-			
 			//Get all the keys
 			ArrayList<KeyRow> keys = wallet.getAllKeys();
 			
@@ -136,7 +130,6 @@ public class keys extends Command {
 			resp.put("allkeys", keys.size());
 			resp.put("correct", correct);
 			resp.put("wrong", wrong);
-			resp.put("privatekeysok", privok);
 			
 			//Put the details in the response..
 			ret.put("response", resp);
@@ -157,6 +150,11 @@ public class keys extends Command {
 	public static boolean checkKey(String zPublicKey) {
 		MiniData pubkey = new MiniData(zPublicKey);
 		KeyRow kr 		= MinimaDB.getDB().getWallet().getKeyFromPublic(zPublicKey);
+		
+		//Check this keys private key is correct - hash(Seed+Mod)
+		if(!MinimaDB.getDB().getWallet().checkSingleKey(kr.getPrivateKey(), kr.getModifier())) {
+			return false;
+		}
 		
 		//Check the address
 		TreeKey tk = new TreeKey( new MiniData(kr.getPrivateKey()), kr.getSize(), kr.getDepth());
