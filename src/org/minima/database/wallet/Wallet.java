@@ -338,6 +338,30 @@ public class Wallet extends SqlDB {
 	}
 	
 	/**
+	 * Check all the private keys are correct - BaseSeed  =modifier..
+	 */
+	public boolean checkPrivateKeys() {
+		
+		//Get all the keys..
+		ArrayList<KeyRow> allkeys = getAllKeys();
+		boolean allok = true;
+		for(KeyRow kr : allkeys) {
+			
+			MiniData privatekey 	= new MiniData(kr.getPrivateKey());
+			MiniData mod 			= new MiniData(kr.getModifier());
+			
+			MiniData privseed 		= Crypto.getInstance().hashObjects(new MiniData(mBaseSeed.getSeed()), mod);
+			
+			if(!privseed.isEqual(privatekey)) {
+				MinimaLogger.log("[SERIOUS ERROR] Private key NOT == Seed+Modifier publickey:"+kr.getPublicKey());
+				allok = false;
+			}
+		}
+		
+		return allok;
+	}
+	
+	/**
 	 * Create an initial set of keys / addresses to use
 	 */
 	public int getDefaultKeysNumber() {
