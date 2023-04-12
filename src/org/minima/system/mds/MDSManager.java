@@ -181,6 +181,17 @@ public class MDSManager extends MessageProcessor {
 		return MinimaDB.getDB().getMDSDB().getMiniDAPP(zMiniDAPPID);
 	}
 	
+	public MiniDAPP getMiniDAPPFromName(String zName) {
+		ArrayList<MiniDAPP> allmini = MinimaDB.getDB().getMDSDB().getAllMiniDAPPs();
+		for(MiniDAPP mini : allmini) {
+			if(mini.getName().equalsIgnoreCase(zName)) {
+				return mini;
+			}
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Return the MINIDAPPID for a given SESSIONID
 	 */

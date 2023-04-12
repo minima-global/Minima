@@ -296,6 +296,59 @@ public class MDSCompleteHandler implements Runnable {
 						COMMSCommand comms = new COMMSCommand(mMDS, minidappid, md.getName(), msg);
 						result = comms.runCommand();
 					}
+				
+				}else if(command.equals("dapplink")) {
+					
+					//Get the MiniDapp in question..
+					MiniDAPP reqmini = mMDS.getMiniDAPPFromName(data);
+					if(reqmini == null) {
+						//No MiniDAPP found..
+						JSONObject error = new JSONObject();
+						error.put("status", false);
+						error.put("error", "MiniDAPP with that name not found");
+						result = error.toString();
+					}else {
+						
+						//Are permission levels intact
+						boolean allow = false;
+						
+						//Check the Permissions..
+						if(reqmini.getPermission().equalsIgnoreCase("read")) {
+							allow = true;
+						}else {
+							
+							//Check OUR permission..
+							MiniDAPP md = mMDS.getMiniDAPP(minidappid);
+							if(md.getPermission().equalsIgnoreCase("write")) {
+								allow = true;
+							}
+						}
+						
+						//Ok to send link.. ?
+						if(allow) {
+							
+							//Get the sessionid..
+							String sessionid = mMDS.convertMiniDAPPID(reqmini.getUID());
+							
+							//And return the data
+							JSONObject linkresult = new JSONObject();
+							linkresult.put("status", true);
+							
+							JSONObject resp = new JSONObject();
+							resp.put("uid", reqmini.getUID());
+							resp.put("sessionid", sessionid);
+							
+							linkresult.put("response", resp);
+							result = linkresult.toString();
+							
+						}else {
+							//No MiniDAPP found..
+							JSONObject error = new JSONObject();
+							error.put("status", false);
+							error.put("error", "MiniDAPP permission escalation");
+							result = error.toString();
+						}
+					}
 					
 				}else if(command.equals("poll")) {
 					
@@ -305,7 +358,7 @@ public class MDSCompleteHandler implements Runnable {
 				}else{
 					
 					//Is it a CMD / SQL / FILE / FUNC ..
-					MinimaLogger.log("ERROR COMPLETE FILE REQ : "+command+" "+params);
+					MinimaLogger.log("ERROR MDS COMPLETE HANDLER REQ : "+command+" "+params);
 					
 					//Invalid command
 					JSONObject error = new JSONObject();

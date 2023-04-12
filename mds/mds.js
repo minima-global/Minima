@@ -14,6 +14,9 @@ var MDS_MAIN_CALLBACK = null;
  */
 var MDS = {
 	
+	//Main File host
+	filehost : "",
+	
 	//RPC Host for Minima
 	mainhost : "",
 	
@@ -69,7 +72,8 @@ var MDS = {
 		//The ports..
 		var mainport 	= port+1;
 		
-		MDS.log("MDS FILEHOST  : https://"+host+":"+port+"/");
+		MDS.filehost = "https://"+host+":"+port+"/";
+		MDS.log("MDS FILEHOST  : "+MDS.filehost);
 		
 		MDS.mainhost 	= "https://"+host+":"+mainport+"/";
 		MDS.log("MDS MAINHOST : "+MDS.mainhost);
@@ -121,6 +125,30 @@ var MDS = {
 	sql : function(command, callback){
 		//Send via POST
 		httpPostAsync(MDS.mainhost+"sql?"+"uid="+MDS.minidappuid, command, callback);
+	},
+	
+	/**
+	 * Get a link to a different Dapp. READ dapps can only get READ DAPPS. WRITE can get all dapps.
+	 */
+	dapplink : function(dappname, callback){
+		//Send via POST
+		httpPostAsync(MDS.mainhost+"dapplink?"+"uid="+MDS.minidappuid, dappname, function(result){
+			
+			var linkdata 	= {};
+			linkdata.status = result.status;
+			 
+			//Create the link..
+			if(result.status){
+				linkdata.uid 		= result.response.uid;
+				linkdata.sessionid 	= result.response.sessionid;
+				linkdata.base 		= MDS.filehost+linkdata.uid+"/index.html?uid="+result.response.sessionid;
+			}else{
+				//Not found..
+				linkdata.error = result.error;
+			}
+			
+			callback(linkdata);
+		});
 	},
 	
 	/**	

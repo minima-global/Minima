@@ -8,33 +8,42 @@
 
 <body>
 
-
-<script type="text/javascript">
-
-	
-	//Main message handler..
-	MDS.init(async function(msg){
-		
-		//Do initialisation
-		if(msg.event == "inited"){
-			
-			//testFile();
-			const block = await MDS.cmdsync("block");
-			console.log(block);
-			
-		}
-	});
-
-</script>
-
 <center>
 
 	<br>
 
 	<h2>HELLO</h2>
 
+<br>
+<br>
+<div id=blocklink>..</div>
 	
 </center>
+
+<script type="text/javascript">
+
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			var blink = document.getElementById(blocklink);
+			
+			//Get a link to a different DApp
+			MDS.dapplink("block",function(result){
+				if(!result.status){
+					blink.innerHTML = "DAPP NOT FOUND";	
+				}else{
+					blink.innerHTML = "DAPP FOUND!";
+				}
+			});			
+			
+		}
+	});
+
+</script>
 
 </body>
 
