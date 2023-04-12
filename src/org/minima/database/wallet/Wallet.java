@@ -40,6 +40,7 @@ public class Wallet extends SqlDB {
 	PreparedStatement SQL_GET_ALL_KEYS 					= null;
 	PreparedStatement SQL_UPDATE_KEY_USES 				= null;
 	PreparedStatement SQL_UPDATE_ALL_KEY_USES 			= null;
+	PreparedStatement SQL_UPDATE_INC_ALL_KEY_USES 		= null;
 	
 	PreparedStatement SQL_WIPE_PRIVATE_KEYS 			= null;
 	PreparedStatement SQL_UPDATE_PRIVATE_KEYS 			= null;
@@ -145,6 +146,7 @@ public class Wallet extends SqlDB {
 		SQL_GET_KEY						= mSQLConnection.prepareStatement("SELECT * FROM keys WHERE publickey=?");
 		SQL_UPDATE_KEY_USES				= mSQLConnection.prepareStatement("UPDATE keys SET uses=? WHERE publickey=?");
 		SQL_UPDATE_ALL_KEY_USES			= mSQLConnection.prepareStatement("UPDATE keys SET uses=?");
+		SQL_UPDATE_INC_ALL_KEY_USES		= mSQLConnection.prepareStatement("UPDATE keys SET uses=uses+?");
 		
 		//Base Seed functions
 		SQL_WIPE_PRIVATE_KEYS			= mSQLConnection.prepareStatement("UPDATE keys SET privatekey='0x00' WHERE privatekey!='0x00'");
@@ -163,6 +165,11 @@ public class Wallet extends SqlDB {
 		SQL_SELECT_SEED				= mSQLConnection.prepareStatement("SELECT * FROM seed WHERE id=1");
 		SQL_INSERT_SEED				= mSQLConnection.prepareStatement("INSERT INTO seed ( id, phrase, seed ) VALUES ( 1 , ? , ? )");				
 		SQL_UPDATE_SEED				= mSQLConnection.prepareStatement("UPDATE seed SET phrase=?, seed=? WHERE id=1");				
+		
+		//Reset
+		mAllKeys 			= new HashSet<>();
+		mAllTrackedAddress 	= new HashSet<>();
+		mAllSimpleAddress 	= new HashSet<>();
 		
 		//Now load up the caches..
 		ArrayList<KeyRow> allkeys = getAllKeys();
@@ -324,6 +331,36 @@ public class Wallet extends SqlDB {
 		} catch (SQLException e) {
 			MinimaLogger.log(e);
 			
+			return false;
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Check all the private keys are correct - BaseSeed  =modifier..
+	 */
+	public boolean checkAllPrivateKeys() {
+		
+		//Get all the keys..
+		ArrayList<KeyRow> allkeys = getAllKeys();
+		boolean allok = true;
+		for(KeyRow kr : allkeys) {
+			if(!checkSingleKey(kr.getPrivateKey(), kr.getModifier())) {
+				MinimaLogger.log("[SERIOUS ERROR] Private key NOT == Seed+Modifier publickey:"+kr.getPublicKey());
+				allok = false;
+			}
+		}
+		
+		return allok;
+	}
+	
+	public boolean checkSingleKey(String zPrivateKey, String zModifier) {
+		MiniData privatekey 	= new MiniData(zPrivateKey);
+		MiniData mod 			= new MiniData(zModifier);
+		MiniData privseed 		= Crypto.getInstance().hashObjects(new MiniData(mBaseSeed.getSeed()), mod);
+		
+		if(!privseed.isEqual(privatekey)) {
 			return false;
 		}
 		
@@ -788,5 +825,20 @@ public class Wallet extends SqlDB {
 		
 		//Run the query
 		SQL_UPDATE_ALL_KEY_USES.execute();
+	}
+	
+	/**
+	 * After a Restore
+	 */
+	public void updateIncrementAllKeyUses(int zIncrementUses) throws SQLException {		
+
+		//Get the Query ready
+		SQL_UPDATE_INC_ALL_KEY_USES.clearParameters();
+	
+		//Set main params
+		SQL_UPDATE_INC_ALL_KEY_USES.setInt(1, zIncrementUses);
+		
+		//Run the query
+		SQL_UPDATE_INC_ALL_KEY_USES.execute();
 	}
 }

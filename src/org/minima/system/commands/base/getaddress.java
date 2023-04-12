@@ -7,6 +7,8 @@ import org.minima.database.MinimaDB;
 import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
+import org.minima.system.commands.search.keys;
 import org.minima.utils.json.JSONObject;
 
 public class getaddress extends Command {
@@ -58,7 +60,14 @@ public class getaddress extends Command {
 			
 			//Get an existing address
 			ScriptRow scrow = wallet.getDefaultAddress();
-				
+			
+			//Get the key row.. THIS is a fix for an issue where backup saved with wrong seed phrase
+			if(MinimaDB.getDB().getWallet().isBaseSeedAvailable()) {
+				if(!keys.checkKey(scrow.getPublicKey())) {
+					throw new CommandException("[!] SERIOUS ERROR - INCORRECT Public key : "+scrow.getPublicKey());
+				}
+			}
+			
 			//Put the details in the response..
 			ret.put("response", scrow.toJSON());
 		}

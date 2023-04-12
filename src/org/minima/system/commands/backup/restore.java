@@ -35,7 +35,7 @@ public class restore extends Command {
 	public String getFullHelp() {
 		return "\nrestore\n"
 				+ "\n"
-				+ "Restore your node from a backup.\n"
+				+ "Restore your node from a backup. You MUST wait until all your original keys are created before this is allowed.\n"
 				+ "\n"
 				+ "file:\n"
 				+ "    Specify the filename or local path of the backup to restore\n"
@@ -56,6 +56,9 @@ public class restore extends Command {
 	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
+		
+		//Can only do this if all keys created..
+		vault.checkAllKeysCreated();
 		
 		String file = getParam("file","");
 		if(file.equals("")) {
@@ -130,6 +133,9 @@ public class restore extends Command {
 		//Now load the sql
 		MinimaDB.getDB().getWallet().restoreFromFile(new File(restorefolder,"wallet.sql"));
 	
+		//Increment Key Uses
+		MinimaDB.getDB().getWallet().updateIncrementAllKeyUses(256);
+		
 		//Close
 		MinimaDB.getDB().getTxPoWDB().getSQLDB().saveDB(false);
 		

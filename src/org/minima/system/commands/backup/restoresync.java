@@ -30,7 +30,6 @@ import org.minima.system.commands.CommandException;
 import org.minima.system.commands.network.connect;
 import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.system.params.GeneralParams;
-import org.minima.utils.BIP39;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.encrypt.GenerateKey;
@@ -49,13 +48,16 @@ public class restoresync extends Command {
 	public String getFullHelp() {
 		return "\nrestore\n"
 				+ "\n"
-				+ "Restore your node from a backup and then sync with archive node the rest of the data.\n"
+				+ "Restore your node from a backup and then sync with archive node the rest of the data. You MUST wait until all your original keys are created before this is allowed.\n"
 				+ "\n"
 				+ "file:\n"
 				+ "    Specify the filename or local path of the backup to restore\n"
 				+ "\n"
 				+ "password: (optional)\n"
 				+ "    Enter the password of the backup \n"
+				+ "\n"
+				+ "keyuses: (optional)\n"
+				+ "    Increment (not set) the number of key uses per key. \n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
@@ -71,6 +73,9 @@ public class restoresync extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
+		//Can only do this if all keys created..
+		vault.checkAllKeysCreated();
+				
 		String file = getParam("file","");
 		if(file.equals("")) {
 			throw new Exception("MUST specify a file to restore from");
@@ -177,11 +182,17 @@ public class restoresync extends Command {
 		long timediff   = System.currentTimeMillis() - timemilli;
 		long maxtime 	= 1000 * 60 * 60 * 24 * 2;
 		
+		//How many keyuses
+		int keyuses = getNumberParam("keyuses", new MiniNumber(256)).getAsInt();
+				
 		//Do we even need to do a sync..
 		if(timediff < maxtime) {
 			
 			MinimaLogger.log("No Sync required as new backup");
 
+			//Update key uses
+			MinimaDB.getDB().getWallet().updateIncrementAllKeyUses(keyuses);
+			
 			//And NOW shut down..
 			Main.getInstance().getTxPoWProcessor().stopMessageProcessor();
 			
@@ -213,11 +224,8 @@ public class restoresync extends Command {
 		//Is there a host
 		String host = getParam("host", "auto");
 		
-		//How many keyuses
-		int keyuses = getNumberParam("keyuses", new MiniNumber(1000)).getAsInt();
-		
 		//Now do a resync..
-		performResync(	host, keyuses, startblock);
+		performResync(	host, keyuses, startblock, true);
 		
 		//Get the TxPowTree
 		tip = MinimaDB.getDB().getTxPoWTree().getTip();
@@ -267,7 +275,7 @@ public class restoresync extends Command {
 	 * Perform a resync
 	 * @throws Exception 
 	 */
-	public JSONObject performResync(String zHost, int zKeyUses, MiniNumber zStartBlock) throws Exception {
+	public JSONObject performResync(String zHost, int zKeyUses, MiniNumber zStartBlock, boolean zIncrementKeys) throws Exception {
 		
 		//Get the Minima Listener..
 		MessageListener minimalistener = Main.getInstance().getMinimaListener();
@@ -312,8 +320,12 @@ public class restoresync extends Command {
 		//Get the Wallet
 		Wallet wallet = MinimaDB.getDB().getWallet();
 		
-		//Now Update the USES - since they may have been used before - we don;t know.. 
-		wallet.updateAllKeyUses(zKeyUses);
+		//Now Update the USES - since they may have been used before - we don;t know..
+		if(zIncrementKeys) {
+			wallet.updateIncrementAllKeyUses(zKeyUses);
+		}else {
+			wallet.updateAllKeyUses(zKeyUses);
+		}
 		
 		//Now cycle through the chain..
 		MiniNumber startblock 	= zStartBlock;

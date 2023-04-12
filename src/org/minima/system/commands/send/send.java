@@ -33,6 +33,7 @@ import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.backup.vault;
+import org.minima.system.commands.search.keys;
 import org.minima.system.commands.txn.txnutils;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
@@ -480,6 +481,14 @@ public class send extends Command {
 		if(change.isMore(MiniNumber.ZERO)) {
 			//Create a new address
 			ScriptRow newwalletaddress = MinimaDB.getDB().getWallet().getDefaultAddress();
+			
+			//THIS is a fix for an issue where backup saved with wrong seed phrase
+			if(MinimaDB.getDB().getWallet().isBaseSeedAvailable()) {
+				if(!keys.checkKey(newwalletaddress.getPublicKey())) {
+					throw new CommandException("[!] SERIOUS ERROR - INCORRECT Public key : "+newwalletaddress.getPublicKey());
+				}
+			}
+			
 			MiniData chgaddress = new MiniData(newwalletaddress.getAddress());
 			
 			//Get the scaled token ammount..

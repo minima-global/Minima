@@ -1,0 +1,41 @@
+<html>
+
+<head>
+	<title>TEST</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script type="text/javascript" src="mds.js"></script>
+</head>
+
+<body>
+
+
+<script type="text/javascript">
+
+	
+	//Main message handler..
+	MDS.init(async function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//testFile();
+			const block = await MDS.cmdsync("block");
+			console.log(block);
+			
+		}
+	});
+
+</script>
+
+<center>
+
+	<br>
+
+	<h2>HELLO</h2>
+
+	
+</center>
+
+</body>
+
+</html>
