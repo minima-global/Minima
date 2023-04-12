@@ -300,7 +300,7 @@ public class MDSCompleteHandler implements Runnable {
 				}else if(command.equals("dapplink")) {
 					
 					//Get the MiniDapp in question..
-					MiniDAPP reqmini = mMDS.getMiniDAPPFromName(data);
+					MiniDAPP reqmini = mMDS.getMiniDAPPFromName(data.trim());
 					if(reqmini == null) {
 						//No MiniDAPP found..
 						JSONObject error = new JSONObject();
