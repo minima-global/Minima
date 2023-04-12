@@ -29,14 +29,16 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			
-			var blink = document.getElementById(blocklink);
+			var blink = document.getElementById("blocklink");
 			
 			//Get a link to a different DApp
 			MDS.dapplink("block",function(result){
+				MDS.log(JSON.stringify(result));
+				
 				if(!result.status){
 					blink.innerHTML = "DAPP NOT FOUND";	
 				}else{
-					blink.innerHTML = "DAPP FOUND!";
+					blink.innerHTML = "<a target=_blank href='"+result.base+"'>BLOCK</a>";
 				}
 			});			
 			
