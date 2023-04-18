@@ -538,12 +538,8 @@ public class archive extends Command {
 				if(attempts<3) {
 					MinimaLogger.log(attempts+" Attempts > Wait 10 seconds and re-attempt..");
 					
-					try {
-						Thread.sleep(10000);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					//Wait 10 seconds
+					try {Thread.sleep(10000);} catch (InterruptedException e) {}
 					
 					MinimaLogger.log("Re-attempt started..");
 				}
