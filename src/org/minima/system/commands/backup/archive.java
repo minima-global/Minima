@@ -468,63 +468,86 @@ public class archive extends Command {
 		
 		IBD ibd= null;
 		
-		try {
-			
-			//Create the Network Message
-			MiniData msg = NIOManager.createNIOMessage(NIOMessage.MSG_ARCHIVE_REQ, zStartBlock);
-			
-			//Open the socket..
-			Socket sock = new Socket();
-
-			//3 seconds to connect
-			sock.connect(new InetSocketAddress(zHost, zPort), 10000);
-			
-			//10 seconds to read
-			sock.setSoTimeout(10000);
-			
-			//Create the streams..
-			OutputStream out 		= sock.getOutputStream();
-			DataOutputStream dos 	= new DataOutputStream(out);
-			
-			InputStream in			= sock.getInputStream();
-			DataInputStream dis 	= new DataInputStream(in);
-			
-			//Write the data
-			msg.writeDataStream(dos);
-			dos.flush();
-			
-			//Tell the NIO
-			Main.getInstance().getNIOManager().getTrafficListener().addWriteBytes(msg.getLength());
-			
-			//Load the message
-			MiniData resp = MiniData.ReadFromStream(dis);
-			
-			//Tell the NIO
-			Main.getInstance().getNIOManager().getTrafficListener().addReadBytes(resp.getLength());
-			
-			//Close the streams..
-			dis.close();
-			in.close();
-			dos.close();
-			out.close();
-			
-			//Convert
-			ByteArrayInputStream bais 	= new ByteArrayInputStream(resp.getBytes());
-			DataInputStream bdis 		= new DataInputStream(bais);
-
-			//What Type..
-			MiniByte type = MiniByte.ReadFromStream(bdis);
-			
-			//Load the IBD
-			ibd = IBD.ReadFromStream(bdis);
-			
-			bdis.close();
-			bais.close();
+		int attempts = 0;
 		
-		}catch(Exception exc){
-			MinimaLogger.log("Archive connection : "+exc+" @ "+zHost+":"+zPort);
+		while(attempts<3) {
+			try {
+				
+				//Create the Network Message
+				MiniData msg = NIOManager.createNIOMessage(NIOMessage.MSG_ARCHIVE_REQ, zStartBlock);
+				
+				//Open the socket..
+				Socket sock = new Socket();
+	
+				//3 seconds to connect
+				sock.connect(new InetSocketAddress(zHost, zPort), 10000);
+				
+				//10 seconds to read
+				sock.setSoTimeout(10000);
+				
+				//Create the streams..
+				OutputStream out 		= sock.getOutputStream();
+				DataOutputStream dos 	= new DataOutputStream(out);
+				
+				InputStream in			= sock.getInputStream();
+				DataInputStream dis 	= new DataInputStream(in);
+				
+				//Write the data
+				msg.writeDataStream(dos);
+				dos.flush();
+				
+				//Tell the NIO
+				Main.getInstance().getNIOManager().getTrafficListener().addWriteBytes(msg.getLength());
+				
+				//Load the message
+				MiniData resp = MiniData.ReadFromStream(dis);
+				
+				//Tell the NIO
+				Main.getInstance().getNIOManager().getTrafficListener().addReadBytes(resp.getLength());
+				
+				//Close the streams..
+				dis.close();
+				in.close();
+				dos.close();
+				out.close();
+				
+				//Convert
+				ByteArrayInputStream bais 	= new ByteArrayInputStream(resp.getBytes());
+				DataInputStream bdis 		= new DataInputStream(bais);
+	
+				//What Type..
+				MiniByte type = MiniByte.ReadFromStream(bdis);
+				
+				//Load the IBD
+				ibd = IBD.ReadFromStream(bdis);
+				
+				bdis.close();
+				bais.close();
 			
-			ibd= null;
+				break;
+				
+			}catch(Exception exc){
+				MinimaLogger.log("Archive connection : "+exc+" @ "+zHost+":"+zPort);
+				
+				//Null the IBD
+				ibd= null;
+				
+				//Increase attempts
+				attempts++;			
+				
+				if(attempts<3) {
+					MinimaLogger.log(attempts+" Attempts > Wait 10 seconds and re-attempt..");
+					
+					try {
+						Thread.sleep(10000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+					MinimaLogger.log("Re-attempt started..");
+				}
+			}
 		}
 		
 		return ibd;
