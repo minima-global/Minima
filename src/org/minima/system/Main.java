@@ -274,7 +274,7 @@ public class Main extends MessageProcessor {
 		PostTimerMessage(new TimerMessage(1000 * 60 * 5, MAIN_AUTOBACKUP));
 		
 		//MYSQL AutoBackup - do one in 5 minutes then every 2 hours
-		PostTimerMessage(new TimerMessage(1000 * 60 * 1, MAIN_AUTOBACKUP_MYSQL));
+		PostTimerMessage(new TimerMessage(1000 * 60 * 5, MAIN_AUTOBACKUP_MYSQL));
 				
 		//Quick Clean up..
 		System.gc();
