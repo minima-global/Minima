@@ -69,6 +69,37 @@ public class P2PPeersChecker extends MessageProcessor {
         PostTimerMessage(new TimerMessage(1000 * 60 * 5, PEERS_LOOP));
     }
 
+    /**
+     * Only add up to max peers in unverified list
+     */
+    public void checkUnverifiedPeer(InetSocketAddress zAddress) {
+    	
+    	//Check the limit
+    	if(unverifiedPeers.size()<MAX_VERIFIED_PEERS) {
+    		
+    		//Do we have all the verified peers ?
+    		if(verifiedPeers.size()>=MAX_VERIFIED_PEERS) {
+    			
+    			//Randomly choose if to add it.. 10% chance
+    			int rand = new Random().nextInt(100);
+    			if(rand<90) {
+    				//MOST will not be added
+    				return;
+    			}
+    		}
+    		
+    		//Add it to the list
+    		unverifiedPeers.add(zAddress);
+    		
+    		//Send a message to check it..
+    		Message msg = new Message(PEERS_CHECKPEERS).addObject("address", zAddress);
+            PostMessage(msg);
+            
+    	}else {
+    		//MAX reached..
+    	}
+    }
+    
     @Override
     protected void processMessage(Message zMessage) throws Exception {
    	
@@ -78,7 +109,8 @@ public class P2PPeersChecker extends MessageProcessor {
 
 
         } else if (zMessage.getMessageType().equals(PEERS_ADDPEERS)) {
-            // When a new peer address is added - check if the address is already in the verified
+            
+        	// When a new peer address is added - check if the address is already in the verified
             // or unverified peers list. If it is not, add to the unverified list and request a check if it's contactable
             InetSocketAddress address = (InetSocketAddress) zMessage.getObject("address");
             Set<String> localAddresses = P2PFunctions.getLocalAddresses();
@@ -87,9 +119,12 @@ public class P2PPeersChecker extends MessageProcessor {
             //if (GeneralParams.ALLOW_ALL_IP || (!localAddresses.contains(address.getHostString()) && !address.getHostString().startsWith("127"))) {
             if (GeneralParams.ALLOW_ALL_IP || !islocal) {
                 if (!unverifiedPeers.contains(address) && !verifiedPeers.contains(address)) {
-                    unverifiedPeers.add(address);
-                    Message msg = new Message(PEERS_CHECKPEERS).addObject("address", address);
-                    PostMessage(msg);
+//                    unverifiedPeers.add(address);
+//                    Message msg = new Message(PEERS_CHECKPEERS).addObject("address", address);
+//                    PostMessage(msg);
+                	
+                	//Do we have room for more..
+                	checkUnverifiedPeer(address);
                 }
             } else {
 				P2PFunctions.log_debug("[-] Prevent node from adding localhost address to peers list "+address.getHostString());
@@ -127,58 +162,6 @@ public class P2PPeersChecker extends MessageProcessor {
                     }
                 }
                 
-//                //Check they are on the right chain..
-//                if(validversion) {
-//                	
-//                	//Get the extra data..
-//                	JSONObject extra = greet.getExtraData();
-//                	
-//                	//Get the block 50 back..
-//                	String block 	 = extra.getString("50block","");
-//                	String blockhash = extra.getString("50hash","");
-//                	
-//                	//Need both
-//                	if(!block.equals("") && !blockhash.equals("")) {
-//                	
-//                		//What is our tip
-//                		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
-//                		
-//                		//check it..
-//                		if(tip != null) {
-//                			
-//                			//Get that node..
-//                			TxPoWTreeNode checknode = tip.getPastNode(new MiniNumber(block));
-//                			if(checknode != null) {
-//                			
-//	                			if(!checknode.getTxBlock().getTxPoW().getTxPoWID().equals(blockhash)) {
-//	                			
-//	                				MinimaLogger.log("PEERS CHECKER incorrect chain! @ "+block+" "+address.toString()+" ");
-//	                				
-//	                				//Wrong chain.. !
-//	                				validversion = false;
-//	                			}
-//	                			
-//                			}else {
-//                				MinimaLogger.log("PEERS CHECKER incorrect chain! ( null checknode ) @ "+block+" "+address.toString()+" ");
-//                				
-//                				//Wrong chain.. !
-//                				validversion = false;
-//                			}
-//                		} else {
-//                            MinimaLogger.log("[-] Can't check peer as we have no block data");
-//                        }
-//                	}else {
-//                		MinimaLogger.log("PEERS CHECKER no block data @ "+address.toString());
-//                		
-//                		//Wrong chain.. !
-//        				validversion = false;
-//                	}
-//                	
-//                	if(validversion) {
-////                		MinimaLogger.log("PEERS CHECKER VALID CHAIN "+address.toString());
-//                	}
-//                }
-                
                 //What to do now..
                 if (validversion) {
                     unverifiedPeers.remove(address);
@@ -207,8 +190,8 @@ public class P2PPeersChecker extends MessageProcessor {
                         }
                         unverifiedPeers.add(address);
 
-                        // Check the peer is still down in 3 hours time
-                        TimerMessage msg = new TimerMessage(1000 * 60 * 60 * 3, PEERS_CHECKPEERS);
+                        // Check the peer is still down in 30 mins time
+                        TimerMessage msg = new TimerMessage(1000 * 60 * 30, PEERS_CHECKPEERS);
                         msg.addObject("address", address);
                         PostTimerMessage(msg);
                     } else {
