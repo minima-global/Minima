@@ -65,8 +65,9 @@ public class P2PPeersChecker extends MessageProcessor {
         //Do some Initialisation..
         PostMessage(PEERS_INIT);
 
+        //Once  peer is valid.. it's valid..
         //First one happens after 2 hours
-        PostTimerMessage(new TimerMessage(1000 * 60 * 60 * 2, PEERS_LOOP));
+        //PostTimerMessage(new TimerMessage(1000 * 60 * 60 * 2, PEERS_LOOP));
     }
 
     /**
