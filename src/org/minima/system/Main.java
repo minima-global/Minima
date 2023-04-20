@@ -257,9 +257,9 @@ public class Main extends MessageProcessor {
 			//Do sooner as stores the genesis Txn..
 			PostTimerMessage(new TimerMessage(10 * 1000, MAIN_CLEANDB_RAM));
 		}else {
-			PostTimerMessage(new TimerMessage(2 * 60 * 1000, MAIN_CLEANDB_RAM));
+			PostTimerMessage(new TimerMessage(3 * 60 * 1000, MAIN_CLEANDB_RAM));
 		}
-		PostTimerMessage(new TimerMessage(60 * 1000, MAIN_CLEANDB_SQL));
+		PostTimerMessage(new TimerMessage(10 * 60 * 1000, MAIN_CLEANDB_SQL));
 		
 		//Debug Checker
 		PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
