@@ -3,6 +3,7 @@ package org.minima.system.network.minima;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import org.minima.utils.MiniFormat;
 import org.minima.utils.json.JSONObject;
 
 public class NIOTraffic {
@@ -48,7 +49,8 @@ public class NIOTraffic {
 		while(reads.hasMoreElements()) {
 			String key = reads.nextElement();
 			Long value = mReadBreakDown.get(key);
-			rr.put(key, value);
+			String vs = MiniFormat.formatSize(value.longValue());
+			rr.put(key, vs);
 		}
 		
 		//Writes
@@ -57,7 +59,8 @@ public class NIOTraffic {
 		while(writes.hasMoreElements()) {
 			String key = writes.nextElement();
 			Long value = mWriteBreakDown.get(key);
-			ww.put(key, value);
+			String vs = MiniFormat.formatSize(value.longValue());
+			ww.put(key, vs);
 		}
 		
 		//Add to main JSON

@@ -13,6 +13,7 @@ import javax.net.ssl.SSLSocket;
 import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.UserDB;
 import org.minima.system.network.minima.NIOManager;
+import org.minima.system.network.minima.NIOTraffic;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.network.rpc.CMDHandler;
@@ -160,22 +161,29 @@ public class NetworkManager {
 		}
 		
 		//Read / Write stats..
+		NIOTraffic traffic = mNIOManager.getTrafficListener();
+		
 		JSONObject readwrite = new JSONObject();
 		
-		Duration dur = Duration.ofMillis(System.currentTimeMillis() - mNIOManager.getTrafficListener().getStartTime());
+		Duration dur = Duration.ofMillis(System.currentTimeMillis() - traffic.getStartTime());
 		long mins 	 = dur.toMinutes(); 
 		if(mins==0) {
 			mins = 1;
 		}
 		
-		Date starter = new Date(mNIOManager.getTrafficListener().getStartTime());
+		
+		Date starter = new Date(traffic.getStartTime());
 		readwrite.put("from", starter.toString());
-		readwrite.put("totalread", MiniFormat.formatSize(mNIOManager.getTrafficListener().getTotalRead()));
-		readwrite.put("totalwrite", MiniFormat.formatSize(mNIOManager.getTrafficListener().getTotalWrite()));
-		long speedread 	= mNIOManager.getTrafficListener().getTotalRead() / mins;
-		long speedwrite = mNIOManager.getTrafficListener().getTotalWrite() / mins;
+		readwrite.put("totalread", MiniFormat.formatSize(traffic.getTotalRead()));
+		readwrite.put("totalwrite", MiniFormat.formatSize(traffic.getTotalWrite()));
+		readwrite.put("breakdown",traffic.getBreakdown());
+		
+		long speedread 	= traffic.getTotalRead() / mins;
+		long speedwrite = traffic.getTotalWrite() / mins;
 		readwrite.put("read",MiniFormat.formatSize(speedread)+"/min");
 		readwrite.put("write",MiniFormat.formatSize(speedwrite)+"/min");
+		
+		
 		stats.put("traffic", readwrite);
 		
 		
