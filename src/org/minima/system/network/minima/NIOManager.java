@@ -780,13 +780,13 @@ public class NIOManager extends MessageProcessor {
 			dos.flush();
 			
 			//Tell the NIO
-			Main.getInstance().getNIOManager().getTrafficListener().addWriteBytes(msg.getLength());
+			Main.getInstance().getNIOManager().getTrafficListener().addWriteBytes("sendPingMessage",msg.getLength());
 			
 			//Load the message
 			MiniData resp = MiniData.ReadFromStream(dis);
 			
 			//Tell the NIO
-			Main.getInstance().getNIOManager().getTrafficListener().addReadBytes(resp.getLength());
+			Main.getInstance().getNIOManager().getTrafficListener().addReadBytes("sendPingMessage",resp.getLength());
 			
 			//Close the streams..
 			dis.close();
