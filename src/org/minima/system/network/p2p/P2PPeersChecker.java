@@ -65,14 +65,19 @@ public class P2PPeersChecker extends MessageProcessor {
         //Do some Initialisation..
         PostMessage(PEERS_INIT);
 
-        //First one happens after 5 mins..
-        PostTimerMessage(new TimerMessage(1000 * 60 * 5, PEERS_LOOP));
+        //First one happens after 2 hours
+        PostTimerMessage(new TimerMessage(1000 * 60 * 60 * 2, PEERS_LOOP));
     }
 
     /**
      * Only add up to max peers in unverified list
      */
     public void checkUnverifiedPeer(InetSocketAddress zAddress) {
+    	
+    	//Do we know it
+    	if (unverifiedPeers.contains(zAddress) || verifiedPeers.contains(zAddress)) {
+    		return;
+    	}
     	
     	//Check the limit
     	if(unverifiedPeers.size()<MAX_VERIFIED_PEERS) {
@@ -116,16 +121,11 @@ public class P2PPeersChecker extends MessageProcessor {
             Set<String> localAddresses = P2PFunctions.getLocalAddresses();
             
             boolean islocal = P2PFunctions.isIPLocal(address.getHostString());
-            //if (GeneralParams.ALLOW_ALL_IP || (!localAddresses.contains(address.getHostString()) && !address.getHostString().startsWith("127"))) {
             if (GeneralParams.ALLOW_ALL_IP || !islocal) {
-                if (!unverifiedPeers.contains(address) && !verifiedPeers.contains(address)) {
-//                    unverifiedPeers.add(address);
-//                    Message msg = new Message(PEERS_CHECKPEERS).addObject("address", address);
-//                    PostMessage(msg);
-                	
-                	//Do we have room for more..
-                	checkUnverifiedPeer(address);
-                }
+           
+            	//Do we have room for more..
+            	checkUnverifiedPeer(address);
+           
             } else {
 				P2PFunctions.log_debug("[-] Prevent node from adding localhost address to peers list "+address.getHostString());
 			}
