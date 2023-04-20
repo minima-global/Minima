@@ -307,14 +307,14 @@ public class maxextra extends Command {
 		dos.flush();
 		
 		//Tell the NIO
-		Main.getInstance().getNIOManager().getTrafficListener().addWriteBytes(zMaxMessage.getLength());
+		Main.getInstance().getNIOManager().getTrafficListener().addWriteBytes("sendMLSMaxPacket",zMaxMessage.getLength());
 	
 		//Read the data
 		MiniData resp 	= MiniData.ReadFromStream(dis);
 		byte[] msgdata 	= resp.getBytes();
 		
 		//Tell the NIO
-		Main.getInstance().getNIOManager().getTrafficListener().addReadBytes(resp.getLength());
+		Main.getInstance().getNIOManager().getTrafficListener().addReadBytes("sendMLSMaxPacket",resp.getLength());
 		
 		ByteArrayInputStream bais 	= new ByteArrayInputStream(msgdata);
 		DataInputStream respdis 	= new DataInputStream(bais);
