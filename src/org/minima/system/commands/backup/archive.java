@@ -211,6 +211,9 @@ public class archive extends Command {
 			
 		}else if(action.equals("resync")) {
 			
+			//Can only do this if all keys created..
+			vault.checkAllKeysCreated();
+			
 			//Get the Minima Listener..
 			MessageListener minimalistener = Main.getInstance().getMinimaListener();
 			
