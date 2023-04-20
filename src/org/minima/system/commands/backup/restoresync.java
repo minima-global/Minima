@@ -245,6 +245,10 @@ public class restoresync extends Command {
 		//And NOW shut down..
 		Main.getInstance().stopMessageProcessor();
 		
+		//Get the Minima Listener..
+		MessageListener minimalistener = Main.getInstance().getMinimaListener();
+		archive.NotifyListener(minimalistener,"SHUTDOWN");
+		
 		//And send data
 		JSONObject resp = new JSONObject();
 		resp.put("file", restorefile.getAbsolutePath());

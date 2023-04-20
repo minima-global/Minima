@@ -25,6 +25,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.base.newaddress;
 import org.minima.system.commands.network.connect;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
@@ -404,6 +405,11 @@ public class archive extends Command {
 				if(size==0) {
 					break;
 				}
+				
+//				//HACK
+//				if(startblock.isMore(new MiniNumber(10000))) {
+//					break;
+//				}
 			}
 			
 			//Notify the Android Listener
@@ -427,6 +433,9 @@ public class archive extends Command {
 			
 			//And NOW shut down..
 			Main.getInstance().stopMessageProcessor();
+			
+			//Tell the listener
+			NotifyListener(minimalistener,"SHUTDOWN");
 			
 		}else {
 			throw new CommandException("Invalid action : "+action);
