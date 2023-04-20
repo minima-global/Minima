@@ -6,6 +6,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -84,6 +85,9 @@ public class MaxMsgHandler extends MessageProcessor {
 					MinimaLogger.log("Unknown Maxima response message "+validresp.to0xString());
 				}
 			
+			} catch (ConnectException ce) {
+				//can happen a lot.. 
+				
 			} catch (Exception e) {
 				MinimaLogger.log("MaxMsgHandler "+host+":"+port+" "+e.toString());
 			}
