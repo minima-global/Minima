@@ -779,6 +779,12 @@ public class NIOMessage implements Runnable {
 				//Get the client
 				NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(mClientUID);
 				
+				//Are we still connected..
+				if(nioclient == null) {
+					//Already disconnected
+					return;
+				}
+				
 				//And send it on to Maxima..
 				Message maxmsg = new Message(MaximaManager.MAXIMA_RECMESSAGE);
 				maxmsg.addObject("nioclient", nioclient);
