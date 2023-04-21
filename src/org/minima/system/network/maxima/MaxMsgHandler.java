@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
@@ -85,8 +86,9 @@ public class MaxMsgHandler extends MessageProcessor {
 					MinimaLogger.log("Unknown Maxima response message "+validresp.to0xString());
 				}
 			
+			} catch (SocketTimeoutException ce) {
+				
 			} catch (ConnectException ce) {
-				//can happen a lot.. 
 				
 			} catch (Exception e) {
 				MinimaLogger.log("MaxMsgHandler "+host+":"+port+" "+e.toString());
