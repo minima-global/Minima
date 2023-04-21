@@ -200,11 +200,12 @@ public class status extends Command {
 				
 				MiniNumber blockdiff 		= startblock.getBlockNumber().sub(endblock.getBlockNumber()); 
 				if(blockdiff.isEqual(MiniNumber.ZERO)) {
-					throw new CommandException("ZERO blockdiff on speed check.. start:"+startblock.getBlockNumber()+" end:"+endblock.getBlockNumber());
+					//throw new CommandException("ZERO blockdiff on speed check.. start:"+startblock.getBlockNumber()+" end:"+endblock.getBlockNumber());
+					tree.put("speed", MiniNumber.MINUSONE);
+				}else {
+					MiniNumber speed = TxPoWGenerator.getChainSpeed(startblock, blockdiff);
+					tree.put("speed", speed.setSignificantDigits(5));
 				}
-				
-				MiniNumber speed = TxPoWGenerator.getChainSpeed(startblock, blockdiff);
-				tree.put("speed", speed.setSignificantDigits(5));
 			}
 			
 			MiniData difficulty = new MiniData(txptree.getTip().getTxPoW().getBlockDifficulty().getBytes(),32);
