@@ -450,6 +450,26 @@ public class Main extends MessageProcessor {
 		}
 	}
 	
+	/**
+	 * USed when Syncing to clear memory
+	 */
+	public void resetMemFull() {
+		MinimaLogger.log("System full memory clean..");
+		
+		//Reset all the DBs..
+		MinimaDB.getDB().fullDBRestartMemFree();
+		
+		//Stop the main TxPoW processor
+		mTxPoWProcessor.stopMessageProcessor();
+		mTxPoWProcessor.waitToShutDown();
+		
+		//Now reset the main processor..
+		mTxPoWProcessor = new TxPoWProcessor();
+		
+		//And system clean 
+		System.gc();
+	}
+	
 	public void restartNIO() {
 		
 		//Not now..

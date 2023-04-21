@@ -450,19 +450,45 @@ public class MinimaDB {
 		writeLock(false);
 	}
 	
-	public void ShutdownRestartTxpArchiveDB() {
+	public void fullDBRestartMemFree() {
 		
 		//We need lock 
 		writeLock(true);
 				
 		try {
 			
-			//Shut them down
-			mTxPoWDB.saveDB(false);
-			mArchive.saveDB(false);
-			
 			//Get the base Database folder
 			File basedb = getBaseDBFolder();
+			
+//			MinimaLogger.log("Save Cascade..");
+//			//Reset these structures..
+//			mCascade.saveDB(new File(basedb,"cascade.db"));
+//			mCascade = new Cascade();
+//			mCascade.loadDB(new File(basedb,"cascade.db"));
+//			
+//			MinimaLogger.log("Save TxPoWTree..");
+//			mTxPoWTree.saveDB(new File(basedb,"chaintree.db"));
+//			mTxPoWTree = new TxPowTree();
+//			mTxPoWTree.loadDB(new File(basedb,"chaintree.db"));
+			
+			//Shut them down
+			MinimaLogger.log("Save TxPoWDB..");
+			mTxPoWDB.saveDB(false);
+			MinimaLogger.log("Save ArchiveDB..");
+			mArchive.saveDB(false);
+			MinimaLogger.log("Save WalletDB..");
+			mWallet.saveDB(false);
+			
+			MinimaLogger.log("Load DBs..");
+			
+			//Wallet
+			mWallet					= new Wallet();
+			File walletsqlfolder 	= new File(basedb,"walletsql");
+			if(!GeneralParams.IS_MAIN_DBPASSWORD_SET) {
+				mWallet.loadDB(new File(walletsqlfolder,"wallet"));
+			}else {
+				mWallet.loadEncryptedSQLDB(new File(walletsqlfolder,"wallet"),GeneralParams.MAIN_DBPASSWORD);
+			}
 			
 			//Set the Archive folder
 			mArchive			= new ArchiveManager();
@@ -473,6 +499,8 @@ public class MinimaDB {
 			mTxPoWDB			= new TxPoWDB();
 			File txpowsqlfolder = new File(basedb,"txpowsql");
 			mTxPoWDB.loadSQLDB(new File(txpowsqlfolder,"txpow"));
+			
+			MinimaLogger.log("Memory clear finished..");
 			
 		} catch (SQLException e) {
 			e.printStackTrace();

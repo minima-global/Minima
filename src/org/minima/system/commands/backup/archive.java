@@ -309,10 +309,7 @@ public class archive extends Command {
 				//Clean system counter
 				counter++;
 				if(counter % 20 == 0) {
-					MinimaLogger.log("System clean..");
-					System.gc();
-					
-					MinimaDB.getDB().ShutdownRestartTxpArchiveDB();
+					Main.getInstance().resetMemFull();
 				}
 				
 				//Send him a message..

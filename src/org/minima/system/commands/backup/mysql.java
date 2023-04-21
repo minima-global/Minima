@@ -404,10 +404,7 @@ public class mysql extends Command {
 				//Clean system counter
 				counter++;
 				if(counter % 20 == 0) {
-					MinimaLogger.log("System clean..");
-					System.gc();
-					
-					MinimaDB.getDB().ShutdownRestartTxpArchiveDB();
+					Main.getInstance().resetMemFull();
 				}
 				
 				//Create an IBD for the mysql data

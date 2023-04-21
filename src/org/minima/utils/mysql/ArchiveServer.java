@@ -92,8 +92,9 @@ public class ArchiveServer extends HTTPServer {
 				
 				//Is this the initial
 				if(firstblock.isEqual(MiniNumber.MINUSONE)) {
-					//Testing the connection
-					//Don't add anything..
+					//Testing the connection - Reconnect to the DB to make sure it is alive..
+					ArrayList<TxBlock> testblocks = reconnectLoadTxBlocks(MiniNumber.ZERO);
+					
 				}else {
 					
 					//Do we have a cascade - only check on first call..
