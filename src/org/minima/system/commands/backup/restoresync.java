@@ -343,9 +343,12 @@ public class restoresync extends Command {
 		System.gc();
 		while(true) {
 			
+			//We don't need any transactions in RamDB
+			MinimaDB.getDB().getTxPoWDB().wipeDBRAM();
+			
 			//Clean system counter
 			counter++;
-			if(counter % 20 == 0) {
+			if(counter % 10 == 0) {
 				Main.getInstance().resetMemFull();
 			}
 			
