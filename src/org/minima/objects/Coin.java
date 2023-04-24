@@ -180,6 +180,10 @@ public class Coin implements Streamable {
 	public MiniNumber getAmount() {
 		return mAmount;
 	}
+	
+	public MiniNumber getTokenAmount() {
+		return getToken().getScaledTokenAmount(getAmount());
+	}
 
 	public MiniData getTokenID() {
 		return mTokenID;
