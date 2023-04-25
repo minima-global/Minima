@@ -37,10 +37,13 @@ MDS.init(function(msg){
 		doRechatter();
 	
 	//Do a Resync requset..
-	}else if(msg.event == "MDS_TIMER_60SECONDS"){
+	}else if(msg.event == "MDS_TIMER_1HOUR"){
 			
+		//Current time	
 		var currentdate = new Date();
-		var datetime 	= currentdate.getTime(); 
+		
+		//1 day MAX..
+		var maxdatetime = currentdate.getTime() - (1000 * 60 * 60 * 24);	
 			
 		//Send a message to each contact
 		MDS.cmd("maxcontacts",function(resp){
@@ -55,7 +58,9 @@ MDS.init(function(msg){
 				//The last time we received a message from them..
 				var lm = lastrecmessage[""+pubkey];
 				if(lm === undefined){
-					lm = datetime;
+					lm = maxdatetime;
+				}else if(lm < maxdatetime){
+					lm = maxdatetime;
 				}
 				
 				//Send them a message
@@ -63,9 +68,8 @@ MDS.init(function(msg){
 				chatter.type		= "MESSAGE_SYNCREQ";	
 				chatter.lastmessage	= lm;
 	
-				postMessageToPublickey(chatter,pubkey,function(){
-					MDS.log("SYNC REQ sent to :"+pubkey);
-				});
+				//Send the request
+				postMessageToPublickey(chatter,pubkey);
 			}
 		});
 			
@@ -84,8 +88,6 @@ MDS.init(function(msg){
 											
 			//Convert the data..
 			MDS.cmd("convert from:HEX to:String data:"+msg.data.data,function(resp){
-			
-				MDS.log("CHATTER REC : "+resp.response.conversion);
 			
 				//And create the actual JSON
 				var rantjson = JSON.parse(resp.response.conversion);
@@ -198,6 +200,16 @@ MDS.init(function(msg){
 					//When was the last message you got from us..
 					var lastmsg = rantjson.lastmessage;
 					
+					//Current time	
+					var currentdate = new Date();
+					
+					//1 day MAX..
+					var maxdatetime = currentdate.getTime() - (1000 * 60 * 60 * 24);
+					
+					if(lastmsg<maxdatetime){
+						lastmsg = maxdatetime;
+					}
+					
 					//Get all messages past that point that I should have sent
 					MDS.sql("SELECT DISTINCT * FROM MESSAGES WHERE (publickey='"+MAXIMA_PUBLICKEY+"' OR rechatter=1) AND recdate>"+lastmsg, function(sqlmsg){
 						
@@ -212,7 +224,7 @@ MDS.init(function(msg){
 	
 							postMessageToPublickey(chatjson,publickey,function(postresp){
 								if(logs){
-									MDS.log("POST REQUEST REPLY:"+JSON.stringify(postresp));	
+									MDS.log("POST SYNC REQUEST :"+JSON.stringify(postresp));	
 								}
 							});
 						}
