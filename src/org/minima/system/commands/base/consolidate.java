@@ -73,7 +73,7 @@ public class consolidate extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"tokenid","coinage","maxcoins",
-				"maxsigs","burn","debug","dryrun"}));
+				"maxsigs","burn","debug","dryrun","password"}));
 	}
 	
 	@Override
