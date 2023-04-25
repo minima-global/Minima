@@ -81,8 +81,6 @@ MDS.init(function(msg){
 			//Add to our local store..
 			var dd = new Date();
 			lastrecmessage[""+publickey] = dd.getTime();
-			
-			MDS.log("LASTMESSAGE : "+JSON.stringify(lastrecmessage));
 											
 			//Convert the data..
 			MDS.cmd("convert from:HEX to:String data:"+msg.data.data,function(resp){
@@ -202,8 +200,6 @@ MDS.init(function(msg){
 					
 					//Get all messages past that point that I should have sent
 					MDS.sql("SELECT DISTINCT * FROM MESSAGES WHERE (publickey='"+MAXIMA_PUBLICKEY+"' OR rechatter=1) AND recdate>"+lastmsg, function(sqlmsg){
-						
-						MDS.log(JSON.stringify(sqlmsg));
 						
 						//How many messages
 						var len = sqlmsg.rows.length; 
