@@ -284,7 +284,59 @@ public class maxextra extends Command {
 		return ret;
 	}
 
-	public MLSPacketGETResp sendMLSMaxPacket(String zHost, int zPort, MiniData zMaxMessage) throws IOException {
+	public static JSONObject getMaxAddress(String zAddress) throws Exception {
+		
+		JSONObject details = new JSONObject();
+		
+		if(!zAddress.startsWith("MAX#")) {
+			throw new CommandException("Permanent address MUST start with MAX# .. format MAX#PUBKEY#MLS_ADDRESS");
+		}
+		
+		//Starts with MLS
+		int pubkeystart = zAddress.indexOf("#");
+		int pubkeyend   = zAddress.indexOf("#", pubkeystart+1);
+			
+		String pubkey 	  = zAddress.substring(pubkeystart+1, pubkeyend);
+		String MLSaddress = zAddress.substring(pubkeyend+1);
+		
+		//Create a Get req
+		MLSPacketGETReq req = new MLSPacketGETReq(pubkey, MiniData.getRandomData(32).to0xString());
+		MiniData reqdata 	= MiniData.getMiniDataVersion(req);
+		
+		Message getreq 	= maxima.createSendMessage(MLSaddress,MaximaManager.MAXIMA_MLS_GETAPP,reqdata);
+		
+		//Who to..
+		String host 	= getreq.getString("tohost");
+		int port		= getreq.getInteger("toport");
+		
+		//Create the packet
+		MiniData maxpacket = MaxMsgHandler.constructMaximaData(getreq);
+		if(maxpacket == null) {
+			throw new CommandException("Could not build Maxima message in time..");
+		}
+		
+		//Now send that..
+		MLSPacketGETResp resp = sendMLSMaxPacket(host, port, maxpacket);
+		
+		//Create response
+		details.put("publickey", pubkey);
+		details.put("mls", MLSaddress);
+		
+		if(resp == null) {
+			//Now send it..
+			details.put("success", false);
+			details.put("mlsresponse", "{}");
+			
+		}else {
+			//Now send it..
+			details.put("success", true);
+			details.put("mlsresponse", resp.toJSON());
+		}
+		
+		return details;
+	}
+	
+	public static MLSPacketGETResp sendMLSMaxPacket(String zHost, int zPort, MiniData zMaxMessage) throws IOException {
 		
 		//Open the socket..
 		Socket sock = new Socket();
