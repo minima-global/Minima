@@ -19,6 +19,7 @@ import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaximaMessage;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.Crypto;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -186,6 +187,28 @@ public class maxima extends Command {
 			String fullto = null;
 			if(existsParam("to")) {
 				fullto 	= getParam("to");
+				
+				//Is it a MAX address
+				if(fullto.startsWith("MAX#")) {
+					
+					//Get the Address..
+					JSONObject maxaddress = maxextra.getMaxAddress(fullto);
+					
+					//Get the address bit..
+					if((boolean)maxaddress.get("success")) {
+						
+						JSONObject resp 	= (JSONObject)maxaddress.get("response");
+						JSONObject mlsresp 	= (JSONObject)maxaddress.get("mlsresponse");
+						
+						//And finally..
+						fullto = mlsresp.getString("address");
+				
+						MinimaLogger.log("ATTEMPT SEND MAX CONTACT : "+fullto);
+						
+					}else {
+						throw new CommandException("MAX address invalid..");
+					}
+				}
 				
 				//Check is a valid address
 				if(!maxextra.checkValidMxAddress(fullto)) {
