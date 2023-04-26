@@ -363,6 +363,10 @@ public class send extends Command {
 			//Add this input to our transaction
 			transaction.addInput(inputs);
 			
+			if(debug) {
+				MinimaLogger.log("Input : "+inputs.toJSON());
+			}
+			
 			//How deep
 			if(inputs.getBlockCreated().isMore(minblock)) {
 				minblock = inputs.getBlockCreated();
@@ -481,6 +485,10 @@ public class send extends Command {
 				
 				//Add to the Transaction
 				transaction.addOutput(recipient);
+				
+				if(debug) {
+					MinimaLogger.log("Output : "+recipient.toJSON());
+				}
 			}
 		}
 		
@@ -517,6 +525,7 @@ public class send extends Command {
 			transaction.addOutput(changecoin);
 			
 			if(debug) {
+				MinimaLogger.log("Rounding Output : "+changecoin.toJSON());
 				MinimaLogger.log("Rounding amount (left over from split): "+totaldiff);
 			}
 		}
@@ -555,6 +564,10 @@ public class send extends Command {
 			
 			//And finally.. add the change output
 			transaction.addOutput(changecoin);
+			
+			if(debug) {
+				MinimaLogger.log("Change Output : "+changecoin.toJSON());
+			}
 		}
 		
 		//Are there any State Variables
