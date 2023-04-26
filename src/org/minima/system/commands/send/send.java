@@ -206,9 +206,9 @@ public class send extends Command {
 		}
 		
 		//Are we splitting the outputs
-		MiniNumber split = getNumberParam("split", MiniNumber.ONE);
+		MiniNumber split = getNumberParam("split", MiniNumber.ONE).floor();
 		if(split.isLess(MiniNumber.ONE) || split.isMore(MiniNumber.TWENTY)) {
-			throw new CommandException("Split outputs from 1 to 20");
+			throw new CommandException("Split must be whole number from 1 to 20");
 		}
 		
 		//Are we doing a Minima burn
@@ -485,7 +485,12 @@ public class send extends Command {
 		}
 		
 		//What is left over..
-		MiniNumber totaldiff = totalamount.sub(totaloutputs);
+		MiniNumber totalsanburn = totalamount;
+		if(tokenid.equals("0x00")) {
+			totalsanburn = totalamount.sub(burn);
+		}
+		
+		MiniNumber totaldiff = totalsanburn.sub(totaloutputs);
 		if(totaldiff.isMore(MiniNumber.ZERO)) {
 			
 			//Get a new address
