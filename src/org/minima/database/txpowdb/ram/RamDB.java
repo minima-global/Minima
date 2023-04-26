@@ -87,6 +87,10 @@ public class RamDB {
 		return mTxPoWDB.size();
 	}
 
+	public void wipeRamDB() {
+		mTxPoWDB.clear();
+	}
+	
 	/**
 	 * MEMPOOL specific functions
 	 */

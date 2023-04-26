@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
+import org.minima.database.userprefs.UserDB;
 import org.minima.database.wallet.ScriptRow;
 import org.minima.objects.Pulse;
 import org.minima.objects.TxBlock;
@@ -77,6 +78,9 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_CLEANDB_SQL 	= "MAIN_CLEANDB_SQL";
 	long CLEANDB_SQL_TIMER	= 1000 * 60 * 60 * 12;
 	
+	public static final String MAIN_AUTOBACKUP_MYSQL 	= "MAIN_AUTOBACKUP_MYSQL";
+	long MAIN_AUTOBACKUP_MYSQL_TIMER					= 1000 * 60 * 60 * 2;
+	
 	/**
 	 * Auto backup every 24 hrs..
 	 */
@@ -106,7 +110,7 @@ public class Main extends MessageProcessor {
 	 * Create all the initial Keys
 	 */
 	public static final String MAIN_INIT_KEYS 	= "MAIN_INIT_KEYS";
-	long INIT_KEYS_TIMER = 1000 * 30;
+	long INIT_KEYS_TIMER = 1000 * 15;
 	
 	/**
 	 * Main loop to check various values every 180 seconds..
@@ -253,15 +257,15 @@ public class Main extends MessageProcessor {
 			//Do sooner as stores the genesis Txn..
 			PostTimerMessage(new TimerMessage(10 * 1000, MAIN_CLEANDB_RAM));
 		}else {
-			PostTimerMessage(new TimerMessage(2 * 60 * 1000, MAIN_CLEANDB_RAM));
+			PostTimerMessage(new TimerMessage(3 * 60 * 1000, MAIN_CLEANDB_RAM));
 		}
-		PostTimerMessage(new TimerMessage(60 * 1000, MAIN_CLEANDB_SQL));
+		PostTimerMessage(new TimerMessage(10 * 60 * 1000, MAIN_CLEANDB_SQL));
 		
 		//Debug Checker
 		PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
 		
 		//Init Keys
-		PostTimerMessage(new TimerMessage(INIT_KEYS_TIMER, MAIN_INIT_KEYS));
+		PostTimerMessage(new TimerMessage(1000 * 30, MAIN_INIT_KEYS));
 				
 		//Reset Network stats every 24 hours
 		PostTimerMessage(new TimerMessage(NETRESET_TIMER, MAIN_NETRESET));
@@ -269,6 +273,9 @@ public class Main extends MessageProcessor {
 		//AutoBackup - do one in 5 minutes then every 24 hours
 		PostTimerMessage(new TimerMessage(1000 * 60 * 5, MAIN_AUTOBACKUP));
 		
+		//MYSQL AutoBackup - do one in 5 minutes then every 2 hours
+		PostTimerMessage(new TimerMessage(1000 * 60 * 5, MAIN_AUTOBACKUP_MYSQL));
+				
 		//Quick Clean up..
 		System.gc();
 	}
@@ -443,6 +450,26 @@ public class Main extends MessageProcessor {
 		}
 	}
 	
+	/**
+	 * USed when Syncing to clear memory
+	 */
+	public void resetMemFull() {
+		MinimaLogger.log("System full memory clean..");
+		
+		//Reset all the DBs..
+		MinimaDB.getDB().fullDBRestartMemFree();
+		
+		//Stop the main TxPoW processor
+		mTxPoWProcessor.stopMessageProcessor();
+		mTxPoWProcessor.waitToShutDown();
+		
+		//Now reset the main processor..
+		mTxPoWProcessor = new TxPoWProcessor();
+		
+		//And system clean 
+		System.gc();
+	}
+	
 	public void restartNIO() {
 		
 		//Not now..
@@ -606,6 +633,36 @@ public class Main extends MessageProcessor {
 			
 			//Now save the state - in case system crashed..
 			MinimaDB.getDB().saveState();
+			
+		}else if(zMessage.getMessageType().equals(MAIN_AUTOBACKUP_MYSQL)) {
+			
+			//Do it again..
+			PostTimerMessage(new TimerMessage(MAIN_AUTOBACKUP_MYSQL_TIMER, MAIN_AUTOBACKUP_MYSQL));
+			
+			UserDB udb = MinimaDB.getDB().getUserDB();
+			
+			//Are we enabled..
+			if(udb.getAutoBackupMySQL()) {
+				
+				String backupcommand = "mysql host:"+udb.getAutoMySQLHost()
+								+" database:"+udb.getAutoMySQLDB()
+								+" user:"+udb.getAutoMySQLUser()
+								+" password:"+udb.getAutoMySQLPassword()
+								+" action:update";
+				
+				//Run a mysql Backup of the archive data..
+				JSONArray res 	= Command.runMultiCommand(backupcommand);
+				JSONObject json = (JSONObject) res.get(0); 
+				boolean status  = (boolean) json.get("status");
+				
+				//Output
+				if(!status) {
+					MinimaLogger.log("[ERROR] MYSQL AUTOBACKUP "+json.getString("error"));
+				}else {
+					JSONObject response = (JSONObject) json.get("response");
+					MinimaLogger.log("MYSQL AUTOBACKUP OK "+response.toString());
+				}
+			}
 			
 		}else if(zMessage.getMessageType().equals(MAIN_CLEANDB_SQL)) {
 			

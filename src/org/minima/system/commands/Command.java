@@ -59,6 +59,7 @@ import org.minima.system.commands.maxima.maxextra;
 import org.minima.system.commands.maxima.maxima;
 import org.minima.system.commands.maxima.maxsign;
 import org.minima.system.commands.maxima.maxverify;
+import org.minima.system.commands.mds.checkmode;
 import org.minima.system.commands.mds.checkpending;
 import org.minima.system.commands.mds.mds;
 import org.minima.system.commands.network.connect;
@@ -123,7 +124,7 @@ public abstract class Command {
 			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(), new sendview(),
 			
 			new archive(), new logs(), new history(), new convert(),new maths(),
-			new magic(), new checkpending(), new restoresync(),
+			new magic(), new checkpending(), new checkmode(), new restoresync(),
 			new multisig(), new checkaddress(),
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
 			
@@ -155,9 +156,19 @@ public abstract class Command {
 	
 	String mCompleteCommand = new String("");
 	
+	String mMiniDAPPID = "";
+	
 	public Command(String zName, String zHelp) {
 		mName = zName;
 		mHelp = zHelp;
+	}
+	
+	public void setMiniDAPPID(String zMiniDAPPID) {
+		mMiniDAPPID = zMiniDAPPID;
+	}
+	
+	public String getMiniDAPPID() {
+		return mMiniDAPPID;
 	}
 	
 	public void setCompleteCommand(String zCommand) {
@@ -369,8 +380,11 @@ public abstract class Command {
 		while(strtok.hasMoreTokens()) {
 			String command = strtok.nextToken().trim();
 			
-			//Run this command..
+			//Get this command..
 			Command cmd = Command.getCommand(command);
+			
+			//Set who called it
+			cmd.setMiniDAPPID(zMiniDAPPID);
 			
 			//The final result
 			JSONObject result = null;

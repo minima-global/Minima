@@ -6,8 +6,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
@@ -84,6 +86,10 @@ public class MaxMsgHandler extends MessageProcessor {
 					MinimaLogger.log("Unknown Maxima response message "+validresp.to0xString());
 				}
 			
+			} catch (SocketTimeoutException ce) {
+				
+			} catch (ConnectException ce) {
+				
 			} catch (Exception e) {
 				MinimaLogger.log("MaxMsgHandler "+host+":"+port+" "+e.toString());
 			}
@@ -164,7 +170,7 @@ public class MaxMsgHandler extends MessageProcessor {
 		dos.flush();
 		
 		//Tell the NIO
-		Main.getInstance().getNIOManager().getTrafficListener().addWriteBytes(zMaxMessage.getLength());
+		Main.getInstance().getNIOManager().getTrafficListener().addWriteBytes("sendMaxPacket",zMaxMessage.getLength());
 		
 		//Now get a response.. should be ONE_ID.. give it 10 second max.. ( might get a block..)
 		MiniData valid = MaximaManager.MAXIMA_RESPONSE_FAIL;
@@ -175,7 +181,7 @@ public class MaxMsgHandler extends MessageProcessor {
 			MiniData resp = MiniData.ReadFromStream(dis);
 			
 			//Tell the NIO
-			Main.getInstance().getNIOManager().getTrafficListener().addReadBytes(resp.getLength());
+			Main.getInstance().getNIOManager().getTrafficListener().addReadBytes("sendMaxPacket",resp.getLength());
 			
 			if(resp.isEqual(MaximaManager.MAXIMA_RESPONSE_OK)) {
 				valid = resp;

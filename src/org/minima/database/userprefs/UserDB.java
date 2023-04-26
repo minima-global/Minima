@@ -178,4 +178,47 @@ public class UserDB extends JsonDB{
 	public void setMaximaPermanent(ArrayList<String> zPermanentList) {
 		setJSONArray("maxima_permanent",MiniUtil.convertArrayList(zPermanentList));
 	}
+	
+	/**
+	 * Are we auto backing up the MySQLDB
+	 */
+	public boolean getAutoBackupMySQL() {
+		return getBoolean("mysql_autobackup", false);
+	}
+	
+	public void setAutoBackupMySQL(boolean zAuto) {
+		setBoolean("mysql_autobackup", zAuto);
+	}
+	
+	public void setAutoMySQLHost(String zHost) {
+		setString("mysql_host", zHost);
+	}
+	
+	public String getAutoMySQLHost() {
+		return getString("mysql_host","");
+	}
+	
+	public void setAutoMySQLDB(String zDB) {
+		setString("mysql_db", zDB);
+	}
+	
+	public String getAutoMySQLDB() {
+		return getString("mysql_db","");
+	}
+	
+	public void setAutoMySQLUser(String zUser) {
+		setString("mysql_user", zUser);
+	}
+	
+	public String getAutoMySQLUser() {
+		return getString("mysql_user","");
+	}
+	
+	public void setAutoMySQLPassword(String zPassword) {
+		setString("mysql_password", zPassword);
+	}
+	
+	public String getAutoMySQLPassword() {
+		return getString("mysql_password","");
+	}
 }

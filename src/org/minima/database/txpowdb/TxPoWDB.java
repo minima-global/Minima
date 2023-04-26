@@ -180,6 +180,10 @@ public class TxPoWDB {
 		mRamDB.cleanDB();
 	}
 	
+	public void wipeDBRAM() {
+		mRamDB.wipeRamDB();
+	}
+	
 	public void cleanDBSQL() {
 		mSqlDB.cleanDB();
 	}

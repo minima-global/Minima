@@ -17,6 +17,7 @@ import org.minima.system.network.maxima.MaxMsgHandler;
 import org.minima.system.network.maxima.MaximaContactManager;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaximaMessage;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -146,6 +147,28 @@ public class maxcontacts extends Command {
 			//Get the contact address
 			String address 	= getParam("contact");
 
+			//Is it a MAX address
+			if(address.startsWith("MAX#")) {
+				
+				//Get the Address..
+				JSONObject maxaddress = maxextra.getMaxAddress(address);
+				
+				//Get the address bit..
+				if((boolean)maxaddress.get("success")) {
+					
+					JSONObject resp 	= (JSONObject)maxaddress.get("response");
+					JSONObject mlsresp 	= (JSONObject)maxaddress.get("mlsresponse");
+					
+					//And finally..
+					address = mlsresp.getString("address");
+			
+					MinimaLogger.log("ATTEMPT ADD MAX CONTACT : "+address);
+					
+				}else {
+					throw new CommandException("MAX address invalid..");
+				}
+			}
+			
 			//Check is a valid address
 			if(!maxextra.checkValidMxAddress(address)) {
 				throw new CommandException("Invalid MX address : "+address);

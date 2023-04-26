@@ -6,6 +6,7 @@ import java.util.Arrays;
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
 import org.minima.database.txpowtree.TxPoWTreeNode;
+import org.minima.database.userprefs.UserDB;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
@@ -59,6 +60,7 @@ public class mysql extends Command {
 				+ "    integrity : Check the block order and block parents are correct in the MySQL db.\n"
 				+ "    update : Update the MySQL db with the latest syncblocks from the node's archive db.\n"
 				+ "    addresscheck : Check the history of all the spent and unspent coins from an address.\n"
+				+ "    sutobackup : Automatically save archive data to MySQL DB. Use with enable.\n"
 				+ "    resync : Perform a chain or seed re-sync from the specified MySQL db.\n"
 				+ "             Will shutdown the node so you must restart it once complete.\n"
 				+ "    wipe :  Be careful. Wipe the MySQL db.\n"
@@ -78,6 +80,9 @@ public class mysql extends Command {
 				+ "\n"
 				+ "address: (optional)\n"
 				+ "    Use with action:checkaddress. The address to check the history of spent and unspent coins for.\n"
+				+ "\n"
+				+ "enable: (optional)\n"
+				+ "    Use with action:autobackup. Automatically save data to MySQL archive DB.\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
@@ -99,7 +104,7 @@ public class mysql extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database","user","password","keys","keyuses","phrase","address"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database","user","password","keys","keyuses","phrase","address","enable"}));
 	}
 	
 	@Override
@@ -111,6 +116,9 @@ public class mysql extends Command {
 			throw new CommandException("Sorry - MySQL does not work on Android..");
 		}
 		
+		//What action are we doing..
+		String action = getParam("action","info");
+		
 		//Get the details
 		String host 		= getParam("host");
 		String db 			= getParam("database");
@@ -120,8 +128,6 @@ public class mysql extends Command {
 		//Get the login details..
 		MySQLConnect mysql = new MySQLConnect(host, db, user, password);
 		mysql.init();
-		
-		String action = getParam("action","info");
 		
 		//Get the ArchiveManager
 		ArchiveManager arch = MinimaDB.getDB().getArchive();
@@ -157,6 +163,9 @@ public class mysql extends Command {
 			resp.put("archive", archresp);
 			resp.put("mysql", mysqlresp);
 			
+			boolean autobackup = MinimaDB.getDB().getUserDB().getAutoBackupMySQL();
+			resp.put("autobackup", autobackup);
+			
 			ret.put("response", resp);
 		
 		}else if(action.equals("wipe")) {
@@ -166,6 +175,33 @@ public class mysql extends Command {
 			
 			ret.put("response", "MySQL DB Wiped..");
 		
+		}else if(action.equals("autobackup")) {
+			
+			UserDB udb = MinimaDB.getDB().getUserDB();
+			
+			boolean enable = getBooleanParam("enable");
+			udb.setAutoBackupMySQL(enable);
+			
+			MinimaLogger.log("ENABLE:"+enable);
+			
+			if(enable) {
+				udb.setAutoMySQLHost(host);
+				udb.setAutoMySQLDB(db);
+				udb.setAutoMySQLUser(user);
+				udb.setAutoMySQLPassword(password);
+			}else {
+				udb.setAutoMySQLHost("");
+				udb.setAutoMySQLDB("");
+				udb.setAutoMySQLUser("");
+				udb.setAutoMySQLPassword("");
+			}
+			
+			JSONObject resp = new JSONObject();
+			boolean autobackup = MinimaDB.getDB().getUserDB().getAutoBackupMySQL();
+			resp.put("autobackup", autobackup);
+			
+			ret.put("response", resp);
+			
 		}else if(action.equals("integrity")) {
 			
 			//Check all the block in the MySQL DB..
@@ -372,10 +408,7 @@ public class mysql extends Command {
 				//Clean system counter
 				counter++;
 				if(counter % 20 == 0) {
-					MinimaLogger.log("System clean..");
-					System.gc();
-					
-					MinimaDB.getDB().ShutdownRestartTxpArchiveDB();
+					Main.getInstance().resetMemFull();
 				}
 				
 				//Create an IBD for the mysql data

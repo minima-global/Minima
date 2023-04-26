@@ -73,7 +73,7 @@ public class consolidate extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"tokenid","coinage","maxcoins",
-				"maxsigs","burn","debug","dryrun"}));
+				"maxsigs","burn","debug","dryrun","password"}));
 	}
 	
 	@Override
@@ -182,11 +182,29 @@ public class consolidate extends Command {
 		MiniData myaddress 			= new MiniData(newwalletaddress.getAddress());
 		
 		//Construct the command
-		String command = "send coinage:"+coinage.toString()+" split:2 dryrun:"+dryrun+" debug:"+debug+" burn:"+burn.toString()
-				+" amount:"+totalamount.toString()+" address:"+myaddress.to0xString()+" tokenid:"+tokenid;
+		String command = "send coinage:"+coinage.toString()
+				+" split:2 dryrun:"+dryrun
+				+" debug:"+debug
+				+" burn:"+burn.toString()
+				+" amount:"+totalamount.toString()
+				+" address:"+myaddress.to0xString()
+				+" tokenid:"+tokenid;
 		
-		if(debug) {
-			MinimaLogger.log("Consolidate command : "+command);
+		//Is there a password..
+		if(existsParam("password")) {
+			
+			//Hide the password
+			if(debug) {
+				MinimaLogger.log("Consolidate command : "+command+" password:####");
+			}
+			
+			//Add the password
+			command +=" password:\""+getParam("password")+"\"";
+			
+		}else {
+			if(debug) {
+				MinimaLogger.log("Consolidate command : "+command);
+			}
 		}
 		
 		JSONArray result 		= Command.runMultiCommand(command);

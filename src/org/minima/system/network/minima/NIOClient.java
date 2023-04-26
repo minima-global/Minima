@@ -323,7 +323,7 @@ public class NIOClient {
  	   	}
  	   	
  	   	//Add to the Traffic Listener..
- 	   	mNIOManager.getTrafficListener().addReadBytes(readbytes);
+ 	   	mNIOManager.getTrafficListener().addReadBytes("NIO_handleRead",readbytes);
  	   	
  	   	//Ready to read
 // 	   	mBufferIn.flip();
@@ -475,7 +475,7 @@ public class NIOClient {
 		}
 		
 		//Add to the Traffic Listener..
- 	   	mNIOManager.getTrafficListener().addWriteBytes(write);
+ 	   	mNIOManager.getTrafficListener().addWriteBytes("NIO_handleWrite",write);
 		
 		//Any left
 		synchronized (mMessages) {

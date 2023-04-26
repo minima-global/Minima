@@ -10,6 +10,9 @@ MDS.load("chatter.js");
 //Are we logging data
 var logs = false;
 
+//The last message you received from people..
+var lastrecmessage = {};
+
 //Main message handler..
 MDS.init(function(msg){
 	
@@ -21,12 +24,55 @@ MDS.init(function(msg){
 			MDS.log("SQL DB inited");
 		});
 	
+		//Run Maxima to get the User details..
+		MDS.cmd("maxima",function(msg){
+			MAXIMA_PUBLICKEY = msg.response.publickey;
+			MAXIMA_USERNAME  = msg.response.name;	
+		});
+	
 	//Check rechatter messages
 	}else if(msg.event == "MDS_TIMER_10SECONDS"){
 		
 		//Check the rechatter table
 		doRechatter();
+	
+	//Do a Resync requset..
+	}else if(msg.event == "MDS_TIMER_1HOUR"){
+			
+		//Current time	
+		var currentdate = new Date();
 		
+		//1 day MAX..
+		var maxdatetime = currentdate.getTime() - (1000 * 60 * 60 * 24);	
+			
+		//Send a message to each contact
+		MDS.cmd("maxcontacts",function(resp){
+			
+			//For each contact
+			var len = resp.response.contacts.length;
+			for(var i=0;i<len;i++){
+				
+				//Get the contact public key
+				var pubkey  = resp.response.contacts[i].publickey;
+				
+				//The last time we received a message from them..
+				var lm = lastrecmessage[""+pubkey];
+				if(lm === undefined){
+					lm = maxdatetime;
+				}else if(lm < maxdatetime){
+					lm = maxdatetime;
+				}
+				
+				//Send them a message
+				var chatter  = {};
+				chatter.type		= "MESSAGE_SYNCREQ";	
+				chatter.lastmessage	= lm;
+	
+				//Send the request
+				postMessageToPublickey(chatter,pubkey);
+			}
+		});
+			
 	//Only interested in Maxima
 	}else if(msg.event == "MAXIMA"){
 		
@@ -35,6 +81,10 @@ MDS.init(function(msg){
 			
 			//The Maxima user that sent this request
 			var publickey = msg.data.from;
+						
+			//Add to our local store..
+			var dd = new Date();
+			lastrecmessage[""+publickey] = dd.getTime();
 											
 			//Convert the data..
 			MDS.cmd("convert from:HEX to:String data:"+msg.data.data,function(resp){
@@ -123,7 +173,7 @@ MDS.init(function(msg){
 						}
 					});
 				
-				}else if(messagetype="MESSAGE_REQUEST"){
+				}else if(messagetype=="MESSAGE_REQUEST"){
 					
 					var msgid = rantjson.messageid;
 					
@@ -142,6 +192,42 @@ MDS.init(function(msg){
 								MDS.log("POST REQUEST REPLY:"+JSON.stringify(postresp));	
 							}
 						});	
+					});
+					
+				
+				}else if(messagetype=="MESSAGE_SYNCREQ"){
+					
+					//When was the last message you got from us..
+					var lastmsg = rantjson.lastmessage;
+					
+					//Current time	
+					var currentdate = new Date();
+					
+					//1 day MAX..
+					var maxdatetime = currentdate.getTime() - (1000 * 60 * 60 * 24);
+					
+					if(lastmsg<maxdatetime){
+						lastmsg = maxdatetime;
+					}
+					
+					//Get all messages past that point that I should have sent
+					MDS.sql("SELECT DISTINCT * FROM MESSAGES WHERE (publickey='"+MAXIMA_PUBLICKEY+"' OR rechatter=1) AND recdate>"+lastmsg, function(sqlmsg){
+						
+						//How many messages
+						var len = sqlmsg.rows.length; 
+						
+						//Send these messages..
+						for(var i=0;i<len;i++){
+							
+							//Convert to JSON
+							var chatjson = JSON.parse(sqlmsg.rows[i].CHATTER);
+	
+							postMessageToPublickey(chatjson,publickey,function(postresp){
+								if(logs){
+									MDS.log("POST SYNC REQUEST :"+JSON.stringify(postresp));	
+								}
+							});
+						}
 					});
 					
 				}else{
