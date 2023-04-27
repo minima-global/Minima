@@ -473,6 +473,7 @@ public class send extends Command {
 				throw new CommandException("Cannot have ZERO output - output is too small for this user.. "+user.getAddress());
 			}
 			
+			//Create all the outputs for this user at this split level
 			for(int i=0;i<isplit;i++) {
 				//Create the output
 				Coin recipient = new Coin(Coin.COINID_OUTPUT, address, splitamount, Token.TOKENID_MINIMA, true);
@@ -494,22 +495,22 @@ public class send extends Command {
 				}
 			}
 			
-			//Is there any left..
+			//Is there any left over..
 			MiniNumber currentdiff = usertotal.sub(currenttotal);
 			if(currentdiff.isMore(MiniNumber.ZERO)) {
 				
 				//Send them the remainder..
-				Coin changecoin = new Coin(Coin.COINID_OUTPUT, address, currentdiff, Token.TOKENID_MINIMA, true);
+				Coin remaincoin = new Coin(Coin.COINID_OUTPUT, address, currentdiff, Token.TOKENID_MINIMA, true);
 				if(!tokenid.equals("0x00")) {
-					changecoin.resetTokenID(new MiniData(tokenid));
-					changecoin.setToken(token);
+					remaincoin.resetTokenID(new MiniData(tokenid));
+					remaincoin.setToken(token);
 				}
 				
 				//And finally.. add the change output
-				transaction.addOutput(changecoin);
+				transaction.addOutput(remaincoin);
 				
 				if(debug) {
-					MinimaLogger.log("Rounding Output from split : "+changecoin.toJSON());
+					MinimaLogger.log("Rounding Output from split : "+remaincoin.toJSON());
 				}
 			}
 		}
