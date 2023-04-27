@@ -352,7 +352,7 @@ public class maxima extends Command {
 						if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_TOOBIG)) {
 							json.put("error", "Maxima Mesasge too big");
 						}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_UNKNOWN)) {
-							json.put("error", "Unkown Address");
+							json.put("error", "Unknown Address");
 						}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_WRONGHASH)) {
 							json.put("error", "TxPoW Hash wrong");
 						}else {

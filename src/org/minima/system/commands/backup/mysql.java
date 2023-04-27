@@ -60,7 +60,7 @@ public class mysql extends Command {
 				+ "    integrity : Check the block order and block parents are correct in the MySQL db.\n"
 				+ "    update : Update the MySQL db with the latest syncblocks from the node's archive db.\n"
 				+ "    addresscheck : Check the history of all the spent and unspent coins from an address.\n"
-				+ "    sutobackup : Automatically save archive data to MySQL DB. Use with enable.\n"
+				+ "    autobackup : Automatically save archive data to MySQL DB. Use with enable.\n"
 				+ "    resync : Perform a chain or seed re-sync from the specified MySQL db.\n"
 				+ "             Will shutdown the node so you must restart it once complete.\n"
 				+ "    wipe :  Be careful. Wipe the MySQL db.\n"
