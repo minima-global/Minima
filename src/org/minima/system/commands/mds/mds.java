@@ -443,6 +443,9 @@ public class mds extends Command {
 			
 			//There has been a change
 			Main.getInstance().getMDSManager().PostMessage(MDSManager.MDS_MINIDAPPS_RESETALL);
+		
+		}else {
+			throw new CommandException("Unknown action : "+action);
 		}
 		
 		return ret;
