@@ -269,7 +269,7 @@ public class Wallet extends SqlDB {
 		mBaseSeed = new SeedRow(phrase, seed.to0xString());
 	}
 	
-	public synchronized void updateSeedRow(String zPhrase, String zSeed) throws SQLException {
+	public void updateSeedRow(String zPhrase, String zSeed) throws SQLException {
 		
 		//Update
 		SQL_UPDATE_SEED.clearParameters();
@@ -290,11 +290,15 @@ public class Wallet extends SqlDB {
 	}
 	
 	public synchronized void wipeBaseSeedRow() throws SQLException {
+		
 		//Wipe the DB
 		SQL_WIPE_PRIVATE_KEYS.execute();
 		
-		//reset the base seed
-		updateSeedRow("","0x00");
+		//Update
+		SQL_UPDATE_SEED.clearParameters();
+		SQL_UPDATE_SEED.setString(1, "");
+		SQL_UPDATE_SEED.setString(2, "0x00");
+		SQL_UPDATE_SEED.executeUpdate();
 		
 		//And Store..
 		mBaseSeed = new SeedRow("", "0x00");
