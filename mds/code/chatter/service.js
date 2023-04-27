@@ -8,7 +8,7 @@
 MDS.load("chatter.js");
 
 //Are we logging data
-var logs = true;
+var logs = false;
 
 //Main message handler..
 MDS.init(function(msg){
@@ -34,18 +34,18 @@ MDS.init(function(msg){
 		doRechatter();
 	
 	//Do a Resync requset..
-	}else if(msg.event == "MDS_TIMER_60SECONDS"){
+	}else if(msg.event == "MDS_TIMER_1HOUR"){
 			
 		//Current time	
 		var currentdate = new Date();
 		
 		//12 hour MAX..
-		var maxdatetime = currentdate.getTime() - (1000 * 60 * 60 * 24);	
+		var maxdatetime = currentdate.getTime() - (1000 * 60 * 60 * 48);	
 		
 		//First select all the messages you have sent in the last 24 hours..
 		MDS.sql("SELECT DISTINCT messageid FROM MESSAGES WHERE (publickey='"+MAXIMA_PUBLICKEY+
 				"' OR rechatter=1) AND recdate>"+maxdatetime
-				+" ORDER BY recdate ASC LIMIT 50", function(sqlmsg){
+				+" ORDER BY recdate DESC LIMIT 50", function(sqlmsg){
 			
 			//How many messages
 			var len = sqlmsg.rows.length; 
@@ -53,7 +53,7 @@ MDS.init(function(msg){
 			//Send these messages..
 			var msglist = [];
 			for(var i=0;i<len;i++){
-				msglist.push(sqlmsg.rows[i].MESSAGEID);
+				msglist.unshift(sqlmsg.rows[i].MESSAGEID);
 			}
 			
 			//Send a message to each contact
