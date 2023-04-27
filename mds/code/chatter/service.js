@@ -8,10 +8,7 @@
 MDS.load("chatter.js");
 
 //Are we logging data
-var logs = false;
-
-//The last message you received from people..
-var lastrecmessage = {};
+var logs = true;
 
 //Main message handler..
 MDS.init(function(msg){
@@ -37,40 +34,51 @@ MDS.init(function(msg){
 		doRechatter();
 	
 	//Do a Resync requset..
-	}else if(msg.event == "MDS_TIMER_1HOUR"){
+	}else if(msg.event == "MDS_TIMER_60SECONDS"){
 			
 		//Current time	
 		var currentdate = new Date();
 		
-		//1 day MAX..
+		//12 hour MAX..
 		var maxdatetime = currentdate.getTime() - (1000 * 60 * 60 * 24);	
+		
+		//First select all the messages you have sent in the last 24 hours..
+		MDS.sql("SELECT DISTINCT messageid FROM MESSAGES WHERE (publickey='"+MAXIMA_PUBLICKEY+
+				"' OR rechatter=1) AND recdate>"+maxdatetime
+				+" ORDER BY recdate ASC LIMIT 50", function(sqlmsg){
 			
-		//Send a message to each contact
-		MDS.cmd("maxcontacts",function(resp){
+			//How many messages
+			var len = sqlmsg.rows.length; 
 			
-			//For each contact
-			var len = resp.response.contacts.length;
+			//Send these messages..
+			var msglist = [];
 			for(var i=0;i<len;i++){
-				
-				//Get the contact public key
-				var pubkey  = resp.response.contacts[i].publickey;
-				
-				//The last time we received a message from them..
-				var lm = lastrecmessage[""+pubkey];
-				if(lm === undefined){
-					lm = maxdatetime;
-				}else if(lm < maxdatetime){
-					lm = maxdatetime;
-				}
-				
-				//Send them a message
-				var chatter  = {};
-				chatter.type		= "MESSAGE_SYNCREQ";	
-				chatter.lastmessage	= lm;
-	
-				//Send the request
-				postMessageToPublickey(chatter,pubkey);
+				msglist.push(sqlmsg.rows[i].MESSAGEID);
 			}
+			
+			//Send a message to each contact
+			MDS.cmd("maxcontacts",function(resp){
+				
+				//For each contact
+				var len = resp.response.contacts.length;
+				for(var i=0;i<len;i++){
+					
+					//Get the contact public key
+					var pubkey  = resp.response.contacts[i].publickey;
+					
+					//Send them a message
+					var chatter  		= {};
+					chatter.type		= "MESSAGE_SYNCLIST";	
+					chatter.synclist	= msglist;
+		
+					//Send the request
+					postMessageToPublickey(chatter,pubkey);
+					
+					if(logs){
+						MDS.log("CHATTER 1 HOUR RESYNC SENT TO  : "+pubkey+" "+JSON.stringify(chatter));	
+					}
+				}
+			});
 		});
 			
 	//Only interested in Maxima
@@ -81,16 +89,16 @@ MDS.init(function(msg){
 			
 			//The Maxima user that sent this request
 			var publickey = msg.data.from;
-						
-			//Add to our local store..
-			var dd = new Date();
-			lastrecmessage[""+publickey] = dd.getTime();
 											
 			//Convert the data..
 			MDS.cmd("convert from:HEX to:String data:"+msg.data.data,function(resp){
 			
 				//And create the actual JSON
 				var rantjson = JSON.parse(resp.response.conversion);
+				
+				if(logs){
+					MDS.log("RECEIVED CHATTER MESSAGE : "+JSON.stringify(rantjson));
+				}
 				
 				//What message type is this..
 				var messagetype = rantjson.type; 
@@ -195,41 +203,37 @@ MDS.init(function(msg){
 					});
 					
 				
-				}else if(messagetype=="MESSAGE_SYNCREQ"){
+				}else if(messagetype=="MESSAGE_SYNCLIST"){
+				
+					//Get the full message list
+					var msglist = rantjson.synclist;
 					
-					//When was the last message you got from us..
-					var lastmsg = rantjson.lastmessage;
-					
-					//Current time	
-					var currentdate = new Date();
-					
-					//1 day MAX..
-					var maxdatetime = currentdate.getTime() - (1000 * 60 * 60 * 24);
-					
-					if(lastmsg<maxdatetime){
-						lastmsg = maxdatetime;
+					//Now search for any you DON'T have - MAX 50..
+					var len = msglist.length;
+					if(len>50){
+						len = 50;
 					}
 					
-					//Get all messages past that point that I should have sent
-					MDS.sql("SELECT DISTINCT * FROM MESSAGES WHERE (publickey='"+MAXIMA_PUBLICKEY+"' OR rechatter=1) AND recdate>"+lastmsg, function(sqlmsg){
+					for(var i=0;i<len;i++){
 						
-						//How many messages
-						var len = sqlmsg.rows.length; 
-						
-						//Send these messages..
-						for(var i=0;i<len;i++){
-							
-							//Convert to JSON
-							var chatjson = JSON.parse(sqlmsg.rows[i].CHATTER);
-	
-							postMessageToPublickey(chatjson,publickey,function(postresp){
-								if(logs){
-									MDS.log("POST SYNC REQUEST :"+JSON.stringify(postresp));	
-								}
-							});
-						}
-					});
-					
+						//Do we have it..
+						checkInDB(msglist[i],function(indb){
+							if(!indb){
+								
+								//Create a request message						
+								createMessageRequest(msglist[i],function(chatterreq){
+									
+									//Post it normally over Maxima to JUST this user
+									postMessageToPublickey(chatterreq,publickey,function(postresp){
+										if(logs){
+											MDS.log("POST SYNC REQUEST:"+JSON.stringify(postresp));
+										}	
+									});	
+								});
+							}	
+						});
+					}
+				
 				}else{
 					MDS.log("INVALID Message type in Chatter message "+messagetype);
 				}		
