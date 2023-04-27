@@ -432,7 +432,7 @@ public class MinimaDB {
 		try {
 			//Clean shutdown of SQL DBs
 			MinimaLogger.log("Wallet shutdown..");
-			mWallet.saveDB(zCompact);
+			mWallet.saveDB(true);
 			MinimaLogger.log("Maxima shutdown..");
 			mMaximaDB.saveDB(zCompact);
 			MinimaLogger.log("MDSDB shutdown..");
@@ -477,7 +477,7 @@ public class MinimaDB {
 			MinimaLogger.log("Save ArchiveDB..");
 			mArchive.saveDB(false);
 			MinimaLogger.log("Save WalletDB..");
-			mWallet.saveDB(false);
+			mWallet.saveDB(true);
 			
 			MinimaLogger.log("Load DBs..");
 			
