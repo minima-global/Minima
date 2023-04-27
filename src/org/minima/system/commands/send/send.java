@@ -501,18 +501,29 @@ public class send extends Command {
 		MiniNumber totaldiff = totalsanburn.sub(totaloutputs);
 		if(totaldiff.isMore(MiniNumber.ZERO)) {
 			
-			//Get a new address
-			ScriptRow newwalletaddress = MinimaDB.getDB().getWallet().getDefaultAddress();
+			//Who to send the spare to..
+			MiniData spareaddress = null;
 			
-			//THIS is a fix for an issue where backup saved with wrong seed phrase
-			if(MinimaDB.getDB().getWallet().isBaseSeedAvailable()) {
-				if(!keys.checkKey(newwalletaddress.getPublicKey())) {
-					throw new CommandException("[!] SERIOUS ERROR - INCORRECT Public key : "+newwalletaddress.getPublicKey());
+			//Do we send it back to ourselves..
+			if(recipients.size()==1) {
+				
+				//Only 1 recipient - send it to them
+				spareaddress = recipients.get(0).getAddress();
+				
+			}else {
+				//More than 1 recipient - Send back to yourself
+				ScriptRow newwalletaddress = MinimaDB.getDB().getWallet().getDefaultAddress();
+				
+				//THIS is a fix for an issue where backup saved with wrong seed phrase
+				if(MinimaDB.getDB().getWallet().isBaseSeedAvailable()) {
+					if(!keys.checkKey(newwalletaddress.getPublicKey())) {
+						throw new CommandException("[!] SERIOUS ERROR - INCORRECT Public key : "+newwalletaddress.getPublicKey());
+					}
 				}
+				
+				//The spare address to send the split spare amount to
+				spareaddress = new MiniData(newwalletaddress.getAddress());
 			}
-			
-			//The spare address to send the split spare amount to
-			MiniData spareaddress = new MiniData(newwalletaddress.getAddress());
 			
 			//Spare coin does not keep the state
 			Coin changecoin = new Coin(Coin.COINID_OUTPUT, spareaddress, totaldiff, Token.TOKENID_MINIMA, false);
