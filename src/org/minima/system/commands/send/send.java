@@ -453,29 +453,33 @@ public class send extends Command {
 		int isplit = split.getAsInt();
 		
 		//Cycle through all the recipients
-		MiniNumber totaloutputs = MiniNumber.ZERO;
 		for(AddressAmount user : recipients) {
 			
-			MiniNumber splitamount 	= user.getAmount().div(split);
+			//The user address
 			MiniData address 		= user.getAddress();
 			
+			//How much we send to this user
+			MiniNumber usertotal 	= user.getAmount();
 			if(!tokenid.equals("0x00")) {
-				//Use the token object we previously found
-				splitamount = token.getScaledMinimaAmount(splitamount);
+				//Get the correct scaled amount
+				usertotal = token.getScaledMinimaAmount(usertotal);
 			}
+			MiniNumber currenttotal = MiniNumber.ZERO;
 			
-			//Make sure is not ZERO
+			//The split amount
+			MiniNumber splitamount 	= usertotal.div(split);
 			if(splitamount.isLessEqual(MiniNumber.ZERO)) {
 				//ZERO output not allowed..
 				throw new CommandException("Cannot have ZERO output - output is too small for this user.. "+user.getAddress());
 			}
 			
+			//Create all the outputs for this user at this split level
 			for(int i=0;i<isplit;i++) {
 				//Create the output
 				Coin recipient = new Coin(Coin.COINID_OUTPUT, address, splitamount, Token.TOKENID_MINIMA, true);
 				
-				//Add to totals..
-				totaloutputs = totaloutputs.add(splitamount);
+				//Add to the User total
+				currenttotal = currenttotal.add(splitamount);
 				
 				//Do we need to add the Token..
 				if(!tokenid.equals("0x00")) {
@@ -490,43 +494,24 @@ public class send extends Command {
 					MinimaLogger.log("Output : "+recipient.toJSON());
 				}
 			}
-		}
-		
-		//What is left over..
-		MiniNumber totalsanburn = totalamount;
-		if(tokenid.equals("0x00")) {
-			totalsanburn = totalamount.sub(burn);
-		}
-		
-		MiniNumber totaldiff = totalsanburn.sub(totaloutputs);
-		if(totaldiff.isMore(MiniNumber.ZERO)) {
 			
-			//Get a new address
-			ScriptRow newwalletaddress = MinimaDB.getDB().getWallet().getDefaultAddress();
-			
-			//THIS is a fix for an issue where backup saved with wrong seed phrase
-			if(MinimaDB.getDB().getWallet().isBaseSeedAvailable()) {
-				if(!keys.checkKey(newwalletaddress.getPublicKey())) {
-					throw new CommandException("[!] SERIOUS ERROR - INCORRECT Public key : "+newwalletaddress.getPublicKey());
+			//Is there any left over..
+			MiniNumber currentdiff = usertotal.sub(currenttotal);
+			if(currentdiff.isMore(MiniNumber.ZERO)) {
+				
+				//Send them the remainder..
+				Coin remaincoin = new Coin(Coin.COINID_OUTPUT, address, currentdiff, Token.TOKENID_MINIMA, true);
+				if(!tokenid.equals("0x00")) {
+					remaincoin.resetTokenID(new MiniData(tokenid));
+					remaincoin.setToken(token);
 				}
-			}
-			
-			//The spare address to send the split spare amount to
-			MiniData spareaddress = new MiniData(newwalletaddress.getAddress());
-			
-			//Spare coin does not keep the state
-			Coin changecoin = new Coin(Coin.COINID_OUTPUT, spareaddress, totaldiff, Token.TOKENID_MINIMA, false);
-			if(!tokenid.equals("0x00")) {
-				changecoin.resetTokenID(new MiniData(tokenid));
-				changecoin.setToken(token);
-			}
-			
-			//And finally.. add the change output
-			transaction.addOutput(changecoin);
-			
-			if(debug) {
-				MinimaLogger.log("Rounding Output : "+changecoin.toJSON());
-				MinimaLogger.log("Rounding amount (left over from split): "+totaldiff);
+				
+				//And finally.. add the change output
+				transaction.addOutput(remaincoin);
+				
+				if(debug) {
+					MinimaLogger.log("Rounding Output from split : "+remaincoin.toJSON());
+				}
 			}
 		}
 		

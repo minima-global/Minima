@@ -55,6 +55,7 @@ import org.minima.system.commands.search.history;
 import org.minima.system.commands.search.keys;
 import org.minima.system.commands.search.tokens;
 import org.minima.system.commands.search.txpow;
+import org.minima.system.commands.send.multisig;
 import org.minima.system.commands.send.send;
 import org.minima.system.commands.send.sendnosign;
 import org.minima.system.commands.send.sendpoll;
@@ -141,6 +142,7 @@ public class help extends Command {
 			addCommand(details, new sendview());
 			addCommand(details, new sendsign());
 			addCommand(details, new sendpost());
+			addCommand(details, new multisig());
 			
 			addCommand(details, new balance());
 			addCommand(details, new tokencreate());
