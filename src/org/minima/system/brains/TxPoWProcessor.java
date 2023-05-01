@@ -767,7 +767,6 @@ public class TxPoWProcessor extends MessageProcessor {
 				lastpow = block.getTxPoW();
 			}
 		
-			
 			//Ask to sync the TxBlocks
 			askToSyncTxBlocks(uid);
 		
@@ -824,8 +823,8 @@ public class TxPoWProcessor extends MessageProcessor {
 	 */
 	public void askToSyncTxBlocks(String zClientID) {
 		
-		//Only ask if not in no sync iDB or TXBLOCK mode..
-		if(!GeneralParams.NO_SYNC_IBD && !GeneralParams.TXBLOCK_NODE) {
+		//Only ask if not in no sync ibd mode
+		if(!GeneralParams.NO_SYNC_IBD) {
 			Message synctxblock = new Message(NIOManager.NIO_SYNCTXBLOCK);
 			synctxblock.addString("client", zClientID);
 			Main.getInstance().getNetworkManager().getNIOManager().PostMessage(synctxblock);
@@ -834,7 +833,7 @@ public class TxPoWProcessor extends MessageProcessor {
 	
 	private void requestMissingTxns(String zClientID, TxBlock zBlock) {
 		
-		//Are we in TXBLOCK mode..
+		//Are we in TXBLOCK mode.. no txns pls
 		if(GeneralParams.TXBLOCK_NODE) {
 			return;
 		}
