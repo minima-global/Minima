@@ -555,6 +555,12 @@ public class TxPoWProcessor extends MessageProcessor {
 		}
 		
 		if(zMessage.isMessageType(TXPOWPROCESSOR_PROCESSTXPOW)) {
+			
+			//Do NOT process if you are a txblock node
+			if(GeneralParams.TXBLOCK_NODE) {
+				return;
+			}
+			
 			//Get the TxPoW
 			TxPoW txp = (TxPoW) zMessage.getObject("txpow");
 			
@@ -562,6 +568,11 @@ public class TxPoWProcessor extends MessageProcessor {
 			processTxPoW(txp);
 		
 		}else if(zMessage.isMessageType(TXPOWPROCESSOR_PROCESSTXBLOCK)) {
+			
+			//ONLY process if you are a txblock node
+			if(!GeneralParams.TXBLOCK_NODE) {
+				return;
+			}
 			
 			//Get the TxBlock
 			TxBlock txblock = (TxBlock)zMessage.getObject("txblock");
