@@ -491,7 +491,7 @@ public class TxPoWProcessor extends MessageProcessor {
 				cascdb.cascadeChain();
 				
 				//Clear the TxBlockDB
-				MinimaDB.getDB().getTxBlockDB().clearOld(newroot.getBlockNumber().sub(MiniNumber.TEN));
+				MinimaDB.getDB().getTxBlockDB().clearOld(newroot.getBlockNumber().sub(MiniNumber.HUNDRED));
 			}
 		
 			//And now set all the onchain txns so not used again in a new TxPoW
