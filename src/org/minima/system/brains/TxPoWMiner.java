@@ -165,6 +165,11 @@ public class TxPoWMiner extends MessageProcessor {
 			
 		}else if(zMessage.isMessageType(TXPOWMINER_MINEPULSE)) {
 			
+			//NOT YET..
+			if(GeneralParams.TXBLOCK_NODE) {
+				return;
+			}
+			
 			//Do we have any blocks yet
 			if(MinimaDB.getDB().getTxPoWTree().getTip() != null) {
 				
