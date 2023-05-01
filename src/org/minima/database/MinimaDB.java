@@ -6,6 +6,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.minima.database.archive.ArchiveManager;
+import org.minima.database.archive.TxBlockDB;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.maxima.MaximaDB;
 import org.minima.database.minidapps.MDSDB;
@@ -42,6 +43,7 @@ public class MinimaDB {
 	Wallet			mWallet;
 	MaximaDB	 	mMaximaDB;
 	MDSDB			mMDSDB;
+	TxBlockDB		mTxBlockDB;
 	
 	/**
 	 * For P2P Information
@@ -65,6 +67,7 @@ public class MinimaDB {
 		mWallet		= new Wallet();
 		mMaximaDB	= new MaximaDB();
 		mMDSDB   	= new MDSDB();
+		mTxBlockDB	= new TxBlockDB();
 		
 		mP2PDB		= new P2PDB();
 		
@@ -97,6 +100,10 @@ public class MinimaDB {
 	 */
 	public TxPoWDB getTxPoWDB() {
 		return mTxPoWDB;
+	}
+	
+	public TxBlockDB getTxBlockDB() {
+		return mTxBlockDB;
 	}
 	
 	public TxPowTree getTxPoWTree() {
