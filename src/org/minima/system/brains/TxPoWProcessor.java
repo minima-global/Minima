@@ -62,6 +62,11 @@ public class TxPoWProcessor extends MessageProcessor {
 		//Add / Update last access to the DB
 		MinimaDB.getDB().getTxPoWDB().addTxPoW(zTxPoW);
 		
+		//Do NOT process if you are a txblock node
+		if(GeneralParams.TXBLOCK_NODE) {
+			return;
+		}
+		
 		//Post a message on the single threaded stack
 		PostMessage(new Message(TXPOWPROCESSOR_PROCESSTXPOW).addObject("txpow", zTxPoW));
 	}
@@ -73,6 +78,11 @@ public class TxPoWProcessor extends MessageProcessor {
 		
 		//Are we shutting down
 		if(Main.getInstance().isShuttongDownOrRestoring()) {
+			return;
+		}
+		
+		//ONLY txblocknodes do this
+		if(!GeneralParams.TXBLOCK_NODE) {
 			return;
 		}
 		
