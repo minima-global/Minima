@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Random;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowdb.TxPoWDB;
@@ -169,7 +170,7 @@ public class NIOMessage implements Runnable {
 			
 			//Are we syncing an IBD
 			if(Main.getInstance().isSyncIBD()) {
-				if(type.isEqual(MSG_TXPOWID) || type.isEqual(MSG_PULSE)) {
+				if(type.isEqual(MSG_TXPOWID) || type.isEqual(MSG_TXBLOCKID) || type.isEqual(MSG_PULSE)) {
 					//Ignore until finished..
 					MinimaLogger.log("Ignoring NIOmessage during IBD Sync.. type:"+convertMessageType(type));
 					return;
@@ -180,8 +181,16 @@ public class NIOMessage implements Runnable {
 			if(GeneralParams.TXBLOCK_NODE) {
 				if( type.isEqual(MSG_TXPOWID)) {
 					//Ignore these..
-					//MinimaLogger.log("Ignoring NIOmessage for TXBLOCK NODE :"+convertMessageType(type));
 					return;
+				}
+				
+				//Random message lost
+				if( type.isEqual(MSG_TXBLOCKID)) {
+					if(new Random().nextInt(100) < 80) {
+						MinimaLogger.log("RANDOM LOSE TXBLOCK ID MESSAGE");
+						return;
+					}
+					
 				}
 			}
 			
@@ -842,7 +851,7 @@ public class NIOMessage implements Runnable {
 
 					//And post on out stack
 					Message newniomsg = new Message(NIOManager.NIO_INCOMINGMSG);
-					newniomsg.addString("uid", "0x00");
+					newniomsg.addString("uid", "0x01");
 					newniomsg.addObject("data", niodata);
 
 					//Post to the NIOManager - which will check it and forward if correct
@@ -1002,6 +1011,11 @@ public class NIOMessage implements Runnable {
 			
 			}else if(type.isEqual(MSG_TXBLOCKID)) {
 				
+				//Are we running this type of node..
+				if(!GeneralParams.TXBLOCK_NODE) {
+					return;
+				}
+				
 				//Read in the txpowid
 				MiniData txpowid = MiniData.ReadFromStream(dis);
 				String txid 	 = txpowid.to0xString();
@@ -1054,6 +1068,11 @@ public class NIOMessage implements Runnable {
 			
 			}else if(type.isEqual(MSG_TXBLOCK)) {
 				
+				//Are we running this type of node..
+				if(!GeneralParams.TXBLOCK_NODE) {
+					return;
+				}
+				
 				//Get the TxBlock
 				TxBlock txblock = TxBlock.ReadFromStream(dis);
 				
@@ -1082,6 +1101,7 @@ public class NIOMessage implements Runnable {
 					//If not request it..
 					if(txb==null) {
 						//request it..
+						MinimaLogger.log("Request Parent TxBlock.. @ "+txblock.getTxPoW().getBlockNumber());
 						NIOManager.sendNetworkMessage(mClientUID, MSG_TXBLOCKREQ, parent);
 					}
 				}
