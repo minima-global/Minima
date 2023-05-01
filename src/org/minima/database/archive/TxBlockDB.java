@@ -49,6 +49,8 @@ public class TxBlockDB {
 	
 	public synchronized void clearOld(MiniNumber zMinBlock) {
 	
+		int oldsize = mTxBlockDB.size();
+		
 		ConcurrentHashMap<String, TxBlock> newDB = new ConcurrentHashMap();
 		
 		Enumeration<TxBlock> allblocks = mTxBlockDB.elements();
@@ -62,5 +64,6 @@ public class TxBlockDB {
 		}
 		
 		mTxBlockDB = newDB;
+		MinimaLogger.log("Clear TxBlockDB new size : "+mTxBlockDB.size()+" / "+oldsize);
 	}
 }
