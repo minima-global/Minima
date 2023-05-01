@@ -180,7 +180,7 @@ public class NIOMessage implements Runnable {
 			if(GeneralParams.TXBLOCK_NODE) {
 				if( type.isEqual(MSG_TXPOWID)) {
 					//Ignore these..
-					MinimaLogger.log("Ignoring NIOmessage for TXBLOCK NODE :"+convertMessageType(type));
+					//MinimaLogger.log("Ignoring NIOmessage for TXBLOCK NODE :"+convertMessageType(type));
 					return;
 				}
 			}
@@ -540,7 +540,7 @@ public class NIOMessage implements Runnable {
 				}
 				
 				//Check all the Transactions.. if it's a block
-				if(txpow.isBlock() && !beforecascade) {
+				if(!GeneralParams.TXBLOCK_NODE && txpow.isBlock() && !beforecascade) {
 					ArrayList<MiniData> txns = txpow.getBlockTransactions();
 					for(MiniData txn : txns) {
 						exists = MinimaDB.getDB().getTxPoWDB().exists(txn.to0xString());
@@ -1011,7 +1011,10 @@ public class NIOMessage implements Runnable {
 				
 				//Do we have it in TxPoWTree
 				if(txb == null) {
-					txb = MinimaDB.getDB().getTxPoWTree().findNode(txid).getTxBlock();
+					TxPoWTreeNode node = MinimaDB.getDB().getTxPoWTree().findNode(txid);
+					if(node!=null) {
+						txb = node.getTxBlock();
+					}
 				}
 				
 				//If not request it..
@@ -1031,7 +1034,10 @@ public class NIOMessage implements Runnable {
 				
 				//Do we have it in TxPoWTree
 				if(txb == null) {
-					txb = MinimaDB.getDB().getTxPoWTree().findNode(txid).getTxBlock();
+					TxPoWTreeNode node = MinimaDB.getDB().getTxPoWTree().findNode(txid);
+					if(node!=null) {
+						txb = node.getTxBlock();
+					}
 				}
 
 				//Do we have it in Archive..
@@ -1041,19 +1047,44 @@ public class NIOMessage implements Runnable {
 				
 				//Send it to them
 				if(txb!=null) {
-					//request it..
 					NIOManager.sendNetworkMessage(mClientUID, MSG_TXBLOCK, txb);
 				}else {
-					MinimaLogger.log("REquest for TxBlock we don't have : "+txpowid.to0xString());
+					MinimaLogger.log("Request for TxBlock we don't have : "+txpowid.to0xString());
 				}
 			
 			}else if(type.isEqual(MSG_TXBLOCK)) {
 				
 				//Get the TxBlock
-				TxBlock txb = TxBlock.ReadFromStream(dis);
+				TxBlock txblock = TxBlock.ReadFromStream(dis);
 				
 				//And process..
-				Main.getInstance().getTxPoWProcessor().postProcessTxBlock(txb);
+				Main.getInstance().getTxPoWProcessor().postProcessTxBlock(txblock);
+				
+				//Is the parent above the cascade.
+				TxPoWTreeNode cascade = MinimaDB.getDB().getTxPoWTree().getRoot();
+				if(txblock.getTxPoW().getBlockNumber().isMoreEqual(cascade.getBlockNumber())) {
+				
+					//Do we have the parent..
+					MiniData parent = txblock.getTxPoW().getParentID();
+					String txid 	= parent.to0xString();
+				
+					//Do we have it.. in RAM DB
+					TxBlock txb = MinimaDB.getDB().getTxBlockDB().findTxBlock(txid);
+					
+					//Do we have it in TxPoWTree
+					if(txb == null) {
+						TxPoWTreeNode node = MinimaDB.getDB().getTxPoWTree().findNode(txid);
+						if(node!=null) {
+							txb = node.getTxBlock();
+						}
+					}
+					
+					//If not request it..
+					if(txb==null) {
+						//request it..
+						NIOManager.sendNetworkMessage(mClientUID, MSG_TXBLOCKREQ, parent);
+					}
+				}
 				
 			}else {
 				
