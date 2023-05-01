@@ -178,7 +178,7 @@ public class NIOMessage implements Runnable {
 			
 			//Are we a TxBlock node..
 			if(GeneralParams.TXBLOCK_NODE) {
-				if( type.isEqual(MSG_TXPOWID) || type.isEqual(MSG_TXPOWREQ)) {
+				if( type.isEqual(MSG_TXPOWID) || type.isEqual(MSG_TXBLOCKID)) {
 					//Ignore these..
 					MinimaLogger.log("Ignoring NIOmessage for TXBLOCK NODE :"+convertMessageType(type));
 					return;
