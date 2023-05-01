@@ -26,6 +26,8 @@ public class TxPoWMiner extends MessageProcessor {
 	public static final String TXPOWMINER_MINETXPOW 	= "TXPOWMINER_MINETXPOW";
 	public static final String TXPOWMINER_MINEPULSE 	= "TXPOWMINER_MINEPULSE";
 	
+	public static final String TXPOWMINER_TXBLOCKMINER 	= "TXPOWMINER_TXBLOCKMINER";
+	
 	/**
 	 * The Large Byte MiniNumber to set the Header up for hashing
 	 */
@@ -155,6 +157,9 @@ public class TxPoWMiner extends MessageProcessor {
 			if(automine) {
 				//Post another mine message
 				PostTimerMessage(new TimerMessage(Main.getInstance().AUTOMINE_TIMER, TXPOWMINER_MINEPULSE));
+				
+				//Post a message for the txblock miners - give this message time to be processed
+				PostTimerMessage(new TimerMessage(10000, TXPOWMINER_TXBLOCKMINER));
 			}
 			
 			//Are we logging..
@@ -178,19 +183,29 @@ public class TxPoWMiner extends MessageProcessor {
 				//Get the current TxPoW
 				TxPoW txpow = TxPoWGenerator.generateTxPoW(new Transaction(), new Witness());
 				
-				//Post to the TxBlock crew..
-				try {
-					NIOManager.sendNetworkMessageAll(NIOMessage.MSG_TXBLOCKMINE, txpow);
-				} catch (Exception e) {
-					MinimaLogger.log(e);
-				}
-				
 				//Mine a TxPow..
 				PostMessage(new Message(TXPOWMINER_MINETXPOW).addObject("txpow", txpow).addBoolean("automine", true));
 			}else {
 				
 				//Check again in 30 secs
 				PostTimerMessage(new TimerMessage(30000, TXPOWMINER_MINEPULSE));
+			}
+			
+		}else if(zMessage.isMessageType(TXPOWMINER_TXBLOCKMINER)) {
+			
+			//This is not where you get your mining block from..
+			if(GeneralParams.TXBLOCK_NODE) {
+				return;
+			}
+			
+			//This message is sent for those who are txblock only..
+			TxPoW txpow = TxPoWGenerator.generateTxPoW(new Transaction(), new Witness());
+			
+			//Post to the TxBlock crew..
+			try {
+				NIOManager.sendNetworkMessageAll(NIOMessage.MSG_TXBLOCKMINE, txpow);
+			} catch (Exception e) {
+				MinimaLogger.log(e);
 			}
 		}
 	}
