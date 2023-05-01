@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
+import org.minima.database.archive.TxBlockDB;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
@@ -27,6 +28,8 @@ import org.minima.utils.messages.MessageProcessor;
 public class TxPoWProcessor extends MessageProcessor {
 	
 	private static final String TXPOWPROCESSOR_PROCESSTXPOW 		= "TXP_PROCESSTXPOW";
+	private static final String TXPOWPROCESSOR_PROCESSTXBLOCK 		= "TXP_PROCESSTXBLOCK";
+	
 	private static final String TXPOWPROCESSOR_PROCESS_IBD 			= "TXP_PROCESS_IBD";
 	private static final String TXPOWPROCESSOR_PROCESS_SYNCIBD 		= "TXP_PROCESS_SYNCIBD";
 	private static final String TXPOWPROCESSOR_PROCESS_ARCHIVEIBD 	= "TXP_PROCESS_ARCHIVEIBD";
@@ -61,6 +64,23 @@ public class TxPoWProcessor extends MessageProcessor {
 		
 		//Post a message on the single threaded stack
 		PostMessage(new Message(TXPOWPROCESSOR_PROCESSTXPOW).addObject("txpow", zTxPoW));
+	}
+	
+	/**
+	 * Main entry point for a TxBlock node into the system
+	 */
+	public void postProcessTxBlock(TxBlock zTxBlock) {
+		
+		//Are we shutting down
+		if(Main.getInstance().isShuttongDownOrRestoring()) {
+			return;
+		}
+		
+		//Add to the RAM DB
+		MinimaDB.getDB().getTxBlockDB().addTxBlock(zTxBlock);
+		
+		//Post a message on the single threaded stack
+		PostMessage(new Message(TXPOWPROCESSOR_PROCESSTXBLOCK).addObject("txblock", zTxBlock));
 	}
 	
 	/**
@@ -223,13 +243,118 @@ public class TxPoWProcessor extends MessageProcessor {
 		}
 	}
 	
+	/**
+	 * Main TxPoW process function
+	 *  
+	 * @param zTxPoW
+	 */
+	private void processTxBlock(TxBlock zTxBlock) {
+		
+		//Are we running this type of node..
+		if(!GeneralParams.TXBLOCK_NODE) {
+			return;
+		}
+		
+		//Has something on tree changed
+		boolean recalculate = false;
+		
+		//Fast access DB
+		TxPowTree txptree 	= MinimaDB.getDB().getTxPoWTree();
+		Cascade	cascdb		= MinimaDB.getDB().getCascade();
+		
+		//Process a stack of TxPoW if necessary
+		Stack processstack = new Stack();
+		processstack.push(zTxBlock);
+		
+		//Now work through all the required blocks
+		while(!processstack.isEmpty()) {
+		
+			//Get the next txpow
+			TxBlock trustedtxblock = (TxBlock) processstack.pop();
+			
+			//Get the TxPoW
+			TxPoW txpow = trustedtxblock.getTxPoW();
+			
+			//Check we are at least enough blocks on from the root of the tree.. for speed and difficulty calcs
+			MiniNumber blknum 	= txpow.getBlockNumber();
+			MiniNumber tipnum 	= txptree.getTip().getBlockNumber();
+			MiniNumber rootnum 	= txptree.getRoot().getBlockNumber();
+			
+			boolean validrange = blknum.isMore(rootnum);
+			if(txpow.isBlock() && !validrange) {
+				MinimaLogger.log("Invalid range for txblock check @ "
+									+blknum+" root:"+rootnum+" tip:"+tipnum
+									+" txpowid:"+txpow.getTxPoWID());
+			}
+			
+			//Is it a block.. that is the only time we crunch
+			if(txpow.isBlock() && validrange) {
+				
+				//Check not already added
+				TxPoWTreeNode oldnode = txptree.findNode(txpow.getTxPoWID());
+				if(oldnode == null) {
+					
+					//Is there a valid parent block node..
+					TxPoWTreeNode parentnode = txptree.findNode(txpow.getParentID().to0xString());
+					if(parentnode != null) {
+					
+						//Check this TxBlock is Valid..
+						boolean validblock = true;//TxPoWChecker.checkTxPoWBlockTimed(parentnode, txpow, alltrans);
+						
+						//OK - Lets check this block
+						if(validblock) {
+							
+							//Create a new node - using the given TxBlock
+							TxPoWTreeNode newblock = new TxPoWTreeNode(trustedtxblock);
+							
+							//Lets add it to the tree
+							parentnode.addChildNode(newblock);
+							
+							//Add fast link in tree - otherwise only reset / added when recalculate tree is called
+							txptree.addFastLink(newblock);
+							
+							//we need to recalculate the Tree
+							recalculate = true;
+							
+							//Do we have children for this block
+							ArrayList<TxBlock> children = MinimaDB.getDB().getTxBlockDB().getChildBlocks(txpow.getTxPoWID());
+							for(TxBlock child : children) {
+								processstack.push(child);
+							}
+						}else {
+							MinimaLogger.log("[!] Failed txblock check @ "
+												+txpow.getBlockNumber()+" txpowid:"
+												+txpow.getTxPoWID()
+												+" root:"+rootnum+" tip:"+tipnum);
+						}
+						
+					}else {
+						
+						//Do we have the Parent TxPoW
+						TxBlock parent = MinimaDB.getDB().getTxBlockDB().findTxBlock(txpow.getParentID().to0xString());
+						if(parent != null) {
+							//If Parent not added.. must be missing transactions.. try now ( This block builds on it soo.. )
+							processstack.push(parent);
+						}
+					}
+				}
+			}
+		}
+		
+		//Did something change..
+		if(recalculate) {
+			
+			//Recalculate the whole tree
+			recalculateTree();
+		}
+	}
+	
 	private boolean processSyncBlock(TxBlock zTxBlock) throws Exception {
 		
-		//Are we shutting down..
-//		if(Main.getInstance().isShuttingDown()) {
-//			return false;
-//		}
+		//Add to the RAM DB
+		MinimaDB.getDB().getTxBlockDB().addTxBlock(zTxBlock);
 		
+		//Get all the required DBs
 		Cascade cascdb		= MinimaDB.getDB().getDB().getCascade();
 		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
 		TxPowTree txptree 	= MinimaDB.getDB().getTxPoWTree();
@@ -351,6 +476,9 @@ public class TxPoWProcessor extends MessageProcessor {
 				
 				//And finally..
 				cascdb.cascadeChain();
+				
+				//Clear the TxBlockDB
+				MinimaDB.getDB().getTxBlockDB().clearOld(newroot.getBlockNumber());
 			}
 		
 			//And now set all the onchain txns so not used again in a new TxPoW
@@ -409,6 +537,14 @@ public class TxPoWProcessor extends MessageProcessor {
 			
 			//Process it..
 			processTxPoW(txp);
+		
+		}else if(zMessage.isMessageType(TXPOWPROCESSOR_PROCESSTXBLOCK)) {
+			
+			//Get the TxBlock
+			TxBlock txblock = (TxBlock)zMessage.getObject("txblock");
+			
+			//process it
+			processTxBlock(txblock);
 			
 		}else if(zMessage.isMessageType(TXPOWPROCESSOR_PROCESS_IBD)) {
 			

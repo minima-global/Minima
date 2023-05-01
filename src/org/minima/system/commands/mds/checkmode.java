@@ -1,13 +1,8 @@
 package org.minima.system.commands.mds;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import org.minima.database.MinimaDB;
 import org.minima.database.minidapps.MiniDAPP;
-import org.minima.system.Main;
 import org.minima.system.commands.Command;
-import org.minima.system.mds.pending.PendingCommand;
 import org.minima.utils.json.JSONObject;
 
 public class checkmode extends Command {

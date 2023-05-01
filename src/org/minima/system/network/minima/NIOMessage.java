@@ -15,6 +15,7 @@ import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Greeting;
 import org.minima.objects.IBD;
 import org.minima.objects.Pulse;
+import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
@@ -66,12 +67,16 @@ public class NIOMessage implements Runnable {
 	public static final MiniByte MSG_SINGLE_PING 	= new MiniByte(11);
 	public static final MiniByte MSG_SINGLE_PONG 	= new MiniByte(12);
 	
-	public static final MiniByte MSG_TXBLOCK_REQ 	= new MiniByte(13);
-	public static final MiniByte MSG_TXBLOCK_RESP 	= new MiniByte(14);
+	public static final MiniByte MSG_IBD_REQ 		= new MiniByte(13);
+	public static final MiniByte MSG_IBD_RESP 		= new MiniByte(14);
 	
 	public static final MiniByte MSG_ARCHIVE_REQ 		= new MiniByte(15);
 	public static final MiniByte MSG_ARCHIVE_DATA 		= new MiniByte(16);
 	public static final MiniByte MSG_ARCHIVE_SINGLE_REQ = new MiniByte(17);
+	
+	public static final MiniByte MSG_TXBLOCKID 			= new MiniByte(18);
+	public static final MiniByte MSG_TXBLOCKREQ 		= new MiniByte(19);
+	public static final MiniByte MSG_TXBLOCK 			= new MiniByte(20);
 	
 	/**
 	 * Helper function that converts to String 
@@ -99,6 +104,18 @@ public class NIOMessage implements Runnable {
 			return "MAXIMA_CTRL";
 		}else if(zType.isEqual(MSG_MAXIMA_TXPOW)) {
 			return "MAXIMA";
+		
+		}else if(zType.isEqual(MSG_IBD_REQ)) {
+			return "MSG_IBD_REQ";
+		}else if(zType.isEqual(MSG_IBD_RESP)) {
+			return "MSG_IBD_RESP";
+		
+		}else if(zType.isEqual(MSG_TXBLOCKID)) {
+			return "TXBLOCKID";
+		}else if(zType.isEqual(MSG_TXBLOCKREQ)) {
+			return "TXBLOCKREQ";
+		}else if(zType.isEqual(MSG_TXBLOCK)) {
+			return "TXBLOCK";
 		}
 		
 		return "UNKNOWN";
@@ -155,6 +172,20 @@ public class NIOMessage implements Runnable {
 				if(type.isEqual(MSG_TXPOWID) || type.isEqual(MSG_PULSE)) {
 					//Ignore until finished..
 					MinimaLogger.log("Ignoring NIOmessage during IBD Sync.. type:"+convertMessageType(type));
+					return;
+				}
+			}
+			
+			//Are we a TxBlock node..
+			if(GeneralParams.TXBLOCK_NODE) {
+				
+				if( type.isEqual(MSG_TXPOWID) || 
+					type.isEqual(MSG_TXPOW) ||
+					type.isEqual(MSG_PULSE) ||
+					type.isEqual(MSG_TXPOWREQ)) {
+					
+					//Ignore until finished..
+					MinimaLogger.log("Ignoring NIOmessage for TXBLOCK NODE :"+convertMessageType(type));
 					return;
 				}
 			}
@@ -852,7 +883,7 @@ public class NIOMessage implements Runnable {
 				//Send this back to them.. 
 				NIOManager.sendNetworkMessage(mClientUID, MSG_SINGLE_PONG, pinggreet);
 			
-			}else if(type.isEqual(MSG_TXBLOCK_REQ)) {
+			}else if(type.isEqual(MSG_IBD_REQ)) {
 				
 				//Get the Hash of the Block
 				TxPoW lastblock = TxPoW.ReadFromStream(dis);
@@ -888,9 +919,9 @@ public class NIOMessage implements Runnable {
 				syncibd.createSyncIBD(lastblock);
 				
 				//And send it..
-				NIOManager.sendNetworkMessage(mClientUID, MSG_TXBLOCK_RESP, syncibd);
+				NIOManager.sendNetworkMessage(mClientUID, MSG_IBD_RESP, syncibd);
 				
-			}else if(type.isEqual(MSG_TXBLOCK_RESP)) {
+			}else if(type.isEqual(MSG_IBD_RESP)) {
 				
 				//Load the IBD..
 				IBD syncibd = IBD.ReadFromStream(dis);
@@ -959,6 +990,45 @@ public class NIOMessage implements Runnable {
 //				//Send this to the main processor
 //				Main.getInstance().getTxPoWProcessor().postProcessArchiveIBD(archibd, mClientUID);
 								
+			
+			}else if(type.isEqual(MSG_TXBLOCKID)) {
+				
+				//Read in the txpowid
+				MiniData txpowid = MiniData.ReadFromStream(dis);
+				
+				//Do we have it..
+				TxBlock txb = MinimaDB.getDB().getTxBlockDB().findTxBlock(txpowid.to0xString());
+				
+				//If not request it..
+				if(txb==null) {
+					//request it..
+					NIOManager.sendNetworkMessage(mClientUID, MSG_TXBLOCKREQ, txpowid);
+				} 
+			
+			}else if(type.isEqual(MSG_TXBLOCKREQ)) {
+				
+				//Read in the txpowid
+				MiniData txpowid = MiniData.ReadFromStream(dis);
+				
+				//Do we have it..
+				TxBlock txb = MinimaDB.getDB().getTxBlockDB().findTxBlock(txpowid.to0xString());
+				
+				//Send it to them
+				if(txb!=null) {
+					//request it..
+					NIOManager.sendNetworkMessage(mClientUID, MSG_TXBLOCK, txb);
+				}else {
+					MinimaLogger.log("REquest for TxBlock we don't have : "+txpowid.to0xString());
+				}
+			
+			}else if(type.isEqual(MSG_TXBLOCK)) {
+				
+				//Get the TxBlock
+				TxBlock txb = TxBlock.ReadFromStream(dis);
+				
+				//And process..
+				Main.getInstance().getTxPoWProcessor().postProcessTxBlock(txb);
+				
 			}else {
 				
 				//UNKNOWN MESSAGE..
