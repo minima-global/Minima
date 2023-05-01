@@ -159,7 +159,8 @@ public class TxPoWMiner extends MessageProcessor {
 				PostTimerMessage(new TimerMessage(Main.getInstance().AUTOMINE_TIMER, TXPOWMINER_MINEPULSE));
 				
 				//Post a message for the txblock miners - give this message time to be processed
-				PostTimerMessage(new TimerMessage(10000, TXPOWMINER_TXBLOCKMINER));
+				long timerdelay = Main.getInstance().AUTOMINE_TIMER / 2;
+				PostTimerMessage(new TimerMessage(timerdelay, TXPOWMINER_TXBLOCKMINER));
 			}
 			
 			//Are we logging..
