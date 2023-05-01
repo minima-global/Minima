@@ -12,6 +12,8 @@ import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
+import org.minima.system.network.minima.NIOManager;
+import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
@@ -165,7 +167,7 @@ public class TxPoWMiner extends MessageProcessor {
 			
 		}else if(zMessage.isMessageType(TXPOWMINER_MINEPULSE)) {
 			
-			//NOT YET..
+			//This is not where you get your mining block from..
 			if(GeneralParams.TXBLOCK_NODE) {
 				return;
 			}
@@ -175,6 +177,13 @@ public class TxPoWMiner extends MessageProcessor {
 				
 				//Get the current TxPoW
 				TxPoW txpow = TxPoWGenerator.generateTxPoW(new Transaction(), new Witness());
+				
+				//Post to the TxBlock crew..
+				try {
+					NIOManager.sendNetworkMessageAll(NIOMessage.MSG_TXBLOCKMINE, txpow);
+				} catch (Exception e) {
+					MinimaLogger.log(e);
+				}
 				
 				//Mine a TxPow..
 				PostMessage(new Message(TXPOWMINER_MINETXPOW).addObject("txpow", txpow).addBoolean("automine", true));

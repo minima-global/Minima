@@ -78,6 +78,7 @@ public class NIOMessage implements Runnable {
 	public static final MiniByte MSG_TXBLOCKID 			= new MiniByte(18);
 	public static final MiniByte MSG_TXBLOCKREQ 		= new MiniByte(19);
 	public static final MiniByte MSG_TXBLOCK 			= new MiniByte(20);
+	public static final MiniByte MSG_TXBLOCKMINE 		= new MiniByte(21);
 	
 	/**
 	 * Helper function that converts to String 
@@ -117,6 +118,8 @@ public class NIOMessage implements Runnable {
 			return "TXBLOCKREQ";
 		}else if(zType.isEqual(MSG_TXBLOCK)) {
 			return "TXBLOCK";
+		}else if(zType.isEqual(MSG_TXBLOCKMINE)) {
+			return "TXBLOCKMINE";
 		}
 		
 		return "UNKNOWN";
@@ -1104,6 +1107,22 @@ public class NIOMessage implements Runnable {
 						NIOManager.sendNetworkMessage(mClientUID, MSG_TXBLOCKREQ, parent);
 					}
 				}
+				
+			}else if(type.isEqual(MSG_TXBLOCKMINE)) {
+				
+				//Are we running this type of node..
+				if(!GeneralParams.TXBLOCK_NODE) {
+					return;
+				}
+				
+				//Get the unmined txpow
+				TxPoW txp = TxPoW.ReadFromStream(dis);
+				
+				//Reset the RandomID - so everyone mines a different block
+				txp.getTxBody().resetRandomPRNG();
+				
+				//Mine it..
+				Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txp);
 				
 			}else {
 				

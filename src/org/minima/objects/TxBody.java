@@ -56,6 +56,10 @@ public class TxBody implements Streamable {
 		mTxPowIDList = new ArrayList<>();
 	}
 
+	public void resetRandomPRNG(){
+		mPRNG = MiniData.getRandomData(32);
+	}
+	
 	public JSONObject toJSON() {
 		JSONObject txpow = new JSONObject();
 		
