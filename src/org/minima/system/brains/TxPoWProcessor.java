@@ -641,7 +641,7 @@ public class TxPoWProcessor extends MessageProcessor {
 			
 			//First run accept the IBD - still follow heaviest chain
 			long diff = System.currentTimeMillis() - mFirstIBD;
-			if(diff > MAX_FIRST_IBD_TIME) {
+			if(diff > MAX_FIRST_IBD_TIME && !GeneralParams.TXBLOCK_NODE) {
 				
 				//If our chain is up to date (within 3 hrs) we don't accept TxBlock at all.. only full blocks
 				if(txptree.getTip() != null && ibd.getTxBlocks().size()>0) {
