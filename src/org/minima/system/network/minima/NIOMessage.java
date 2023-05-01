@@ -178,7 +178,7 @@ public class NIOMessage implements Runnable {
 			
 			//Are we a TxBlock node..
 			if(GeneralParams.TXBLOCK_NODE) {
-				if( type.isEqual(MSG_TXPOWID) || type.isEqual(MSG_TXBLOCKID)) {
+				if( type.isEqual(MSG_TXPOWID)) {
 					//Ignore these..
 					MinimaLogger.log("Ignoring NIOmessage for TXBLOCK NODE :"+convertMessageType(type));
 					return;
@@ -1004,9 +1004,15 @@ public class NIOMessage implements Runnable {
 				
 				//Read in the txpowid
 				MiniData txpowid = MiniData.ReadFromStream(dis);
+				String txid 	 = txpowid.to0xString();
 				
 				//Do we have it..
-				TxBlock txb = MinimaDB.getDB().getTxBlockDB().findTxBlock(txpowid.to0xString());
+				TxBlock txb = MinimaDB.getDB().getTxBlockDB().findTxBlock(txid);
+				
+				//Do we have it in TxPoWTree
+				if(txb == null) {
+					txb = MinimaDB.getDB().getTxPoWTree().findNode(txid).getTxBlock();
+				}
 				
 				//If not request it..
 				if(txb==null) {
