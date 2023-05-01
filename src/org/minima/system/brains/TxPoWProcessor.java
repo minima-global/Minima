@@ -207,7 +207,9 @@ public class TxPoWProcessor extends MessageProcessor {
 								//Send a message to everyone..
 								try {
 									NIOManager.sendNetworkMessageAll(NIOMessage.MSG_TXBLOCKID, txblock.getTxPoW().getTxPoWIDData());
-								} catch (IOException e) {}
+								} catch (Exception e) {
+									MinimaLogger.log(e);
+								}
 								
 								//Create a new node
 								TxPoWTreeNode newblock = new TxPoWTreeNode(txblock);
@@ -489,7 +491,7 @@ public class TxPoWProcessor extends MessageProcessor {
 				cascdb.cascadeChain();
 				
 				//Clear the TxBlockDB
-				MinimaDB.getDB().getTxBlockDB().clearOld(newroot.getBlockNumber().sub(MiniNumber.HUNDRED));
+				MinimaDB.getDB().getTxBlockDB().clearOld(newroot.getBlockNumber().sub(MiniNumber.TEN));
 			}
 		
 			//And now set all the onchain txns so not used again in a new TxPoW
