@@ -184,14 +184,13 @@ public class NIOMessage implements Runnable {
 					return;
 				}
 				
-				//Random message lost
-				if( type.isEqual(MSG_TXBLOCKID)) {
-					if(new Random().nextInt(100) < 80) {
-						MinimaLogger.log("RANDOM LOSE TXBLOCK ID MESSAGE");
-						return;
-					}
-					
-				}
+//				//Random message lost
+//				if( type.isEqual(MSG_TXBLOCKID)) {
+//					if(new Random().nextInt(100) < 80) {
+//						MinimaLogger.log("RANDOM LOSE TXBLOCK ID MESSAGE");
+//						return;
+//					}	
+//				}
 			}
 			
 			//Output some info
