@@ -203,11 +203,7 @@ public class TxPoWMiner extends MessageProcessor {
 			TxPoW txpow = TxPoWGenerator.generateTxPoW(new Transaction(), new Witness());
 			
 			//Post to the TxBlock crew..
-			try {
-				NIOManager.sendNetworkMessageAll(NIOMessage.MSG_TXBLOCKMINE, txpow);
-			} catch (Exception e) {
-				MinimaLogger.log(e);
-			}
+			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_TXBLOCKMINE, txpow);
 		}
 	}
 
