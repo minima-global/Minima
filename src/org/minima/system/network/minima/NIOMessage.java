@@ -178,13 +178,8 @@ public class NIOMessage implements Runnable {
 			
 			//Are we a TxBlock node..
 			if(GeneralParams.TXBLOCK_NODE) {
-				
-				if( type.isEqual(MSG_TXPOWID) || 
-					type.isEqual(MSG_TXPOW) ||
-					type.isEqual(MSG_PULSE) ||
-					type.isEqual(MSG_TXPOWREQ)) {
-					
-					//Ignore until finished..
+				if( type.isEqual(MSG_TXPOWID) || type.isEqual(MSG_TXPOWREQ)) {
+					//Ignore these..
 					MinimaLogger.log("Ignoring NIOmessage for TXBLOCK NODE :"+convertMessageType(type));
 					return;
 				}
@@ -193,6 +188,10 @@ public class NIOMessage implements Runnable {
 			//Output some info
 			String tracemsg = "[NIOMessage] uid:"+mClientUID+" type:"+convertMessageType(type)+" size:"+MiniFormat.formatSize(data.length);
 			if(mTrace && tracemsg.contains(mFilter)) {
+				MinimaLogger.log(tracemsg,false);
+			}
+			
+			if(true) {
 				MinimaLogger.log(tracemsg,false);
 			}
 			
@@ -713,11 +712,13 @@ public class NIOMessage implements Runnable {
 						//Ask for it
 						requestlist.add(0, block);
 					}else {
-						//Check all the transactions..
-						ArrayList<MiniData> txns = check.getBlockTransactions();
-						for(MiniData txn : txns) {
-							if(!txpdb.exists(txn.to0xString())) {
-								requestlist.add(0, txn);
+						if(!GeneralParams.TXBLOCK_NODE) {
+							//Check all the transactions..
+							ArrayList<MiniData> txns = check.getBlockTransactions();
+							for(MiniData txn : txns) {
+								if(!txpdb.exists(txn.to0xString())) {
+									requestlist.add(0, txn);
+								}
 							}
 						}
 					}
@@ -736,10 +737,18 @@ public class NIOMessage implements Runnable {
 				
 				//Did we find a crossover..
 				if(found) {
+					if(!GeneralParams.TXBLOCK_NODE) {
 					
-					//Request all the blocks.. in the correct order
-					for(MiniData block : requestlist) {
-						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, block);
+						//Request all the blocks.. in the correct order
+						for(MiniData block : requestlist) {
+							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, block);
+						}
+					}else {
+						
+						//Request all the blocks.. in the correct order
+						for(MiniData block : requestlist) {
+							NIOManager.sendNetworkMessage(mClientUID, MSG_TXBLOCKREQ, block);
+						}
 					}
 					
 				}else{
@@ -1008,10 +1017,21 @@ public class NIOMessage implements Runnable {
 			}else if(type.isEqual(MSG_TXBLOCKREQ)) {
 				
 				//Read in the txpowid
-				MiniData txpowid = MiniData.ReadFromStream(dis);
+				MiniData txpowid 	= MiniData.ReadFromStream(dis);
+				String txid 		= txpowid.to0xString();
 				
-				//Do we have it..
-				TxBlock txb = MinimaDB.getDB().getTxBlockDB().findTxBlock(txpowid.to0xString());
+				//Do we have it.. in RAM DB
+				TxBlock txb = MinimaDB.getDB().getTxBlockDB().findTxBlock(txid);
+				
+				//Do we have it in TxPoWTree
+				if(txb == null) {
+					txb = MinimaDB.getDB().getTxPoWTree().findNode(txid).getTxBlock();
+				}
+
+				//Do we have it in Archive..
+				if(txb == null) {
+					txb = MinimaDB.getDB().getArchive().loadBlock(txid);
+				}
 				
 				//Send it to them
 				if(txb!=null) {

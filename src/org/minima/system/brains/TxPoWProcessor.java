@@ -79,6 +79,9 @@ public class TxPoWProcessor extends MessageProcessor {
 		//Add to the RAM DB
 		MinimaDB.getDB().getTxBlockDB().addTxBlock(zTxBlock);
 		
+		//Add / Update last access to the DB
+		MinimaDB.getDB().getTxPoWDB().addTxPoW(zTxBlock.getTxPoW());
+		
 		//Post a message on the single threaded stack
 		PostMessage(new Message(TXPOWPROCESSOR_PROCESSTXBLOCK).addObject("txblock", zTxBlock));
 	}
@@ -197,6 +200,14 @@ public class TxPoWProcessor extends MessageProcessor {
 								
 								//Create a TxBlock..
 								TxBlock txblock = new TxBlock(parentnode.getMMR(), txpow, alltrans);
+								
+								//Add to the RAM DB
+								MinimaDB.getDB().getTxBlockDB().addTxBlock(txblock);
+								
+								//Send a message to everyone..
+								try {
+									NIOManager.sendNetworkMessageAll(NIOMessage.MSG_TXBLOCKID, txblock.getTxPoW().getTxPoWIDData());
+								} catch (IOException e) {}
 								
 								//Create a new node
 								TxPoWTreeNode newblock = new TxPoWTreeNode(txblock);
@@ -351,14 +362,14 @@ public class TxPoWProcessor extends MessageProcessor {
 	
 	private boolean processSyncBlock(TxBlock zTxBlock) throws Exception {
 		
-		//Add to the RAM DB
-		MinimaDB.getDB().getTxBlockDB().addTxBlock(zTxBlock);
-		
 		//Get all the required DBs
 		Cascade cascdb		= MinimaDB.getDB().getDB().getCascade();
 		TxPoWDB txpdb 		= MinimaDB.getDB().getTxPoWDB();
 		TxPowTree txptree 	= MinimaDB.getDB().getTxPoWTree();
 		
+		//Add to the RAM DB
+		MinimaDB.getDB().getTxBlockDB().addTxBlock(zTxBlock);
+				
 		//Add the TxPoW to the database - in case we don't have it
 		txpdb.addTxPoW(zTxBlock.getTxPoW());
 		
@@ -478,7 +489,7 @@ public class TxPoWProcessor extends MessageProcessor {
 				cascdb.cascadeChain();
 				
 				//Clear the TxBlockDB
-				MinimaDB.getDB().getTxBlockDB().clearOld(newroot.getBlockNumber());
+				MinimaDB.getDB().getTxBlockDB().clearOld(newroot.getBlockNumber().sub(MiniNumber.HUNDRED));
 			}
 		
 			//And now set all the onchain txns so not used again in a new TxPoW
@@ -812,7 +823,9 @@ public class TxPoWProcessor extends MessageProcessor {
 	 * Send a SYNC TxBlock message
 	 */
 	public void askToSyncTxBlocks(String zClientID) {
-		if(!GeneralParams.NO_SYNC_IBD) {
+		
+		//Only ask if not in no sync iDB or TXBLOCK mode..
+		if(!GeneralParams.NO_SYNC_IBD && !GeneralParams.TXBLOCK_NODE) {
 			Message synctxblock = new Message(NIOManager.NIO_SYNCTXBLOCK);
 			synctxblock.addString("client", zClientID);
 			Main.getInstance().getNetworkManager().getNIOManager().PostMessage(synctxblock);
@@ -820,6 +833,11 @@ public class TxPoWProcessor extends MessageProcessor {
 	}
 	
 	private void requestMissingTxns(String zClientID, TxBlock zBlock) {
+		
+		//Are we in TXBLOCK mode..
+		if(GeneralParams.TXBLOCK_NODE) {
+			return;
+		}
 		
 		//Get the TxPoW
 		TxPoW txp = zBlock.getTxPoW();

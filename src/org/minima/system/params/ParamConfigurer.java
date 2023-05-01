@@ -317,6 +317,11 @@ public class ParamConfigurer {
                 GeneralParams.NO_SYNC_IBD = true;
             }
         }),
+        txblocknode("txblocknode", "USe ONLY TxBlock messages", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.TXBLOCK_NODE = true;
+            }
+        }),
         limitbandwidth("limitbandwidth", "Limit the amount sent for archive sync", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.ARCHIVESYNC_LIMIT_BANDWIDTH = true;
