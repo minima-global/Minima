@@ -939,7 +939,7 @@ public class MaximaManager extends MessageProcessor {
 						
 						//Set this as static MLS
 						setStaticMLS(true, niocmls);
-						MinimaLogger.log("Setting STATIC MLS set to : "+niocmls);
+						MinimaLogger.log("Setting STATIC MLS to : "+niocmls);
 					}
 				}
 				
