@@ -278,6 +278,18 @@ public class Main extends MessageProcessor {
 				
 		//Quick Clean up..
 		System.gc();
+		
+		//Check slavenode status
+		if(GeneralParams.TXBLOCK_NODE) {
+			
+			if(GeneralParams.CONNECT_LIST.indexOf(",")!=-1) {
+				//Can only connect to 1 host
+				MinimaLogger.log("[!] Can ONLY connect to 1 host in slave mode.. stopping");
+				Runtime.getRuntime().exit(1);
+			}
+			
+			MinimaLogger.log("Running in slave mode. Connected to "+GeneralParams.CONNECT_LIST);
+		}
 	}
 	
 	/**
