@@ -37,7 +37,7 @@ public class TxPoWProcessor extends MessageProcessor {
 	/**
 	 * Ask for Txns in blocks less than this old
 	 */
-	private static final MiniNumber TWELVE_HOURS = new MiniNumber(1000 * 60 * 60 * 12);
+	private static final MiniNumber THREE_HOURS = new MiniNumber(1000 * 60 * 60 * 3);
 	
 	/**
 	 * The IBD you receive on startup
@@ -598,6 +598,7 @@ public class TxPoWProcessor extends MessageProcessor {
 			
 			//How big is it..
 			MinimaLogger.log("Processing main IBD length : "+ibd.getTxBlocks().size());
+			long timestart = System.currentTimeMillis();
 			
 			//Does it have a cascade
 			if(ibd.hasCascade()) {
@@ -664,7 +665,7 @@ public class TxPoWProcessor extends MessageProcessor {
 			
 			//First run accept the IBD - still follow heaviest chain
 			long diff = System.currentTimeMillis() - mFirstIBD;
-			if(diff > MAX_FIRST_IBD_TIME && !GeneralParams.TXBLOCK_NODE) {
+			if((diff > MAX_FIRST_IBD_TIME) && !GeneralParams.TXBLOCK_NODE) {
 				
 				//If our chain is up to date (within 3 hrs) we don't accept TxBlock at all.. only full blocks
 				if(txptree.getTip() != null && ibd.getTxBlocks().size()>0) {
@@ -731,7 +732,8 @@ public class TxPoWProcessor extends MessageProcessor {
 			recalculateTree();
 			
 			//How big is it..
-			MinimaLogger.log("Processing main IBD finished");
+			long timediff = System.currentTimeMillis() - timestart;
+			MinimaLogger.log("Processing main IBD finished "+timediff+"ms");
 			
 			//we are not syncing..
 			Main.getInstance().setSyncIBD(false);
@@ -866,7 +868,7 @@ public class TxPoWProcessor extends MessageProcessor {
 		
 		//Is this a recent block ? 
 		MiniNumber timenow = new MiniNumber(System.currentTimeMillis());
-		MiniNumber mintime = timenow.sub(TWELVE_HOURS);
+		MiniNumber mintime = timenow.sub(THREE_HOURS);
 		if(txp.getTimeMilli().isLess(mintime)) {
 			return;
 		}

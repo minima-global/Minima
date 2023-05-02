@@ -460,6 +460,8 @@ public class NIOMessage implements Runnable {
 					return;
 				}
 				
+				long timestart1 = System.currentTimeMillis();
+				
 				//More CHECKS.. if ALL these pass will forward otherwise may be a branch txpow that we requested
 				boolean fullyvalid = true;
 				
@@ -478,6 +480,8 @@ public class NIOMessage implements Runnable {
 					beforecascade 	= true;
 				}
 				
+				long timestart2 = System.currentTimeMillis();
+				
 				//Check the Scripts - could fail.. 
 				if(!TxPoWChecker.checkTxPoWScripts(tip.getMMR(), txpow, tip.getTxPoW())) {
 					//Monotonic txn MUST pass the script check or is INVALID - since will never pass..
@@ -491,6 +495,8 @@ public class NIOMessage implements Runnable {
 					//Could be block related
 					fullyvalid = false;
 				}
+				
+				long timestart3 = System.currentTimeMillis();
 				
 				//Max time in the future.. 2 hours.. could be OUR clock..
 				if(txpow.isBlock()) {
@@ -508,17 +514,23 @@ public class NIOMessage implements Runnable {
 					fullyvalid = false;
 				}
 				
+				long timestart4 = System.currentTimeMillis();
+				
 				//Check for mempool coins..
 				if(TxPoWChecker.checkMemPoolCoins(txpow)) {
 					//Same coins in different transaction - could have been requested by us from branch
 					//MinimaLogger.log("TxPoW with existing mempoolcoins from client : "+mClientUID+" "+txpow.getTxPoWID());
 					fullyvalid = false;
 				}
+	
+				long timestart5 = System.currentTimeMillis();
 				
 				//Check the MMR - could be in a separate branch / or a future txn..
 				if(!TxPoWChecker.checkMMR(tip.getMMR(), txpow, false)) {
 					fullyvalid = false;
 				}
+				
+				long timestart6 = System.currentTimeMillis();
 				
 				//Is the MEMPOOL Full
 				if(TxPoWGenerator.isMempoolFull()) {
@@ -538,6 +550,13 @@ public class NIOMessage implements Runnable {
 				long timediff 	= timefinish - timestart;
 				if(timediff > 20000) {
 					MinimaLogger.log("Message took a long time ("+timediff+"ms) to process @ txpowid:"+txpow.getTxPoWID());
+					MinimaLogger.log("timerstart1:"+(timestart1-timestart));
+					MinimaLogger.log("timerstart2:"+(timestart2-timestart1));
+					MinimaLogger.log("timerstart3:"+(timestart3-timestart2));
+					MinimaLogger.log("timerstart4:"+(timestart4-timestart3));
+					MinimaLogger.log("timerstart5:"+(timestart5-timestart4));
+					MinimaLogger.log("timerstart6:"+(timestart6-timestart5));
+					
 					fullyvalid = false;
 				}
 				
