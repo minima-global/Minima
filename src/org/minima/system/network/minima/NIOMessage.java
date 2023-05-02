@@ -202,9 +202,9 @@ public class NIOMessage implements Runnable {
 				MinimaLogger.log(tracemsg,false);
 			}
 			
-			if(true) {
-				MinimaLogger.log(tracemsg,false);
-			}
+//			if(true) {
+//				MinimaLogger.log(tracemsg,false);
+//			}
 			
 			//Now find the right message
 			if(type.isEqual(MSG_GREETING)) {
@@ -634,7 +634,7 @@ public class NIOMessage implements Runnable {
 				//Read in the message
 				MiniString msg = MiniString.ReadFromStream(dis);
 				
-				//Foe now..
+				//For now..
 				MinimaLogger.log(mClientUID+":"+msg.toString());
 			
 			}else if(type.isEqual(MSG_PING)) {
