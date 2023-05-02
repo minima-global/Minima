@@ -758,7 +758,7 @@ public abstract class Command {
 	private static final String[] ALL_WRITE_COMMANDS = 
 		{"send","sendpoll","sendsign","multisig","tokencreate","consolidate",
 		 "cointrack","sign","txnsign","mds","backup","removescript",
-		 "restore","vault","archive","mysql","rpc","magic"};
+		 "restore","restoresync","vault","archive","mysql","rpc","magic"};
 	
 	private static final ArrayList<String> ALL_WRITE_COMMANDS_ARRAY = new ArrayList<String>(Arrays.asList(ALL_WRITE_COMMANDS));
 	
