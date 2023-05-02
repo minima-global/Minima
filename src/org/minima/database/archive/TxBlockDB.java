@@ -64,6 +64,6 @@ public class TxBlockDB {
 		}
 		
 		mTxBlockDB = newDB;
-		MinimaLogger.log("Clear TxBlockDB new size : "+mTxBlockDB.size()+" / "+oldsize);
+//		MinimaLogger.log("Clear TxBlockDB new size : "+mTxBlockDB.size()+" / "+oldsize);
 	}
 }
