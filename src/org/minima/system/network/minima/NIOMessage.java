@@ -550,12 +550,12 @@ public class NIOMessage implements Runnable {
 				long timediff 	= timefinish - timestart;
 				if(timediff > 20000) {
 					MinimaLogger.log("Message took a long time ("+timediff+"ms) to process @ txpowid:"+txpow.getTxPoWID());
-					MinimaLogger.log("timerstart1:"+(timestart1-timestart));
-					MinimaLogger.log("timerstart2:"+(timestart2-timestart1));
-					MinimaLogger.log("timerstart3:"+(timestart3-timestart2));
-					MinimaLogger.log("timerstart4:"+(timestart4-timestart3));
-					MinimaLogger.log("timerstart5:"+(timestart5-timestart4));
-					MinimaLogger.log("timerstart6:"+(timestart6-timestart5));
+//					MinimaLogger.log("timerstart1:"+(timestart1-timestart));
+//					MinimaLogger.log("timerstart2:"+(timestart2-timestart1));
+//					MinimaLogger.log("timerstart3:"+(timestart3-timestart2));
+//					MinimaLogger.log("timerstart4:"+(timestart4-timestart3));
+//					MinimaLogger.log("timerstart5:"+(timestart5-timestart4));
+//					MinimaLogger.log("timerstart6:"+(timestart6-timestart5));
 					
 					fullyvalid = false;
 				}
