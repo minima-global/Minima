@@ -920,7 +920,10 @@ public class MaximaManager extends MessageProcessor {
 				
 				//OK.. add to our list
 				if(nioc.isMaximaMLS()) {
-					if(mMLSService.newMLSNode(nioc.getMaximaMLS())) {
+					
+					String niocmls = nioc.getMaximaMLS();
+					
+					if(mMLSService.newMLSNode(niocmls)) {
 						//Changed.. set new in DB
 						UserDB udb = MinimaDB.getDB().getUserDB();
 						udb.setString(MAXIMA_OLDMLSHOST, mMLSService.getOldMLSServer());
@@ -929,6 +932,14 @@ public class MaximaManager extends MessageProcessor {
 								
 						//Save this..
 						MinimaDB.getDB().saveUserDB();
+					}
+					
+					//Are we in slave mode..
+					if(GeneralParams.TXBLOCK_NODE) {
+						
+						//Set this as static MLS
+						setStaticMLS(true, niocmls);
+						MinimaLogger.log("Setting STATIC MLS to : "+niocmls);
 					}
 				}
 				

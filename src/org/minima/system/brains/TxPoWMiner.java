@@ -12,6 +12,8 @@ import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
+import org.minima.system.network.minima.NIOManager;
+import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
@@ -23,6 +25,8 @@ public class TxPoWMiner extends MessageProcessor {
 
 	public static final String TXPOWMINER_MINETXPOW 	= "TXPOWMINER_MINETXPOW";
 	public static final String TXPOWMINER_MINEPULSE 	= "TXPOWMINER_MINEPULSE";
+	
+	public static final String TXPOWMINER_TXBLOCKMINER 	= "TXPOWMINER_TXBLOCKMINER";
 	
 	/**
 	 * The Large Byte MiniNumber to set the Header up for hashing
@@ -153,6 +157,10 @@ public class TxPoWMiner extends MessageProcessor {
 			if(automine) {
 				//Post another mine message
 				PostTimerMessage(new TimerMessage(Main.getInstance().AUTOMINE_TIMER, TXPOWMINER_MINEPULSE));
+				
+				//Post a message for the txblock miners - give this message time to be processed
+				long timerdelay = Main.getInstance().AUTOMINE_TIMER / 2;
+				PostTimerMessage(new TimerMessage(timerdelay, TXPOWMINER_TXBLOCKMINER));
 			}
 			
 			//Are we logging..
@@ -164,6 +172,11 @@ public class TxPoWMiner extends MessageProcessor {
 			}
 			
 		}else if(zMessage.isMessageType(TXPOWMINER_MINEPULSE)) {
+			
+			//This is not where you get your mining block from..
+			if(GeneralParams.TXBLOCK_NODE) {
+				return;
+			}
 			
 			//Do we have any blocks yet
 			if(MinimaDB.getDB().getTxPoWTree().getTip() != null) {
@@ -178,6 +191,19 @@ public class TxPoWMiner extends MessageProcessor {
 				//Check again in 30 secs
 				PostTimerMessage(new TimerMessage(30000, TXPOWMINER_MINEPULSE));
 			}
+			
+		}else if(zMessage.isMessageType(TXPOWMINER_TXBLOCKMINER)) {
+			
+			//This is not where you get your mining block from..
+			if(GeneralParams.TXBLOCK_NODE) {
+				return;
+			}
+			
+			//This message is sent for those who are txblock only..
+			TxPoW txpow = TxPoWGenerator.generateTxPoW(new Transaction(), new Witness());
+			
+			//Post to the TxBlock crew..
+			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_TXBLOCKMINE, txpow);
 		}
 	}
 

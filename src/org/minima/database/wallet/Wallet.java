@@ -1,5 +1,6 @@
 package org.minima.database.wallet;
 
+import java.io.File;
 import java.math.BigInteger;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -280,23 +281,33 @@ public class Wallet extends SqlDB {
 		mBaseSeed = new SeedRow(zPhrase, zSeed);
 	}
 	
-	public SeedRow getBaseSeed() {
+	public synchronized SeedRow getBaseSeed() {
 		return mBaseSeed;
 	}
 	
-	public boolean isBaseSeedAvailable() {
+	public synchronized boolean isBaseSeedAvailable() {
 		return !mBaseSeed.getSeed().equals("0x00");
 	}
 	
-	public void wipeBaseSeedRow() throws SQLException {
+	public synchronized void wipeBaseSeedRow() throws SQLException {
+		
 		//Wipe the DB
 		SQL_WIPE_PRIVATE_KEYS.execute();
 		
-		//reset the base seed
-		updateSeedRow("","0x00");
+		//Update
+		SQL_UPDATE_SEED.clearParameters();
+		SQL_UPDATE_SEED.setString(1, "");
+		SQL_UPDATE_SEED.setString(2, "0x00");
+		SQL_UPDATE_SEED.executeUpdate();
 		
 		//And Store..
 		mBaseSeed = new SeedRow("", "0x00");
+		
+		//Now Save It..
+		saveDB(true);
+		
+		//And re-open..
+		checkOpen();
 	}
 	
 	public boolean resetBaseSeedPrivKeys(String zPhrase, String zSeed) {
@@ -840,5 +851,26 @@ public class Wallet extends SqlDB {
 		
 		//Run the query
 		SQL_UPDATE_INC_ALL_KEY_USES.execute();
+	}
+	
+	public static void main(String[] zArgs) throws SQLException {
+		
+		Wallet wal = new Wallet();
+		
+		wal.loadDB(new File("C:\\Users\\spartacusrex\\.minima\\1.0\\databases\\walletsql\\wallet.mv.db"));
+		
+		SeedRow base = wal.getBaseSeed();
+		
+		System.out.println("BASE:"+base.toJSON().toString());
+		
+		wal.wipeBaseSeedRow();
+//		
+//		base = wal.getBaseSeed();
+//		
+//		System.out.println("WIPE:"+base.toJSON().toString());
+		
+		wal.saveDB(true);
+		
+		
 	}
 }

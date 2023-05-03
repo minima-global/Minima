@@ -28,6 +28,11 @@ public class GeneralParams {
 	public static boolean ARCHIVE = false;
 	
 	/**
+	 * Are we running an TxBlock ONLY node
+	 */
+	public static boolean TXBLOCK_NODE = false;
+	
+	/**
 	 * The SQL DB Aes Password. If it is 'minima' no Encryption used
 	 */
 	public static boolean IS_MAIN_DBPASSWORD_SET = false;

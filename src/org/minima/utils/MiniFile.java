@@ -196,7 +196,7 @@ public class MiniFile {
 			FileOutputStream fos 		= new FileOutputStream(zFile, false);
 			
 			//256K buffer
-			BufferedOutputStream bos 	= new BufferedOutputStream(fos, 32768 * 8);
+			BufferedOutputStream bos 	= new BufferedOutputStream(fos, 65536);
 			
 			DataOutputStream fdos 		= new DataOutputStream(bos);
 			

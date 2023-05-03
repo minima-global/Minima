@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Random;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowdb.TxPoWDB;
@@ -15,6 +16,7 @@ import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Greeting;
 import org.minima.objects.IBD;
 import org.minima.objects.Pulse;
+import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
@@ -66,12 +68,17 @@ public class NIOMessage implements Runnable {
 	public static final MiniByte MSG_SINGLE_PING 	= new MiniByte(11);
 	public static final MiniByte MSG_SINGLE_PONG 	= new MiniByte(12);
 	
-	public static final MiniByte MSG_TXBLOCK_REQ 	= new MiniByte(13);
-	public static final MiniByte MSG_TXBLOCK_RESP 	= new MiniByte(14);
+	public static final MiniByte MSG_IBD_REQ 		= new MiniByte(13);
+	public static final MiniByte MSG_IBD_RESP 		= new MiniByte(14);
 	
 	public static final MiniByte MSG_ARCHIVE_REQ 		= new MiniByte(15);
 	public static final MiniByte MSG_ARCHIVE_DATA 		= new MiniByte(16);
 	public static final MiniByte MSG_ARCHIVE_SINGLE_REQ = new MiniByte(17);
+	
+	public static final MiniByte MSG_TXBLOCKID 			= new MiniByte(18);
+	public static final MiniByte MSG_TXBLOCKREQ 		= new MiniByte(19);
+	public static final MiniByte MSG_TXBLOCK 			= new MiniByte(20);
+	public static final MiniByte MSG_TXBLOCKMINE 		= new MiniByte(21);
 	
 	/**
 	 * Helper function that converts to String 
@@ -99,6 +106,20 @@ public class NIOMessage implements Runnable {
 			return "MAXIMA_CTRL";
 		}else if(zType.isEqual(MSG_MAXIMA_TXPOW)) {
 			return "MAXIMA";
+		
+		}else if(zType.isEqual(MSG_IBD_REQ)) {
+			return "MSG_IBD_REQ";
+		}else if(zType.isEqual(MSG_IBD_RESP)) {
+			return "MSG_IBD_RESP";
+		
+		}else if(zType.isEqual(MSG_TXBLOCKID)) {
+			return "TXBLOCKID";
+		}else if(zType.isEqual(MSG_TXBLOCKREQ)) {
+			return "TXBLOCKREQ";
+		}else if(zType.isEqual(MSG_TXBLOCK)) {
+			return "TXBLOCK";
+		}else if(zType.isEqual(MSG_TXBLOCKMINE)) {
+			return "TXBLOCKMINE";
 		}
 		
 		return "UNKNOWN";
@@ -152,11 +173,27 @@ public class NIOMessage implements Runnable {
 			
 			//Are we syncing an IBD
 			if(Main.getInstance().isSyncIBD()) {
-				if(type.isEqual(MSG_TXPOWID) || type.isEqual(MSG_PULSE)) {
+				if(type.isEqual(MSG_TXPOWID) || type.isEqual(MSG_TXBLOCKID) || type.isEqual(MSG_PULSE)) {
 					//Ignore until finished..
 					MinimaLogger.log("Ignoring NIOmessage during IBD Sync.. type:"+convertMessageType(type));
 					return;
 				}
+			}
+			
+			//Are we a TxBlock node..
+			if(GeneralParams.TXBLOCK_NODE) {
+				if( type.isEqual(MSG_TXPOWID)) {
+					//Ignore these..
+					return;
+				}
+				
+//				//Random message lost
+//				if( type.isEqual(MSG_TXBLOCKID)) {
+//					if(new Random().nextInt(100) < 80) {
+//						MinimaLogger.log("RANDOM LOSE TXBLOCK ID MESSAGE");
+//						return;
+//					}	
+//				}
 			}
 			
 			//Output some info
@@ -164,6 +201,10 @@ public class NIOMessage implements Runnable {
 			if(mTrace && tracemsg.contains(mFilter)) {
 				MinimaLogger.log(tracemsg,false);
 			}
+			
+//			if(true) {
+//				MinimaLogger.log(tracemsg,false);
+//			}
 			
 			//Now find the right message
 			if(type.isEqual(MSG_GREETING)) {
@@ -419,6 +460,8 @@ public class NIOMessage implements Runnable {
 					return;
 				}
 				
+				long timestart1 = System.currentTimeMillis();
+				
 				//More CHECKS.. if ALL these pass will forward otherwise may be a branch txpow that we requested
 				boolean fullyvalid = true;
 				
@@ -437,6 +480,8 @@ public class NIOMessage implements Runnable {
 					beforecascade 	= true;
 				}
 				
+				long timestart2 = System.currentTimeMillis();
+				
 				//Check the Scripts - could fail.. 
 				if(!TxPoWChecker.checkTxPoWScripts(tip.getMMR(), txpow, tip.getTxPoW())) {
 					//Monotonic txn MUST pass the script check or is INVALID - since will never pass..
@@ -450,6 +495,8 @@ public class NIOMessage implements Runnable {
 					//Could be block related
 					fullyvalid = false;
 				}
+				
+				long timestart3 = System.currentTimeMillis();
 				
 				//Max time in the future.. 2 hours.. could be OUR clock..
 				if(txpow.isBlock()) {
@@ -467,17 +514,23 @@ public class NIOMessage implements Runnable {
 					fullyvalid = false;
 				}
 				
+				long timestart4 = System.currentTimeMillis();
+				
 				//Check for mempool coins..
 				if(TxPoWChecker.checkMemPoolCoins(txpow)) {
 					//Same coins in different transaction - could have been requested by us from branch
 					//MinimaLogger.log("TxPoW with existing mempoolcoins from client : "+mClientUID+" "+txpow.getTxPoWID());
 					fullyvalid = false;
 				}
+	
+				long timestart5 = System.currentTimeMillis();
 				
 				//Check the MMR - could be in a separate branch / or a future txn..
 				if(!TxPoWChecker.checkMMR(tip.getMMR(), txpow, false)) {
 					fullyvalid = false;
 				}
+				
+				long timestart6 = System.currentTimeMillis();
 				
 				//Is the MEMPOOL Full
 				if(TxPoWGenerator.isMempoolFull()) {
@@ -497,6 +550,13 @@ public class NIOMessage implements Runnable {
 				long timediff 	= timefinish - timestart;
 				if(timediff > 20000) {
 					MinimaLogger.log("Message took a long time ("+timediff+"ms) to process @ txpowid:"+txpow.getTxPoWID());
+//					MinimaLogger.log("timerstart1:"+(timestart1-timestart));
+//					MinimaLogger.log("timerstart2:"+(timestart2-timestart1));
+//					MinimaLogger.log("timerstart3:"+(timestart3-timestart2));
+//					MinimaLogger.log("timerstart4:"+(timestart4-timestart3));
+//					MinimaLogger.log("timerstart5:"+(timestart5-timestart4));
+//					MinimaLogger.log("timerstart6:"+(timestart6-timestart5));
+					
 					fullyvalid = false;
 				}
 				
@@ -510,7 +570,7 @@ public class NIOMessage implements Runnable {
 				}
 				
 				//Check all the Transactions.. if it's a block
-				if(txpow.isBlock() && !beforecascade) {
+				if(!GeneralParams.TXBLOCK_NODE && txpow.isBlock() && !beforecascade) {
 					ArrayList<MiniData> txns = txpow.getBlockTransactions();
 					for(MiniData txn : txns) {
 						exists = MinimaDB.getDB().getTxPoWDB().exists(txn.to0xString());
@@ -593,7 +653,7 @@ public class NIOMessage implements Runnable {
 				//Read in the message
 				MiniString msg = MiniString.ReadFromStream(dis);
 				
-				//Foe now..
+				//For now..
 				MinimaLogger.log(mClientUID+":"+msg.toString());
 			
 			}else if(type.isEqual(MSG_PING)) {
@@ -682,11 +742,13 @@ public class NIOMessage implements Runnable {
 						//Ask for it
 						requestlist.add(0, block);
 					}else {
-						//Check all the transactions..
-						ArrayList<MiniData> txns = check.getBlockTransactions();
-						for(MiniData txn : txns) {
-							if(!txpdb.exists(txn.to0xString())) {
-								requestlist.add(0, txn);
+						if(!GeneralParams.TXBLOCK_NODE) {
+							//Check all the transactions..
+							ArrayList<MiniData> txns = check.getBlockTransactions();
+							for(MiniData txn : txns) {
+								if(!txpdb.exists(txn.to0xString())) {
+									requestlist.add(0, txn);
+								}
 							}
 						}
 					}
@@ -705,10 +767,18 @@ public class NIOMessage implements Runnable {
 				
 				//Did we find a crossover..
 				if(found) {
+					if(!GeneralParams.TXBLOCK_NODE) {
 					
-					//Request all the blocks.. in the correct order
-					for(MiniData block : requestlist) {
-						NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, block);
+						//Request all the blocks.. in the correct order
+						for(MiniData block : requestlist) {
+							NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOWREQ, block);
+						}
+					}else {
+						
+						//Request all the blocks.. in the correct order
+						for(MiniData block : requestlist) {
+							NIOManager.sendNetworkMessage(mClientUID, MSG_TXBLOCKREQ, block);
+						}
 					}
 					
 				}else{
@@ -802,7 +872,7 @@ public class NIOMessage implements Runnable {
 
 					//And post on out stack
 					Message newniomsg = new Message(NIOManager.NIO_INCOMINGMSG);
-					newniomsg.addString("uid", "0x00");
+					newniomsg.addString("uid", "0x01");
 					newniomsg.addObject("data", niodata);
 
 					//Post to the NIOManager - which will check it and forward if correct
@@ -852,7 +922,7 @@ public class NIOMessage implements Runnable {
 				//Send this back to them.. 
 				NIOManager.sendNetworkMessage(mClientUID, MSG_SINGLE_PONG, pinggreet);
 			
-			}else if(type.isEqual(MSG_TXBLOCK_REQ)) {
+			}else if(type.isEqual(MSG_IBD_REQ)) {
 				
 				//Get the Hash of the Block
 				TxPoW lastblock = TxPoW.ReadFromStream(dis);
@@ -888,9 +958,9 @@ public class NIOMessage implements Runnable {
 				syncibd.createSyncIBD(lastblock);
 				
 				//And send it..
-				NIOManager.sendNetworkMessage(mClientUID, MSG_TXBLOCK_RESP, syncibd);
+				NIOManager.sendNetworkMessage(mClientUID, MSG_IBD_RESP, syncibd);
 				
-			}else if(type.isEqual(MSG_TXBLOCK_RESP)) {
+			}else if(type.isEqual(MSG_IBD_RESP)) {
 				
 				//Load the IBD..
 				IBD syncibd = IBD.ReadFromStream(dis);
@@ -959,6 +1029,120 @@ public class NIOMessage implements Runnable {
 //				//Send this to the main processor
 //				Main.getInstance().getTxPoWProcessor().postProcessArchiveIBD(archibd, mClientUID);
 								
+			
+			}else if(type.isEqual(MSG_TXBLOCKID)) {
+				
+				//Are we running this type of node..
+				if(!GeneralParams.TXBLOCK_NODE) {
+					return;
+				}
+				
+				//Read in the txpowid
+				MiniData txpowid = MiniData.ReadFromStream(dis);
+				String txid 	 = txpowid.to0xString();
+				
+				//Do we have it..
+				TxBlock txb = MinimaDB.getDB().getTxBlockDB().findTxBlock(txid);
+				
+				//Do we have it in TxPoWTree
+				if(txb == null) {
+					TxPoWTreeNode node = MinimaDB.getDB().getTxPoWTree().findNode(txid);
+					if(node!=null) {
+						txb = node.getTxBlock();
+					}
+				}
+				
+				//If not request it..
+				if(txb==null) {
+					//request it..
+					NIOManager.sendNetworkMessage(mClientUID, MSG_TXBLOCKREQ, txpowid);
+				} 
+			
+			}else if(type.isEqual(MSG_TXBLOCKREQ)) {
+				
+				//Read in the txpowid
+				MiniData txpowid 	= MiniData.ReadFromStream(dis);
+				String txid 		= txpowid.to0xString();
+				
+				//Do we have it.. in RAM DB
+				TxBlock txb = MinimaDB.getDB().getTxBlockDB().findTxBlock(txid);
+				
+				//Do we have it in TxPoWTree
+				if(txb == null) {
+					TxPoWTreeNode node = MinimaDB.getDB().getTxPoWTree().findNode(txid);
+					if(node!=null) {
+						txb = node.getTxBlock();
+					}
+				}
+
+				//Do we have it in Archive..
+				if(txb == null) {
+					txb = MinimaDB.getDB().getArchive().loadBlock(txid);
+				}
+				
+				//Send it to them
+				if(txb!=null) {
+					NIOManager.sendNetworkMessage(mClientUID, MSG_TXBLOCK, txb);
+				}else {
+					MinimaLogger.log("Request for TxBlock we don't have : "+txpowid.to0xString());
+				}
+			
+			}else if(type.isEqual(MSG_TXBLOCK)) {
+				
+				//Are we running this type of node..
+				if(!GeneralParams.TXBLOCK_NODE) {
+					return;
+				}
+				
+				//Get the TxBlock
+				TxBlock txblock = TxBlock.ReadFromStream(dis);
+				
+				//And process..
+				Main.getInstance().getTxPoWProcessor().postProcessTxBlock(txblock);
+				
+				//Is the parent above the cascade.
+				TxPoWTreeNode cascade = MinimaDB.getDB().getTxPoWTree().getRoot();
+				if(txblock.getTxPoW().getBlockNumber().isMoreEqual(cascade.getBlockNumber())) {
+				
+					//Do we have the parent..
+					MiniData parent = txblock.getTxPoW().getParentID();
+					String txid 	= parent.to0xString();
+				
+					//Do we have it.. in RAM DB
+					TxBlock txb = MinimaDB.getDB().getTxBlockDB().findTxBlock(txid);
+					
+					//Do we have it in TxPoWTree
+					if(txb == null) {
+						TxPoWTreeNode node = MinimaDB.getDB().getTxPoWTree().findNode(txid);
+						if(node!=null) {
+							txb = node.getTxBlock();
+						}
+					}
+					
+					//If not request it..
+					if(txb==null) {
+						//request it..
+						MinimaLogger.log("Request Parent TxBlock.. @ "+txblock.getTxPoW().getBlockNumber());
+						NIOManager.sendNetworkMessage(mClientUID, MSG_TXBLOCKREQ, parent);
+					}
+				}
+				
+			}else if(type.isEqual(MSG_TXBLOCKMINE)) {
+				
+				//Are we running this type of node..
+				if(!GeneralParams.TXBLOCK_NODE) {
+					return;
+				}
+				
+				//Get the unmined txpow
+				TxPoW txp = TxPoW.ReadFromStream(dis);
+				
+				//Reset the RandomID - so everyone mines a different block
+				txp.getTxBody().resetRandomPRNG();
+				
+				//Mine it..
+				Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txp);
+				
 			}else {
 				
 				//UNKNOWN MESSAGE..

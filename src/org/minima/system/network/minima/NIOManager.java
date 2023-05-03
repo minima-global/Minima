@@ -121,7 +121,7 @@ public class NIOManager extends MessageProcessor {
 	/**
 	 * Thread pool to manage incoming messages
 	 */
-	ExecutorService THREAD_POOL = Executors.newFixedThreadPool(8);
+	ExecutorService THREAD_POOL = Executors.newFixedThreadPool(4);
 	
 	public NIOManager(NetworkManager zNetManager) {
 		super("NIOMANAGER");
@@ -591,7 +591,7 @@ public class NIOManager extends MessageProcessor {
 			
 			//Send a message asking for a sync
 			MinimaLogger.log("[+] Request Sync IBD @ "+lastpow.getBlockNumber());
-			sendNetworkMessage(clientid, NIOMessage.MSG_TXBLOCK_REQ, lastpow);
+			sendNetworkMessage(clientid, NIOMessage.MSG_IBD_REQ, lastpow);
 			
 		}else if(zMessage.getMessageType().equals(NIO_CHECKLASTMSG)) {
 			

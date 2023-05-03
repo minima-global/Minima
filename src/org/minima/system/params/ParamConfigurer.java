@@ -284,7 +284,9 @@ public class ParamConfigurer {
             }
         }),
         nop2p("nop2p", "Disable the automatic P2P system", (args, configurer) -> {
-            GeneralParams.P2P_ENABLED = false;
+        	if ("true".equals(args)) {
+        		GeneralParams.P2P_ENABLED = false;
+            }
         }),
         noshutdownhook("noshutdownhook", "Do not use the shutdown hook (Android)", (args, configurer) -> {
         	configurer.mShutdownhook = false;
@@ -316,6 +318,13 @@ public class ParamConfigurer {
             if ("true".equals(args)) {
                 GeneralParams.NO_SYNC_IBD = true;
             }
+        }),
+        slavenode("slavenode", "Connect to this node only and only accept TxBlock messages.", (args, configurer) -> {
+        	GeneralParams.CONNECT_LIST 			= args;
+        	GeneralParams.P2P_ENABLED 			= false;
+            GeneralParams.TXBLOCK_NODE 			= true;
+            GeneralParams.NO_SYNC_IBD 			= true;
+            GeneralParams.IS_ACCEPTING_IN_LINKS = false;
         }),
         limitbandwidth("limitbandwidth", "Limit the amount sent for archive sync", (args, configurer) -> {
             if ("true".equals(args)) {
