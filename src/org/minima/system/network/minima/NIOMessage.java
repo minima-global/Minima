@@ -202,6 +202,11 @@ public class NIOMessage implements Runnable {
 				MinimaLogger.log(tracemsg,false);
 			}
 			
+			//Are we logging..
+			if(GeneralParams.NETWORKING_LOGS) {
+				MinimaLogger.log("[NETLOGS RECEIVED] from:"+mClientUID+" type:"+convertMessageType(type)+" size:"+MiniFormat.formatSize(data.length));
+			}
+			
 //			if(true) {
 //				MinimaLogger.log(tracemsg,false);
 //			}
