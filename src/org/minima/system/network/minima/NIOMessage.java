@@ -632,8 +632,12 @@ public class NIOMessage implements Runnable {
 					}
 					
 					//Now scan the whole tree - unless you already have per block
+					counter = 0;
 					TxPoWTreeNode tipblock = MinimaDB.getDB().getTxPoWTree().getTip();
-					while(tipblock != null) {
+					while(tipblock != null && counter<256) {
+						
+						//Only scan 256 blocks..
+						counter++;
 						
 						//Do we have all the txns in this block
 						boolean haveall = tipblock.checkFullTxns(txpdb);
