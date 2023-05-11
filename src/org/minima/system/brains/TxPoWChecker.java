@@ -188,6 +188,68 @@ public class TxPoWChecker {
 	}
 	
 	/**
+	 * Perform some basic checks on this TxBlock
+	 */
+	public static boolean checkTxBlockOnly(TxPoWTreeNode zParentNode, TxBlock zTxBlock) {
+		
+		try {
+			//Get the TxPoW..
+			TxPoW txpow = zTxBlock.getTxPoW();
+			
+			//Check ChainID
+			if(!txpow.getChainID().isEqual(TxPoWChecker.CURRENT_NETWORK)) {
+				MinimaLogger.log("Invalid Block ChainID! "+txpow.getChainID()+" "+txpow.getTxPoWID());
+				return false;
+			}
+			
+			//Check the Block Number is correct
+			if(!txpow.getBlockNumber().isEqual(zParentNode.getBlockNumber().increment())) {
+				MinimaLogger.log("Invalid TxPoW block with wrong blocknumber "+txpow.getTxPoWID());
+				return false;
+			}
+			
+			//Check Parents..
+			if(!checkParents(zParentNode, txpow)) {
+				MinimaLogger.log("Invalid TxPoW Super Parents "+txpow.getTxPoWID());
+				return false;
+			}
+			
+			//Check TimeMilli is acceptable..
+			TxPoWTreeNode median = TxPoWGenerator.getMedianTimeBlock(zParentNode, GlobalParams.MEDIAN_BLOCK_CALC*2);
+			MiniNumber maxtime 	 = median.getTxPoW().getTimeMilli().add(MAX_TIME_FUTURE); 
+			if(txpow.getTimeMilli().isLess(median.getTxPoW().getTimeMilli())) {
+				MinimaLogger.log("Invalid TxPoW TimeMilli less than median 1 hr back "+txpow.getTxPoWID());
+				return false;
+			}else if(txpow.getTimeMilli().isMore(maxtime)) {
+				MinimaLogger.log("Invalid TxPoW TimeMilli more than 24 hrs in future "+txpow.getTxPoWID());
+				return false;
+			}
+			
+			//Check the block difficulty is correct
+			MiniData blockdifficulty = TxPoWGenerator.getBlockDifficulty(zParentNode);
+			if(!txpow.getBlockDifficulty().isEqual(blockdifficulty)) {
+				MinimaLogger.log("Incorrect TxPoW block difficulty @ "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
+				return false;
+			}
+			
+			//Check Magic numbers
+			Magic txpowmagic = txpow.getMagic();
+			if(!txpowmagic.checkSame(zParentNode.getTxPoW().getMagic().calculateNewCurrent())) {
+				MinimaLogger.log("Incorrect Magic values "+txpow.getBlockTransactions().size()+" "+txpow.getTxPoWID());
+				return false;
+			}
+						
+		}catch(Exception exc) {
+			MinimaLogger.log("ERROR checking TxBlock in slave node..");
+			MinimaLogger.log(exc);
+			
+			return false;
+		}
+		
+		return true;
+	}
+	
+	/**
 	 * Make basic checks of this TxPoW
 	 */
 	public static boolean checkTxPoWBasic(TxPoW zTxPoW) throws Exception {
