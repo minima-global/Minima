@@ -34,6 +34,7 @@ import org.minima.system.network.NetworkManager;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.params.GeneralParams;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.messages.Message;
@@ -709,6 +710,11 @@ public class NIOManager extends MessageProcessor {
 		
 		//Create the network message
 		MiniData niodata = createNIOMessage(zType, zObject);
+		
+		//Are we logging..
+		if(GeneralParams.NETWORKING_LOGS) {
+			MinimaLogger.log("[NETLOGS SEND] to:"+zUID+" type:"+NIOMessage.convertMessageType(zType)+" size:"+MiniFormat.formatSize(niodata.getLength()));
+		}
 		
 		//For ALL or for ONE
 		if(!zUID.equals("")) {
