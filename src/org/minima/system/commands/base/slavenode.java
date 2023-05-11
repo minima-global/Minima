@@ -20,7 +20,7 @@ public class slavenode extends Command {
 	
 	@Override
 	public String getFullHelp() {
-		return "\slavenode\n"
+		return "\nslavenode\n"
 				+ "\n"
 				+ "Connect to a master node and receive txblock messages.\n"
 				+ "\n"
