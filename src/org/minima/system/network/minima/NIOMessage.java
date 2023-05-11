@@ -141,6 +141,8 @@ public class NIOMessage implements Runnable {
 	boolean mTrace = false;
 	String mFilter  = "";
  	
+	public static long LAST_TXBLOCKMINE_MSG = 0;
+	
 	public NIOMessage(String zClientUID, MiniData zData) {
 		mClientUID 	= zClientUID;
 		mData 		= zData;
@@ -1148,6 +1150,18 @@ public class NIOMessage implements Runnable {
 				
 				//Reset the RandomID - so everyone mines a different block
 				txp.getTxBody().resetRandomPRNG();
+				
+				//When was the last message rec 
+				long timenow 	= System.currentTimeMillis();
+				long timediff 	= timenow - LAST_TXBLOCKMINE_MSG;
+				if(timediff < Main.getInstance().AUTOMINE_TIMER) {
+					//Not enough time has passed..
+					//MinimaLogger.log("DON'T MINE - too soon");
+					return;
+				}
+				
+				//Set the last Mine Time..
+				LAST_TXBLOCKMINE_MSG = timenow;
 				
 				//Mine it..
 				Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txp);
