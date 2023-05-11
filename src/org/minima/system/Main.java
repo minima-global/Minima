@@ -204,6 +204,17 @@ public class Main extends MessageProcessor {
 		//Load the Databases
 		MinimaDB.getDB().loadAllDB();
 		
+		//Are we in Slave node mode
+		boolean slavemode = MinimaDB.getDB().getUserDB().isSlaveNode();
+		if(slavemode) {
+			GeneralParams.CONNECT_LIST 			= MinimaDB.getDB().getUserDB().getSlaveNodeHost();
+        	GeneralParams.P2P_ENABLED 			= false;
+            GeneralParams.TXBLOCK_NODE 			= true;
+            GeneralParams.NO_SYNC_IBD 			= true;
+            GeneralParams.IS_ACCEPTING_IN_LINKS = false;
+            MinimaLogger.log("Slave Mode ENABLED master:"+GeneralParams.CONNECT_LIST);
+		}
+		
 		//Create the SSL Keystore..
 		SSLManager.makeKeyFile();
 		

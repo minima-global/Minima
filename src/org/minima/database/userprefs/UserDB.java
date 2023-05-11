@@ -221,4 +221,20 @@ public class UserDB extends JsonDB{
 	public String getAutoMySQLPassword() {
 		return getString("mysql_password","");
 	}
+	
+	/**
+	 * Slave Node properties..
+	 */
+	public boolean isSlaveNode() {
+		return getBoolean("slavenode_enabled", false);
+	}
+	
+	public String getSlaveNodeHost() {
+		return getString("slavenode_host", "");
+	}
+	
+	public void setSlaveNode(boolean zEnabled, String zHost) {
+		setBoolean("slavenode_enabled", zEnabled);
+		setString("slavenode_host", zHost);
+	}
 }
