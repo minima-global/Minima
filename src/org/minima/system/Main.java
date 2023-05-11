@@ -705,6 +705,11 @@ public class Main extends MessageProcessor {
 			//And then wait again..
 			PostTimerMessage(new TimerMessage(GeneralParams.USER_PULSE_FREQ, MAIN_PULSE));
 			
+			//Are we a Slavenode - have no transactions.. use TXBLOCKMINE msg instead
+			if(GeneralParams.TXBLOCK_NODE) {
+				return;
+			}
+			
 			//Create Pulse Message
 			Pulse pulse = Pulse.createPulse();
 		
