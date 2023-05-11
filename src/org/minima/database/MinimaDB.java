@@ -480,9 +480,9 @@ public class MinimaDB {
 			
 			//Shut them down
 			MinimaLogger.log("Save TxPoWDB..");
-			mTxPoWDB.saveDB(false);
+			mTxPoWDB.saveDB(true);
 			MinimaLogger.log("Save ArchiveDB..");
-			mArchive.saveDB(false);
+			mArchive.saveDB(true);
 			MinimaLogger.log("Save WalletDB..");
 			mWallet.saveDB(true);
 			

@@ -48,6 +48,7 @@ import org.minima.system.commands.base.printmmr;
 import org.minima.system.commands.base.printtree;
 import org.minima.system.commands.base.quit;
 import org.minima.system.commands.base.random;
+import org.minima.system.commands.base.slavenode;
 import org.minima.system.commands.base.status;
 import org.minima.system.commands.base.test;
 import org.minima.system.commands.base.tokencreate;
@@ -128,7 +129,7 @@ public abstract class Command {
 			new multisig(), new checkaddress(),
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
 			
-			new ping(), new random(), new mysql(),
+			new ping(), new random(), new mysql(), new slavenode(),
 			//new file(),
 			
 			new vault(), new consolidate(),
