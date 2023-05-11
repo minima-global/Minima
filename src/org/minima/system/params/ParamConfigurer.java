@@ -319,13 +319,13 @@ public class ParamConfigurer {
                 GeneralParams.NO_SYNC_IBD = true;
             }
         }),
-        slavenode("slavenode", "Connect to this node only and only accept TxBlock messages.", (args, configurer) -> {
-        	GeneralParams.CONNECT_LIST 			= args;
-        	GeneralParams.P2P_ENABLED 			= false;
-            GeneralParams.TXBLOCK_NODE 			= true;
-            GeneralParams.NO_SYNC_IBD 			= true;
-            GeneralParams.IS_ACCEPTING_IN_LINKS = false;
-        }),
+//        slavenode("slavenode", "Connect to this node only and only accept TxBlock messages.", (args, configurer) -> {
+//        	GeneralParams.CONNECT_LIST 			= args;
+//        	GeneralParams.P2P_ENABLED 			= false;
+//            GeneralParams.TXBLOCK_NODE 			= true;
+//            GeneralParams.NO_SYNC_IBD 			= true;
+//            GeneralParams.IS_ACCEPTING_IN_LINKS = false;
+//        }),
         limitbandwidth("limitbandwidth", "Limit the amount sent for archive sync", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.ARCHIVESYNC_LIMIT_BANDWIDTH = true;
