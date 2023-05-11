@@ -1151,7 +1151,7 @@ public class NIOMessage implements Runnable {
 				//Reset the RandomID - so everyone mines a different block
 				txp.getTxBody().resetRandomPRNG();
 				
-				//When was the last message rec 
+				//When was the last mine message rec 
 				long timenow 	= System.currentTimeMillis();
 				long timediff 	= timenow - LAST_TXBLOCKMINE_MSG;
 				if(timediff < Main.getInstance().AUTOMINE_TIMER) {
