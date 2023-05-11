@@ -322,7 +322,7 @@ public class TxPoWProcessor extends MessageProcessor {
 					if(parentnode != null) {
 					
 						//Check this TxBlock is Valid..
-						boolean validblock = true;//TxPoWChecker.checkTxPoWBlockTimed(parentnode, txpow, alltrans);
+						boolean validblock = TxPoWChecker.checkTxBlockOnly(parentnode, trustedtxblock);
 						
 						//OK - Lets check this block
 						if(validblock) {
