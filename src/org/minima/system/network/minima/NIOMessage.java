@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowdb.TxPoWDB;
@@ -49,12 +50,12 @@ public class NIOMessage implements Runnable {
 	/**
 	 * What was the last sync block requested..
 	 */
-	public static Hashtable<String, MiniNumber> mlastSyncReq = new Hashtable<>(); 
+	public static ConcurrentHashMap<String, MiniNumber> mlastSyncReq = new ConcurrentHashMap<>(); 
 	
 	/**
 	 * When was the last time you tried a chain sync..
 	 */
-	public static Hashtable<String, Long> mLastChainSync = new Hashtable<>();
+	public static ConcurrentHashMap<String, Long> mLastChainSync = new ConcurrentHashMap<>();
 	
 	/**
 	 * Base Message types sent over the network
