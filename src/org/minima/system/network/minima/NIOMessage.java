@@ -664,10 +664,8 @@ public class NIOMessage implements Runnable {
 					long reqtimenow  	= System.currentTimeMillis();
 					long reqtimediff 	= reqtimenow - lasttime;
 					if(reqtimediff < 1000 * 60 * 10) {
-						//MinimaLogger.log("No point checking chain.. waiting.. "+mClientUID);
 						return;
 					}
-					//MinimaLogger.log("Checking chain.. "+mClientUID);
 					mLastChainSync.put(mClientUID, Long.valueOf(reqtimenow));
 					
 					counter = 0;
