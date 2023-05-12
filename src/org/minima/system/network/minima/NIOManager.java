@@ -435,7 +435,9 @@ public class NIOManager extends MessageProcessor {
 			NIOClient nioc = (NIOClient)zMessage.getObject("client");
 			
 			//Remove from the last sync list
-			NIOMessage.mlastSyncReq.remove(nioc.getUID());
+			String clientid = nioc.getUID();
+			NIOMessage.mlastSyncReq.remove(clientid);
+			NIOMessage.mLastChainSync.remove(clientid);
 			
 			//Do we reconnect
 			boolean reconnect = false;
