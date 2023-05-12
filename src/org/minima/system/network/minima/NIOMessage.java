@@ -2,6 +2,7 @@ package org.minima.system.network.minima;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
@@ -158,15 +159,19 @@ public class NIOMessage implements Runnable {
 		//Convert the MiniData into a valid net message
 		byte[] data = mData.getBytes();
 		
+		//The streams..
+		ByteArrayInputStream bais 	= null;
+		DataInputStream dis			= null;
+		
 		//Are we shutting down
 		if(Main.getInstance().isShuttongDownOrRestoring()) {
-			//MinimaLogger.log("Minima Shutting down - no new NIOMessages");
+			mData = null;
 			return;
 		}
 		
 		//Convert..
-		ByteArrayInputStream bais 	= new ByteArrayInputStream(data);
-		DataInputStream dis 		= new DataInputStream(bais);
+		bais 	= new ByteArrayInputStream(data);
+		dis 	= new DataInputStream(bais);
 		
 		//What type of message is it..
 		try {
@@ -1177,6 +1182,20 @@ public class NIOMessage implements Runnable {
 			
 		} catch (Exception e) {
 			MinimaLogger.log(e);
+			
+		} finally {
+			
+			//Close the streams..
+			if(dis!=null) {
+				try {dis.close();} catch (IOException e) {}
+			}
+			
+			if(bais!=null) {
+				try {bais.close();} catch (IOException e) {}
+			}
+			
+			//And blank this..
+			mData = null;
 		}
 	}
 }
