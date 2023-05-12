@@ -27,6 +27,7 @@ import org.minima.system.Main;
 import org.minima.system.brains.TxPoWChecker;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.brains.TxPoWSearcher;
+import org.minima.system.commands.base.newaddress;
 import org.minima.system.network.maxima.MaximaCTRLMessage;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaxTxPoW;
@@ -49,6 +50,11 @@ public class NIOMessage implements Runnable {
 	 * What was the last sync block requested..
 	 */
 	public static Hashtable<String, MiniNumber> mlastSyncReq = new Hashtable<>(); 
+	
+	/**
+	 * When was the last time you tried a chain sync..
+	 */
+	public static Hashtable<String, Long> mLastChainSync = new Hashtable<>();
 	
 	/**
 	 * Base Message types sent over the network
@@ -417,7 +423,7 @@ public class NIOMessage implements Runnable {
 					//request it..
 					NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOW, txpow);
 				}else {
-					MinimaLogger.log("TxPoW requested from "+mClientUID+" that we don't have.. "+txpowid.to0xString());
+					//MinimaLogger.log("TxPoW requested from "+mClientUID+" that we don't have.. "+txpowid.to0xString());
 				}
 			
 			}else if(type.isEqual(MSG_TXPOW)) {
@@ -643,7 +649,26 @@ public class NIOMessage implements Runnable {
 						counter++;
 					}
 					
+					if(mClientUID.equals("0x00") || mClientUID.equals("0x01")) {
+						//Internal message.. no chain sync..
+						return;
+					}
+					
 					//Now scan the whole tree - unless you already have per block
+					Long lastreq = mLastChainSync.get(mClientUID);
+					if(lastreq == null) {
+						lastreq = Long.valueOf(0);
+					}
+					long lasttime 		= lastreq.longValue();
+					long reqtimenow  	= System.currentTimeMillis();
+					long reqtimediff 	= reqtimenow - lasttime;
+					if(reqtimediff < 1000 * 60 * 10) {
+						//MinimaLogger.log("No point checking chain.. waiting.. "+mClientUID);
+						return;
+					}
+					//MinimaLogger.log("Checking chain.. "+mClientUID);
+					mLastChainSync.put(mClientUID, Long.valueOf(reqtimenow));
+					
 					counter = 0;
 					TxPoWTreeNode tipblock = MinimaDB.getDB().getTxPoWTree().getTip();
 					while(tipblock != null && counter<256) {
