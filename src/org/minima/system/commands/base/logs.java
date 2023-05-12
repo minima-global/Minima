@@ -11,7 +11,7 @@ import org.minima.utils.json.JSONObject;
 public class logs extends Command {
 
 	public logs() {
-		super("logs","(scripts:true|false) (mining:true|false) - Enable full logs for various parts of Minima");
+		super("logs","(scripts:) (mining:) (maxima:) (networking:) (blocks:) (ibd:) - Enable full logs for various parts of Minima");
 	}
 	
 	@Override
@@ -29,6 +29,15 @@ public class logs extends Command {
 				+ "maxima: (optional)\n"
 				+ "    true or false, true turns on detailed logs for Maxima.\n"
 				+ "\n"
+				+ "networking: (optional)\n"
+				+ "    true or false, true turns on detailed logs for Network Messages.\n"
+				+ "\n"
+				+ "blocks: (optional)\n"
+				+ "    true or false, true turns on detailed logs for Blocks.\n"
+				+ "\n"
+				+ "ibd: (optional)\n"
+				+ "    true or false, true turns on detailed logs for IBD processing.\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "logs scripts:true\n"
@@ -38,7 +47,7 @@ public class logs extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"scripts","mining","maxima","blocks"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"scripts","mining","maxima","blocks","networking","ibd"}));
 	}
 	
 	@Override
@@ -85,11 +94,33 @@ public class logs extends Command {
 			}
 		}
 		
+		//Are we logging networking
+		if(existsParam("networking")) {
+			String mining = getParam("networking", "false");
+			if(mining.equals("true")) {
+				GeneralParams.NETWORKING_LOGS = true;
+			}else {
+				GeneralParams.NETWORKING_LOGS = false;
+			}
+		}
+		
+		//Are we logging IBD data
+		if(existsParam("ibd")) {
+			String mining = getParam("ibd", "false");
+			if(mining.equals("true")) {
+				GeneralParams.IBDSYNC_LOGS = true;
+			}else {
+				GeneralParams.IBDSYNC_LOGS = false;
+			}
+		}
+		
 		JSONObject resp = new JSONObject();
 		resp.put("scripts", GeneralParams.SCRIPTLOGS);
 		resp.put("mining", GeneralParams.MINING_LOGS);
 		resp.put("maxima", GeneralParams.MAXIMA_LOGS);
 		resp.put("blocks", TimedChecker.LOG_BLOCK_CHECK_TIME);
+		resp.put("networking", GeneralParams.NETWORKING_LOGS);
+		resp.put("ibd", GeneralParams.IBDSYNC_LOGS);
 		
 		//Add balance..
 		ret.put("response", resp);

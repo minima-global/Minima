@@ -227,7 +227,7 @@ public class BondServer {
 	    		String ouraddress	= response.getString("miniaddress");
 	    		
 	    		//First scan for any available coins..
-	    		String coincheck 	= "coins checkmempool:true order:asc address:"+BOND_ADDRESS;
+	    		String coincheck 	= "coins tokenid:0x00 checkmempool:true order:asc address:"+BOND_ADDRESS;
 	    		jsonres 			= runSingleCommand(coincheck);
 	    		JSONArray allcoins 	= (JSONArray) jsonres.get("response");
 	    		//MinimaLogger.log(MiniFormat.JSONPretty(allcoins));

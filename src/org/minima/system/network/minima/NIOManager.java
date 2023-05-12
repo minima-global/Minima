@@ -34,6 +34,7 @@ import org.minima.system.network.NetworkManager;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.params.GeneralParams;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.messages.Message;
@@ -434,7 +435,9 @@ public class NIOManager extends MessageProcessor {
 			NIOClient nioc = (NIOClient)zMessage.getObject("client");
 			
 			//Remove from the last sync list
-			NIOMessage.mlastSyncReq.remove(nioc.getUID());
+			String clientid = nioc.getUID();
+			NIOMessage.mlastSyncReq.remove(clientid);
+			NIOMessage.mLastChainSync.remove(clientid);
 			
 			//Do we reconnect
 			boolean reconnect = false;
@@ -566,7 +569,7 @@ public class NIOManager extends MessageProcessor {
 			TxBlock lastblock 	= arch.loadLastBlock();
 			TxPoW lastpow 		= null;
 			if(lastblock == null) {
-				MinimaLogger.log("NIO_SYNCTXBLOCK : No data in archive setting root of tree :"+arch.getSize());
+				//MinimaLogger.log("NIO_SYNCTXBLOCK : No data in archive setting root of tree :"+arch.getSize());
 				lastpow = MinimaDB.getDB().getTxPoWTree().getRoot().getTxPoW();
 			}else {
 				lastpow = lastblock.getTxPoW();
@@ -584,7 +587,9 @@ public class NIOManager extends MessageProcessor {
 				long maxtime = timenow - SYNC_MAX_TIME;
 				if(lastpow.getTimeMilli().getAsLong() < maxtime) {
 					//we have enough..
-					MinimaLogger.log("We have enough archive blocks.. lastblock "+new Date(lastpow.getTimeMilli().getAsLong()));
+					if(GeneralParams.IBDSYNC_LOGS) {
+						MinimaLogger.log("We have enough archive blocks.. lastblock "+new Date(lastpow.getTimeMilli().getAsLong()));
+					}
 					return;
 				}
 			}
@@ -709,6 +714,11 @@ public class NIOManager extends MessageProcessor {
 		
 		//Create the network message
 		MiniData niodata = createNIOMessage(zType, zObject);
+		
+		//Are we logging..
+		if(GeneralParams.NETWORKING_LOGS) {
+			MinimaLogger.log("[NETLOGS SEND] to:"+zUID+" type:"+NIOMessage.convertMessageType(zType)+" size:"+MiniFormat.formatSize(niodata.getLength()));
+		}
 		
 		//For ALL or for ONE
 		if(!zUID.equals("")) {

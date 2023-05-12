@@ -2,6 +2,7 @@ package org.minima.system.network.minima;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowdb.TxPoWDB;
@@ -26,6 +28,7 @@ import org.minima.system.Main;
 import org.minima.system.brains.TxPoWChecker;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.brains.TxPoWSearcher;
+import org.minima.system.commands.base.newaddress;
 import org.minima.system.network.maxima.MaximaCTRLMessage;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaxTxPoW;
@@ -47,7 +50,12 @@ public class NIOMessage implements Runnable {
 	/**
 	 * What was the last sync block requested..
 	 */
-	public static Hashtable<String, MiniNumber> mlastSyncReq = new Hashtable<>(); 
+	public static ConcurrentHashMap<String, MiniNumber> mlastSyncReq = new ConcurrentHashMap<>(); 
+	
+	/**
+	 * When was the last time you tried a chain sync..
+	 */
+	public static ConcurrentHashMap<String, Long> mLastChainSync = new ConcurrentHashMap<>();
 	
 	/**
 	 * Base Message types sent over the network
@@ -141,6 +149,8 @@ public class NIOMessage implements Runnable {
 	boolean mTrace = false;
 	String mFilter  = "";
  	
+	public static long LAST_TXBLOCKMINE_MSG = 0;
+	
 	public NIOMessage(String zClientUID, MiniData zData) {
 		mClientUID 	= zClientUID;
 		mData 		= zData;
@@ -156,15 +166,19 @@ public class NIOMessage implements Runnable {
 		//Convert the MiniData into a valid net message
 		byte[] data = mData.getBytes();
 		
+		//The streams..
+		ByteArrayInputStream bais 	= null;
+		DataInputStream dis			= null;
+		
 		//Are we shutting down
 		if(Main.getInstance().isShuttongDownOrRestoring()) {
-			//MinimaLogger.log("Minima Shutting down - no new NIOMessages");
+			mData = null;
 			return;
 		}
 		
 		//Convert..
-		ByteArrayInputStream bais 	= new ByteArrayInputStream(data);
-		DataInputStream dis 		= new DataInputStream(bais);
+		bais 	= new ByteArrayInputStream(data);
+		dis 	= new DataInputStream(bais);
 		
 		//What type of message is it..
 		try {
@@ -200,6 +214,11 @@ public class NIOMessage implements Runnable {
 			String tracemsg = "[NIOMessage] uid:"+mClientUID+" type:"+convertMessageType(type)+" size:"+MiniFormat.formatSize(data.length);
 			if(mTrace && tracemsg.contains(mFilter)) {
 				MinimaLogger.log(tracemsg,false);
+			}
+			
+			//Are we logging..
+			if(GeneralParams.NETWORKING_LOGS) {
+				MinimaLogger.log("[NETLOGS RECEIVED] from:"+mClientUID+" type:"+convertMessageType(type)+" size:"+MiniFormat.formatSize(data.length));
 			}
 			
 //			if(true) {
@@ -335,25 +354,28 @@ public class NIOMessage implements Runnable {
 			}else if(type.isEqual(MSG_IBD)) {
 				
 				//Log it..
-				MinimaLogger.log("Received IBD size:"+MiniFormat.formatSize(data.length));
+				if(GeneralParams.IBDSYNC_LOGS) {
+					MinimaLogger.log("Received IBD size:"+MiniFormat.formatSize(data.length));
+				}
 				
 				//IBD received..
 				IBD ibd = IBD.ReadFromStream(dis);
 				
 				//Log it..
-				MinimaLogger.log("Received IBD blocks:"+ibd.getTxBlocks().size());
+				if(GeneralParams.IBDSYNC_LOGS) {
+					MinimaLogger.log("Received IBD blocks:"+ibd.getTxBlocks().size());
+				}
 				
 				//Check Seems Valid..
 				if(!ibd.checkValidData()) {
+					
+					MinimaLogger.log("Received INVALID IBD from "+mClientUID);
 					
 					//Disconnect
 					Main.getInstance().getNIOManager().disconnect(mClientUID);
 					
 					return;
 				}
-				
-				//Log it..
-				MinimaLogger.log("Received IBD is valid..");
 				
 				//Is it a complete IBD even though we have a cascade
 				if(MinimaDB.getDB().getCascade().getLength()>0 && ibd.hasCascadeWithBlocks()) {
@@ -362,6 +384,8 @@ public class NIOMessage implements Runnable {
 					
 					if(!heavier) {
 						MinimaLogger.log("[!] CONNECTED TO HEAVIER CHAIN.. from "+mClientUID);
+					}else {
+						MinimaLogger.log("[!] Received IBD with cascade even though we have one.. from "+mClientUID);
 					}
 					
 					return;
@@ -626,9 +650,30 @@ public class NIOMessage implements Runnable {
 						counter++;
 					}
 					
+					if(mClientUID.equals("0x00") || mClientUID.equals("0x01")) {
+						//Internal message.. no chain sync..
+						return;
+					}
+					
 					//Now scan the whole tree - unless you already have per block
+					Long lastreq = mLastChainSync.get(mClientUID);
+					if(lastreq == null) {
+						lastreq = Long.valueOf(0);
+					}
+					long lasttime 		= lastreq.longValue();
+					long reqtimenow  	= System.currentTimeMillis();
+					long reqtimediff 	= reqtimenow - lasttime;
+					if(reqtimediff < 1000 * 60 * 10) {
+						return;
+					}
+					mLastChainSync.put(mClientUID, Long.valueOf(reqtimenow));
+					
+					counter = 0;
 					TxPoWTreeNode tipblock = MinimaDB.getDB().getTxPoWTree().getTip();
-					while(tipblock != null) {
+					while(tipblock != null && counter<256) {
+						
+						//Only scan 256 blocks..
+						counter++;
 						
 						//Do we have all the txns in this block
 						boolean haveall = tipblock.checkFullTxns(txpdb);
@@ -1140,6 +1185,18 @@ public class NIOMessage implements Runnable {
 				//Reset the RandomID - so everyone mines a different block
 				txp.getTxBody().resetRandomPRNG();
 				
+				//When was the last mine message rec 
+				long timenow 	= System.currentTimeMillis();
+				long timediff 	= timenow - LAST_TXBLOCKMINE_MSG;
+				if(timediff < Main.getInstance().AUTOMINE_TIMER) {
+					//Not enough time has passed..
+					//MinimaLogger.log("DON'T MINE - too soon");
+					return;
+				}
+				
+				//Set the last Mine Time..
+				LAST_TXBLOCKMINE_MSG = timenow;
+				
 				//Mine it..
 				Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txp);
 				
@@ -1151,6 +1208,20 @@ public class NIOMessage implements Runnable {
 			
 		} catch (Exception e) {
 			MinimaLogger.log(e);
+			
+		} finally {
+			
+			//Close the streams..
+			if(dis!=null) {
+				try {dis.close();} catch (IOException e) {}
+			}
+			
+			if(bais!=null) {
+				try {bais.close();} catch (IOException e) {}
+			}
+			
+			//And blank this..
+			mData = null;
 		}
 	}
 }

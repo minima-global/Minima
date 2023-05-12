@@ -180,6 +180,16 @@ public class GeneralParams {
 	public static boolean MAXIMA_LOGS = false;
 	
 	/**
+	 * Enable full logs for Networking..
+	 */
+	public static boolean NETWORKING_LOGS = false;
+	
+	/**
+	 * Enable full logs for IBD SYNC..
+	 */
+	public static boolean IBDSYNC_LOGS = false;
+	
+	/**
 	 * Do we LIMIT the bandwidth (-mobile)
 	 */
 	public static boolean ARCHIVESYNC_LIMIT_BANDWIDTH = false;

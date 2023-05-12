@@ -204,6 +204,17 @@ public class Main extends MessageProcessor {
 		//Load the Databases
 		MinimaDB.getDB().loadAllDB();
 		
+		//Are we in Slave node mode
+		boolean slavemode = MinimaDB.getDB().getUserDB().isSlaveNode();
+		if(slavemode) {
+			GeneralParams.CONNECT_LIST 			= MinimaDB.getDB().getUserDB().getSlaveNodeHost();
+        	GeneralParams.P2P_ENABLED 			= false;
+            GeneralParams.TXBLOCK_NODE 			= true;
+            GeneralParams.NO_SYNC_IBD 			= true;
+            GeneralParams.IS_ACCEPTING_IN_LINKS = false;
+            MinimaLogger.log("Slave Mode ENABLED master:"+GeneralParams.CONNECT_LIST);
+		}
+		
 		//Create the SSL Keystore..
 		SSLManager.makeKeyFile();
 		
@@ -296,6 +307,9 @@ public class Main extends MessageProcessor {
 	 * Are we syncing an IBD
 	 */
 	public void setSyncIBD(boolean zSync) {
+		if(GeneralParams.IBDSYNC_LOGS) {
+			MinimaLogger.log("SYNC IBD LOCK : "+zSync);
+		}
 		mSyncIBD = zSync;
 	}
 	
@@ -693,6 +707,11 @@ public class Main extends MessageProcessor {
 			
 			//And then wait again..
 			PostTimerMessage(new TimerMessage(GeneralParams.USER_PULSE_FREQ, MAIN_PULSE));
+			
+			//Are we a Slavenode - have no transactions.. use TXBLOCKMINE msg instead
+			if(GeneralParams.TXBLOCK_NODE) {
+				return;
+			}
 			
 			//Create Pulse Message
 			Pulse pulse = Pulse.createPulse();

@@ -538,7 +538,9 @@ public class MaximaManager extends MessageProcessor {
 				
 				//Do we have something..
 				if(mxhost == null) {
-					MinimaLogger.log("MAXIMA NEW connection : "+nioc.getFullAddress());
+					if(GeneralParams.MAXIMA_LOGS) {
+						MinimaLogger.log("MAXIMA NEW connection : "+nioc.getFullAddress());
+					}
 					
 					//Create a new Host
 					mxhost = new MaximaHost(nioc.getFullAddress());
@@ -547,7 +549,10 @@ public class MaximaManager extends MessageProcessor {
 					//Now insert this into the DB
 					maxdb.newHost(mxhost);
 				}else {
-					MinimaLogger.log("MAXIMA EXISTING connection : "+nioc.getFullAddress());
+					if(GeneralParams.MAXIMA_LOGS) {
+						MinimaLogger.log("MAXIMA EXISTING connection : "+nioc.getFullAddress());
+					}
+					
 					mxhost.updateLastSeen();
 					maxdb.updateHost(mxhost);
 				}
@@ -807,7 +812,10 @@ public class MaximaManager extends MessageProcessor {
 					maximaMessageStatus(nioc,MAXIMA_OK);
 					
 				}else{
-					MinimaLogger.log("MAXIMA message received for Client we are not connected to : "+tomaxima);
+					
+					if(GeneralParams.MAXIMA_LOGS) {
+						MinimaLogger.log("MAXIMA message received for Client we are not connected to : "+tomaxima);
+					}
 				
 					//Notify that Client of the fail.. this makes external client disconnect ( internal just a ping )
 					maximaMessageStatus(nioc,MAXIMA_UNKNOWN);
@@ -910,7 +918,9 @@ public class MaximaManager extends MessageProcessor {
 					return;
 				}
 				
-				MinimaLogger.log("MAXIMA HOST accepted : "+nioc.getFullAddress());
+				if(GeneralParams.MAXIMA_LOGS) {
+					MinimaLogger.log("MAXIMA HOST accepted : "+nioc.getFullAddress());
+				}
 				
 				//Now we can use this as one of Our Addresses
 				mxhost.setConnected(1);
