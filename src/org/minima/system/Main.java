@@ -307,6 +307,9 @@ public class Main extends MessageProcessor {
 	 * Are we syncing an IBD
 	 */
 	public void setSyncIBD(boolean zSync) {
+		if(GeneralParams.IBDSYNC_LOGS) {
+			MinimaLogger.log("SYNC IBD LOCK : "+zSync);
+		}
 		mSyncIBD = zSync;
 	}
 	
