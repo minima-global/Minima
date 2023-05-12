@@ -377,6 +377,8 @@ public class NIOMessage implements Runnable {
 					
 					if(!heavier) {
 						MinimaLogger.log("[!] CONNECTED TO HEAVIER CHAIN.. from "+mClientUID);
+					}else {
+						MinimaLogger.log("[!] Received IBD with cascade even though we have one.. from "+mClientUID);
 					}
 					
 					return;
