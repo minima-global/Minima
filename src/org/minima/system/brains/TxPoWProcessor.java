@@ -303,9 +303,28 @@ public class TxPoWProcessor extends MessageProcessor {
 			MiniNumber tipnum 	= txptree.getTip().getBlockNumber();
 			MiniNumber rootnum 	= txptree.getRoot().getBlockNumber();
 			
-			boolean validrange = blknum.isMore(rootnum);
+			boolean validrange = false;
+			if(GeneralParams.TEST_PARAMS) {
+				validrange 	= blknum.isMore(rootnum);
+			}else{
+				
+				//Make sure far enough from root to be able to check block difficulty
+				if(tipnum.isLess(MiniNumber.THOUSAND)) {
+					validrange = true;
+				}else {
+				
+					//Min block we will check..
+					MiniNumber minblock = rootnum.add(GlobalParams.MINIMA_BLOCKS_SPEED_CALC); 
+					
+					//Make sure at least Speed Calc away from root..
+					if(blknum.isMore(minblock)){
+						validrange = true;
+					}
+				}
+			}
+			
 			if(txpow.isBlock() && !validrange) {
-				MinimaLogger.log("Invalid range for txblock check @ "
+				MinimaLogger.log("Invalid range for txblock check slavemode @ "
 									+blknum+" root:"+rootnum+" tip:"+tipnum
 									+" txpowid:"+txpow.getTxPoWID());
 			}
@@ -597,7 +616,9 @@ public class TxPoWProcessor extends MessageProcessor {
 			Main.getInstance().setSyncIBD(true);
 			
 			//How big is it..
-			MinimaLogger.log("Processing main IBD length : "+ibd.getTxBlocks().size());
+			if(GeneralParams.IBDSYNC_LOGS) {
+				MinimaLogger.log("Processing main IBD length : "+ibd.getTxBlocks().size());
+			}
 			long timestart = System.currentTimeMillis();
 			
 			//Does it have a cascade
@@ -617,7 +638,7 @@ public class TxPoWProcessor extends MessageProcessor {
 						if(!casctip.isEqual(rootblock.decrement())) {
 							
 							ignore = true;
-							MinimaLogger.log("[!] IGNORE IDB - My Tree Root : "+rootblock+" IBD TIP : "+casctip);
+							MinimaLogger.log("[!] IGNORE IBD - My Tree Root : "+rootblock+" IBD TIP : "+casctip);
 						
 						}else{
 							
@@ -626,7 +647,7 @@ public class TxPoWProcessor extends MessageProcessor {
 							
 							if(!rootparent.isEqual(casctipid)) {
 								ignore = true;
-								MinimaLogger.log("[!] IGNORE IDB - Invalid Hash for parents");
+								MinimaLogger.log("[!] IGNORE IBD - Invalid Hash for parents");
 							}
 						}
 					}
@@ -715,7 +736,9 @@ public class TxPoWProcessor extends MessageProcessor {
 						//Reset these
 						additions = 0;
 						
-						MinimaLogger.log("[!] Processed IBD block @ "+block.getTxPoW().getBlockNumber().toString());
+						if(GeneralParams.IBDSYNC_LOGS) {
+							MinimaLogger.log("[!] Processed IBD block @ "+block.getTxPoW().getBlockNumber().toString());
+						}
 					}
 					
 				}catch(Exception exc) {
@@ -733,7 +756,10 @@ public class TxPoWProcessor extends MessageProcessor {
 			
 			//How big is it..
 			long timediff = System.currentTimeMillis() - timestart;
-			MinimaLogger.log("Processing main IBD finished "+timediff+"ms");
+			if(GeneralParams.IBDSYNC_LOGS) {
+				MinimaLogger.log("Processing main IBD finished "+timediff+"ms");
+			}
+			
 			
 			//we are not syncing..
 			Main.getInstance().setSyncIBD(false);
@@ -807,7 +833,9 @@ public class TxPoWProcessor extends MessageProcessor {
 			//Cycle and add..
 			ArrayList<TxBlock> blocks = arch.getTxBlocks();
 			if(blocks.size() > 0) {
-				MinimaLogger.log("Processing Archive IBD length:"+blocks.size()+" start:"+blocks.get(0).getTxPoW().getBlockNumber());	
+				if(GeneralParams.IBDSYNC_LOGS) {
+					MinimaLogger.log("Processing Archive IBD length:"+blocks.size()+" start:"+blocks.get(0).getTxPoW().getBlockNumber());	
+				}
 			}
 			
 			for(TxBlock block : blocks) {

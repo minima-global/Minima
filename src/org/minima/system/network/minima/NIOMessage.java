@@ -342,25 +342,28 @@ public class NIOMessage implements Runnable {
 			}else if(type.isEqual(MSG_IBD)) {
 				
 				//Log it..
-				MinimaLogger.log("Received IBD size:"+MiniFormat.formatSize(data.length));
+				if(GeneralParams.IBDSYNC_LOGS) {
+					MinimaLogger.log("Received IBD size:"+MiniFormat.formatSize(data.length));
+				}
 				
 				//IBD received..
 				IBD ibd = IBD.ReadFromStream(dis);
 				
 				//Log it..
-				MinimaLogger.log("Received IBD blocks:"+ibd.getTxBlocks().size());
+				if(GeneralParams.IBDSYNC_LOGS) {
+					MinimaLogger.log("Received IBD blocks:"+ibd.getTxBlocks().size());
+				}
 				
 				//Check Seems Valid..
 				if(!ibd.checkValidData()) {
+					
+					MinimaLogger.log("Received INVALID IBD from "+mClientUID);
 					
 					//Disconnect
 					Main.getInstance().getNIOManager().disconnect(mClientUID);
 					
 					return;
 				}
-				
-				//Log it..
-				MinimaLogger.log("Received IBD is valid..");
 				
 				//Is it a complete IBD even though we have a cascade
 				if(MinimaDB.getDB().getCascade().getLength()>0 && ibd.hasCascadeWithBlocks()) {
