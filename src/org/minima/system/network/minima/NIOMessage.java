@@ -424,7 +424,7 @@ public class NIOMessage implements Runnable {
 					//request it..
 					NIOManager.sendNetworkMessage(mClientUID, MSG_TXPOW, txpow);
 				}else {
-					//MinimaLogger.log("TxPoW requested from "+mClientUID+" that we don't have.. "+txpowid.to0xString());
+					MinimaLogger.log("TxPoW requested from "+mClientUID+" that we don't have.. "+txpowid.to0xString());
 				}
 			
 			}else if(type.isEqual(MSG_TXPOW)) {
