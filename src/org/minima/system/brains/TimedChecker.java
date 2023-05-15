@@ -4,13 +4,12 @@ import java.util.ArrayList;
 
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.TxPoW;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 
 public class TimedChecker {
 
 	public static final long MAX_CHECKTIME = 120000;
-	
-	public static boolean LOG_BLOCK_CHECK_TIME = false;
 	
 	boolean mFinishedRunning;
 	boolean mValidBlock;
@@ -78,7 +77,7 @@ public class TimedChecker {
 		}
 		
 		//Are we logging this
-		if(LOG_BLOCK_CHECK_TIME) {
+		if(GeneralParams.BLOCK_LOGS) {
 			timediff = System.currentTimeMillis() - timenow;
 			MinimaLogger.log("[VALID:"+mValidBlock+"] Block checker time : "+timediff+"ms @ "+zTxPoW.getBlockNumber()+" "+zTxPoW.getTxPoWID());
 		}

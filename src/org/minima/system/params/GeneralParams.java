@@ -190,6 +190,11 @@ public class GeneralParams {
 	public static boolean IBDSYNC_LOGS = false;
 	
 	/**
+	 * Enable full logs for Block Info..
+	 */
+	public static boolean BLOCK_LOGS = false;
+	
+	/**
 	 * Do we LIMIT the bandwidth (-mobile)
 	 */
 	public static boolean ARCHIVESYNC_LIMIT_BANDWIDTH = false;
