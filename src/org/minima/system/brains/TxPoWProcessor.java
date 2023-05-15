@@ -177,9 +177,11 @@ public class TxPoWProcessor extends MessageProcessor {
 			}
 			
 			if(txpow.isBlock() && !validrange) {
-				MinimaLogger.log("Invalid range for block check @ "
-									+blknum+" root:"+rootnum+" tip:"+tipnum
-									+" txpowid:"+txpow.getTxPoWID());
+				if(GeneralParams.BLOCK_LOGS) {
+					MinimaLogger.log("Invalid range for block check @ "
+										+blknum+" root:"+rootnum+" tip:"+tipnum
+										+" txpowid:"+txpow.getTxPoWID());
+				}
 			}
 			
 			//Is it a block.. that is the only time we crunch
@@ -213,6 +215,11 @@ public class TxPoWProcessor extends MessageProcessor {
 								
 								//Add to the RAM DB
 								MinimaDB.getDB().getTxBlockDB().addTxBlock(txblock);
+								
+								//Shall we log it..
+								if(GeneralParams.BLOCK_LOGS) {
+									MinimaLogger.log("Added block to tree : "+txblock.getTxPoW().getBlockNumber()+" "+txblock.getTxPoW().getTxPoWID());
+								}
 								
 								//Send a message to everyone..
 								try {
@@ -324,9 +331,11 @@ public class TxPoWProcessor extends MessageProcessor {
 			}
 			
 			if(txpow.isBlock() && !validrange) {
-				MinimaLogger.log("Invalid range for txblock check slavemode @ "
-									+blknum+" root:"+rootnum+" tip:"+tipnum
-									+" txpowid:"+txpow.getTxPoWID());
+				if(GeneralParams.BLOCK_LOGS) {
+					MinimaLogger.log("Invalid range for txblock check slavemode @ "
+										+blknum+" root:"+rootnum+" tip:"+tipnum
+										+" txpowid:"+txpow.getTxPoWID());
+				}
 			}
 			
 			//Is it a block.. that is the only time we crunch
@@ -345,6 +354,11 @@ public class TxPoWProcessor extends MessageProcessor {
 						
 						//OK - Lets check this block
 						if(validblock) {
+							
+							//Shall we log it..
+							if(GeneralParams.BLOCK_LOGS) {
+								MinimaLogger.log("Added TxBlock to tree : "+trustedtxblock.getTxPoW().getBlockNumber()+" "+trustedtxblock.getTxPoW().getTxPoWID());
+							}
 							
 							//Create a new node - using the given TxBlock
 							TxPoWTreeNode newblock = new TxPoWTreeNode(trustedtxblock);
