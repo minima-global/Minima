@@ -78,6 +78,9 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_CLEANDB_SQL 	= "MAIN_CLEANDB_SQL";
 	long CLEANDB_SQL_TIMER	= 1000 * 60 * 60 * 12;
 	
+	public static final String MAIN_SYSTEMCLEAN 	= "MAIN_SYSTEMCLEAN";
+	long SYSTEMCLEAN_TIMER	= 1000 * 60 * 5;
+	
 	public static final String MAIN_AUTOBACKUP_MYSQL 	= "MAIN_AUTOBACKUP_MYSQL";
 	long MAIN_AUTOBACKUP_MYSQL_TIMER					= 1000 * 60 * 60 * 2;
 	
@@ -271,6 +274,9 @@ public class Main extends MessageProcessor {
 			PostTimerMessage(new TimerMessage(3 * 60 * 1000, MAIN_CLEANDB_RAM));
 		}
 		PostTimerMessage(new TimerMessage(10 * 60 * 1000, MAIN_CLEANDB_SQL));
+		
+		//System Clean..
+		PostTimerMessage(new TimerMessage(SYSTEMCLEAN_TIMER, MAIN_SYSTEMCLEAN));
 		
 		//Debug Checker
 		PostTimerMessage(new TimerMessage(CHECKER_TIMER, MAIN_CHECKER));
@@ -646,13 +652,18 @@ public class Main extends MessageProcessor {
 			//Post to the NIOManager - which will check it and forward if correct
 			getNetworkManager().getNIOManager().PostMessage(newniomsg);
 			
+		}else if(zMessage.getMessageType().equals(MAIN_SYSTEMCLEAN)) {
+			
+			//Do it again..
+			PostTimerMessage(new TimerMessage(SYSTEMCLEAN_TIMER, MAIN_SYSTEMCLEAN));
+			
+			//Clean up the RAM Memory
+			System.gc();
+			
 		}else if(zMessage.getMessageType().equals(MAIN_CLEANDB_RAM)) {
 			
 			//Do it again..
 			PostTimerMessage(new TimerMessage(CLEANDB_RAM_TIMER, MAIN_CLEANDB_RAM));
-			
-			//Clean up the RAM Memory
-			System.gc();
 			
 			//Do some house keeping on the DB
 			MinimaDB.getDB().getTxPoWDB().cleanDBRAM();
