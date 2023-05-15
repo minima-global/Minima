@@ -5,7 +5,6 @@ import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
-import org.minima.database.archive.TxBlockDB;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;

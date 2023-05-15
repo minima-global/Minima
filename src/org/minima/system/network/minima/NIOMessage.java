@@ -8,8 +8,6 @@ import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.minima.database.MinimaDB;
@@ -28,7 +26,6 @@ import org.minima.system.Main;
 import org.minima.system.brains.TxPoWChecker;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.brains.TxPoWSearcher;
-import org.minima.system.commands.base.newaddress;
 import org.minima.system.network.maxima.MaximaCTRLMessage;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaxTxPoW;
