@@ -112,7 +112,24 @@ public class Greeting implements Streamable {
 			return MiniNumber.MINUSONE;
 		}
 		
-		return mTopBlock.sub(new MiniNumber(mChain.size()-1));
+		//Check Upper Limit..
+		if(mTopBlock.isMore(MiniNumber.TRILLION)) {
+			//Something wrong here..
+			MinimaLogger.log("[!] Greeting TopBlock error topblock:"+mTopBlock+" ChainSize:"+mChain.size());
+			return MiniNumber.MINUSONE;
+		}
+		
+		MiniNumber rootblock = null;
+		try {
+			rootblock = mTopBlock.sub(new MiniNumber(mChain.size()-1));
+		}catch(NumberFormatException nfe) {
+			MinimaLogger.log(nfe);
+			MinimaLogger.log("Greeting calc root error.. topblock:"+mTopBlock+" ChainSize:"+mChain.size());
+		
+			throw nfe;
+		}
+		 
+		return rootblock;
 	}
 	
 	public ArrayList<MiniData> getChain(){
@@ -143,6 +160,7 @@ public class Greeting implements Streamable {
 		try {
 			mExtraData = (JSONObject)new JSONParser().parse(json.toString());
 		} catch (ParseException e) {
+			MinimaLogger.log(e);
 			mExtraData = new JSONObject();
 		}  		
 		
