@@ -669,7 +669,9 @@ public class MaximaManager extends MessageProcessor {
 			if(nioc.isOutgoing()) {
 				
 				if(mxhost != null) {
-					MinimaLogger.log("MAXIMA outgoing disconnection : "+nioc.getFullAddress()+" "+reconnect);
+					if(GeneralParams.MAXIMA_LOGS) {
+						MinimaLogger.log("MAXIMA outgoing disconnection : "+nioc.getFullAddress()+" "+reconnect);
+					}
 					nioc.setMaximaDisconnected();
 				}
 				
