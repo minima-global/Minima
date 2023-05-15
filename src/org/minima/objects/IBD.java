@@ -24,6 +24,11 @@ import org.minima.utils.Streamable;
 public class IBD implements Streamable {
 
 	/**
+	 * Maximum numbver of cblocks in an IBD
+	 */
+	public static final MiniNumber MAX_BLOCKS_FOR_IBD = new MiniNumber(34000);
+	
+	/**
 	 * The back end Cascade - only sent for a new user - can be null
 	 */
 	Cascade mCascade;
@@ -102,24 +107,53 @@ public class IBD implements Streamable {
 					//Did we find a block..
 					if(!found.isEqual(MiniNumber.MINUSONE)) {
 						
-						//Add the whole tree first
-						while(tip != null) {
-							mTxBlocks.add(0,tip.getTxBlock());
-							tip = tip.getParent();
+						//Check total..
+						boolean toobig = false;
+						MiniNumber total = myroot.sub(found);
+						if(total.isMore(MAX_BLOCKS_FOR_IBD)) {
+							
+							//Too big..
+							toobig = true;
 						}
 						
-						//And NOW - Load the range..
-						ArrayList<TxBlock> blocks = MinimaDB.getDB().getArchive().loadBlockRange(found, myroot);
-						
-						//Check not tooo many
-						if(blocks.size()>120000) {
-							MinimaLogger.log("Intersection found but User too far back to sync.. too many blocks "+blocks.size());
-							createCompleteIBD();
-						}else {
+						if(!toobig) {
+							
+							//Add the whole tree first
+							while(tip != null) {
+								mTxBlocks.add(0,tip.getTxBlock());
+								tip = tip.getParent();
+							}
+							
+							//And NOW - Load the range..
+							ArrayList<TxBlock> blocks = MinimaDB.getDB().getArchive().loadBlockRange(found, myroot);
 							for(TxBlock block : blocks) {
 								mTxBlocks.add(0,block);
 							}
+							
+						}else {
+							
+							MinimaLogger.log("Intersection found but User too far back to sync.. too many blocks:"+total+" max:"+MAX_BLOCKS_FOR_IBD);
+							createCompleteIBD();
 						}
+						
+//						//Add the whole tree first
+//						while(tip != null) {
+//							mTxBlocks.add(0,tip.getTxBlock());
+//							tip = tip.getParent();
+//						}
+//						
+//						//And NOW - Load the range..
+//						ArrayList<TxBlock> blocks = MinimaDB.getDB().getArchive().loadBlockRange(found, myroot);
+//						
+//						//Check not tooo many
+//						if(blocks.size()>34000) {	
+//							MinimaLogger.log("Intersection found but User too far back to sync.. too many blocks "+blocks.size()+" max:34000");
+//							createCompleteIBD();
+//						}else {
+//							for(TxBlock block : blocks) {
+//								mTxBlocks.add(0,block);
+//							}
+//						}
 						
 					}else {
 						MinimaLogger.log("No Archive blocks found to match New User.. ");
@@ -160,8 +194,6 @@ public class IBD implements Streamable {
 					
 					//Did we find it.. ?
 					if(found) {
-						
-						MinimaLogger.log("Crossover found @ "+foundblockID);
 						
 						//Send from then onwards as SyncBlocks..
 						tip = MinimaDB.getDB().getTxPoWTree().getTip();
@@ -432,8 +464,14 @@ public class IBD implements Streamable {
 		//And now write all the sync blocks.. if any
 		int len = mTxBlocks.size();
 		MiniNumber.WriteToStream(zOut, len);
-		for(TxBlock block : mTxBlocks) {
-			block.writeDataStream(zOut);
+		
+		try {
+			for(TxBlock block : mTxBlocks) {
+				block.writeDataStream(zOut);
+			}
+		}catch(OutOfMemoryError oom ) {
+			oom.printStackTrace();
+			MinimaLogger.log("OUT OF MEMORY on IBD size:"+len);
 		}
 	}
 
@@ -553,8 +591,6 @@ public class IBD implements Streamable {
 		BigInteger myweight;
 		BigInteger theirweight;
 		if(found) {
-			MinimaLogger.log("Intersection of chains found @ "+foundblockID);
-			
 			IBD mynew 		= createShortenedIBD(current, foundblockID);
 			myweight 		= mynew.getTotalWeight();
 			

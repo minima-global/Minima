@@ -689,7 +689,7 @@ public class TxPoWProcessor extends MessageProcessor {
 					
 				}else {
 					//Received a cascade when we already have one.. ignore..
-					MinimaLogger.log("WARNING Received cascade when already have one from "+uid);
+					//MinimaLogger.log("WARNING Received cascade when already have one from "+uid);
 				}
 			}
 			

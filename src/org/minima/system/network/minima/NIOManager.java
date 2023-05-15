@@ -732,30 +732,63 @@ public class NIOManager extends MessageProcessor {
 	
 	public static MiniData createNIOMessage(MiniByte zType, Streamable zObject) throws IOException {
 		
-		//Create a stream to write to
-		ByteArrayOutputStream baos 	= new ByteArrayOutputStream();
-		DataOutputStream dos 		= new DataOutputStream(baos);
+		try {
+			//Create a stream to write to
+			ByteArrayOutputStream baos 	= new ByteArrayOutputStream();
+			DataOutputStream dos 		= new DataOutputStream(baos);
+			
+			//write the type
+			zType.writeDataStream(dos);
+			
+			//Write the Object
+			zObject.writeDataStream(dos);
+			
+			//Flush it..
+			dos.flush();
+			
+			//Convert to byte array
+			byte[] bb = baos.toByteArray();
+			
+			//Close all..
+			dos.close();
+			baos.close();
+			
+			//request it..
+			MiniData data = new MiniData(bb);
+			
+			return data;
+			
+		}catch(OutOfMemoryError oom ) {
+			oom.printStackTrace();
+			MinimaLogger.log("OUT OF MEMORY.. on create NIOMsssage:"+NIOMessage.convertMessageType(zType));
+		}
 		
-		//write the type
-		zType.writeDataStream(dos);
+		throw new IOException("Out Of Memory..");
 		
-		//Write the Object
-		zObject.writeDataStream(dos);
-		
-		//Flush it..
-		dos.flush();
-		
-		//Convert to byte array
-		byte[] bb = baos.toByteArray();
-		
-		//Close all..
-		dos.close();
-		baos.close();
-		
-		//request it..
-		MiniData data = new MiniData(bb);
-		
-		return data;
+//		//Create a stream to write to
+//		ByteArrayOutputStream baos 	= new ByteArrayOutputStream();
+//		DataOutputStream dos 		= new DataOutputStream(baos);
+//		
+//		//write the type
+//		zType.writeDataStream(dos);
+//		
+//		//Write the Object
+//		zObject.writeDataStream(dos);
+//		
+//		//Flush it..
+//		dos.flush();
+//		
+//		//Convert to byte array
+//		byte[] bb = baos.toByteArray();
+//		
+//		//Close all..
+//		dos.close();
+//		baos.close();
+//		
+//		//request it..
+//		MiniData data = new MiniData(bb);
+//		
+//		return data;
 	}
 	
 	/**
