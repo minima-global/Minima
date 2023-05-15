@@ -5,7 +5,6 @@ import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
-import org.minima.database.archive.TxBlockDB;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
@@ -177,9 +176,11 @@ public class TxPoWProcessor extends MessageProcessor {
 			}
 			
 			if(txpow.isBlock() && !validrange) {
-				MinimaLogger.log("Invalid range for block check @ "
-									+blknum+" root:"+rootnum+" tip:"+tipnum
-									+" txpowid:"+txpow.getTxPoWID());
+				if(GeneralParams.BLOCK_LOGS) {
+					MinimaLogger.log("Invalid range for block check @ "
+										+blknum+" root:"+rootnum+" tip:"+tipnum
+										+" txpowid:"+txpow.getTxPoWID());
+				}
 			}
 			
 			//Is it a block.. that is the only time we crunch
@@ -213,6 +214,11 @@ public class TxPoWProcessor extends MessageProcessor {
 								
 								//Add to the RAM DB
 								MinimaDB.getDB().getTxBlockDB().addTxBlock(txblock);
+								
+								//Shall we log it..
+								if(GeneralParams.BLOCK_LOGS) {
+									MinimaLogger.log("Added block to tree : "+txblock.getTxPoW().getBlockNumber()+" "+txblock.getTxPoW().getTxPoWID());
+								}
 								
 								//Send a message to everyone..
 								try {
@@ -324,9 +330,11 @@ public class TxPoWProcessor extends MessageProcessor {
 			}
 			
 			if(txpow.isBlock() && !validrange) {
-				MinimaLogger.log("Invalid range for txblock check slavemode @ "
-									+blknum+" root:"+rootnum+" tip:"+tipnum
-									+" txpowid:"+txpow.getTxPoWID());
+				if(GeneralParams.BLOCK_LOGS) {
+					MinimaLogger.log("Invalid range for txblock check slavemode @ "
+										+blknum+" root:"+rootnum+" tip:"+tipnum
+										+" txpowid:"+txpow.getTxPoWID());
+				}
 			}
 			
 			//Is it a block.. that is the only time we crunch
@@ -345,6 +353,11 @@ public class TxPoWProcessor extends MessageProcessor {
 						
 						//OK - Lets check this block
 						if(validblock) {
+							
+							//Shall we log it..
+							if(GeneralParams.BLOCK_LOGS) {
+								MinimaLogger.log("Added TxBlock to tree : "+trustedtxblock.getTxPoW().getBlockNumber()+" "+trustedtxblock.getTxPoW().getTxPoWID());
+							}
 							
 							//Create a new node - using the given TxBlock
 							TxPoWTreeNode newblock = new TxPoWTreeNode(trustedtxblock);
@@ -676,7 +689,7 @@ public class TxPoWProcessor extends MessageProcessor {
 					
 				}else {
 					//Received a cascade when we already have one.. ignore..
-					MinimaLogger.log("WARNING Received cascade when already have one from "+uid);
+					//MinimaLogger.log("WARNING Received cascade when already have one from "+uid);
 				}
 			}
 			

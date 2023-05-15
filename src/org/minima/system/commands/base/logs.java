@@ -3,7 +3,6 @@ package org.minima.system.commands.base;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.minima.system.brains.TimedChecker;
 import org.minima.system.commands.Command;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.json.JSONObject;
@@ -88,9 +87,9 @@ public class logs extends Command {
 		if(existsParam("blocks")) {
 			String mining = getParam("blocks", "false");
 			if(mining.equals("true")) {
-				TimedChecker.LOG_BLOCK_CHECK_TIME = true;
+				GeneralParams.BLOCK_LOGS = true;
 			}else {
-				TimedChecker.LOG_BLOCK_CHECK_TIME = false;
+				GeneralParams.BLOCK_LOGS = false;
 			}
 		}
 		
@@ -118,7 +117,7 @@ public class logs extends Command {
 		resp.put("scripts", GeneralParams.SCRIPTLOGS);
 		resp.put("mining", GeneralParams.MINING_LOGS);
 		resp.put("maxima", GeneralParams.MAXIMA_LOGS);
-		resp.put("blocks", TimedChecker.LOG_BLOCK_CHECK_TIME);
+		resp.put("blocks", GeneralParams.BLOCK_LOGS);
 		resp.put("networking", GeneralParams.NETWORKING_LOGS);
 		resp.put("ibd", GeneralParams.IBDSYNC_LOGS);
 		

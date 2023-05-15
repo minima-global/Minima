@@ -151,7 +151,7 @@ public class GeneralParams {
 	/**
 	 * How many days do you archive the TxBlocks to resync Users
 	 */
-	public static long NUMBER_DAYS_ARCHIVE = 60;
+	public static long NUMBER_DAYS_ARCHIVE = 30;
 	
 	/**
 	 * Number of seconds before sending a pulse message - every 10 minutes
@@ -188,6 +188,11 @@ public class GeneralParams {
 	 * Enable full logs for IBD SYNC..
 	 */
 	public static boolean IBDSYNC_LOGS = false;
+	
+	/**
+	 * Enable full logs for Block Info..
+	 */
+	public static boolean BLOCK_LOGS = false;
 	
 	/**
 	 * Do we LIMIT the bandwidth (-mobile)
