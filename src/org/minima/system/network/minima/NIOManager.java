@@ -359,28 +359,43 @@ public class NIOManager extends MessageProcessor {
 			//Do we try to reconnect
 			boolean reconnect = true;
 			
-			//Do we attempt a reconnect..
-			if(nc.getConnectAttempts() > RECONNECT_ATTEMPTS) {
-				//Do we have ANY connections at all..
-				ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
-				if(conns.size()>0) {
+			//Are we in slave mode..
+			if(GeneralParams.TXBLOCK_NODE) {
+				
+				if(nc.getConnectAttempts() > RECONNECT_ATTEMPTS) {
 					
-					//No reconnect
-					reconnect = false;
+					//Always attempts to reconnect
+					MinimaLogger.log("INFO : Slave node attempt reconnect.. "+nc.getFullAddress());
 					
-					//Tell the P2P..
-					Message newconn = new Message(P2PFunctions.P2P_NOCONNECT);
-					newconn.addObject("client", nc);
-					newconn.addString("uid", nc.getUID());
-					mNetworkManager.getP2PManager().PostMessage(newconn);
-					
-					MinimaLogger.log("INFO : "+nc.getUID()+"@"+nc.getFullAddress()+" connection failed - no more reconnect attempts ");
-					
-				}else {
-					MinimaLogger.log("INFO : "+nc.getUID()+"@"+nc.getFullAddress()+" Resetting reconnect attempts (no other connections) for "+nc.getFullAddress());
-					
-					//reset connect attempts..
+					//We definitely have to reconnect..
 					nc.setConnectAttempts(1);
+				}
+				
+			}else{
+				
+				//Do we attempt a reconnect..
+				if(nc.getConnectAttempts() > RECONNECT_ATTEMPTS) {
+					//Do we have ANY connections at all..
+					ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+					if(conns.size()>0) {
+						
+						//No reconnect
+						reconnect = false;
+						
+						//Tell the P2P..
+						Message newconn = new Message(P2PFunctions.P2P_NOCONNECT);
+						newconn.addObject("client", nc);
+						newconn.addString("uid", nc.getUID());
+						mNetworkManager.getP2PManager().PostMessage(newconn);
+						
+						MinimaLogger.log("INFO : "+nc.getUID()+"@"+nc.getFullAddress()+" connection failed - no more reconnect attempts ");
+						
+					}else {
+						MinimaLogger.log("INFO : "+nc.getUID()+"@"+nc.getFullAddress()+" Resetting reconnect attempts (no other connections) for "+nc.getFullAddress());
+						
+						//reset connect attempts..
+						nc.setConnectAttempts(1);
+					}
 				}
 			}
 			
