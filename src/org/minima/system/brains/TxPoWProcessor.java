@@ -331,7 +331,7 @@ public class TxPoWProcessor extends MessageProcessor {
 			
 			if(txpow.isBlock() && !validrange) {
 				if(GeneralParams.BLOCK_LOGS) {
-					MinimaLogger.log("Invalid range for txblock check slavemode @ "
+					MinimaLogger.log("[!] Invalid range for txblock check slavemode @ "
 										+blknum+" root:"+rootnum+" tip:"+tipnum
 										+" txpowid:"+txpow.getTxPoWID());
 				}
