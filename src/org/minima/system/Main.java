@@ -305,7 +305,7 @@ public class Main extends MessageProcessor {
 				Runtime.getRuntime().exit(1);
 			}
 			
-			MinimaLogger.log("Running in slave mode. Connected to "+GeneralParams.CONNECT_LIST);
+			MinimaLogger.log("Running in slave mode. Will Connect to "+GeneralParams.CONNECT_LIST);
 		}
 	}
 	

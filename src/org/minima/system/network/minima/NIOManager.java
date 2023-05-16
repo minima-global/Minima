@@ -274,8 +274,6 @@ public class NIOManager extends MessageProcessor {
 					if(msg == null) {
 						MinimaLogger.log("ERROR connect host specified incorrectly : "+host);
 					}else {
-//						PostMessage(msg);
-						
 						//Wait 10 secs and then connect
 						PostTimerMessage(new TimerMessage(10000, msg));
 					}
