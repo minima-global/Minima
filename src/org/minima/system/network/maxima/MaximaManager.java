@@ -245,6 +245,12 @@ public class MaximaManager extends MessageProcessor {
 		
 		//Save this..
 		MinimaDB.getDB().saveUserDB();
+		
+		if(zStatic) {
+			MinimaLogger.log("Enable STATIC MLS to host : "+zStaticAddress);
+		}else {
+			MinimaLogger.log("Disable STATIC MLS");
+		}
 	}
 	
 	private void savePermanentUDB() {
@@ -397,7 +403,6 @@ public class MaximaManager extends MessageProcessor {
 				mMaximaMLSAddress = Address.makeMinimaAddress(mMLSPublic);
 			}
 			
-			//Are we using a Static MLS
 			mIsStaticMLS 	= udb.getBoolean(MAXIMA_ISSTATICMLS, false);
 			mStaticMLS		= udb.getString(MAXIMA_STATICMLS, "");
 			if(mIsStaticMLS) {
@@ -758,7 +763,9 @@ public class MaximaManager extends MessageProcessor {
 			getContactsManager().PostMessage(update);
 			
 			//Log it..
-			MinimaLogger.log("MLSGET address updated for "+contact.getName()+" "+contact.getCurrentAddress());
+			if(GeneralParams.MAXIMA_LOGS) {
+				MinimaLogger.log("MLSGET address updated for "+contact.getName()+" "+contact.getCurrentAddress());
+			}
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_RECMESSAGE)) {
 			
@@ -948,10 +955,10 @@ public class MaximaManager extends MessageProcessor {
 					
 					//Are we in slave mode..
 					if(GeneralParams.TXBLOCK_NODE) {
+						MinimaLogger.log("Slave Node force set STATIC MLS");
 						
 						//Set this as static MLS
 						setStaticMLS(true, niocmls);
-						MinimaLogger.log("Setting STATIC MLS to : "+niocmls);
 					}
 				}
 				

@@ -249,10 +249,10 @@ public class Main extends MessageProcessor {
 		
 		//Start the networking..
 		mNetwork = new NetworkManager();
-		
+				
 		//Start up Maxima
 		mMaxima = new MaximaManager();
-		
+				
 		//Start MDS
 		mMDS = new MDSManager();
 		

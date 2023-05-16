@@ -274,7 +274,10 @@ public class NIOManager extends MessageProcessor {
 					if(msg == null) {
 						MinimaLogger.log("ERROR connect host specified incorrectly : "+host);
 					}else {
-						PostMessage(msg);
+//						PostMessage(msg);
+						
+						//Wait 10 secs and then connect
+						PostTimerMessage(new TimerMessage(10000, msg));
 					}
 				}
 			}
@@ -329,7 +332,13 @@ public class NIOManager extends MessageProcessor {
 			//Is it still in the list..
 			if(!mConnectingClients.containsKey(nc.getUID())) {
 				//Has been removed.. stop trying to connect
+				MinimaLogger.log("Connect attempt to "+nc.getFullAddress()+" cancelled.. (removed from connecting clients)");
 				return;
+			}
+			
+			//Logs..
+			if(GeneralParams.TXBLOCK_NODE) {
+				MinimaLogger.log("Slave Node Connect attempt to "+nc.getFullAddress());
 			}
 			
 //			//How many connections - if too many stop.. 
@@ -422,7 +431,6 @@ public class NIOManager extends MessageProcessor {
 		}else if(zMessage.getMessageType().equals(NIO_DISCONNECTALL)) {
 			
 			//Disconnect from all the clients..!
-			
 			Enumeration<NIOClient> clients = mConnectingClients.elements();
 			while(clients.hasMoreElements()) {
 				NIOClient nc = clients.nextElement();
@@ -463,6 +471,11 @@ public class NIOManager extends MessageProcessor {
 			//Is it a vaid client..
 			if(!nioc.isValidGreeting()) {
 				reconnect = false;
+			}
+			
+			//Slave node logs
+			if(GeneralParams.TXBLOCK_NODE) {
+				MinimaLogger.log("SLAVE NODE DISCONNECTED.. reconnect:"+reconnect);
 			}
 			
 			//Lost a connection
@@ -692,7 +705,7 @@ public class NIOManager extends MessageProcessor {
 					
 				}catch(Exception exc) {
 					//Try again in a minute..
-//					MinimaLogger.log(zNIOClient.getUID()+" INFO : connecting attempt "+zNIOClient.getConnectAttempts()+" to "+zNIOClient.getHost()+":"+zNIOClient.getPort()+" "+exc.toString());
+					MinimaLogger.log(zNIOClient.getUID()+" INFO : connecting attempt "+zNIOClient.getConnectAttempts()+" to "+zNIOClient.getHost()+":"+zNIOClient.getPort()+" "+exc.toString());
 					
 					//Do we try to reconnect
 					Message reconn = new Message(NIO_RECONNECT);

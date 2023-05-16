@@ -56,7 +56,12 @@ public class peers extends Command {
 
 		//Is the P2P Enable..
 		if(!GeneralParams.P2P_ENABLED) {
-			throw new CommandException("P2P System not enabled");
+			JSONObject resp = new JSONObject();
+			resp.put("peers-list", "[]");
+			resp.put("havepeers",false);
+			resp.put("p2penabled",false);
+			ret.put("response", resp);
+			return ret;
 		}
 		
 		//Are we adding a peer..
@@ -80,6 +85,8 @@ public class peers extends Command {
 			
 			JSONObject resp = new JSONObject();
 			resp.put("peers-list", InetSocketAddressIO.addressesListToJSONArray(peers));
+			resp.put("havepeers",p2PManager.haveAnyPeers());
+			resp.put("p2penabled",true);
 			ret.put("response", resp);
 			
 		}else if(action.equals("addpeers")) {
