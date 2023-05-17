@@ -1,0 +1,142 @@
+<html>
+
+<head>
+	<!--   The MINIMA MDS Javascript Library -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<title>HTLC Rescue</title>
+</head>
+
+<script type="text/javascript">
+	
+	var SAFE_ADDRESS = "";
+	
+	//Show a single row of coin details
+	function showCoinDetails(coin, age, tablerow){
+		
+		var tablecell1 	= tablerow.insertCell(0);
+		var tablecell2 	= tablerow.insertCell(1);
+		
+		var state3 		= MDS.util.getStateVariable(coin,3);
+		
+		if(state3 == undefined){
+			tablecell1.innerHTML = "";	
+		}else{
+			
+			//Check is one of your coins..
+			MDS.cmd("keys action:list publickey:"+state3,function(keysresp){
+				
+				//Is it one of ours..
+				if(keysresp.response.keys.length>0){
+					tablecell1.innerHTML = "HTLC Coin found age:"+age+" amount:"+coin.amount;
+					
+					if(age<10){
+						tablecell2.innerHTML = "NOT OLD ENOUGH";
+					}else{
+						tablecell2.innerHTML = '<button onclick="rescuecoin(\''+coin.coinid+'\',\''+coin.amount+'\',\''+state3+'\')">RESCUE</button>';	
+					}
+					
+				}else{
+					tablecell1.innerHTML = "Coin NOT HTLC..";
+				}
+			});	
+		}
+	}
+	
+	//Load all coins..
+	function loadHTLCCoins(){
+		
+		MDS.cmd("getaddress;block;coins relevant:true",function(resp){
+			
+			//Get the address
+			SAFE_ADDRESS = resp[0].response.address;
+			
+			//First get the block time..
+			var blocktime = resp[1].response.block;
+			
+			var thetable 	= document.getElementById("myhtlc");
+			thetable.innerHTML = "";
+			
+			var coins 	= resp[2].response;
+			var len 	= coins.length; 
+			for(var i=0;i<len;i++){
+				var coin 		= coins[i];
+				var tablerow 	= thetable.insertRow(i);
+				var age	 		= blocktime - coin.created;
+				
+				//Are there 3 state variables..
+				if(coin.state.length==3 || true){
+					
+					//Print out coin details
+					showCoinDetails(coin, age, tablerow);
+				}
+			}
+		});	
+	}
+	
+	//Rescue a coin
+	function rescuecoin(coinid, amount, publickey){
+		
+		MDS.log("RESCUE : "+coinid+" "+amount+" "+publickey);
+		
+		if(confirm("Are you sure you wish to rescue this coin ?")){
+			
+			//Random name
+			var txnname = "rescue_"+(Math.random()*100000);
+			
+			//Create the command..
+			var cmd = 	"txncreate id:"+txnname+";"+
+						"txninput id:"+txnname+" coinid:"+coinid+";"+
+						"txnoutput id:"+txnname+" amount:"+amount+" address:"+SAFE_ADDRESS+";"+
+						"txnstate id:"+txnname+" port:0 value:0xFF;"+
+						"txnsign id:"+txnname+" publickey:"+publickey+" txnpostauto:true txndelete:true;";
+						
+			//Now run that command
+			MDS.cmd(cmd,function(resp){
+				MDS.log(JSON.stringify(resp));
+				
+				if(resp[4].pending){
+					alert("TXN now Pending.. !");	
+				}else{
+					if(resp[4].status){
+						alert("Coin rescued..!");	
+					}else{
+						alert("Something went wrong.. check logs..");
+					}	
+				}
+			});			
+		}
+	}
+	
+</script>
+
+<body style='margin:0;'>
+
+<center>
+
+<br>
+<h1>HTLC Coin Rescue</h1>
+
+<table id="myhtlc"></table>
+
+<br>
+You can rescue stuck coins here. 
+
+</center>
+
+<script type="text/javascript">
+	
+	//Initialise MiFi
+	MDS.init(function(msg){
+		if(msg.event == "inited"){
+			loadHTLCCoins();
+		}else if(msg.event == "NEWBALANCE"){
+			loadHTLCCoins();
+		}
+	});
+	
+</script>
+
+</body>
+
+</html>
