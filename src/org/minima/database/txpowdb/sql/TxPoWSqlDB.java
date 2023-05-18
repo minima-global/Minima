@@ -82,7 +82,7 @@ public class TxPoWSqlDB extends SqlDB {
 			SQL_DELETE_TXPOW	= mSQLConnection.prepareStatement("DELETE FROM txpow WHERE timemilli < ? AND isrelevant=0");
 			SQL_EXISTS			= mSQLConnection.prepareStatement("SELECT txpowid FROM txpow WHERE txpowid=?");
 		
-			SQL_SELECT_RELEVANT = mSQLConnection.prepareStatement("SELECT * FROM txpow WHERE isrelevant=1 LIMIT 200");
+			SQL_SELECT_RELEVANT = mSQLConnection.prepareStatement("SELECT * FROM txpow WHERE isrelevant=1 ORDER BY timemilli DESC LIMIT ?");
 	}
 	
 	public void wipeDB() throws SQLException {
@@ -211,12 +211,15 @@ public class TxPoWSqlDB extends SqlDB {
 		return txpows;
 	}
 	
-	public synchronized ArrayList<TxPoW> getAllRelevant() {
+	public synchronized ArrayList<TxPoW> getAllRelevant(int zLimit) {
 		ArrayList<TxPoW> txpows = new ArrayList<>();
 
 		try {
 			//Get the query ready
 			SQL_SELECT_RELEVANT.clearParameters();
+			
+			//Set the Limit..
+			SQL_SELECT_RELEVANT.setInt(1, zLimit);
 			
 			//Run the query
 			ResultSet rs = SQL_SELECT_RELEVANT.executeQuery();

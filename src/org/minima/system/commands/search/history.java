@@ -1,6 +1,7 @@
 package org.minima.system.commands.search;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -18,14 +19,37 @@ import org.minima.utils.json.JSONObject;
 public class history extends Command {
 
 	public history() {
-		super("history","Search for all relevant TxPoW");
+		super("history","(max:) - Search for all relevant TxPoW");
+	}
+	
+	@Override
+	public String getFullHelp() {
+		return "\nhistory\n"
+				+ "\n"
+				+ "Return all TxPoW relevant to you.\n"
+				+ "\n"
+				+ "max: (optional)\n"
+				+ "    Maximum number of TxPoW to retrieve.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "history\n"
+				+ "\n"
+				+ "history max:20\n";
+	}
+	
+	@Override
+	public ArrayList<String> getValidParams(){
+		return new ArrayList<>(Arrays.asList(new String[]{"max"}));
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception{
 		JSONObject ret = getJSONReply();
-			
-		ArrayList<TxPoW> txps = MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant();
+		
+		int max = getNumberParam("max",MiniNumber.THOUSAND).getAsInt();
+		
+		ArrayList<TxPoW> txps = MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant(max);
 		
 		JSONArray txns 			= new JSONArray();
 		JSONArray txndetails 	= new JSONArray();

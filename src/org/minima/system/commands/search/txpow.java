@@ -17,7 +17,7 @@ import org.minima.utils.json.JSONObject;
 public class txpow extends Command {
 
 	public txpow() {
-		super("txpow","(txpowid:) (onchain:) (block:) (address:) (relevant:) - Search for a specific TxPoW or check for onchain");
+		super("txpow","(txpowid:) (onchain:) (block:) (address:) (relevant:) (max:) - Search for a specific TxPoW or check for onchain");
 	}
 	
 	@Override
@@ -37,6 +37,9 @@ public class txpow extends Command {
 				+ "address: (optional)\n"
 				+ "    0x or Mx address. Search for TxPoWs containing this specific address.\n"
 				+ "\n"
+				+ "max: (optional)\n"
+				+ "    Max relevant TxPoW to retrieve.\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "txpow txpowid:0x000..\n"
@@ -48,7 +51,7 @@ public class txpow extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"txpowid","block","address","onchain","relevant"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"txpowid","block","address","onchain","relevant","max"}));
 	}
 	
 	@Override
@@ -69,7 +72,9 @@ public class txpow extends Command {
 			
 		}else if(existsParam("relevant")) {
 			
-			ArrayList<TxPoW> txps = MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant();
+			int max = getNumberParam("max",MiniNumber.THOUSAND).getAsInt();
+			
+			ArrayList<TxPoW> txps = MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant(max);
 			
 			JSONArray txns = new JSONArray();
 			for(TxPoW txp : txps) {
