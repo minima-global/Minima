@@ -47,7 +47,7 @@ public class history extends Command {
 	public JSONObject runCommand() throws Exception{
 		JSONObject ret = getJSONReply();
 		
-		int max = getNumberParam("max",MiniNumber.THOUSAND).getAsInt();
+		int max = getNumberParam("max",MiniNumber.HUNDRED).getAsInt();
 		
 		ArrayList<TxPoW> txps = MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant(max);
 		

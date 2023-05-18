@@ -173,7 +173,7 @@ public class backup extends Command {
 			MiniData p2pdata = new MiniData(MiniFile.readCompleteFile(p2pdb));
 			
 			//Store the relevant TxPoWs..
-			int max = getNumberParam("maxhistory",MiniNumber.THOUSAND).getAsInt();
+			int max = getNumberParam("maxhistory",MiniNumber.HUNDRED).getAsInt();
 			ArrayList<TxPoW> txps 	= MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant(max);
 			TxPoWList txplist 	 	= new TxPoWList(txps);
 			MiniData txplistdata 	= MiniData.getMiniDataVersion(txplist);
