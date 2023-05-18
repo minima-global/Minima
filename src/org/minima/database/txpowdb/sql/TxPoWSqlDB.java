@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SqlDB;
@@ -20,7 +21,12 @@ public class TxPoWSqlDB extends SqlDB {
 	/**
 	 * How long does data remain the SQL DB in milli seconds
 	 */
-	public long MAX_SQL_MILLI = 1000 * 60 * 60 * 24 * GeneralParams.NUMBER_DAYS_SQLTXPOWDB;
+	public static long MAX_SQL_MILLI = 1000 * 60 * 60 * 24 * GeneralParams.NUMBER_DAYS_SQLTXPOWDB;
+	
+	/**
+	 * The default MAX Relevant TxPoW
+	 */
+	public static MiniNumber MAX_RELEVANT_TXPOW = MiniNumber.HUNDRED;
 	
 	/**
 	 * Prepared SQL statements

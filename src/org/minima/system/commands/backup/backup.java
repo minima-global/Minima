@@ -15,6 +15,7 @@ import javax.crypto.CipherOutputStream;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowdb.sql.TxPoWList;
+import org.minima.database.txpowdb.sql.TxPoWSqlDB;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -173,7 +174,7 @@ public class backup extends Command {
 			MiniData p2pdata = new MiniData(MiniFile.readCompleteFile(p2pdb));
 			
 			//Store the relevant TxPoWs..
-			int max = getNumberParam("maxhistory",MiniNumber.HUNDRED).getAsInt();
+			int max = getNumberParam("maxhistory",TxPoWSqlDB.MAX_RELEVANT_TXPOW).getAsInt();
 			ArrayList<TxPoW> txps 	= MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant(max);
 			TxPoWList txplist 	 	= new TxPoWList(txps);
 			MiniData txplistdata 	= MiniData.getMiniDataVersion(txplist);

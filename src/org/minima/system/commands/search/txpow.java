@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.txpowdb.sql.TxPoWSqlDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
@@ -72,7 +73,7 @@ public class txpow extends Command {
 			
 		}else if(existsParam("relevant")) {
 			
-			int max = getNumberParam("max",MiniNumber.HUNDRED).getAsInt();
+			int max = getNumberParam("max",TxPoWSqlDB.MAX_RELEVANT_TXPOW).getAsInt();
 			
 			ArrayList<TxPoW> txps = MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant(max);
 			

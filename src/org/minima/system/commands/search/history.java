@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.txpowdb.sql.TxPoWSqlDB;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
@@ -47,7 +48,7 @@ public class history extends Command {
 	public JSONObject runCommand() throws Exception{
 		JSONObject ret = getJSONReply();
 		
-		int max = getNumberParam("max",MiniNumber.HUNDRED).getAsInt();
+		int max = getNumberParam("max",TxPoWSqlDB.MAX_RELEVANT_TXPOW).getAsInt();
 		
 		ArrayList<TxPoW> txps = MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant(max);
 		
