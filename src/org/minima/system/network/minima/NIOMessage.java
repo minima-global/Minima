@@ -764,6 +764,14 @@ public class NIOMessage implements Runnable {
 				//Now check for intersection
 				boolean found = false;
 				ArrayList<MiniData> pulsemsg = pulse.getBlockList();
+				
+				//Check within limits..
+				if(pulsemsg.size()>1000) {
+					//Too many..!
+					MinimaLogger.log("Too mnay messages in PULSE "+pulsemsg.size()+" max:1000");
+					return;
+				}
+				
 				int counter=0;
 				for(MiniData block : pulsemsg) {
 					
