@@ -852,25 +852,4 @@ public class Wallet extends SqlDB {
 		//Run the query
 		SQL_UPDATE_INC_ALL_KEY_USES.execute();
 	}
-	
-	public static void main(String[] zArgs) throws SQLException {
-		
-		Wallet wal = new Wallet();
-		
-		wal.loadDB(new File("C:\\Users\\spartacusrex\\.minima\\1.0\\databases\\walletsql\\wallet.mv.db"));
-		
-		SeedRow base = wal.getBaseSeed();
-		
-		System.out.println("BASE:"+base.toJSON().toString());
-		
-		wal.wipeBaseSeedRow();
-//		
-//		base = wal.getBaseSeed();
-//		
-//		System.out.println("WIPE:"+base.toJSON().toString());
-		
-		wal.saveDB(true);
-		
-		
-	}
 }
