@@ -612,6 +612,11 @@ public class MaximaManager extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(MAXIMA_CHECK_CONNECTED)) {
 			
+			//Don't do this if in SLAVE mode
+			if(GeneralParams.TXBLOCK_NODE) {
+				return;
+			}
+			
 			//Check that IF this host is connected to us - it is a valid Maxima host
 			String uid = zMessage.getString("uid");
 			
