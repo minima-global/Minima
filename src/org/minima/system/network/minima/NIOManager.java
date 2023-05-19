@@ -29,6 +29,7 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
+import org.minima.system.commands.base.logs;
 import org.minima.system.commands.network.connect;
 import org.minima.system.network.NetworkManager;
 import org.minima.system.network.maxima.MaximaManager;
@@ -473,9 +474,26 @@ public class NIOManager extends MessageProcessor {
 				reconnect = false;
 			}
 			
+			//Is it incoming..
+			if(nioc.isIncoming()) {
+				reconnect = false;
+			}
+			
 			//Slave node logs
 			if(GeneralParams.TXBLOCK_NODE) {
-				MinimaLogger.log("SLAVE NODE DISCONNECTED.. reconnect:"+reconnect);
+				if(zMessage.exists("reconnect")) {
+					MinimaLogger.log("SLAVE NODE disconneced.. from:"+nioc.getUID()+" req:"+zMessage.getBoolean("reconnect")+" reconnect:"+reconnect+" validgreeting:"+nioc.isValidGreeting()+" host:"+nioc.getFullAddress()+" incoming:"+nioc.isIncoming());
+				}else {
+					MinimaLogger.log("SLAVE NODE disconneced.. from:"+nioc.getUID()+" reconnect:"+reconnect+" validgreeting:"+nioc.isValidGreeting()+" host:"+nioc.getFullAddress()+" incoming:"+nioc.isIncoming());
+				}
+				
+				//Are we still connected..
+				if(nioc.isOutgoing() && checkConnected(nioc.getFullAddress(), true) == null) {
+					if(reconnect == false) {
+						MinimaLogger.log("FORCE Slave reconnect "+nioc.getUID()+" "+nioc.getFullAddress());
+						reconnect = true;
+					}
+				}
 			}
 			
 			//Lost a connection
@@ -723,6 +741,19 @@ public class NIOManager extends MessageProcessor {
 	 * Disconnect a client
 	 */
 	public void disconnect(String zClientUID) {
+		
+		//Logs
+		if(GeneralParams.TXBLOCK_NODE) {
+			try {
+				if(true) {
+					throw new Exception("Show Disconnect Stack Trace");
+				}
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
+		}
+		
+		
 		Message msg = new Message(NIOManager.NIO_DISCONNECT).addString("uid", zClientUID);
 		PostMessage(msg);
 	}
