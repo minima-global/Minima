@@ -341,6 +341,7 @@ public class restoresync extends Command {
 		int counter = 0;
 		MinimaLogger.log("System clean..");
 		System.gc();
+		IBD ibd = null;
 		while(true) {
 			
 			//We don't need any transactions in RamDB
@@ -353,7 +354,7 @@ public class restoresync extends Command {
 			}
 			
 			//Send him a message..
-			IBD ibd = archive.sendArchiveReq(host, port, startblock);
+			ibd = archive.sendArchiveReq(host, port, startblock);
 			if(ibd == null) {
 				MinimaLogger.log("No blocks returned..");
 				ibd = new IBD();
