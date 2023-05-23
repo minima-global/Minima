@@ -6,7 +6,7 @@
 	<script type="text/javascript" src="minihub.js"></script>
 	<link rel="stylesheet" type="text/css" href="minihub.css">
 	
-	<title>MiniHUB</title>
+	<title>Install MiniDAPP</title>
 </head>
 
 <script type="text/javascript">
@@ -28,18 +28,11 @@
        <table border="0">
        	<tbody><tr>
        		<td>
-				<form action="pending.html" method="POST">
-					<input type="hidden" name="sessionid" value="0x3111B86169358D45E3588DA8092420C555A641608F6DCCBFC7A5078EBF540171">
-					<input class="solobutton" style="width:200;" onclick="this.form.submit(); this.disabled=true;" type="submit" value="Pending Actions">
+				<form action="index.html" method="POST">
+					<input class="solobutton" style="width:200;" onclick="this.form.submit(); this.disabled=true;" type="submit" value="Main Menu">
 				</form>
 			</td>
        		
-       		<td>
-				<form action="logoff.html" method="POST">
-					<input class="solobutton" style="width:100;" onclick="this.form.submit(); this.disabled=true;" type="submit" value="Log Off">
-				</form>
-			</td>
-			
        	</tr></tbody>
        </table>
       	
@@ -57,29 +50,9 @@
 	MDS.init(function(msg){
 		if(msg.event == "inited"){
 			
-			//Run MDS
-			MDS.cmd("mds",function(resp){
-				
-				//Get the MiniDAPPs
-				var minidapps 	= resp.response.minidapps;
-				var len 		= minidapps.length
-				
-				//Get the list
-				var mlist = document.getElementById("mainlist");
-				for(var i=0;i<len;i++){
-					addMiniDAPP(mlist,minidapps[i]);
-				}
-				
-				//Add gap..
-				var node=document.createElement("li");
-				node.appendChild(document.createTextNode("\u00A0"));
-				mlist.appendChild(node);
-				
-				//Add Install MiniDApp..
-				node=document.createElement("li");
-				writeInstall(node);
-				mlist.appendChild(node);
-			});
+			//Get the file..
+			
+			
 		}
 	});
 	
