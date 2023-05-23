@@ -67,7 +67,7 @@ public class runscript extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"script","state","prevstate","globals","signatures","extrascreipt"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"script","state","prevstate","globals","signatures","extrascripts"}));
 	}
 	
 	@Override
