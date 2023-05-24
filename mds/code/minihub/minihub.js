@@ -1,14 +1,14 @@
 
 //Add a minidapp to the main list
-function addMiniDAPP(list, minidapp){
+function addMiniDAPP(list, minidapp, install){
 	var node=document.createElement("li");
 	list.appendChild(node);
 	
 	//And now write to it.. asynchronous..
-	writeFullLink(node,minidapp);
+	writeFullLink(node,minidapp, install);
 }
 
-function writeFullLink(node,minidapp){
+function writeFullLink(node,minidapp, install){
 	
 	//Get the dapp link
 	MDS.dapplink(minidapp.conf.name,function(link){
@@ -23,27 +23,31 @@ function writeFullLink(node,minidapp){
 		visual 		+='<div>'+minidapp.conf.version+' [ '+minidapp.conf.permission.toUpperCase()+' ]</div>';
 		
 		//Now the action
-		visual 		+='<div style="height:40"><br>';
+		if(install){
+			visual 		+='<div style="height:40"><br>';
+			visual 		+='MiniDAPP Installed!';
+			visual 		+='</div>';
+			
+		}else{
+			visual 		+='<div style="height:40"><br>';
 			visual 		+='<table><tr>'
 			
 			//Read Button
 			visual 		+=	'<td><form method="get" onsubmit="return confirmRead(\''+minidapp.uid+'\');">'+
-							'<input type=hidden name=uid value="'+MDS.minidappuid+'"/>'+
 							'<input class="permissionbutton" style="width:100;" type="submit" value="&nbsp;READ&nbsp;"></form></td>';
 			
 			//Write Button
 			visual 		+=	'<td><form method="get" onsubmit="return confirmWrite(\''+minidapp.uid+'\');">'+
-							'<input type=hidden name=uid value="'+MDS.minidappuid+'"/>'+
 							'<input class="permissionbutton" style="width:100;" type="submit" value="&nbsp;WRITE&nbsp;"></form></td>';
 			
 			//Delete Button
 			visual 		+=	'<td><form method="get" onsubmit="return confirmDelete(\''+minidapp.uid+'\');">'+
-							'<input type=hidden name=uid value="'+MDS.minidappuid+'"/>'+
 							'<input class="deletebutton" style="width:100;" type="submit" value="&nbsp;Delete&nbsp;"></form></td>';
 			
 			visual 		+='</tr></table>'
-			
-		visual 		+='</div>';
+			visual 		+='</div>';	
+		}
+		
 		
 		//And close up
 		visual 		+='</div>';
@@ -102,18 +106,16 @@ function writeInstall(node){
 	
 	//Now the action
 	visual 		+='<div><br>';
-		visual 		+='<table><tr>'
 		
-		//Install
-		visual 		+=	'<td><form action="/fileupload.html" method=POST enctype="multipart/form-data">'+
-						'<input type=hidden name=uid value="'+MDS.minidappuid+'"/>'+
-						'<input type=hidden name=extradata value="00"/>'+
-						'<input type=hidden name=jumppage value="index.html"/>'+
-						'<input class=solobutton type=file name=fileupload required />'+
-						'<input class=solobutton type=submit value="Install" />'+
-						'';
-		
-		visual 		+='</tr></table>'
+	//Install
+	visual 		+=	'<table><tr><td>'+
+					'<form action="/fileupload.html" method=POST enctype="multipart/form-data">'+
+					'<input type=hidden name=uid value="'+MDS.minidappuid+'"/>'+
+					'<input type=hidden name=extradata value="00"/>'+
+					'<input type=hidden name=jumppage value="install.html"/>'+
+					'<input class=solobutton type=file name=fileupload required />'+
+					'<input class=solobutton type=submit value="Install" />'+
+					'</td></tr></table>';
 		
 	visual 		+='</div>';
 	
@@ -122,6 +124,71 @@ function writeInstall(node){
 	visual 		+='</div>';
 	
 	//Set an HTML
-	node.innerHTML=visual;	
+	node.innerHTML=visual;
+}
 
+//Add pending txn to list
+function addPending(list, pending){
+	var node=document.createElement("li");
+	
+	var minidapp = pending.minidapp;
+	
+	var visual = '';
+	
+	visual		+='<div class="list-item-container">';
+	visual 		+='<img width="50" height="50" src="'+MDS.filehost+minidapp.uid+'/'+minidapp.conf.icon+'">'; 
+	
+	visual 		+='';	
+	visual 		+='<div class="list-item-right">';
+	visual 		+='<div class="app-title">'+minidapp.conf.name+'</div>';
+	
+	visual 		+='<div><br><br><br>';
+	visual 		+='Command : <br><br>';
+	visual 		+='<table width=100%><tr><td>';
+	visual 		+=pending.command;
+	visual 		+='</td></tr></table>';
+	
+	visual 		+="<br><br>";
+	visual 		+='<table><tr>'
+	
+	//Deny Button
+	visual 		+=	'<td><form method="get" onsubmit="return confirmDeny(\''+pending.uid+'\');">'+
+					'<input class="deletebutton" style="width:100;" type="submit" value="&nbsp;DENY&nbsp;"></form></td>';
+	
+	//Accept Button
+	visual 		+=	'<td><form method="get" onsubmit="return confirmAccept(\''+pending.uid+'\');">'+
+					'<input class="acceptbutton" style="width:100;" type="submit" value="&nbsp;ACCEPT&nbsp;"></form></td>';
+	
+	visual 		+='</tr></table>'
+	visual 		+='</div>';	
+	
+	//And close up
+	visual 		+='</div>';
+	
+	//Set an HTML
+	node.innerHTML=visual;
+	
+	//Add to the list
+	list.appendChild(node);
+}
+
+function confirmAccept(uid){
+	if (confirm("Are you sure ACCEPT?")){
+		//Accept page
+		location.href = "accept.html?uid="+MDS.minidappuid+"&pendinguid="+uid;
+	}
+	
+	return false;
+}
+
+function confirmDeny(uid){
+	if (confirm("Are you sure DENY?")){
+		
+		//DENY the pending txn
+		MDS.cmd("mds action:deny uid:"+uid,function(resp){
+			//Reload page
+			location.href = "pending.html?uid="+MDS.minidappuid;	
+		});
+	}
+	return false;
 }

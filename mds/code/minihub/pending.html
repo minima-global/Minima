@@ -6,7 +6,7 @@
 	<script type="text/javascript" src="minihub.js"></script>
 	<link rel="stylesheet" type="text/css" href="minihub.css">
 	
-	<title>Install MiniDAPP</title>
+	<title>Pending Transactions</title>
 </head>
 
 <script type="text/javascript">
@@ -53,34 +53,27 @@
 	MDS.init(function(msg){
 		if(msg.event == "inited"){
 			
-			//Get the file..
-			var file = "/fileupload/"+MDS.form.getParams("fileupload");
-			
-			//Now get a link to it..
-			var path = MDS.file.getpath(file,function(resp){
-				MDS.log(JSON.stringify(resp));
+			//Get pending transactions
+			MDS.cmd("mds action:pending",function(pendresp){
 				
-				//Now install this minidapp..
-				MDS.cmd("mds action:install file:"+resp.response.getpath.path,function(install){
-					MDS.log(JSON.stringify(install));
-					
-					//Delete the file..
-					MDS.file.delete(file,function(del){
-						MDS.log(JSON.stringify(del));
+				//Get the MiniDAPPs
+				var pending 	= pendresp.response.pending;
+				var len 		= pending.length
 				
-						//Install success
-						if(install.status){
-						
-							//And show success..
-							var mlist = document.getElementById("mainlist");
-							addMiniDAPP(mlist,install.response.installed,true);
-						}else{
-							
-							//Something went wrong..
-							alert("Something went wrong - check console logs..");		
-						}
-					});
-				});
+				//Get the list
+				var mlist = document.getElementById("mainlist");
+				
+				if(len == 0){
+					//Add gap..
+					var node=document.createElement("li");
+					node.appendChild(document.createTextNode("No pending transactions.."));
+					mlist.appendChild(node);	
+				}else{
+					for(var i=0;i<len;i++){
+						addPending(mlist,pending[i]);
+					}	
+				}
+				
 			});
 		}
 	});
