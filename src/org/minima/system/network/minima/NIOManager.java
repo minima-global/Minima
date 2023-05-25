@@ -641,7 +641,10 @@ public class NIOManager extends MessageProcessor {
 			}
 			
 			//Send a message asking for a sync
-			MinimaLogger.log("[+] Request Sync IBD @ "+lastpow.getBlockNumber());
+			if(GeneralParams.IBDSYNC_LOGS) {
+				MinimaLogger.log("[+] Request Sync IBD @ "+lastpow.getBlockNumber());
+			}
+			
 			sendNetworkMessage(clientid, NIOMessage.MSG_IBD_REQ, lastpow);
 			
 		}else if(zMessage.getMessageType().equals(NIO_CHECKLASTMSG)) {
