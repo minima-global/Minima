@@ -7,6 +7,7 @@ import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.txpowtree.TxPowTree;
 import org.minima.objects.TxPoW;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.utils.json.JSONObject;
 
 public class block extends Command {
@@ -33,6 +34,11 @@ public class block extends Command {
 		//Get the top block..
 		TxPowTree tree 		= MinimaDB.getDB().getTxPoWTree();
 		TxPoWTreeNode tip 	= tree.getTip();
+		if(tip == null) {
+			throw new CommandException("NO Blocks yet..");
+		}
+		
+		//Get the top block
 		TxPoW topblock 		= tip.getTxPoW();
 		
 		JSONObject resp = new JSONObject();
