@@ -1,0 +1,117 @@
+<html>
+
+<head>
+	<!--   The MINIMA MDS Javascript Library -->
+	<script type="text/javascript" src="mds.js"></script>
+	<script type="text/javascript" src="ide.js"></script>
+	<link rel="stylesheet" type="text/css" href="ide.css">
+	
+	<title>Minima IDE</title>
+</head>
+
+<body>
+
+<header>
+  <span>
+    <span class="fa fa-file-text-o" aria-hidden="true"></span>
+  <span class="title">Untitled</span> &#8212; Notepad
+  </span>
+  <nav>
+    <ul>
+      <li>File
+        <ul>
+          <li id="new_file">New</li>
+          <li>Open
+            <ul>
+              <li id="open_cookie_button">Cookie</li>
+              <li id="open_file_button">File</li>
+            </ul></li>
+          <li>Save  
+            <ul>
+              <li id="save_cookie">Cookie</li>
+              <li id="save_file">File</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>Edit
+        <ul>
+          <li id="undo">Undo</li>
+          <li>Redo</li>
+          <li>Cute</li>
+          <li id="copy">Copy</li>
+          <li id="paste">Paste</li>
+          <li>Find</li>
+          <li>Change to</li>
+          <li>Go to</li>
+          <li>Select all</li>
+        </ul>
+      </li>
+      <li>Format
+        <ul>
+          <li>Font</li>
+        </ul>
+      </li>
+      <li>View
+        <ul>
+          <li id="option_statusbar">Status Bar</li>
+        </ul>
+      </li>
+      <li>Author</li>
+    </ul>
+  </nav>
+</header>
+<main>
+  <textarea id="main"></textarea>
+  <div class="status-bar flex hide">
+    <div>Line: <span id="line_number">1</span></div>
+    <div>Letters: <span id="letters_number">0</span></div>
+  </div>
+  <div class="alert hide">
+    <div>Alert</div>
+    <div>Note saved</div>
+  </div>
+  <div id="save_cookie_dialog" class="dialog-window auto-height">
+    <div>Save file to cookie</div>
+    <div>
+      <form id="save_cookie_form">
+        <label for="save_cookie_form_name">Name:</label>
+        <input type="text" id="save_cookie_form_name" class="input">
+        <button type="submit" class="button">Save</button>
+      </form>
+    </div>
+  </div> 
+  <div id="save_file_dialog" class="dialog-window auto-height">
+    <div>Save file</div>
+    <div>
+      <form id="save_file_form">
+        <label for="save_file_form_name">File name:</label>
+        <input type="text" id="save_file_form_name" class="input">
+        <button type="submit" class="button">Save</button>
+      </form>
+    </div>
+  </div> 
+  <div id="open_cookie_dialog" class="dialog-window">
+    <div>Open file from cookie</div>
+    <div>
+      <div class="open_cookie_div"></div>
+    </div>
+  </div>
+  <input type="file" class="open_file" id="open_file">
+</main>
+
+
+<script type="text/javascript">
+	
+	//Initialise MiFi
+	MDS.init(function(msg){
+		if(msg.event == "inited"){
+		
+		}
+	});
+	
+</script>
+
+</body>
+
+</html>
