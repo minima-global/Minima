@@ -31,10 +31,16 @@ public class FILEcommand {
 	public static final String FILECOMMAND_COPY 		= "COPY";
 	public static final String FILECOMMAND_MOVE 		= "MOVE";
 	public static final String FILECOMMAND_DOWNLOAD 	= "DOWNLOAD";
+	public static final String FILECOMMAND_COPYTOWEB 	= "COPYTOWEB";
 	
-	
+	/**
+	 * Main MDS Manager
+	 */
 	MDSManager mMDS;
 	
+	/**
+	 * Which MiniDAPP os this
+	 */
 	String mMiniDAPPID;
 	
 	String mFileCommand;
@@ -263,7 +269,7 @@ public class FILEcommand {
 					parent.mkdirs();
 				}
 				
-				//Now copy the data
+				//Now move the file
 				actualfile.renameTo(newfile);
 				
 				JSONObject fdata = new JSONObject();
@@ -275,7 +281,7 @@ public class FILEcommand {
 			}else if(mFileCommand.equals(FILECOMMAND_DOWNLOAD)) {
 				
 				//Make sure downloads folder exists
-				File downs = new File(rootfiles,"Download");
+				File downs = new File(rootfiles,"Downloads");
 				downs.mkdirs();
 				
 				//Get the filename
@@ -283,6 +289,9 @@ public class FILEcommand {
 				
 				//What is the file
 				File dfile = new File(downs,filename);
+				if(dfile.exists()) {
+					dfile.delete();
+				}
 				
 				//Download the file to downloads folder
 				long size = download(mFile, dfile.getPath());
@@ -293,6 +302,43 @@ public class FILEcommand {
 				fdata.put("path", dfile.getPath());
 				fdata.put("size", size);
 				resp.put("download", fdata);
+			
+			}else if(mFileCommand.equals(FILECOMMAND_COPYTOWEB)) {
+				
+				//Get the web Folder
+				File webfiles = mMDS.getMiniDAPPWebFolder(mMiniDAPPID);
+				
+				//The new file..
+				File newfile = new File(webfiles,mData);
+				
+				//Check id child..
+				if(!MiniFile.isChild(webfiles, newfile)) {
+					throw new Exception("Invalid file..");
+				}
+				
+				//Check exists
+				if(!actualfile.exists()) {
+					throw new IllegalArgumentException("File does not exist "+actualfile);
+				}
+				
+				//Check not directory
+				if(actualfile.isDirectory()) {
+					throw new IllegalArgumentException("Cannot move Directory");
+				}
+				
+				File parent = newfile.getParentFile();
+				if(!parent.exists()) {
+					parent.mkdirs();
+				}
+				
+				//Now copy the data
+				MiniFile.copyFile(actualfile, newfile);
+				
+				JSONObject fdata = new JSONObject();
+				fdata.put("origfile", mFile);
+				fdata.put("webfile", mData);
+				
+				resp.put("copytoweb", fdata);
 			}
 			
 			JSONObject stattrue = new JSONObject();

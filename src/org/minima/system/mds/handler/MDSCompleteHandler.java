@@ -102,7 +102,7 @@ public class MDSCompleteHandler implements Runnable {
 			//And finally URL decode..
 			fileRequested = URLDecoder.decode(fileRequested,"UTF-8").trim();
 			
-			MinimaLogger.log(fileRequested);
+			//MinimaLogger.log(fileRequested,false);
 			
 			//Get the command / params only
 			int index 		= fileRequested.indexOf("?");
@@ -277,6 +277,15 @@ public class MDSCompleteHandler implements Runnable {
 						
 						fc = new FILEcommand(mMDS, minidappid, 
 								FILEcommand.FILECOMMAND_DOWNLOAD, filedata, "");
+						
+					}else if(action.equals("copytoweb")) {
+						
+						dataindex 			= filedata.indexOf("&");
+						String file 		= filedata.substring(0, dataindex);
+						String movefile 	= filedata.substring(dataindex+1);
+						
+						fc = new FILEcommand(mMDS, minidappid, 
+								FILEcommand.FILECOMMAND_COPYTOWEB, file, movefile);
 						
 					}else {
 						throw new IllegalArgumentException("Invalid function : "+action);
