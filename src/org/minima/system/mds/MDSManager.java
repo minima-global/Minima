@@ -736,31 +736,32 @@ public class MDSManager extends MessageProcessor {
 		}
 	}
 	
-	private void installDefaultMiniHUB() throws Exception {
+	private void installDefaultMiniHUB() {
 		
 		//The MiniHUB
-		String minihub = "minihub/minihub-default.mds.zip";
-		
-		//Get the MiniHUB file..
-		InputStream is = getClass().getClassLoader().getResourceAsStream(minihub);
-		
-		//Get all the data..
-		byte[] alldata = is.readAllBytes();
-		
-		//Create an input stream for the file..
-		ByteArrayInputStream bais 	= new ByteArrayInputStream(alldata);
-		
-		//Where is it going..
-		String rand = MiniData.getRandomData(32).to0xString();
-		
-		//The file where the package is extracted..
-		File dest 	= new File( Main.getInstance().getMDSManager().getWebFolder() , rand);
-		if(dest.exists()) {
-			MiniFile.deleteFileOrFolder(dest.getAbsolutePath(), dest);
-		}
-		boolean mk = dest.mkdirs();
+		String minihub 	= "minihub/minihub-default.mds.zip";
+		File dest 		= null;
 		
 		try {
+			
+			//Get the MiniHUB file..
+			InputStream is = getClass().getClassLoader().getResourceAsStream(minihub);
+			
+			//Get all the data..
+			byte[] alldata = is.readAllBytes();
+			
+			//Create an input stream for the file..
+			ByteArrayInputStream bais 	= new ByteArrayInputStream(alldata);
+			
+			//Where is it going..
+			String rand = MiniData.getRandomData(32).to0xString();
+			
+			//The file where the package is extracted..
+			dest 	= new File( Main.getInstance().getMDSManager().getWebFolder() , rand);
+			if(dest.exists()) {
+				MiniFile.deleteFileOrFolder(dest.getAbsolutePath(), dest);
+			}
+			boolean mk = dest.mkdirs();
 		
 			//Send it to the extractor..
 			ZipExtractor.unzip(bais, dest);
@@ -805,43 +806,47 @@ public class MDSManager extends MessageProcessor {
 			MinimaLogger.log(exc);
 			
 			//Delete the install
-			MiniFile.deleteFileOrFolder(dest.getAbsolutePath(), dest);
+			if(dest != null) {
+				MiniFile.deleteFileOrFolder(dest.getAbsolutePath(), dest);
+			}
 		}
 	}
 	
-	private void updateMiniHUB(String zMiniDAPPID) throws Exception {
+	private void updateMiniHUB(String zMiniDAPPID) {
 		
-		//The MiniHUB
-		String minihub = "minihub/minihub-default.mds.zip";
-				
-		//Get the MiniHUB file..
-		InputStream is = getClass().getClassLoader().getResourceAsStream(minihub);
-		
-		//Get all the data..
-		byte[] alldata = is.readAllBytes();
-		
-		//Create an input stream for the file..
-		ByteArrayInputStream bais 	= new ByteArrayInputStream(alldata);
-		
-		//Now the MiniDAPP ID
-		MDSDB db 			= MinimaDB.getDB().getMDSDB();
-		MiniDAPP md 		= db.getMiniDAPP(zMiniDAPPID);
-		
-		//Get the Conf..
-		JSONObject miniconf = md.getConfData();
-		
-		//Delete ONLY the old WEB files
-		String mdsroot 	= Main.getInstance().getMDSManager().getRootMDSFolder().getAbsolutePath();
-		File minidapp 	= new File(Main.getInstance().getMDSManager().getWebFolder(),zMiniDAPPID);
-		if(minidapp.exists()) {
-			MiniFile.deleteFileOrFolder(mdsroot, minidapp);
-		}
-		
-		//Extract the new files.. make sure exists
-		minidapp.mkdirs();
+		File minidapp = null;
 		
 		try {
-		
+			
+			//The MiniHUB
+			String minihub = "minihub/minihub-default.mds.zip";
+					
+			//Get the MiniHUB file..
+			InputStream is = getClass().getClassLoader().getResourceAsStream(minihub);
+			
+			//Get all the data..
+			byte[] alldata = is.readAllBytes();
+			
+			//Create an input stream for the file..
+			ByteArrayInputStream bais 	= new ByteArrayInputStream(alldata);
+			
+			//Now the MiniDAPP ID
+			MDSDB db 			= MinimaDB.getDB().getMDSDB();
+			MiniDAPP md 		= db.getMiniDAPP(zMiniDAPPID);
+			
+			//Get the Conf..
+			JSONObject miniconf = md.getConfData();
+			
+			//Delete ONLY the old WEB files
+			String mdsroot 	= Main.getInstance().getMDSManager().getRootMDSFolder().getAbsolutePath();
+			minidapp 		= new File(Main.getInstance().getMDSManager().getWebFolder(),zMiniDAPPID);
+			if(minidapp.exists()) {
+				MiniFile.deleteFileOrFolder(mdsroot, minidapp);
+			}
+			
+			//Extract the new files.. make sure exists
+			minidapp.mkdirs();
+			
 			//Send it to the extractor..
 			ZipExtractor.unzip(bais, minidapp);
 			bais.close();
@@ -882,9 +887,11 @@ public class MDSManager extends MessageProcessor {
 			
 			//Can log this..
 			MinimaLogger.log(exc);
-			
-			//Delete the install
-			MiniFile.deleteFileOrFolder(minidapp.getAbsolutePath(), minidapp);
+
+			if(minidapp != null) {
+				//Delete the install
+				MiniFile.deleteFileOrFolder(minidapp.getAbsolutePath(), minidapp);
+			}
 		}
 	}
 	
