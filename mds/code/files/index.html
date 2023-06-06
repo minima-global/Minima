@@ -70,6 +70,8 @@
 	//Have we made a directory
 	var makedir = MDS.form.getParams("makedir");
 	
+	MDS.log("USER AGENT : "+window.navigator.userAgent);
+	
 	//Download af file given the raw byte data
 	function downloadFile(mdsfile, name){
 		
@@ -77,20 +79,31 @@
 		MDS.file.loadbinary(mdsfile,function(msg){
 			
 			var filedata 	= msg.response.load.data.substring(2);
-			var b64 		= MDS.util.hexToBase64(filedata);
-			var binaryData 	= MDS.util.base64ToArrayBuffer(b64);
-			var blob 		= new Blob([binaryData], { type: 'application/octet-stream' });
 			
-			var url 		= URL.createObjectURL(blob);
+			if(window.navigator.userAgent.includes("Minima Browser")){
+				
+				MDS.log("Trying with internal JavaScriptInterface");
+				
+				//Use the inbuilt blob downloader
+				Android.blobDownload(mdsfile,filedata);
+				
+			}else{
+				
+				var b64 		= MDS.util.hexToBase64(filedata);
+				var binaryData 	= MDS.util.base64ToArrayBuffer(b64);
+				var blob 		= new Blob([binaryData], { type: 'application/octet-stream' });
+				
+				var url 		= URL.createObjectURL(blob);
 
-			// Create a link element
-			var link 		= document.createElement('a');
-			link.href 		= url;
-			link.download 	= name;
-			document.body.appendChild(link);
-			link.click();
+				// Create a link element
+				var link 		= document.createElement('a');
+				link.href 		= url;
+				link.download 	= name;
+				document.body.appendChild(link);
+				link.click();
 
-			URL.revokeObjectURL(url);
+				URL.revokeObjectURL(url);
+			}
 		});
 	}
 	

@@ -24,8 +24,8 @@ public class MDSHubLogon {
 		+ "		\n"
 		+ "	</form>\n"
 		+ "</div>"
-		+ "<br>"
-		+ "You may only open <b>1</b> MiniHUB at a time<br>"
+//		+ "<br>"
+//		+ "You may only open <b>1</b> MiniHUB at a time<br>"
 		+ "</center>";
 
 		
