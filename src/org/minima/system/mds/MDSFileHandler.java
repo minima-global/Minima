@@ -647,44 +647,6 @@ public class MDSFileHandler implements Runnable {
 //				//Create the webpage
 //				writeHTMLPage(dos, MDSHubPermission.createHubPage(mMDS, mMainSessionID,perm.toUpperCase()));
 			
-			}else if(fileRequested.startsWith("minihub")){	
-			
-				//Remove the params..
-				int index = fileRequested.indexOf("?");
-				if(index!=-1) {
-					fileRequested = fileRequested.substring(0,index);
-				}
-			
-				//Now get the content type
-				String contenttype 	= MiniFile.getContentType(fileRequested);
-				
-				//Check is child..
-				//..
-				
-				//Load from resources..
-				InputStream is = getClass().getClassLoader().getResourceAsStream(fileRequested);
-				if(is == null) {
-					MinimaLogger.log("HTTP : unknown file requested "+fileRequested);
-		    		dos.writeBytes("HTTP/1.0 404 OK\r\n");
-					dos.writeBytes("\r\n");
-					dos.flush();
-				}else {
-					
-					//Get all the data
-					byte[] file = is.readAllBytes();
-					
-					//Calculate the size of the response
-					int finallength = file.length;
-		            
-					dos.writeBytes("HTTP/1.0 200 OK\r\n");
-					dos.writeBytes("Content-Type: "+contenttype+"\r\n");
-					dos.writeBytes("Content-Length: " + finallength + "\r\n");
-					dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
-					dos.writeBytes("\r\n");
-					dos.write(file, 0, finallength);
-					dos.flush();
-				}
-				
 			}else {
 			
 				//Remove the params..

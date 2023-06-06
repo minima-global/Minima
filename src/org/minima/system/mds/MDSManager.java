@@ -745,10 +745,11 @@ public class MDSManager extends MessageProcessor {
 		try {
 			
 			//Get the MiniHUB file..
-			InputStream is = getClass().getClassLoader().getResourceAsStream(minihub);
+			InputStream is 	= getClass().getClassLoader().getResourceAsStream(minihub);
 			
 			//Get all the data..
-			byte[] alldata = is.readAllBytes();
+			byte[] alldata = MiniFile.readAllBytes(is);
+			is.close();
 			
 			//Create an input stream for the file..
 			ByteArrayInputStream bais 	= new ByteArrayInputStream(alldata);
@@ -825,7 +826,8 @@ public class MDSManager extends MessageProcessor {
 			InputStream is = getClass().getClassLoader().getResourceAsStream(minihub);
 			
 			//Get all the data..
-			byte[] alldata = is.readAllBytes();
+			byte[] alldata = MiniFile.readAllBytes(is);
+			is.close();
 			
 			//Create an input stream for the file..
 			ByteArrayInputStream bais 	= new ByteArrayInputStream(alldata);
