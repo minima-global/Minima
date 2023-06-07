@@ -6,7 +6,10 @@ import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
+import org.minima.database.MinimaDB;
+import org.minima.database.txpowtree.TxPowTree;
 import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;
 import org.minima.utils.MinimaLogger;
@@ -27,21 +30,18 @@ public class test extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 	
-		String file = "minihub/index.html";
+		//Wanna check the chaintree
+		TxPowTree tree = MinimaDB.getDB().getTxPoWTree();
 		
-		//Load a resource..
-		InputStream is 		 	= getFileFromResourceAsStream(file);
-		InputStreamReader ir 	= new InputStreamReader(is);
-		BufferedReader br 		= new BufferedReader(ir);
-
-		String line = null;
-		while((line = br.readLine()) != null) {			
-			MinimaLogger.log(line);
-		}
+		MinimaLogger.log("Length : "+tree.getSize());
+				
+		
+		
 		
 		
 		return ret;
 	}
+	
 	
 	// get a file from the resources folder
     // works everywhere, IDEA, unit test and JAR file.
