@@ -55,7 +55,11 @@ public class ArchiveManager extends SqlDB {
 	
 	@Override
 	protected void createSQL() throws SQLException {
-			
+		
+		if(Main.STARTUP_DEBUG_LOGS) {
+			MinimaLogger.log("Create ArchiveDB..");
+		}
+		
 		//Create the various tables..
 		Statement stmt = mSQLConnection.createStatement();
 		
@@ -89,6 +93,10 @@ public class ArchiveManager extends SqlDB {
 		
 		//All done..
 		stmt.close();
+		
+		if(Main.STARTUP_DEBUG_LOGS) {
+			MinimaLogger.log("Create ArchiveDB.. finish");
+		}
 		
 		//Create some prepared statements..
 		String insert 			= "INSERT IGNORE INTO syncblock ( txpowid, block, timemilli, syncdata ) VALUES ( ?, ? ,? ,? )";

@@ -777,6 +777,9 @@ public class TxPoWProcessor extends MessageProcessor {
 			//we are not syncing..
 			Main.getInstance().setSyncIBD(false);
 			
+			//Wipe old Archive Blocks..
+			MinimaDB.getDB().getArchive().cleanDB();
+			
 			//Ask to sync the TxBlocks
 			askToSyncTxBlocks(uid);
 		
@@ -831,6 +834,9 @@ public class TxPoWProcessor extends MessageProcessor {
 				lastpow = block.getTxPoW();
 			}
 		
+			//Wipe old Archive Blocks..
+			MinimaDB.getDB().getArchive().cleanDB();
+			
 			//Ask to sync the TxBlocks
 			askToSyncTxBlocks(uid);
 		

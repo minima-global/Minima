@@ -295,9 +295,16 @@ public class TxPoWSqlDB extends SqlDB {
 	 * Returns how many rows were deleted
 	 */
 	public synchronized int cleanDB() {
+		return cleanDB(false);
+	}
+	
+	public synchronized int cleanDB(boolean zHard) {
 		try {
 			//Current MAX time..
 			long maxtime = System.currentTimeMillis() - MAX_SQL_MILLI;
+			if(zHard) {
+				maxtime = System.currentTimeMillis() + 100000;
+			}
 			
 			//Set the parameters
 			SQL_DELETE_TXPOW.clearParameters();

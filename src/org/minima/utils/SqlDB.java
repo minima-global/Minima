@@ -8,6 +8,7 @@ import java.sql.Statement;
 
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
+import org.minima.system.Main;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.json.parser.ParseException;
@@ -61,12 +62,20 @@ public abstract class SqlDB {
 		//The H2 JDBC URL
 		String h2db = "jdbc:h2:"+path+";MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE";
 		
+		if(Main.STARTUP_DEBUG_LOGS) {
+			MinimaLogger.log("SQLDB Connect.. "+h2db);
+		}
+		
 		//Create the connection
 		mSQLConnection = DriverManager.getConnection(h2db, "SA", "");
 		
 		//Auto commit changes
 		mSQLConnection.setAutoCommit(true);
 
+		if(Main.STARTUP_DEBUG_LOGS) {
+			MinimaLogger.log("SQLDB Connected.. "+h2db);
+		}
+		
 		//Perform Create SQL
 		createSQL();
 	}

@@ -39,6 +39,8 @@ import org.minima.utils.ssl.SSLManager;
 
 public class Main extends MessageProcessor {
 
+	public static boolean STARTUP_DEBUG_LOGS = false;
+	
 	/**
 	 * Uptime for the node
 	 */
@@ -185,6 +187,10 @@ public class Main extends MessageProcessor {
 	public Main() {
 		super("MAIN");
 	
+		if(STARTUP_DEBUG_LOGS) {
+			MinimaLogger.log("MAIN init.. start");
+		}
+		
 		//Start the Uptime clock..
 		mUptimeMilli = System.currentTimeMillis();
 		
@@ -202,10 +208,23 @@ public class Main extends MessageProcessor {
 		}
 		
 		//Create the MinmaDB
+		if(STARTUP_DEBUG_LOGS) {
+			MinimaLogger.log("MinimaDB create.. start");
+		}
 		MinimaDB.createDB();
+		if(STARTUP_DEBUG_LOGS) {
+			MinimaLogger.log("MinimaDB create.. finish");
+		}
 		
 		//Load the Databases
+		if(STARTUP_DEBUG_LOGS) {
+			MinimaLogger.log("Load all DB.. start");
+		}
 		MinimaDB.getDB().loadAllDB();
+		if(STARTUP_DEBUG_LOGS) {
+			MinimaLogger.log("Load all DB.. finish");
+		}
+		
 		
 		//Are we in Slave node mode
 		boolean slavemode = MinimaDB.getDB().getUserDB().isSlaveNode();
@@ -219,8 +238,13 @@ public class Main extends MessageProcessor {
 		}
 		
 		//Create the SSL Keystore..
+		if(STARTUP_DEBUG_LOGS) {
+			MinimaLogger.log("SSL Key.. start");
+		}
 		SSLManager.makeKeyFile();
-		
+		if(STARTUP_DEBUG_LOGS) {
+			MinimaLogger.log("SSL Key.. finish");
+		}
 		//Calculate the User hashrate.. start her up as seems to make a difference.. initialises..
 		TxPoWMiner.calculateHashRateOld(new MiniNumber(10000));
 		
