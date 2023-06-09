@@ -14,10 +14,10 @@ COPY minima-all.jar minima/minima.jar
 
 # Get other permissions right, too
 RUN mkdir -p $HOME/data
-RUN mkdir -p $HOME/dapps
+#RUN mkdir -p $HOME/dapps
 
 # Copy over the MiniDAPPs
-COPY *.mds.zip $HOME/dapps/
+#COPY *.mds.zip $HOME/dapps/
 
 # Copy the Config
 COPY minima.config $HOME/minima.config
