@@ -740,8 +740,21 @@ public class MDSManager extends MessageProcessor {
 		ArrayList<MiniDAPP> allminis = MinimaDB.getDB().getMDSDB().getAllMiniDAPPs();
 		
 		//Now run through the defaults
+		
+		//Pending gets write permissions
+		checkInstalled("pending", "default/pending-0.1.3.mds.zip", allminis, true);
+		
+		//The rest are normal
+		checkInstalled("block", "default/block-2.0.3.mds.zip", allminis, false);
+		checkInstalled("chatter", "default/chatter-1.1.1.mds.zip", allminis, false);
+		checkInstalled("docs", "default/docs_1.1.3.mds.zip", allminis, false);
+		checkInstalled("filez", "default/filez-1.0.0.mds.zip", allminis, false);
+		checkInstalled("future cash", "default/futurecash-1.8.0.mds.zip", allminis, false);
 		checkInstalled("health", "default/health-0.1.2.mds.zip", allminis, false);
-		checkInstalled("pending", "default/pending-0.1.2.mds.zip", allminis, true);
+		checkInstalled("maxcontacts", "default/maxcontacts-1.3.4.mds.zip", allminis, false);
+		checkInstalled("maxsolo", "default/maxsolo-2.3.7.mds.zip", allminis, false);
+		checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
+		checkInstalled("script ide", "default/scriptide-2.0.mds.zip", allminis, false);
 		checkInstalled("terminal", "default/terminal-2.03.mds.zip", allminis, false);
 		checkInstalled("wallet", "default/wallet-2.23.0.mds.zip", allminis, false);
 	}
