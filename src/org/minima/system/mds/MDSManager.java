@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -724,7 +725,7 @@ public class MDSManager extends MessageProcessor {
 		if(defminihub.equals("0x00")) {
 			
 			//No MiniHUB installed.. install
-			installDefaultMiniHUB();
+			installDefaultMiniDAPP("minihub/minihub-default.mds.zip", true, true);
 			
 		}else {
 			
@@ -734,18 +735,48 @@ public class MDSManager extends MessageProcessor {
 			//Update the current
 			updateMiniHUB(defminihub);
 		}
+		
+		//And install some default dapps..
+		ArrayList<MiniDAPP> allminis = MinimaDB.getDB().getMDSDB().getAllMiniDAPPs();
+		
+		//Now run through the defaults
+		checkInstalled("health", "default/health-0.1.2.mds.zip", allminis, false);
+		checkInstalled("pending", "default/pending-0.1.2.mds.zip", allminis, true);
+		checkInstalled("terminal", "default/terminal-2.03.mds.zip", allminis, false);
+		checkInstalled("wallet", "default/wallet-2.23.0.mds.zip", allminis, false);
 	}
 	
-	private void installDefaultMiniHUB() {
+	private boolean checkInstalled(String zName, String zResource,  ArrayList<MiniDAPP> zAllDapps, boolean zWrite) {		
+		
+		try {
+			
+			//Is it already installed
+			for(MiniDAPP md : zAllDapps) {
+				if(md.getName().equalsIgnoreCase(zName)) {
+					return true;
+				}
+			}
+			
+			//Ok - Install it..
+			installDefaultMiniDAPP(zResource,zWrite,false);
+			
+		}catch(Exception exc) {
+			MinimaLogger.log(exc);			
+		}
+		
+		return false;
+	}
+	
+	private void installDefaultMiniDAPP(String zResource, boolean zWrite, boolean zIsMiniHUB) {
 		
 		//The MiniHUB
-		String minihub 	= "minihub/minihub-default.mds.zip";
+		String minidapp = zResource;
 		File dest 		= null;
 		
 		try {
 			
 			//Get the MiniHUB file..
-			InputStream is 	= getClass().getClassLoader().getResourceAsStream(minihub);
+			InputStream is 	= getClass().getClassLoader().getResourceAsStream(minidapp);
 			
 			//Get all the data..
 			byte[] alldata = MiniFile.readAllBytes(is);
@@ -781,11 +812,16 @@ public class MDSManager extends MessageProcessor {
 			JSONObject jsonconf = (JSONObject) new JSONParser().parse(data.toString());
 			
 			//ALWAYS starts with only READ Permission
-			jsonconf.put("permission", "write");
+			if(zWrite) {
+				jsonconf.put("permission", "write");
+			}else {
+				jsonconf.put("permission", "read");
+			}
 			
 			//Which version..
-			String version = jsonconf.getString("version");
-			MinimaLogger.log("Installing default MiniHUB.. "+version);
+			String name		= jsonconf.getString("name");
+			String version 	= jsonconf.getString("version");
+			MinimaLogger.log("Installing default MiniDAPP.. "+name+" v"+version);
 			
 			//Create the MiniDAPP
 			MiniDAPP md = new MiniDAPP(rand, jsonconf);
@@ -794,12 +830,14 @@ public class MDSManager extends MessageProcessor {
 			MDSDB db = MinimaDB.getDB().getMDSDB();
 			db.insertMiniDAPP(md);
 		
-			//Create the webpage
-			DEFAULT_MINIHUB = rand;
-			
-			//And set in UserDB..
-			MinimaDB.getDB().getUserDB().setDefaultMiniHUB(rand);
-			MinimaDB.getDB().saveUserDB();
+			if(zIsMiniHUB) {
+				//Create the webpage
+				DEFAULT_MINIHUB = rand;
+				
+				//And set in UserDB..
+				MinimaDB.getDB().getUserDB().setDefaultMiniHUB(rand);
+				MinimaDB.getDB().saveUserDB();
+			}
 			
 		}catch(Exception exc) {
 			
