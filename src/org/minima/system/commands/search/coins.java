@@ -132,6 +132,12 @@ public class coins extends Command {
 		
 		//Get the tree tip..
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+
+		//Do we even have a tip
+		if(tip == null) {
+			ret.put("response", new JSONArray());
+			return ret;
+		}
 		
 		//Run the query
 		ArrayList<Coin> coins = TxPoWSearcher.searchCoins(	tip, relevant, 
