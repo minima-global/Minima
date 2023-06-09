@@ -253,6 +253,12 @@ public class mds extends Command {
 				throw new CommandException("Invalid UID for MiniDAPP");
 			}
 			
+			//Make sure not the MiniHUB..
+			String minihub = MinimaDB.getDB().getUserDB().getDefaultMiniHUB();
+			if(uid.equals(minihub)) {
+				throw new CommandException("Cannot delete the MiniHUB");
+			}
+			
 			//Delete from the DB
 			db.deleteMiniDAPP(uid);
 			
@@ -371,6 +377,12 @@ public class mds extends Command {
 			MiniDAPP md = db.getMiniDAPP(uid);
 			if(md == null) {
 				throw new CommandException("MiniDAPP not found : "+uid);
+			}
+			
+			//Make sure not the MiniHUB..
+			String minihub = MinimaDB.getDB().getUserDB().getDefaultMiniHUB();
+			if(uid.equals(minihub)) {
+				throw new CommandException("Cannot change permissions for the MiniHUB");
 			}
 			
 			//Now update the TRUST level..
