@@ -733,7 +733,7 @@ public class MDSManager extends MessageProcessor {
 			DEFAULT_MINIHUB = defminihub;
 			
 			//DO not - let them update themselves..
-			//updateMiniHUB(defminihub);
+			updateMiniHUB(defminihub);
 		}
 		
 		//And install some default dapps..
