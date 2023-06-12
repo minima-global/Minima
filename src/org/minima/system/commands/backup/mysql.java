@@ -507,10 +507,10 @@ public class mysql extends Command {
 					break;
 				}
 				
-				//HACK
-				if(startblock.isMore(new MiniNumber(5000))) {
-					break;
-				}
+//				//HACK
+//				if(startblock.isMore(new MiniNumber(5000))) {
+//					break;
+//				}
 			}
 			
 			//Notify the Android Listener
