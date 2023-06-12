@@ -50,11 +50,6 @@ public class NetworkManager {
 	 */
 	Server mRPCServer = null;
 	
-	/**
-	 * The Web Hooks for Minima messages
-	 */
-	NotifyManager mNotifyManager;
-	
 	public NetworkManager() {
 		
 		//Not shutting down
@@ -86,9 +81,6 @@ public class NetworkManager {
 		if(GeneralParams.RPC_ENABLED) {
 			startRPC();
 		}
-		
-		//Notification of Events
-		mNotifyManager = new NotifyManager();
 	}
 	
 	public void calculateHostIP() {
@@ -243,10 +235,6 @@ public class NetworkManager {
 		}else {
 			mP2PManager.stopMessageProcessor();
 		}
-//		mP2PManager.PostMessage(P2PFunctions.P2P_SHUTDOWN);
-		
-		//And the notify Manager
-		mNotifyManager.shutDown();
 	}
 	
 	public boolean isShuttingDowen() {
@@ -254,9 +242,7 @@ public class NetworkManager {
 	}
 	
 	public boolean isShutDownComplete() {
-		return 		mNIOManager.isShutdownComplete() 
-				&&  mP2PManager.isShutdownComplete()
-				&&  mNotifyManager.isShutdownComplete();
+		return 	mNIOManager.isShutdownComplete() &&  mP2PManager.isShutdownComplete();
 	}
 	
 	public MessageProcessor getP2PManager() {
@@ -265,9 +251,5 @@ public class NetworkManager {
 	
 	public NIOManager getNIOManager() {
 		return mNIOManager;
-	}
-	
-	public NotifyManager getNotifyManager() {
-		return mNotifyManager;
 	}
 }

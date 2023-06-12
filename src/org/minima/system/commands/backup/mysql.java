@@ -506,6 +506,11 @@ public class mysql extends Command {
 				if(size==0) {
 					break;
 				}
+				
+				//HACK
+				if(startblock.isMore(new MiniNumber(5000))) {
+					break;
+				}
 			}
 			
 			//Notify the Android Listener
@@ -525,7 +530,8 @@ public class mysql extends Command {
 			ret.put("response", resp);
 			
 			//And NOW shut down..
-			Main.getInstance().getTxPoWProcessor().stopMessageProcessor();
+			//Main.getInstance().getTxPoWProcessor().stopMessageProcessor();
+			Main.getInstance().shutdownFinalProcs();
 			
 			//Now shutdown and save everything
 			MinimaDB.getDB().saveAllDB();

@@ -732,8 +732,8 @@ public class MDSManager extends MessageProcessor {
 			//Set the feault
 			DEFAULT_MINIHUB = defminihub;
 			
-			//Update the current
-			updateMiniHUB(defminihub);
+			//DO not - let them update themselves..
+			//updateMiniHUB(defminihub);
 		}
 		
 		//And install some default dapps..
@@ -756,7 +756,7 @@ public class MDSManager extends MessageProcessor {
 		checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
 		checkInstalled("script ide", "default/scriptide-2.0.mds.zip", allminis, false);
 		checkInstalled("terminal", "default/terminal-2.03.mds.zip", allminis, false);
-		checkInstalled("vestr", "default/vestr-2.2.2.mds.zip", allminis, false);
+		//checkInstalled("vestr", "default/vestr-2.2.2.mds.zip", allminis, false);
 		checkInstalled("wallet", "default/wallet-2.23.0.mds.zip", allminis, false);
 	}
 	

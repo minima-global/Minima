@@ -20,6 +20,11 @@ import org.minima.utils.json.JSONObject;
 
 public class Minima {
 
+	private static InputStreamReader mInputStream = null;
+	private static BufferedReader mBufferedStream = null;
+    
+	private static boolean mIsRunning = true;
+	
 	public Minima() {}
 	
 	/**
@@ -84,6 +89,9 @@ public class Minima {
 	 * Called by fireStarter on Android
 	 */
 	public static void main(String[] zArgs) {
+		
+		//we are running
+		mIsRunning = true;
 		
 		//Set the main data folder
 		File dataFolder 	= new File(System.getProperty("user.home"),".minima");
@@ -194,14 +202,14 @@ public class Minima {
 	    }
 		
 		//Listen for input
-		InputStreamReader is    = new InputStreamReader(System.in, MiniString.MINIMA_CHARSET);
-	    BufferedReader bis      = new BufferedReader(is);
+		mInputStream    = new InputStreamReader(System.in, MiniString.MINIMA_CHARSET);
+	    mBufferedStream = new BufferedReader(mInputStream);
 	    
 	    //Loop until finished..
-	    while(main.isRunning()){
+	    while(mIsRunning && main.isRunning()){
 	        try {
 	            //Get a line of input
-	            String input = bis.readLine();
+	            String input = mBufferedStream.readLine();
 	            
 	            //Check valid..
 	            if(input!=null && !input.equals("")) {
@@ -239,8 +247,8 @@ public class Minima {
 	    
 	    //Cross the streams..
 	    try {
-	        bis.close();
-	        is.close();
+	        mBufferedStream.close();
+	        mInputStream.close();
 	    } catch (IOException ex) {
 	    	MinimaLogger.log(""+ex);
 	    }

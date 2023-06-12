@@ -426,7 +426,8 @@ public class archive extends Command {
 			ret.put("response", resp);
 			
 			//And NOW shut down..
-			Main.getInstance().getTxPoWProcessor().stopMessageProcessor();
+			//Main.getInstance().getTxPoWProcessor().stopMessageProcessor();
+			Main.getInstance().shutdownFinalProcs();
 			
 			//Now shutdown and save everything
 			MinimaDB.getDB().saveAllDB();
