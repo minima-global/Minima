@@ -27,16 +27,19 @@ COPY minima /usr/bin/minima
 RUN chmod +x /usr/bin/minima
 
 #Install curl
-#RUN apt-get update
-#RUN apt-get -y install curl jq vim
-#RUN apt-get clean
-#RUN rm -rf /var/lib/apt/lists/*
+RUN apt-get update
+RUN apt-get -y install curl jq vim nano
+RUN apt-get clean
+RUN rm -rf /var/lib/apt/lists/*
 
 #Make BASH the defult
 RUN ln -sf /bin/bash /bin/sh
+
+#Move to Home folder
+WORKDIR $HOME
 
 # Minima ports
 EXPOSE 9001 9002 9003 9004
 
 # Start her up 
-ENTRYPOINT ["java", "-jar", "minima/minima.jar", "-conf", "/home/minima/minima.config"]
+ENTRYPOINT ["java", "-jar", "/usr/local/minima/minima.jar", "-conf", "/home/minima/minima.config"]
