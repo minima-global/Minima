@@ -268,6 +268,9 @@ public class Main extends MessageProcessor {
 			MinimaLogger.log(exc.toString());
 		}
 		
+		//Notification of Events
+		mNotifyManager = new NotifyManager();
+				
 		//Start the engine..
 		mTxPoWProcessor = new TxPoWProcessor();
 		mTxPoWMiner 	= new TxPoWMiner();
@@ -277,12 +280,9 @@ public class Main extends MessageProcessor {
 			//Create a genesis node
 			doGenesis();
 		}
-		
+				
 		//Start the networking..
 		mNetwork = new NetworkManager();
-		
-		//Notification of Events
-		mNotifyManager = new NotifyManager();
 				
 		//Start up Maxima
 		mMaxima = new MaximaManager();
@@ -906,7 +906,8 @@ public class Main extends MessageProcessor {
 		notify.put("event", zEvent);
 		notify.put("data", zData);
 		
-		if(getNetworkManager() != null) {
+		if(getNotifyManager() != null) {
+			
 			//And post
 			getNotifyManager().PostEvent(notify);
 		}
