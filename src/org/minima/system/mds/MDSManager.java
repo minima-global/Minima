@@ -107,6 +107,11 @@ public class MDSManager extends MessageProcessor {
 	public String DEFAULT_MINIHUB = "0x00";
 	
 	/**
+	 * Has MDS inited
+	 */
+	boolean mHasStarted = false;
+	
+	/**
 	 * Main Constructor
 	 */
 	public MDSManager() {
@@ -126,6 +131,10 @@ public class MDSManager extends MessageProcessor {
 		}
 		
 		PostMessage(MDS_INIT);
+	}
+	
+	public boolean hasStarted() {
+		return mHasStarted;
 	}
 	
 	public void shutdown() {
@@ -317,7 +326,7 @@ public class MDSManager extends MessageProcessor {
 		MiniDAPPDB db = mSqlDB.get(zMiniDAPPID);
 		
 		if(db != null) {
-			db.saveDB(false);
+			db.saveDB(true);
 		}
 		
 		mSqlDB.remove(zMiniDAPPID);
@@ -537,6 +546,8 @@ public class MDSManager extends MessageProcessor {
 				setupMiniDAPP(dapp);
 			}
 		
+			mHasStarted = true;
+			
 		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_INSTALLED)) {
 			
 			//Get the MiniDAPP
@@ -728,7 +739,7 @@ public class MDSManager extends MessageProcessor {
 		ArrayList<MiniDAPP> allminis = MinimaDB.getDB().getMDSDB().getAllMiniDAPPs();
 				
 		//Check for HUB
-		checkInstalled("minihub", "minihub/minihub-0.3.3.mds.zip", allminis, true, true);
+		checkInstalled("minihub", "minihub/minihub-0.3.4.mds.zip", allminis, true, true);
 		
 		//Pending gets write permissions
 		checkInstalled("pending", "default/pending-0.2.0.mds.zip", allminis, true);
