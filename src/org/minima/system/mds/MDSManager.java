@@ -742,20 +742,20 @@ public class MDSManager extends MessageProcessor {
 		checkInstalled("minihub", "minihub/minihub-0.3.4.mds.zip", allminis, true, true);
 		
 		//Pending gets write permissions
-		checkInstalled("pending", "default/pending-0.2.0.mds.zip", allminis, true);
+		checkInstalled("pending", "default/pending-0.2.1.mds.zip", allminis, true);
 		
 		//The rest are normal
-		checkInstalled("block", "default/block-2.0.5.mds.zip", allminis, false);
-		checkInstalled("chatter", "default/chatter-1.1.1.mds.zip", allminis, false);
-		checkInstalled("docs", "default/docs-1.1.3.mds.zip", allminis, false);
-		checkInstalled("filez", "default/filez-1.0.0.mds.zip", allminis, false);
+		checkInstalled("block", "default/block-2.1.0.mds.zip", allminis, false);
+		checkInstalled("chatter", "default/chatter-1.2.0.mds.zip", allminis, false);
+		checkInstalled("docs", "default/docs-1.4.0.mds.zip", allminis, false);
+		checkInstalled("filez", "default/filez-1.2.0.mds.zip", allminis, false);
 		checkInstalled("future cash", "default/futurecash-1.9.0.mds.zip", allminis, false);
-		checkInstalled("health", "default/health-0.1.5.mds.zip", allminis, false);
-		checkInstalled("maxcontacts", "default/maxcontacts-1.3.5.mds.zip", allminis, false);
+		checkInstalled("health", "default/health-0.1.8.mds.zip", allminis, false);
+		checkInstalled("maxcontacts", "default/maxcontacts-1.4.0.mds.zip", allminis, false);
 		checkInstalled("maxsolo", "default/maxsolo-2.4.3.mds.zip", allminis, false);
 		checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
 		checkInstalled("script ide", "default/scriptide-2.0.mds.zip", allminis, false);
-		checkInstalled("terminal", "default/terminal-2.03.mds.zip", allminis, false);
+		checkInstalled("terminal", "default/terminal-2.1.0.mds.zip", allminis, false);
 		//checkInstalled("vestr", "default/vestr-2.2.2.mds.zip", allminis, false);
 		checkInstalled("wallet", "default/wallet-2.24.3.mds.zip", allminis, false);
 	}
@@ -808,7 +808,7 @@ public class MDSManager extends MessageProcessor {
 			installDefaultMiniDAPP(zResource,zWrite,zIsMiniHUB);
 			
 		}catch(Exception exc) {
-			MinimaLogger.log(exc);			
+			MinimaLogger.log("[!] Failed install of "+zName+" @ "+zResource);			
 		}
 		
 		return false;
@@ -889,6 +889,7 @@ public class MDSManager extends MessageProcessor {
 		}catch(Exception exc) {
 			
 			//Can log this..
+			MinimaLogger.log("[!] Failed install of "+zResource);
 			MinimaLogger.log(exc);
 			
 			//Delete the install
@@ -972,6 +973,7 @@ public class MDSManager extends MessageProcessor {
 		}catch(Exception exc) {
 			
 			//Can log this..
+			MinimaLogger.log("[!] Failed update of "+zResource);
 			MinimaLogger.log(exc);
 
 			if(minidapp != null) {
