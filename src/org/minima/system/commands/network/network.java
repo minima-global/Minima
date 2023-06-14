@@ -14,7 +14,7 @@ import org.minima.utils.json.JSONObject;
 public class network extends Command {
 
 	public network() {
-		super("network","(action:list|reset) - Show network status or reset traffic counter");
+		super("network","(action:list|reset|recalculateip) - Show network status or reset traffic counter");
 	}
 	
 	@Override

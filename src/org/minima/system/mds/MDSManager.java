@@ -739,7 +739,7 @@ public class MDSManager extends MessageProcessor {
 		ArrayList<MiniDAPP> allminis = MinimaDB.getDB().getMDSDB().getAllMiniDAPPs();
 				
 		//Check for HUB
-		checkInstalled("minihub", "minihub/minihub-0.3.4.mds.zip", allminis, true, true);
+		checkInstalled("minihub", "minihub/minihub-0.3.5.mds.zip", allminis, true, true);
 		
 		//Pending gets write permissions
 		checkInstalled("pending", "default/pending-0.2.1.mds.zip", allminis, true);
@@ -749,8 +749,8 @@ public class MDSManager extends MessageProcessor {
 		checkInstalled("chatter", "default/chatter-1.2.0.mds.zip", allminis, false);
 		checkInstalled("docs", "default/docs-1.4.0.mds.zip", allminis, false);
 		checkInstalled("filez", "default/filez-1.2.0.mds.zip", allminis, false);
-		checkInstalled("future cash", "default/futurecash-1.9.0.mds.zip", allminis, false);
-		checkInstalled("health", "default/health-0.1.8.mds.zip", allminis, false);
+		checkInstalled("future cash", "default/futurecash-1.10.1.mds.zip", allminis, false);
+		checkInstalled("health", "default/health-0.2.0.mds.zip", allminis, false);
 		checkInstalled("maxcontacts", "default/maxcontacts-1.4.0.mds.zip", allminis, false);
 		checkInstalled("maxsolo", "default/maxsolo-2.4.3.mds.zip", allminis, false);
 		checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);

@@ -127,9 +127,11 @@ docker {
     name 'minimaglobal/minima:dev'
     dockerfile project.file('docker/Dockerfile')
     
-    buildx true
-    push true
-    platform 'linux/amd64,linux/arm64,linux/arm/v7'
+    //buildx true
+    //push true
+    //platform 'linux/amd64,linux/arm64,linux/arm/v7'
+    //platform 'linux/amd64,linux/arm64'
+    //platform 'amd64,arm32v7,arm64v8,windows-amd64'
     
     files tasks.shadowJar, "$rootDir/docker/dapps"
     copySpec.from("$buildDir/lib/minima-all.jar",).into(".")

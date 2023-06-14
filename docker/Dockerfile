@@ -1,5 +1,5 @@
 #Use a JDK that allows multiple platforms
-FROM adoptopenjdk:11-jre-hotspot
+FROM eclipse-temurin:11
 
 #Create a home folder
 RUN mkdir -p /home/minima
@@ -9,15 +9,14 @@ ENV HOME=/home/minima
 ENV LOCAL=/usr/local
 WORKDIR $LOCAL
 
-# Copy in startup script, minima and dapps
-COPY minima-all.jar minima/minima.jar
-
 # Get other permissions right, too
 RUN mkdir -p $HOME/data
-#RUN mkdir -p $HOME/dapps
 
-# Copy over the MiniDAPPs
-#COPY *.mds.zip $HOME/dapps/
+#Install some apps
+RUN apt-get update
+RUN apt-get -y install curl jq vim nano
+RUN apt-get clean
+RUN rm -rf /var/lib/apt/lists/*
 
 # Copy the Config
 COPY minima.config $HOME/minima.config
@@ -26,14 +25,11 @@ COPY minima.config $HOME/minima.config
 COPY minima /usr/bin/minima
 RUN chmod +x /usr/bin/minima
 
-#Install curl
-RUN apt-get update
-RUN apt-get -y install curl jq vim nano
-RUN apt-get clean
-RUN rm -rf /var/lib/apt/lists/*
-
 #Make BASH the defult
 RUN ln -sf /bin/bash /bin/sh
+
+# Copy in startup script, minima and dapps
+COPY minima-all.jar minima/minima.jar
 
 #Move to Home folder
 WORKDIR $HOME
