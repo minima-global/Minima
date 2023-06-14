@@ -15,8 +15,10 @@ import javax.crypto.CipherOutputStream;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowdb.sql.TxPoWList;
+import org.minima.database.txpowdb.sql.TxPoWSqlDB;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.params.GeneralParams;
@@ -31,7 +33,7 @@ public class backup extends Command {
 	public static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat("dd_MM_yyyy_HHmmss", Locale.ENGLISH );
 	
 	public backup() {
-		super("backup","(password:) (file:) (auto:) - Backup the system. Uses a timestamped name by default");
+		super("backup","(password:) (file:) (auto:) (maxhistory:) - Backup the system. Uses a timestamped name by default");
 	}
 	
 	@Override
@@ -50,6 +52,9 @@ public class backup extends Command {
 				+ "auto: (optional)\n"
 				+ "    true or false, true will schedule a non-password protected backup every 24 hours.\n"
 				+ "\n"
+				+ "maxhistory: (optional)\n"
+				+ "    Max relevant TxPoW to add - your history.\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "backup password:Longsecurepassword456\n"
@@ -63,7 +68,7 @@ public class backup extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"debug","password","file","auto","confirm"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"debug","password","file","auto","confirm","maxhistory"}));
 	}
 	
 	@Override
@@ -169,7 +174,8 @@ public class backup extends Command {
 			MiniData p2pdata = new MiniData(MiniFile.readCompleteFile(p2pdb));
 			
 			//Store the relevant TxPoWs..
-			ArrayList<TxPoW> txps 	= MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant();
+			int max = getNumberParam("maxhistory",TxPoWSqlDB.MAX_RELEVANT_TXPOW).getAsInt();
+			ArrayList<TxPoW> txps 	= MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant(max);
 			TxPoWList txplist 	 	= new TxPoWList(txps);
 			MiniData txplistdata 	= MiniData.getMiniDataVersion(txplist);
 			

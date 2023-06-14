@@ -2,6 +2,10 @@ package org.minima.system.mds.handler;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 import org.minima.objects.base.MiniData;
@@ -26,10 +30,17 @@ public class FILEcommand {
 	public static final String FILECOMMAND_MAKEDIR 		= "MAKEDIR";
 	public static final String FILECOMMAND_COPY 		= "COPY";
 	public static final String FILECOMMAND_MOVE 		= "MOVE";
+	public static final String FILECOMMAND_DOWNLOAD 	= "DOWNLOAD";
+	public static final String FILECOMMAND_COPYTOWEB 	= "COPYTOWEB";
 	
-	
+	/**
+	 * Main MDS Manager
+	 */
 	MDSManager mMDS;
 	
+	/**
+	 * Which MiniDAPP os this
+	 */
 	String mMiniDAPPID;
 	
 	String mFileCommand;
@@ -58,25 +69,34 @@ public class FILEcommand {
 		
 		try {
 		
-			//Get the root folder..
-			File rootfiles = mMDS.getMiniDAPPFileFolder(mMiniDAPPID);
+			//The root folder
+			File rootfiles		= mMDS.getMiniDAPPFileFolder(mMiniDAPPID);
 			
-			//Get the requested file..
-			File actualfile = new File(rootfiles,mFile);
+			String canonical 	= "";
+			File actualfile		= null;
+			boolean fileexists 	= false;
 			
-			//Check id child..
-			if(!MiniFile.isChild(rootfiles, actualfile)) {
-				throw new Exception("Invalid file..");
+			//Only do this for local files
+			if(!mFileCommand.equals(FILECOMMAND_DOWNLOAD)) {
+				
+				//Get the requested file..
+				actualfile = new File(rootfiles,mFile);
+				fileexists = actualfile.exists();
+				
+				//Check id child..
+				if(!MiniFile.isChild(rootfiles, actualfile)) {
+					throw new Exception("Invalid file..");
+				}
+				
+				canonical = getCanonicalPath(rootfiles,actualfile);
 			}
-			
-			String canonical = getCanonicalPath(rootfiles,actualfile);
 			
 			JSONObject resp = new JSONObject();
 			resp.put("action", mFileCommand);
 			resp.put("file", mFile);
 			resp.put("canonical", canonical);
 			resp.put("data", mData);
-			resp.put("exists", actualfile.exists());
+			resp.put("exists", fileexists);
 			
 			if(mFileCommand.equals(FILECOMMAND_LIST)) {
 				
@@ -249,7 +269,7 @@ public class FILEcommand {
 					parent.mkdirs();
 				}
 				
-				//Now copy the data
+				//Now move the file
 				actualfile.renameTo(newfile);
 				
 				JSONObject fdata = new JSONObject();
@@ -257,6 +277,68 @@ public class FILEcommand {
 				fdata.put("movefile", mData);
 				
 				resp.put("move", fdata);
+				
+			}else if(mFileCommand.equals(FILECOMMAND_DOWNLOAD)) {
+				
+				//Make sure downloads folder exists
+				File downs = new File(rootfiles,"Downloads");
+				downs.mkdirs();
+				
+				//Get the filename
+				String filename = Paths.get(new URI(mFile).getPath()).getFileName().toString();
+				
+				//What is the file
+				File dfile = new File(downs,filename);
+				if(dfile.exists()) {
+					dfile.delete();
+				}
+				
+				//Download the file to downloads folder
+				long size = download(mFile, dfile.getPath());
+				
+				JSONObject fdata = new JSONObject();
+				fdata.put("file", "/Downloads/"+filename);
+				fdata.put("location", getCanonicalPath(rootfiles,dfile));
+				fdata.put("path", dfile.getPath());
+				fdata.put("size", size);
+				resp.put("download", fdata);
+			
+			}else if(mFileCommand.equals(FILECOMMAND_COPYTOWEB)) {
+				
+				//Get the web Folder
+				File webfiles = mMDS.getMiniDAPPWebFolder(mMiniDAPPID);
+				
+				//The new file..
+				File newfile = new File(webfiles,mData);
+				
+				//Check id child..
+				if(!MiniFile.isChild(webfiles, newfile)) {
+					throw new Exception("Invalid file..");
+				}
+				
+				//Check exists
+				if(!actualfile.exists()) {
+					throw new IllegalArgumentException("File does not exist "+actualfile);
+				}
+				
+				//Check not directory
+				if(actualfile.isDirectory()) {
+					throw new IllegalArgumentException("Cannot move Directory");
+				}
+				
+				File parent = newfile.getParentFile();
+				if(!parent.exists()) {
+					parent.mkdirs();
+				}
+				
+				//Now copy the data
+				MiniFile.copyFile(actualfile, newfile);
+				
+				JSONObject fdata = new JSONObject();
+				fdata.put("origfile", mFile);
+				fdata.put("webfile", mData);
+				
+				resp.put("copytoweb", fdata);
 			}
 			
 			JSONObject stattrue = new JSONObject();
@@ -293,6 +375,12 @@ public class FILEcommand {
 		filecan = filecan.replace("//", "/");
 		
 		return filecan;
+	}
+	
+	static long download(String url, String fileName) throws IOException {
+	    try (InputStream in = URI.create(url).toURL().openStream()) {
+	        return Files.copy(in, Paths.get(fileName));
+	    }
 	}
 
 }

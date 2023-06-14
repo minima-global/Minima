@@ -331,6 +331,30 @@ var MDS = {
 			
 			//Send via POST
 			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+		},
+		
+		/**
+		 * Download a File from the InterWeb - Will be put in Downloads folder
+		 */
+		download : function(url, callback){
+			
+			//Create the single line
+			var commsline = "download&"+url;
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);	
+		},
+		
+		/**
+		 * Copy a file to your web folder
+		 */
+		copytoweb : function(file, webfile, callback){
+			
+			//Create the single line
+			var commsline = "copytoweb&"+file+"&"+webfile;
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);	
 		}
 		
 	}, 

@@ -515,4 +515,19 @@ public class P2PManager extends MessageProcessor {
         //And finish with..
         stopMessageProcessor();
     }
+    
+    public boolean haveAnyPeers() {
+    	
+    	//Check peers checker
+    	if(mPeersChecker.haveAnyPeers()) {
+    		return true;
+    	}
+    	
+    	//Check our DB
+    	if(MinimaDB.getDB().getP2PDB().getPeersList().size()>0) {
+    		return true;
+    	}
+    	
+    	return false;
+    }
 }

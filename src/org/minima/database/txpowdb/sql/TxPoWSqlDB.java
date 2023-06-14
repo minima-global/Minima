@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SqlDB;
@@ -20,7 +21,12 @@ public class TxPoWSqlDB extends SqlDB {
 	/**
 	 * How long does data remain the SQL DB in milli seconds
 	 */
-	public long MAX_SQL_MILLI = 1000 * 60 * 60 * 24 * GeneralParams.NUMBER_DAYS_SQLTXPOWDB;
+	public static long MAX_SQL_MILLI = 1000 * 60 * 60 * 24 * GeneralParams.NUMBER_DAYS_SQLTXPOWDB;
+	
+	/**
+	 * The default MAX Relevant TxPoW
+	 */
+	public static MiniNumber MAX_RELEVANT_TXPOW = MiniNumber.HUNDRED;
 	
 	/**
 	 * Prepared SQL statements
@@ -82,7 +88,7 @@ public class TxPoWSqlDB extends SqlDB {
 			SQL_DELETE_TXPOW	= mSQLConnection.prepareStatement("DELETE FROM txpow WHERE timemilli < ? AND isrelevant=0");
 			SQL_EXISTS			= mSQLConnection.prepareStatement("SELECT txpowid FROM txpow WHERE txpowid=?");
 		
-			SQL_SELECT_RELEVANT = mSQLConnection.prepareStatement("SELECT * FROM txpow WHERE isrelevant=1 LIMIT 200");
+			SQL_SELECT_RELEVANT = mSQLConnection.prepareStatement("SELECT * FROM txpow WHERE isrelevant=1 ORDER BY timemilli DESC LIMIT ?");
 	}
 	
 	public void wipeDB() throws SQLException {
@@ -211,12 +217,15 @@ public class TxPoWSqlDB extends SqlDB {
 		return txpows;
 	}
 	
-	public synchronized ArrayList<TxPoW> getAllRelevant() {
+	public synchronized ArrayList<TxPoW> getAllRelevant(int zLimit) {
 		ArrayList<TxPoW> txpows = new ArrayList<>();
 
 		try {
 			//Get the query ready
 			SQL_SELECT_RELEVANT.clearParameters();
+			
+			//Set the Limit..
+			SQL_SELECT_RELEVANT.setInt(1, zLimit);
 			
 			//Run the query
 			ResultSet rs = SQL_SELECT_RELEVANT.executeQuery();
@@ -286,9 +295,16 @@ public class TxPoWSqlDB extends SqlDB {
 	 * Returns how many rows were deleted
 	 */
 	public synchronized int cleanDB() {
+		return cleanDB(false);
+	}
+	
+	public synchronized int cleanDB(boolean zHard) {
 		try {
 			//Current MAX time..
 			long maxtime = System.currentTimeMillis() - MAX_SQL_MILLI;
+			if(zHard) {
+				maxtime = System.currentTimeMillis() + 100000;
+			}
 			
 			//Set the parameters
 			SQL_DELETE_TXPOW.clearParameters();

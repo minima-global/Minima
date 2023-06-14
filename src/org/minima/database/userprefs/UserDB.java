@@ -237,4 +237,16 @@ public class UserDB extends JsonDB{
 		setBoolean("slavenode_enabled", zEnabled);
 		setString("slavenode_host", zHost);
 	}
+	
+	/**
+	 * Default MiniHUB
+	 */
+	public String getDefaultMiniHUB() {
+		return getString("minihub_default", "0x00");
+	}
+	
+	public void setDefaultMiniHUB(String zMiniDAPPID) {
+		setString("minihub_default", zMiniDAPPID);
+	}
+	
 }

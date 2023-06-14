@@ -344,6 +344,9 @@ public class mysql extends Command {
 			
 		}else if(action.equals("resync")) {
 			
+			//Can only do this if all keys created..
+			vault.checkAllKeysCreated();
+			
 			//How many Keys do we need to generate
 			int keys = getNumberParam("keys", new MiniNumber(Wallet.NUMBER_GETADDRESS_KEYS + 16)).getAsInt();
 			
@@ -404,6 +407,9 @@ public class mysql extends Command {
 			MinimaLogger.log("System clean..");
 			System.gc();
 			while(true) {
+				
+				//We don't need any transactions in RamDB
+				MinimaDB.getDB().getTxPoWDB().wipeDBRAM();
 				
 				//Clean system counter
 				counter++;
@@ -500,6 +506,11 @@ public class mysql extends Command {
 				if(size==0) {
 					break;
 				}
+				
+//				//HACK
+//				if(startblock.isMore(new MiniNumber(5000))) {
+//					break;
+//				}
 			}
 			
 			//Notify the Android Listener
@@ -519,7 +530,8 @@ public class mysql extends Command {
 			ret.put("response", resp);
 			
 			//And NOW shut down..
-			Main.getInstance().getTxPoWProcessor().stopMessageProcessor();
+			//Main.getInstance().getTxPoWProcessor().stopMessageProcessor();
+			Main.getInstance().shutdownFinalProcs();
 			
 			//Now shutdown and save everything
 			MinimaDB.getDB().saveAllDB();

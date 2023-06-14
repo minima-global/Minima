@@ -71,6 +71,17 @@ public class P2PPeersChecker extends MessageProcessor {
     }
 
     /**
+     * Do we have any peers
+     */
+    public boolean haveAnyPeers() {
+    	if(verifiedPeers.size()>0 || unverifiedPeers.size()>0) {
+    		return true;
+    	}
+    	
+    	return false;
+    }
+    
+    /**
      * Only add up to max peers in unverified list
      */
     public void checkUnverifiedPeer(InetSocketAddress zAddress) {

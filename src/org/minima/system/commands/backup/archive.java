@@ -303,6 +303,7 @@ public class archive extends Command {
 			int counter = 0;
 			MinimaLogger.log("System clean..");
 			System.gc();
+			IBD ibd = null;
 			while(true) {
 				
 				//We don't need any transactions in RamDB
@@ -315,7 +316,7 @@ public class archive extends Command {
 				}
 				
 				//Send him a message..
-				IBD ibd = sendArchiveReq(host, port, startblock);
+				ibd = sendArchiveReq(host, port, startblock);
 				if(ibd == null) {
 					ibd = new IBD();
 					//throw new CommandException("Connection error @ "+host+":"+port);
@@ -425,7 +426,8 @@ public class archive extends Command {
 			ret.put("response", resp);
 			
 			//And NOW shut down..
-			Main.getInstance().getTxPoWProcessor().stopMessageProcessor();
+			//Main.getInstance().getTxPoWProcessor().stopMessageProcessor();
+			Main.getInstance().shutdownFinalProcs();
 			
 			//Now shutdown and save everything
 			MinimaDB.getDB().saveAllDB();

@@ -3,6 +3,7 @@ package org.minima.system;
 import java.io.File;
 import java.util.ArrayList;
 
+import org.minima.Minima;
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.UserDB;
@@ -23,6 +24,7 @@ import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.network.p2p.P2PFunctions;
+import org.minima.system.network.webhooks.NotifyManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.system.sendpoll.SendPollManager;
@@ -39,6 +41,8 @@ import org.minima.utils.ssl.SSLManager;
 
 public class Main extends MessageProcessor {
 
+	public static boolean STARTUP_DEBUG_LOGS = false;
+	
 	/**
 	 * Uptime for the node
 	 */
@@ -158,6 +162,11 @@ public class Main extends MessageProcessor {
 	SendPollManager mSendPoll;
 	
 	/**
+	 * The Web Hooks for Minima messages
+	 */
+	NotifyManager mNotifyManager;
+	
+	/**
 	 * Are we shutting down..
 	 */
 	boolean mShuttingdown = false;
@@ -185,6 +194,10 @@ public class Main extends MessageProcessor {
 	public Main() {
 		super("MAIN");
 	
+		if(STARTUP_DEBUG_LOGS) {
+			MinimaLogger.log("MAIN init.. start");
+		}
+		
 		//Start the Uptime clock..
 		mUptimeMilli = System.currentTimeMillis();
 		
@@ -202,10 +215,23 @@ public class Main extends MessageProcessor {
 		}
 		
 		//Create the MinmaDB
+		if(STARTUP_DEBUG_LOGS) {
+			MinimaLogger.log("MinimaDB create.. start");
+		}
 		MinimaDB.createDB();
+		if(STARTUP_DEBUG_LOGS) {
+			MinimaLogger.log("MinimaDB create.. finish");
+		}
 		
 		//Load the Databases
+		if(STARTUP_DEBUG_LOGS) {
+			MinimaLogger.log("Load all DB.. start");
+		}
 		MinimaDB.getDB().loadAllDB();
+		if(STARTUP_DEBUG_LOGS) {
+			MinimaLogger.log("Load all DB.. finish");
+		}
+		
 		
 		//Are we in Slave node mode
 		boolean slavemode = MinimaDB.getDB().getUserDB().isSlaveNode();
@@ -219,8 +245,13 @@ public class Main extends MessageProcessor {
 		}
 		
 		//Create the SSL Keystore..
+		if(STARTUP_DEBUG_LOGS) {
+			MinimaLogger.log("SSL Key.. start");
+		}
 		SSLManager.makeKeyFile();
-		
+		if(STARTUP_DEBUG_LOGS) {
+			MinimaLogger.log("SSL Key.. finish");
+		}
 		//Calculate the User hashrate.. start her up as seems to make a difference.. initialises..
 		TxPoWMiner.calculateHashRateOld(new MiniNumber(10000));
 		
@@ -237,6 +268,9 @@ public class Main extends MessageProcessor {
 			MinimaLogger.log(exc.toString());
 		}
 		
+		//Notification of Events
+		mNotifyManager = new NotifyManager();
+				
 		//Start the engine..
 		mTxPoWProcessor = new TxPoWProcessor();
 		mTxPoWMiner 	= new TxPoWMiner();
@@ -246,13 +280,13 @@ public class Main extends MessageProcessor {
 			//Create a genesis node
 			doGenesis();
 		}
-		
+				
 		//Start the networking..
 		mNetwork = new NetworkManager();
-		
+				
 		//Start up Maxima
 		mMaxima = new MaximaManager();
-		
+				
 		//Start MDS
 		mMDS = new MDSManager();
 		
@@ -305,7 +339,7 @@ public class Main extends MessageProcessor {
 				Runtime.getRuntime().exit(1);
 			}
 			
-			MinimaLogger.log("Running in slave mode. Connected to "+GeneralParams.CONNECT_LIST);
+			MinimaLogger.log("Running in slave mode. Will Connect to "+GeneralParams.CONNECT_LIST);
 		}
 	}
 	
@@ -371,8 +405,7 @@ public class Main extends MessageProcessor {
 			
 			//Stop the main TxPoW processor
 			MinimaLogger.log("Waiting for TxPoWProcessor shutdown");
-			mTxPoWProcessor.stopMessageProcessor();
-			mTxPoWProcessor.waitToShutDown();
+			shutdownFinalProcs();
 			
 			//Now backup the  databases
 			MinimaLogger.log("Saving all db");
@@ -384,7 +417,7 @@ public class Main extends MessageProcessor {
 			//Wait for it..
 			MinimaLogger.log("Waiting for Main thread shutdown");
 			waitToShutDown();
-		
+			
 			MinimaLogger.log("Shut down completed OK..");
 			
 		}catch(Exception exc) {
@@ -401,8 +434,7 @@ public class Main extends MessageProcessor {
 		shutdownGenProcs();
 		
 		//Stop the main TxPoW processor
-		mTxPoWProcessor.stopMessageProcessor();
-		mTxPoWProcessor.waitToShutDown();	
+		shutdownFinalProcs();
 	}
 	
 	public void restoreReadyForSync() {
@@ -412,7 +444,6 @@ public class Main extends MessageProcessor {
 		
 		//Reload the DBs..
 		MinimaDB.getDB().loadDBsForRestoreSync();
-				
 	}
 	
 	public void archiveResetReady(boolean zResetWallet) {
@@ -462,7 +493,7 @@ public class Main extends MessageProcessor {
 		mMaxima.shutdown();
 		
 		//ShutDown MDS
-		mMDS.shutdown();
+//		mMDS.shutdown();
 				
 		//Stop the Miner
 		mTxPoWMiner.stopMessageProcessor();
@@ -480,6 +511,19 @@ public class Main extends MessageProcessor {
 				break;
 			}
 		}
+	}
+	
+	public void shutdownFinalProcs() {
+				
+		//ShutDown MDS
+		mMDS.shutdown();
+		
+		//Shut down the Notify Manager
+		mNotifyManager.shutDown();
+				
+		//Stop the main TxPoW processor
+		mTxPoWProcessor.stopMessageProcessor();
+		mTxPoWProcessor.waitToShutDown();
 	}
 	
 	/**
@@ -565,6 +609,10 @@ public class Main extends MessageProcessor {
 	
 	public NIOManager getNIOManager() {
 		return mNetwork.getNIOManager();
+	}
+	
+	public NotifyManager getNotifyManager() {
+		return mNotifyManager;
 	}
 	
 	public TxPoWProcessor getTxPoWProcessor() {
@@ -858,9 +906,10 @@ public class Main extends MessageProcessor {
 		notify.put("event", zEvent);
 		notify.put("data", zData);
 		
-		if(getNetworkManager() != null) {
+		if(getNotifyManager() != null) {
+			
 			//And post
-			getNetworkManager().getNotifyManager().PostEvent(notify);
+			getNotifyManager().PostEvent(notify);
 		}
 		
 		//Tell the MDS..

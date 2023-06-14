@@ -15,6 +15,7 @@ import org.minima.database.txpowtree.TxPowTree;
 import org.minima.database.userprefs.UserDB;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.wallet.Wallet;
+import org.minima.system.Main;
 import org.minima.system.network.p2p.P2PDB;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
@@ -196,6 +197,9 @@ public class MinimaDB {
 			File basedb = getBaseDBFolder();
 			
 			//Load the wallet
+			if(Main.STARTUP_DEBUG_LOGS) {
+				MinimaLogger.log("MinimaDB load Wallet..");
+			}
 			File walletsqlfolder = new File(basedb,"walletsql");
 			if(!GeneralParams.IS_MAIN_DBPASSWORD_SET) {
 				mWallet.loadDB(new File(walletsqlfolder,"wallet"));
@@ -205,6 +209,9 @@ public class MinimaDB {
 			}
 			
 			//Set the Archive folder
+			if(Main.STARTUP_DEBUG_LOGS) {
+				MinimaLogger.log("MinimaDB load ArchiveDB..");
+			}
 			File archsqlfolder = new File(basedb,"archivesql");
 			try {
 				
@@ -231,6 +238,9 @@ public class MinimaDB {
 			}
 			
 			//Load the SQL DB
+			if(Main.STARTUP_DEBUG_LOGS) {
+				MinimaLogger.log("MinimaDB load TxPoWDB..");
+			}
 			File txpowsqlfolder = new File(basedb,"txpowsql");
 			try {
 				
@@ -257,6 +267,9 @@ public class MinimaDB {
 			}
 			
 			//Load the Maxima DB
+			if(Main.STARTUP_DEBUG_LOGS) {
+				MinimaLogger.log("MinimaDB load MaximaDB..");
+			}
 			File maxsqlfolder = new File(basedb,"maximasql");
 			try {
 				
@@ -467,16 +480,10 @@ public class MinimaDB {
 			//Get the base Database folder
 			File basedb = getBaseDBFolder();
 			
-//			MinimaLogger.log("Save Cascade..");
-//			//Reset these structures..
-//			mCascade.saveDB(new File(basedb,"cascade.db"));
-//			mCascade = new Cascade();
-//			mCascade.loadDB(new File(basedb,"cascade.db"));
-//			
-//			MinimaLogger.log("Save TxPoWTree..");
-//			mTxPoWTree.saveDB(new File(basedb,"chaintree.db"));
-//			mTxPoWTree = new TxPowTree();
-//			mTxPoWTree.loadDB(new File(basedb,"chaintree.db"));
+			//Wipe the old data..
+			mTxPoWDB.wipeDBRAM();
+			mTxPoWDB.getSQLDB().cleanDB(true);
+			mArchive.cleanDB();
 			
 			//Shut them down
 			MinimaLogger.log("Save TxPoWDB..");

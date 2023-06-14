@@ -61,7 +61,7 @@ public class webhooks extends Command {
 		String action = getParam("action", "list");
 		
 		//Get the Notify Manager
-		NotifyManager notify = Main.getInstance().getNetworkManager().getNotifyManager();
+		NotifyManager notify = Main.getInstance().getNotifyManager();
 		
 		//The response..
 		JSONObject resp = new JSONObject();

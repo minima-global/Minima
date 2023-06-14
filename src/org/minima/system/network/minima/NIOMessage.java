@@ -764,6 +764,14 @@ public class NIOMessage implements Runnable {
 				//Now check for intersection
 				boolean found = false;
 				ArrayList<MiniData> pulsemsg = pulse.getBlockList();
+				
+				//Check within limits..
+				if(pulsemsg.size()>1000) {
+					//Too many..!
+					MinimaLogger.log("Too mnay messages in PULSE "+pulsemsg.size()+" max:1000");
+					return;
+				}
+				
 				int counter=0;
 				for(MiniData block : pulsemsg) {
 					
@@ -1014,7 +1022,9 @@ public class NIOMessage implements Runnable {
 					MiniNumber top = syncibd.getTxBlocks().get(0).getTxPoW().getBlockNumber(); 
 					
 					//And post this on..
-					MinimaLogger.log("[+] Received Sync IBD. size:"+MiniFormat.formatSize(data.length)+" blocks:"+syncibd.getTxBlocks().size()+" top:"+top);
+					if(GeneralParams.IBDSYNC_LOGS) {
+						MinimaLogger.log("[+] Received Sync IBD. size:"+MiniFormat.formatSize(data.length)+" blocks:"+syncibd.getTxBlocks().size()+" top:"+top);
+					}
 					
 					//Send to the Processor
 					Main.getInstance().getTxPoWProcessor().postProcessSyncIBD(syncibd, mClientUID);

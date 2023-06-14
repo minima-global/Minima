@@ -29,6 +29,7 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
+import org.minima.system.commands.base.logs;
 import org.minima.system.commands.network.connect;
 import org.minima.system.network.NetworkManager;
 import org.minima.system.network.maxima.MaximaManager;
@@ -274,7 +275,10 @@ public class NIOManager extends MessageProcessor {
 					if(msg == null) {
 						MinimaLogger.log("ERROR connect host specified incorrectly : "+host);
 					}else {
-						PostMessage(msg);
+						MinimaLogger.log("Attempt to connect to specified host in 10 seconds : "+host);
+						
+						//Wait 10 secs and then connect
+						PostTimerMessage(new TimerMessage(10000, msg));
 					}
 				}
 			}
@@ -329,7 +333,13 @@ public class NIOManager extends MessageProcessor {
 			//Is it still in the list..
 			if(!mConnectingClients.containsKey(nc.getUID())) {
 				//Has been removed.. stop trying to connect
+				MinimaLogger.log("Connect attempt to "+nc.getFullAddress()+" cancelled.. (removed from connecting clients)");
 				return;
+			}
+			
+			//Logs..
+			if(GeneralParams.TXBLOCK_NODE) {
+				MinimaLogger.log("Slave Node Connect attempt to "+nc.getFullAddress());
 			}
 			
 //			//How many connections - if too many stop.. 
@@ -359,28 +369,43 @@ public class NIOManager extends MessageProcessor {
 			//Do we try to reconnect
 			boolean reconnect = true;
 			
-			//Do we attempt a reconnect..
-			if(nc.getConnectAttempts() > RECONNECT_ATTEMPTS) {
-				//Do we have ANY connections at all..
-				ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
-				if(conns.size()>0) {
+			//Are we in slave mode..
+			if(GeneralParams.TXBLOCK_NODE) {
+				
+				if(nc.getConnectAttempts() > RECONNECT_ATTEMPTS) {
 					
-					//No reconnect
-					reconnect = false;
+					//Always attempts to reconnect
+					MinimaLogger.log("INFO : Slave node attempt reconnect.. "+nc.getFullAddress());
 					
-					//Tell the P2P..
-					Message newconn = new Message(P2PFunctions.P2P_NOCONNECT);
-					newconn.addObject("client", nc);
-					newconn.addString("uid", nc.getUID());
-					mNetworkManager.getP2PManager().PostMessage(newconn);
-					
-					MinimaLogger.log("INFO : "+nc.getUID()+"@"+nc.getFullAddress()+" connection failed - no more reconnect attempts ");
-					
-				}else {
-					MinimaLogger.log("INFO : "+nc.getUID()+"@"+nc.getFullAddress()+" Resetting reconnect attempts (no other connections) for "+nc.getFullAddress());
-					
-					//reset connect attempts..
+					//We definitely have to reconnect..
 					nc.setConnectAttempts(1);
+				}
+				
+			}else{
+				
+				//Do we attempt a reconnect..
+				if(nc.getConnectAttempts() > RECONNECT_ATTEMPTS) {
+					//Do we have ANY connections at all..
+					ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+					if(conns.size()>0) {
+						
+						//No reconnect
+						reconnect = false;
+						
+						//Tell the P2P..
+						Message newconn = new Message(P2PFunctions.P2P_NOCONNECT);
+						newconn.addObject("client", nc);
+						newconn.addString("uid", nc.getUID());
+						mNetworkManager.getP2PManager().PostMessage(newconn);
+						
+						MinimaLogger.log("INFO : "+nc.getUID()+"@"+nc.getFullAddress()+" connection failed - no more reconnect attempts ");
+						
+					}else {
+						MinimaLogger.log("INFO : "+nc.getUID()+"@"+nc.getFullAddress()+" Resetting reconnect attempts (no other connections) for "+nc.getFullAddress());
+						
+						//reset connect attempts..
+						nc.setConnectAttempts(1);
+					}
 				}
 			}
 			
@@ -407,7 +432,6 @@ public class NIOManager extends MessageProcessor {
 		}else if(zMessage.getMessageType().equals(NIO_DISCONNECTALL)) {
 			
 			//Disconnect from all the clients..!
-			
 			Enumeration<NIOClient> clients = mConnectingClients.elements();
 			while(clients.hasMoreElements()) {
 				NIOClient nc = clients.nextElement();
@@ -448,6 +472,28 @@ public class NIOManager extends MessageProcessor {
 			//Is it a vaid client..
 			if(!nioc.isValidGreeting()) {
 				reconnect = false;
+			}
+			
+			//Is it incoming..
+			if(nioc.isIncoming()) {
+				reconnect = false;
+			}
+			
+			//Slave node logs
+			if(GeneralParams.TXBLOCK_NODE) {
+				if(zMessage.exists("reconnect")) {
+					MinimaLogger.log("SLAVE NODE disconneced.. from:"+nioc.getUID()+" req:"+zMessage.getBoolean("reconnect")+" reconnect:"+reconnect+" validgreeting:"+nioc.isValidGreeting()+" host:"+nioc.getFullAddress()+" incoming:"+nioc.isIncoming());
+				}else {
+					MinimaLogger.log("SLAVE NODE disconneced.. from:"+nioc.getUID()+" reconnect:"+reconnect+" validgreeting:"+nioc.isValidGreeting()+" host:"+nioc.getFullAddress()+" incoming:"+nioc.isIncoming());
+				}
+				
+				//Are we still connected..
+				if(nioc.isOutgoing() && checkConnected(nioc.getFullAddress(), true) == null) {
+					if(reconnect == false) {
+						MinimaLogger.log("FORCE Slave reconnect "+nioc.getUID()+" "+nioc.getFullAddress());
+						reconnect = true;
+					}
+				}
 			}
 			
 			//Lost a connection
@@ -595,7 +641,10 @@ public class NIOManager extends MessageProcessor {
 			}
 			
 			//Send a message asking for a sync
-			MinimaLogger.log("[+] Request Sync IBD @ "+lastpow.getBlockNumber());
+			if(GeneralParams.IBDSYNC_LOGS) {
+				MinimaLogger.log("[+] Request Sync IBD @ "+lastpow.getBlockNumber());
+			}
+			
 			sendNetworkMessage(clientid, NIOMessage.MSG_IBD_REQ, lastpow);
 			
 		}else if(zMessage.getMessageType().equals(NIO_CHECKLASTMSG)) {
@@ -677,7 +726,7 @@ public class NIOManager extends MessageProcessor {
 					
 				}catch(Exception exc) {
 					//Try again in a minute..
-//					MinimaLogger.log(zNIOClient.getUID()+" INFO : connecting attempt "+zNIOClient.getConnectAttempts()+" to "+zNIOClient.getHost()+":"+zNIOClient.getPort()+" "+exc.toString());
+					MinimaLogger.log(zNIOClient.getUID()+" INFO : connecting attempt "+zNIOClient.getConnectAttempts()+" to "+zNIOClient.getHost()+":"+zNIOClient.getPort()+" "+exc.toString());
 					
 					//Do we try to reconnect
 					Message reconn = new Message(NIO_RECONNECT);
@@ -695,6 +744,19 @@ public class NIOManager extends MessageProcessor {
 	 * Disconnect a client
 	 */
 	public void disconnect(String zClientUID) {
+		
+		//Logs
+		if(GeneralParams.TXBLOCK_NODE) {
+			try {
+				if(true) {
+					throw new Exception("Show Disconnect Stack Trace");
+				}
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
+		}
+		
+		
 		Message msg = new Message(NIOManager.NIO_DISCONNECT).addString("uid", zClientUID);
 		PostMessage(msg);
 	}

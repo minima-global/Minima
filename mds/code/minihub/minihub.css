@@ -1,0 +1,178 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: #16181C;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 30px;
+}
+
+.mainlogon {
+    padding: 20px;
+    background: #F4F4F5;
+    border-radius: 16px;
+    color: #16181C;
+    text-decoration: none;
+    width : 400px;
+}
+
+.list-container {
+    display:flex;
+    justify-content: center;
+    padding-top: 20px;
+}
+
+.list-container ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.list-container li {
+    border: 0.5px solid #EDEDED;
+    border-radius: 16px;
+    margin-bottom: 20px;
+}
+
+.list-item-container {
+    display: flex;
+    justify-content: space-between;
+    width: 80vw;
+    max-width: 800px;
+    padding: 20px;
+    background: #F4F4F5;
+    border-radius: 16px;
+    color: #16181C;
+    text-decoration: none;
+}
+
+.list-item-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.app-title {
+    font-weight: bold;
+    font-size: larger;
+}
+
+.logonentry {
+		    background-color: #eee;
+		    border: 0.5px solid #16181c;
+		  	border-radius: 8px;
+		  	padding: 8px 8px;
+		  	font-size: 14px;
+		}
+
+.logonbutton {
+		    background-color: #eee;
+		    border: 0.5px solid #16181c;
+		  	border-radius: 8px;
+		  	padding: 8px 8px;
+		  	font-size: 14px;
+		}
+
+.logonbutton:hover {
+	 	cursor: pointer;
+    	color: #fff;
+		background-color: #16181C;
+  		border-radius: 8px;
+  		padding: 8px 8px;
+		border-color: #16181C;
+}
+
+.logonbutton:active {
+  		opacity: 0.8;
+		font-style: italic;
+}.solobutton {
+    background-color: #eee;
+    border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	font-size: 14px;
+}
+
+.solobutton:hover {
+	 	cursor: pointer;
+    	color: #fff;
+		background-color: #16181C;
+  		border-radius: 8px;
+  		padding: 8px 8px;
+		border-color: #16181C;
+}
+
+.solobutton:active {
+  		opacity: 0.8;
+		font-style: italic;
+}		
+.deletebutton {
+    background-color: #f00;
+    border: 2.5px solid #00f;
+  	border-radius: 8px;
+  	padding: 4px 4px;
+  	font-size: 14px;
+}
+.updatebutton {
+    background-color: #0f0;
+    border: 2.5px solid #00f;
+  	border-radius: 8px;
+  	padding: 4px 4px;
+  	font-size: 14px;
+}
+
+.deletebutton:hover {
+	 	cursor: pointer;
+    	background-color: #f99;
+}		
+
+.updatebutton:hover {
+	 	cursor: pointer;
+    	background-color: #9f9;
+}		
+
+pre {
+	white-space: pre-wrap;       /* css-3 */
+	white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+	white-space: -pre-wrap;      /* Opera 4-6 */
+	white-space: -o-pre-wrap;    /* Opera 7 */
+	word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+
+.acceptbutton {
+    background-color: #0f0;
+    border: 2.5px solid #00f;
+  	border-radius: 8px;
+  	padding: 4px 4px;
+  	font-size: 14px;
+}
+
+.acceptbutton:hover {
+ 	cursor: pointer;
+   	background-color: #8f8;
+}
+
+.permissionbutton {
+    background-color: #5a94ff;
+    border: 2.5px solid #00f;
+  	border-radius: 8px;
+  	padding: 4px 4px;
+  	font-size: 12px;
+}
+
+.permissionbutton:hover {
+	 	cursor: pointer;
+    	background-color: #6faaff;
+}		table{
+    table-layout: fixed;
+}
+td{
+    word-wrap:break-word
+}		form {
+    margin: 0;
+}

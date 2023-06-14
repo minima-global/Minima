@@ -1,16 +1,22 @@
 package org.minima.system.mds;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
 import javax.net.ssl.SSLSocket;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.minidapps.MDSDB;
 import org.minima.database.minidapps.MiniDAPP;
+import org.minima.database.userprefs.UserDB;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
@@ -23,6 +29,7 @@ import org.minima.system.mds.sql.MiniDAPPDB;
 import org.minima.system.network.rpc.HTTPSServer;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.BaseConverter;
+import org.minima.utils.Maths;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.ZipExtractor;
@@ -95,6 +102,16 @@ public class MDSManager extends MessageProcessor {
 	ArrayList<PendingCommand> mPending = new ArrayList<>();
 	
 	/**
+	 * The Current Default MinHUB
+	 */
+	public String DEFAULT_MINIHUB = "0x00";
+	
+	/**
+	 * Has MDS inited
+	 */
+	boolean mHasStarted = false;
+	
+	/**
 	 * Main Constructor
 	 */
 	public MDSManager() {
@@ -114,6 +131,10 @@ public class MDSManager extends MessageProcessor {
 		}
 		
 		PostMessage(MDS_INIT);
+	}
+	
+	public boolean hasStarted() {
+		return mHasStarted;
 	}
 	
 	public void shutdown() {
@@ -305,7 +326,7 @@ public class MDSManager extends MessageProcessor {
 		MiniDAPPDB db = mSqlDB.get(zMiniDAPPID);
 		
 		if(db != null) {
-			db.saveDB(false);
+			db.saveDB(true);
 		}
 		
 		mSqlDB.remove(zMiniDAPPID);
@@ -380,6 +401,9 @@ public class MDSManager extends MessageProcessor {
 			}else {
 				MinimaLogger.log("MDS RHINOJS INIT hasGlobal Allready!.. may need a restart");
 			}
+			
+			//Intsall the default MiniHUB..
+			doDefaultMiniHUB();
 			
 			//Scan for MiniDApps
 			PostMessage(MDS_MINIDAPPS_RESETALL);
@@ -522,6 +546,8 @@ public class MDSManager extends MessageProcessor {
 				setupMiniDAPP(dapp);
 			}
 		
+			mHasStarted = true;
+			
 		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_INSTALLED)) {
 			
 			//Get the MiniDAPP
@@ -701,4 +727,263 @@ public class MDSManager extends MessageProcessor {
 		return true;
 	}
 	
+	/**
+	 * The Default MiniHUB is updated every time you start..
+	 */
+	private void doDefaultMiniHUB() throws Exception {
+		
+		//Do we have a MiniHUB installed..
+		DEFAULT_MINIHUB = MinimaDB.getDB().getUserDB().getDefaultMiniHUB();
+		
+		//And install some default dapps..
+		ArrayList<MiniDAPP> allminis = MinimaDB.getDB().getMDSDB().getAllMiniDAPPs();
+				
+		//Check for HUB
+		checkInstalled("minihub", "minihub/minihub-0.3.5.mds.zip", allminis, true, true);
+		
+		//Pending gets write permissions
+		checkInstalled("pending", "default/pending-0.2.1.mds.zip", allminis, true);
+		
+		//The rest are normal
+		checkInstalled("block", "default/block-2.1.0.mds.zip", allminis, false);
+		checkInstalled("chatter", "default/chatter-1.2.0.mds.zip", allminis, false);
+		checkInstalled("docs", "default/docs-1.4.0.mds.zip", allminis, false);
+		checkInstalled("filez", "default/filez-1.2.0.mds.zip", allminis, false);
+		checkInstalled("future cash", "default/futurecash-1.10.1.mds.zip", allminis, false);
+		checkInstalled("health", "default/health-0.2.0.mds.zip", allminis, false);
+		checkInstalled("maxcontacts", "default/maxcontacts-1.4.0.mds.zip", allminis, false);
+		checkInstalled("maxsolo", "default/maxsolo-2.4.3.mds.zip", allminis, false);
+		checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
+		checkInstalled("script ide", "default/scriptide-2.0.mds.zip", allminis, false);
+		checkInstalled("terminal", "default/terminal-2.1.0.mds.zip", allminis, false);
+		//checkInstalled("vestr", "default/vestr-2.2.2.mds.zip", allminis, false);
+		checkInstalled("wallet", "default/wallet-2.24.3.mds.zip", allminis, false);
+	}
+	
+	private String getVersionFromPath(String zPath) {
+		
+		//Find the numbers..
+		int start = zPath.indexOf("-");
+		if(start == -1) {
+			return "0";
+		}
+		
+		int end = zPath.indexOf(".mds.zip");
+		if(end == -1) {
+			return "0";
+		}
+		
+		//Chop it..
+		return zPath.substring(start+1,end);
+	}
+	
+	private boolean checkInstalled(String zName, String zResource,  ArrayList<MiniDAPP> zAllDapps, boolean zWrite) {
+		return checkInstalled(zName, zResource, zAllDapps, zWrite, false);
+	}
+	
+	private boolean checkInstalled(String zName, String zResource,  ArrayList<MiniDAPP> zAllDapps, boolean zWrite, boolean zIsMiniHUB) {		
+		
+		try {
+			
+			//Is it already installed
+			for(MiniDAPP md : zAllDapps) {
+				if(md.getName().equalsIgnoreCase(zName)) {
+					
+					//Check the Version..
+					String newversion = getVersionFromPath(zResource);
+					String oldversion = md.getVersion();
+					
+					//Is it newer
+					if(Maths.compareVersions(newversion, oldversion)>0) {
+						
+						//Update this MiniDAPP..
+						updateMiniHUB(zResource, md.getUID(), zWrite);
+					}
+					
+					return true;
+				}
+			}
+			
+			//Ok - Install it..
+			installDefaultMiniDAPP(zResource,zWrite,zIsMiniHUB);
+			
+		}catch(Exception exc) {
+			MinimaLogger.log("[!] Failed install of "+zName+" @ "+zResource);			
+		}
+		
+		return false;
+	}
+	
+	private void installDefaultMiniDAPP(String zResource, boolean zWrite, boolean zIsMiniHUB) {
+		
+		//The MiniHUB
+		String minidapp = zResource;
+		File dest 		= null;
+		
+		try {
+			
+			//Get the MiniHUB file..
+			InputStream is 	= getClass().getClassLoader().getResourceAsStream(minidapp);
+			
+			//Get all the data..
+			byte[] alldata = MiniFile.readAllBytes(is);
+			is.close();
+			
+			//Create an input stream for the file..
+			ByteArrayInputStream bais 	= new ByteArrayInputStream(alldata);
+			
+			//Where is it going..
+			String rand = MiniData.getRandomData(32).to0xString();
+			
+			//The file where the package is extracted..
+			dest 	= new File( Main.getInstance().getMDSManager().getWebFolder() , rand);
+			if(dest.exists()) {
+				MiniFile.deleteFileOrFolder(dest.getAbsolutePath(), dest);
+			}
+			boolean mk = dest.mkdirs();
+		
+			//Send it to the extractor..
+			ZipExtractor.unzip(bais, dest);
+			bais.close();
+			
+			//Is there a conf file..
+			File conf = new File(dest,"dapp.conf");
+			if(!conf.exists()) {
+				throw new Exception("No dapp.conf file found @ "+conf.getAbsolutePath());
+			}
+			
+			//Load the Conf file.. to get the data
+			MiniString data = new MiniString(MiniFile.readCompleteFile(conf)); 	
+			
+			//Now create the JSON..
+			JSONObject jsonconf = (JSONObject) new JSONParser().parse(data.toString());
+			
+			//ALWAYS starts with only READ Permission
+			if(zWrite) {
+				jsonconf.put("permission", "write");
+			}else {
+				jsonconf.put("permission", "read");
+			}
+			
+			//Which version..
+			String name		= jsonconf.getString("name");
+			String version 	= jsonconf.getString("version");
+			MinimaLogger.log("Installing default MiniDAPP.. "+name+" v"+version);
+			
+			//Create the MiniDAPP
+			MiniDAPP md = new MiniDAPP(rand, jsonconf);
+			
+			//Now add to the DB
+			MDSDB db = MinimaDB.getDB().getMDSDB();
+			db.insertMiniDAPP(md);
+		
+			if(zIsMiniHUB) {
+				//Create the webpage
+				DEFAULT_MINIHUB = rand;
+				
+				//And set in UserDB..
+				MinimaDB.getDB().getUserDB().setDefaultMiniHUB(rand);
+				MinimaDB.getDB().saveUserDB();
+			}
+			
+		}catch(Exception exc) {
+			
+			//Can log this..
+			MinimaLogger.log("[!] Failed install of "+zResource);
+			MinimaLogger.log(exc);
+			
+			//Delete the install
+			if(dest != null) {
+				MiniFile.deleteFileOrFolder(dest.getAbsolutePath(), dest);
+			}
+		}
+	}
+	
+	private void updateMiniHUB(String zResource, String zMiniDAPPID, boolean zWrite) {
+		
+		File minidapp = null;
+		
+		try {
+					
+			//Get the MiniHUB file..
+			InputStream is = getClass().getClassLoader().getResourceAsStream(zResource);
+			
+			//Get all the data..
+			byte[] alldata = MiniFile.readAllBytes(is);
+			is.close();
+			
+			//Create an input stream for the file..
+			ByteArrayInputStream bais 	= new ByteArrayInputStream(alldata);
+			
+			//Now the MiniDAPP ID
+			MDSDB db 			= MinimaDB.getDB().getMDSDB();
+			MiniDAPP md 		= db.getMiniDAPP(zMiniDAPPID);
+			
+			//Get the Conf..
+			JSONObject miniconf = md.getConfData();
+			
+			//Delete ONLY the old WEB files
+			String mdsroot 	= Main.getInstance().getMDSManager().getRootMDSFolder().getAbsolutePath();
+			minidapp 		= new File(Main.getInstance().getMDSManager().getWebFolder(),zMiniDAPPID);
+			if(minidapp.exists()) {
+				MiniFile.deleteFileOrFolder(mdsroot, minidapp);
+			}
+			
+			//Extract the new files.. make sure exists
+			minidapp.mkdirs();
+			
+			//Send it to the extractor..
+			ZipExtractor.unzip(bais, minidapp);
+			bais.close();
+		
+			//Is there a conf file..
+			File conf = new File(minidapp,"dapp.conf");
+			if(!conf.exists()) {
+				
+				//Delete the install
+				MiniFile.deleteFileOrFolder(mdsroot, minidapp);	
+				
+				throw new Exception("No dapp.conf file found");
+			}
+			
+			//Load the Conf file.. to get the data
+			MiniString data = new MiniString(MiniFile.readCompleteFile(conf)); 	
+			
+			//Now create the JSON..
+			JSONObject jsonconf = (JSONObject) new JSONParser().parse(data.toString());
+			
+			//Copy the trust
+			if(zWrite) {
+				jsonconf.put("permission", "write");
+			}
+			
+			//Which version..
+			String version = jsonconf.getString("version");
+			MinimaLogger.log("Updating default MiniDAPP.. "+jsonconf.getString("name")+" to v"+version);
+			
+			//Delete the old..
+			db.deleteMiniDAPP(zMiniDAPPID);
+			
+			//The NEW miniDAPP
+			MiniDAPP newmd = new MiniDAPP(zMiniDAPPID, jsonconf);
+			
+			//Now add to the DB
+			db.insertMiniDAPP(newmd);
+			
+		}catch(Exception exc) {
+			
+			//Can log this..
+			MinimaLogger.log("[!] Failed update of "+zResource);
+			MinimaLogger.log(exc);
+
+			if(minidapp != null) {
+				//Delete the install
+				MiniFile.deleteFileOrFolder(minidapp.getAbsolutePath(), minidapp);
+			}
+		}
+	}
+	
+	public String getDefaultMiniHUB() {
+		return DEFAULT_MINIHUB;
+	}
 }

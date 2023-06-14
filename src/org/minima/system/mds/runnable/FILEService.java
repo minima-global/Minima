@@ -215,6 +215,42 @@ public class FILEService {
 	}
 	
 	/**
+	 * DOWNLOAD
+	 */
+	public void download(String zURL) {
+		download(zURL,null);
+	}
+	
+	public void download(String zURL, Function zCallback) {
+		
+		//Create a Command and run it..
+		FILEcommand fc = new FILEcommand(mMDS, mMiniDAPPID, 
+				FILEcommand.FILECOMMAND_DOWNLOAD, zURL, "");
+		String result = fc.runCommand();
+		
+		//Run the callback
+		runCallback(zCallback, result);
+	}
+	
+	/**
+	 * COPYTOWEB
+	 */
+	public void copytoweb(String zFile, String zCopy) {
+		copytoweb(zFile, zCopy, null);
+	}
+	
+	public void copytoweb(String zFile, String zCopy, Function zCallback) {
+		
+		//Create a Command and run it..
+		FILEcommand fc = new FILEcommand(mMDS, mMiniDAPPID, 
+				FILEcommand.FILECOMMAND_COPYTOWEB, zFile, zCopy);
+		String result = fc.runCommand();
+		
+		//Run the callback
+		runCallback(zCallback, result);
+	}
+	
+	/**
 	 * Used by all functions to send results back to JS
 	 */
 	private void runCallback(Function zCallback, String zResult) {

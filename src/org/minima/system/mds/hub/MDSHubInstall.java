@@ -5,7 +5,7 @@ import org.minima.system.mds.MDSManager;
 
 public class MDSHubInstall {
 
-	public static String createHubPage(MDSManager zMDS, MiniDAPP zDAPP, String zSessionID) {
+	public static String createHubPage(MDSManager zMDS, MiniDAPP zDAPP, String zSessionID, boolean zInstall) {
 		
 		//Start the HTML
 		String page = MDSUtil.HUB_START;
@@ -26,7 +26,11 @@ public class MDSHubInstall {
 				+ "                </div>\n"
 				+ "</li>";
 		
-		page += "<br><center><div class='app-title'>MiniDAPP Installed..</div></center>";
+		if(zInstall) {
+			page += "<br><center><div class='app-title'>MiniDAPP Installed..</div></center>";
+		}else {
+			page += "<br><center><div class='app-title'>MiniDAPP Updated..</div></center>";
+		}
 		
 		page += MDSUtil.HUB_END;
 		
