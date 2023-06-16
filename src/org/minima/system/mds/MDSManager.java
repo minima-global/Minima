@@ -801,6 +801,15 @@ public class MDSManager extends MessageProcessor {
 						updateMiniHUB(zResource, md.getUID(), zWrite);
 					}
 					
+					//Check if this is the MiniHUB..
+					if(zName.equals("minihub")) {
+						DEFAULT_MINIHUB = md.getUID();
+						
+						//And set in UserDB..
+						MinimaDB.getDB().getUserDB().setDefaultMiniHUB(DEFAULT_MINIHUB);
+						MinimaDB.getDB().saveUserDB();
+					}
+					
 					return true;
 				}
 			}
