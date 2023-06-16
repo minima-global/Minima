@@ -68,6 +68,11 @@ public class Main extends MessageProcessor {
 	}
 	
 	/**
+	 * Have we told listener to shutdown..
+	 */
+	private boolean mShutDownSentToListener = false;
+	
+	/**
 	 * Main loop messages
 	 */
 	public static final String MAIN_TXPOWMINED 	= "MAIN_TXPOWMINED";
@@ -420,9 +425,28 @@ public class Main extends MessageProcessor {
 			
 			MinimaLogger.log("Shut down completed OK..");
 			
+			//Tell listener..
+			NotifyMainListenerOfShutDown();
+			
 		}catch(Exception exc) {
 			MinimaLogger.log("ERROR Shutting down..");
 			MinimaLogger.log(exc);
+		}
+	}
+	
+	public void NotifyMainListenerOfShutDown() {
+		
+		//Have we done this already
+		if(mShutDownSentToListener) {
+			return;
+		}
+		mShutDownSentToListener = true;
+		
+		//Send them a message
+		try {
+			NotifyMainListenerOnly("SHUTDOWN");
+		} catch (Exception e) {
+			MinimaLogger.log(e);
 		}
 	}
 	
@@ -920,4 +944,23 @@ public class Main extends MessageProcessor {
 		}
 	}
 	
+	/**
+	 * Send a message ONLY to the LIstener..
+	 */
+	public static void NotifyMainListenerOnly(String zMessage) throws Exception {
+		//Notify
+		if(getMinimaListener() != null) {
+			
+			//Create the JSON Message
+			JSONObject notify = new JSONObject();
+			notify.put("event", zMessage);
+			notify.put("data", new JSONObject());
+			
+			Message msg = new Message(NotifyManager.NOTIFY_POST);
+			msg.addObject("notify", notify);
+			
+			//Notify them that something is happening..
+			getMinimaListener().processMessage(msg);
+		}
+	}
 }

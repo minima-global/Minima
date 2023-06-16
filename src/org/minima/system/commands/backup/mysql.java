@@ -542,6 +542,9 @@ public class mysql extends Command {
 			//And NOW shut down..
 			Main.getInstance().stopMessageProcessor();
 			
+			//Tell listener..
+			Main.getInstance().NotifyMainListenerOfShutDown();
+			
 		}else if(action.equals("addresscheck")) {
 			
 			//Which address are we looking for

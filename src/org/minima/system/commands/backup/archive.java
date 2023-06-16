@@ -441,6 +441,9 @@ public class archive extends Command {
 			//Tell the listener
 			NotifyListener(minimalistener,"SHUTDOWN");
 			
+			//Tell listener..
+			Main.getInstance().NotifyMainListenerOfShutDown();
+			
 		}else {
 			throw new CommandException("Invalid action : "+action);
 		}

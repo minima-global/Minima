@@ -171,6 +171,9 @@ public class restore extends Command {
 		//And NOW shut down..
 		Main.getInstance().stopMessageProcessor();
 		
+		//Tell listener..
+		Main.getInstance().NotifyMainListenerOfShutDown();
+		
 		return ret;
 	}
 	
