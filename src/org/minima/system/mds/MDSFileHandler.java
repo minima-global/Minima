@@ -156,6 +156,7 @@ public class MDSFileHandler implements Runnable {
 			
 			if(	fileRequested.equals("index.html") ||
 				fileRequested.equals("favicon.png") ||
+				fileRequested.equals("Manrope-Regular.ttf") ||
 				fileRequested.equals("background.svg")) {
 				
 				writeHTMLResouceFile(dos, "hublogin/"+fileRequested);
