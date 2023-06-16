@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import org.minima.database.MinimaDB;
 import org.minima.database.cascade.Cascade;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
@@ -607,6 +608,14 @@ public class ArchiveManager extends SqlDB {
 		}
 		
 		return blocks;
+	}
+	
+	public int checkForCleanDB() {
+		if(!GeneralParams.ARCHIVE) {
+			return cleanDB();
+		}
+		
+		return 0;
 	}
 	
 	public synchronized int cleanDB() {
