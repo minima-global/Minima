@@ -66,12 +66,6 @@ public class MDSFileHandler implements Runnable {
 	MDSManager mMDS;
 	
 	/**
-	 * The STATIC SessionID used for all interactions with MiniHUB
-	 */
-	static private String mMainSessionID 	= MiniData.getRandomData(32).to0xString();
-	static private String mLoginID 			= MiniData.getRandomData(32).to0xString();
-	
-	/**
 	 * Main Constructor
 	 * @param zSocket
 	 */
@@ -156,24 +150,23 @@ public class MDSFileHandler implements Runnable {
 			//MinimaLogger.log("File Requested : "+fileRequested);
 			
 			//Is it the minihub..
-			if(fileRequested.equals("") || fileRequested.equals("index.html")) {
+			if(fileRequested.equals("")) {
+				fileRequested = "index.html";
+			}
+			
+			if(	fileRequested.equals("index.html") ||
+				fileRequested.equals("favicon.png") ||
+				fileRequested.equals("background.svg")) {
 				
-				//Create a NEW SessionID
-				createNewSessionID();
-				
-				//Write the Main Login form
-				writeHTMLPage(dos, MDSHubLogon.createHubPage(mLoginID));
+				writeHTMLResouceFile(dos, "hublogin/"+fileRequested);
 				
 			}else if(fileRequested.startsWith("logoff.html")){
 				
 				//Reset all session IDs..
 				Main.getInstance().getMDSManager().PostMessage(MDSManager.MDS_MINIDAPPS_RESETSESSIONS);
 				
-				//Create a NEW SessionID
-				createNewSessionID();
-				
 				//Write the Main Login form
-				writeHTMLPage(dos, MDSHubLogon.createHubPage(mLoginID));
+				writeHTMLResouceFile(dos, "hublogin/index.html");
 				
 			}else if(fileRequested.startsWith("login.html")){
 				
@@ -190,462 +183,23 @@ public class MDSFileHandler implements Runnable {
 					throw new IllegalArgumentException("Incorrect MDS Password");
 				}
 				
-				//Check the login id
-				String loginid = "";
-				if(params.containsKey("loginid")) {
-					loginid = params.get("loginid").toString();
-				}
-				
-				if(!loginid.equals(mLoginID)) {
-					throw new IllegalArgumentException("Incorrect MDS Password");
-				}
-				
-				//New LoginID
-				mLoginID = MiniData.getRandomData(32).to0xString();
-				
-				//New sessionID 
-				createNewSessionID();
-				
 				//Get the feault MiniHUB..
 				String minihubuid = Main.getInstance().getMDSManager().getDefaultMiniHUB();
 				
 				//Load that MiniDFAPP..
 				String base = "./"+minihubuid+"/index.html?uid="+mMDS.convertMiniDAPPID(minihubuid); 
 				
-				//Write the page
-				writeHTMLPage(dos, MDSHubLoggedOn.createHubPage(mMainSessionID,base));
-			
-//			}else if(fileRequested.startsWith("main.html")){
-//				
-//				//Check the sessionID
-//				checkPostSessionID(allheaders, bufferedReader);
-//				
-//				//Write the page
-//				writeHTMLPage(dos, MDSHub.createHubPage(mMDS, mMainSessionID));
-//			
-//			}else if(fileRequested.startsWith("fileupload.html")){
-//				
-//				//get the POST data
-//				int contentlength = Integer.parseInt(allheaders.get("Content-Length"));
-//				
-//				//Read the data..
-//				byte[] alldata = new byte[contentlength];
-//				
-//				//Read it ALL in
-//				int len,total=0;
-//				while( (len = inputStream.read(alldata,total,contentlength-total)) != -1) {
-//					total += len;
-//					if(total == contentlength) {
-//						break;
-//					}
-//				}
-//				
-//				//Get the bits..
-//				Hashtable<String, MultipartData> data = MultipartParser.parseMultipartData(alldata);
-//				
-//				//Which MiniDAPP..
-//				MultipartData minidappidpart = data.get("uid");
-//				if(minidappidpart==null) {
-//					throw new IllegalArgumentException("NO minidappuid specified in form for uploadfile");
-//				}
-//				String minidappsessionid = minidappidpart.getTextData();
-//				
-//				//Check it..
-//				String minidappid = mMDS.convertSessionID(minidappsessionid);
-//				if(minidappid == null) {
-//					throw new IllegalArgumentException("Invalid session id for uploadfile "+minidappsessionid);
-//				}
-//				
-//				//Get the jumppage
-//				MultipartData jumppagepart = data.get("jumppage");
-//				if(jumppagepart==null) {
-//					throw new IllegalArgumentException("NO jumppagh specified in form for uploadfile");
-//				}
-//				String jumppage = jumppagepart.getTextData();
-//				
-//				//Get the extradata
-//				MultipartData extradatapart = data.get("extradata");
-//				String extradata = "";
-//				if(extradatapart!=null) {
-//					extradata = URLEncoder.encode(extradatapart.getTextData(), "UTF-8");
-//				}
-//				
-//				//Now.. save the file..
-//				MultipartData filepart = data.get("fileupload"); 
-//				String filename 	= URLEncoder.encode(filepart.getFileName(), "UTF-8");
-//				String contenttype 	= URLEncoder.encode(filepart.getContentType(), "UTF-8");
-//				
-//				//Save the data
-//				byte[] filedata = filepart.getFileData();
-//				File root = new File(mMDS.getMiniDAPPFileFolder(minidappid),"fileupload");
-//				if(!root.exists()) {
-//					root.mkdirs();
-//				}
-//				MiniFile.writeDataToFile(new File(root,filepart.getFileName()), filedata);
-//				
-//				//Jump to the correct page..
-//				String base = "/"+minidappid+"/"+jumppage+"?uid="+minidappsessionid
-//						+"&fileupload="+filename
-//						+"&size="+filedata.length
-//						+"&contenttype="+contenttype;
-//				
-//				if(!extradata.equals("")) {
-//					base += "&extradata="+extradata;
-//				}
-//				
-//				//Create the web redirect paghe
-//				String webredirect = "<html>\r\n"
-//						+ "  <head>\r\n"
-//						+ "    <meta http-equiv='refresh' content=\"0; url='"+base+"\" />\r\n"
-//						+ "  </head>\r\n"
-//						+ "  <body>\r\n"
-//						+ "    <p>Please follow <a href='"+base+"'>this link</a>.</p>\r\n"
-//						+ "  </body>\r\n"
-//						+ "</html>";
-//				
-//				//Write this redirect page..
-//				writeHTMLPage(dos, webredirect);
-//				
-//			}else if(fileRequested.startsWith("install.html")){
-//				
-//				//get the POST data
-//				int contentlength = Integer.parseInt(allheaders.get("Content-Length"));
-//				
-//				//Read the data..
-//				byte[] alldata = new byte[contentlength];
-//				
-//				//Read it ALL in
-//				int len,total=0;
-//				while( (len = inputStream.read(alldata,total,contentlength-total)) != -1) {
-//					total += len;
-//					if(total == contentlength) {
-//						break;
-//					}
-//				}
-//				
-//				//Create an input stream for the file..
-//				ByteArrayInputStream bais 	= new ByteArrayInputStream(alldata);
-//				DataInputStream dis 		= new DataInputStream(bais);
-//				
-//				//FIRST read in the password..
-//				String line = dis.readLine();
-//				while(!line.equals("")) {
-//					line = dis.readLine();
-//				}
-//				
-//				//Password is the next line..
-//				String sessionid = dis.readLine();
-//				if(!mMainSessionID.equals(sessionid)) {
-//					MinimaLogger.log("Incorrect Install MiniDAPP SessionID : "+sessionid);
-//					throw new IllegalArgumentException("Invalid SessionID");
-//				}
-//				
-//				//New sessionID 
-//				createNewSessionID();
-//				
-//				//Now read lines until we reach the data
-//				line = dis.readLine();
-//				while(!line.equals("")) {
-//					line = dis.readLine();
-//				}
-//				
-//				//Where is it going..
-//				String rand = MiniData.getRandomData(32).to0xString();
-//				
-//				//The file where the package is extracted..
-//				File dest 	= new File( Main.getInstance().getMDSManager().getWebFolder() , rand);
-//				if(dest.exists()) {
-//					MiniFile.deleteFileOrFolder(dest.getAbsolutePath(), dest);
-//				}
-//				boolean mk = dest.mkdirs();
-//				
-//				try {
-//				
-//					//Send it to the extractor..
-//					ZipExtractor.unzip(dis, dest);
-//					bais.close();
-//					
-//					//Is there a conf file..
-//					File conf = new File(dest,"dapp.conf");
-//					if(!conf.exists()) {
-//						throw new CommandException("No dapp.conf file found @ "+conf.getAbsolutePath());
-//					}
-//					
-//					//Load the Conf file.. to get the data
-//					MiniString data = new MiniString(MiniFile.readCompleteFile(conf)); 	
-//					
-//					//Now create the JSON..
-//					JSONObject jsonconf = (JSONObject) new JSONParser().parse(data.toString());
-//					
-//					//ALWAYS starts with only READ Permission
-//					jsonconf.put("permission", "read");
-//					
-//					//Create the MiniDAPP
-//					MiniDAPP md = new MiniDAPP(rand, jsonconf);
-//					
-//					//Now add to the DB
-//					MDSDB db = MinimaDB.getDB().getMDSDB();
-//					db.insertMiniDAPP(md);
-//					
-//					//There has been a change
-//					Message installed = new Message(MDSManager.MDS_MINIDAPPS_INSTALLED);
-//					installed.addObject("minidapp", md);
-//					Main.getInstance().getMDSManager().PostMessage(installed);
-//					
-//					//Create the webpage
-//					writeHTMLPage(dos, MDSHubInstall.createHubPage(mMDS,md,mMainSessionID,true));
-//					
-//				}catch(Exception exc) {
-//					
-//					//Can log this..
-//					MinimaLogger.log(exc);
-//					
-//					//Delete the install
-//					MiniFile.deleteFileOrFolder(dest.getAbsolutePath(), dest);
-//					
-//					//Something went wrong..
-//					writeHTMLPage(dos, MDSHubInstallError.createHubPage(mMDS,mMainSessionID,exc.toString()));
-//				}
-//					
-//			}else if(fileRequested.startsWith("update.html")){
-//				
-//				//Check the sessionID
-//				Map params  = checkPostSessionID(allheaders, bufferedReader);
-//				
-//				//Get the MiniDAPP id..
-//				String uid 	= params.get("uid").toString();
-//				
-//				//Write the page
-//				writeHTMLPage(dos, MDSHubUpdate.createHubPage(mMDS, mMainSessionID,uid));
-//							
-//			}else if(fileRequested.startsWith("updateminidapp.html")){
-//				
-//				//get the POST data
-//				int contentlength = Integer.parseInt(allheaders.get("Content-Length"));
-//				
-//				//Read the data..
-//				byte[] alldata = new byte[contentlength];
-//				
-//				//Read it ALL in
-//				int len,total=0;
-//				while( (len = inputStream.read(alldata,total,contentlength-total)) != -1) {
-//					total += len;
-//					if(total == contentlength) {
-//						break;
-//					}
-//				}
-//				
-//				//Create an input stream for the file..
-//				ByteArrayInputStream bais 	= new ByteArrayInputStream(alldata);
-//				DataInputStream dis 		= new DataInputStream(bais);
-//				
-//				//FIRST read in the password..
-//				String line = dis.readLine();
-//				while(!line.equals("")) {
-//					line = dis.readLine();
-//				}
-//				
-//				//Password is the next line..
-//				String sessionid = dis.readLine();
-//				if(!mMainSessionID.equals(sessionid)) {
-//					MinimaLogger.log("Incorrect Install MiniDAPP SessionID : "+sessionid);
-//					throw new IllegalArgumentException("Invalid SessionID");
-//				}
-//				
-//				//Scan to next data
-//				line = dis.readLine();
-//				while(!line.equals("")) {
-//					line = dis.readLine();
-//				}
-//				
-//				//Now the MiniDAPP ID
-//				String minidappid 	= dis.readLine();
-//				MDSDB db 			= MinimaDB.getDB().getMDSDB();
-//				MiniDAPP md 		= db.getMiniDAPP(minidappid);
-//				
-//				//Get the Conf..
-//				JSONObject miniconf = md.getConfData();
-//				
-//				//New sessionID 
-//				createNewSessionID();
-//				
-//				//Now read lines until we reach the data
-//				line = dis.readLine();
-//				while(!line.equals("")) {
-//					line = dis.readLine();
-//				}
-//				
-//				//Delete ONLY the old WEB files
-//				String mdsroot 	= Main.getInstance().getMDSManager().getRootMDSFolder().getAbsolutePath();
-//				File minidapp 	= new File(Main.getInstance().getMDSManager().getWebFolder(),minidappid);
-//				if(minidapp.exists()) {
-//					MiniFile.deleteFileOrFolder(mdsroot, minidapp);
-//				}
-//				
-//				//Extract the new files.. make sure exists
-//				minidapp.mkdirs();
-//				
-//				try {
-//				
-//					//Send it to the extractor..
-//					ZipExtractor.unzip(dis, minidapp);
-//					bais.close();
-//				
-//					//Is there a conf file..
-//					File conf = new File(minidapp,"dapp.conf");
-//					if(!conf.exists()) {
-//						
-//						//Delete the install
-//						MiniFile.deleteFileOrFolder(mdsroot, minidapp);	
-//						
-//						throw new CommandException("No dapp.conf file found");
-//					}
-//					
-//					//Load the Conf file.. to get the data
-//					MiniString data = new MiniString(MiniFile.readCompleteFile(conf)); 	
-//					
-//					//Now create the JSON..
-//					JSONObject jsonconf = (JSONObject) new JSONParser().parse(data.toString());
-//					
-//					//Copy the trust
-//					String trust = miniconf.getString("permission", "read");
-//					jsonconf.put("permission", trust);
-//					
-//					//Delete the old..
-//					db.deleteMiniDAPP(minidappid);
-//					
-//					//There has been a change
-//					Message uninstall = new Message(MDSManager.MDS_MINIDAPPS_UNINSTALLED);
-//					uninstall.addString("uid", minidappid);
-//					Main.getInstance().getMDSManager().PostMessage(uninstall);
-//					
-//					//The NEW miniDAPP
-//					MiniDAPP newmd = new MiniDAPP(minidappid, jsonconf);
-//					
-//					//Now add to the DB
-//					db.insertMiniDAPP(newmd);
-//					
-//					//There has been a change
-//					Message installed = new Message(MDSManager.MDS_MINIDAPPS_INSTALLED);
-//					installed.addObject("minidapp", newmd);
-//					Main.getInstance().getMDSManager().PostMessage(installed);
-//					
-//					//Wait a second.. 
-//					Thread.sleep(2000);
-//					
-//					//Create the webpage
-//					writeHTMLPage(dos, MDSHubInstall.createHubPage(mMDS,newmd,mMainSessionID,false));
-//					
-//				}catch(Exception exc) {
-//					
-//					//Can log this..
-//					MinimaLogger.log(exc);
-//					
-//					//Delete the install
-//					MiniFile.deleteFileOrFolder(minidapp.getAbsolutePath(), minidapp);
-//					
-//					//Something went wrong..
-//					writeHTMLPage(dos, MDSHubInstallError.createHubPage(mMDS,mMainSessionID,exc.toString()));
-//				}
-//					
-//			}else if(fileRequested.startsWith("pending.html")){
-//				
-//				//Check the sessionID
-//				checkPostSessionID(allheaders, bufferedReader);
-//
-//				//Write the page
-//				writeHTMLPage(dos, MDSHubPending.createHubPage(mMDS, mMainSessionID));
-//							
-//			}else if(fileRequested.startsWith("pendingaction.html")){
-//				
-//				//Check the sessionID
-//				Map params  = checkPostSessionID(allheaders, bufferedReader);
-//				
-//				String accept 	 = params.get("accept").toString();
-//				String uid 		 = params.get("uid").toString();
-//				
-//				if(accept.equals("accept")) {
-//					
-//					//Run this command
-//					CMDcommand cmd = new CMDcommand("0x00", "mds action:accept uid:"+uid);
-//					String result = cmd.runCommand();
-//					
-//					writeHTMLPage(dos, MDSHubPendingAction.createHubPage(mMDS, mMainSessionID, true, result));
-//					
-//				}else {
-//					
-//					//Run this command
-//					CMDcommand cmd = new CMDcommand("0x00", "mds action:deny uid:"+uid);
-//					String result = cmd.runCommand();
-//					
-//					writeHTMLPage(dos, MDSHubPendingAction.createHubPage(mMDS, mMainSessionID, false, result));
-//				}
-//				
-//			}else if(fileRequested.startsWith("delete.html")){
-//				
-//				//Check the sessionID
-//				Map params  = checkPostSessionID(allheaders, bufferedReader);
-//				
-//				String uid 		 = params.get("uid").toString();
-//				
-//				//Now add to the DB
-//				MDSDB db = MinimaDB.getDB().getMDSDB();
-//				db.deleteMiniDAPP(uid);
-//				
-//				// Delete web..
-//				String mdsroot 	= Main.getInstance().getMDSManager().getRootMDSFolder().getAbsolutePath();
-//				File dest 		= Main.getInstance().getMDSManager().getWebFolder();
-//				File minidapp 	= new File(dest,uid);
-//				if(minidapp.exists()) {
-//					MiniFile.deleteFileOrFolder(mdsroot, minidapp);
-//				}
-//				
-//				//Delete Data folder
-//				Main.getInstance().getMDSManager().shutdownSQL(uid);
-//				File dbfolder1 = Main.getInstance().getMDSManager().getMiniDAPPDataFolder(uid);
-//				if(dbfolder1.exists()) {
-//					MiniFile.deleteFileOrFolder(mdsroot, dbfolder1);
-//				}
-//				
-//				//There has been a change
-//				Message uninstall = new Message(MDSManager.MDS_MINIDAPPS_UNINSTALLED);
-//				uninstall.addString("uid", uid);
-//				Main.getInstance().getMDSManager().PostMessage(uninstall);
-//				
-//				//Create the webpage
-//				writeHTMLPage(dos, MDSHubDelete.createHubPage(mMDS, mMainSessionID));
-//			
-//			}else if(fileRequested.startsWith("permissions.html")){
-//				
-//				//Check the sessionID
-//				Map params  = checkPostSessionID(allheaders, bufferedReader);
-//				
-//				String uid 		 = params.get("uid").toString();
-//				String perm 	 = params.get("permission").toString();
-//				
-//				//Now add to the DB
-//				MDSDB db 	= MinimaDB.getDB().getMDSDB();
-//				MiniDAPP md = db.getMiniDAPP(uid);
-//				
-//				//Now update the TRUST level..
-//				if(perm.equals("write")) {
-//					md.setPermission("write");
-//				
-//				}else if(perm.equals("read")) {
-//					md.setPermission("read");
-//					
-//				}else {
-//					throw new IllegalArgumentException("Invalid Permission!");
-//				}
-//				
-//				//Now update.. delete the old / insert the new..
-//				db.deleteMiniDAPP(uid);
-//				
-//				//And insert..
-//				db.insertMiniDAPP(md);
-//				
-//				//Create the webpage
-//				writeHTMLPage(dos, MDSHubPermission.createHubPage(mMDS, mMainSessionID,perm.toUpperCase()));
+				//Now load the success page
+				String success = loadResouceFile("hublogin/success.html");
+				
+				//Replace the doRedirect()
+				success = success.replace("function doRedirect(){}", 
+										    "function doRedirect(){"
+										  + "	window.location.href = \""+base+"\";"
+										  + "}");
+				
+				//And write that out..
+				writeHTMLPage(dos, success);
 			
 			}else {
 			
@@ -699,16 +253,20 @@ public class MDSFileHandler implements Runnable {
 			//Write out an error page
 			if(dos !=null) {
 				try {
-					writeHTMLPage(dos, MDSHubError.createHubPage());
+					writeHTMLResouceFile(dos, "hublogin/invalid.html");
+					//writeHTMLPage(dos, MDSHubError.createHubPage());
 				} catch (IOException e) {}
 			}
 			
 		}catch(Exception exc) {
 			
+			//MinimaLogger.log(exc);
+			
 			//Write out an error page
 			if(dos !=null) {
 				try {
-					writeHTMLPage(dos, MDSHubError.createHubPage());
+					writeHTMLResouceFile(dos, "hublogin/invalid.html");
+					//writeHTMLPage(dos, MDSHubError.createHubPage());
 				} catch (IOException e) {}
 			}
 			
@@ -763,32 +321,6 @@ public class MDSFileHandler implements Runnable {
 		return params;
 	}
 	
-	private Map checkPostSessionID(Hashtable<String, String> zHeaders, BufferedReader bufferedReader) throws Exception {
-		
-		//Get all the POST params..
-		Map params = getPostParams(zHeaders, bufferedReader);
-		
-		//Here is the login attempt
-		if(!params.containsKey("sessionid")) {
-			throw new IllegalArgumentException("Missing MDS SessionID");
-		}
-		
-		String sessionid 	= params.get("sessionid").toString();
-		
-		if(!mMainSessionID.equals(sessionid)) {
-			throw new IllegalArgumentException("Incorrect MDS SessionID");
-		}
-		
-		//Always use a new SessionID after a check
-		createNewSessionID();
-		
-		return params;
-	}
-	
-	private void createNewSessionID() {
-		mMainSessionID = MiniData.getRandomData(32).to0xString();
-	}
-	
 	public void writeHTMLPage(DataOutputStream zDos, String zWebPage) throws IOException {
 		//It's the root file..
 		byte[] file = zWebPage.getBytes();
@@ -804,5 +336,38 @@ public class MDSFileHandler implements Runnable {
 		zDos.write(file, 0, finallength);
 		zDos.flush();
 		
-	} 
+	}
+	
+	public void writeHTMLResouceFile(DataOutputStream zDos, String zResource) throws IOException {
+		
+		//Get the Resource file
+		InputStream is 	= getClass().getClassLoader().getResourceAsStream(zResource);
+		
+		//Get all the data..
+		byte[] file = MiniFile.readAllBytes(is);
+		is.close();
+		
+		//Calculate the size of the response
+		int finallength = file.length;
+        
+		zDos.writeBytes("HTTP/1.0 200 OK\r\n");
+		zDos.writeBytes("Content-Type: text/html\r\n");
+		zDos.writeBytes("Content-Length: " + finallength + "\r\n");
+		zDos.writeBytes("Access-Control-Allow-Origin: *\r\n");
+		zDos.writeBytes("\r\n");
+		zDos.write(file, 0, finallength);
+		zDos.flush();
+	}
+	
+	public String loadResouceFile(String zResource) throws IOException {
+		
+		//Get the Resource file
+		InputStream is 	= getClass().getClassLoader().getResourceAsStream(zResource);
+		
+		//Get all the data..
+		byte[] file = MiniFile.readAllBytes(is);
+		is.close();
+		
+		return new String(file, MiniString.MINIMA_CHARSET);
+	}
 }
