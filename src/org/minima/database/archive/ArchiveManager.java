@@ -618,7 +618,7 @@ public class ArchiveManager extends SqlDB {
 		return 0;
 	}
 	
-	public synchronized int cleanDB() {
+	private synchronized int cleanDB() {
 		
 		try {
 			//Make sure..

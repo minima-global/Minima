@@ -483,7 +483,7 @@ public class MinimaDB {
 			//Wipe the old data..
 			mTxPoWDB.wipeDBRAM();
 			mTxPoWDB.getSQLDB().cleanDB(true);
-			mArchive.cleanDB();
+			mArchive.checkForCleanDB();
 			
 			//Shut them down
 			MinimaLogger.log("Save TxPoWDB..");
