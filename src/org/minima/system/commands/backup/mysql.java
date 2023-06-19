@@ -182,8 +182,6 @@ public class mysql extends Command {
 			boolean enable = getBooleanParam("enable");
 			udb.setAutoBackupMySQL(enable);
 			
-			MinimaLogger.log("ENABLE:"+enable);
-			
 			if(enable) {
 				udb.setAutoMySQLHost(host);
 				udb.setAutoMySQLDB(db);
