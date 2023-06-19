@@ -46,9 +46,13 @@ public class restoresync extends Command {
 	
 	@Override
 	public String getFullHelp() {
-		return "\nrestore\n"
+		return "\nrestoresync\n"
 				+ "\n"
-				+ "Restore your node from a backup and then sync with archive node the rest of the data. You MUST wait until all your original keys are created before this is allowed.\n"
+				+ "Restore your node from a backup and then sync to the top block using an archive node.\n"
+				+ "\n"
+				+ "You MUST wait until all the keys for the node are created before this is allowed.\n"
+				+ "\n"
+				+ "Reverts to a standard restore if backup is not older than 2 days.\n"
 				+ "\n"
 				+ "file:\n"
 				+ "    Specify the filename or local path of the backup to restore\n"
@@ -56,12 +60,16 @@ public class restoresync extends Command {
 				+ "password: (optional)\n"
 				+ "    Enter the password of the backup \n"
 				+ "\n"
-				+ "keyuses: (optional)\n"
-				+ "    Increment (not set) the number of key uses per key. \n"
+				+ "host: (optional)\n"
+				+ "    ip:port of the archive node to sync from.\n"
+				+ "    Use 'auto' to connect to a default archive node.\n"
+				+ "\n"
+				+ "keyuses: (optional) \n"
+				+ "    Increment (not set) the number of key uses per key.\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
-				+ "restore file:my-full-backup-01-Jan-22 password:Longsecurepassword456\n";
+				+ "restoresync file:my-full-backup-01-Jan-22 password:Longsecurepassword456 host:89.98.89.98:9001\n";
 	}
 	
 	@Override
