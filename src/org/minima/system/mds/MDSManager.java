@@ -803,11 +803,15 @@ public class MDSManager extends MessageProcessor {
 					
 					//Check if this is the MiniHUB..
 					if(zName.equals("minihub")) {
-						DEFAULT_MINIHUB = md.getUID();
 						
-						//And set in UserDB..
-						MinimaDB.getDB().getUserDB().setDefaultMiniHUB(DEFAULT_MINIHUB);
-						MinimaDB.getDB().saveUserDB();
+						//Is it correct
+						if(!DEFAULT_MINIHUB.equals(md.getUID())) {
+							DEFAULT_MINIHUB = md.getUID();
+							
+							//And set in UserDB..
+							MinimaDB.getDB().getUserDB().setDefaultMiniHUB(DEFAULT_MINIHUB);
+							MinimaDB.getDB().saveUserDB();
+						}
 					}
 					
 					return true;
