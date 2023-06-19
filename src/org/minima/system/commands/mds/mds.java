@@ -198,7 +198,7 @@ public class mds extends Command {
 			FileInputStream fis = new FileInputStream(minidapp);
 			
 			//Where is it going..
-			String rand = MiniData.getRandomData(16).to0xString();
+			String rand = MiniData.getRandomData(32).to0xString();
 			
 			//The file where the package is extracted..
 			File dest 	= new File( Main.getInstance().getMDSManager().getWebFolder() , rand);
