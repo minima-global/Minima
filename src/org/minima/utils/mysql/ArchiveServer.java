@@ -135,12 +135,17 @@ public class ArchiveServer extends HTTPServer {
 				Thread.sleep(10000);
 				
 				//Close the streams
+				bais.close();
 				dis.close();
 				dos.close();
+				maindis.close();
 				
 			} catch (Exception e) {
 				MinimaLogger.log(e);
 			}
+			
+			//Clean up
+			//System.gc();
 		}
 	}
 	
