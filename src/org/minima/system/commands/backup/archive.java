@@ -3,6 +3,7 @@ package org.minima.system.commands.backup;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -30,21 +31,30 @@ import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.system.network.webhooks.NotifyManager;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.BIP39;
+import org.minima.utils.MiniFile;
+import org.minima.utils.MiniFormat;
+import org.minima.utils.MiniUtil;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageListener;
 
 public class archive extends Command {
 
+	private static ArchiveManager STATIC_TEMPARCHIVE 	= null;
+	private final String LOCAL_ARCHIVE 					= "archiverestore";
+	
+	
 	public archive() {
 		super("archive","[action:] (host:) (phrase:) (keys:) (keyuses:) - Resync your chain with seed phrase if necessary (otherwise wallet remains the same)");
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","host","phrase","keys","keyuses"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","host","phrase","keys","keyuses","file"}));
 	}
 	
 	@Override
@@ -239,6 +249,7 @@ public class archive extends Command {
 			String fullhost = getParam("host");
 			
 			//Is it auto
+			boolean usinglocal = false;
 			if(fullhost.equals("auto")) {
 				
 				//Choose one from our default list
@@ -251,12 +262,25 @@ public class archive extends Command {
 				fullhost	= ip+":"+port;
 				
 				MinimaLogger.log("RANDOM ARCHIVE HOST : "+rand+" host:"+fullhost);
+			
+			}else if(fullhost.equals(LOCAL_ARCHIVE)) {
+				
+				//Using the local DB..
+				if(STATIC_TEMPARCHIVE == null) {
+					throw new CommandException("No Local STATIC Archive DB Found..");
+				}
+				
+				usinglocal = true;
 			}
 			
 			Message connectdata = connect.createConnectMessage(fullhost);
 			
-			String host = connectdata.getString("host");
-			int port 	= connectdata.getInteger("port");
+			String host = null;
+			int port 	= 0;
+			if(!usinglocal) {
+				host = connectdata.getString("host");
+				port = connectdata.getInteger("port");
+			}
 			
 			//How many Keys do we need to generate
 			int keys = getNumberParam("keys", new MiniNumber(Wallet.NUMBER_GETADDRESS_KEYS)).getAsInt();
@@ -265,9 +289,11 @@ public class archive extends Command {
 			int keyuses = getNumberParam("keyuses", new MiniNumber(1000)).getAsInt();
 			
 			//Before we start deleting - check connection..
-			IBD ibdtest = sendArchiveReq(host, port, MiniNumber.MINUSONE);
-			if(ibdtest == null) {
-				throw new CommandException("Could not connect to Archive host! @ "+host+":"+port);
+			if(!usinglocal) {
+				IBD ibdtest = sendArchiveReq(host, port, MiniNumber.MINUSONE);
+				if(ibdtest == null) {
+					throw new CommandException("Could not connect to Archive host! @ "+host+":"+port);
+				}
 			}
 			
 			//Are we resetting the wallet too ?
@@ -335,7 +361,13 @@ public class archive extends Command {
 				}
 				
 				//Send him a message..
-				ibd = sendArchiveReq(host, port, startblock);
+				if(!usinglocal) {
+					ibd = sendArchiveReq(host, port, startblock);
+				}else {
+					ibd = new IBD();
+					ibd.createArchiveIBD(startblock, STATIC_TEMPARCHIVE, true);
+				}
+				
 				if(ibd == null) {
 					ibd = new IBD();
 					//throw new CommandException("Connection error @ "+host+":"+port);
@@ -385,7 +417,7 @@ public class archive extends Command {
 					Thread.sleep(250);
 					tip = MinimaDB.getDB().getTxPoWTree().getTip();
 					attempts++;
-					if(attempts>128) {
+					if(attempts>1000) {
 						error = true;
 						break;
 					}
@@ -402,7 +434,7 @@ public class archive extends Command {
 				attempts = 0;
 				while(foundsome) {
 					if(!tip.getBlockNumber().isEqual(endblock)) {
-						Thread.sleep(250);
+						Thread.sleep(50);
 					}else {
 						break;
 					}
@@ -410,7 +442,7 @@ public class archive extends Command {
 					tip = MinimaDB.getDB().getTxPoWTree().getTip();
 					
 					attempts++;
-					if(attempts>1024) {
+					if(attempts>4000) {
 						error = true;
 						break;
 					}
@@ -427,11 +459,6 @@ public class archive extends Command {
 				if(size==0) {
 					break;
 				}
-				
-//				//HACK
-//				if(startblock.isMore(new MiniNumber(10000))) {
-//					break;
-//				}
 			}
 			
 			//Notify the Android Listener
@@ -462,6 +489,111 @@ public class archive extends Command {
 			
 			//Tell listener..
 			Main.getInstance().NotifyMainListenerOfShutDown();
+		
+		}else if(action.equals("export")) {
+			
+			//File backup folder
+			File backupfolder = new File(GeneralParams.DATA_FOLDER,"archivebackup");
+			backupfolder.mkdirs();
+			
+			//Create the archive..
+			File archivefile = new File(backupfolder,"archive.sql");
+			if(archivefile.exists()) {
+				archivefile.delete();
+			}
+			MinimaLogger.log("Exporting ArchiveDB to SQL..");
+			MinimaDB.getDB().getArchive().backupToFile(archivefile);
+			
+			//How Big..
+			long len = archivefile.length();
+			
+			//Now GZIP it..
+			MinimaLogger.log("GZIP ArchiveDB..");
+			File gzip = new File(backupfolder, "archivebackup-"+System.currentTimeMillis()+".gzip");
+			MiniFile.compressGzipFile(archivefile, gzip);
+			
+			long gziplen = gzip.length();
+			
+			//Now delete the original
+			archivefile.delete();
+			
+			JSONObject resp = new JSONObject();
+			resp.put("message", "Archive DB GZIPPED");
+			resp.put("rows", MinimaDB.getDB().getArchive().getSize());
+			resp.put("original", MiniFormat.formatSize(len));
+			resp.put("gzipped", MiniFormat.formatSize(gziplen));
+			resp.put("file", gzip.getAbsolutePath());
+			ret.put("response", resp);
+		
+		}else if(action.equals("import")) {
+			
+			//File backup folder
+			File restorefolder = new File(GeneralParams.DATA_FOLDER,"archiverestore");
+			restorefolder.mkdirs();
+			
+			//Get the file
+			String file = getParam("file");
+			
+			//Does it exist..
+			File restorefile = MiniFile.createBaseFile(file);
+			if(!restorefile.exists()) {
+				throw new Exception("Restore file doesn't exist : "+restorefile.getAbsolutePath());
+			}
+			
+			//unzip it..
+			File restorearch = new File(restorefolder,"restore.sql");
+			if(restorearch.exists()) {
+				restorearch.delete();
+			}
+			
+			MinimaLogger.log("Uncompressing ArchiveDB GZIP.. "+restorearch.getAbsolutePath());
+			MiniFile.decompressGzipFile(restorefile, restorearch);
+			
+			//And now restore
+			MinimaLogger.log("Creating TEMP ArchiveDB..");
+			ArchiveManager archtemp = new ArchiveManager();
+			
+			//Set this statically..
+			STATIC_TEMPARCHIVE = archtemp;
+			
+			//Create a temp file..
+			File tempdb = new File(restorefolder,"archivetemp");
+			archtemp.loadDB(tempdb);
+			
+			//Restore from File..
+			MinimaLogger.log("Restoring TEMP ArchiveDB..");
+			archtemp.restoreFromFile(restorearch);
+			
+			TxBlock first = archtemp.loadFirstBlock();
+			if(first != null) {
+				MinimaLogger.log("First block : "+first.getTxPoW().getBlockNumber());
+			}else {
+				MinimaLogger.log("First block not found!");
+			}
+			
+			TxBlock last = archtemp.loadLastBlock();
+			if(last != null) {
+				MinimaLogger.log("Last block : "+last.getTxPoW().getBlockNumber());
+			}else {
+				MinimaLogger.log("Last block not found!");
+			}
+			
+			//Now run a chain sync..
+			JSONArray res 		= Command.runMultiCommand("archive action:resync host:"+LOCAL_ARCHIVE);
+			JSONObject result 	= (JSONObject) res.get(0);
+			
+			//And remove the TEMP
+			archtemp.saveDB(false);
+			
+			//Delete the restore folder
+			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
+			
+			//Reset 
+			STATIC_TEMPARCHIVE = null;
+			
+			JSONObject resp = new JSONObject();
+			resp.put("archiveresync", result);
+			ret.put("response", resp);
 			
 		}else {
 			throw new CommandException("Invalid action : "+action);
@@ -583,5 +715,4 @@ public class archive extends Command {
 		
 		return ibd;
 	}
-	
 }
