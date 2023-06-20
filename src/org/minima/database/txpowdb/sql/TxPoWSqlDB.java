@@ -92,6 +92,10 @@ public class TxPoWSqlDB extends SqlDB {
 	}
 	
 	public void wipeDB() throws SQLException {
+		
+		//Make sure..
+		checkOpen();
+		
 		//One last statement
 		Statement stmt = mSQLConnection.createStatement();
 	
@@ -119,6 +123,10 @@ public class TxPoWSqlDB extends SqlDB {
 	
 	public synchronized boolean addTxPoW(TxPoW zTxPoW, boolean zIsRelevant) {
 		try {
+			
+			//Make sure..
+			checkOpen();
+			
 			//get the MiniData version..
 			MiniData txdata = MiniData.getMiniDataVersion(zTxPoW);
 			
@@ -156,6 +164,10 @@ public class TxPoWSqlDB extends SqlDB {
 
 	public synchronized TxPoW getTxPoW(String zTxPoWID) {
 		try {
+			
+			//Make sure..
+			checkOpen();
+			
 			//Get the query ready
 			SQL_SELECT_TXPOW.clearParameters();
 			
@@ -191,6 +203,9 @@ public class TxPoWSqlDB extends SqlDB {
 		ArrayList<String> txpows = new ArrayList<>();
 
 		try {
+			//Make sure..
+			checkOpen();
+			
 			//Get the query ready
 			SQL_SELECT_CHILDREN.clearParameters();
 			
@@ -255,6 +270,9 @@ public class TxPoWSqlDB extends SqlDB {
 
 	public synchronized int getSize() {
 		try {
+			//Make sure..
+			checkOpen();
+			
 			//Run the query
 			ResultSet rs = SQL_TOTAL_TXPOW.executeQuery();
 			
@@ -274,6 +292,10 @@ public class TxPoWSqlDB extends SqlDB {
 
 	public synchronized boolean exists(String zTxPoWID) {
 		try {
+			
+			//Make sure..
+			checkOpen();
+			
 			//Set the params..
 			SQL_EXISTS.clearParameters();
 			SQL_EXISTS.setString(1, zTxPoWID);
@@ -300,6 +322,10 @@ public class TxPoWSqlDB extends SqlDB {
 	
 	public synchronized int cleanDB(boolean zHard) {
 		try {
+			
+			//Make sure..
+			checkOpen();
+			
 			//Current MAX time..
 			long maxtime = System.currentTimeMillis() - MAX_SQL_MILLI;
 			if(zHard) {
