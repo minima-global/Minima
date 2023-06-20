@@ -1,0 +1,152 @@
+
+<html>
+<head>
+    <title>Success | Minima</title>
+    <link rel="shortcut icon" type="image/jpg" href="./favicon.png">
+    <meta meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+    
+	    @font-face {
+			font-family: Manrope;
+			src: url('./Manrope-Regular.ttf');
+		}
+
+        html {
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
+
+        body, h1, h2, h3, h4, h5, h6, p, ol, ul {
+            margin: 0;
+            padding: 0;
+            font-weight: normal;
+        }
+
+        ol, ul {
+            list-style: none;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        :root {
+            --black: #08090B;
+            --core-grey-05: #F9F9FA;
+            --black-contrast: #17191C;
+            --black-contrast-two: #282B2E;
+        }
+
+        body {
+            letter-spacing: 0.3px;;
+            font-weight: 500;
+            font-family: 'Manrope', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: var(--black);
+            background-size: cover;
+            background-image: url('./background.svg');
+        }
+
+        .container {
+            height: 100%;
+            display: flex;
+            padding: 0 20px;
+            flex-direction: column;
+        }
+
+        header {
+            padding-top: 16px;
+        }
+
+        form {
+            margin-bottom: 0;
+        }
+
+        main {
+            flex: 1 1 auto;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 120px;
+        }
+
+        .panel {
+            padding: 28px;
+            background: var(--black-contrast-two);
+            border-radius: 8px;
+            color: white;
+            width: 100%;
+            max-width: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            cursor : pointer;
+        }
+
+        .panel__message {
+            margin-top: -4px;
+            font-size: 18px;
+            text-align: center;
+            line-height: 28px;
+        }
+
+        .panel__message--success {
+            color: #4FE3C1;
+        }
+
+        .panel__message--failure {
+            color: #FF627E;
+        }
+
+        @media screen and (min-width: 568px) {
+            .container {
+                padding: 0;
+            }
+
+            .panel {
+                padding: 32px;
+            }
+
+            header {
+                padding: 16px;
+            }
+        }
+    </style>
+<body>
+
+    <div class="container">
+        <header>
+            <svg width="28" height="24" viewBox="0 0 28 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22.4484 6.42613L21.2111 11.6205L19.6268 5.3437L14.0818 3.20995L12.5827 9.493L11.2537 2.12753L5.70868 0L0 24H6.05565L7.81015 16.6283L9.12602 24H15.1948L16.6874 17.7107L18.2651 24H24.3208L28 8.55365L22.4484 6.42613Z" fill="#F9F9FA"/>
+            </svg>
+        </header>
+    
+        <main>
+            <div class="panel" onclick="doRedirect();">
+                <h1 class="panel__message panel__message--success">You have logged in successfully, you will be redirected..</h1>
+            </div>        
+        </main>
+    </div>
+    
+    
+    <script type="text/javascript">
+    
+		//This is replcaed by Minima
+		function doRedirect(){}		
+    
+    	//Do a redirect
+    	setTimeout(doRedirect, 2000);
+    	
+    </script>
+</body>
+</html>

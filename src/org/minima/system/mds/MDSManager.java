@@ -739,20 +739,21 @@ public class MDSManager extends MessageProcessor {
 		ArrayList<MiniDAPP> allminis = MinimaDB.getDB().getMDSDB().getAllMiniDAPPs();
 				
 		//Check for HUB
-		checkInstalled("minihub", "minihub/minihub-0.3.5.mds.zip", allminis, true, true);
+		checkInstalled("minihub", "minihub/minihub-0.4.2.mds.zip", allminis, true, true);
 		
 		//Pending gets write permissions
 		checkInstalled("pending", "default/pending-0.2.1.mds.zip", allminis, true);
 		
 		//The rest are normal
-		checkInstalled("block", "default/block-2.1.0.mds.zip", allminis, false);
-		checkInstalled("chatter", "default/chatter-1.2.0.mds.zip", allminis, false);
+		checkInstalled("block", "default/block-2.1.1.mds.zip", allminis, false);
+		checkInstalled("chatter", "default/chatter-1.2.1.mds.zip", allminis, false);
 		checkInstalled("docs", "default/docs-1.4.0.mds.zip", allminis, false);
-		checkInstalled("filez", "default/filez-1.2.0.mds.zip", allminis, false);
+		checkInstalled("filez", "default/filez-1.2.1.mds.zip", allminis, false);
 		checkInstalled("future cash", "default/futurecash-1.10.1.mds.zip", allminis, false);
 		checkInstalled("health", "default/health-0.2.0.mds.zip", allminis, false);
+		//checkInstalled("logs", "default/logs-0.2.0.mds.zip", allminis, false);
 		checkInstalled("maxcontacts", "default/maxcontacts-1.4.0.mds.zip", allminis, false);
-		checkInstalled("maxsolo", "default/maxsolo-2.4.3.mds.zip", allminis, false);
+		checkInstalled("maxsolo", "default/maxsolo-2.4.4.mds.zip", allminis, false);
 		checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
 		checkInstalled("script ide", "default/scriptide-2.0.mds.zip", allminis, false);
 		checkInstalled("terminal", "default/terminal-2.1.0.mds.zip", allminis, false);
@@ -798,6 +799,19 @@ public class MDSManager extends MessageProcessor {
 						
 						//Update this MiniDAPP..
 						updateMiniHUB(zResource, md.getUID(), zWrite);
+					}
+					
+					//Check if this is the MiniHUB..
+					if(zName.equals("minihub")) {
+						
+						//Is it correct
+						if(!DEFAULT_MINIHUB.equals(md.getUID())) {
+							DEFAULT_MINIHUB = md.getUID();
+							
+							//And set in UserDB..
+							MinimaDB.getDB().getUserDB().setDefaultMiniHUB(DEFAULT_MINIHUB);
+							MinimaDB.getDB().saveUserDB();
+						}
 					}
 					
 					return true;

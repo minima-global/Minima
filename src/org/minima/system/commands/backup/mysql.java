@@ -182,8 +182,6 @@ public class mysql extends Command {
 			boolean enable = getBooleanParam("enable");
 			udb.setAutoBackupMySQL(enable);
 			
-			MinimaLogger.log("ENABLE:"+enable);
-			
 			if(enable) {
 				udb.setAutoMySQLHost(host);
 				udb.setAutoMySQLDB(db);
@@ -541,6 +539,9 @@ public class mysql extends Command {
 			
 			//And NOW shut down..
 			Main.getInstance().stopMessageProcessor();
+			
+			//Tell listener..
+			Main.getInstance().NotifyMainListenerOfShutDown();
 			
 		}else if(action.equals("addresscheck")) {
 			

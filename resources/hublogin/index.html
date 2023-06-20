@@ -1,0 +1,225 @@
+
+<html>
+<head>
+    <title>Login | Minima</title>
+    <link rel="shortcut icon" type="image/jpg" href="./favicon.png">
+    <meta meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+    
+	    @font-face {
+			font-family: Manrope;
+			src: url('./Manrope-Regular.ttf');
+		}
+
+        html {
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
+
+        body, h1, h2, h3, h4, h5, h6, p, ol, ul {
+            margin: 0;
+            padding: 0;
+            font-weight: normal; 
+        }
+
+        ol, ul {
+            list-style: none;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        :root {
+            --black: #08090B;
+            --core-grey-05: #F9F9FA;
+            --black-contrast: #17191C;
+            --black-contrast-two: #282B2E;
+        }
+
+        body {
+            letter-spacing: 0.3px;;
+            font-weight: 500;
+            font-family: 'Manrope', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: var(--black);
+            background-size: cover;
+            background-image: url('./background.svg');
+        }
+
+        .container {
+            height: 100%;
+            display: flex;
+            padding: 0 16px;
+            flex-direction: column;
+        }
+
+        header {
+            padding-top: 16px;
+        }
+
+        form {
+            margin-bottom: 0;
+        }
+
+        main {
+            flex: 1 1 auto;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 140px;
+        }
+
+        .panel {
+            width: 100%;
+            max-width: 380px;
+            padding: 28px;
+            background: var(--black-contrast-two);
+            border-radius: 8px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .panel__title {
+            font-size: 20px;
+            margin-top: -1px;
+            text-align: center;
+        }
+
+        .panel__title, .panel__input {
+            margin-bottom: 32px;
+        }
+
+        .panel__input {
+            position: relative;
+        }
+
+        .input {
+            width: 100%;
+            height: 46px;
+            border: 0;
+            outline: none;
+            padding: 0 16px;
+            color: white;
+            font-size: 16px;
+            letter-spacing: 0.4px;
+            padding-right: 48px;
+            border-radius: 4px;
+            background-color: var(--black-contrast);
+        }
+
+        .input[type="password"] {
+            font-size: 24px;
+            letter-spacing: 4px;
+            line-height: 32px;
+        }
+
+        .input__button {
+            position: absolute;
+            right: 10px;
+            top: 14px;
+            border: 0;
+            cursor: pointer;
+            background-color: transparent;
+        }
+
+        .button {
+            height: 47px;
+            width: 100%;
+            border: 0;
+            border-radius: 2px;
+            font-size: 16px;
+            cursor: pointer;
+            color: var(--black);
+            margin-bottom: 4px;
+            background-color: var(--core-grey-05);
+        }
+
+        @media screen and (min-width: 568px) {
+            .container {
+                padding: 0;
+            }
+
+            .panel__title {
+                font-size: 20px;
+            }
+
+            .panel {
+                padding: 32px;
+            }
+
+            header {
+                padding: 16px;
+            }
+        }
+    </style>
+<body>
+
+    <div class="container">
+        <header>
+            <svg width="28" height="24" viewBox="0 0 28 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22.4484 6.42613L21.2111 11.6205L19.6268 5.3437L14.0818 3.20995L12.5827 9.493L11.2537 2.12753L5.70868 0L0 24H6.05565L7.81015 16.6283L9.12602 24H15.1948L16.6874 17.7107L18.2651 24H24.3208L28 8.55365L22.4484 6.42613Z" fill="#F9F9FA"/>
+            </svg>
+        </header>
+    
+        <main>
+            <div class="panel">
+                <form action="login.html" method="POST">
+                    <h1 class="panel__title">Login to Minima</h1>
+                    <div class="panel__input">
+                        <input id="password" class="input" name="password" type="password" data-state="hidden" />
+                        <button id="toggle-password" type="button" class="input__button">
+                            <svg id="password-hidden" width="18" height="17" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12.271 9.14599L10.979 7.85399C11.0343 7.32599 10.8747 6.87133 10.5 6.48999C10.1253 6.10799 9.674 5.94466 9.146 5.99999L7.854 4.70799C8.03467 4.63866 8.22233 4.58666 8.417 4.55199C8.611 4.51733 8.80533 4.49999 9 4.49999C9.972 4.49999 10.7983 4.84033 11.479 5.52099C12.1597 6.20166 12.5 7.02799 12.5 7.99999C12.5 8.19466 12.4827 8.38899 12.448 8.58299C12.4133 8.77766 12.3543 8.96533 12.271 9.14599ZM15.042 11.917L13.958 10.833C14.458 10.4443 14.913 10.0173 15.323 9.55199C15.733 9.08666 16.0767 8.56933 16.354 7.99999C15.6733 6.59733 14.67 5.49666 13.344 4.69799C12.0173 3.89933 10.5693 3.49999 9 3.49999C8.63867 3.49999 8.28467 3.52066 7.938 3.56199C7.59067 3.60399 7.25033 3.67366 6.917 3.77099L5.708 2.56199C6.236 2.35399 6.77433 2.20833 7.323 2.12499C7.87167 2.04166 8.43067 1.99999 9 1.99999C10.986 1.99999 12.802 2.53833 14.448 3.61499C16.094 4.69099 17.278 6.15266 18 7.99999C17.6947 8.79199 17.2883 9.51066 16.781 10.156C16.2743 10.802 15.6947 11.389 15.042 11.917ZM15 16.125L12.292 13.417C11.764 13.611 11.2257 13.7567 10.677 13.854C10.1283 13.9513 9.56933 14 9 14C7.014 14 5.198 13.4617 3.552 12.385C1.906 11.309 0.722 9.84733 0 7.99999C0.305333 7.20799 0.708 6.48566 1.208 5.83299C1.708 5.18033 2.29133 4.58999 2.958 4.06199L0.875 1.97899L1.938 0.916992L16.062 15.062L15 16.125ZM4.021 5.14599C3.535 5.53466 3.08367 5.96166 2.667 6.42699C2.25033 6.89233 1.91 7.41666 1.646 7.99999C2.32667 9.40266 3.33 10.5033 4.656 11.302C5.98267 12.1007 7.43067 12.5 9 12.5C9.36133 12.5 9.71533 12.4757 10.062 12.427C10.4093 12.3783 10.7567 12.3123 11.104 12.229L10.167 11.292C9.97233 11.3613 9.77767 11.4133 9.583 11.448C9.389 11.4827 9.19467 11.5 9 11.5C8.028 11.5 7.20167 11.1597 6.521 10.479C5.84033 9.79833 5.5 8.97199 5.5 7.99999C5.5 7.80533 5.52433 7.61099 5.573 7.41699C5.62167 7.22233 5.66667 7.02766 5.708 6.83299L4.021 5.14599Z" fill="#A7A7B0"/>
+                            </svg>
+                            <svg id="password-visible" style="display: none" width="18" height="16" viewBox="0 0 18 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 9.5C9.972 9.5 10.7983 9.15967 11.479 8.479C12.1597 7.79833 12.5 6.972 12.5 6C12.5 5.028 12.1597 4.20167 11.479 3.521C10.7983 2.84033 9.972 2.5 9 2.5C8.028 2.5 7.20167 2.84033 6.521 3.521C5.84033 4.20167 5.5 5.028 5.5 6C5.5 6.972 5.84033 7.79833 6.521 8.479C7.20167 9.15967 8.028 9.5 9 9.5ZM9 8C8.44467 8 7.97233 7.80567 7.583 7.417C7.19433 7.02767 7 6.55533 7 6C7 5.44467 7.19433 4.97233 7.583 4.583C7.97233 4.19433 8.44467 4 9 4C9.55533 4 10.0277 4.19433 10.417 4.583C10.8057 4.97233 11 5.44467 11 6C11 6.55533 10.8057 7.02767 10.417 7.417C10.0277 7.80567 9.55533 8 9 8ZM9 12C7.014 12 5.20833 11.455 3.583 10.365C1.95833 9.27433 0.764 7.81933 0 6C0.764 4.18067 1.95833 2.72567 3.583 1.635C5.20833 0.545 7.014 0 9 0C10.986 0 12.7917 0.545 14.417 1.635C16.0417 2.72567 17.236 4.18067 18 6C17.236 7.81933 16.0417 9.27433 14.417 10.365C12.7917 11.455 10.986 12 9 12ZM9 10.5C10.5553 10.5 11.9927 10.0973 13.312 9.292C14.632 8.486 15.646 7.38867 16.354 6C15.646 4.61133 14.632 3.514 13.312 2.708C11.9927 1.90267 10.5553 1.5 9 1.5C7.44467 1.5 6.00733 1.90267 4.688 2.708C3.368 3.514 2.354 4.61133 1.646 6C2.354 7.38867 3.368 8.486 4.688 9.292C6.00733 10.0973 7.44467 10.5 9 10.5Z" fill="#91919D"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <button type="submit" class="button">Log in</button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        (function() {
+            var ui  = {
+                input: document.getElementById('password'),
+                toggleButton: document.getElementById('toggle-password'),
+                visibleIcon: document.getElementById('password-visible'),
+                hiddenIcon: document.getElementById('password-hidden'),
+            };
+
+            if (ui.toggleButton) {
+                ui.toggleButton.addEventListener('click', function() {
+                    if (ui.input.dataset.state === 'hidden') {
+                        ui.input.dataset.state = 'visible';
+                        ui.input.type = 'text';
+                        ui.visibleIcon.style.display = 'block';
+                        ui.hiddenIcon.style.display = 'none';
+                    } else {
+                        ui.input.dataset.state = 'hidden';
+                        ui.input.type = 'password';
+                        ui.visibleIcon.style.display = 'none';
+                        ui.hiddenIcon.style.display = 'block';
+                    }
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
