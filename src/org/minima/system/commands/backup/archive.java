@@ -583,8 +583,21 @@ public class archive extends Command {
 				MinimaLogger.log("Last block not found!");
 			}
 			
-			//Now run a chain sync..
-			JSONArray res 		= Command.runMultiCommand("archive action:resync host:"+LOCAL_ARCHIVE);
+			//Now run a chain sync.. with correct params
+			String command = "archive action:resync host:"+LOCAL_ARCHIVE;
+			if(existsParam("phrase")) {
+				command = command+" phrase:\""+getParam("phrase")+"\"";
+			}
+			
+			if(existsParam("keys")) {
+				command = command+" keys:"+getParam("keys");
+			}
+			
+			if(existsParam("keyuses")) {
+				command = command+" keyuses:"+getParam("keyuses");
+			}
+			
+			JSONArray res 		= Command.runMultiCommand(command);
 			JSONObject result 	= (JSONObject) res.get(0);
 			
 			//And remove the TEMP
