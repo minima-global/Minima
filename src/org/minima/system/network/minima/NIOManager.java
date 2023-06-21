@@ -380,6 +380,18 @@ public class NIOManager extends MessageProcessor {
 					//We definitely have to reconnect..
 					nc.setConnectAttempts(1);
 				}
+			
+			}else if(!GeneralParams.P2P_ENABLED){
+				
+				//No P2P - keep trying to connect
+				if(nc.getConnectAttempts() > RECONNECT_ATTEMPTS) {
+					
+					//Always attempts to reconnect
+					MinimaLogger.log("INFO : P2P disabled.. attempt reconnect.. "+nc.getFullAddress()+" use disconnect to stop.");
+					
+					//We definitely have to reconnect..
+					nc.setConnectAttempts(1);
+				}
 				
 			}else{
 				
