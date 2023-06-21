@@ -358,10 +358,10 @@ public class archive extends Command {
 				counter++;
 				if(counter % 10 == 0) {
 					long mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-					if(mem > 400 * 1024 * 1024) {
+					if(mem > 250 * 1024 * 1024) {
 						Main.getInstance().resetMemFull();
 					}else {
-						MinimaLogger.log("RAM memoty usage still low.. wait for cleanup");
+						MinimaLogger.log("RAM memory usage still low.. wait for cleanup");
 					}
 				}
 				
