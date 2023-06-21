@@ -236,6 +236,10 @@ public class TxPoWSqlDB extends SqlDB {
 		ArrayList<TxPoW> txpows = new ArrayList<>();
 
 		try {
+			
+			//Make sure..
+			checkOpen();
+			
 			//Get the query ready
 			SQL_SELECT_RELEVANT.clearParameters();
 			
