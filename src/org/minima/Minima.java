@@ -102,11 +102,6 @@ public class Minima {
 		//Set this globally
 		GeneralParams.DATA_FOLDER 	= minimafolder.getAbsolutePath();
 		
-		//CHECK PARAMS
-		//MinimaLogger.log("PARAMS OK : "+ParamConfigurer.checkParams(zArgs));
-		//MinimaLogger.log("PARAMS OK : "+ParamConfigurer.checkParams("-genesis   -mdspassword   234 -popo"));
-		//System.exit(1);
-		
 		//Run Params configure
 		ParamConfigurer configurer = null;
 		try {

@@ -133,7 +133,6 @@ public class ParamConfigurer {
     		String tok = strtok.nextToken().trim();
     		if(!tok.equals("")) {
     			args.add(tok);
-    			MinimaLogger.log("PARAM FOUND : "+tok);
     		}
     	}
     	
