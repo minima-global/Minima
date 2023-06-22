@@ -101,28 +101,11 @@ public class Minima {
 		
 		//Set this globally
 		GeneralParams.DATA_FOLDER 	= minimafolder.getAbsolutePath();
-
-		//Check for previous versions - and delete
-		File check102 = new File(dataFolder,"0.102");
-		if(check102.exists()) {
-			String rootpath = check102.getAbsolutePath();
-			MinimaLogger.log("OLD data folder found - "+rootpath);
-			MiniFile.deleteFileOrFolder(rootpath, check102);
-		}
 		
-		File check103 = new File(dataFolder,"0.103");
-		if(check103.exists()) {
-			String rootpath = check103.getAbsolutePath();
-			MinimaLogger.log("OLD data folder found - "+rootpath);
-			MiniFile.deleteFileOrFolder(rootpath, check103);
-		}
-		
-		File check104 = new File(dataFolder,"0.104");
-		if(check104.exists()) {
-			String rootpath = check104.getAbsolutePath();
-			MinimaLogger.log("OLD data folder found - "+rootpath);
-			MiniFile.deleteFileOrFolder(rootpath, check104);
-		}
+		//CHECK PARAMS
+		//MinimaLogger.log("PARAMS OK : "+ParamConfigurer.checkParams(zArgs));
+		//MinimaLogger.log("PARAMS OK : "+ParamConfigurer.checkParams("-genesis   -mdspassword   234 -popo"));
+		//System.exit(1);
 		
 		//Run Params configure
 		ParamConfigurer configurer = null;

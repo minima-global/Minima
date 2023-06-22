@@ -10,16 +10,17 @@ import static org.minima.system.params.ParamConfigurer.ParamKeys.toParamKey;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.StringTokenizer;
 import java.util.function.BiConsumer;
 
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.params.P2PParams;
-import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 
 public class ParamConfigurer {
@@ -123,9 +124,37 @@ public class ParamConfigurer {
         return daemon;
     }
 
-//    public boolean isRpcenable() {
-//        return rpcenable;
-//    }
+    public static boolean checkParams(String zFullParams) {
+    	
+    	//Break it up
+    	StringTokenizer strtok = new StringTokenizer(zFullParams," ");
+    	ArrayList<String> args = new ArrayList<>();
+    	while(strtok.hasMoreTokens()) {
+    		String tok = strtok.nextToken().trim();
+    		if(!tok.equals("")) {
+    			args.add(tok);
+    			MinimaLogger.log("PARAM FOUND : "+tok);
+    		}
+    	}
+    	
+    	//Convert to an array..
+    	String[] allargs = args.toArray(new String[0]);
+    	
+    	return checkParams(allargs);
+    }
+    
+    public static boolean checkParams(String[] zParams) {
+    	
+    	//Run through Params
+		ParamConfigurer configurer = null;
+		try {
+			configurer = new ParamConfigurer().usingProgramArgs(zParams).configure();
+		} catch (Exception ex) {
+			return false;
+		}
+    	
+    	return true;
+    }
     
     public boolean isShutDownHook() {
         return mShutdownhook;
@@ -133,30 +162,9 @@ public class ParamConfigurer {
     
     enum ParamKeys {
     	data("data", "Specify the data folder ( defaults to ~/.minima )", (args, configurer) -> {
+    		
     		//Get that folder
     		File dataFolder = new File(args);
-
-    		//Check for previous versions - and delete
-    		File check102 = new File(dataFolder,"0.102");
-    		if(check102.exists()) {
-    			String rootpath = check102.getAbsolutePath();
-    			MinimaLogger.log("OLD data folder found - "+rootpath);
-    			MiniFile.deleteFileOrFolder(rootpath, check102);
-    		}
-    		
-    		File check103 = new File(dataFolder,"0.103");
-    		if(check103.exists()) {
-    			String rootpath = check103.getAbsolutePath();
-    			MinimaLogger.log("OLD data folder found - "+rootpath);
-    			MiniFile.deleteFileOrFolder(rootpath, check103);
-    		}
-    		
-    		File check104 = new File(dataFolder,"0.104");
-    		if(check104.exists()) {
-    			String rootpath = check104.getAbsolutePath();
-    			MinimaLogger.log("OLD data folder found - "+rootpath);
-    			MiniFile.deleteFileOrFolder(rootpath, check104);
-    		}
     		
     		//Depends on the Base Minima Version
     		File minimafolder 	= new File(dataFolder,GlobalParams.MINIMA_BASE_VERSION);
@@ -267,10 +275,9 @@ public class ParamConfigurer {
             }
         }),
         server("server", "Use Server settings - this node can accept incoming connections", (args, configurer) -> {
-        	GeneralParams.IS_ACCEPTING_IN_LINKS = true;
-//        	if ("true".equals(args)) {
-//                GeneralParams.IS_ACCEPTING_IN_LINKS = false;
-//            }
+        	if ("true".equals(args)) {
+                GeneralParams.IS_ACCEPTING_IN_LINKS = true;
+            }
         }),
         mobile("mobile", "Sets this device to a mobile device - used for metrics only", (args, configurer) -> {
             if ("true".equals(args)) {
