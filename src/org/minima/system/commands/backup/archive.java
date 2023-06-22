@@ -497,6 +497,15 @@ public class archive extends Command {
 		
 		}else if(action.equals("export")) {
 			
+			//The GZIPPED file 
+			String file = getParam("file","archivebackup-"+System.currentTimeMillis()+".gzip");
+			
+			//Create the file
+			File gzoutput = MiniFile.createBaseFile(file);
+			if(gzoutput.exists()) {
+				gzoutput.delete();
+			}
+			
 			//File backup folder
 			File backupfolder = new File(GeneralParams.DATA_FOLDER,"archivebackup");
 			backupfolder.mkdirs();
@@ -514,10 +523,9 @@ public class archive extends Command {
 			
 			//Now GZIP it..
 			MinimaLogger.log("GZIP ArchiveDB..");
-			File gzip = new File(backupfolder, "archivebackup-"+System.currentTimeMillis()+".gzip");
-			MiniFile.compressGzipFile(archivefile, gzip);
+			MiniFile.compressGzipFile(archivefile, gzoutput);
 			
-			long gziplen = gzip.length();
+			long gziplen = gzoutput.length();
 			
 			//Now delete the original
 			archivefile.delete();
@@ -527,7 +535,7 @@ public class archive extends Command {
 			resp.put("rows", MinimaDB.getDB().getArchive().getSize());
 			resp.put("original", MiniFormat.formatSize(len));
 			resp.put("gzipped", MiniFormat.formatSize(gziplen));
-			resp.put("file", gzip.getAbsolutePath());
+			resp.put("file", gzoutput.getAbsolutePath());
 			ret.put("response", resp);
 		
 		}else if(action.equals("import")) {
