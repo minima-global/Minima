@@ -18,8 +18,11 @@ import org.minima.database.archive.ArchiveManager;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.wallet.Wallet;
+import org.minima.objects.Coin;
+import org.minima.objects.CoinProof;
 import org.minima.objects.IBD;
 import org.minima.objects.TxBlock;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -54,7 +57,7 @@ public class archive extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","host","phrase","keys","keyuses","file"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","host","phrase","keys","keyuses","file","address"}));
 	}
 	
 	@Override
@@ -620,6 +623,134 @@ public class archive extends Command {
 			JSONObject resp = new JSONObject();
 			resp.put("archiveresync", result);
 			ret.put("response", resp);
+			
+		}else if(action.equals("addresscheck")) {
+			
+			//Which address are we looking for
+			String address = getAddressParam("address");
+			
+			//Cycle through
+			JSONObject resp 	= new JSONObject();
+			JSONArray inarr 	= new JSONArray();
+			JSONArray outarr 	= new JSONArray();
+			
+			ArchiveManager adb 		= MinimaDB.getDB().getArchive();
+			TxBlock startblock 		= adb.loadLastBlock();
+			
+			MiniNumber firstStart = MiniNumber.ZERO;
+			boolean canstart = true;
+			if(startblock == null) {
+				canstart = false;
+			}else {
+				firstStart   = startblock.getTxPoW().getBlockNumber();
+				MinimaLogger.log("Start archive @ "+firstStart);
+			}
+			while(canstart) {
+				
+				//Create an IBD for the mysql data
+				ArrayList<TxBlock> mysqlblocks = adb.loadBlockRange(firstStart, firstStart.add(MiniNumber.HUNDRED), false);
+				if(mysqlblocks.size()==0) {
+					//No blocks left
+					break;
+				}
+				
+				for(TxBlock block : mysqlblocks) {
+					
+					//For the next loop
+					firstStart = block.getTxPoW().getBlockNumber(); 
+					
+					//Get details
+					TxPoW txp 			= block.getTxPoW();
+					long blocknumber 	= txp.getBlockNumber().getAsLong();
+					
+					//Date string
+					String date = MinimaLogger.DATEFORMAT.format(new Date(txp.getTimeMilli().getAsLong()));
+					
+					//Created
+					ArrayList<Coin> outputs 		= block.getOutputCoins();
+					for(Coin cc : outputs) {
+						if(cc.getAddress().to0xString().equals(address)) {
+							MinimaLogger.log("BLOCK "+blocknumber+" CREATED COIN : "+cc.toString());
+							
+							JSONObject created = new JSONObject();
+							created.put("block", blocknumber);
+							created.put("date", date);
+							created.put("coin", cc.toJSON());
+							outarr.add(created);
+						}
+					}
+					
+					//Spent
+					ArrayList<CoinProof> inputs  	= block.getInputCoinProofs();
+					for(CoinProof incoin : inputs) {
+						if(incoin.getCoin().getAddress().to0xString().equals(address)) {
+							MinimaLogger.log("BLOCK "+blocknumber+" SPENT COIN : "+incoin.getCoin().toString());
+							
+							JSONObject spent = new JSONObject();
+							spent.put("block", blocknumber);
+							spent.put("date", date);
+							spent.put("coin", incoin.getCoin().toJSON());
+							inarr.add(spent);
+						}
+					}
+				}
+			}
+			
+			//And Now check the chain..
+			if(startblock!=null) {
+				MinimaLogger.log("End archive @ "+firstStart);
+			}
+			
+			MinimaLogger.log("Checking BlockChain.. descending");
+			if(MinimaDB.getDB().getTxPoWTree() != null) {
+				TxPoWTreeNode top = MinimaDB.getDB().getTxPoWTree().getTip();
+				while(top != null) {
+					TxBlock block = top.getTxBlock();
+					
+					//Get details
+					TxPoW txp 			= block.getTxPoW();
+					long blocknumber 	= txp.getBlockNumber().getAsLong();
+					
+					//Date string
+					String date = MinimaLogger.DATEFORMAT.format(new Date(txp.getTimeMilli().getAsLong()));
+					
+					//Created
+					ArrayList<Coin> outputs 		= block.getOutputCoins();
+					for(Coin cc : outputs) {
+						if(cc.getAddress().to0xString().equals(address)) {
+							MinimaLogger.log("BLOCK "+blocknumber+" CREATED COIN : "+cc.toString());
+							
+							JSONObject created = new JSONObject();
+							created.put("block", blocknumber);
+							created.put("date", date);
+							created.put("coin", cc.toJSON());
+							outarr.add(created);
+						}
+					}
+					
+					//Spent
+					ArrayList<CoinProof> inputs  	= block.getInputCoinProofs();
+					for(CoinProof incoin : inputs) {
+						if(incoin.getCoin().getAddress().to0xString().equals(address)) {
+							MinimaLogger.log("BLOCK "+blocknumber+" SPENT COIN : "+incoin.getCoin().toString());
+							
+							JSONObject spent = new JSONObject();
+							spent.put("block", blocknumber);
+							spent.put("date", date);
+							spent.put("coin", incoin.getCoin().toJSON());
+							inarr.add(spent);
+						}
+					}
+					
+					
+					top = top.getParent();
+				}
+			}
+			
+			
+			resp.put("created", outarr);
+			resp.put("spent", inarr);
+			ret.put("coins", resp);
 			
 		}else {
 			throw new CommandException("Invalid action : "+action);
