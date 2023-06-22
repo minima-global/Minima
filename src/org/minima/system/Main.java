@@ -409,7 +409,6 @@ public class Main extends MessageProcessor {
 			shutdownGenProcs();
 			
 			//Stop the main TxPoW processor
-			MinimaLogger.log("Waiting for TxPoWProcessor shutdown");
 			shutdownFinalProcs();
 			
 			//Now backup the  databases
@@ -420,7 +419,7 @@ public class Main extends MessageProcessor {
 			stopMessageProcessor();
 			
 			//Wait for it..
-			MinimaLogger.log("Waiting for Main thread shutdown");
+			MinimaLogger.log("Main thread shutdown");
 			waitToShutDown();
 			
 			MinimaLogger.log("Shut down completed OK..");
@@ -515,9 +514,6 @@ public class Main extends MessageProcessor {
 		
 		//Shut down Maxima
 		mMaxima.shutdown();
-		
-		//ShutDown MDS
-//		mMDS.shutdown();
 				
 		//Stop the Miner
 		mTxPoWMiner.stopMessageProcessor();
@@ -540,12 +536,14 @@ public class Main extends MessageProcessor {
 	public void shutdownFinalProcs() {
 				
 		//ShutDown MDS
+		MinimaLogger.log("Shutdown MDS..");
 		mMDS.shutdown();
 		
 		//Shut down the Notify Manager
 		mNotifyManager.shutDown();
 				
 		//Stop the main TxPoW processor
+		MinimaLogger.log("TxPoWProcessor shutdown..");
 		mTxPoWProcessor.stopMessageProcessor();
 		mTxPoWProcessor.waitToShutDown();
 	}

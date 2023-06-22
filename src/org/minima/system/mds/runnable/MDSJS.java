@@ -130,18 +130,6 @@ public class MDSJS {
 	}
 	
 	/**
-	 * Send a SHUTDOWN message
-	 */
-	public void sendshutdown() {
-		//Create the init message
-		JSONObject shutd = new JSONObject();
-		shutd.put("event", "MDSSHUTDOWN");
-	
-		//Send to the Runnable
-		callMainCallback(shutd);
-	}
-	
-	/**
 	 * The Main CMD function
 	 */
 	public void cmd(String zCommand) {

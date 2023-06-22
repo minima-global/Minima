@@ -62,6 +62,11 @@ public class MDSManager extends MessageProcessor {
 	public static final String MDS_TIMER_60SECONDS		= "MDS_TIMER_60SECONDS";
 	public static final String MDS_TIMER_1HOUR			= "MDS_TIMER_1HOUR";
 	
+	/**
+	 * Message sent to MiniDAPPs when shutdown occurs.
+	 */
+	public static final String MDS_SHUTDOWN_MSG			= "MDS_SHUTDOWN";
+	
 	//The Main File and Command server
 	HTTPSServer mMDSFileServer;
 	HTTPSServer mMDSCommand;
@@ -144,7 +149,13 @@ public class MDSManager extends MessageProcessor {
 			return;
 		}
 		
-		//Otherwise post a shutdown message
+		//Send a SHUTDOWN message to all the MiniDAPPs..
+		Main.getInstance().PostNotifyEvent("MDS_SHUTDOWN", new JSONObject());
+		
+		//Wait 2 seconds for it to be processed..
+		try {Thread.sleep(2000);} catch (InterruptedException e) {}
+		
+		//Now post a shutdown message
 		PostMessage(MDS_SHUTDOWN);
 		
 		//Waiting for shutdown..
@@ -418,15 +429,6 @@ public class MDSManager extends MessageProcessor {
 			//Shutdown the Runnables
 			for(MDSJS mds : mRunnables) {
 				try {
-					mds.sendshutdown();
-				}catch(Exception exc) {
-					MinimaLogger.log(exc);
-				}
-			}
-			
-			//Shutdown the Runnables
-			for(MDSJS mds : mRunnables) {
-				try {
 					mds.shutdown();
 				}catch(Exception exc) {
 					MinimaLogger.log(exc);
@@ -506,7 +508,7 @@ public class MDSManager extends MessageProcessor {
 					}
 					
 				}catch(Exception exc) {
-					MinimaLogger.log(exc);
+					MinimaLogger.log(exc, false);
 				}
 			}
 			
@@ -757,7 +759,7 @@ public class MDSManager extends MessageProcessor {
 		checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
 		checkInstalled("script ide", "default/scriptide-2.0.mds.zip", allminis, false);
 		checkInstalled("terminal", "default/terminal-2.1.0.mds.zip", allminis, false);
-		checkInstalled("vestr", "default/vestr-3.0.0.mds.zip", allminis, false);
+		//checkInstalled("vestr", "default/vestr-3.0.0.mds.zip", allminis, false);
 		checkInstalled("wallet", "default/wallet-2.24.3.mds.zip", allminis, false);
 	}
 	
