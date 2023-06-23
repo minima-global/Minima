@@ -550,6 +550,20 @@ public class archive extends Command {
 			MinimaLogger.log("Restoring ArchiveDB from file..");
 			archtemp.restoreFromFile(restorefile,true);
 			
+			Cascade casc = archtemp.loadCascade();
+			if(casc != null) {
+				MinimaLogger.log("Archive DB cascade start : "+casc.getTip().getTxPoW().getBlockNumber()+" length:"+casc.getLength());
+			}
+			
+			TxBlock first 	= archtemp.loadFirstBlock();
+			if(first!=null) {
+				MinimaLogger.log("Archive DB first block : "+first.getTxPoW().getBlockNumber());
+			}
+			TxBlock last 	= archtemp.loadLastBlock();
+			if(last!=null) {
+				MinimaLogger.log("Archive DB last block : "+last.getTxPoW().getBlockNumber());
+			}
+			
 			//Set this statically..
 			STATIC_TEMPARCHIVE = archtemp;
 			
@@ -581,6 +595,75 @@ public class archive extends Command {
 			
 			JSONObject resp = new JSONObject();
 			resp.put("archiveresync", result);
+			ret.put("response", resp);
+			
+		}else if(action.equals("inspect")) {
+			
+			//Get the file
+			String file = getParam("file");
+			
+			//Does it exist..
+			File restorefile = MiniFile.createBaseFile(file);
+			if(!restorefile.exists()) {
+				throw new Exception("Restore file doesn't exist : "+restorefile.getAbsolutePath());
+			}
+			
+			//And now restore
+			ArchiveManager archtemp = new ArchiveManager();
+			
+			//Create a temp DB file..
+			File restorefolder = new File(GeneralParams.DATA_FOLDER,"archiverestore");
+			restorefolder.mkdirs();
+			
+			File tempdb = new File(restorefolder,"archivetemp");
+			if(tempdb.exists()) {
+				tempdb.delete();
+			}
+			archtemp.loadDB(tempdb);
+			
+			//Inspect File..
+			JSONObject resp 	= new JSONObject();
+			JSONObject jcasc 	= new JSONObject();
+			JSONObject jarch 	= new JSONObject();
+			
+			resp.put("cascade", jcasc);
+			resp.put("archive", jarch);
+			
+			jcasc.put("exists", false);
+			jcasc.put("start", "-1");
+			jcasc.put("length", "-1");
+			jarch.put("first", "-1");
+			jarch.put("last", "-1");
+			jarch.put("size", "-1");
+			
+			MinimaLogger.log("Restoring ArchiveDB from file..");
+			archtemp.restoreFromFile(restorefile,true);
+			
+			Cascade casc = archtemp.loadCascade();
+			if(casc != null) {
+				jcasc.put("exists", true);
+				jcasc.put("start", casc.getTip().getTxPoW().getBlockNumber().toString());
+				jcasc.put("length", casc.getLength());
+			}
+			
+			TxBlock first 	= archtemp.loadFirstBlock();
+			if(first!=null) {
+				jarch.put("first", first.getTxPoW().getBlockNumber().toString());
+			}
+			TxBlock last 	= archtemp.loadLastBlock();
+			if(last!=null) {
+				jarch.put("last", last.getTxPoW().getBlockNumber().toString());
+			}
+			
+			//And finally the size
+			jarch.put("size", archtemp.getSize());
+			
+			//Shutdwon TEMP DB
+			archtemp.saveDB(false);
+			
+			//Delete the restore folder
+			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
+			
 			ret.put("response", resp);
 			
 		}else if(action.equals("addresscheck")) {
