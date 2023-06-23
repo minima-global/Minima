@@ -600,26 +600,37 @@ public class archive extends Command {
 		}else if(action.equals("inspect")) {
 			
 			//Get the file
-			String file = getParam("file");
+			String file = getParam("file","");
 			
-			//Does it exist..
-			File restorefile = MiniFile.createBaseFile(file);
-			if(!restorefile.exists()) {
-				throw new Exception("Restore file doesn't exist : "+restorefile.getAbsolutePath());
+			//Where the temp db will go..
+			File restorefolder 	= new File(GeneralParams.DATA_FOLDER,"archiverestore");
+			
+			//Do we load one..
+			ArchiveManager archtemp = null;
+			if(!file.equals("")) {
+				//Does it exist..
+				File restorefile = MiniFile.createBaseFile(file);
+				if(!restorefile.exists()) {
+					throw new Exception("Restore file doesn't exist : "+restorefile.getAbsolutePath());
+				}
+				
+				//And now restore
+				archtemp = new ArchiveManager();
+				
+				//Create a temp DB file..
+				restorefolder.mkdirs();
+				
+				File tempdb = new File(restorefolder,"archivetemp");
+				if(tempdb.exists()) {
+					tempdb.delete();
+				}
+				archtemp.loadDB(tempdb);
+				
+				MinimaLogger.log("Restoring ArchiveDB from file..");
+				archtemp.restoreFromFile(restorefile,true);
+			}else {
+				archtemp = MinimaDB.getDB().getArchive();
 			}
-			
-			//And now restore
-			ArchiveManager archtemp = new ArchiveManager();
-			
-			//Create a temp DB file..
-			File restorefolder = new File(GeneralParams.DATA_FOLDER,"archiverestore");
-			restorefolder.mkdirs();
-			
-			File tempdb = new File(restorefolder,"archivetemp");
-			if(tempdb.exists()) {
-				tempdb.delete();
-			}
-			archtemp.loadDB(tempdb);
 			
 			//Inspect File..
 			JSONObject resp 	= new JSONObject();
@@ -635,9 +646,6 @@ public class archive extends Command {
 			jarch.put("first", "-1");
 			jarch.put("last", "-1");
 			jarch.put("size", "-1");
-			
-			MinimaLogger.log("Restoring ArchiveDB from file..");
-			archtemp.restoreFromFile(restorefile,true);
 			
 			Cascade casc = archtemp.loadCascade();
 			if(casc != null) {
@@ -659,10 +667,12 @@ public class archive extends Command {
 			jarch.put("size", archtemp.getSize());
 			
 			//Shutdwon TEMP DB
-			archtemp.saveDB(false);
-			
-			//Delete the restore folder
-			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
+			if(!file.equals("")) {
+				archtemp.saveDB(false);
+				
+				//Delete the restore folder
+				MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
+			}
 			
 			ret.put("response", resp);
 			
