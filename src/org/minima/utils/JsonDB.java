@@ -85,6 +85,14 @@ public class JsonDB implements Streamable{
 	/**
 	 * String functions
 	 */
+	public String getString(String zName) {
+		if(mParams.get(zName) == null) {
+			return null;
+		}
+		
+		return (String)mParams.get(zName);
+	}
+	
 	public String getString(String zName, String zDefault) {
 		if(mParams.get(zName) == null) {
 			return zDefault;

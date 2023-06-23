@@ -29,6 +29,7 @@ import org.minima.system.mds.sql.MiniDAPPDB;
 import org.minima.system.network.rpc.HTTPSServer;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.BaseConverter;
+import org.minima.utils.JsonDB;
 import org.minima.utils.Maths;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
@@ -85,6 +86,12 @@ public class MDSManager extends MessageProcessor {
 	 */
 	Hashtable<String, MiniDAPPDB> mSqlDB 	= new Hashtable<>();
 	Object mSQLSyncObject 					= new Object();
+	
+	/**
+	 * The KeyPair JSON
+	 */
+	Hashtable<String, JsonDB> mKeyPairDB 	= new Hashtable<>();
+	Object mKeyPairSyncObject 				= new Object();
 	
 	/**
 	 * Valid MiniDAPPs
@@ -190,6 +197,10 @@ public class MDSManager extends MessageProcessor {
 		return new File(getMiniDAPPDataFolder(zUID), "sql");
 	}
 	
+	public File getMiniDAPPKeyPairFolder(String zUID) {
+		return new File(getMiniDAPPDataFolder(zUID), "keypair");
+	}
+	
 	public String getMiniHUBPasword() {
 		return mMiniHUBPassword;
 	}
@@ -278,6 +289,71 @@ public class MDSManager extends MessageProcessor {
 		mPending = newpending;
 		
 		return found;
+	}
+	
+	public void setMDSKeyPair(String zMiniDAPPID, String zKey, String zValue) {
+		
+		//Synchronise all access
+		synchronized (mKeyPairSyncObject) {
+			
+			//The file
+			File jsondbfile = new File(getMiniDAPPKeyPairFolder(zMiniDAPPID),"keypair.db");
+			
+			//Have we loaded it already..
+			JsonDB jsondb = mKeyPairDB.get(zMiniDAPPID);
+			
+			//Does it exist
+			if(jsondb == null) {
+				
+				//Create
+				jsondb = new JsonDB();
+				
+				//Load it..
+				if(jsondbfile.exists()) {
+					jsondb.loadDB(jsondbfile);
+				}
+				
+				//And add to our list
+				mKeyPairDB.put(zMiniDAPPID, jsondb);
+			}
+			
+			//Now set the Property
+			jsondb.setString(zKey, zValue);
+			
+			//And save it..
+			jsondb.saveDB(jsondbfile);
+		}
+	}
+	
+	public String getMDSKeyPair(String zMiniDAPPID, String zKey) {
+		
+		//Synchronise all access
+		synchronized (mKeyPairSyncObject) {
+			
+			//The file
+			File jsondbfile = new File(getMiniDAPPKeyPairFolder(zMiniDAPPID),"keypair.db");
+			
+			//Have we loaded it already..
+			JsonDB jsondb = mKeyPairDB.get(zMiniDAPPID);
+			
+			//Does it exist
+			if(jsondb == null) {
+				
+				//Create
+				jsondb = new JsonDB();
+				
+				//Load it..
+				if(jsondbfile.exists()) {
+					jsondb.loadDB(jsondbfile);
+				}
+				
+				//And add to our list
+				mKeyPairDB.put(zMiniDAPPID, jsondb);
+			}
+			
+			//Now get the Property
+			return jsondb.getString(zKey);
+		}
 	}
 	
 	public JSONObject runSQL(String zUID, String zSQL) {
@@ -743,24 +819,28 @@ public class MDSManager extends MessageProcessor {
 		//Check for HUB
 		checkInstalled("minihub", "minihub/minihub-0.4.2.mds.zip", allminis, true, true);
 		
-		//Pending gets write permissions
-		checkInstalled("pending", "default/pending-0.2.1.mds.zip", allminis, true);
+		//Do we Install the Default MiniDAPPs
+		if(GeneralParams.DEFAULT_MINIDAPPS) {
 		
-		//The rest are normal
-		checkInstalled("block", "default/block-2.1.1.mds.zip", allminis, false);
-		checkInstalled("chatter", "default/chatter-1.2.1.mds.zip", allminis, false);
-		checkInstalled("docs", "default/docs-1.4.0.mds.zip", allminis, false);
-		checkInstalled("filez", "default/filez-1.2.1.mds.zip", allminis, false);
-		checkInstalled("future cash", "default/futurecash-1.10.1.mds.zip", allminis, false);
-		checkInstalled("health", "default/health-0.2.0.mds.zip", allminis, false);
-		//checkInstalled("logs", "default/logs-0.2.0.mds.zip", allminis, false);
-		checkInstalled("maxcontacts", "default/maxcontacts-1.4.0.mds.zip", allminis, false);
-		checkInstalled("maxsolo", "default/maxsolo-2.4.4.mds.zip", allminis, false);
-		checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
-		checkInstalled("script ide", "default/scriptide-2.0.mds.zip", allminis, false);
-		checkInstalled("terminal", "default/terminal-2.1.0.mds.zip", allminis, false);
-		//checkInstalled("vestr", "default/vestr-3.0.0.mds.zip", allminis, false);
-		checkInstalled("wallet", "default/wallet-2.24.3.mds.zip", allminis, false);
+			//Pending gets write permissions
+			checkInstalled("pending", "default/pending-0.2.1.mds.zip", allminis, true);
+			
+			//The rest are normal
+			checkInstalled("block", "default/block-2.1.1.mds.zip", allminis, false);
+			checkInstalled("chatter", "default/chatter-1.2.1.mds.zip", allminis, false);
+			checkInstalled("docs", "default/docs-1.4.0.mds.zip", allminis, false);
+			checkInstalled("filez", "default/filez-1.2.1.mds.zip", allminis, false);
+			checkInstalled("future cash", "default/futurecash-1.10.1.mds.zip", allminis, false);
+			checkInstalled("health", "default/health-0.2.0.mds.zip", allminis, false);
+			//checkInstalled("logs", "default/logs-0.2.0.mds.zip", allminis, false);
+			checkInstalled("maxcontacts", "default/maxcontacts-1.4.0.mds.zip", allminis, false);
+			checkInstalled("maxsolo", "default/maxsolo-2.4.4.mds.zip", allminis, false);
+			checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
+			checkInstalled("script ide", "default/scriptide-2.0.mds.zip", allminis, false);
+			checkInstalled("terminal", "default/terminal-2.1.0.mds.zip", allminis, false);
+			//checkInstalled("vestr", "default/vestr-3.0.0.mds.zip", allminis, false);
+			checkInstalled("wallet", "default/wallet-2.24.3.mds.zip", allminis, false);
+		}
 	}
 	
 	private String getVersionFromPath(String zPath) {

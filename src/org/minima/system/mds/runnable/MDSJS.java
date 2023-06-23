@@ -55,6 +55,11 @@ public class MDSJS {
 	public FILEService file;
 	
 	/**
+	 * The KeyPair service
+	 */
+	public KEYPAIRService keypair;
+	
+	/**
 	 * Main Constructor
 	 * 
 	 * @param zMDS
@@ -72,6 +77,7 @@ public class MDSJS {
 		net 			= new NETService(zMiniDAPPID, zMiniName, zContext, zScope);
 		comms			= new COMMSService(mMDS, zMiniDAPPID, zMiniName, zContext, zScope);
 		file			= new FILEService(mMDS, zMiniDAPPID, zMiniName, zContext, zScope);
+		keypair			= new KEYPAIRService(mMDS, zMiniDAPPID, zMiniName, zContext, zScope);
 	}
 	
 	public String getMiniDAPPID() {

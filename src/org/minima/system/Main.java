@@ -237,7 +237,6 @@ public class Main extends MessageProcessor {
 			MinimaLogger.log("Load all DB.. finish");
 		}
 		
-		
 		//Are we in Slave node mode
 		boolean slavemode = MinimaDB.getDB().getUserDB().isSlaveNode();
 		if(slavemode) {
