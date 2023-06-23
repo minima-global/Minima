@@ -28,6 +28,9 @@ public class MiniDAPPDB extends SqlDB {
 		
 		try {
 			
+			//Check is OPEN
+			checkOpen();
+			
 			//Create the various tables..
 			Statement stmt = mSQLConnection.createStatement();
 		
