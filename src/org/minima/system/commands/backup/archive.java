@@ -518,8 +518,8 @@ public class archive extends Command {
 			JSONObject resp = new JSONObject();
 			resp.put("message", "Archive DB GZIPPED");
 			resp.put("rows", MinimaDB.getDB().getArchive().getSize());
-			resp.put("size", MiniFormat.formatSize(gziplen));
 			resp.put("file", gzoutput.getAbsolutePath());
+			resp.put("size", MiniFormat.formatSize(gziplen));
 			ret.put("response", resp);
 		
 		}else if(action.equals("import")) {
