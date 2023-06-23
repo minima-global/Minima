@@ -1,5 +1,7 @@
 package org.minima.system.mds.pending;
 
+import java.util.Date;
+
 import org.minima.objects.base.MiniData;
 import org.minima.utils.json.JSONObject;
 
@@ -8,11 +10,13 @@ public class PendingCommand {
 	String 		mUID;
 	JSONObject 	mMiniDAPP;
 	String 		mCommand;
+	long 		mDate;
 	
 	public PendingCommand(JSONObject zMiniDAPP, String zCommand) {
 		mUID		= MiniData.getRandomData(16).to0xString();
 		mMiniDAPP	= zMiniDAPP;
 		mCommand 	= zCommand;
+		mDate		= System.currentTimeMillis();
 	}
 	
 	public String getUID() {
@@ -23,6 +27,10 @@ public class PendingCommand {
 		return mMiniDAPP;
 	}
 	
+	public long getDate() {
+		return mDate;
+	}
+	
 	public String getCommand() {
 		return mCommand;
 	}
@@ -31,6 +39,7 @@ public class PendingCommand {
 		JSONObject json = new JSONObject();
 		json.put("uid", mUID);
 		json.put("minidapp", mMiniDAPP);
+		json.put("date", new Date(mDate).toString());
 		json.put("command", mCommand);
 		return json;
 	}
