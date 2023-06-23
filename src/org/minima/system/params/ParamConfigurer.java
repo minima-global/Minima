@@ -320,6 +320,11 @@ public class ParamConfigurer {
                 GeneralParams.CLEAN = true;
             }
         }),
+        nodefaultminidapps("nodefaultminidapps", "Do NOT install the default MiniDAPPs", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.DEFAULT_MINIDAPPS = false;
+            }
+        }),
         nosyncibd("nosyncibd", "Do not sync IBD (for testing)", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.NO_SYNC_IBD = true;
