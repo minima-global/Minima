@@ -501,7 +501,7 @@ public class archive extends Command {
 		}else if(action.equals("export")) {
 			
 			//The GZIPPED file 
-			String file = getParam("file","archivebackup-"+System.currentTimeMillis()+".gzip");
+			String file = getParam("file","archivebackup-"+System.currentTimeMillis()+".gz");
 			
 			//Create the file
 			File gzoutput = MiniFile.createBaseFile(file);
@@ -509,43 +509,20 @@ public class archive extends Command {
 				gzoutput.delete();
 			}
 			
-			//File backup folder
-			File backupfolder = new File(GeneralParams.DATA_FOLDER,"archivebackup");
-			backupfolder.mkdirs();
-			
-			//Create the archive..
-			File archivefile = new File(backupfolder,"archive.sql");
-			if(archivefile.exists()) {
-				archivefile.delete();
-			}
-			MinimaLogger.log("Exporting ArchiveDB to SQL..");
-			MinimaDB.getDB().getArchive().backupToFile(archivefile);
-			
-			//How Big..
-			long len = archivefile.length();
-			
-			//Now GZIP it..
-			MinimaLogger.log("GZIP ArchiveDB..");
-			MiniFile.compressGzipFile(archivefile, gzoutput);
+			//Write out in GZIP format
+			MinimaLogger.log("Exporting ArchiveDB to GZIPPED SQL..");
+			MinimaDB.getDB().getArchive().backupToFile(gzoutput,true);
 			
 			long gziplen = gzoutput.length();
-			
-			//Now delete the original
-			archivefile.delete();
 			
 			JSONObject resp = new JSONObject();
 			resp.put("message", "Archive DB GZIPPED");
 			resp.put("rows", MinimaDB.getDB().getArchive().getSize());
-			resp.put("original", MiniFormat.formatSize(len));
-			resp.put("gzipped", MiniFormat.formatSize(gziplen));
+			resp.put("size", MiniFormat.formatSize(gziplen));
 			resp.put("file", gzoutput.getAbsolutePath());
 			ret.put("response", resp);
 		
 		}else if(action.equals("import")) {
-			
-			//File backup folder
-			File restorefolder = new File(GeneralParams.DATA_FOLDER,"archiverestore");
-			restorefolder.mkdirs();
 			
 			//Get the file
 			String file = getParam("file");
@@ -556,43 +533,25 @@ public class archive extends Command {
 				throw new Exception("Restore file doesn't exist : "+restorefile.getAbsolutePath());
 			}
 			
-			//unzip it..
-			File restorearch = new File(restorefolder,"restore.sql");
-			if(restorearch.exists()) {
-				restorearch.delete();
-			}
-			
-			MinimaLogger.log("Uncompressing ArchiveDB GZIP.. "+restorearch.getAbsolutePath());
-			MiniFile.decompressGzipFile(restorefile, restorearch);
-			
 			//And now restore
-			MinimaLogger.log("Creating TEMP ArchiveDB..");
 			ArchiveManager archtemp = new ArchiveManager();
 			
-			//Set this statically..
-			STATIC_TEMPARCHIVE = archtemp;
+			//Create a temp DB file..
+			File restorefolder = new File(GeneralParams.DATA_FOLDER,"archiverestore");
+			restorefolder.mkdirs();
 			
-			//Create a temp file..
 			File tempdb = new File(restorefolder,"archivetemp");
+			if(tempdb.exists()) {
+				tempdb.delete();
+			}
 			archtemp.loadDB(tempdb);
 			
 			//Restore from File..
-			MinimaLogger.log("Restoring TEMP ArchiveDB..");
-			archtemp.restoreFromFile(restorearch);
+			MinimaLogger.log("Restoring ArchiveDB from file..");
+			archtemp.restoreFromFile(restorefile,true);
 			
-			TxBlock first = archtemp.loadFirstBlock();
-			if(first != null) {
-				MinimaLogger.log("First block : "+first.getTxPoW().getBlockNumber());
-			}else {
-				MinimaLogger.log("First block not found!");
-			}
-			
-			TxBlock last = archtemp.loadLastBlock();
-			if(last != null) {
-				MinimaLogger.log("Last block : "+last.getTxPoW().getBlockNumber());
-			}else {
-				MinimaLogger.log("Last block not found!");
-			}
+			//Set this statically..
+			STATIC_TEMPARCHIVE = archtemp;
 			
 			//Now run a chain sync.. with correct params
 			String command = "archive action:resync host:"+LOCAL_ARCHIVE;
@@ -611,7 +570,7 @@ public class archive extends Command {
 			JSONArray res 		= Command.runMultiCommand(command);
 			JSONObject result 	= (JSONObject) res.get(0);
 			
-			//And remove the TEMP
+			//Shutdwon TEMP DB
 			archtemp.saveDB(false);
 			
 			//Delete the restore folder

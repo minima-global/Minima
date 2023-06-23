@@ -208,6 +208,10 @@ public abstract class SqlDB {
 	}
 	
 	public void backupToFile(File zBackupFile) throws SQLException {
+		backupToFile(zBackupFile, false);
+	}
+	
+	public void backupToFile(File zBackupFile, boolean zGZIP) throws SQLException {
 		
 		//Delete file if exists..
 		if(zBackupFile.exists()) {
@@ -218,7 +222,12 @@ public abstract class SqlDB {
 		Statement stmt = mSQLConnection.createStatement();
 	
 		//Create the backup Script
-		String backup = String.format("SCRIPT TO '%s'", zBackupFile.getAbsolutePath());
+		String backup = null;
+		if(zGZIP) {
+			backup = String.format("SCRIPT TO '%s' COMPRESSION GZIP", zBackupFile.getAbsolutePath());
+		}else {
+			backup = String.format("SCRIPT TO '%s'", zBackupFile.getAbsolutePath());
+		}
 		
 		//Shut down.. this saves and closes all the data
 		stmt.executeQuery(backup);
@@ -228,6 +237,10 @@ public abstract class SqlDB {
 	}
 	
 	public void restoreFromFile(File zRestoreFile) throws SQLException {
+		restoreFromFile(zRestoreFile, false);
+	}
+	
+	public void restoreFromFile(File zRestoreFile, boolean zGZIP) throws SQLException {
 		//One last statement
 		Statement stmt = mSQLConnection.createStatement();
 	
@@ -235,7 +248,12 @@ public abstract class SqlDB {
 		stmt.execute("DROP ALL OBJECTS");
 		
 		//Create the backup Script
-		String restore = String.format("RUNSCRIPT FROM '%s'", zRestoreFile.getAbsolutePath());
+		String restore = null;
+		if(zGZIP) {
+			restore = String.format("RUNSCRIPT FROM '%s' COMPRESSION GZIP", zRestoreFile.getAbsolutePath());
+		}else {
+			restore = String.format("RUNSCRIPT FROM '%s'", zRestoreFile.getAbsolutePath());
+		}
 		
 		//Shut down.. this saves and closes all the data
 		stmt.execute(restore);
