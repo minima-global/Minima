@@ -285,7 +285,7 @@ public class Main extends MessageProcessor {
 				mTxPoWProcessor.onStartUpRecalc();
 				
 				//For now..
-				MinimaDB.getDB().saveTxPoWTree();
+				MinimaDB.getDB().saveState();
 			}	
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
