@@ -162,7 +162,13 @@ public class Token implements Streamable{
 		obj.put("totalamount", mTokenMinimaAmount.toString());
 		obj.put("scale", mTokenScale.toString() );
 		obj.put("created", mTokenCreated.toString());
-		obj.put("tokenid", mTokenID.to0xString());
+		
+		if(mTokenID == null) {
+			obj.put("tokenid", null);
+		}else {
+			obj.put("tokenid", mTokenID.to0xString());
+		}
+		
 		
 		return obj;
 	}
@@ -189,9 +195,8 @@ public class Token implements Streamable{
 			daos.close();
 			baos.close();
 			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			MinimaLogger.log(e);
 		}
 	}
 	

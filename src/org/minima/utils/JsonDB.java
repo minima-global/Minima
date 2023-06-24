@@ -139,7 +139,7 @@ public class JsonDB implements Streamable{
 	 * Load and Save
 	 */
 	public void loadDB(File zFile) {
-		MiniFile.loadObject(zFile, this);
+		MiniFile.loadObjectSlow(zFile, this);
 	}
 	
 	public void saveDB(File zFile) {

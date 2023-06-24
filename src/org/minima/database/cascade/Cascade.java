@@ -170,7 +170,7 @@ public class Cascade implements Streamable {
 	}
 
 	public void loadDB(File zFile) {
-		MiniFile.loadObject(zFile, this);
+		MiniFile.loadObjectSlow(zFile, this);
 	}
 	
 	public void saveDB(File zFile) {

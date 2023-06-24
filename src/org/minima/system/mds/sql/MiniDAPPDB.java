@@ -11,8 +11,12 @@ import org.minima.utils.json.JSONObject;
 
 public class MiniDAPPDB extends SqlDB {
 
-	public MiniDAPPDB() {
+	public String mUID;
+	
+	public MiniDAPPDB(String zUID) {
 		super();
+		
+		mUID = zUID;
 	}
 	
 	@Override
@@ -90,7 +94,7 @@ public class MiniDAPPDB extends SqlDB {
 			stmt.close();
 						
 		} catch (Exception e) {
-			MinimaLogger.log("MiniDAPPSQL : "+e.toString());
+			MinimaLogger.log("MiniDAPPSQL uid:"+mUID+" sql:"+zSQL+" error:"+e.toString(),false);
 			
 			results.put("status", false);
 			results.put("count",0);

@@ -19,6 +19,7 @@ import org.minima.system.Main;
 import org.minima.system.network.p2p.P2PDB;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 
 public class MinimaDB {
@@ -322,7 +323,13 @@ public class MinimaDB {
 			mCascade.loadDB(new File(basedb,"cascade.db"));
 			
 			//Load the TxPoWTree
+			File txtree = new File(basedb,"chaintree.db");
+			MinimaLogger.log("Loading TxPowTree size : "+MiniFormat.formatSize(txtree.length()));
 			mTxPoWTree.loadDB(new File(basedb,"chaintree.db"));
+			MinimaLogger.log("TxPowTree loaded size : "+mTxPoWTree.getSize());
+			
+			//Clean Mem after that
+			System.gc();
 			
 			//And finally..
 //			mP2PDB.loadEncryptedDB(GeneralParams.MAIN_DBPASSWORD, new File(basedb,"p2p.db"));
@@ -342,6 +349,14 @@ public class MinimaDB {
 		
 		//Release the krakken
 		writeLock(false);
+	}
+	
+	public void saveTxPoWTree() {
+		//Get the base Database folder
+		File basedb = getBaseDBFolder();
+		
+		//Save it..
+		mTxPoWTree.saveDB(new File(basedb,"chaintree.db"));
 	}
 	
 	public void loadArchiveAndTxPoWDB(boolean zResetWallet) {

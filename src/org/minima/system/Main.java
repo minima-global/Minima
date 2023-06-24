@@ -277,6 +277,21 @@ public class Main extends MessageProcessor {
 				
 		//Start the engine..
 		mTxPoWProcessor = new TxPoWProcessor();
+		
+		//Recalc Tree if too large
+		try {
+			if(MinimaDB.getDB().getTxPoWTree().getHeaviestBranchLength() > 1200) {
+				MinimaLogger.log("Large tree.. recalculating..");
+				mTxPoWProcessor.onStartUpRecalc();
+				
+				//For now..
+				MinimaDB.getDB().saveTxPoWTree();
+			}	
+		}catch(Exception exc) {
+			MinimaLogger.log(exc);
+		}
+		
+		//Create the TxpowMiner
 		mTxPoWMiner 	= new TxPoWMiner();
 		
 		//Are we running a private network

@@ -141,6 +141,28 @@ public class MiniFile {
 		}
 	}
 	
+	public static void loadObjectSlow(File zFile, Streamable zObject) {
+		//Does the File exist
+		if(!zFile.exists()) {
+			MinimaLogger.log("Load Object file does not exist : "+zFile.getAbsolutePath());
+			return;
+		}
+		
+		try {
+			FileInputStream fis 	= new FileInputStream(zFile);
+			BufferedInputStream bis = new BufferedInputStream(fis,65536);
+			DataInputStream dis 	= new DataInputStream(bis);
+			zObject.readDataStream(dis);
+			
+			dis.close();
+			bis.close();
+			fis.close();
+			
+		} catch (IOException e) {
+			MinimaLogger.log(e);
+		}
+	}
+	
 	public static void loadObjectEncrypted(String zPassword, File zFile, Streamable zObject) {
 		//Does the File exist
 		if(!zFile.exists()) {

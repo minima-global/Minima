@@ -354,11 +354,10 @@ public class TxPowTree implements Streamable {
 	}
 
 	public void loadDB(File zFile) {
-		MiniFile.loadObject(zFile, this);
+		MiniFile.loadObjectSlow(zFile, this);
 	}
 	
 	public void saveDB(File zFile) {
-		//MiniFile.saveObject(zFile, this);
 		MiniFile.saveObjectDirect(zFile, this);
 	}
 	

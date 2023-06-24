@@ -374,7 +374,7 @@ public class MDSManager extends MessageProcessor {
 			if(db == null) {
 			
 				//Create the DB link
-				db = new MiniDAPPDB();
+				db = new MiniDAPPDB(zUID);
 				
 				//The location
 				File dbfolder3 = getMiniDAPPSQLFolder(minidappid);
