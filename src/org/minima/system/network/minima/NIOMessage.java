@@ -55,6 +55,11 @@ public class NIOMessage implements Runnable {
 	public static ConcurrentHashMap<String, Long> mLastChainSync = new ConcurrentHashMap<>();
 	
 	/**
+	 * Maximum outputs for a txn for fully valid
+	 */
+	public static int MAX_RELAY_OUTPUTCOINSIZE = 25;
+	
+	/**
 	 * Base Message types sent over the network
 	 */
 	public static final MiniByte MSG_GREETING 		= new MiniByte(0);
@@ -499,6 +504,13 @@ public class NIOMessage implements Runnable {
 					MinimaLogger.log("Received block before cascade.. "+block+" / "+cascadeblock+" difficulty:"+blockdiffratio+" from "+mClientUID);
 					fullyvalid 		= false;
 					beforecascade 	= true;
+				}
+				
+				//Too many outputs  - Hmmm.. just don't relay.. something unfunny going on..
+				int outsize = txpow.getTransaction().getAllOutputs().size();
+				if(outsize>MAX_RELAY_OUTPUTCOINSIZE) {
+					MinimaLogger.log("Transaction has a lot of outputs.. "+outsize+" relay max:"+MAX_RELAY_OUTPUTCOINSIZE);
+					fullyvalid = false;
 				}
 				
 				long timestart2 = System.currentTimeMillis();
