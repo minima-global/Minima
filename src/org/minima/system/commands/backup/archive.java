@@ -122,6 +122,9 @@ public class archive extends Command {
 			//Scan through the entire DB.. checking.. 
 			MinimaLogger.log("Checking Archive DB.. this may take some time..");
 			
+//			JSONObject res = arch.executeGenericSQL("SELECT * FROM cascadedata");
+//			MinimaLogger.log(MiniFormat.JSONPretty(res));
+			
 			//What is the first block in the DB
 			TxBlock starterblock = arch.loadLastBlock();
 			
@@ -145,33 +148,32 @@ public class archive extends Command {
 				}
 			}
 			
-			//Get the cascade
+			//Get the cascade details
+			MiniNumber cascstart 	= MiniNumber.MINUSONE;
+			JSONObject cascjson 	= new JSONObject();
 			Cascade dbcasc = arch.loadCascade(); 
 			if(dbcasc != null) {
+				cascjson.put("exists", true);
+				
 				//Get the tip..
-				MiniNumber tip = dbcasc.getTip().getTxPoW().getBlockNumber();
-				
-				//Can start from cascade
-				MinimaLogger.log("ArchiveDB cascade start : "+tip);
-				
-				//Start the test from then onwards
-				if(!startatroot) {
-					lastlog = tip.increment();
-					start 	= lastlog;
-				}
+				cascstart = dbcasc.getTip().getTxPoW().getBlockNumber();
+				cascjson.put("tip", cascstart.toString());
+				cascjson.put("length", dbcasc.getLength());
 				
 			}else {
-				
-				//Can start from cascade
-				MinimaLogger.log("ArchiveDB has no cascade ");
+				cascjson.put("exists", false);
 			}
 			
 			//Get t the initial 1000
 			MiniData parenthash 	= null;
 			MiniNumber parentnum 	= null;
 			int errorsfound 		= 0;
-			int total = 0;
-			MiniNumber archstart = start;
+			int total 				= 0;
+			MiniNumber archstart 	= start;
+			MiniNumber archend 		= archstart;
+			
+			JSONObject archjson = new JSONObject();
+			archjson.put("start", archstart.toString());
 			
 			while(startcheck) {
 				
@@ -182,12 +184,13 @@ public class archive extends Command {
 				}
 				
 				//Use batches of 256
-				MiniNumber end = start.add(MiniNumber.TWOFIVESIX);
+				MiniNumber end 	= start.add(MiniNumber.TWOFIVESIX);
 				
 				//Get some blocks
 				ArrayList<TxBlock> blocks = arch.loadBlockRange(start.decrement(),end,false); 
 				
 				for(TxBlock block : blocks) {
+					archend = block.getTxPoW().getBlockNumber();
 					total++;
 					
 					//Start Checking..
@@ -225,15 +228,36 @@ public class archive extends Command {
 				start = parentnum.increment();
 			}
 			
+			//Add more details
+			archjson.put("end", archend.toString());
+			archjson.put("blocks", total);
+			
+			//Check the archive node starts in the cascade..
+			MiniNumber startresync 	= archstart;
+			boolean validlist 		= false;
+			if(!archstart.isEqual(MiniNumber.ONE)) {
+				if(cascstart.isMoreEqual(archstart.sub(MiniNumber.ONE)) && cascstart.isLessEqual(archend)) {
+					validlist = true;
+				}
+				
+				startresync = cascstart;
+			}else {
+				validlist = true;
+			}
+			
 			JSONObject resp = new JSONObject();
 			resp.put("message", "Archive integrity check completed");
-			resp.put("start", archstart);
-			resp.put("blocks", total);
-			resp.put("cascade", (dbcasc!=null));
+			resp.put("cascade", cascjson);
+			resp.put("archive", archjson);
+			resp.put("valid", validlist);
+			if(!validlist) {
+				resp.put("notvalid", "Your cascade and blocks do not line up.. new cascade required.. pls restart Minima");
+			}
+			resp.put("from", startresync);
 			resp.put("errors", errorsfound);
 			
 			if(errorsfound>0) {
-				resp.put("recommend", "There are errors in your Archive DB - you should wipe then resync with a valid host");
+				resp.put("recommend", "There are errors in your Archive DB blocks - you should wipe then resync with a valid host");
 			}else {
 				resp.put("recommend", "Your ArchiveDB is correct and has no errors.");
 			}
