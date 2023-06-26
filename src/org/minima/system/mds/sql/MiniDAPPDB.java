@@ -23,7 +23,7 @@ public class MiniDAPPDB extends SqlDB {
 	protected void createSQL() {}
 	
 	/**
-	 * Only one thread can access the db at a atime
+	 * Only one thread can access the db at a time
 	 */
 	public synchronized JSONObject executeSQL(String zSQL) {
 		
