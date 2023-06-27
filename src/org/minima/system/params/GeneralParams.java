@@ -1,5 +1,8 @@
 package org.minima.system.params;
 
+import org.minima.objects.base.MiniNumber;
+import org.minima.system.commands.base.newaddress;
+
 public class GeneralParams {
 
 	/**
@@ -137,6 +140,16 @@ public class GeneralParams {
 	 * Don't download sync IBD
 	 */
 	public static boolean NO_SYNC_IBD = false;
+	
+	/**
+	 * Don't download sync IBD
+	 */
+	public static int MAX_RELAY_OUTPUTCOINS = 25;
+	
+	/**
+	 * Max Split coins
+	 */
+	public static MiniNumber MAX_SPLIT_COINS = new MiniNumber(20);
 	
 	/**
 	 * How many days do you keep the TxPoW in the SQL DB
