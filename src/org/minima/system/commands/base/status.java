@@ -105,12 +105,12 @@ public class status extends Command {
 				userhashrate = Magic.MIN_HASHES;
 			}
 			MiniNumber ratio 			= new MiniNumber(blockWeight).div(userhashrate);
-	//		MinimaLogger.log("blkweight    : "+blockWeight);
-	//		MinimaLogger.log("userhashrate : "+userhashrate);
-	//		MinimaLogger.log("ratio        : "+ratio.toString());
-			MiniNumber pulsespeed 		= MiniNumber.THOUSAND.div(new MiniNumber(GeneralParams.USER_PULSE_FREQ));
-			MiniNumber usersperpulse 	= MiniNumber.ONE.div(new MiniNumber(""+pulsespeed).div(GlobalParams.MINIMA_BLOCK_SPEED));
-			MiniNumber totaldevs 		= usersperpulse.mult(ratio).floor();
+			
+			//Are we in Normal mode..
+			if(!Main.getInstance().isNormalMineMode()) {
+				ratio = ratio.mult(MiniNumber.TEN);
+			}
+			
 			details.put("devices", ratio.ceil().toString());
 		}
 
