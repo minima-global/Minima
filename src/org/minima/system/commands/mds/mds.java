@@ -159,11 +159,11 @@ public class mds extends Command {
 					ret.put("response", result);
 				}
 			
-				//Post a message to the MiniDAPP
-				sendPendingResult(minidappid, uid, true);
-				
 				//Remove it from the list
 				Main.getInstance().getMDSManager().removePending(uid);
+				
+				//Post a message to the MiniDAPP
+				sendPendingResult(minidappid, uid, true);
 				
 			}else {
 				throw new CommandException("Pending UID not found : "+uid);
