@@ -144,12 +144,12 @@ public class GeneralParams {
 	/**
 	 * Don't download sync IBD
 	 */
-	public static int MAX_RELAY_OUTPUTCOINS = 25;
+	public static int MAX_RELAY_OUTPUTCOINS = 15;
 	
 	/**
 	 * Max Split coins
 	 */
-	public static MiniNumber MAX_SPLIT_COINS = new MiniNumber(20);
+	public static MiniNumber MAX_SPLIT_COINS = new MiniNumber(10);
 	
 	/**
 	 * How many days do you keep the TxPoW in the SQL DB
