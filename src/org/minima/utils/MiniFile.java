@@ -19,6 +19,7 @@ import java.util.zip.GZIPOutputStream;
 import org.minima.objects.base.MiniData;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.encrypt.PasswordCrypto;
+import org.minima.utils.json.JSONObject;
 
 public class MiniFile {
 	
@@ -322,6 +323,49 @@ public class MiniFile {
 			}
 		}
 		
+		return tot;
+	}
+	
+	public static long getTotalFileSizeWithNames(File zFolder, JSONObject zResult, int zMaxDepthInfo, int zDepth) {
+		
+		//Are there an children
+		JSONObject dirs = new JSONObject();
+				
+		//Add this File....
+		String fname = zFolder.getName();
+		
+		long tot = 0;
+		
+		File[] files = zFolder.listFiles();
+		if(files == null) {
+			return 0;
+		}
+		
+		for(File file : files) {
+			if(file.isDirectory()) {
+				JSONObject dirdata = new JSONObject();
+				long dirsize = getTotalFileSizeWithNames(file,dirdata, zMaxDepthInfo, zDepth+1);
+				tot = tot + dirsize;
+				
+				dirs.put(file.getName(), dirdata);
+				
+			}else {
+				tot += file.length();
+			}
+		}
+		
+		if(fname.equals("databases")) {
+			int y=0;
+		}
+		
+		zResult.put("total", MiniFormat.formatSize(tot));
+		
+		if(zDepth<zMaxDepthInfo) {
+			if(dirs.size()>0) {
+				zResult.put("dirs", dirs);
+			}
+		}
+				
 		return tot;
 	}
 	
