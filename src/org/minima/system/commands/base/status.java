@@ -21,6 +21,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.commands.Command;
+import org.minima.system.mds.MDSManager;
 import org.minima.system.network.NetworkManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
@@ -166,8 +167,16 @@ public class status extends Command {
 		database.put("userdb", MiniFormat.formatSize(MinimaDB.getDB().getUserDBFileSize()));
 		database.put("p2pdb", MiniFormat.formatSize(MinimaDB.getDB().getP2PFileSize()));
 		
-//		long mdsfiles = MiniFile.getTotalFileSize(Main.getInstance().getMDSManager().getRootMDSFolder());
-//		database.put("mds", MiniFormat.formatSize(mdsfiles));
+		if(complete) {
+
+			long mdsfiles = MiniFile.getTotalFileSize(Main.getInstance().getMDSManager().getRootMDSFolder());
+			database.put("mds", MiniFormat.formatSize(mdsfiles));
+			
+			//Get ALKL the files
+			JSONObject allthefiles = new JSONObject();
+			MiniFile.getTotalFileSizeWithNames(new File(GeneralParams.DATA_FOLDER), allthefiles,3,0);
+			database.put("allfiles", allthefiles);
+		}
 		
 		files.put("files", database);
 
@@ -312,4 +321,15 @@ public class status extends Command {
 		return new status();
 	}
 
+	public static void main(String[] zARgs) {
+		
+		File ff = new File("C:\\Users\\spartacusrex\\.minima\\1.0");
+		
+		JSONObject files = new JSONObject();
+		MiniFile.getTotalFileSizeWithNames(ff, files,3,0);
+		
+		System.out.println(MiniFormat.JSONPretty(files));
+		
+	}
+	
 }
