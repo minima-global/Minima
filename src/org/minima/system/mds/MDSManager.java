@@ -274,6 +274,16 @@ public class MDSManager extends MessageProcessor {
 		return mPending;
 	}
 	
+	public PendingCommand getPendingCommand(String zUID) {
+		for(PendingCommand pending : mPending) {
+			if(pending.getUID().equals(zUID)) {
+				return pending;
+			}
+		}
+		
+		return null;
+	}
+	
 	public boolean removePending(String zUID) {
 		ArrayList<PendingCommand> newpending = new ArrayList<>();
 		boolean found = false;

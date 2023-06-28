@@ -137,37 +137,34 @@ public class mds extends Command {
 			//Get the uid
 			String uid = getParam("uid");
 			
-			//Get all the pending commands..
-			ArrayList<PendingCommand> allpending = Main.getInstance().getMDSManager().getAllPending(); 
-			
-			//Make into JSONArray
-			boolean found = false;
-			for(PendingCommand pending : allpending) {
-				if(pending.getUID().equals(uid)) {
-					
-					//RUN it.. as normal 0x00 - so is accepted
-					CMDcommand cmd 	= new CMDcommand("0x00", pending.getCommand());
-					String result 	= cmd.runCommand();
-					
-					if(result.startsWith("{")) {
-						ret.put("response", (JSONObject) new JSONParser().parse(result));
-					
-					}else if(result.startsWith("[")) {
-						ret.put("response", (JSONArray) new JSONParser().parse(result));
-					
-					}else {
-						ret.put("response", result);
-					}
-					
-					found = true;
-					break;
+			//Get the pending command
+			PendingCommand pending = Main.getInstance().getMDSManager().getPendingCommand(uid);
+			String minidappid = "";
+			if(pending!=null) {
+				
+				//Get the MiniDAPP  ID
+				minidappid = pending.getMiniDAPP().getString("uid",""); 
+				
+				//RUN it.. as normal 0x00 - so is accepted
+				CMDcommand cmd 	= new CMDcommand("0x00", pending.getCommand());
+				String result 	= cmd.runCommand();
+				
+				if(result.startsWith("{")) {
+					ret.put("response", (JSONObject) new JSONParser().parse(result));
+				
+				}else if(result.startsWith("[")) {
+					ret.put("response", (JSONArray) new JSONParser().parse(result));
+				
+				}else {
+					ret.put("response", result);
 				}
-			}
 			
-			//Did we find it..
-			if(found) {
+				//Post a message to the MiniDAPP
+				sendPendingResult(minidappid, uid, true);
+				
 				//Remove it from the list
 				Main.getInstance().getMDSManager().removePending(uid);
+				
 			}else {
 				throw new CommandException("Pending UID not found : "+uid);
 			}
@@ -177,13 +174,24 @@ public class mds extends Command {
 			//Get the uid
 			String uid = getParam("uid");
 			
-			//Remove it from the list
-			boolean found = Main.getInstance().getMDSManager().removePending(uid);
-			if(!found) {
+			PendingCommand pending = Main.getInstance().getMDSManager().getPendingCommand(uid);
+			String minidappid = "";
+			if(pending!=null) {
+				
+				//Get the MiniDAPP  ID
+				minidappid = pending.getMiniDAPP().getString("uid",""); 
+			
+				//Remove
+				Main.getInstance().getMDSManager().removePending(uid);
+				
+			}else {
 				throw new CommandException("Pending UID not found : "+uid);
 			}
 			
 			ret.put("response", "Pending action removed : "+uid);
+			
+			//Post a message to the MiniDAPP
+			sendPendingResult(minidappid, uid, false);
 			
 		}else if(action.equals("install")) {
 		
@@ -463,6 +471,19 @@ public class mds extends Command {
 		return ret;
 	}
 
+	public void sendPendingResult(String zMiniDAPPID, String zPendinUID, boolean zAccept) {
+		
+		//Is it a valid MiniDAPP
+		if(!zMiniDAPPID.equals("")) {
+			
+			JSONObject res = new JSONObject();
+			res.put("uid", zPendinUID);
+			res.put("accept", zAccept);
+			
+			Main.getInstance().PostNotifyEvent("MDS_PENDING", res, zMiniDAPPID);
+		}
+	}
+	
 	@Override
 	public Command getFunction() {
 		return new mds();

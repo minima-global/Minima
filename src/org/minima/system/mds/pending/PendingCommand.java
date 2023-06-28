@@ -37,10 +37,11 @@ public class PendingCommand {
 	
 	public JSONObject toJSON() {
 		JSONObject json = new JSONObject();
-		json.put("uid", mUID);
-		json.put("minidapp", mMiniDAPP);
-		json.put("date", new Date(mDate).toString());
-		json.put("command", mCommand);
+		json.put("uid", getUID());
+		json.put("minidapp", getMiniDAPP());
+		json.put("timemilli", getDate());
+		json.put("date", new Date(getDate()).toString());
+		json.put("command", getCommand());
 		return json;
 	}
 }

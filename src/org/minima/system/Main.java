@@ -137,6 +137,11 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_MINING 		= "MAIN_MINING";
 	
 	/**
+	 * Are we on Normal mine mode or LOW
+	 */
+	boolean mNormalMineMode = true;
+	
+	/**
 	 * Main TxPoW Processor
 	 */
 	TxPoWProcessor 	mTxPoWProcessor;
@@ -627,12 +632,18 @@ public class Main extends MessageProcessor {
 	
 	//Every 50 seconds - the normal blockspeed
 	public void setNormalAutoMineSpeed() {
+		mNormalMineMode = true;
 		AUTOMINE_TIMER = 1000 * 50;
 	}
 	
 	//Every 500 seconds - for Android when not plugged in
 	public void setLowPowAutoMineSpeed() {
+		mNormalMineMode = false;
 		AUTOMINE_TIMER = 1000 * 500;
+	}
+	
+	public boolean isNormalMineMode() {
+		return mNormalMineMode;
 	}
 	
 	public long getUptimeMilli() {
@@ -934,24 +945,30 @@ public class Main extends MessageProcessor {
 	 * Post a network message to the webhook / MDS / Android listeners
 	 */
 	public void PostNotifyEvent(String zEvent, JSONObject zData) {
+		PostNotifyEvent(zEvent, zData, "*");
+	}
+	
+	public void PostNotifyEvent(String zEvent, JSONObject zData, String zTo) {
 		
 		//Create the JSON Message
 		JSONObject notify = new JSONObject();
 		notify.put("event", zEvent);
 		notify.put("data", zData);
 		
-		if(getNotifyManager() != null) {
-			
-			//And post
-			getNotifyManager().PostEvent(notify);
+		//Post to everyone ?
+		if(zTo.equals("*")) {
+			if(getNotifyManager() != null) {
+				
+				//And post
+				getNotifyManager().PostEvent(notify);
+			}
 		}
 		
 		//Tell the MDS..
 		if(getMDSManager() != null) {
 			Message poll = new Message(MDSManager.MDS_POLLMESSAGE);
 			poll.addObject("poll", notify);
-			poll.addObject("to", "*");
-			
+			poll.addObject("to", zTo);
 			getMDSManager().PostMessage(poll);
 		}
 	}
