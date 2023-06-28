@@ -137,6 +137,11 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_MINING 		= "MAIN_MINING";
 	
 	/**
+	 * Are we on Normal mine mode or LOW
+	 */
+	boolean mNormalMineMode = true;
+	
+	/**
 	 * Main TxPoW Processor
 	 */
 	TxPoWProcessor 	mTxPoWProcessor;
@@ -237,7 +242,6 @@ public class Main extends MessageProcessor {
 			MinimaLogger.log("Load all DB.. finish");
 		}
 		
-		
 		//Are we in Slave node mode
 		boolean slavemode = MinimaDB.getDB().getUserDB().isSlaveNode();
 		if(slavemode) {
@@ -278,7 +282,25 @@ public class Main extends MessageProcessor {
 				
 		//Start the engine..
 		mTxPoWProcessor = new TxPoWProcessor();
+		
+		//Create the TxpowMiner
 		mTxPoWMiner 	= new TxPoWMiner();
+				
+		//Recalc Tree if too large
+		try {
+			if(MinimaDB.getDB().getTxPoWTree().getHeaviestBranchLength() > 1200) {
+				MinimaLogger.log("Large tree.. recalculating..");
+				mTxPoWProcessor.onStartUpRecalc();
+				
+				//For now..
+				MinimaDB.getDB().saveState();
+				
+				//Clean..
+				System.gc();
+			}	
+		}catch(Exception exc) {
+			MinimaLogger.log(exc);
+		}
 		
 		//Are we running a private network
 		if(GeneralParams.GENESIS) {
@@ -409,7 +431,6 @@ public class Main extends MessageProcessor {
 			shutdownGenProcs();
 			
 			//Stop the main TxPoW processor
-			MinimaLogger.log("Waiting for TxPoWProcessor shutdown");
 			shutdownFinalProcs();
 			
 			//Now backup the  databases
@@ -420,7 +441,7 @@ public class Main extends MessageProcessor {
 			stopMessageProcessor();
 			
 			//Wait for it..
-			MinimaLogger.log("Waiting for Main thread shutdown");
+			MinimaLogger.log("Main thread shutdown");
 			waitToShutDown();
 			
 			MinimaLogger.log("Shut down completed OK..");
@@ -515,9 +536,6 @@ public class Main extends MessageProcessor {
 		
 		//Shut down Maxima
 		mMaxima.shutdown();
-		
-		//ShutDown MDS
-//		mMDS.shutdown();
 				
 		//Stop the Miner
 		mTxPoWMiner.stopMessageProcessor();
@@ -540,12 +558,14 @@ public class Main extends MessageProcessor {
 	public void shutdownFinalProcs() {
 				
 		//ShutDown MDS
+		MinimaLogger.log("Shutdown MDS..");
 		mMDS.shutdown();
 		
 		//Shut down the Notify Manager
 		mNotifyManager.shutDown();
 				
 		//Stop the main TxPoW processor
+		MinimaLogger.log("TxPoWProcessor shutdown..");
 		mTxPoWProcessor.stopMessageProcessor();
 		mTxPoWProcessor.waitToShutDown();
 	}
@@ -615,12 +635,18 @@ public class Main extends MessageProcessor {
 	
 	//Every 50 seconds - the normal blockspeed
 	public void setNormalAutoMineSpeed() {
+		mNormalMineMode = true;
 		AUTOMINE_TIMER = 1000 * 50;
 	}
 	
 	//Every 500 seconds - for Android when not plugged in
 	public void setLowPowAutoMineSpeed() {
+		mNormalMineMode = false;
 		AUTOMINE_TIMER = 1000 * 500;
+	}
+	
+	public boolean isNormalMineMode() {
+		return mNormalMineMode;
 	}
 	
 	public long getUptimeMilli() {
@@ -922,24 +948,30 @@ public class Main extends MessageProcessor {
 	 * Post a network message to the webhook / MDS / Android listeners
 	 */
 	public void PostNotifyEvent(String zEvent, JSONObject zData) {
+		PostNotifyEvent(zEvent, zData, "*");
+	}
+	
+	public void PostNotifyEvent(String zEvent, JSONObject zData, String zTo) {
 		
 		//Create the JSON Message
 		JSONObject notify = new JSONObject();
 		notify.put("event", zEvent);
 		notify.put("data", zData);
 		
-		if(getNotifyManager() != null) {
-			
-			//And post
-			getNotifyManager().PostEvent(notify);
+		//Post to everyone ?
+		if(zTo.equals("*")) {
+			if(getNotifyManager() != null) {
+				
+				//And post
+				getNotifyManager().PostEvent(notify);
+			}
 		}
 		
 		//Tell the MDS..
 		if(getMDSManager() != null) {
 			Message poll = new Message(MDSManager.MDS_POLLMESSAGE);
 			poll.addObject("poll", notify);
-			poll.addObject("to", "*");
-			
+			poll.addObject("to", zTo);
 			getMDSManager().PostMessage(poll);
 		}
 	}

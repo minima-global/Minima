@@ -363,7 +363,12 @@ public class restoresync extends Command {
 			//Clean system counter
 			counter++;
 			if(counter % 10 == 0) {
-				Main.getInstance().resetMemFull();
+				long mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+				if(mem > 250 * 1024 * 1024) {
+					Main.getInstance().resetMemFull();
+				}else {
+					MinimaLogger.log("RAM memory usage still low.. wait for cleanup");
+				}
 			}
 			
 			//Send him a message..
@@ -435,7 +440,7 @@ public class restoresync extends Command {
 			attempts = 0;
 			while(foundsome) {
 				if(!tip.getBlockNumber().isEqual(endblock)) {
-					Thread.sleep(250);
+					Thread.sleep(50);
 				}else {
 					break;
 				}
@@ -443,7 +448,7 @@ public class restoresync extends Command {
 				tip = MinimaDB.getDB().getTxPoWTree().getTip();
 				
 				attempts++;
-				if(attempts>1024) {
+				if(attempts>4000) {
 					error = true;
 					break;
 				}

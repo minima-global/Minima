@@ -29,6 +29,16 @@ public class ArchiveServer extends HTTPServer {
 	
 	public Cascade mCascade = null;
 	
+	static long mLastClean = 0 ;
+	public static synchronized void SystemClean() {
+		long timenow = System.currentTimeMillis();
+		if(timenow - mLastClean > 10000) {
+			MinimaLogger.log("System Clean..");
+			System.gc();
+			mLastClean = timenow;
+		}
+	}
+	
 	public class ArchiveHandler implements Runnable{
 
 		Socket mSocket;
@@ -145,7 +155,7 @@ public class ArchiveServer extends HTTPServer {
 			}
 			
 			//Clean up
-			//System.gc();
+			SystemClean();
 		}
 	}
 	

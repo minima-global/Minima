@@ -38,13 +38,17 @@ public class MinimaLogger {
 	}
 	
 	public static void log(Exception zException){
+		log(zException,true);
+	}
+	
+	public static void log(Exception zException, boolean zNotify){
 		//First the Full Exception
-		MinimaLogger.log(zException.toString());
+		MinimaLogger.log(zException.toString(), zNotify);
 		
 		//Now the Stack Trace
 		for(StackTraceElement stack : zException.getStackTrace()) {
 			//Print it..
-			MinimaLogger.log("     "+stack.toString());
+			MinimaLogger.log("     "+stack.toString(), zNotify);
 		}
 	}
 }

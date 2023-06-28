@@ -469,6 +469,9 @@ public class TxPoWProcessor extends MessageProcessor {
 		return false;
 	}
 	
+	public void onStartUpRecalc() {
+		recalculateTree();
+	}
 	
 	private void recalculateTree() {
 		

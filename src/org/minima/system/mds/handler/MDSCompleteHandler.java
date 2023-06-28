@@ -212,6 +212,31 @@ public class MDSCompleteHandler implements Runnable {
 					NETcommand net 	= new NETcommand(minidappid,url, postdata);
 					result 			= net.runCommand();
 				
+				}else if(command.equals("keypair")) {
+					
+					//Get the URL and the post data..
+					int dataindex 	= data.indexOf("&");
+					String action 	= data.substring(0, dataindex);
+					String keydata 	= data.substring(dataindex+1);
+					
+					//Is it set or get
+					KEYPAIRcommand kp = null;
+					if(action.equals("get")) {
+					
+						kp = new KEYPAIRcommand(mMDS, minidappid, KEYPAIRcommand.KEYPAIR_GET,keydata,"");
+					}else {
+						
+						//It's a set
+						dataindex 		= keydata.indexOf("&");
+						String key 		= keydata.substring(0, dataindex);
+						String value 	= keydata.substring(dataindex+1);
+						
+						kp = new KEYPAIRcommand(mMDS, minidappid, KEYPAIRcommand.KEYPAIR_SET,key,value);
+					}
+					
+					//Run it
+					result = kp.runCommand();
+				
 				}else if(command.equals("file")) {
 					
 					//Get the URL and the post data..

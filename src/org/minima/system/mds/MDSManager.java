@@ -29,6 +29,7 @@ import org.minima.system.mds.sql.MiniDAPPDB;
 import org.minima.system.network.rpc.HTTPSServer;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.BaseConverter;
+import org.minima.utils.JsonDB;
 import org.minima.utils.Maths;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
@@ -62,6 +63,11 @@ public class MDSManager extends MessageProcessor {
 	public static final String MDS_TIMER_60SECONDS		= "MDS_TIMER_60SECONDS";
 	public static final String MDS_TIMER_1HOUR			= "MDS_TIMER_1HOUR";
 	
+	/**
+	 * Message sent to MiniDAPPs when shutdown occurs.
+	 */
+	public static final String MDS_SHUTDOWN_MSG			= "MDS_SHUTDOWN";
+	
 	//The Main File and Command server
 	HTTPSServer mMDSFileServer;
 	HTTPSServer mMDSCommand;
@@ -80,6 +86,12 @@ public class MDSManager extends MessageProcessor {
 	 */
 	Hashtable<String, MiniDAPPDB> mSqlDB 	= new Hashtable<>();
 	Object mSQLSyncObject 					= new Object();
+	
+	/**
+	 * The KeyPair JSON
+	 */
+	Hashtable<String, JsonDB> mKeyPairDB 	= new Hashtable<>();
+	Object mKeyPairSyncObject 				= new Object();
 	
 	/**
 	 * Valid MiniDAPPs
@@ -144,7 +156,13 @@ public class MDSManager extends MessageProcessor {
 			return;
 		}
 		
-		//Otherwise post a shutdown message
+		//Send a SHUTDOWN message to all the MiniDAPPs..
+		Main.getInstance().PostNotifyEvent("MDS_SHUTDOWN", new JSONObject());
+		
+		//Wait 2 seconds for it to be processed..
+		try {Thread.sleep(2000);} catch (InterruptedException e) {}
+		
+		//Now post a shutdown message
 		PostMessage(MDS_SHUTDOWN);
 		
 		//Waiting for shutdown..
@@ -177,6 +195,10 @@ public class MDSManager extends MessageProcessor {
 	
 	public File getMiniDAPPSQLFolder(String zUID) {
 		return new File(getMiniDAPPDataFolder(zUID), "sql");
+	}
+	
+	public File getMiniDAPPKeyPairFolder(String zUID) {
+		return new File(getMiniDAPPDataFolder(zUID), "keypair");
 	}
 	
 	public String getMiniHUBPasword() {
@@ -252,6 +274,16 @@ public class MDSManager extends MessageProcessor {
 		return mPending;
 	}
 	
+	public PendingCommand getPendingCommand(String zUID) {
+		for(PendingCommand pending : mPending) {
+			if(pending.getUID().equals(zUID)) {
+				return pending;
+			}
+		}
+		
+		return null;
+	}
+	
 	public boolean removePending(String zUID) {
 		ArrayList<PendingCommand> newpending = new ArrayList<>();
 		boolean found = false;
@@ -267,6 +299,71 @@ public class MDSManager extends MessageProcessor {
 		mPending = newpending;
 		
 		return found;
+	}
+	
+	public void setMDSKeyPair(String zMiniDAPPID, String zKey, String zValue) {
+		
+		//Synchronise all access
+		synchronized (mKeyPairSyncObject) {
+			
+			//The file
+			File jsondbfile = new File(getMiniDAPPKeyPairFolder(zMiniDAPPID),"keypair.db");
+			
+			//Have we loaded it already..
+			JsonDB jsondb = mKeyPairDB.get(zMiniDAPPID);
+			
+			//Does it exist
+			if(jsondb == null) {
+				
+				//Create
+				jsondb = new JsonDB();
+				
+				//Load it..
+				if(jsondbfile.exists()) {
+					jsondb.loadDB(jsondbfile);
+				}
+				
+				//And add to our list
+				mKeyPairDB.put(zMiniDAPPID, jsondb);
+			}
+			
+			//Now set the Property
+			jsondb.setString(zKey, zValue);
+			
+			//And save it..
+			jsondb.saveDB(jsondbfile);
+		}
+	}
+	
+	public String getMDSKeyPair(String zMiniDAPPID, String zKey) {
+		
+		//Synchronise all access
+		synchronized (mKeyPairSyncObject) {
+			
+			//The file
+			File jsondbfile = new File(getMiniDAPPKeyPairFolder(zMiniDAPPID),"keypair.db");
+			
+			//Have we loaded it already..
+			JsonDB jsondb = mKeyPairDB.get(zMiniDAPPID);
+			
+			//Does it exist
+			if(jsondb == null) {
+				
+				//Create
+				jsondb = new JsonDB();
+				
+				//Load it..
+				if(jsondbfile.exists()) {
+					jsondb.loadDB(jsondbfile);
+				}
+				
+				//And add to our list
+				mKeyPairDB.put(zMiniDAPPID, jsondb);
+			}
+			
+			//Now get the Property
+			return jsondb.getString(zKey);
+		}
 	}
 	
 	public JSONObject runSQL(String zUID, String zSQL) {
@@ -287,7 +384,7 @@ public class MDSManager extends MessageProcessor {
 			if(db == null) {
 			
 				//Create the DB link
-				db = new MiniDAPPDB();
+				db = new MiniDAPPDB(zUID);
 				
 				//The location
 				File dbfolder3 = getMiniDAPPSQLFolder(minidappid);
@@ -418,15 +515,6 @@ public class MDSManager extends MessageProcessor {
 			//Shutdown the Runnables
 			for(MDSJS mds : mRunnables) {
 				try {
-					mds.sendshutdown();
-				}catch(Exception exc) {
-					MinimaLogger.log(exc);
-				}
-			}
-			
-			//Shutdown the Runnables
-			for(MDSJS mds : mRunnables) {
-				try {
 					mds.shutdown();
 				}catch(Exception exc) {
 					MinimaLogger.log(exc);
@@ -506,7 +594,7 @@ public class MDSManager extends MessageProcessor {
 					}
 					
 				}catch(Exception exc) {
-					MinimaLogger.log(exc);
+					MinimaLogger.log(exc, false);
 				}
 			}
 			
@@ -741,24 +829,28 @@ public class MDSManager extends MessageProcessor {
 		//Check for HUB
 		checkInstalled("minihub", "minihub/minihub-0.4.2.mds.zip", allminis, true, true);
 		
-		//Pending gets write permissions
-		checkInstalled("pending", "default/pending-0.2.1.mds.zip", allminis, true);
+		//Do we Install the Default MiniDAPPs
+		if(GeneralParams.DEFAULT_MINIDAPPS) {
 		
-		//The rest are normal
-		checkInstalled("block", "default/block-2.1.1.mds.zip", allminis, false);
-		checkInstalled("chatter", "default/chatter-1.2.1.mds.zip", allminis, false);
-		checkInstalled("docs", "default/docs-1.4.0.mds.zip", allminis, false);
-		checkInstalled("filez", "default/filez-1.2.1.mds.zip", allminis, false);
-		checkInstalled("future cash", "default/futurecash-1.10.1.mds.zip", allminis, false);
-		checkInstalled("health", "default/health-0.2.0.mds.zip", allminis, false);
-		//checkInstalled("logs", "default/logs-0.2.0.mds.zip", allminis, false);
-		checkInstalled("maxcontacts", "default/maxcontacts-1.4.0.mds.zip", allminis, false);
-		checkInstalled("maxsolo", "default/maxsolo-2.4.4.mds.zip", allminis, false);
-		checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
-		checkInstalled("script ide", "default/scriptide-2.0.mds.zip", allminis, false);
-		checkInstalled("terminal", "default/terminal-2.1.0.mds.zip", allminis, false);
-		//checkInstalled("vestr", "default/vestr-2.2.2.mds.zip", allminis, false);
-		checkInstalled("wallet", "default/wallet-2.24.3.mds.zip", allminis, false);
+			//Pending gets write permissions
+			checkInstalled("pending", "default/pending-0.2.1.mds.zip", allminis, true);
+			
+			//The rest are normal
+			checkInstalled("block", "default/block-2.1.1.mds.zip", allminis, false);
+			checkInstalled("chatter", "default/chatter-1.2.1.mds.zip", allminis, false);
+			checkInstalled("docs", "default/docs-1.4.0.mds.zip", allminis, false);
+			checkInstalled("filez", "default/filez-1.2.1.mds.zip", allminis, false);
+			checkInstalled("future cash", "default/futurecash-1.10.1.mds.zip", allminis, false);
+			checkInstalled("health", "default/health-0.2.0.mds.zip", allminis, false);
+			//checkInstalled("logs", "default/logs-0.2.0.mds.zip", allminis, false);
+			checkInstalled("maxcontacts", "default/maxcontacts-1.4.0.mds.zip", allminis, false);
+			checkInstalled("maxsolo", "default/maxsolo-2.4.4.mds.zip", allminis, false);
+			checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
+			checkInstalled("script ide", "default/scriptide-2.0.mds.zip", allminis, false);
+			checkInstalled("terminal", "default/terminal-2.1.0.mds.zip", allminis, false);
+			//checkInstalled("vestr", "default/vestr-3.0.0.mds.zip", allminis, false);
+			checkInstalled("wallet", "default/wallet-2.24.3.mds.zip", allminis, false);
+		}
 	}
 	
 	private String getVersionFromPath(String zPath) {

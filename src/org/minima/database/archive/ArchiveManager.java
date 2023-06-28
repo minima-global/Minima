@@ -160,12 +160,39 @@ public class ArchiveManager extends SqlDB {
 				MinimaLogger.log("Saving Cascade in ARCHIVEDB.. tip : "+zCascade.getTip().getTxPoW().getBlockNumber());
 				saveCascade(zCascade);
 			}else {
-				MinimaLogger.log("Cascade already in ARCHIVEDB.. tip : "+casc.getTip().getTxPoW().getBlockNumber());
+				
+				//Check our cascade lines up with the blocks..
+				TxBlock arch = loadLastBlock();
+				if(arch!= null) {
+					
+					//Get start and end..
+					MiniNumber archstart 	= arch.getTxPoW().getBlockNumber();
+					MiniNumber archend 		= loadFirstBlock().getTxPoW().getBlockNumber();
+					
+					//Is the cascade somewhere in there
+					MiniNumber cascstart 	= casc.getTip().getTxPoW().getBlockNumber();
+					if(cascstart.isMoreEqual(archstart.sub(MiniNumber.ONE)) && cascstart.isLessEqual(archend)) {
+						
+						//OK..
+						
+					}else {
+						
+						//Not OK.. 
+						MinimaLogger.log("RE-Saving Cascade in ARCHIVEDB.. tip : "+zCascade.getTip().getTxPoW().getBlockNumber());
+						saveCascade(zCascade);
+					}
+					
+				}else {
+					MinimaLogger.log("Cascade already in ARCHIVEDB.. tip : "+casc.getTip().getTxPoW().getBlockNumber());
+				}
 			}
 		}
 	}
 
-	public boolean saveCascade(Cascade zCascade) throws SQLException {
+	private boolean saveCascade(Cascade zCascade) throws SQLException {
+		
+		//Remove the old..
+		executeGenericSQL("DELETE FROM cascadedata WHERE id>=0");
 		
 		//get the MiniData version..
 		MiniData cascdata = MiniData.getMiniDataVersion(zCascade);

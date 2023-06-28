@@ -3,12 +3,15 @@ package org.minima.utils;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.json.parser.ParseException;
@@ -208,6 +211,10 @@ public abstract class SqlDB {
 	}
 	
 	public void backupToFile(File zBackupFile) throws SQLException {
+		backupToFile(zBackupFile, false);
+	}
+	
+	public void backupToFile(File zBackupFile, boolean zGZIP) throws SQLException {
 		
 		//Delete file if exists..
 		if(zBackupFile.exists()) {
@@ -218,7 +225,12 @@ public abstract class SqlDB {
 		Statement stmt = mSQLConnection.createStatement();
 	
 		//Create the backup Script
-		String backup = String.format("SCRIPT TO '%s'", zBackupFile.getAbsolutePath());
+		String backup = null;
+		if(zGZIP) {
+			backup = String.format("SCRIPT TO '%s' COMPRESSION GZIP", zBackupFile.getAbsolutePath());
+		}else {
+			backup = String.format("SCRIPT TO '%s'", zBackupFile.getAbsolutePath());
+		}
 		
 		//Shut down.. this saves and closes all the data
 		stmt.executeQuery(backup);
@@ -228,6 +240,10 @@ public abstract class SqlDB {
 	}
 	
 	public void restoreFromFile(File zRestoreFile) throws SQLException {
+		restoreFromFile(zRestoreFile, false);
+	}
+	
+	public void restoreFromFile(File zRestoreFile, boolean zGZIP) throws SQLException {
 		//One last statement
 		Statement stmt = mSQLConnection.createStatement();
 	
@@ -235,7 +251,12 @@ public abstract class SqlDB {
 		stmt.execute("DROP ALL OBJECTS");
 		
 		//Create the backup Script
-		String restore = String.format("RUNSCRIPT FROM '%s'", zRestoreFile.getAbsolutePath());
+		String restore = null;
+		if(zGZIP) {
+			restore = String.format("RUNSCRIPT FROM '%s' COMPRESSION GZIP", zRestoreFile.getAbsolutePath());
+		}else {
+			restore = String.format("RUNSCRIPT FROM '%s'", zRestoreFile.getAbsolutePath());
+		}
 		
 		//Shut down.. this saves and closes all the data
 		stmt.execute(restore);
@@ -272,5 +293,89 @@ public abstract class SqlDB {
 		MiniData data = new MiniData(str.getData());
 		
 		return data;
+	}
+	
+	/**
+	 * Only one thread can access the db at a time
+	 */
+	public synchronized JSONObject executeGenericSQL(String zSQL) {
+		
+		JSONObject results = new JSONObject();
+		results.put("sql", zSQL);
+		
+		try {
+			
+			//Check is OPEN
+			checkOpen();
+			
+			//Create the various tables..
+			Statement stmt = mSQLConnection.createStatement();
+		
+			//Execute the SQL..
+			boolean res = stmt.execute(zSQL);
+			
+			if(res) {
+				
+				//Get the Results..
+				ResultSet resset = stmt.getResultSet();
+			
+				//The data arrays
+				JSONArray allrows      = new JSONArray();
+				
+				//Get the Headers..
+				ResultSetMetaData rsmd = resset.getMetaData();
+				int columnnum          = rsmd.getColumnCount();
+				
+				//Get the Results..
+				int counter=0;
+				while(resset.next()) {
+					counter++;
+					JSONObject row = new JSONObject();
+					for(int i=1;i<=columnnum;i++) {
+						String column = rsmd.getColumnName(i);
+						Object obj    = resset.getObject(i);
+						
+						//Make sure NOT NULL - or Omit.. 
+						if(obj!=null) {
+							//Treat some type special
+							if(rsmd.getColumnClassName(i).equals("java.sql.Clob")) {
+								java.sql.Clob clob = (java.sql.Clob)obj;
+	                        	String strvalue = clob.getSubString(1, (int) clob.length());
+	                        	row.put(column, strvalue);
+							
+							}else {
+								row.put(column, obj.toString());
+							}
+						}
+					}
+					allrows.add(row);
+				}
+				
+				//There are results..
+				results.put("status", true);
+				results.put("results", true);
+				results.put("count",counter);
+				results.put("rows", allrows);
+				
+			}else {
+				//There are results..
+				results.put("status", true);
+				results.put("results", false);
+			}
+			
+			//Close the statement
+			stmt.close();
+						
+		} catch (Exception e) {
+			MinimaLogger.log("ExecuteSQL sql:"+zSQL+" error:"+e.toString(),false);
+			
+			results.put("status", false);
+			results.put("count",0);
+			results.put("rows", new JSONArray());
+			results.put("results", false);
+			results.put("error", e.toString());
+		}	
+		
+		return results;
 	}
 }

@@ -2,6 +2,7 @@ package org.minima.system.commands.backup;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
@@ -567,6 +568,9 @@ public class mysql extends Command {
 					TxPoW txp 			= block.getTxPoW();
 					long blocknumber 	= txp.getBlockNumber().getAsLong();
 					
+					//Date string
+					String date = MinimaLogger.DATEFORMAT.format(new Date(txp.getTimeMilli().getAsLong()));
+					
 					//Created
 					ArrayList<Coin> outputs 		= block.getOutputCoins();
 					for(Coin cc : outputs) {
@@ -575,6 +579,7 @@ public class mysql extends Command {
 							
 							JSONObject created = new JSONObject();
 							created.put("block", blocknumber);
+							created.put("date", date);
 							created.put("coin", cc.toJSON());
 							outarr.add(created);
 						}
@@ -588,6 +593,7 @@ public class mysql extends Command {
 							
 							JSONObject spent = new JSONObject();
 							spent.put("block", blocknumber);
+							spent.put("date", date);
 							spent.put("coin", incoin.getCoin().toJSON());
 							inarr.add(spent);
 						}

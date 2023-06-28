@@ -35,6 +35,7 @@ import org.minima.system.commands.CommandException;
 import org.minima.system.commands.backup.vault;
 import org.minima.system.commands.search.keys;
 import org.minima.system.commands.txn.txnutils;
+import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -206,8 +207,8 @@ public class send extends Command {
 		
 		//Are we splitting the outputs
 		MiniNumber split = getNumberParam("split", MiniNumber.ONE).floor();
-		if(split.isLess(MiniNumber.ONE) || split.isMore(MiniNumber.TWENTY)) {
-			throw new CommandException("Split must be whole number from 1 to 20");
+		if(split.isLess(MiniNumber.ONE) || split.isMore(GeneralParams.MAX_SPLIT_COINS)) {
+			throw new CommandException("Split must be whole number from 1 to "+GeneralParams.MAX_SPLIT_COINS);
 		}
 		
 		//Are we doing a Minima burn
@@ -552,6 +553,14 @@ public class send extends Command {
 			if(debug) {
 				MinimaLogger.log("Change Output : "+changecoin.toJSON());
 			}
+		}
+		
+		//Check Total Outputs..
+		int outsize = transaction.getAllOutputs().size();
+		if(outsize>GeneralParams.MAX_RELAY_OUTPUTCOINS) {
+			
+			//Will not be relayed..
+			throw new CommandException("Too many outputs "+outsize+" - will not be relayed by network");
 		}
 		
 		//Are there any State Variables

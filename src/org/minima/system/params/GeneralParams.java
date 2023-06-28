@@ -1,5 +1,8 @@
 package org.minima.system.params;
 
+import org.minima.objects.base.MiniNumber;
+import org.minima.system.commands.base.newaddress;
+
 public class GeneralParams {
 
 	/**
@@ -139,6 +142,16 @@ public class GeneralParams {
 	public static boolean NO_SYNC_IBD = false;
 	
 	/**
+	 * Don't download sync IBD
+	 */
+	public static int MAX_RELAY_OUTPUTCOINS = 15;
+	
+	/**
+	 * Max Split coins
+	 */
+	public static MiniNumber MAX_SPLIT_COINS = new MiniNumber(10);
+	
+	/**
 	 * How many days do you keep the TxPoW in the SQL DB
 	 */
 	public static long NUMBER_DAYS_SQLTXPOWDB = 3;
@@ -203,6 +216,11 @@ public class GeneralParams {
 	 * NODEJS requires the RPC command to be CRLF
 	 */
 	public static boolean RPC_CRLF = false;
+	
+	/**
+	 * DO we install the Default DAPPS
+	 */
+	public static boolean DEFAULT_MINIDAPPS = true;
 	
 	/**
 	 * Authentication for RPC

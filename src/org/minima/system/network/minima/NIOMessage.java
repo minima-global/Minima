@@ -501,6 +501,13 @@ public class NIOMessage implements Runnable {
 					beforecascade 	= true;
 				}
 				
+				//Too many outputs  - Hmmm.. just don't relay.. something unfunny going on..
+				int outsize = txpow.getTransaction().getAllOutputs().size();
+				if(outsize>GeneralParams.MAX_RELAY_OUTPUTCOINS) {
+					MinimaLogger.log("Transaction has a lot of outputs.. "+outsize+" relay max:"+GeneralParams.MAX_RELAY_OUTPUTCOINS);
+					fullyvalid = false;
+				}
+				
 				long timestart2 = System.currentTimeMillis();
 				
 				//Check the Scripts - could fail.. 

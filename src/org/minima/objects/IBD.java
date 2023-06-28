@@ -276,6 +276,10 @@ public class IBD implements Streamable {
 	}
 	
 	public void createArchiveIBD(MiniNumber zFirstBlock) {
+		createArchiveIBD(zFirstBlock, MinimaDB.getDB().getArchive(), false);
+	}
+	
+	public void createArchiveIBD(MiniNumber zFirstBlock, ArchiveManager zArchiveDB, boolean zUseLocal) {
 		
 		//Are we shutting down..
 		if(Main.getInstance().isShuttingDown()) {
@@ -283,7 +287,7 @@ public class IBD implements Streamable {
 		}
 		
 		//Get the ArchiveManager
-		ArchiveManager arch = MinimaDB.getDB().getArchive();
+		ArchiveManager arch = zArchiveDB;
 			
 		//Lock the DB - cascade and tree tip / root cannot change while doing this..
 		MinimaDB.getDB().readLock(true);
@@ -326,42 +330,46 @@ public class IBD implements Streamable {
 				mTxBlocks.add(block);
 			}
 			
-			//And now add all the blocks.. root will be first
-			TxPoWTreeNode root 		= MinimaDB.getDB().getTxPoWTree().getRoot();
-			MiniNumber rootblock 	= root.getTxPoW().getBlockNumber();
+			//Are we local
+			if(!zUseLocal) {
 			
-			MiniNumber reqblock = zFirstBlock; 
-			if(rootblock.isEqual(MiniNumber.ONE) && reqblock.isEqual(MiniNumber.ZERO)) {
-				MinimaLogger.log("Root Tree Archive IBD - starts at genesis");
-				reqblock = MiniNumber.ONE;
-			}
-			
-			if(rootblock.isEqual(reqblock)) {
+				//And now add all the blocks.. root will be first
+				TxPoWTreeNode root 		= MinimaDB.getDB().getTxPoWTree().getRoot();
+				MiniNumber rootblock 	= root.getTxPoW().getBlockNumber();
 				
-				MinimaLogger.log("Archive request for main tree data @ "+reqblock);
-				
-				//Add the whole tree..
-				TxBlock lastblock = null;
-				ArrayList<TxBlock> mainblocks = new ArrayList<>();
-				TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
-				while(tip != null) {
-					lastblock = tip.getTxBlock();
-					mainblocks.add(0,lastblock);
-					tip = tip.getParent();
+				MiniNumber reqblock = zFirstBlock; 
+				if(rootblock.isEqual(MiniNumber.ONE) && reqblock.isEqual(MiniNumber.ZERO)) {
+					MinimaLogger.log("Root Tree Archive IBD - starts at genesis");
+					reqblock = MiniNumber.ONE;
 				}
 				
-				//All good - or has it changed this exact second
-				MiniNumber lastadded=lastblock.getTxPoW().getBlockNumber();
-				if(lastadded.isEqual(reqblock)) {
-				
-					//And now add these..
-					for(TxBlock block : mainblocks) {
-						mTxBlocks.add(block);
-					}
-				}else {
+				if(rootblock.isEqual(reqblock)) {
 					
-					//IBD main chain changed..
-					MinimaLogger.log("Archive main tree data error.. root:"+lastadded+" req:"+reqblock);
+					MinimaLogger.log("Archive request for main tree data @ "+reqblock);
+					
+					//Add the whole tree..
+					TxBlock lastblock = null;
+					ArrayList<TxBlock> mainblocks = new ArrayList<>();
+					TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+					while(tip != null) {
+						lastblock = tip.getTxBlock();
+						mainblocks.add(0,lastblock);
+						tip = tip.getParent();
+					}
+					
+					//All good - or has it changed this exact second
+					MiniNumber lastadded=lastblock.getTxPoW().getBlockNumber();
+					if(lastadded.isEqual(reqblock)) {
+					
+						//And now add these..
+						for(TxBlock block : mainblocks) {
+							mTxBlocks.add(block);
+						}
+					}else {
+						
+						//IBD main chain changed..
+						MinimaLogger.log("Archive main tree data error.. root:"+lastadded+" req:"+reqblock);
+					}
 				}
 			}
 			

@@ -11,15 +11,19 @@ import org.minima.utils.json.JSONObject;
 
 public class MiniDAPPDB extends SqlDB {
 
-	public MiniDAPPDB() {
+	public String mUID;
+	
+	public MiniDAPPDB(String zUID) {
 		super();
+		
+		mUID = zUID;
 	}
 	
 	@Override
 	protected void createSQL() {}
 	
 	/**
-	 * Only one thread can access the db at a atime
+	 * Only one thread can access the db at a time
 	 */
 	public synchronized JSONObject executeSQL(String zSQL) {
 		
@@ -27,6 +31,9 @@ public class MiniDAPPDB extends SqlDB {
 		results.put("sql", zSQL);
 		
 		try {
+			
+			//Check is OPEN
+			checkOpen();
 			
 			//Create the various tables..
 			Statement stmt = mSQLConnection.createStatement();
@@ -87,7 +94,7 @@ public class MiniDAPPDB extends SqlDB {
 			stmt.close();
 						
 		} catch (Exception e) {
-			MinimaLogger.log("MiniDAPPSQL : "+e.toString());
+			MinimaLogger.log("MiniDAPPSQL uid:"+mUID+" sql:"+zSQL+" error:"+e.toString(),false);
 			
 			results.put("status", false);
 			results.put("count",0);

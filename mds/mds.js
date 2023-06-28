@@ -179,6 +179,36 @@ var MDS = {
 	},
 	
 	/**	
+	 *  Simple GET and SET key value pairs that are saved persistently
+	 */
+	keypair : {
+		
+		/**
+		 * GET a value
+		 */
+		get : function(key, callback){
+			
+			//Create the single line
+			var commsline = "get&"+key;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"keypair?"+"uid="+MDS.minidappuid, commsline, callback);	
+		},
+		
+		/**
+		 * SET a value
+		 */
+		set : function(key, value, callback){
+			
+			//Create the single line
+			var commsline = "set&"+key+"&"+value;		
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"keypair?"+"uid="+MDS.minidappuid, commsline, callback);	
+		}
+	},
+	
+	/**	
 	 * COMMS - send a message to ALL minidapps or JUST your own service.js
 	 */
 	comms : {

@@ -3,6 +3,7 @@ package org.minima.system.commands.backup;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -17,8 +18,11 @@ import org.minima.database.archive.ArchiveManager;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.wallet.Wallet;
+import org.minima.objects.Coin;
+import org.minima.objects.CoinProof;
 import org.minima.objects.IBD;
 import org.minima.objects.TxBlock;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -30,21 +34,30 @@ import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.system.network.webhooks.NotifyManager;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.BIP39;
+import org.minima.utils.MiniFile;
+import org.minima.utils.MiniFormat;
+import org.minima.utils.MiniUtil;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageListener;
 
 public class archive extends Command {
 
+	private static ArchiveManager STATIC_TEMPARCHIVE 	= null;
+	private final String LOCAL_ARCHIVE 					= "archiverestore";
+	
+	
 	public archive() {
 		super("archive","[action:] (host:) (phrase:) (keys:) (keyuses:) - Resync your chain with seed phrase if necessary (otherwise wallet remains the same)");
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","host","phrase","keys","keyuses"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","host","phrase","keys","keyuses","file","address"}));
 	}
 	
 	@Override
@@ -109,6 +122,9 @@ public class archive extends Command {
 			//Scan through the entire DB.. checking.. 
 			MinimaLogger.log("Checking Archive DB.. this may take some time..");
 			
+//			JSONObject res = arch.executeGenericSQL("SELECT * FROM cascadedata");
+//			MinimaLogger.log(MiniFormat.JSONPretty(res));
+			
 			//What is the first block in the DB
 			TxBlock starterblock = arch.loadLastBlock();
 			
@@ -132,33 +148,32 @@ public class archive extends Command {
 				}
 			}
 			
-			//Get the cascade
+			//Get the cascade details
+			MiniNumber cascstart 	= MiniNumber.MINUSONE;
+			JSONObject cascjson 	= new JSONObject();
 			Cascade dbcasc = arch.loadCascade(); 
 			if(dbcasc != null) {
+				cascjson.put("exists", true);
+				
 				//Get the tip..
-				MiniNumber tip = dbcasc.getTip().getTxPoW().getBlockNumber();
-				
-				//Can start from cascade
-				MinimaLogger.log("ArchiveDB cascade start : "+tip);
-				
-				//Start the test from then onwards
-				if(!startatroot) {
-					lastlog = tip.increment();
-					start 	= lastlog;
-				}
+				cascstart = dbcasc.getTip().getTxPoW().getBlockNumber();
+				cascjson.put("tip", cascstart.toString());
+				cascjson.put("length", dbcasc.getLength());
 				
 			}else {
-				
-				//Can start from cascade
-				MinimaLogger.log("ArchiveDB has no cascade ");
+				cascjson.put("exists", false);
 			}
 			
 			//Get t the initial 1000
 			MiniData parenthash 	= null;
 			MiniNumber parentnum 	= null;
 			int errorsfound 		= 0;
-			int total = 0;
-			MiniNumber archstart = start;
+			int total 				= 0;
+			MiniNumber archstart 	= start;
+			MiniNumber archend 		= archstart;
+			
+			JSONObject archjson = new JSONObject();
+			archjson.put("start", archstart.toString());
 			
 			while(startcheck) {
 				
@@ -169,12 +184,13 @@ public class archive extends Command {
 				}
 				
 				//Use batches of 256
-				MiniNumber end = start.add(MiniNumber.TWOFIVESIX);
+				MiniNumber end 	= start.add(MiniNumber.TWOFIVESIX);
 				
 				//Get some blocks
 				ArrayList<TxBlock> blocks = arch.loadBlockRange(start.decrement(),end,false); 
 				
 				for(TxBlock block : blocks) {
+					archend = block.getTxPoW().getBlockNumber();
 					total++;
 					
 					//Start Checking..
@@ -212,15 +228,36 @@ public class archive extends Command {
 				start = parentnum.increment();
 			}
 			
+			//Add more details
+			archjson.put("end", archend.toString());
+			archjson.put("blocks", total);
+			
+			//Check the archive node starts in the cascade..
+			MiniNumber startresync 	= archstart;
+			boolean validlist 		= false;
+			if(!archstart.isEqual(MiniNumber.ONE)) {
+				if(cascstart.isMoreEqual(archstart.sub(MiniNumber.ONE)) && cascstart.isLessEqual(archend)) {
+					validlist = true;
+				}
+				
+				startresync = cascstart;
+			}else {
+				validlist = true;
+			}
+			
 			JSONObject resp = new JSONObject();
 			resp.put("message", "Archive integrity check completed");
-			resp.put("start", archstart);
-			resp.put("blocks", total);
-			resp.put("cascade", (dbcasc!=null));
+			resp.put("cascade", cascjson);
+			resp.put("archive", archjson);
+			resp.put("valid", validlist);
+			if(!validlist) {
+				resp.put("notvalid", "Your cascade and blocks do not line up.. new cascade required.. pls restart Minima");
+			}
+			resp.put("from", startresync);
 			resp.put("errors", errorsfound);
 			
 			if(errorsfound>0) {
-				resp.put("recommend", "There are errors in your Archive DB - you should wipe then resync with a valid host");
+				resp.put("recommend", "There are errors in your Archive DB blocks - you should wipe then resync with a valid host");
 			}else {
 				resp.put("recommend", "Your ArchiveDB is correct and has no errors.");
 			}
@@ -239,6 +276,7 @@ public class archive extends Command {
 			String fullhost = getParam("host");
 			
 			//Is it auto
+			boolean usinglocal = false;
 			if(fullhost.equals("auto")) {
 				
 				//Choose one from our default list
@@ -251,12 +289,25 @@ public class archive extends Command {
 				fullhost	= ip+":"+port;
 				
 				MinimaLogger.log("RANDOM ARCHIVE HOST : "+rand+" host:"+fullhost);
+			
+			}else if(fullhost.equals(LOCAL_ARCHIVE)) {
+				
+				//Using the local DB..
+				if(STATIC_TEMPARCHIVE == null) {
+					throw new CommandException("No Local STATIC Archive DB Found..");
+				}
+				
+				usinglocal = true;
 			}
 			
 			Message connectdata = connect.createConnectMessage(fullhost);
 			
-			String host = connectdata.getString("host");
-			int port 	= connectdata.getInteger("port");
+			String host = null;
+			int port 	= 0;
+			if(!usinglocal) {
+				host = connectdata.getString("host");
+				port = connectdata.getInteger("port");
+			}
 			
 			//How many Keys do we need to generate
 			int keys = getNumberParam("keys", new MiniNumber(Wallet.NUMBER_GETADDRESS_KEYS)).getAsInt();
@@ -265,9 +316,11 @@ public class archive extends Command {
 			int keyuses = getNumberParam("keyuses", new MiniNumber(1000)).getAsInt();
 			
 			//Before we start deleting - check connection..
-			IBD ibdtest = sendArchiveReq(host, port, MiniNumber.MINUSONE);
-			if(ibdtest == null) {
-				throw new CommandException("Could not connect to Archive host! @ "+host+":"+port);
+			if(!usinglocal) {
+				IBD ibdtest = sendArchiveReq(host, port, MiniNumber.MINUSONE);
+				if(ibdtest == null) {
+					throw new CommandException("Could not connect to Archive host! @ "+host+":"+port);
+				}
 			}
 			
 			//Are we resetting the wallet too ?
@@ -331,11 +384,22 @@ public class archive extends Command {
 				//Clean system counter
 				counter++;
 				if(counter % 10 == 0) {
-					Main.getInstance().resetMemFull();
+					long mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+					if(mem > 250 * 1024 * 1024) {
+						Main.getInstance().resetMemFull();
+					}else {
+						MinimaLogger.log("RAM memory usage still low.. wait for cleanup");
+					}
 				}
 				
 				//Send him a message..
-				ibd = sendArchiveReq(host, port, startblock);
+				if(!usinglocal) {
+					ibd = sendArchiveReq(host, port, startblock);
+				}else {
+					ibd = new IBD();
+					ibd.createArchiveIBD(startblock, STATIC_TEMPARCHIVE, true);
+				}
+				
 				if(ibd == null) {
 					ibd = new IBD();
 					//throw new CommandException("Connection error @ "+host+":"+port);
@@ -385,7 +449,7 @@ public class archive extends Command {
 					Thread.sleep(250);
 					tip = MinimaDB.getDB().getTxPoWTree().getTip();
 					attempts++;
-					if(attempts>128) {
+					if(attempts>1000) {
 						error = true;
 						break;
 					}
@@ -402,7 +466,7 @@ public class archive extends Command {
 				attempts = 0;
 				while(foundsome) {
 					if(!tip.getBlockNumber().isEqual(endblock)) {
-						Thread.sleep(250);
+						Thread.sleep(50);
 					}else {
 						break;
 					}
@@ -410,7 +474,7 @@ public class archive extends Command {
 					tip = MinimaDB.getDB().getTxPoWTree().getTip();
 					
 					attempts++;
-					if(attempts>1024) {
+					if(attempts>4000) {
 						error = true;
 						break;
 					}
@@ -427,11 +491,6 @@ public class archive extends Command {
 				if(size==0) {
 					break;
 				}
-				
-//				//HACK
-//				if(startblock.isMore(new MiniNumber(10000))) {
-//					break;
-//				}
 			}
 			
 			//Notify the Android Listener
@@ -462,6 +521,312 @@ public class archive extends Command {
 			
 			//Tell listener..
 			Main.getInstance().NotifyMainListenerOfShutDown();
+		
+		}else if(action.equals("export")) {
+			
+			//The GZIPPED file 
+			String file = getParam("file","archivebackup-"+System.currentTimeMillis()+".gz");
+			
+			//Create the file
+			File gzoutput = MiniFile.createBaseFile(file);
+			if(gzoutput.exists()) {
+				gzoutput.delete();
+			}
+			
+			//Write out in GZIP format
+			MinimaLogger.log("Exporting ArchiveDB to GZIPPED SQL..");
+			MinimaDB.getDB().getArchive().backupToFile(gzoutput,true);
+			
+			long gziplen = gzoutput.length();
+			
+			JSONObject resp = new JSONObject();
+			resp.put("message", "Archive DB GZIPPED");
+			resp.put("rows", MinimaDB.getDB().getArchive().getSize());
+			resp.put("file", gzoutput.getAbsolutePath());
+			resp.put("size", MiniFormat.formatSize(gziplen));
+			ret.put("response", resp);
+		
+		}else if(action.equals("import")) {
+			
+			//Get the file
+			String file = getParam("file");
+			
+			//Does it exist..
+			File restorefile = MiniFile.createBaseFile(file);
+			if(!restorefile.exists()) {
+				throw new Exception("Restore file doesn't exist : "+restorefile.getAbsolutePath());
+			}
+			
+			//And now restore
+			ArchiveManager archtemp = new ArchiveManager();
+			
+			//Create a temp DB file..
+			File restorefolder = new File(GeneralParams.DATA_FOLDER,"archiverestore");
+			restorefolder.mkdirs();
+			
+			File tempdb = new File(restorefolder,"archivetemp");
+			if(tempdb.exists()) {
+				tempdb.delete();
+			}
+			archtemp.loadDB(tempdb);
+			
+			//Restore from File..
+			MinimaLogger.log("Restoring ArchiveDB from file..");
+			archtemp.restoreFromFile(restorefile,true);
+			
+			Cascade casc = archtemp.loadCascade();
+			if(casc != null) {
+				MinimaLogger.log("Archive DB cascade start : "+casc.getTip().getTxPoW().getBlockNumber()+" length:"+casc.getLength());
+			}
+			
+			TxBlock first 	= archtemp.loadFirstBlock();
+			if(first!=null) {
+				MinimaLogger.log("Archive DB first block : "+first.getTxPoW().getBlockNumber());
+			}
+			TxBlock last 	= archtemp.loadLastBlock();
+			if(last!=null) {
+				MinimaLogger.log("Archive DB last block : "+last.getTxPoW().getBlockNumber());
+			}
+			
+			//Set this statically..
+			STATIC_TEMPARCHIVE = archtemp;
+			
+			//Now run a chain sync.. with correct params
+			String command = "archive action:resync host:"+LOCAL_ARCHIVE;
+			if(existsParam("phrase")) {
+				command = command+" phrase:\""+getParam("phrase")+"\"";
+			}
+			
+			if(existsParam("keys")) {
+				command = command+" keys:"+getParam("keys");
+			}
+			
+			if(existsParam("keyuses")) {
+				command = command+" keyuses:"+getParam("keyuses");
+			}
+			
+			JSONArray res 		= Command.runMultiCommand(command);
+			JSONObject result 	= (JSONObject) res.get(0);
+			
+			//Shutdwon TEMP DB
+			archtemp.saveDB(false);
+			
+			//Delete the restore folder
+			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
+			
+			//Reset 
+			STATIC_TEMPARCHIVE = null;
+			
+			JSONObject resp = new JSONObject();
+			resp.put("archiveresync", result);
+			ret.put("response", resp);
+			
+		}else if(action.equals("inspect")) {
+			
+			//Get the file
+			String file = getParam("file","");
+			
+			//Where the temp db will go..
+			File restorefolder 	= new File(GeneralParams.DATA_FOLDER,"archiverestore");
+			
+			//Do we load one..
+			ArchiveManager archtemp = null;
+			if(!file.equals("")) {
+				//Does it exist..
+				File restorefile = MiniFile.createBaseFile(file);
+				if(!restorefile.exists()) {
+					throw new Exception("Restore file doesn't exist : "+restorefile.getAbsolutePath());
+				}
+				
+				//And now restore
+				archtemp = new ArchiveManager();
+				
+				//Create a temp DB file..
+				restorefolder.mkdirs();
+				
+				File tempdb = new File(restorefolder,"archivetemp");
+				if(tempdb.exists()) {
+					tempdb.delete();
+				}
+				archtemp.loadDB(tempdb);
+				
+				MinimaLogger.log("Restoring ArchiveDB from file..");
+				archtemp.restoreFromFile(restorefile,true);
+			}else {
+				archtemp = MinimaDB.getDB().getArchive();
+			}
+			
+			//Inspect File..
+			JSONObject resp 	= new JSONObject();
+			JSONObject jcasc 	= new JSONObject();
+			JSONObject jarch 	= new JSONObject();
+			
+			resp.put("cascade", jcasc);
+			resp.put("archive", jarch);
+			
+			jcasc.put("exists", false);
+			jcasc.put("start", "-1");
+			jcasc.put("length", "-1");
+			jarch.put("first", "-1");
+			jarch.put("last", "-1");
+			jarch.put("size", "-1");
+			
+			Cascade casc = archtemp.loadCascade();
+			if(casc != null) {
+				jcasc.put("exists", true);
+				jcasc.put("start", casc.getTip().getTxPoW().getBlockNumber().toString());
+				jcasc.put("length", casc.getLength());
+			}
+			
+			TxBlock first 	= archtemp.loadFirstBlock();
+			if(first!=null) {
+				jarch.put("first", first.getTxPoW().getBlockNumber().toString());
+			}
+			TxBlock last 	= archtemp.loadLastBlock();
+			if(last!=null) {
+				jarch.put("last", last.getTxPoW().getBlockNumber().toString());
+			}
+			
+			//And finally the size
+			jarch.put("size", archtemp.getSize());
+			
+			//Shutdwon TEMP DB
+			if(!file.equals("")) {
+				archtemp.saveDB(false);
+				
+				//Delete the restore folder
+				MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
+			}
+			
+			ret.put("response", resp);
+			
+		}else if(action.equals("addresscheck")) {
+			
+			//Which address are we looking for
+			String address = getAddressParam("address");
+			
+			//Cycle through
+			JSONObject resp 	= new JSONObject();
+			JSONArray inarr 	= new JSONArray();
+			JSONArray outarr 	= new JSONArray();
+			
+			ArchiveManager adb 		= MinimaDB.getDB().getArchive();
+			TxBlock startblock 		= adb.loadLastBlock();
+			
+			MiniNumber firstStart = MiniNumber.ZERO;
+			boolean canstart = true;
+			if(startblock == null) {
+				canstart = false;
+			}else {
+				firstStart   = startblock.getTxPoW().getBlockNumber();
+				MinimaLogger.log("Start archive @ "+firstStart);
+			}
+			while(canstart) {
+				
+				//Create an IBD for the mysql data
+				ArrayList<TxBlock> mysqlblocks = adb.loadBlockRange(firstStart, firstStart.add(MiniNumber.HUNDRED), false);
+				if(mysqlblocks.size()==0) {
+					//No blocks left
+					break;
+				}
+				
+				for(TxBlock block : mysqlblocks) {
+					
+					//For the next loop
+					firstStart = block.getTxPoW().getBlockNumber(); 
+					
+					//Get details
+					TxPoW txp 			= block.getTxPoW();
+					long blocknumber 	= txp.getBlockNumber().getAsLong();
+					
+					//Date string
+					String date = MinimaLogger.DATEFORMAT.format(new Date(txp.getTimeMilli().getAsLong()));
+					
+					//Created
+					ArrayList<Coin> outputs 		= block.getOutputCoins();
+					for(Coin cc : outputs) {
+						if(cc.getAddress().to0xString().equals(address)) {
+							MinimaLogger.log("BLOCK "+blocknumber+" CREATED COIN : "+cc.toString());
+							
+							JSONObject created = new JSONObject();
+							created.put("block", blocknumber);
+							created.put("date", date);
+							created.put("coin", cc.toJSON());
+							outarr.add(created);
+						}
+					}
+					
+					//Spent
+					ArrayList<CoinProof> inputs  	= block.getInputCoinProofs();
+					for(CoinProof incoin : inputs) {
+						if(incoin.getCoin().getAddress().to0xString().equals(address)) {
+							MinimaLogger.log("BLOCK "+blocknumber+" SPENT COIN : "+incoin.getCoin().toString());
+							
+							JSONObject spent = new JSONObject();
+							spent.put("block", blocknumber);
+							spent.put("date", date);
+							spent.put("coin", incoin.getCoin().toJSON());
+							inarr.add(spent);
+						}
+					}
+				}
+			}
+			
+			//And Now check the chain..
+			if(startblock!=null) {
+				MinimaLogger.log("End archive @ "+firstStart);
+			}
+			
+			MinimaLogger.log("Checking BlockChain.. descending");
+			if(MinimaDB.getDB().getTxPoWTree() != null) {
+				TxPoWTreeNode top = MinimaDB.getDB().getTxPoWTree().getTip();
+				while(top != null) {
+					TxBlock block = top.getTxBlock();
+					
+					//Get details
+					TxPoW txp 			= block.getTxPoW();
+					long blocknumber 	= txp.getBlockNumber().getAsLong();
+					
+					//Date string
+					String date = MinimaLogger.DATEFORMAT.format(new Date(txp.getTimeMilli().getAsLong()));
+					
+					//Created
+					ArrayList<Coin> outputs 		= block.getOutputCoins();
+					for(Coin cc : outputs) {
+						if(cc.getAddress().to0xString().equals(address)) {
+							MinimaLogger.log("BLOCK "+blocknumber+" CREATED COIN : "+cc.toString());
+							
+							JSONObject created = new JSONObject();
+							created.put("block", blocknumber);
+							created.put("date", date);
+							created.put("coin", cc.toJSON());
+							outarr.add(created);
+						}
+					}
+					
+					//Spent
+					ArrayList<CoinProof> inputs  	= block.getInputCoinProofs();
+					for(CoinProof incoin : inputs) {
+						if(incoin.getCoin().getAddress().to0xString().equals(address)) {
+							MinimaLogger.log("BLOCK "+blocknumber+" SPENT COIN : "+incoin.getCoin().toString());
+							
+							JSONObject spent = new JSONObject();
+							spent.put("block", blocknumber);
+							spent.put("date", date);
+							spent.put("coin", incoin.getCoin().toJSON());
+							inarr.add(spent);
+						}
+					}
+					
+					
+					top = top.getParent();
+				}
+			}
+			
+			
+			resp.put("created", outarr);
+			resp.put("spent", inarr);
+			ret.put("coins", resp);
 			
 		}else {
 			throw new CommandException("Invalid action : "+action);
@@ -583,5 +948,4 @@ public class archive extends Command {
 		
 		return ibd;
 	}
-	
 }
