@@ -26,12 +26,18 @@
 	<div class="mainwindow">
 		<br>
 		<button onclick="startgame();">START GAME</button>
-	
 		<br><br><br>
-		<button onclick="startlotto('10 times!!',0.1,0.1,1);">START LOTTO</button>
-	
+		
+		<button onclick="startlotto('Coin Flip!!',2,0.1,1);">START LOTTO</button>
 		<br><br><Br>
+		
+		ALL LOTTO
 		<table id="lottotable" border=1></table>
+		<br><br><Br>
+		
+		MY GAMES
+		<table id="mygames" border=1></table>
+		<br><br><Br>
 		
 	</div>	
 
@@ -47,7 +53,7 @@
 		return but;
 	}
 	
-	function loadGames(){
+	function loadLottoGames(){
 		
 		MDS.cmd("coins address:"+LOTTO_PUBLISH_ADDRESS,function(resp){
 			
@@ -94,6 +100,44 @@
 		
 	}
 	
+	function loadMyGames(){
+		
+		MDS.cmd("coins address:"+LOTTO_ADDRESS+" relevant:true",function(resp){
+			
+			var coins 	= resp.response;
+			var length 	= coins.length; 
+	
+			//get the table
+			var thetable 		= document.getElementById("mygames");
+			
+			//Blank it..
+			thetable.innerHTML 	= "";
+			
+			// Create an empty <thead> element and add it to the table:
+			var header 		= thetable.createTHead();
+			var headerrow 	= header.insertRow(0);
+			headerrow.insertCell(0).innerHTML="Round";
+			headerrow.insertCell(1).innerHTML="Amount";
+			headerrow.insertCell(2).innerHTML="PLAY";
+			
+			//Create data
+			for(var i=0;i<length;i++){
+				var coin 			= coins[i];
+				var tablerow 		= thetable.insertRow(i+1);
+				var cell1 	 		= tablerow.insertCell(0);
+				var cell2 	 		= tablerow.insertCell(1);
+				var cell3 	 		= tablerow.insertCell(2);
+				
+				cell1.innerHTML		= MDS.util.getStateVariable(coin,0);
+				cell2.innerHTML		= coin.amount;
+				cell3.innerHTML		= "<button onclick='roundOne(\""+coin.coinid+"\");'>ROUND 1</button> <button>ROUND 2</button>";
+			}
+			
+		});
+		
+	}
+	
+	
 	//Main message handler..
 	MDS.init(function(msg){
 		
@@ -101,7 +145,9 @@
 		if(msg.event == "inited"){
 			
 			//Do stuff.. from now..		
-			loadGames();
+			loadLottoGames();
+			
+			loadMyGames();
 			
 		}
 	});

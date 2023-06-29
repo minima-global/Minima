@@ -8,6 +8,8 @@ var hashsecret 	= "0x4A05726F61F3F046FCD3F542D8FCB3570B6DB8AC449C1799B05AE83EE20
 var LOTTO_PUBLISH_ADDRESS = "0xD5A88ECA2195D1B2EAFB7AFB1A1D79F8EFFEC1676E1C12A86BE8410833927B55";
 var LOTTO_COLLECT_ADDRESS = "MxG083Y0JUHYNR0YPSFZQQV4GEW2V0TA3VA93PYR4BESKGVAW0B0G94V06J6N0T";
 
+var LOTTO_SCRIPT  = "LET round=STATE(0) LET prevround=PREVSTATE(0) ASSERT round EQ INC(prevround) LET playerpubkey=PREVSTATE(1) LET secret=PREVSTATE(2) LET odds=PREVSTATE(3) LET chance=1/odds LET lottopubkey=PREVSTATE(4) LET lottoaddress=PREVSTATE(5) IF round EQ 1 THEN IF SIGNEDBY(playerpubkey) THEN RETURN TRUE ENDIF ASSERT SAMESTATE(1 5) ASSERT ((HEX(STATE(6)) EQ STATE(6)) AND (LEN(STATE(6)) LTE 32)) LET requiredamount=@AMOUNT*odds RETURN VERIFYOUT(@INPUT @ADDRESS requiredamount @TOKENID TRUE) ELSEIF round EQ 2 THEN IF @COINAGE GT 64 AND SIGNEDBY(lottopubkey) THEN RETURN TRUE ENDIF LET preimage=STATE(7) LET checkhash=SHA3(preimage) ASSERT checkhash EQ secret LET decider=SHA3(CONCAT(preimage PREVSTATE(6))) LET hexsubset=SUBSET(0 6 decider) LET numvalue=NUMBER(hexsubset) LET maxvalue=NUMBER(0xFFFFFFFFFFFF) LET target=FLOOR(maxvalue*chance) LET iswin=numvalue LTE target IF iswin THEN RETURN SIGNEDBY(playerpubkey) ELSE RETURN VERIFYOUT(@INPUT lottoaddress @AMOUNT @TOKENID TRUE) ENDIF ENDIF";
+var LOTTO_ADDRESS = "MxG080QFF578S7GRHSGRW80WUPPGFU7WFQBF581JESGE431ZKU0NRHUFBFGMTVK";
 
 function startlotto(message,odds,min,max){
 	
@@ -52,6 +54,38 @@ function startgame(){
 		
 		var statestr = JSON.stringify(state);
 		
-		MDS.log(statestr);	
+		var sendcommand = "send amount:1 address:"+LOTTO_ADDRESS+" state:"+statestr;
+		
+		MDS.cmd(sendcommand, function(resp){
+			MDS.log(JSON.stringify(resp));
+		});
+		
 	});
+}
+
+function roundOne(coinid){
+	
+	MDS.cmd("coins coinid:"+coinid+" simplestate:true",function(resp){
+		//Get the coin details
+		var coin = resp.response[0];
+		
+		//Now create the next txn..
+		var newstate = coin.state;
+		newstate[6]  = "0x000000"
+		
+		//What are the odds..
+		var odds = 
+		
+		//Create the txn..
+		var creator = "";
+		creator += "txncreate id:roundone;";
+		creator += "txninput id:roundone coinid:"+coinid+";";
+		
+		//Add more..
+		
+		//And output
+		creator += "txnoutput id:roundone amount:"+coin.amount+" address:"+coin.address+" storestate:true;";
+		
+	});
+	
 }
