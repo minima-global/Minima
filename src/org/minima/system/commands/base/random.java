@@ -6,6 +6,7 @@ import java.util.Arrays;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.commands.Command;
+import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONObject;
 
 public class random extends Command {
@@ -45,9 +46,13 @@ public class random extends Command {
 		//Generate..
 		MiniData rand = MiniData.getRandomData(size.getAsInt());
 		
+		//Hash it
+		MiniData randhash = new MiniData(Crypto.getInstance().hashData(rand.getBytes()));
+		
 		JSONObject resp = new JSONObject();
 		resp.put("size", size.toString());
 		resp.put("random", rand.to0xString());
+		resp.put("hashed", randhash.to0xString());
 		
 		ret.put("response", resp);
 		
