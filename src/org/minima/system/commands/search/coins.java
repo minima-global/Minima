@@ -9,6 +9,7 @@ import org.minima.database.MinimaDB;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Coin;
+import org.minima.objects.Token;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
@@ -130,7 +131,6 @@ public class coins extends Command {
 			tokenid = new MiniData(getParam("tokenid", "0x01"));
 		}
 		
-		
 		//How old do the coins need to be.. used by consolidate
 		MiniNumber coinage = getNumberParam("coinage", MiniNumber.ZERO);
 		
@@ -209,8 +209,16 @@ public class coins extends Command {
 			//How much do we need..
 			MiniNumber totalamount = getNumberParam("totalamount");
 			
+			//Get the converted amount
+			MiniNumber tokenamount = totalamount;
+			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
+				if(finalcoins.size()>0) {
+					tokenamount = finalcoins.get(0).getToken().getScaledMinimaAmount(totalamount);
+				}
+			}
+			
 			//Get just this number..
-			finalcoins = send.selectCoins(finalcoins, totalamount);
+			finalcoins = send.selectCoins(finalcoins, tokenamount);
 		}
 		
 		//Put it all in an array
