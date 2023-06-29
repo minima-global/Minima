@@ -81,7 +81,7 @@ public class coins extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"relevant","sendable","coinid","amount",
-				"address","tokenid","checkmempool","order","coinage"}));
+				"address","tokenid","checkmempool","order","coinage","simplestate"}));
 	}
 	
 	@Override
@@ -99,6 +99,9 @@ public class coins extends Command {
 		if(hardsetrel) {
 			relevant = true;
 		}
+		
+		//Are we using ther simplestate output
+		boolean simplestate = getBooleanParam("simplestate", false);
 		
 		boolean simple		= getBooleanParam("sendable",false);
 		
@@ -203,7 +206,7 @@ public class coins extends Command {
 		//Put it all in an array
 		JSONArray coinarr = new JSONArray();
 		for(Coin cc : finalcoins) {
-			coinarr.add(cc.toJSON());
+			coinarr.add(cc.toJSON(simplestate));
 		}
 		
 		ret.put("response", coinarr);

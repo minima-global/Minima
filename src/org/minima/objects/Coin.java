@@ -203,6 +203,10 @@ public class Coin implements Streamable {
 	}
 	
 	public JSONObject toJSON() {
+		return toJSON(false);
+	}
+	
+	public JSONObject toJSON(boolean zSimpleState) {
 		JSONObject obj = new JSONObject();
 		
 		obj.put("coinid", mCoinID.toString());
@@ -225,11 +229,21 @@ public class Coin implements Streamable {
 		obj.put("storestate", mStoreState);
 		
 		//Add the state variables
-		JSONArray starr = new JSONArray();
-		for(StateVariable sv : mState) {
-			starr.add(sv.toJSON());
+		if(zSimpleState) {
+			JSONObject state = new JSONObject();
+			for(StateVariable sv : mState) {
+				state.put(""+sv.getPort(), sv.getData().toString());
+			}
+			obj.put("state", state);
+			
+		}else {
+			JSONArray starr = new JSONArray();
+			for(StateVariable sv : mState) {
+				starr.add(sv.toJSON());
+			}
+			obj.put("state", starr);
 		}
-		obj.put("state", starr);
+		
 		
 		obj.put("spent", mSpent.isTrue());
 		obj.put("mmrentry", mMMREntryNumber.toString());
