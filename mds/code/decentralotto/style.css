@@ -1,0 +1,18 @@
+body {
+	background: url(./images/gambler.jpg) no-repeat;
+	background-size:cover;
+	font-size:20px;	
+}
+
+.mainwindow {
+  margin: auto;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  width:80%;
+  max-width:800;
+  height:80%;
+  background-color:#ddd;
+  border-radius: 20px;
+  opacity:0.9;
+  text-align:center;
+}
