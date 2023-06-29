@@ -6,6 +6,7 @@ import java.util.Arrays;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONObject;
 
@@ -33,7 +34,7 @@ public class random extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"size"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"size","type"}));
 	}
 	
 	@Override
@@ -46,13 +47,28 @@ public class random extends Command {
 		//Generate..
 		MiniData rand = MiniData.getRandomData(size.getAsInt());
 		
+		//Now hash it
+		String hashtype = getParam("type", "sha3");
+		
+		byte[] hash = null;
+		if(hashtype.equals("sha2")) {
+			hash = Crypto.getInstance().hashSHA2(rand.getBytes());
+		
+		}else if(hashtype.equals("sha3")) {
+			hash = Crypto.getInstance().hashData(rand.getBytes());
+		
+		}else {
+			throw new CommandException("Invalid hash type : "+hashtype);
+		}
+		
 		//Hash it
-		MiniData randhash = new MiniData(Crypto.getInstance().hashData(rand.getBytes()));
+		MiniData randhash = new MiniData(hash);
 		
 		JSONObject resp = new JSONObject();
 		resp.put("size", size.toString());
 		resp.put("random", rand.to0xString());
 		resp.put("hashed", randhash.to0xString());
+		resp.put("type", hashtype);
 		
 		ret.put("response", resp);
 		
