@@ -15,6 +15,7 @@ import org.minima.system.Main;
 import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.send.send;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -81,7 +82,7 @@ public class coins extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"relevant","sendable","coinid","amount",
-				"address","tokenid","checkmempool","order","coinage","simplestate"}));
+				"address","tokenid","checkmempool","order","coinage","simplestate","totalamount"}));
 	}
 	
 	@Override
@@ -201,6 +202,15 @@ public class coins extends Command {
 					return o1.getBlockCreated().compareTo(o2.getBlockCreated());
 				}
 			});
+		}
+		
+		//Are we listing a total amount of coins..
+		if(existsParam("totalamount")) {
+			//How much do we need..
+			MiniNumber totalamount = getNumberParam("totalamount");
+			
+			//Get just this number..
+			finalcoins = send.selectCoins(finalcoins, totalamount);
 		}
 		
 		//Put it all in an array
