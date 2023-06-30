@@ -62,6 +62,7 @@ import org.minima.system.commands.maxima.maxsign;
 import org.minima.system.commands.maxima.maxverify;
 import org.minima.system.commands.mds.checkmode;
 import org.minima.system.commands.mds.checkpending;
+import org.minima.system.commands.mds.checkrestore;
 import org.minima.system.commands.mds.mds;
 import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.disconnect;
@@ -130,7 +131,7 @@ public abstract class Command {
 			new multisig(), new checkaddress(),
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
 			
-			new ping(), new random(), new mysql(), new slavenode(),
+			new ping(), new random(), new mysql(), new slavenode(), new checkrestore(),
 			//new file(),
 			
 			new vault(), new consolidate(),
