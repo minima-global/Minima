@@ -28,7 +28,7 @@
 		<button onclick="startgame();">START GAME</button>
 		<br><br><br>
 		
-		<button onclick="startlotto('Coin Flip!!',2,0.1,1);">START LOTTO</button>
+		<button onclick="jumpStartLotto();">START LOTTO</button>
 		<br><br><Br>
 		
 		ALL LOTTO
@@ -45,6 +45,10 @@
 </center>
 
 <script type="text/javascript">
+	
+	function jumpStartLotto(){
+		location.href = "startlotto.html?uid="+MDS.minidappuid;
+	}
 	
 	function startGameButton(coin){
 		

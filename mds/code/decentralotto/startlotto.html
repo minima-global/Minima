@@ -1,0 +1,169 @@
+<html>
+
+<head>
+	<title>DectraLotto</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="./js/sql.js"></script>
+	
+</head>
+
+<body>
+
+
+
+	<div class=startlottocenterdiv>
+	
+	Start a Lottery..
+	<br><br>
+		<table>
+			<tr>
+				<td> ODDS : </td> <td> <input type=text id=lotto_odds value=0.5 /> </td>
+			</tr>
+			<tr>
+				<td> MIN : </td> <td> <input type=text id=lotto_min value=0.1 /> </td>
+			</tr>
+			<tr>
+				<td> MAX : </td> <td> <input type=text id=lotto_max value=1 /> </td>
+			</tr>
+			<tr>
+				<td> FEE % of Bet : </td> <td> <input type=text id=lotto_fees value=0.05 /> </td>
+			</tr>
+			<tr>
+				<td colspan=2> <input type=submit value="Start Lotto" onclick="newlotto();" /></td>
+			</tr>
+		</table>
+		<br><br>
+		
+		My Lotteries!
+		<table id="mylotteries" border=1 width=500></table>
+		<br><br>
+		
+	</div>
+	
+
+<script type="text/javascript">
+	
+	function newlotto(){
+		
+		//Run some functions..
+		MDS.cmd("getaddress;random",function(resp){
+			
+			//Get the functions
+			var getaddrresp	= resp[0];
+			var randresp 	= resp[1];
+			
+			//Get the Public Key..
+			var pubkey 	= getaddrresp.response.publickey;
+			var rand 	= randresp.response.random;
+			
+			MDS.cmd("runscript script:\"LET uid=SHA3(CONCAT("+pubkey+" "+rand+"))\"",function(script){
+				MDS.log(JSON.stringify(script));
+				
+				var uid = script.response.variables.uid; 
+				
+				//Now get the details..
+				var odds 	= document.getElementById("lotto_odds").value;
+				var min 	= document.getElementById("lotto_min").value;
+				var max 	= document.getElementById("lotto_max").value;
+				var fee 	= document.getElementById("lotto_fees").value;
+				
+				newLottery(pubkey,odds,min,max,fee,rand,uid,function(){
+					loadlotts();
+				});
+			});
+		});
+		
+		//Construct the state variables
+		/*var state = {};
+		state[0] = LOTTO_PUBKEY;
+		state[1] = "["+encodeURIComponent(message)+"]";
+		state[2] = ""+odds;
+		state[3] = ""+min;
+		state[4] = ""+max;
+		
+		var statestr = JSON.stringify(state);
+		
+		//Now send out a txn publishing your Lotto..
+		var sendcommand = "send amount:0.0000000000000000000001 address:0xD5A88ECA2195D1B2EAFB7AFB1A1D79F8EFFEC1676E1C12A86BE8410833927B55 state:"+statestr;
+
+		MDS.cmd(sendcommand,function(resp){
+			MDS.log(JSON.stringify(resp));
+		});*/
+	}
+		
+	function loadlotts(){
+		
+		loadMyLotteries(function(rows){
+			
+			//get the table
+			var thetable 		= document.getElementById("mylotteries");
+			
+			//Blank it..
+			thetable.innerHTML 	= "";
+			
+			// Create an empty <thead> element and add it to the table:
+			var header 		= thetable.createTHead();
+			var headerrow 	= header.insertRow(0);
+			headerrow.insertCell(0).innerHTML="ODDS";
+			headerrow.insertCell(1).innerHTML="MIN";
+			headerrow.insertCell(2).innerHTML="MAX";
+			headerrow.insertCell(3).innerHTML="FEE";
+			headerrow.insertCell(4).innerHTML="Options";
+			
+			var len = rows.length;
+			for(var i=0;i<len;i++){
+				
+				var row 			= rows[i];
+				var tablerow 		= thetable.insertRow(i+1);
+				var cell1 	 		= tablerow.insertCell(0);
+				var cell2 	 		= tablerow.insertCell(1);
+				var cell3 	 		= tablerow.insertCell(2);
+				var cell4 	 		= tablerow.insertCell(3);
+				var cell5 	 		= tablerow.insertCell(4);
+				
+				cell1.innerHTML		= row.ODDS;
+				cell2.innerHTML		= row.MIN;
+				cell3.innerHTML		= row.MAX;
+				cell4.innerHTML		= row.FEE;
+				cell5.innerHTML		= "<button onclick='cancelLottery(\""+row.UID+"\")'>CANCEL</button>";
+			}
+		});
+	}
+	
+	function cancelLottery(uid){
+		deleteLottery(uid, function(msg){
+			loadlotts();
+		});
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			createDB(function(){
+				loadlotts();	
+			});
+			
+		}
+	});
+
+</script>
+
+</body>
+
+</html>

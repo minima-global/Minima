@@ -74,7 +74,7 @@ function roundOne(coinid){
 		newstate[6]  = "0x000000"
 		
 		//What are the odds..
-		var odds = 
+		//var odds = 
 		
 		//Create the txn..
 		var creator = "";
