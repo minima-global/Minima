@@ -50,8 +50,14 @@
 	
 	function createGameCoin(gameuid){
 		
-		var amount = prompt("How much do you wish to play ? ");
-		if(amount == undefined){
+		var stramount = prompt("How much do you wish to play ? ");
+		if(stramount == undefined){
+			return;
+		}
+		
+		var amount = parseFloat(stramount); 
+		if(isNaN(amount)){
+			alert("Invalid Number : "+stramount);
 			return;
 		}
 		

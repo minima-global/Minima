@@ -168,6 +168,25 @@ function checkAdvertTxn(mylotteries, callback){
 	});
 }
 
+function findLottoGame(gameuid, callback){
+	
+	//Get ALL the games
+	MDS.cmd("coins simplestate:true address:"+LOTTERY_ADVERT_ADDRESS,function(resp){
+		
+		var len = resp.response.length;
+		for(var i=0;i<len;i++){
+			
+			var coin = resp.response[i];
+			var uid  = coin.state[5];
+			if(gameuid == uid){
+				//found it..
+				callback(coin);
+				break;
+			}
+		}
+	});
+}
+
 function playLottoGame(mypubkey, secret, odds, lottopubkey, lottoaddress, uid, amount, callback){
 	
 	//Construct the state variables
