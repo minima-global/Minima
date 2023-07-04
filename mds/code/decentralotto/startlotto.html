@@ -17,15 +17,15 @@
 	<!-- Load the local JS lib -->
 	<script type="text/javascript" src="jslib.js"></script>
 	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/txns.js"></script>
 	
 </head>
 
 <body>
 
-
-
 	<div class=startlottocenterdiv>
 	
+	<center>
 	Start a Lottery..
 	<br><br>
 		<table>
@@ -51,11 +51,19 @@
 		<table id="mylotteries" border=1 width=500></table>
 		<br><br>
 		
+		<button onclick="goHome();">HOME</button>
+		
+		</center>
+		
 	</div>
 	
 
 <script type="text/javascript">
-	
+
+	function goHome(){
+		location.href = "index.html?uid="+MDS.minidappuid;
+	}
+
 	function newlotto(){
 		
 		//Run some functions..
@@ -81,7 +89,11 @@
 				var fee 	= document.getElementById("lotto_fees").value;
 				
 				newLottery(pubkey,odds,min,max,fee,rand,uid,function(){
-					loadlotts();
+					
+					//And now create a coin Advert - for everyone..
+					createAdvertTxn(pubkey,odds,min,max,fee,uid, function(){
+						loadlotts();	
+					});
 				});
 			});
 		});
@@ -144,8 +156,17 @@
 	}
 	
 	function cancelLottery(uid){
-		deleteLottery(uid, function(msg){
-			loadlotts();
+		cancelAdvertTxn(uid, function(resp){
+			
+			//Did we find it..
+			if(!resp){
+				alert("Lottry Coin not found!");
+			}
+			
+			//Delete it from the SQL
+			deleteLottery(uid, function(msg){
+				loadlotts();
+			});
 		});
 	}
 	

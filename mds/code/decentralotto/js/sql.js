@@ -19,7 +19,7 @@ function createDB(callback){
 				
 	//Run this..
 	MDS.sql(initsql,function(msg){
-		MDS.log(JSON.stringify(msg));
+		//MDS.log(JSON.stringify(msg));
 		callback();
 	});
 }
@@ -31,7 +31,7 @@ function loadMyLotteries(callback){
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
-		MDS.log(JSON.stringify(msg));
+		//MDS.log(JSON.stringify(msg));
 		
 		callback(msg.rows);
 	});
@@ -49,7 +49,7 @@ function newLottery(publickey, odds, min, max, fee, random, uid, callback){
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
-		MDS.log(JSON.stringify(msg));
+		//MDS.log(JSON.stringify(msg));
 		callback(msg);
 	});
 }
@@ -61,7 +61,7 @@ function deleteLottery(uid, callback){
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
-		MDS.log(JSON.stringify(msg));
+		//MDS.log(JSON.stringify(msg));
 		callback(msg);
 	});
 }
