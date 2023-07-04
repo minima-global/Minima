@@ -118,7 +118,7 @@ public class MDSFileHandler implements Runnable {
 			// we get file requested
 			fileRequested = parse.nextToken();
 			
-			MinimaLogger.log("FILE REQUESTED : "+fileRequested);
+			//MinimaLogger.log("FILE REQUESTED : "+fileRequested);
 			
 			//Remove slashes..
 			if(fileRequested.startsWith("/")) {
