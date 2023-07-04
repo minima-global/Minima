@@ -118,6 +118,8 @@ public class MDSFileHandler implements Runnable {
 			// we get file requested
 			fileRequested = parse.nextToken();
 			
+			MinimaLogger.log("FILE REQUESTED : "+fileRequested);
+			
 			//Remove slashes..
 			if(fileRequested.startsWith("/")) {
 				fileRequested = fileRequested.substring(1);
@@ -202,6 +204,89 @@ public class MDSFileHandler implements Runnable {
 				//And write that out..
 				writeHTMLPage(dos, success);
 			
+			}else if(fileRequested.startsWith("fileupload.html")){
+				
+				//get the POST data
+				int contentlength = Integer.parseInt(allheaders.get("Content-Length"));
+				
+				//Read the data..
+				byte[] alldata = new byte[contentlength];
+				
+				//Read it ALL in
+				int len,total=0;
+				while( (len = inputStream.read(alldata,total,contentlength-total)) != -1) {
+					total += len;
+					if(total == contentlength) {
+						break;
+					}
+				}
+				
+				//Get the bits..
+				Hashtable<String, MultipartData> data = MultipartParser.parseMultipartData(alldata);
+				
+				//Which MiniDAPP..
+				MultipartData minidappidpart = data.get("uid");
+				if(minidappidpart==null) {
+					throw new IllegalArgumentException("NO minidappuid specified in form for uploadfile");
+				}
+				String minidappsessionid = minidappidpart.getTextData();
+				
+				//Check it..
+				String minidappid = mMDS.convertSessionID(minidappsessionid);
+				if(minidappid == null) {
+					throw new IllegalArgumentException("Invalid session id for uploadfile "+minidappsessionid);
+				}
+				
+				//Get the jumppage
+				MultipartData jumppagepart = data.get("jumppage");
+				if(jumppagepart==null) {
+					throw new IllegalArgumentException("NO jumppagh specified in form for uploadfile");
+				}
+				String jumppage = jumppagepart.getTextData();
+				
+				//Get the extradata
+				MultipartData extradatapart = data.get("extradata");
+				String extradata = "";
+				if(extradatapart!=null) {
+					extradata = URLEncoder.encode(extradatapart.getTextData(), "UTF-8");
+				}
+				
+				//Now.. save the file..
+				MultipartData filepart = data.get("fileupload"); 
+				String filename 	= URLEncoder.encode(filepart.getFileName(), "UTF-8");
+				String contenttype 	= URLEncoder.encode(filepart.getContentType(), "UTF-8");
+				
+				//Save the data
+				byte[] filedata = filepart.getFileData();
+				File root = new File(mMDS.getMiniDAPPFileFolder(minidappid),"fileupload");
+				if(!root.exists()) {
+					root.mkdirs();
+				}
+				MiniFile.writeDataToFile(new File(root,filepart.getFileName()), filedata);
+				
+				//Jump to the correct page..
+				String base = "/"+minidappid+"/"+jumppage+"?uid="+minidappsessionid
+						+"&fileupload="+filename
+						+"&size="+filedata.length
+						+"&contenttype="+contenttype;
+				
+				if(!extradata.equals("")) {
+					base += "&extradata="+extradata;
+				}
+				
+				//Create the web redirect paghe
+				String webredirect = "<html>\r\n"
+						+ "  <head>\r\n"
+						+ "    <meta http-equiv='refresh' content=\"0; url='"+base+"\" />\r\n"
+						+ "  </head>\r\n"
+						+ "  <body>\r\n"
+						+ "    <p>Please follow <a href='"+base+"'>this link</a>.</p>\r\n"
+						+ "  </body>\r\n"
+						+ "</html>";
+				
+				//Write this redirect page..
+				writeHTMLPage(dos, webredirect);
+				
 			}else {
 			
 				//Remove the params..
