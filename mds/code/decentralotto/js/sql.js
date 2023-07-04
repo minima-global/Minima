@@ -19,18 +19,24 @@ function createDB(callback){
 				
 	//Run this..
 	MDS.sql(initsql,function(msg){
-		//MDS.log(JSON.stringify(msg));
-		callback();
+		
+		//And create a secrets table..
+		var secretsql = "CREATE TABLE IF NOT EXISTS `secrets` ( "
+				+"  `id` bigint auto_increment, "
+				+"  `random` varchar(128) NOT NULL, "
+				+"  `hashed` varchar(128) NOT NULL, "
+				+"  `created` bigint NOT NULL "
+				+" )";
+		
+		MDS.sql(initsql,function(msg){
+			callback();	
+		});
 	});
 }
 
 function loadMyLotteries(callback){
-	
-	//Create the DB if not exists
-	var sql = "SELECT * FROM mylottories";
-				
 	//Run this..
-	MDS.sql(sql,function(msg){
+	MDS.sql("SELECT * FROM mylottories",function(msg){
 		//MDS.log(JSON.stringify(msg));
 		
 		callback(msg.rows);
@@ -64,4 +70,36 @@ function deleteLottery(uid, callback){
 		//MDS.log(JSON.stringify(msg));
 		callback(msg);
 	});
+}
+
+function storeSecret(random, hashed, callback){
+	
+	//Date as of NOW
+	var startdate = new Date();
+	var timemilli = startdate.getTime()
+	
+	//Create the DB if not exists
+	var sql = "INSERT INTO secrets(random,hashed,created) VALUES "+
+			"('"+random+"','"+hashed+"',"+timemilli+")";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		//MDS.log(JSON.stringify(msg));
+		callback(msg);
+	});
+}
+
+function getSecret(hashed,callback){
+	
+	var sql = "SELECT * FROM secrets WHERE hashed='"+hashed+"'";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		//MDS.log(JSON.stringify(msg));
+		callback(msg.rows);
+	});
+}
+
+function cleanUpSecrets(){
+	
 }

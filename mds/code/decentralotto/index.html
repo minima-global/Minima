@@ -48,9 +48,31 @@
 		location.href = "startlotto.html?uid="+MDS.minidappuid;
 	}
 	
-	function startGameButton(coin){
-		var but = "<button onclick='startgame();'>PLAY</button>"
-		return but;
+	function createGameCoin(gameuid){
+		
+		var amount = prompt("How much do you wish to play ? ");
+		if(amount == undefined){
+			return;
+		}
+		
+		MDS.log("STARTGAME UID:"+gameuid+" amount:"+amount);
+		
+		//Create some details
+		/*MDS.cmd("random;getaddress",function(resp){
+			
+			//Get MY pubkey
+			var mypubkey = resp[1].response.publickey;
+			
+			//Store the secret..
+			var rand 	= resp[0].response.random;
+			var hashed 	= resp[0].response.hashed;
+			storeSecret(rand,hashed,function(){
+				
+				//Now run it..
+				//var func = "playLottoGame(mypubkey, secret, odds, lottopubkey, lottoaddress, uid, amount, callback)";
+						
+			});
+		});*/
 	}
 	
 	function loadLottoGames(){
@@ -88,15 +110,17 @@
 				cell2.innerHTML		= MDS.util.getStateVariable(coin,2);
 				cell3.innerHTML		= MDS.util.getStateVariable(coin,3);
 				cell4.innerHTML		= MDS.util.getStateVariable(coin,4);
-				cell5.innerHTML		= startGameButton();
+				
+				//Get the Game UID
+				var uid = MDS.util.getStateVariable(coin,5);
+				cell5.innerHTML		= "<button onclick='createGameCoin(\""+uid+"\");'>PLAY</button>"
 			}
 		});
-		
 	}
 	
 	function loadMyGames(){
 		
-		MDS.cmd("coins address:"+LOTTO_ADDRESS+" relevant:true",function(resp){
+		MDS.cmd("coins address:"+LOTTERY_GAME_ADDRESS+" relevant:true",function(resp){
 			
 			var coins 	= resp.response;
 			var length 	= coins.length; 
@@ -132,20 +156,13 @@
 	}
 	
 	function checkMyCoinAge(){
-		
 		//Load all my games
 		loadMyLotteries(function(rows){
-			
 			//And now check those..
 			checkAdvertTxn(rows,function(){
-				
-				
 			});
 		});
-		
-		
 	}
-	
 	
 	//Main message handler..
 	MDS.init(function(msg){

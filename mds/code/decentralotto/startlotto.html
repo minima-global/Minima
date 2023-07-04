@@ -75,10 +75,11 @@
 			
 			//Get the Public Key..
 			var pubkey 	= getaddrresp.response.publickey;
+			var address = getaddrresp.response.address;
 			var rand 	= randresp.response.random;
 			
 			MDS.cmd("runscript script:\"LET uid=SHA3(CONCAT("+pubkey+" "+rand+"))\"",function(script){
-				MDS.log(JSON.stringify(script));
+				//MDS.log(JSON.stringify(script));
 				
 				var uid = script.response.variables.uid; 
 				
@@ -91,29 +92,12 @@
 				newLottery(pubkey,odds,min,max,fee,rand,uid,function(){
 					
 					//And now create a coin Advert - for everyone..
-					createAdvertTxn(pubkey,odds,min,max,fee,uid, function(){
+					createAdvertTxn(pubkey,address,odds,min,max,fee,uid, function(){
 						loadlotts();	
 					});
 				});
 			});
 		});
-		
-		//Construct the state variables
-		/*var state = {};
-		state[0] = LOTTO_PUBKEY;
-		state[1] = "["+encodeURIComponent(message)+"]";
-		state[2] = ""+odds;
-		state[3] = ""+min;
-		state[4] = ""+max;
-		
-		var statestr = JSON.stringify(state);
-		
-		//Now send out a txn publishing your Lotto..
-		var sendcommand = "send amount:0.0000000000000000000001 address:0xD5A88ECA2195D1B2EAFB7AFB1A1D79F8EFFEC1676E1C12A86BE8410833927B55 state:"+statestr;
-
-		MDS.cmd(sendcommand,function(resp){
-			MDS.log(JSON.stringify(resp));
-		});*/
 	}
 		
 	function loadlotts(){
@@ -160,7 +144,7 @@
 			
 			//Did we find it..
 			if(!resp){
-				alert("Lottry Coin not found!");
+				alert("Lottery Coin not found!");
 			}
 			
 			//Delete it from the SQL

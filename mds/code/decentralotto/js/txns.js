@@ -6,15 +6,20 @@ var LOTTERY_ADVERT_SCRIPT  = "LET lotto=[ This is a DecentraLotto Advert ] LET p
 var LOTTERY_ADVERT_ADDRESS = "MxG081TA19N7Y8G4BGF30BD34GCS77KCKKD43JNUNSYN84T107V1DW78AQDGRY8"
 var LOTTERY_ADVERT_AMOUNT  = "0.00000000000000000001";
 
+var LOTTERY_GAME_SCRIPT = "LET round=STATE(0) LET prevround=PREVSTATE(0) ASSERT round EQ INC(prevround) LET playerpubkey=PREVSTATE(1) LET secret=PREVSTATE(2) LET odds=PREVSTATE(3) ASSERT (odds GT 0) AND (odds LT 1) LET lottopubkey=PREVSTATE(4) LET lottoaddress=PREVSTATE(5) IF round EQ 1 THEN IF @COINAGE GT 20 AND SIGNEDBY(playerpubkey) THEN RETURN TRUE ENDIF ASSERT SIGNEDBY(lottopubkey) ASSERT SAMESTATE(1 6) LET lottorand=STATE(7) ASSERT ((HEX(lottorand) EQ lottorand) AND (LEN(lottorand) LTE 32)) LET requiredamount=@AMOUNT/odds RETURN VERIFYOUT(@INPUT @ADDRESS requiredamount @TOKENID TRUE) ELSEIF round EQ 2 THEN IF @COINAGE GT 64 AND SIGNEDBY(lottopubkey) THEN RETURN TRUE ENDIF ASSERT SIGNEDBY(playerpubkey) LET preimage=STATE(8) LET checkhash=SHA3(preimage) ASSERT checkhash EQ secret LET lottorand=PREVSTATE(7) LET decider=SHA3(CONCAT(preimage lottorand)) LET hexsubset=SUBSET(0 8 decider) LET numvalue=NUMBER(hexsubset) LET maxvalue=NUMBER(0xFFFFFFFFFFFFFFFF) LET target=FLOOR(maxvalue*odds) LET iswin=numvalue LTE target IF iswin THEN RETURN TRUE ELSE RETURN VERIFYOUT(@INPUT lottoaddress @AMOUNT @TOKENID TRUE) ENDIF ENDIF";
+var LOTTERY_GAME_ADDRESS = "MxG0847MEBNCUHTDGK0FR4HWDZTWQ1KJCNMNHJY56DH15M12403W2WVJU0N39JR";
+
 function addLotteryAdvertAddress(callback){
 	MDS.cmd("newscript trackall:false script:\""+LOTTERY_ADVERT_SCRIPT+"\"", function(resp){
-		if(callback){
-			callback();
-		}
+		MDS.cmd("newscript trackall:false script:\""+LOTTERY_GAME_SCRIPT+"\"", function(resp){
+			if(callback){
+				callback();
+			}
+		});	
 	});
 }
 
-function createAdvertTxn(pubkey, odds, min, max, fee, uid, callback){
+function createAdvertTxn(pubkey, lottoaddress,  odds, min, max, fee, uid, callback){
 	
 	//Construct the state variables
 	var state = {};
@@ -24,6 +29,7 @@ function createAdvertTxn(pubkey, odds, min, max, fee, uid, callback){
 	state[3] = ""+max;
 	state[4] = ""+fee;
 	state[5] = ""+uid;
+	state[6] = ""+lottoaddress;
 	
 	var statestr = JSON.stringify(state);
 	
@@ -124,39 +130,64 @@ function checkAdvertTxn(mylotteries, callback){
 					break;
 				}
 			}	
-		}		
 		
-		if(found){
+			if(found){
+				
+				//Get the coinid
+				var pubkey  = coin.state[0];
+				var coinid 	= coin.coinid;
+				var address	= coin.address;
+				var amount 	= coin.amount;
+				var state 	= coin.state;
+				
+				//Now create the spend txn
+				var txnname = "resubmit_"+coinid;
+				var creator = "";
+				creator 	+= "txndelete id:"+txnname;
+				creator 	+= ";txncreate id:"+txnname;
+				creator 	+= ";txninput id:"+txnname+" coinid:"+coinid;
+				creator 	+= ";txnoutput id:"+txnname+" amount:"+amount+" address:"+address;
+				
+				//Add ALL the state vars..
+				for(var st=0;st<7;st++){
+					creator 	+= ";txnstate id:"+txnname+" port:"+st+" value:"+coin.state[st];	
+				}
+				
+				//And finish up..
+				creator 	+= ";txnsign id:"+txnname+" publickey:"+pubkey;			
+				creator 	+= ";txnpost id:"+txnname+" auto:true";
+				creator 	+= ";txndelete id:"+txnname;
 			
-			//Get the coinid
-			var pubkey  = coin.state[0];
-			var coinid 	= coin.coinid;
-			var address	= coin.address;
-			var amount 	= coin.amount;
-			var state 	= coin.state;
-			
-			//Now create the spend txn
-			var txnname = "resubmit_"+coinid;
-			var creator = "";
-			creator 	+= "txndelete id:"+txnname;
-			creator 	+= ";txncreate id:"+txnname;
-			creator 	+= ";txninput id:"+txnname+" coinid:"+coinid;
-			creator 	+= ";txnoutput id:"+txnname+" amount:"+amount+" address:"+address;
-			
-			//Add ALL the state vars..
-			for(var st=0;st<6;st++){
-				creator 	+= ";txnstate id:"+txnname+" port:"+st+" value:"+coin.state[st];	
+				//Do it..
+				MDS.log("RESUBMITTING : "+txnname)	
+				MDS.cmd(creator, function(resp){
+					//MDS.log(JSON.stringify(resp))
+				});
 			}
-			
-			//And finish up..
-			creator 	+= ";txnsign id:"+txnname+" publickey:"+pubkey;			
-			creator 	+= ";txnpost id:"+txnname+" auto:true";
-			creator 	+= ";txndelete id:"+txnname;
-		
-			//Do it..	
-			MDS.cmd(creator, function(resp){
-				MDS.log(JSON.stringify(resp))
-			});
 		}
+	});
+}
+
+function playLottoGame(mypubkey, secret, odds, lottopubkey, lottoaddress, uid, amount, callback){
+	
+	//Construct the state variables
+	var state = {};
+	state[0] = "0";
+	state[1] = ""+mypubkey;
+	state[2] = ""+secret;
+	state[3] = ""+odds;
+	state[4] = ""+lottopubkey;
+	state[5] = ""+lottoaddress;
+	state[6] = ""+uid;
+	
+	var statestr = JSON.stringify(state);
+	
+	var sendcommand = "send address:"+LOTTERY_GAME_ADDRESS+" amount:"+amount+" state:"+statestr;
+	
+	MDS.cmd(sendcommand,function(resp){
+		if(!resp.status){
+			//Something went wrong..
+		}
+		callback(resp.status);	
 	});
 }
