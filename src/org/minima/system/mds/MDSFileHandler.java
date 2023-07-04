@@ -240,7 +240,7 @@ public class MDSFileHandler implements Runnable {
 				//Get the jumppage
 				MultipartData jumppagepart = data.get("jumppage");
 				if(jumppagepart==null) {
-					throw new IllegalArgumentException("NO jumppagh specified in form for uploadfile");
+					throw new IllegalArgumentException("NO jumppage specified in form for uploadfile");
 				}
 				String jumppage = jumppagepart.getTextData();
 				
