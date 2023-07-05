@@ -46,7 +46,7 @@ public class txnlock extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","timeout"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","timeout","unlockdelay"}));
 	}
 	
 	public static boolean mLocked 	= false;
@@ -93,7 +93,8 @@ public class txnlock extends Command {
 		String action = getParam("action","list");
 		
 		//10 second default timer
-		long timeout = getNumberParam("timeout", new MiniNumber(20000)).getAsLong();
+		long timeout 	 = getNumberParam("timeout", new MiniNumber(20000)).getAsLong();
+		long unlockdelay = getNumberParam("unlockdelay", MiniNumber.ZERO).getAsLong();
 		
 		JSONObject resp = new JSONObject();
 		if(action.equals("lock")) {
@@ -101,6 +102,12 @@ public class txnlock extends Command {
 			resp.put("success", success);
 			resp.put("locked", true);
 		}else if(action.equals("unlock")) {
+			
+			//Is there a delay
+			if(unlockdelay!=0) {
+				Thread.sleep(unlockdelay);
+			}
+			
 			unlock();
 			resp.put("success", true);
 			resp.put("locked", false);
