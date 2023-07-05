@@ -1,6 +1,12 @@
+@font-face {
+	font-family: Manrope;
+	src: url('./Manrope-Regular.ttf');
+}
+
 body {
 	background: url(./images/gambler.jpg) no-repeat;
 	background-size:cover;
+	font-family: Manrope;
 	font-size:20px;	
 }
 
@@ -29,4 +35,55 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   padding: 10px;
+}
+
+.alllotto{
+  padding: 10px;
+  font-style:bold;
+  background-color:#0d0;
+  opacity:0.8;
+  border-radius: 5px;
+  width:380;
+}
+
+.solobutton {
+    background-color: #eee;
+    border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	font-family: Manrope;
+  	font-size: 14px;
+}
+.solobutton-edit {
+	font-family: Manrope;
+	background: #fff;
+}
+.solobutton-edit:focus {
+	font-family: Manrope;
+	border: 0.5px solid #EDEDED;
+}
+
+.solobutton:hover {
+	font-family: Manrope;
+	cursor: pointer;
+    color: #fff;
+	background-color: #0000ff;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+	border-color: #16181C;
+}
+
+.solobutton[disabled]:hover {
+	cursor: default;
+    color: #fff;
+    background-color: #eee;
+    border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	font-size: 14px;
+}
+
+.solobutton:active {
+  	opacity: 0.8;
+	font-style: italic;
 }

@@ -15,8 +15,6 @@
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	
 	<!-- Load the local JS lib -->
-	<script type="text/javascript" src="jslib.js"></script>
-	
 	<script type="text/javascript" src="./js/sql.js"></script>
 	<script type="text/javascript" src="./js/txns.js"></script>
 	
@@ -24,28 +22,30 @@
 
 <body>
 
+<center>
+	
+	<br><br>
+		
+	<table id="lottotable" class="alllotto"></table>
+	<br>
+	<button class="solobutton" onclick="jumpStartLotto();">Create your own LOTTO</button>
 
-	<div class="mainwindow">
-		<center>
-		<br><br>
-		ALL LOTTO
-		<table id="lottotable" border=1 width=300></table>
+	<br><br>
+	<table id="mygames" class="alllotto"></table>
+	<br><br>
+	
+	<p class="alllotto">
+		Players check every 3 blocks..<br>
 		<br>
-		<button onclick="jumpStartLotto();">Create your own LOTTO</button>
-		<br><br><br>
-		
-		MY GAMES
-		<table id="mygames" border=1></table>
-		<br><br><br>
-		
-		<button onclick="checkAllGames();">CHECK GAMES</button>
+		After 20 blocks other player<br> collects all coins</p>
+	
+		<!--  
+		<button class="solobutton" onclick="checkAllGames();">CHECK GAMES</button>	
 		<br><br><br>
 		<button onclick="checkMyCoinAge();">CHECK ADVERT AGE</button>
+		-->
 		
-		</center>
-	</div>	
-
-	
+</center>
 
 <script type="text/javascript">
 	
@@ -87,8 +87,12 @@
 					
 					//Now run it..
 					playLottoGame(mypubkey, hashed, odds, 
-							lottopubkey, lottoaddress, gameuid, amount, function(){
-						//..
+							lottopubkey, lottoaddress, gameuid, amount, function(resp){
+						if(resp){
+							alert("Coins sent - pls wait for them to confirm..");
+						}else{
+							alert("Coin send failed - check balance..");
+						}
 					});
 				});
 			});
@@ -133,7 +137,8 @@
 				
 				//Get the Game UID
 				var uid = MDS.util.getStateVariable(coin,5);
-				cell5.innerHTML		= "<button onclick='createGameCoin(\""+uid+"\");'>PLAY</button>"
+				cell5.innerHTML	= "<button class='solobutton' onclick='createGameCoin(\""+uid+"\");'>PLAY LOTTO</button>";
+				cell5.style.width = '100px';
 			}
 		});
 	}
@@ -156,9 +161,16 @@
 			var header 		= thetable.createTHead();
 			var headerrow 	= header.insertRow(0);
 			headerrow.insertCell(0).innerHTML="Round";
-			headerrow.insertCell(1).innerHTML="Amount";
-			headerrow.insertCell(2).innerHTML="Age";
-			headerrow.insertCell(3).innerHTML="Status";
+			headerrow.insertCell(1).innerHTML="Odds";
+			headerrow.insertCell(2).innerHTML="Amount";
+			headerrow.insertCell(3).innerHTML="Age";
+			headerrow.insertCell(4).innerHTML="Status";
+			
+			if(length == 0){
+				var tablerow 		= thetable.insertRow(1);
+				var cell1 	 		= tablerow.insertCell(0);
+				cell1.innerHTML		= "NO GAMES.."
+			}
 			
 			//Create data
 			for(var i=0;i<length;i++){
@@ -168,13 +180,40 @@
 				var cell2 	 		= tablerow.insertCell(1);
 				var cell3 	 		= tablerow.insertCell(2);
 				var cell4 	 		= tablerow.insertCell(3);
+				var cell5 	 		= tablerow.insertCell(4);
 				
 				cell1.innerHTML		= MDS.util.getStateVariable(coin,0);
-				cell2.innerHTML		= coin.amount;
-				cell3.innerHTML		= Number(block) - Number(coin.created);
-				cell4.innerHTML		= "Awaiting..";
+				cell2.innerHTML		= MDS.util.getStateVariable(coin,3);
+				cell3.innerHTML		= coin.amount;
+				cell4.innerHTML		= Number(block) - Number(coin.created)+" / 5 ..";
+				
+				fillInStatus(coin,cell5);
+				//cell5.innerHTML		= "Awaiting..";
 			}
 		});
+	}
+	
+	function fillInStatus(coin, tablecell){
+		var round = MDS.util.getStateVariable(coin,0);
+		if(round=="0"){
+			tablecell.innerHTML		= "Awaiting Lotto..";
+		}else if(round=="1"){
+			
+			var secret 		= MDS.util.getStateVariable(coin,2);
+			var odds 		= MDS.util.getStateVariable(coin,3);
+			var lottorand 	= MDS.util.getStateVariable(coin,7);
+			
+			//Is it a win!
+			checkForWin(secret, odds, lottorand,function(msg){
+				if(msg == "TRUE"){
+					tablecell.innerHTML		= "WIN!";	
+				}else if(msg == "FALSE"){
+					tablecell.innerHTML		= "LOSE!";
+				}else{
+					tablecell.innerHTML		= "Awaiting Player..";
+				}
+			});
+		}
 	}
 	
 	function checkMyCoinAge(){
@@ -210,7 +249,7 @@
 		}else if(msg.event == "MDS_TIMER_1HOUR"){
 			
 			//Check Advert Coin Age
-			//checkMyCoinAge();
+			checkMyCoinAge();
 			
 		}else if(msg.event == "NEWBLOCK"){
 			
@@ -220,9 +259,11 @@
 			//Load my games
 			loadMyGames();
 			
-			//Now check them
-			//checkAllGames();
-			
+			//Now check them - so as not to repeat the same txns every block 
+			var block = msg.data.txpow.header.block;
+			if(block % 3 == 0){
+				checkAllGames();	
+			}
 		}
 	});
 

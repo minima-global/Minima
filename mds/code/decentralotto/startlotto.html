@@ -22,40 +22,46 @@
 
 <body>
 
-	<div class=startlottocenterdiv>
+<center>
 	
-	<center>
-	Start a Lottery..
+	<br>
+	<br>
+	<br>
+	<table class="alllotto">
+		<tr>
+			<td> ODDS : </td> <td> 
+				<select id="lotto_odds" name="Odds">
+				  <option value="0.05">5%</option>
+				  <option value="0.1">10%</option>
+				  <option value="0.2">20%</option>
+				  <option value="0.4">40%</option>
+				  <option value="0.5">50%</option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td> MIN : </td> <td> <input type=text id=lotto_min value=0.1 /> </td>
+		</tr>
+		<tr>
+			<td> MAX : </td> <td> <input type=text id=lotto_max value=1 /> </td>
+		</tr>
+		<tr>
+			<td> FEE % of Bet : </td> <td> <input type=text id=lotto_fees value=0.05 /> </td>
+		</tr>
+		<tr>
+			<td colspan=2 style="text-align:center;"> <input class="solobutton" type=submit value="Start Lotto" onclick="newlotto();" /></td>
+		</tr>
+	</table>
 	<br><br>
-		<table>
-			<tr>
-				<td> ODDS : </td> <td> <input type=text id=lotto_odds value=0.5 /> </td>
-			</tr>
-			<tr>
-				<td> MIN : </td> <td> <input type=text id=lotto_min value=0.1 /> </td>
-			</tr>
-			<tr>
-				<td> MAX : </td> <td> <input type=text id=lotto_max value=1 /> </td>
-			</tr>
-			<tr>
-				<td> FEE % of Bet : </td> <td> <input type=text id=lotto_fees value=0.05 /> </td>
-			</tr>
-			<tr>
-				<td colspan=2> <input type=submit value="Start Lotto" onclick="newlotto();" /></td>
-			</tr>
-		</table>
-		<br><br>
-		
-		My Lotteries!
-		<table id="mylotteries" border=1 width=500></table>
-		<br><br>
-		
-		<button onclick="goHome();">HOME</button>
-		
-		</center>
-		
-	</div>
 	
+	<p class="alllotto">My Lotteries!</p>
+	
+	<table id="mylotteries" class="alllotto"></table>
+	<br><br>
+	
+	<button class="solobutton" onclick="goHome();">HOME</button>
+	
+	</center>	
 
 <script type="text/javascript">
 
@@ -64,6 +70,8 @@
 	}
 
 	function newlotto(){
+		
+		alert("Will now create game.. pls wait for it to confirm..");
 		
 		//Run some functions..
 		MDS.cmd("getaddress;random",function(resp){

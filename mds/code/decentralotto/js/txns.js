@@ -9,13 +9,18 @@ var LOTTERY_ADVERT_AMOUNT  = "0.00000000000000000001";
 var LOTTERY_GAME_SCRIPT 	= "LET round=STATE(0) LET prevround=PREVSTATE(0) ASSERT round EQ INC(prevround) LET playerpubkey=PREVSTATE(1) LET secret=PREVSTATE(2) LET odds=PREVSTATE(3) ASSERT (odds GT 0) AND (odds LT 1) LET lottopubkey=PREVSTATE(4) LET lottoaddress=PREVSTATE(5) IF round EQ 1 THEN IF @COINAGE GT 20 AND SIGNEDBY(playerpubkey) THEN RETURN TRUE ENDIF ASSERT SIGNEDBY(lottopubkey) ASSERT SAMESTATE(1 6) LET lottorand=STATE(7) ASSERT ((HEX(lottorand) EQ lottorand) AND (LEN(lottorand) LTE 32)) LET requiredamount=@AMOUNT/odds RETURN VERIFYOUT(@INPUT @ADDRESS requiredamount @TOKENID TRUE) ELSEIF round EQ 2 THEN IF @COINAGE GT 20 AND SIGNEDBY(lottopubkey) THEN RETURN TRUE ENDIF ASSERT SIGNEDBY(playerpubkey) LET preimage=STATE(8) LET checkhash=SHA3(preimage) ASSERT checkhash EQ secret LET lottorand=PREVSTATE(7) LET decider=SHA3(CONCAT(preimage lottorand)) LET hexsubset=SUBSET(0 8 decider) LET numvalue=NUMBER(hexsubset) LET maxvalue=NUMBER(0xFFFFFFFFFFFFFFFF) LET target=FLOOR(maxvalue*odds) LET iswin=numvalue LTE target IF iswin THEN RETURN TRUE ELSE RETURN VERIFYOUT(@INPUT lottoaddress @AMOUNT @TOKENID TRUE) ENDIF ENDIF";
 var LOTTERY_GAME_ADDRESS 	= "MxG08743CMGQZ27HWANK8VJJZF44689YG3V0H0STTPBYA0MEYYTH4MADY0FWBNQ";
 
+/**
+ * Add the required scripts 
+ */
 function addLotteryAdvertAddress(callback){
-	MDS.cmd("newscript trackall:false script:\""+LOTTERY_ADVERT_SCRIPT+"\"", function(resp){
-		MDS.cmd("newscript trackall:false script:\""+LOTTERY_GAME_SCRIPT+"\"", function(resp){
-			if(callback){
-				callback();
-			}
-		});	
+	
+	var cmdstr   = "newscript trackall:false script:\""+LOTTERY_ADVERT_SCRIPT+"\"";
+	cmdstr 		+= ";newscript trackall:false script:\""+LOTTERY_GAME_SCRIPT+"\"";
+	
+	MDS.cmd(cmdstr, function(resp){
+		if(callback){
+			callback();
+		}	
 	});
 }
 
@@ -229,7 +234,7 @@ function checkAllGames(){
 			var age  = block - Number(coin.created);
 			
 			//Check Old enough
-			if(age>5){
+			if(age>4){
 				//This is a game
 				if(round == "0"){
 					checkRoundOneGame(block,coin);	
@@ -268,7 +273,7 @@ function checkRoundOneGame(blocknum, coin){
 		var rand     = resp[3].response.random;
 		
 		//Is it one of ours..
-		if(false && isplayer && age>20){
+		if(isplayer && age>20){
 			
 			//It's one of ours.. as PLAYER.. collect it..
 			collectExpiredGame(1, coin, address, playerpubkey);
@@ -276,7 +281,7 @@ function checkRoundOneGame(blocknum, coin){
 		}else if(islotto){
 			
 			//We are the lotto..
-			lottoRoundOne(coin,lottopubkey,rand);
+			lottoRoundOne(coin,rand);
 		}
 	}); 
 }
@@ -299,9 +304,9 @@ function collectExpiredGame(round, coin, address, pubkey){
 	creator		+= ";txnpost id:"+txnname+" auto:true";
 	creator		+= ";txndelete id:"+txnname;
 	
-	MDS.log("COLLECT EXPIRED COIN!");
+	//Run it..
 	MDS.cmd(creator,function(resp){
-		//MDS.log(JSON.stringify(resp));
+		MDS.log("COLLECT EXPIRED COIN!");
 	});
 }
 
@@ -341,16 +346,13 @@ function lottoRoundOne(coin, random){
 							valid = false;
 						}
 						
-						//CHECK ADDRESS AND PUBKEY!!
-						//..
-						
 						//Is it a valid game..
 						if(!valid){
 							MDS.log("[!] INVALID GAME COIN FOUND "+JSON.stringify(row)+" "+JSON.stringify(coin));
 						}else{
 							
 							//Lets play!
-							MDS.log("LETS PLAY! amount:"+coinamount+" odds:"+odds+" lottopubkey:"+pubkey);
+							MDS.log("LETS PLAY! amount:"+coinamount+" odds:"+odds);
 			
 							var requiredamount 	= coinamount / odds;
 							var difference 		= requiredamount - coinamount;  
@@ -389,7 +391,7 @@ function lottoRoundOne(coin, random){
 							creator		+= ";txndelete id:"+txnname;
 							
 							MDS.cmd(creator,function(resp){
-								MDS.log("BASE CREATED!");
+								//MDS.log("BASE CREATED!");
 							});
 						}
 					}else{
@@ -405,7 +407,7 @@ function checkRoundTwoGame(blocknum, coin){
 	
 	//The 2 players
 	var playerpubkey 	= coin.state[1];
-	var lottopubkey 	= coin.state[1];
+	var lottopubkey 	= coin.state[4];
 	
 	//How old is this round
 	var age  			= blocknum - Number(coin.created); 
@@ -424,7 +426,7 @@ function checkRoundTwoGame(blocknum, coin){
 		var address	 = resp[2].response.address;
 		
 		//Is it one of ours..
-		if(islotto && age>64){
+		if(islotto && age>20){
 			
 			//It's one of ours.. as PLAYER.. collect it..
 			collectExpiredGame(2,coin,address,lottopubkey);
@@ -432,11 +434,108 @@ function checkRoundTwoGame(blocknum, coin){
 		}else if(isplayer){
 			
 			//We are the lotto..
-			//playerRoundTwo(coin,playerpubkey);
+			playerRoundTwo(coin, address);
 		}
 	});
 }
 
-function playerRoundTwo(coin,pubkey){
+function playerRoundTwo(coin,address){
 	
+	//Get details
+	var pubkey 		 = coin.state[1];
+	var secret 		 = coin.state[2];
+	var odds 		 = coin.state[3];
+	var lottopubkey	 = coin.state[4];
+	var lottoaddress = coin.state[5];
+	var lottorand 	 = coin.state[7];
+	
+	//Get that from the DB..
+	getSecret(secret,function(sqlres){
+		if(sqlres.length>0){
+			var preimage = sqlres[0].RANDOM;
+			
+			var testscript = "";
+			testscript += " LET preimage="+preimage;
+			testscript += " LET lottorand="+lottorand;
+			testscript += " LET odds="+odds;
+			testscript += " LET decider = SHA3(CONCAT(preimage lottorand))";
+			testscript += " LET hexsubset = SUBSET(0 8 decider)";
+			testscript += " LET numvalue = NUMBER(hexsubset)";
+			testscript += " LET maxvalue = NUMBER(0xFFFFFFFFFFFFFFFF)";
+			testscript += " LET target = FLOOR(maxvalue * odds)";
+			testscript += " LET iswin = numvalue LTE target";
+			
+			MDS.cmd("runscript script:\""+testscript+"\"",function(resp){
+				
+				//Did we win..
+				var iswin = resp.response.variables.iswin == "TRUE";
+				if(iswin){
+					MDS.log("PLAYER WINS!");
+					finalCollectWin(coin,address,pubkey, preimage);
+					
+				}else{
+					MDS.log("LOTTO WINS!");
+					finalCollectWin(coin,lottoaddress,pubkey, preimage);
+				}
+				
+			});
+		}else{
+			MDS.log("[!] SECRET FOR GAME NOT FOUND!!");
+		}
+	});
+}
+
+function finalCollectWin(coin, address, pubkey, secret){
+	
+	var txnname="collectwin_"+coin.coinid;
+	
+	var creator  = "";
+	creator		+= "txndelete id:"+txnname;
+	creator		+= ";txncreate id:"+txnname;
+	creator		+= ";txninput id:"+txnname+" coinid:"+coin.coinid;
+	creator		+= ";txnoutput id:"+txnname+" amount:"+coin.amount+" address:"+address;
+	
+	//Set the round state var..
+	creator += ";txnstate id:"+txnname+" port:0 value:2";
+	
+	//Set the Preimage secret
+	creator += ";txnstate id:"+txnname+" port:8 value:"+secret;
+	
+	//Sign and post and delete
+	creator		+= ";txnsign id:"+txnname+" publickey:"+pubkey;
+	creator		+= ";txnpost id:"+txnname+" auto:true";
+	creator		+= ";txndelete id:"+txnname;
+	
+	//Run it..
+	MDS.cmd(creator,function(resp){
+		MDS.log("SEND WINNING COIN!");
+	});
+}
+
+function checkForWin(secret, odds, lottorand ,callback){
+	
+	//Get that from the DB..
+	getSecret(secret,function(sqlres){
+		if(sqlres.length>0){
+			var preimage = sqlres[0].RANDOM;
+			
+			var testscript = "";
+			testscript += " LET preimage="+preimage;
+			testscript += " LET lottorand="+lottorand;
+			testscript += " LET odds="+odds;
+			testscript += " LET decider = SHA3(CONCAT(preimage lottorand))";
+			testscript += " LET hexsubset = SUBSET(0 8 decider)";
+			testscript += " LET numvalue = NUMBER(hexsubset)";
+			testscript += " LET maxvalue = NUMBER(0xFFFFFFFFFFFFFFFF)";
+			testscript += " LET target = FLOOR(maxvalue * odds)";
+			testscript += " LET iswin = numvalue LTE target";
+			
+			MDS.cmd("runscript script:\""+testscript+"\"",function(resp){
+				//Return..
+				callback(resp.response.variables.iswin)
+			});
+		}else{
+			callback("UNKNOWN");
+		}
+	});
 }
