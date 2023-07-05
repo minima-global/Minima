@@ -341,15 +341,6 @@ function lottoRoundOne(coin, random){
 					//MDS.log("LOTTERY:"+JSON.stringify(rows));	
 					if(sqlres.count==1){
 						
-						//Only do one of these per checkAllGames..
-						if(HAVE_LOTTO_ONE_DONE){
-							MDS.log("Allready done LOTTO round one this turn.. waiting..");
-							return;
-						}
-						HAVE_LOTTO_ONE_DONE = true;
-						
-						MDS.log("JUMP TO 1 : "+coin.coinid)
-						
 						//Get the data
 						var row = sqlres.rows[0]; 
 						
@@ -377,6 +368,13 @@ function lottoRoundOne(coin, random){
 							MDS.log("[!] INVALID GAME COIN FOUND "+JSON.stringify(row)+" "+JSON.stringify(coin));
 						}else{
 							
+							//Only do one of these per checkAllGames.. or txnaddamount gets clogged.. needs a delay
+							if(HAVE_LOTTO_ONE_DONE){
+								MDS.log("Allready done LOTTO round one this turn.. waiting..");
+								return;
+							}
+							HAVE_LOTTO_ONE_DONE = true;
+														
 							//Lets play!
 							MDS.log("LETS PLAY! amount:"+coinamount+" odds:"+odds);
 			
