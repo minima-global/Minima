@@ -28,7 +28,7 @@ function createDB(callback){
 				+"  `created` bigint NOT NULL "
 				+" )";
 		
-		MDS.sql(initsql,function(msg){
+		MDS.sql(secretsql,function(msg){
 			callback();	
 		});
 	});
@@ -38,8 +38,14 @@ function loadMyLotteries(callback){
 	//Run this..
 	MDS.sql("SELECT * FROM mylottories",function(msg){
 		//MDS.log(JSON.stringify(msg));
-		
 		callback(msg.rows);
+	});
+}
+
+function loadLottery(uid,callback){
+	//Run this..
+	MDS.sql("SELECT * FROM mylottories WHERE uid='"+uid+"'",function(msg){
+		callback(msg);
 	});
 }
 
