@@ -224,7 +224,7 @@ function randomInteger(min, max) {
 var HAVE_LOTTO_ONE_DONE = false;
 function checkAllGames(){
 	
-	MDS.cmd("block;coins simplestate:true address:"+LOTTERY_GAME_ADDRESS+" relevant:true",function(resp){
+	MDS.cmd("block;coins order:asc simplestate:true address:"+LOTTERY_GAME_ADDRESS+" relevant:true",function(resp){
 			
 		var block 	= Number(resp[0].response.block);
 		var coins 	= resp[1].response;
