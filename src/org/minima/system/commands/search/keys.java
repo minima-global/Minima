@@ -78,23 +78,33 @@ public class keys extends Command {
 			JSONArray arr 	= new JSONArray();
 			int maxuses		= 0;
 			for(KeyRow kr : keys) {
-				if(kr.getUses()>maxuses) {
-					maxuses = kr.getUses(); 
-				}
+				
+				//Get the details
 				JSONObject dets = kr.toJSON();
 				
+				//Are we seraching for ONE key or ALL of them
 				if(searchkey) {
 					if(dets.getString("publickey").equals(pubkey)) {
+						if(kr.getUses()>maxuses) {
+							maxuses = kr.getUses(); 
+						}
+						
 						arr.add(dets);
+						
+						break;
 					}
 				}else {
+					if(kr.getUses()>maxuses) {
+						maxuses = kr.getUses(); 
+					}
+					
 					arr.add(dets);
 				}
 			}
 				
 			JSONObject resp = new JSONObject();
 			resp.put("keys", arr);
-			resp.put("total", keys.size());
+			resp.put("total", arr.size());
 			resp.put("maxuses", maxuses);
 			
 			//Put the details in the response..
