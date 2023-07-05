@@ -74,8 +74,11 @@ public class txnlock extends Command {
 		while(!lockFunction(true)) {
 			Thread.sleep(delay);
 			counter+=delay;
-			if(counter>zTimeout) {
-				return false;
+			
+			if(zTimeout!=0) {
+				if(counter>zTimeout) {
+					return false;
+				}
 			}
 		}
 		
