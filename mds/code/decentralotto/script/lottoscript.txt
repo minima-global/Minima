@@ -64,8 +64,8 @@ IF round EQ 1 THEN
 /* PLAYER 1 REVEALS HIS HAND */
 ELSEIF round EQ 2 THEN 
 
-    /* Player has 64 blocks to claim - or Lottoe can claim it all */
-    IF @COINAGE GT 64 AND SIGNEDBY(lottopubkey) THEN RETURN TRUE ENDIF 
+    /* Player has 64 blocks to claim - or Lotto can claim it all */
+    IF @COINAGE GT 20 AND SIGNEDBY(lottopubkey) THEN RETURN TRUE ENDIF 
 
     /* Check Signed by Player */
     ASSERT SIGNEDBY(playerpubkey)
