@@ -6,8 +6,8 @@ var LOTTERY_ADVERT_SCRIPT  = "LET lotto=[ This is a DecentraLotto Advert ] LET p
 var LOTTERY_ADVERT_ADDRESS = "MxG081TA19N7Y8G4BGF30BD34GCS77KCKKD43JNUNSYN84T107V1DW78AQDGRY8"
 var LOTTERY_ADVERT_AMOUNT  = "0.00000000000000000001";
 
-var LOTTERY_GAME_SCRIPT 	= "LET round=STATE(0) LET prevround=PREVSTATE(0) ASSERT round EQ INC(prevround) LET playerpubkey=PREVSTATE(1) LET secret=PREVSTATE(2) LET odds=PREVSTATE(3) ASSERT (odds GT 0) AND (odds LT 1) LET lottopubkey=PREVSTATE(4) LET lottoaddress=PREVSTATE(5) IF round EQ 1 THEN IF @COINAGE GT 20 AND SIGNEDBY(playerpubkey) THEN RETURN TRUE ENDIF ASSERT SIGNEDBY(lottopubkey) ASSERT SAMESTATE(1 6) LET lottorand=STATE(7) ASSERT ((HEX(lottorand) EQ lottorand) AND (LEN(lottorand) LTE 32)) LET requiredamount=@AMOUNT/odds RETURN VERIFYOUT(@INPUT @ADDRESS requiredamount @TOKENID TRUE) ELSEIF round EQ 2 THEN IF @COINAGE GT 20 AND SIGNEDBY(lottopubkey) THEN RETURN TRUE ENDIF ASSERT SIGNEDBY(playerpubkey) LET preimage=STATE(8) LET checkhash=SHA3(preimage) ASSERT checkhash EQ secret LET lottorand=PREVSTATE(7) LET decider=SHA3(CONCAT(preimage lottorand)) LET hexsubset=SUBSET(0 8 decider) LET numvalue=NUMBER(hexsubset) LET maxvalue=NUMBER(0xFFFFFFFFFFFFFFFF) LET target=FLOOR(maxvalue*odds) LET iswin=numvalue LTE target IF iswin THEN RETURN TRUE ELSE RETURN VERIFYOUT(@INPUT lottoaddress @AMOUNT @TOKENID TRUE) ENDIF ENDIF";
-var LOTTERY_GAME_ADDRESS 	= "MxG08743CMGQZ27HWANK8VJJZF44689YG3V0H0STTPBYA0MEYYTH4MADY0FWBNQ";
+var LOTTERY_GAME_SCRIPT 	= "LET round=STATE(0) LET prevround=PREVSTATE(0) ASSERT round EQ INC(prevround) LET playerpubkey=PREVSTATE(1) LET secret=PREVSTATE(2) LET odds=PREVSTATE(3) LET lottopubkey=PREVSTATE(4) LET lottoaddress=PREVSTATE(5) LET fees=PREVSTATE(7) ASSERT (odds GT 0) AND (odds LT 1) IF round EQ 1 THEN IF @COINAGE GT 20 AND SIGNEDBY(playerpubkey) THEN RETURN TRUE ENDIF ASSERT SIGNEDBY(lottopubkey) ASSERT SAMESTATE(1 7) LET lottorand=STATE(8) ASSERT ((HEX(lottorand) EQ lottorand) AND (LEN(lottorand) LTE 32)) LET requiredfees=@AMOUNT*fees LET actualamount=@AMOUNT-requiredfees LET requiredamount=actualamount/odds RETURN VERIFYOUT(@INPUT @ADDRESS requiredamount @TOKENID TRUE) ELSEIF round EQ 2 THEN IF @COINAGE GT 20 AND SIGNEDBY(lottopubkey) THEN RETURN TRUE ENDIF ASSERT SIGNEDBY(playerpubkey) LET preimage=STATE(9) LET checkhash=SHA3(preimage) ASSERT checkhash EQ secret LET lottorand=PREVSTATE(8) LET decider=SHA3(CONCAT(preimage lottorand)) LET hexsubset=SUBSET(0 8 decider) LET numvalue=NUMBER(hexsubset) LET maxvalue=NUMBER(0xFFFFFFFFFFFFFFFF) LET target=FLOOR(maxvalue*odds) LET iswin=numvalue LTE target IF iswin THEN RETURN TRUE ELSE RETURN VERIFYOUT(@INPUT lottoaddress @AMOUNT @TOKENID TRUE) ENDIF ENDIF";
+var LOTTERY_GAME_ADDRESS 	= "MxG08433GUWZ9F25Z0AWCJA6FAZQCV4FVQJCTZS5U906QP991VUVBCGNPCQP53C";
 
 /**
  * Add the required scripts 
@@ -125,11 +125,11 @@ function checkAdvertTxn(mylotteries, callback){
 					//Check the coin age..
 					var coinage = Number(block) - Number(coin.created); 
 					
-					MDS.log("ADVERT FOUND age : "+coinage);
+					//MDS.log("ADVERT FOUND age : "+coinage);
 					
 					//Found one..
-					if(coinage > 100){
-						MDS.log("CREATE NEW ADVERT FOUND age : "+coinage);
+					if(coinage > 60){
+						MDS.log("RESUBMIT NEW ADVERT FOUND age : "+coinage);
 						found = true;	
 					}
 					break;
@@ -192,7 +192,7 @@ function findLottoGame(gameuid, callback){
 	});
 }
 
-function playLottoGame(mypubkey, secret, odds, lottopubkey, lottoaddress, uid, amount, callback){
+function playLottoGame(mypubkey, secret, odds, lottopubkey, lottoaddress, uid, amount, fees, callback){
 	
 	//Construct the state variables
 	var state = {};
@@ -203,6 +203,7 @@ function playLottoGame(mypubkey, secret, odds, lottopubkey, lottoaddress, uid, a
 	state[4] = ""+lottopubkey;
 	state[5] = ""+lottoaddress;
 	state[6] = ""+uid;
+	state[7] = ""+fees;
 	
 	var statestr = JSON.stringify(state);
 	
@@ -216,6 +217,11 @@ function playLottoGame(mypubkey, secret, odds, lottopubkey, lottoaddress, uid, a
 	});
 }
 
+function randomInteger(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+var HAVE_LOTTO_ONE_DONE = false;
 function checkAllGames(){
 	
 	MDS.cmd("block;coins simplestate:true address:"+LOTTERY_GAME_ADDRESS+" relevant:true",function(resp){
@@ -223,7 +229,14 @@ function checkAllGames(){
 		var block 	= Number(resp[0].response.block);
 		var coins 	= resp[1].response;
 		var length 	= coins.length;
+		if(length == 0){
+			return;
+		}
 		
+		//RESET for this go at check all games..
+		HAVE_LOTTO_ONE_DONE = false;
+		
+		//Now cycle..
 		for(var i=0;i<length;i++){
 			
 			//What round is it..
@@ -328,19 +341,32 @@ function lottoRoundOne(coin, random){
 					//MDS.log("LOTTERY:"+JSON.stringify(rows));	
 					if(sqlres.count==1){
 						
+						//Only do one of these per checkAllGames..
+						if(HAVE_LOTTO_ONE_DONE){
+							MDS.log("Allready done LOTTO round one this turn.. waiting..");
+							return;
+						}
+						HAVE_LOTTO_ONE_DONE = true;
+						
+						MDS.log("JUMP TO 1 : "+coin.coinid)
+						
 						//Get the data
 						var row = sqlres.rows[0]; 
 						
 						//Found the game.. check the values..
 						var coinamount 	= Number(coin.amount);
 						var coinodds 	= Number(coin.state[3]);
+						var coinfees 	= Number(coin.state[7]);
 						
 						var min	 = Number(row.MIN);
 						var max	 = Number(row.MAX); 
 						var odds = Number(row.ODDS);
+						var fees = Number(row.FEE);
 						
 						var valid = true;
 						if(coinodds != odds){
+							valid = false;
+						}else if(fees != coinfees){
 							valid = false;
 						}else if(coinamount<min || coinamount>max){
 							valid = false;
@@ -354,7 +380,9 @@ function lottoRoundOne(coin, random){
 							//Lets play!
 							MDS.log("LETS PLAY! amount:"+coinamount+" odds:"+odds);
 			
-							var requiredamount 	= coinamount / odds;
+							var requiredfees 	= coinamount * fees;
+							var actualamount 	= coinamount - requiredfees;
+							var requiredamount 	= actualamount / odds;
 							var difference 		= requiredamount - coinamount;  
 					
 							var txnname="lotto1_"+coin.coinid;
@@ -370,12 +398,12 @@ function lottoRoundOne(coin, random){
 							creator += ";txnstate id:"+txnname+" port:0 value:1";
 							
 							//Add all the current state vars.. except state
-							for(var st=1;st<7;st++){
+							for(var st=1;st<8;st++){
 								creator += ";txnstate id:"+txnname+" port:"+st+" value:"+coin.state[st];	
 							}
 							
 							//And now add our OWN random number
-							creator += ";txnstate id:"+txnname+" port:7 value:"+random;
+							creator += ";txnstate id:"+txnname+" port:8 value:"+random;
 							
 							//NOW - add the difference of the amount.. ONLY the change sent back
 							creator += ";txnaddamount id:"+txnname+" amount:"+difference+" onlychange:true";
@@ -391,7 +419,7 @@ function lottoRoundOne(coin, random){
 							creator		+= ";txndelete id:"+txnname;
 							
 							MDS.cmd(creator,function(resp){
-								//MDS.log("BASE CREATED!");
+								//MDS.log("BASE CREATED! resp:"+resp.length);
 							});
 						}
 					}else{
@@ -447,7 +475,7 @@ function playerRoundTwo(coin,address){
 	var odds 		 = coin.state[3];
 	var lottopubkey	 = coin.state[4];
 	var lottoaddress = coin.state[5];
-	var lottorand 	 = coin.state[7];
+	var lottorand 	 = coin.state[8];
 	
 	//Get that from the DB..
 	getSecret(secret,function(sqlres){
@@ -499,7 +527,7 @@ function finalCollectWin(coin, address, pubkey, secret){
 	creator += ";txnstate id:"+txnname+" port:0 value:2";
 	
 	//Set the Preimage secret
-	creator += ";txnstate id:"+txnname+" port:8 value:"+secret;
+	creator += ";txnstate id:"+txnname+" port:9 value:"+secret;
 	
 	//Sign and post and delete
 	creator		+= ";txnsign id:"+txnname+" publickey:"+pubkey;

@@ -1,7 +1,7 @@
 <html>
 
 <head>
-	<title>DectraLotto</title>
+	<title>LOTTO</title>
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
@@ -24,25 +24,30 @@
 
 <center>
 	
-	<br><br>
+	<br>
 		
+	<p class="texttitle">All Lotto Games</p>	
 	<table id="lottotable" class="alllotto"></table>
 	<br>
 	<button class="solobutton" onclick="jumpStartLotto();">Create your own LOTTO</button>
 
 	<br><br>
+	<p class="texttitle">My Games</p>
 	<table id="mygames" class="alllotto"></table>
 	<br><br>
 	
+	<button class="solobutton" onclick="checkAllGames();">CHECK GAMES</button>
+	
+		<!--  
 	<p class="alllotto">
 		Players check every 3 blocks..<br>
 		<br>
-		After 20 blocks other player<br> collects all coins</p>
+		After 20 blocks other player<br> collects all coins
+	</p>
 	
-		<!--  
 		<button class="solobutton" onclick="checkAllGames();">CHECK GAMES</button>	
 		<br><br><br>
-		<button onclick="checkMyCoinAge();">CHECK ADVERT AGE</button>
+		<button onclick="checkAdvertAge();">CHECK ADVERT AGE</button>
 		-->
 		
 </center>
@@ -53,7 +58,7 @@
 		location.href = "startlotto.html?uid="+MDS.minidappuid;
 	}
 	
-	function createGameCoin(gameuid){
+	function createGameCoin(gameuid, min, max){
 		
 		var stramount = prompt("How much do you wish to play ? ");
 		if(stramount == undefined){
@@ -66,13 +71,18 @@
 			return;
 		}
 		
+		//Check Limits..
+		if(amount<min || amount>max){
+			alert("Invalid Number : "+stramount+"\n\nMUST be more than or equal to "+min+" and less than or equal to "+max);
+			return;
+		}
+		
 		//Find the Game..
 		findLottoGame(gameuid,function(coin){
 			
-			//MDS.log(JSON.stringify(coin));
-			
 			var lottopubkey 	= coin.state[0];
 			var odds 			= coin.state[1];
+			var fees			= coin.state[4];
 			var lottoaddress	= coin.state[6];
 			
 			MDS.cmd("random;getaddress",function(resp){
@@ -86,12 +96,13 @@
 				storeSecret(rand,hashed,function(){
 					
 					//Now run it..
-					playLottoGame(mypubkey, hashed, odds, 
-							lottopubkey, lottoaddress, gameuid, amount, function(resp){
+					playLottoGame(	mypubkey, hashed, odds, 
+									lottopubkey, lottoaddress, gameuid, 
+									amount, fees, function(resp){
 						if(resp){
 							alert("Coins sent - pls wait for them to confirm..");
 						}else{
-							alert("Coin send failed - check balance..");
+							alert("Coin send failed - check balance and minidapp in WRITE mode..");
 						}
 					});
 				});
@@ -101,9 +112,11 @@
 	
 	function loadLottoGames(){
 		
-		MDS.cmd("coins address:"+LOTTERY_ADVERT_ADDRESS,function(resp){
+		MDS.cmd("block;coins address:"+LOTTERY_ADVERT_ADDRESS,function(resp){
 			
-			var coins 	= resp.response;
+			var block   = Number(resp[0].response.block);
+			
+			var coins 	= resp[1].response;
 			var length 	= coins.length; 
 	
 			//get the table
@@ -121,8 +134,17 @@
 			headerrow.insertCell(3).innerHTML="FEE";
 			
 			//Create data
+			var counter = 0;
 			for(var i=0;i<length;i++){
 				var coin 			= coins[i];
+				
+				//Check coin age..
+				var age = block - Number(coin.created);
+				if(age>80){
+					//Too old.. Advert must be resent every hour.. to prevent shut down lottos
+					continue;
+				}
+				
 				var tablerow 		= thetable.insertRow(i+1);
 				var cell1 	 		= tablerow.insertCell(0);
 				var cell2 	 		= tablerow.insertCell(1);
@@ -130,14 +152,17 @@
 				var cell4 	 		= tablerow.insertCell(3);
 				var cell5 	 		= tablerow.insertCell(4);
 				
+				var min = Number(MDS.util.getStateVariable(coin,2));
+				var max = Number(MDS.util.getStateVariable(coin,3));
+				
 				cell1.innerHTML		= MDS.util.getStateVariable(coin,1);
-				cell2.innerHTML		= MDS.util.getStateVariable(coin,2);
-				cell3.innerHTML		= MDS.util.getStateVariable(coin,3);
+				cell2.innerHTML		= min;
+				cell3.innerHTML		= max;
 				cell4.innerHTML		= MDS.util.getStateVariable(coin,4);
 				
 				//Get the Game UID
 				var uid = MDS.util.getStateVariable(coin,5);
-				cell5.innerHTML	= "<button class='solobutton' onclick='createGameCoin(\""+uid+"\");'>PLAY LOTTO</button>";
+				cell5.innerHTML	= "<button class='solobutton' onclick='createGameCoin(\""+uid+"\","+min+","+max+");'>PLAY LOTTO</button>";
 				cell5.style.width = '100px';
 			}
 		});
@@ -188,7 +213,6 @@
 				cell4.innerHTML		= Number(block) - Number(coin.created)+" / 5 ..";
 				
 				fillInStatus(coin,cell5);
-				//cell5.innerHTML		= "Awaiting..";
 			}
 		});
 	}
@@ -201,7 +225,7 @@
 			
 			var secret 		= MDS.util.getStateVariable(coin,2);
 			var odds 		= MDS.util.getStateVariable(coin,3);
-			var lottorand 	= MDS.util.getStateVariable(coin,7);
+			var lottorand 	= MDS.util.getStateVariable(coin,8);
 			
 			//Is it a win!
 			checkForWin(secret, odds, lottorand,function(msg){
@@ -216,7 +240,7 @@
 		}
 	}
 	
-	function checkMyCoinAge(){
+	function checkAdvertAge(){
 		//Load all my games
 		loadMyLotteries(function(rows){
 			//And now check those..
@@ -242,15 +266,10 @@
 					loadMyGames();
 					
 					//Check Advert Coin Age
-					//checkMyCoinAge();
+					//checkAdvertAge();
 				});
 			});
 		
-		}else if(msg.event == "MDS_TIMER_1HOUR"){
-			
-			//Check Advert Coin Age
-			checkMyCoinAge();
-			
 		}else if(msg.event == "NEWBLOCK"){
 			
 			//Do stuff.. from now..		
@@ -261,8 +280,10 @@
 			
 			//Now check them - so as not to repeat the same txns every block 
 			var block = msg.data.txpow.header.block;
-			if(block % 3 == 0){
-				checkAllGames();	
+			if(block % 2 == 0){
+				checkAllGames();
+				
+				checkAdvertAge();
 			}
 		}
 	});

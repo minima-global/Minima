@@ -1,7 +1,7 @@
 <html>
 
 <head>
-	<title>DectraLotto</title>
+	<title>LOTTO</title>
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
@@ -25,14 +25,13 @@
 <center>
 	
 	<br>
-	<br>
-	<br>
+	<p class="texttitle">Start Lotto</p>
 	<table class="alllotto">
 		<tr>
 			<td> ODDS : </td> <td> 
 				<select id="lotto_odds" name="Odds">
 				  <option value="0.05">5%</option>
-				  <option value="0.1">10%</option>
+				  <option value="0.1" selected>10%</option>
 				  <option value="0.2">20%</option>
 				  <option value="0.4">40%</option>
 				  <option value="0.5">50%</option>
@@ -40,13 +39,46 @@
 			</td>
 		</tr>
 		<tr>
-			<td> MIN : </td> <td> <input type=text id=lotto_min value=0.1 /> </td>
+			<td> MIN : </td> <td> 
+				<select id="lotto_min" name="Min">
+				  <option value="0.1" selected>0.1</option>
+				  <option value="0.5">0.5</option>
+				  <option value="1">1</option>
+				  <option value="2">2</option>
+				  <option value="10">10</option>
+				  <option value="20">20</option>
+				  <option value="50">50</option>
+				  <option value="100">100</option>
+				</select>
+			</td>
 		</tr>
 		<tr>
-			<td> MAX : </td> <td> <input type=text id=lotto_max value=1 /> </td>
+			<td> MAX : </td> <td> 
+				<select id="lotto_max" name="Min">
+				  <option value="0.1">0.1</option>
+				  <option value="0.5">0.5</option>
+				  <option value="1" selected>1</option>
+				  <option value="2">2</option>
+				  <option value="10">10</option>
+				  <option value="20">20</option>
+				  <option value="100">100</option>
+				</select> 
+				
+				</td>
 		</tr>
 		<tr>
-			<td> FEE % of Bet : </td> <td> <input type=text id=lotto_fees value=0.05 /> </td>
+			<td> FEE % of Bet : </td> <td> 
+				<select id="lotto_fees" name="Min">
+				  <option value="0.01">1%</option>
+				  <option value="0.02">2%</option>
+				  <option value="0.05" selected>5%</option>
+				  <option value="0.1">10%</option>
+				  <option value="0.15">15%</option>
+				  <option value="0.2">20%</option>
+				  <option value="0.2">25%</option>
+				</select>
+				
+				</td>
 		</tr>
 		<tr>
 			<td colspan=2 style="text-align:center;"> <input class="solobutton" type=submit value="Start Lotto" onclick="newlotto();" /></td>
@@ -54,12 +86,12 @@
 	</table>
 	<br><br>
 	
-	<p class="alllotto">My Lotteries!</p>
+	<p class="texttitle">My Lotteries</p>
 	
 	<table id="mylotteries" class="alllotto"></table>
-	<br><br>
+	<br>
 	
-	<button class="solobutton" onclick="goHome();">HOME</button>
+	<button class="solobutton" onclick="goHome();"> BACK HOME </button>
 	
 	</center>	
 
@@ -141,7 +173,8 @@
 				cell2.innerHTML		= row.MIN;
 				cell3.innerHTML		= row.MAX;
 				cell4.innerHTML		= row.FEE;
-				cell5.innerHTML		= "<button onclick='cancelLottery(\""+row.UID+"\")'>CANCEL</button>";
+				cell5.innerHTML		= "<button class='solobutton' onclick='cancelLottery(\""+row.UID+"\")'>CANCEL</button>";
+				cell5.style.width = '90px';
 			}
 		});
 	}
@@ -153,6 +186,8 @@
 			if(!resp){
 				alert("Lottery Coin not found!");
 			}
+			
+			alert("Lottery deleted - pls wait for update..");
 			
 			//Delete it from the SQL
 			deleteLottery(uid, function(msg){

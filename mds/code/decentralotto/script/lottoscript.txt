@@ -12,12 +12,13 @@
   4 - PLAYER 2 PUBKEY
   5 - PLAYER 2 PAYOUT ADDRESS
   6 - UID of GAME
+  7 - FEES
 
   PLAYER 2 adds his details
-  7 - RANDOM HASH VALUE
+  8 - RANDOM HASH VALUE
   
   Then player 1 reveals..
-  8 - PLAYER 1 SECRET
+  9 - PLAYER 1 SECRET
 
 */
 
@@ -32,12 +33,12 @@ ASSERT round EQ INC(prevround)
 LET playerpubkey = PREVSTATE(1)
 LET secret = PREVSTATE(2)
 LET odds = PREVSTATE(3)
+LET lottopubkey  = PREVSTATE(4)
+LET lottoaddress = PREVSTATE(5)
+LET fees = PREVSTATE(7)
 
 /* Check Odds are within range */
 ASSERT (odds GT 0) AND (odds LT 1)
-
-LET lottopubkey  = PREVSTATE(4)
-LET lottoaddress = PREVSTATE(5)
 
 /* PLAYER 2 Joins OR Player 1 Cancels */
 IF round EQ 1 THEN 
@@ -49,34 +50,40 @@ IF round EQ 1 THEN
     ASSERT SIGNEDBY(lottopubkey)
 
     /* Make sure all the details are kept */
-    ASSERT SAMESTATE (1 6)
+    ASSERT SAMESTATE (1 7)
 
     /* The Random HASH chosen by the LOTTO runner */
-    LET lottorand = STATE(7)
+    LET lottorand = STATE(8)
 
     /* Check the rand number specified correctly */
     ASSERT ( (HEX(lottorand) EQ lottorand ) AND (LEN(lottorand) LTE 32) )
 
-    /* Make sure correct output exists and stores the state */
-    LET requiredamount = @AMOUNT / odds
+    /* The FEES */
+    LET requiredfees = @AMOUNT * fees
+    LET actualamount = @AMOUNT - requiredfees 
+
+    /* Required payout to main game - fees */
+    LET requiredamount = actualamount / odds
+
+    /* Now check all the correct outputs are present */
     RETURN VERIFYOUT ( @INPUT @ADDRESS requiredamount @TOKENID TRUE )
 
 /* PLAYER 1 REVEALS HIS HAND */
 ELSEIF round EQ 2 THEN 
 
-    /* Player has 64 blocks to claim - or Lotto can claim it all */
+    /* Player has 20 blocks to claim - or Lotto can claim it all */
     IF @COINAGE GT 20 AND SIGNEDBY(lottopubkey) THEN RETURN TRUE ENDIF 
 
     /* Check Signed by Player */
     ASSERT SIGNEDBY(playerpubkey)
 
     /* Check the provided preimage is correct */
-    LET preimage  = STATE(8)
+    LET preimage  = STATE(9)
     LET checkhash = SHA3(preimage)
     ASSERT checkhash EQ secret
 
     /* The Random HASH chosen by the LOTTO runner */
-    LET lottorand = PREVSTATE(7)
+    LET lottorand = PREVSTATE(8)
     
    /* NOW hash the 2 value */
     LET decider = SHA3(CONCAT(preimage lottorand))
@@ -93,13 +100,10 @@ ELSEIF round EQ 2 THEN
 
         /* Player gets the money */ 
         RETURN TRUE
-    
     ELSE
          
         /* Send to Lotto address */
         RETURN VERIFYOUT ( @INPUT lottoaddress @AMOUNT @TOKENID TRUE )
-
     ENDIF
-
 ENDIF
 

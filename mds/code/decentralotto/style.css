@@ -46,6 +46,16 @@ body {
   width:380;
 }
 
+.texttitle{
+  padding: 10px;
+  border: 5px solid;
+  font-style:bold;
+  background-color:#0dd;
+  opacity:0.9;
+  border-radius: 20px;
+  width:200px;
+}
+
 .solobutton {
     background-color: #eee;
     border: 0.5px solid #EDEDED;
