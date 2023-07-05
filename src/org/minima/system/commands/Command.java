@@ -103,6 +103,7 @@ import org.minima.system.commands.txn.txnexport;
 import org.minima.system.commands.txn.txnimport;
 import org.minima.system.commands.txn.txninput;
 import org.minima.system.commands.txn.txnlist;
+import org.minima.system.commands.txn.txnlock;
 import org.minima.system.commands.txn.txnoutput;
 import org.minima.system.commands.txn.txnpost;
 import org.minima.system.commands.txn.txnscript;
@@ -143,7 +144,7 @@ public abstract class Command {
 			new txnbasics(),new txncreate(), new txninput(),new txnlist(), new txnclear(),
 			new txnoutput(),new txnstate(),new txnsign(),new txnpost(),new txndelete(),
 			new txnexport(),new txnimport(),new txncheck(), new txnscript(), new txnauto(),
-			new txnaddamount(),
+			new txnaddamount(),new txnlock(),
 			
 			new coinimport(), new coinexport(),new cointrack(), new coincheck(),
 			
