@@ -109,6 +109,7 @@ public class txnlock extends Command {
 			}
 			
 			unlock();
+			
 			resp.put("success", true);
 			resp.put("locked", false);
 		}else {
