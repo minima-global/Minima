@@ -69,10 +69,11 @@ public class txnlock extends Command {
 	
 	public boolean getLock(long zTimeout) throws InterruptedException{
 		
+		long delay = 100;
 		long counter = 0;
 		while(!lockFunction(true)) {
-			Thread.sleep(50);
-			counter+=50;
+			Thread.sleep(delay);
+			counter+=delay;
 			if(counter>zTimeout) {
 				return false;
 			}
@@ -92,7 +93,7 @@ public class txnlock extends Command {
 		String action = getParam("action","list");
 		
 		//10 second default timer
-		long timeout = getNumberParam("timeout", new MiniNumber(5000)).getAsLong();
+		long timeout = getNumberParam("timeout", new MiniNumber(20000)).getAsLong();
 		
 		JSONObject resp = new JSONObject();
 		if(action.equals("lock")) {
@@ -101,6 +102,7 @@ public class txnlock extends Command {
 			resp.put("locked", true);
 		}else if(action.equals("unlock")) {
 			unlock();
+			resp.put("success", true);
 			resp.put("locked", false);
 		}else {
 			resp.put("locked", mLocked);
