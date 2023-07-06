@@ -9,6 +9,8 @@ var LOTTERY_ADVERT_AMOUNT  = "0.00000000000000000001";
 var LOTTERY_GAME_SCRIPT 	= "LET round=STATE(0) LET prevround=PREVSTATE(0) ASSERT round EQ INC(prevround) LET playerpubkey=PREVSTATE(1) LET secret=PREVSTATE(2) LET odds=PREVSTATE(3) LET lottopubkey=PREVSTATE(4) LET lottoaddress=PREVSTATE(5) LET fees=PREVSTATE(7) ASSERT (odds GT 0) AND (odds LT 1) IF round EQ 1 THEN IF @COINAGE GT 20 AND SIGNEDBY(playerpubkey) THEN RETURN TRUE ENDIF ASSERT SIGNEDBY(lottopubkey) ASSERT SAMESTATE(1 7) LET lottorand=STATE(8) ASSERT ((HEX(lottorand) EQ lottorand) AND (LEN(lottorand) LTE 32)) LET requiredfees=@AMOUNT*fees LET actualamount=@AMOUNT-requiredfees LET requiredamount=actualamount/odds RETURN VERIFYOUT(@INPUT @ADDRESS requiredamount @TOKENID TRUE) ELSEIF round EQ 2 THEN IF @COINAGE GT 20 AND SIGNEDBY(lottopubkey) THEN RETURN TRUE ENDIF ASSERT SIGNEDBY(playerpubkey) LET preimage=STATE(9) LET checkhash=SHA3(preimage) ASSERT checkhash EQ secret LET lottorand=PREVSTATE(8) LET decider=SHA3(CONCAT(preimage lottorand)) LET hexsubset=SUBSET(0 8 decider) LET numvalue=NUMBER(hexsubset) LET maxvalue=NUMBER(0xFFFFFFFFFFFFFFFF) LET target=FLOOR(maxvalue*odds) LET iswin=numvalue LTE target IF iswin THEN RETURN TRUE ELSE RETURN VERIFYOUT(@INPUT lottoaddress @AMOUNT @TOKENID TRUE) ENDIF ENDIF";
 var LOTTERY_GAME_ADDRESS 	= "MxG08433GUWZ9F25Z0AWCJA6FAZQCV4FVQJCTZS5U906QP991VUVBCGNPCQP53C";
 
+var MIN_COIN_DEPTH = 4;
+
 /**
  * Add the required scripts 
  */
@@ -242,7 +244,7 @@ function checkAllGames(){
 			var age  = block - Number(coin.created);
 			
 			//Check Old enough
-			if(age>4){
+			if(age>=MIN_COIN_DEPTH){
 				//This is a game
 				if(round == "0"){
 					checkRoundOneGame(block,coin);	

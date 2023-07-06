@@ -31,6 +31,8 @@
 		<tr>
 			<td> ODDS : </td> <td> 
 				<select id="lotto_odds" name="Odds">
+				  <option value="0.01">1%</option>
+				  <option value="0.02">2%</option>
 				  <option value="0.05">5%</option>
 				  <option value="0.1" selected>10%</option>
 				  <option value="0.2">20%</option>
@@ -45,11 +47,14 @@
 				  <option value="0.1" selected>0.1</option>
 				  <option value="0.5">0.5</option>
 				  <option value="1">1</option>
-				  <option value="2">2</option>
+				  <option value="5">5</option>
 				  <option value="10">10</option>
 				  <option value="20">20</option>
 				  <option value="50">50</option>
 				  <option value="100">100</option>
+				  <option value="200">200</option>
+				  <option value="500">500</option>
+				  <option value="1000">1000</option>
 				</select>
 			</td>
 		</tr>
@@ -59,10 +64,14 @@
 				  <option value="0.1">0.1</option>
 				  <option value="0.5">0.5</option>
 				  <option value="1" selected>1</option>
-				  <option value="2">2</option>
+				  <option value="5">5</option>
 				  <option value="10">10</option>
 				  <option value="20">20</option>
+				  <option value="50">50</option>
 				  <option value="100">100</option>
+				  <option value="200">200</option>
+				  <option value="500">500</option>
+				  <option value="1000">1000</option>
 				</select> 
 				
 				</td>
@@ -76,7 +85,7 @@
 				  <option value="0.1">10%</option>
 				  <option value="0.15">15%</option>
 				  <option value="0.2">20%</option>
-				  <option value="0.2">25%</option>
+				  <option value="0.25">25%</option>
 				</select>
 				
 				</td>
@@ -171,7 +180,7 @@
 				var cell4 	 		= tablerow.insertCell(3);
 				var cell5 	 		= tablerow.insertCell(4);
 				
-				var showodds = new Decimal(1).div(new Decimal(row.ODDS))+"%";
+				var showodds = new Decimal(100).mul(new Decimal(row.ODDS))+"%";
 				var showfee  = new Decimal(100).mul(new Decimal(row.FEE))+"%";
 				
 				cell1.innerHTML		= showodds;

@@ -150,8 +150,8 @@
 				
 				var min = new Decimal(MDS.util.getStateVariable(coin,2));
 				var max = new Decimal(MDS.util.getStateVariable(coin,3));
-				
-				var showodds = new Decimal(1).div(new Decimal(MDS.util.getStateVariable(coin,1)))+"%";
+			
+				var showodds = new Decimal(100).mul(new Decimal(MDS.util.getStateVariable(coin,1)))+"%";
 				var showfee  = new Decimal(100).mul(new Decimal(MDS.util.getStateVariable(coin,4)))+"%";
 				
 				cell1.innerHTML		= showodds;
@@ -209,7 +209,7 @@
 				cell1.innerHTML		= MDS.util.getStateVariable(coin,0);
 				cell2.innerHTML		= MDS.util.getStateVariable(coin,3);
 				cell3.innerHTML		= coin.amount;
-				cell4.innerHTML		= Number(block) - Number(coin.created)+" / 5 ..";
+				cell4.innerHTML		= Number(block) - Number(coin.created)+" / "+MIN_COIN_DEPTH+" ..";
 				
 				fillInStatus(coin,cell5);
 			}
