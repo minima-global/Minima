@@ -827,7 +827,7 @@ public class MDSManager extends MessageProcessor {
 		ArrayList<MiniDAPP> allminis = MinimaDB.getDB().getMDSDB().getAllMiniDAPPs();
 				
 		//Check for HUB
-		checkInstalled("minihub", "minihub/minihub-0.4.2.mds.zip", allminis, true, true);
+		checkInstalled("minihub", "minihub/minihub-0.5.0.mds.zip", allminis, true, true);
 		
 		//Do we Install the Default MiniDAPPs
 		if(GeneralParams.DEFAULT_MINIDAPPS) {
