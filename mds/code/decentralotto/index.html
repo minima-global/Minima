@@ -67,6 +67,9 @@
 			return;
 		}
 		
+		//Set precision
+		amount = Number(amount).toPrecision(3);
+		
 		//Check Limits..
 		if(amount<min || amount>max){
 			alert("Invalid Number : "+stramount+"\n\nMUST be more than or equal to "+min+" and less than or equal to "+max);
