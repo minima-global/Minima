@@ -205,9 +205,11 @@
 				var cell3 	 		= tablerow.insertCell(2);
 				var cell4 	 		= tablerow.insertCell(3);
 				var cell5 	 		= tablerow.insertCell(4);
+			
+				var showodds = new Decimal(100).mul(new Decimal(MDS.util.getStateVariable(coin,3)))+"%";
 				
 				cell1.innerHTML		= MDS.util.getStateVariable(coin,0);
-				cell2.innerHTML		= MDS.util.getStateVariable(coin,3);
+				cell2.innerHTML		= showodds;
 				cell3.innerHTML		= coin.amount;
 				cell4.innerHTML		= Number(block) - Number(coin.created)+" / "+MIN_COIN_DEPTH+" ..";
 				
