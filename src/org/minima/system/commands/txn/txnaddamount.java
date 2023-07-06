@@ -8,7 +8,6 @@ import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.database.wallet.ScriptRow;
-import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.Token;
 import org.minima.objects.Transaction;
