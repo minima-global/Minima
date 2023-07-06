@@ -482,7 +482,7 @@ public class mysql extends Command {
 				attempts = 0;
 				while(foundsome) {
 					if(!tip.getBlockNumber().isEqual(endblock)) {
-						Thread.sleep(250);
+						Thread.sleep(50);
 					}else {
 						break;
 					}
@@ -490,7 +490,7 @@ public class mysql extends Command {
 					tip = MinimaDB.getDB().getTxPoWTree().getTip();
 					
 					attempts++;
-					if(attempts>1024) {
+					if(attempts>10000) {
 						error = true;
 						break;
 					}

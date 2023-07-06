@@ -474,7 +474,7 @@ public class archive extends Command {
 					tip = MinimaDB.getDB().getTxPoWTree().getTip();
 					
 					attempts++;
-					if(attempts>4000) {
+					if(attempts>10000) {
 						error = true;
 						break;
 					}
