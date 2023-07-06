@@ -10,39 +10,13 @@ body {
 	font-size:20px;	
 }
 
-.mainwindow {
-  margin: auto;
-  position: absolute;
-  top: 0; left: 0; bottom: 0; right: 0;
-  width:80%;
-  max-width:800;
-  height:80%;
-  background-color:#ddd;
-  border-radius: 20px;
-  opacity:0.9;
-  text-align:center;
-}
-
-.startlottocenterdiv {
-  border: 5px solid;
-  background-color:#ddd;
-  border-radius: 20px;
-  width:80%;
-  max-width:800;
-  opacity:0.9;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  padding: 10px;
-}
-
 .alllotto{
   padding: 10px;
   font-style:bold;
-  background-color:#0d0;
+  background-color:#dd0;
   opacity:0.8;
-  border-radius: 5px;
+  border-radius: 10px;
+  border: 5px solid;
   width:380;
 }
 
@@ -54,6 +28,17 @@ body {
   opacity:0.9;
   border-radius: 20px;
   width:200px;
+}
+
+.smalltexttitle{
+  padding: 10px;
+  border: 5px solid;
+  font-style:bold;
+  font-size:14px;
+  background-color:#0dd;
+  opacity:0.9;
+  border-radius: 20px;
+  width:380px;
 }
 
 .solobutton {

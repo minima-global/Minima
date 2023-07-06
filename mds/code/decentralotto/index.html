@@ -15,6 +15,7 @@
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	
 	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="./js/decimal.js"></script>
 	<script type="text/javascript" src="./js/sql.js"></script>
 	<script type="text/javascript" src="./js/txns.js"></script>
 	
@@ -25,31 +26,26 @@
 <center>
 	
 	<br>
-		
-	<p class="texttitle">All Lotto Games</p>	
-	<table id="lottotable" class="alllotto"></table>
-	<br>
-	<button class="solobutton" onclick="jumpStartLotto();">Create your own LOTTO</button>
-
-	<br><br>
 	<p class="texttitle">My Games</p>
 	<table id="mygames" class="alllotto"></table>
 	<br><br>
 	
-	<button class="solobutton" onclick="checkAllGames();">CHECK GAMES</button>
+	<p class="texttitle">All Lotto Games</p>	
+	<table id="lottotable" class="alllotto"></table>
+	<br>
+	<button class="solobutton" onclick="jumpStartLotto();">Create your own LOTTO</button>
 	
-		<!--  
-	<p class="alllotto">
-		Players check every 3 blocks..<br>
+	<br><br>
+	<p class="smalltexttitle">
+		Rounds last 20 blocks max.. after that<br>the full amount can be claimed<br>
 		<br>
-		After 20 blocks other player<br> collects all coins
+		The Fee is taken from the initial bet<br>
+		<br>
+		Lotto runners should split coins (and later consolidate)<br>so they can service multiple games<br> 
+		<br>
+		Good Luck!	
 	</p>
-	
-		<button class="solobutton" onclick="checkAllGames();">CHECK GAMES</button>	
-		<br><br><br>
-		<button onclick="checkAdvertAge();">CHECK ADVERT AGE</button>
-		-->
-		
+			
 </center>
 
 <script type="text/javascript">
@@ -152,13 +148,16 @@
 				var cell4 	 		= tablerow.insertCell(3);
 				var cell5 	 		= tablerow.insertCell(4);
 				
-				var min = Number(MDS.util.getStateVariable(coin,2));
-				var max = Number(MDS.util.getStateVariable(coin,3));
+				var min = new Decimal(MDS.util.getStateVariable(coin,2));
+				var max = new Decimal(MDS.util.getStateVariable(coin,3));
 				
-				cell1.innerHTML		= MDS.util.getStateVariable(coin,1);
+				var showodds = new Decimal(1).div(new Decimal(MDS.util.getStateVariable(coin,1)))+"%";
+				var showfee  = new Decimal(100).mul(new Decimal(MDS.util.getStateVariable(coin,4)))+"%";
+				
+				cell1.innerHTML		= showodds;
 				cell2.innerHTML		= min;
 				cell3.innerHTML		= max;
-				cell4.innerHTML		= MDS.util.getStateVariable(coin,4);
+				cell4.innerHTML		= showfee;
 				
 				//Get the Game UID
 				var uid = MDS.util.getStateVariable(coin,5);
@@ -240,12 +239,12 @@
 		}
 	}
 	
-	function checkAdvertAge(){
-		//Load all my games
-		loadMyLotteries(function(rows){
-			//And now check those..
-			checkAdvertTxn(rows,function(){});
-		});
+	function refreshData(){
+		//Do stuff.. from now..		
+		loadLottoGames();
+		
+		//Load my Games
+		loadMyGames();
 	}
 	
 	//Main message handler..
@@ -253,38 +252,9 @@
 		
 		//Do initialisation
 		if(msg.event == "inited"){
-			
-			//Create the MAIN DB
-			createDB(function(){
-				
-				//Add the lottery address
-				addLotteryAdvertAddress(function(){
-					
-					//Do stuff.. from now..		
-					loadLottoGames();
-					
-					loadMyGames();
-					
-					//Check Advert Coin Age
-					//checkAdvertAge();
-				});
-			});
-		
+			refreshData();
 		}else if(msg.event == "NEWBLOCK"){
-			
-			//Do stuff.. from now..		
-			loadLottoGames();
-			
-			//Load my games
-			loadMyGames();
-			
-			//Now check them - so as not to repeat the same txns every block 
-			var block = msg.data.txpow.header.block;
-			if(block % 2 == 0){
-				checkAllGames();
-				
-				checkAdvertAge();
-			}
+			refreshData();
 		}
 	});
 

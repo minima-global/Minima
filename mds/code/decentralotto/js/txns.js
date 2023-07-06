@@ -164,7 +164,6 @@ function checkAdvertTxn(mylotteries, callback){
 				creator 	+= ";txndelete id:"+txnname;
 			
 				//Do it..
-				MDS.log("RESUBMITTING : "+txnname)	
 				MDS.cmd(creator, function(resp){
 					//MDS.log(JSON.stringify(resp))
 				});
@@ -221,7 +220,6 @@ function randomInteger(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-var HAVE_LOTTO_ONE_DONE = false;
 function checkAllGames(){
 	
 	MDS.cmd("block;coins order:asc simplestate:true address:"+LOTTERY_GAME_ADDRESS+" relevant:true",function(resp){
@@ -232,9 +230,6 @@ function checkAllGames(){
 		if(length == 0){
 			return;
 		}
-		
-		//RESET for this go at check all games..
-		HAVE_LOTTO_ONE_DONE = false;
 		
 		//Now cycle..
 		for(var i=0;i<length;i++){
@@ -345,21 +340,19 @@ function lottoRoundOne(coin, random){
 						var row = sqlres.rows[0]; 
 						
 						//Found the game.. check the values..
-						var coinamount 	= Number(coin.amount);
-						var coinodds 	= Number(coin.state[3]);
-						var coinfees 	= Number(coin.state[7]);
+						var coinamount 	= new Decimal(coin.amount);
+						var coinodds 	= new Decimal(coin.state[3]);
+						var coinfees 	= new Decimal(coin.state[7]);
 						
-						var min	 = Number(row.MIN);
-						var max	 = Number(row.MAX); 
-						var odds = Number(row.ODDS);
-						var fees = Number(row.FEE);
+						var min	 = new Decimal(row.MIN);
+						var max	 = new Decimal(row.MAX); 
+						var odds = new Decimal(row.ODDS);
+						var fees = new Decimal(row.FEE);
 						
 						var valid = true;
-						if(coinodds != odds){
+						if(!coinodds.equals(odds) || !fees.equals(coinfees)){
 							valid = false;
-						}else if(fees != coinfees){
-							valid = false;
-						}else if(coinamount<min || coinamount>max){
+						}else if(coinamount.lt(min) || coinamount.gt(max)){
 							valid = false;
 						}
 						
@@ -367,21 +360,19 @@ function lottoRoundOne(coin, random){
 						if(!valid){
 							MDS.log("[!] INVALID GAME COIN FOUND "+JSON.stringify(row)+" "+JSON.stringify(coin));
 						}else{
-							
-							//Only do one of these per checkAllGames.. or txnaddamount gets clogged.. needs a delay
-							if(HAVE_LOTTO_ONE_DONE){
-								MDS.log("Allready done LOTTO round one this turn.. waiting..");
-								return;
-							}
-							HAVE_LOTTO_ONE_DONE = true;
 														
 							//Lets play!
 							MDS.log("LETS PLAY! amount:"+coinamount+" odds:"+odds);
 			
-							var requiredfees 	= coinamount * fees;
+							var requiredfees 	= coinamount.mul(fees);
+							var actualamount 	= coinamount.sub(requiredfees);
+							var requiredamount 	= actualamount.div(odds);
+							var difference 		= requiredamount.sub(coinamount);  
+							
+							/*var requiredfees 	= coinamount * fees;
 							var actualamount 	= coinamount - requiredfees;
 							var requiredamount 	= actualamount / odds;
-							var difference 		= requiredamount - coinamount;  
+							var difference 		= requiredamount - coinamount;*/  
 					
 							var txnname="lotto1_"+coin.coinid;
 				
@@ -416,9 +407,8 @@ function lottoRoundOne(coin, random){
 							creator		+= ";txnpost id:"+txnname+" auto:true";
 							creator		+= ";txndelete id:"+txnname;
 							
-							MDS.cmd(creator,function(resp){
-								//MDS.log("BASE CREATED! resp:"+resp.length);
-							});
+							//Run the function in a LOCK
+							synchroLockFunction(creator)
 						}
 					}else{
 						MDS.log("GAME NOT FOUND! uid:"+uid);
@@ -427,6 +417,28 @@ function lottoRoundOne(coin, random){
 			}
 		}
 	});	
+}
+
+function hardUnlockTxn(){
+	MDS.cmd("txnlock action:unlock",function(resp){});
+}
+
+function synchroLockFunction(command, callback){
+	
+	//First acquire alock
+	MDS.cmd("txnlock action:lock",function(resp){
+		
+		//Now run the command
+		MDS.cmd(command,function(resp){
+			
+			//And NOW - unlock
+			MDS.cmd("txnlock action:unlock unlockdelay:100",function(resp){
+				if(callback){
+					callback();
+				}
+			});
+		});
+	});
 }
 
 function checkRoundTwoGame(blocknum, coin){
@@ -534,7 +546,7 @@ function finalCollectWin(coin, address, pubkey, secret){
 	
 	//Run it..
 	MDS.cmd(creator,function(resp){
-		MDS.log("SEND WINNING COIN!");
+		//MDS.log("SEND WINNING COIN!");
 	});
 }
 

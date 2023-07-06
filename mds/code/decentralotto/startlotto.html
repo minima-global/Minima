@@ -15,6 +15,7 @@
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	
 	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="./js/decimal.js"></script>
 	<script type="text/javascript" src="./js/sql.js"></script>
 	<script type="text/javascript" src="./js/txns.js"></script>
 	
@@ -89,7 +90,8 @@
 	<p class="texttitle">My Lotteries</p>
 	
 	<table id="mylotteries" class="alllotto"></table>
-	<br>
+	
+	<br><br>
 	
 	<button class="solobutton" onclick="goHome();"> BACK HOME </button>
 	
@@ -169,10 +171,13 @@
 				var cell4 	 		= tablerow.insertCell(3);
 				var cell5 	 		= tablerow.insertCell(4);
 				
-				cell1.innerHTML		= row.ODDS;
+				var showodds = new Decimal(1).div(new Decimal(row.ODDS))+"%";
+				var showfee  = new Decimal(100).mul(new Decimal(row.FEE))+"%";
+				
+				cell1.innerHTML		= showodds;
 				cell2.innerHTML		= row.MIN;
 				cell3.innerHTML		= row.MAX;
-				cell4.innerHTML		= row.FEE;
+				cell4.innerHTML		= showfee;
 				cell5.innerHTML		= "<button class='solobutton' onclick='cancelLottery(\""+row.UID+"\")'>CANCEL</button>";
 				cell5.style.width = '90px';
 			}
