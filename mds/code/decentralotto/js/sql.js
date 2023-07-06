@@ -106,6 +106,24 @@ function getSecret(hashed,callback){
 	});
 }
 
-function cleanUpSecrets(){
+function cleanUpSecrets(callback){
 	
+	//Date as of NOW
+	var startdate = new Date();
+	var timemilli = startdate.getTime();
+	
+	//How far back to go.. 1 week
+	var backtime = 1000 * 60 * 60 * 24 * 7;
+	var mintime  = timemilli - backtime;  
+	
+	//Delete old records
+	var sql = "DELETE FROM secrets WHERE created<"+mintime;
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		//MDS.log(JSON.stringify(msg));
+		if(callback){
+			callback();	
+		}
+	});
 }

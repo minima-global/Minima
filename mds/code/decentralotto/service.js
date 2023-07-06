@@ -5,7 +5,7 @@
 */
 
 //Load a file..
-MDS.load("./js/decimal.js");
+MDS.load("./js/decimal.min.js");
 MDS.load("./js/sql.js");
 MDS.load("./js/txns.js");
 
@@ -33,8 +33,10 @@ MDS.init(function(msg){
 			//Add the lottery address
 			addLotteryAdvertAddress();
 			
-			MDS.log("Lotto Inited!");
+			//Clean up the secrets
+			cleanUpSecrets();
 			
+			MDS.log("Lotto Inited!");
 		});
 	
 	//Check rechatter messages

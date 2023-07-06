@@ -413,7 +413,7 @@ function lottoRoundOne(coin, random){
 					}else{
 						MDS.log("GAME NOT FOUND! uid:"+uid);
 					}
-				});			
+				});
 			}
 		}
 	});	

@@ -231,7 +231,7 @@
 				if(msg == "TRUE"){
 					tablecell.innerHTML		= "WIN!";	
 				}else if(msg == "FALSE"){
-					tablecell.innerHTML		= "LOSE!";
+					tablecell.innerHTML		= "LOSE..";
 				}else{
 					tablecell.innerHTML		= "Awaiting Player..";
 				}
@@ -253,6 +253,14 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			refreshData();
+			
+			//Check mode - MUST be WRITE..
+			MDS.cmd("checkmode",function(resp){
+				if(resp.response.mode != "WRITE"){
+					alert("The Lotto MinDAPP must be in WRITE mode..\n\nIF you want to play..");					
+				}
+			});
+			
 		}else if(msg.event == "NEWBLOCK"){
 			refreshData();
 		}
