@@ -432,7 +432,7 @@ function synchroLockFunction(command, callback){
 		MDS.cmd(command,function(resp){
 			
 			//And NOW - unlock
-			MDS.cmd("txnlock action:unlock unlockdelay:100",function(resp){
+			MDS.cmd("txnlock action:unlock",function(resp){
 				if(callback){
 					callback();
 				}
