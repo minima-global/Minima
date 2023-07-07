@@ -25,7 +25,16 @@
 
 <center>
 	
-	<br>
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table>
+			<tr>
+				<td><img height=45 src="./images/coinicon.png"></td>
+				<td style="font-size:26px">&nbsp;<b>LOTTO</b></td>
+			</tr>
+		</table>
+	</div>
+	
+	<br><br>
 	<p class="texttitle">Start Lotto</p>
 	<table class="alllotto">
 		<tr>
@@ -112,6 +121,12 @@
 		location.href = "index.html?uid="+MDS.minidappuid;
 	}
 
+	function showTitleOnAndroid(){
+		if (window.navigator.userAgent.includes('Minima Browser')) {
+			Android.showTitleBar();
+    	}
+	}
+	
 	function newlotto(){
 		
 		alert("Will now create game.. pls wait for it to confirm..");

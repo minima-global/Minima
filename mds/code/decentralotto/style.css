@@ -10,6 +10,16 @@ body {
 	font-size:20px;	
 }
 
+.titlebar{
+  position: absolute;
+  top:0;
+  left:0;	
+  width:100%;
+  height:50px;
+  background-color:#F00;
+  text-align: left;
+}
+
 .alllotto{
   padding: 10px;
   font-style:bold;

@@ -25,7 +25,16 @@
 
 <center>
 	
-	<br>
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table>
+			<tr>
+				<td><img height=45 src="./images/coinicon.png"></td>
+				<td style="font-size:26px">&nbsp;<b>LOTTO</b></td>
+			</tr>
+		</table>
+	</div>
+	
+	<br><br>
 	<p class="texttitle">My Games</p>
 	<table id="mygames" class="alllotto"></table>
 	<br><br>
@@ -41,7 +50,9 @@
 		<br>
 		The Fee is taken from the initial bet<br>
 		<br>
-		Lotto runners should split coins (and later consolidate)<br>so they can service multiple games<br> 
+		LOTTO runners should split coins so they can<br> service multiple games<br> 
+		<br>
+		Your node must be unlocked to play - all transactions are created automatically in the background<br>
 		<br>
 		Good Luck!	
 	</p>
@@ -52,6 +63,12 @@
 	
 	function jumpStartLotto(){
 		location.href = "startlotto.html?uid="+MDS.minidappuid;
+	}
+	
+	function showTitleOnAndroid(){
+		if (window.navigator.userAgent.includes('Minima Browser')) {
+			Android.showTitleBar();
+    	}
 	}
 	
 	function createGameCoin(gameuid, min, max){
