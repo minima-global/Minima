@@ -18,7 +18,6 @@ import org.minima.database.txpowdb.sql.TxPoWList;
 import org.minima.database.txpowdb.sql.TxPoWSqlDB;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniNumber;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.params.GeneralParams;

@@ -38,7 +38,6 @@ import org.minima.system.params.GeneralParams;
 import org.minima.utils.BIP39;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
-import org.minima.utils.MiniUtil;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;

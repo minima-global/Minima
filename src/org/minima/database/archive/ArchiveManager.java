@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-import org.minima.database.MinimaDB;
 import org.minima.database.cascade.Cascade;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;

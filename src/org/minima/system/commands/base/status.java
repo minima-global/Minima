@@ -21,7 +21,6 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.commands.Command;
-import org.minima.system.mds.MDSManager;
 import org.minima.system.network.NetworkManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;

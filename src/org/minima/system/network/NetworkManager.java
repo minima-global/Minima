@@ -20,7 +20,6 @@ import org.minima.system.network.rpc.CMDHandler;
 import org.minima.system.network.rpc.HTTPSServer;
 import org.minima.system.network.rpc.HTTPServer;
 import org.minima.system.network.rpc.Server;
-import org.minima.system.network.webhooks.NotifyManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;

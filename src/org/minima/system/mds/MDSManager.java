@@ -1,13 +1,11 @@
 package org.minima.system.mds;
 
 import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -16,7 +14,6 @@ import javax.net.ssl.SSLSocket;
 import org.minima.database.MinimaDB;
 import org.minima.database.minidapps.MDSDB;
 import org.minima.database.minidapps.MiniDAPP;
-import org.minima.database.userprefs.UserDB;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;

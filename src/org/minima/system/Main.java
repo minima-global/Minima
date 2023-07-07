@@ -3,7 +3,6 @@ package org.minima.system;
 import java.io.File;
 import java.util.ArrayList;
 
-import org.minima.Minima;
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.UserDB;

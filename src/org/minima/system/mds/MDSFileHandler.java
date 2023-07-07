@@ -1,8 +1,6 @@
 package org.minima.system.mds;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -20,33 +18,12 @@ import java.util.StringTokenizer;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 
-import org.minima.database.MinimaDB;
-import org.minima.database.minidapps.MDSDB;
-import org.minima.database.minidapps.MiniDAPP;
-import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
-import org.minima.system.commands.CommandException;
-import org.minima.system.mds.handler.CMDcommand;
-import org.minima.system.mds.hub.MDSHub;
-import org.minima.system.mds.hub.MDSHubDelete;
-import org.minima.system.mds.hub.MDSHubError;
-import org.minima.system.mds.hub.MDSHubInstall;
-import org.minima.system.mds.hub.MDSHubInstallError;
-import org.minima.system.mds.hub.MDSHubLoggedOn;
-import org.minima.system.mds.hub.MDSHubLogon;
-import org.minima.system.mds.hub.MDSHubPending;
-import org.minima.system.mds.hub.MDSHubPendingAction;
-import org.minima.system.mds.hub.MDSHubPermission;
-import org.minima.system.mds.hub.MDSHubUpdate;
 import org.minima.system.mds.multipart.MultipartData;
 import org.minima.system.mds.multipart.MultipartParser;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.ZipExtractor;
-import org.minima.utils.json.JSONObject;
-import org.minima.utils.json.parser.JSONParser;
-import org.minima.utils.messages.Message;
 
 public class MDSFileHandler implements Runnable {
 	

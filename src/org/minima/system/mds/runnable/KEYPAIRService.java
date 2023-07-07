@@ -1,7 +1,6 @@
 package org.minima.system.mds.runnable;
 
 import org.minima.system.mds.MDSManager;
-import org.minima.system.mds.handler.COMMSCommand;
 import org.minima.system.mds.handler.KEYPAIRcommand;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
