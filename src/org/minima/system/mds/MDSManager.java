@@ -210,14 +210,23 @@ public class MDSManager extends MessageProcessor {
 	 * @throws InterruptedException 
 	 */
 	public synchronized boolean checkMiniHUBPasword(String zPassword) throws InterruptedException {
-		//PAUSE - this prevents fast checking of passwords
-		Thread.sleep(1000);
 		
 		if(GeneralParams.MDS_PASSWORD.equals("")) {
-			return mMiniHUBPassword.replace("-", "").equalsIgnoreCase(zPassword.replace("-", "").trim());
+			boolean valid = mMiniHUBPassword.replace("-", "").equalsIgnoreCase(zPassword.replace("-", "").trim());
+			if(!valid) {
+				//PAUSE - this prevents fast checking of passwords
+				Thread.sleep(1000);
+			}
+			
+			return valid;
 		}
 		
-		return mMiniHUBPassword.equals(zPassword.trim());
+		boolean valid = mMiniHUBPassword.equals(zPassword.trim());
+		if(!valid) {
+			Thread.sleep(1000);
+		}
+		
+		return valid;
 	}
 	
 	public MiniDAPP getMiniDAPP(String zMiniDAPPID) {
@@ -614,6 +623,8 @@ public class MDSManager extends MessageProcessor {
 				mSessionID.put(sessionid, dapp.getUID());
 			}
 			
+			//Something has changed
+			PostMiniDAPPChange();
 			
 		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_RESETALL)) {
 			
@@ -635,6 +646,9 @@ public class MDSManager extends MessageProcessor {
 			}
 		
 			mHasStarted = true;
+		
+			//Something has changed
+			PostMiniDAPPChange();
 			
 		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_INSTALLED)) {
 			
@@ -644,6 +658,9 @@ public class MDSManager extends MessageProcessor {
 			//Install it..
 			setupMiniDAPP(dapp);
 		
+			//Something has changed
+			PostMiniDAPPChange();
+			
 		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_UNINSTALLED)) {
 			
 			//Remove a MiniDAPP
@@ -664,9 +681,19 @@ public class MDSManager extends MessageProcessor {
 			
 			//And now remove the sessionid
 			mSessionID.remove(convertMiniDAPPID(uid));
+			
+			//Something has changed
+			PostMiniDAPPChange();
 		}
 	}
 
+	/**
+	 * MiniDAPP installed uninstalled or sessions changed
+	 */
+	public void PostMiniDAPPChange() {
+		Main.getInstance().PostNotifyEvent("MDS_MINIDAPPS_CHANGE", new JSONObject());
+	}
+	
 	/**
 	 * Initialise a MiniDAPP
 	 */
