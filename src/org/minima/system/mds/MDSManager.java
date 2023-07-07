@@ -878,7 +878,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
 			checkInstalled("script ide", "default/scriptide-2.0.1.mds.zip", allminis, false);
 			checkInstalled("terminal", "default/terminal-2.3.0.mds.zip", allminis, false);
-			checkInstalled("vestr", "default/vestr-1.2.1.mds.zip", allminis, false);
+			checkInstalled("vestr", "default/vestr-1.3.0.mds.zip", allminis, false);
 			checkInstalled("wallet", "default/wallet-2.24.3.mds.zip", allminis, false);
 		}
 	}
