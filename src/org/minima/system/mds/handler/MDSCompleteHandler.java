@@ -312,6 +312,10 @@ public class MDSCompleteHandler implements Runnable {
 						fc = new FILEcommand(mMDS, minidappid, 
 								FILEcommand.FILECOMMAND_COPYTOWEB, file, movefile);
 						
+					}else if(action.equals("deletefromweb")) {
+						fc = new FILEcommand(mMDS, minidappid, 
+								FILEcommand.FILECOMMAND_DELETEFROMWEB, filedata, "");
+					
 					}else {
 						throw new IllegalArgumentException("Invalid function : "+action);
 					}
