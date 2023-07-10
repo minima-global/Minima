@@ -349,8 +349,12 @@ public class FILEcommand {
 				//The new file..
 				File webfile = new File(webfiles,mFile);
 				
+				//Does it exist
+				boolean existed = webfile.exists();
+				
 				JSONObject fdata = new JSONObject();
 				fdata.put("name", webfile.getName());
+				fdata.put("existed", existed);
 				
 				MiniFile.deleteFileOrFolder(webfiles.getAbsolutePath(), webfile);
 				
