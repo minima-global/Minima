@@ -635,12 +635,6 @@ public class mysql extends Command {
 				tempdb.delete();
 			}
 			archtemp.loadDB(tempdb);
-
-			//Load the cascade if it is there
-			Cascade casc = mysql.loadCascade();
-			if(casc!=null) {
-				archtemp.checkCascadeRequired(casc);
-			}
 			
 			//Load the MySQL and output to the H2
 			long mysqllastblock 	= mysql.loadLastBlock();
@@ -682,10 +676,17 @@ public class mysql extends Command {
 					System.gc();
 				}
 			}
-			
-			MinimaLogger.log("Exporting to H2 SQL file..");
+
+			//Load the cascade if it is there
+			Cascade casc = mysql.loadCascade();
+			if(casc!=null) {
+				archtemp.checkCascadeRequired(casc);
+			}else {
+				MinimaLogger.log("No cascade found in MySQL..");
+			}
 			
 			//And Now export to File..
+			MinimaLogger.log("Exporting to H2 SQL file..");
 			archtemp.backupToFile(gzoutput,true);
 			
 			//Shutdwon TEMP DB
