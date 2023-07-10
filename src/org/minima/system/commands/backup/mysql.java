@@ -1,11 +1,13 @@
 package org.minima.system.commands.backup;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
+import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.UserDB;
 import org.minima.database.wallet.Wallet;
@@ -21,6 +23,8 @@ import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.BIP39;
+import org.minima.utils.MiniFile;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -105,7 +109,7 @@ public class mysql extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database","user","password","keys","keyuses","phrase","address","enable"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database","user","password","keys","keyuses","phrase","address","enable","file"}));
 	}
 	
 	@Override
@@ -607,6 +611,97 @@ public class mysql extends Command {
 			resp.put("created", outarr);
 			resp.put("spent", inarr);
 			ret.put("coins", resp);
+			
+		}else if(action.equals("h2export")) {
+			
+			//Create a temp name
+			String outfile = getParam("file","archivebackup-"+System.currentTimeMillis()+".gz");
+			
+			//Create the file
+			File gzoutput = MiniFile.createBaseFile(outfile);
+			if(gzoutput.exists()) {
+				gzoutput.delete();
+			}
+			
+			//Create  tyemp DB
+			ArchiveManager archtemp = new ArchiveManager();
+			
+			//Create a temp DB file..
+			File restorefolder = new File(GeneralParams.DATA_FOLDER,"archiverestore");
+			restorefolder.mkdirs();
+			
+			File tempdb = new File(restorefolder,"archivetemp");
+			if(tempdb.exists()) {
+				tempdb.delete();
+			}
+			archtemp.loadDB(tempdb);
+
+			//Load the cascade if it is there
+			Cascade casc = mysql.loadCascade();
+			if(casc!=null) {
+				archtemp.checkCascadeRequired(casc);
+			}
+			
+			//Load the MySQL and output to the H2
+			long mysqllastblock 	= mysql.loadLastBlock();
+			long mysqlfirstblock 	= mysql.loadFirstBlock();
+			
+			//Load a range..
+			long firstblock = -1;
+			long endblock 	= -1;
+			TxBlock lastblock = null;
+			
+			long startload 	= mysqllastblock;
+			int counter = 0;
+			while(true) {
+				MinimaLogger.log("Loading from MySQL @ "+startload);
+				ArrayList<TxBlock> blocks = mysql.loadBlockRange(new MiniNumber(startload));
+				if(blocks.size()==0) {
+					//All blocks checked
+					break;
+				}
+				
+				//Cycle and add to our DB..
+				for(TxBlock block : blocks) {
+					
+					//Send to H2
+					archtemp.saveBlock(block);
+					
+					if(lastblock == null) {
+						firstblock = block.getTxPoW().getBlockNumber().getAsLong();
+					}
+					lastblock = block;
+					endblock = block.getTxPoW().getBlockNumber().getAsLong();
+				}
+				
+				startload = endblock+1;
+				
+				//Clean up..
+				counter++;
+				if(counter % 20 == 0) {
+					System.gc();
+				}
+			}
+			
+			MinimaLogger.log("Exporting to H2 SQL file..");
+			
+			//And Now export to File..
+			archtemp.backupToFile(gzoutput,true);
+			
+			//Shutdwon TEMP DB
+			archtemp.saveDB(false);
+			
+			//Delete the restore folder
+			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
+			
+			JSONObject resp = new JSONObject();
+			resp.put("start", firstblock);
+			resp.put("end", endblock);
+			resp.put("file", gzoutput.getName());
+			resp.put("path", gzoutput.getAbsolutePath());
+			resp.put("size", MiniFormat.formatSize(gzoutput.length()));
+			
+			ret.put("response", resp);
 			
 		}else {
 			throw new CommandException("Invalid action : "+action);
