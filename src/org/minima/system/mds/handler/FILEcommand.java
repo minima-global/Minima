@@ -116,6 +116,7 @@ public class FILEcommand {
 					fdata.put("name", ff.getName());
 					fdata.put("location", getCanonicalPath(rootfiles,ff));
 					fdata.put("size", ff.length());
+					fdata.put("modified", ff.lastModified());
 					fdata.put("isdir", ff.isDirectory());
 					fdata.put("isfile", ff.isFile());
 					listfiles.add(fdata);
