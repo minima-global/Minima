@@ -351,7 +351,11 @@ public class MDSFileHandler implements Runnable {
 	    try {
 	    	for (String param : params) {  
 		        String name = param.split("=")[0];  
-		        String value = param.split("=")[1];  
+		        String value = param.split("=")[1];
+		        
+		        //URL decode.
+		        value = URLDecoder.decode(value,"UTF-8").trim();
+		        
 		        map.put(name, value);  
 		    }
 	    }catch(Exception exc) {
