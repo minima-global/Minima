@@ -21,6 +21,7 @@ import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.encrypt.GenerateKey;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.ssl.SSLManager;
@@ -50,7 +51,7 @@ public class restore extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"file","password"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"file","password","shutdown"}));
 	}
 	
 	@Override
@@ -70,6 +71,9 @@ public class restore extends Command {
 		if(password.equals("")) {
 			throw new CommandException("Cannot have a blank password");
 		}
+		
+		//Are we shutting down - could be a reset
+		boolean doshutdown = getBooleanParam("shutdown", true);
 		
 		//Does it exist..
 		File restorefile = MiniFile.createBaseFile(file);
@@ -101,7 +105,14 @@ public class restore extends Command {
 		//Create the cipher..
 		Cipher ciph = GenerateKey.getCipherSYM(Cipher.DECRYPT_MODE, ivparam.getBytes(), secret);
 		CipherInputStream cis 	= new CipherInputStream(dis, ciph);
-		GZIPInputStream gzin 	= new GZIPInputStream(cis);
+		
+		GZIPInputStream gzin 	= null;
+		try {
+			gzin 	= new GZIPInputStream(cis);
+		}catch(Exception exc) {
+			//Incorrect password ?
+			throw new CommandException("Incorrect Password!");
+		}
 		DataInputStream disciph = new DataInputStream(gzin);
 		
 		//The total size of files..
@@ -127,7 +138,7 @@ public class restore extends Command {
 			txpsqldb.addTxPoW(txp, true);
 		}
 		
-		//If it hasnot stopped - First stop everything.. and get ready to restore the files..
+		//If it has not stopped - First stop everything.. and get ready to restore the files..
 		Main.getInstance().restoreReady();
 		
 		//Now load the sql
@@ -165,14 +176,18 @@ public class restore extends Command {
 		//Now save the Databases..
 		MinimaDB.getDB().saveSQL(false);
 		
-		//Don't do the usual shutdown hook
-		Main.getInstance().setHasShutDown();
-		
-		//And NOW shut down..
-		Main.getInstance().stopMessageProcessor();
-		
-		//Tell listener..
-		Main.getInstance().NotifyMainListenerOfShutDown();
+		//Normally yes
+		if(doshutdown) {
+			
+			//Don't do the usual shutdown hook
+			Main.getInstance().setHasShutDown();
+			
+			//And NOW shut down..
+			Main.getInstance().stopMessageProcessor();
+			
+			//Tell listener..
+			Main.getInstance().NotifyMainListenerOfShutDown();
+		}
 		
 		return ret;
 	}

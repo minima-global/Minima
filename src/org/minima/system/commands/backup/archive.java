@@ -490,6 +490,12 @@ public class archive extends Command {
 				if(size==0) {
 					break;
 				}
+				
+				//HACK
+				//if(startblock.isMore(new MiniNumber(10000))) {
+				//	MinimaLogger.log("FORCE ARCHIVE STOP @ 10000");
+				//	break;
+				//}
 			}
 			
 			//Notify the Android Listener

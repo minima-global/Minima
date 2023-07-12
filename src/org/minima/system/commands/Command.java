@@ -16,6 +16,7 @@ import org.minima.system.Main;
 import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.backup;
 import org.minima.system.commands.backup.mysql;
+import org.minima.system.commands.backup.reset;
 import org.minima.system.commands.backup.restore;
 import org.minima.system.commands.backup.restoresync;
 import org.minima.system.commands.backup.vault;
@@ -123,7 +124,7 @@ public abstract class Command {
 			new send(), new balance(), new tokencreate(), new tokenvalidate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
 			new incentivecash(), new webhooks(), new peers(), new p2pstate(), new nodecount(),
 
-			new mds(), new sendpoll(), new healthcheck(), new mempool(), new block(),
+			new mds(), new sendpoll(), new healthcheck(), new mempool(), new block(), new reset(),
 			
 			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(), new sendview(),
 			
