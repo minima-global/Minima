@@ -645,7 +645,8 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
 	var filename 	= thefullfile.name;
 	var filesize 	= thefullfile.size;
 	
-	var chunk_size 	= 1024;// * 1024;
+	//1MB MAX Chunk size..
+	var chunk_size 	= 1024 * 1024;
 	var allchunks  	= Math.ceil(filesize / chunk_size);
 	
 	//Have we finished..
@@ -668,7 +669,7 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
 	
 	//Filedata handled a little differently
 	formdata.append("filename", filename);
-	formdata.append("filesize", filename);
+	formdata.append("filesize", filesize);
 	formdata.append("allchunks", allchunks);
 	formdata.append("chunknum", chunk);
 	formdata.append("fileupload", filepiece);
@@ -697,9 +698,9 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
 	        
 				//And now continue uploading..
 				if(callback){
-					recurseUpload(thefullfile,chunk+1, callback);	
+					_recurseUploadMDS(thefullfile,chunk+1, callback);	
 				}else{
-					recurseUpload(thefullfile,chunk+1);
+					_recurseUploadMDS(thefullfile,chunk+1);
 				}				
 				
 			}else{
