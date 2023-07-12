@@ -1,8 +1,10 @@
 package org.minima.system.mds;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -22,6 +24,7 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.mds.multipart.MultipartData;
 import org.minima.system.mds.multipart.MultipartParser;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 
@@ -263,6 +266,90 @@ public class MDSFileHandler implements Runnable {
 				
 				//Write this redirect page..
 				writeHTMLPage(dos, webredirect);
+				
+			}else if(fileRequested.startsWith("fileuploadchunk.html")){
+				
+				//get the POST data
+				int contentlength = Integer.parseInt(allheaders.get("Content-Length"));
+				
+				//Read the data..
+				byte[] alldata = new byte[contentlength];
+				
+				//Read it ALL in
+				int len,total=0;
+				while( (len = inputStream.read(alldata,total,contentlength-total)) != -1) {
+					total += len;
+					if(total == contentlength) {
+						break;
+					}
+				}
+				
+				//Get the bits..
+				Hashtable<String, MultipartData> data = MultipartParser.parseMultipartData(alldata);
+				
+				//Which MiniDAPP..
+				MultipartData minidappidpart = data.get("uid");
+				if(minidappidpart==null) {
+					throw new IllegalArgumentException("NO minidappuid specified in form for uploadfile");
+				}
+				String minidappsessionid = minidappidpart.getTextData();
+				
+				//Check it..
+				String minidappid = mMDS.convertSessionID(minidappsessionid);
+				if(minidappid == null) {
+					throw new IllegalArgumentException("Invalid session id for uploadfile "+minidappsessionid);
+				}
+				
+				//Now.. save the file..
+				MultipartData filepart = data.get("fileupload"); 
+				
+				//Get other data
+				String filename = data.get("filename").getTextData();
+				int allchunks 	= Integer.parseInt(data.get("allchunks").getTextData());
+				int chunk 	 	= Integer.parseInt(data.get("chunknum").getTextData());;
+				
+				//Save the data
+				File root = new File(mMDS.getMiniDAPPFileFolder(minidappid),"fileupload");
+				if(!root.exists()) {
+					root.mkdirs();
+				}
+				File chunkroot 	= new File(root,"chunkupload");
+				if(chunk == 0) {
+					//First time..
+					MiniFile.deleteFileOrFolder(root.getAbsolutePath(), chunkroot);
+				}
+				File chunkfile  = new File(chunkroot,"chunk_"+chunk);
+				
+				//Get the data
+				byte[] filedata = filepart.getFileData();
+				MiniFile.writeDataToFile(chunkfile, filedata);
+				
+				//Are we stitching it all together..
+				if(chunk >= allchunks-1) {
+					
+					File finalfile = new File(root,filename);
+					if(finalfile.exists()) {
+						finalfile.delete();
+					}
+					
+					for(int i=0;i<allchunks;i++) {
+						File readchunkfile  = new File(chunkroot,"chunk_"+i);
+						
+						//Read in the complete file..
+						byte[] chunkdata = MiniFile.readCompleteFile(readchunkfile);
+						
+						//And write it out..
+						MiniFile.writeDataToFile(finalfile, chunkdata, true);
+					}
+					
+					//And finally delete the chunk folder..
+					MiniFile.deleteFileOrFolder(root.getAbsolutePath(), chunkroot);
+				}
+				
+				//Write this page..
+				dos.writeBytes("HTTP/1.0 200 OK\r\n");
+				dos.writeBytes("\r\n");
+				dos.flush();
 				
 			}else {
 			
