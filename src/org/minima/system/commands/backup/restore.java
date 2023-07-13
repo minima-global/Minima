@@ -139,7 +139,7 @@ public class restore extends Command {
 		}
 		
 		//If it has not stopped - First stop everything.. and get ready to restore the files..
-		Main.getInstance().restoreReady();
+		Main.getInstance().restoreReady(doshutdown);
 		
 		//Now load the sql
 		MinimaDB.getDB().getWallet().restoreFromFile(new File(restorefolder,"wallet.sql"));

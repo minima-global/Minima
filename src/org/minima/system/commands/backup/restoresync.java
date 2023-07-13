@@ -154,7 +154,7 @@ public class restoresync extends Command {
 		}
 		
 		//If it has not stopped - First stop everything.. and get ready to restore the files..
-		Main.getInstance().restoreReady();
+		Main.getInstance().restoreReady(false);
 		
 		//Now load the sql
 		MinimaDB.getDB().getWallet().restoreFromFile(new File(restorefolder,"wallet.sql"));
@@ -202,7 +202,6 @@ public class restoresync extends Command {
 			MinimaDB.getDB().getWallet().updateIncrementAllKeyUses(keyuses);
 			
 			//And NOW shut down..
-			//Main.getInstance().getTxPoWProcessor().stopMessageProcessor();
 			Main.getInstance().shutdownFinalProcs();
 			
 			//Now save the Databases..
@@ -243,7 +242,6 @@ public class restoresync extends Command {
 		MinimaLogger.log("End sync on "+tip.getBlockNumber());
 		
 		//And NOW shut down..
-		//Main.getInstance().getTxPoWProcessor().stopMessageProcessor();
 		Main.getInstance().shutdownFinalProcs();
 		
 		//Now shutdown and save everything
