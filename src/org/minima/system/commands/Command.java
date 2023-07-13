@@ -543,7 +543,6 @@ public abstract class Command {
 				return new missingcmd(command,"Invalid parameters for "+command+" @ "+token);
 			}
 			
-			
 			String name  = token.substring(0, index).trim();
 			String value = token.substring(index+1).trim();
 			
@@ -608,8 +607,12 @@ public abstract class Command {
 		
 		//Are there any JSON in this.. if not use super fast method..
 		if(!zForceNormal) {
+			
+			//Check for windows files.. as : screws up
+			boolean iswindowsfile = (zInput.indexOf(":\\")!=-1);
+			
 			//If it's big use the fast one.. but can have issues if : used weirdly.. :( 
-			if(zInput.indexOf("{") == -1 && zInput.indexOf("[") == -1) {
+			if(!iswindowsfile && zInput.indexOf("{") == -1 && zInput.indexOf("[") == -1) {
 				String[] fastres = splitterQuotedPattern(zInput);
 				if(fastres != null) {
 					return fastres;
