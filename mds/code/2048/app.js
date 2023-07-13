@@ -1,7 +1,8 @@
-document.addEventListener('DOMContentLoaded', () =>  {
-  const gridDisplay = document.querySelector('.grid')
-  const scoreDisplay = document.getElementById('score')
-  const resultDisplay = document.getElementById('result')
+
+  //Globals	
+  var gridDisplay;
+  var scoreDisplay;
+  var resultDisplay;
   let squares = []
   const width = 4
   let score = 0
@@ -17,8 +18,7 @@ document.addEventListener('DOMContentLoaded', () =>  {
     generate()
     generate()
   }
-  createBoard()
-
+  
   //generate a new number
   function generate() {
     randomNumber = Math.floor(Math.random() * squares.length)
@@ -151,8 +151,7 @@ document.addEventListener('DOMContentLoaded', () =>  {
       keyDown()
     }
   }
-  document.addEventListener('keyup', control)
-
+  
   function keyRight() {
     moveRight()
     combineRow()
@@ -229,9 +228,87 @@ document.addEventListener('DOMContentLoaded', () =>  {
       else if (squares[i].innerHTML == 1024) squares[i].style.backgroundColor = '#beeaa5' 
       else if (squares[i].innerHTML == 2048) squares[i].style.backgroundColor = '#d7d4f0' 
     }
+  }
+
+let touchstartX = 0;
+let touchstartY = 0;
+let touchendX = 0;
+let touchendY = 0;
+var downmode= false;
+var gestureZone;
+
+/*gestureZone.addEventListener('touchstart', function(event) {
+    touchstartX = event.changedTouches[0].screenX;
+    touchstartY = event.changedTouches[0].screenY;
+}, false);
+
+gestureZone.addEventListener('touchend', function(event) {
+    touchendX = event.changedTouches[0].screenX;
+    touchendY = event.changedTouches[0].screenY;
+    handleGesture();
+}, false);*/
+	
+	function handleGesture() {
+	    
+		var diffX 		= touchendX - touchstartX;
+		var diffY 		= touchendY - touchstartY;
+		var leftright 	= Math.abs(diffX) > Math.abs(diffY); 	 
+		
+		if(leftright){
+			if(diffX<0){
+				console.log('Swiped left');
+				keyLeft();
+			}else{
+				console.log('Swiped right');
+				keyRight();
+			}
+		}else{
+			if(diffY<0){
+				console.log('Swiped up');
+				keyUp();
+			}else{
+				console.log('Swiped down');
+				keyDown();
+			}
+		}
+	}
+
+function mouseDownGrid(){
+	console.log('mousedown');
 }
-addColours()
 
-var myTimer = setInterval(addColours, 50)
+function doStartUp(){
+	
+	//Get relevant components
+	gridDisplay 	= document.querySelector('.grid')
+	scoreDisplay 	= document.getElementById('score')
+	resultDisplay 	= document.getElementById('result')
+	gestureZone 	= document.getElementById('gamegrid');
+	
+	//Create the Board
+	createBoard();
+	
+	//Listen for Key events
+	document.addEventListener('keyup', control)  
+	
+	//Add touch event listeners
+	gestureZone.addEventListener('mousedown', function(event) {
+	    console.log('mousedown');
+		touchstartX = event.screenX;
+	    touchstartY = event.screenY;
+		//handleGesture();
+	}, false);
 
-})
+	/*gestureZone.addEventListener('mouseup', function(event) {		
+		console.log('mouseup');	    
+		touchendX = event.screenX;
+	    touchendY = event.screenY;
+	    //handleGesture();
+	}, false);*/
+
+	//Start sorting the colors
+	addColours();
+	var myTimer = setInterval(addColours, 50);	
+}
+
+//})
