@@ -304,6 +304,12 @@ public class archive extends Command {
 			String host = null;
 			int port 	= 0;
 			if(!usinglocal) {
+				
+				//Check a valid host
+				if(connectdata == null) {
+					throw new CommandException("Invalid HOST format for resync : "+fullhost);
+				}
+				
 				host = connectdata.getString("host");
 				port = connectdata.getInteger("port");
 			}
@@ -492,8 +498,8 @@ public class archive extends Command {
 				}
 				
 				//HACK
-				//if(startblock.isMore(new MiniNumber(10000))) {
-				//	MinimaLogger.log("FORCE ARCHIVE STOP @ 10000");
+				//if(startblock.isMore(new MiniNumber(100000))) {
+				//	MinimaLogger.log("FORCE ARCHIVE STOP @ 100000");
 				//	break;
 				//}
 			}
