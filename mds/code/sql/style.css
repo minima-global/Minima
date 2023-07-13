@@ -1,9 +1,0 @@
-@font-face {
-	font-family: Manrope;
-	src: url('./Manrope-Regular.ttf');
-}
-
-body {
-	font-family: Manrope;
-	font-size:14px;	
-}

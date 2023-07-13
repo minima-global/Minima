@@ -20,17 +20,26 @@
 
 <center>
 
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table>
+			<tr>
+				<td><img height=45 src="sql.jpg"></td>
+				<td style="font-size:26px">&nbsp;<b>SQL Bench</b></td>
+			</tr>
+		</table>
+	</div>
 	<br>
-	<h2>SQL Bench</h2>
-
+	<br>
+	<br>
+	
 	Input:<br>
-	<textarea rows="5" cols="80" id="sqlinput"></textarea>
+	<textarea rows="5" cols="60" id="sqlinput"></textarea>
 	<br><br>
 	<input type="submit" value="Run SQL" onclick="doSQL();"/>
 	<br>
 	<br>
 	Output :<br>
-	<textarea rows="4" cols="80" id="sqlresults" readonly></textarea>
+	<textarea rows="5" cols="60" id="sqlresults" readonly></textarea>
 	<br>
 	<br>
 	Table Results:<br>
@@ -46,6 +55,12 @@
 </center>
 
 <script type="text/javascript">
+	
+	function showTitleOnAndroid(){
+		if (window.navigator.userAgent.includes('Minima Browser')) {
+			Android.showTitleBar();
+		}
+	}
 	
 	function doSQL(){
 		
