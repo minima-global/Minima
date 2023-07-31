@@ -164,18 +164,6 @@ public class reset extends Command {
 		return ret;
 	}
 	
-	private long readNextBackup(File zOutput, DataInputStream zDis) throws IOException {
-		MiniData data = MiniData.ReadFromStream(zDis);
-		MiniFile.writeDataToFile(zOutput, data.getBytes());
-		return zOutput.length();
-	}
-	
-	private TxPoWList readNextTxPoWList(DataInputStream zDis) throws IOException {
-		MiniData data 		= MiniData.ReadFromStream(zDis);
-		TxPoWList txplist 	= TxPoWList.convertMiniDataVersion(data);
-		return txplist;
-	}
-
 	@Override
 	public Command getFunction() {
 		return new reset();
