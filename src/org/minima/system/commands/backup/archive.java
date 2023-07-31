@@ -435,7 +435,7 @@ public class archive extends Command {
 					endblock		= last.getTxPoW().getBlockNumber();
 					startblock 		= endblock.increment();
 					
-					MinimaLogger.log("Archive IBD received start : "+start.getTxPoW().getBlockNumber()+" end : "+endblock);
+					//MinimaLogger.log("Archive IBD received start : "+start.getTxPoW().getBlockNumber()+" end : "+endblock);
 				
 					//Notify the Android Listener
 					NotifyListener(minimalistener,"Loading "+start.getTxPoW().getBlockNumber()+" @ "+new Date(start.getTxPoW().getTimeMilli().getAsLong()).toString());
@@ -467,7 +467,7 @@ public class archive extends Command {
 				
 				//Now wait to catch up..
 				long timenow = System.currentTimeMillis();
-				MinimaLogger.log("Waiting for chain to catch up.. please wait");
+				//MinimaLogger.log("Waiting for chain to catch up.. please wait");
 				attempts = 0;
 				while(foundsome) {
 					if(!tip.getBlockNumber().isEqual(endblock)) {
@@ -484,8 +484,9 @@ public class archive extends Command {
 						break;
 					}
 				}
+				
 				long timediff = System.currentTimeMillis() - timenow;
-				MinimaLogger.log("IBD Processed.. time :"+timediff+"ms");
+				MinimaLogger.log("IBD Processed.. block:"+startblock+" time:"+timediff+"ms");
 				
 				if(error) {
 					MinimaLogger.log("ERROR : There was an error processing that IBD - took too long");
