@@ -122,7 +122,7 @@ public abstract class Command {
 		{   new quit(), new status(), new coins(), new txpow(), new connect(), new disconnect(), new network(),
 			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(), new rpc(),
 			new send(), new balance(), new tokencreate(), new tokenvalidate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
-			new incentivecash(), new webhooks(), new peers(), new p2pstate(), new nodecount(),
+			new incentivecash(), new webhooks(), new peers(), new p2pstate(),
 
 			new mds(), new sendpoll(), new healthcheck(), new mempool(), new block(), new reset(),
 			

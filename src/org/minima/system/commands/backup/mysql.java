@@ -611,6 +611,102 @@ public class mysql extends Command {
 			resp.put("created", outarr);
 			resp.put("spent", inarr);
 			ret.put("coins", resp);
+		
+		}else if(action.equals("h2import")) {
+			
+			long timestart = System.currentTimeMillis();
+			
+			//Create a temp name
+			String infile = getParam("file");
+			
+			//Create  tyemp DB
+			ArchiveManager archtemp = new ArchiveManager();
+			
+			//Create a temp DB file..
+			File restorefolder = new File(GeneralParams.DATA_FOLDER,"archiverestore");
+			restorefolder.mkdirs();
+			
+			File tempdb = new File(restorefolder,"archivetemp");
+			if(tempdb.exists()) {
+				tempdb.delete();
+			}
+			archtemp.loadDB(tempdb);
+			
+			//And now restore..
+			MinimaLogger.log("Restoring H2 Archive DB..");
+			archtemp.restoreFromFile(new File(infile), true);
+			
+			//Wipe the old data
+			mysql.wipeAll();
+			
+			//And recreate the tables
+			mysql.init();
+			
+			//Is there a cascade..
+			Cascade casc = archtemp.loadCascade();
+			if(casc != null) {
+				MinimaLogger.log("Cascade found.. ");
+				mysql.saveCascade(casc);
+			}
+			
+			//Load the H2 Data
+			long mysqllastblock 	= archtemp.loadLastBlock().getTxPoW().getBlockNumber().getAsLong();
+			long mysqlfirstblock 	= archtemp.loadFirstBlock().getTxPoW().getBlockNumber().getAsLong();
+			
+			MinimaLogger.log("First block:"+mysqllastblock);
+			MinimaLogger.log("Last block:"+mysqlfirstblock);
+			
+			//Load a range..
+			long endblock 	= -1;
+			TxBlock lastblock = null;
+			
+			long startload 	= mysqllastblock-1;
+			int counter = 0;
+			while(true) {
+				MinimaLogger.log("Loading from H2 @ "+startload);
+				long endload = startload+250;
+				
+				ArrayList<TxBlock> blocks = archtemp.loadBlockRange(new MiniNumber(startload), new MiniNumber(endload),false);
+				if(blocks.size()==0) {
+					//All blocks checked
+					break;
+				}
+				
+				//Cycle and add to our DB..
+				for(TxBlock block : blocks) {
+					
+					//Send to H2
+					mysql.saveBlock(block);
+					//MinimaLogger.log("Save block : "+block.getTxPoW().getBlockNumber());
+					
+					//New firstblock
+					startload 	= block.getTxPoW().getBlockNumber().getAsLong();
+				}
+				endblock = startload; 
+				
+				//Clean up..
+				counter++;
+				if(counter % 10 == 0) {
+					MinimaLogger.log("System clean..");
+					System.gc();
+					//break;
+				}
+			}
+			
+			//Shutdown TEMP DB
+			archtemp.saveDB(false);
+			
+			//Delete the restore folder
+			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
+			
+			long timediff = System.currentTimeMillis() - timestart;
+			
+			JSONObject resp = new JSONObject();
+			resp.put("start", mysqllastblock-1);
+			resp.put("end", endblock);
+			resp.put("time", MiniFormat.ConvertMilliToTime(timediff));
+			
+			ret.put("response", resp);
 			
 		}else if(action.equals("h2export")) {
 			
@@ -689,7 +785,7 @@ public class mysql extends Command {
 			MinimaLogger.log("Exporting to H2 SQL file..");
 			archtemp.backupToFile(gzoutput,true);
 			
-			//Shutdwon TEMP DB
+			//Shutdown TEMP DB
 			archtemp.saveDB(false);
 			
 			//Delete the restore folder
