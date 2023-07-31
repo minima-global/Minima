@@ -687,9 +687,7 @@ public class mysql extends Command {
 				//Clean up..
 				counter++;
 				if(counter % 10 == 0) {
-					MinimaLogger.log("System clean..");
 					System.gc();
-					//break;
 				}
 			}
 			
