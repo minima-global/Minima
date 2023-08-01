@@ -418,10 +418,10 @@ public class restoresync extends Command {
 			TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 			int attempts = 0;
 			while(foundsome && tip == null) {
-				Thread.sleep(50);
+				Thread.sleep(250);
 				tip = MinimaDB.getDB().getTxPoWTree().getTip();
 				attempts++;
-				if(attempts>10000) {
+				if(attempts>5000) {
 					error = true;
 					break;
 				}
@@ -446,7 +446,7 @@ public class restoresync extends Command {
 				tip = MinimaDB.getDB().getTxPoWTree().getTip();
 				
 				attempts++;
-				if(attempts>4000) {
+				if(attempts>20000) {
 					error = true;
 					break;
 				}

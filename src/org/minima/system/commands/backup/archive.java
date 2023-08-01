@@ -454,7 +454,7 @@ public class archive extends Command {
 					Thread.sleep(250);
 					tip = MinimaDB.getDB().getTxPoWTree().getTip();
 					attempts++;
-					if(attempts>1000) {
+					if(attempts>5000) {
 						error = true;
 						break;
 					}
@@ -467,6 +467,7 @@ public class archive extends Command {
 				
 				//Now wait to catch up..
 				long timenow = System.currentTimeMillis();
+				
 				//MinimaLogger.log("Waiting for chain to catch up.. please wait");
 				attempts = 0;
 				while(foundsome) {
@@ -479,7 +480,7 @@ public class archive extends Command {
 					tip = MinimaDB.getDB().getTxPoWTree().getTip();
 					
 					attempts++;
-					if(attempts>10000) {
+					if(attempts>20000) {
 						error = true;
 						break;
 					}
