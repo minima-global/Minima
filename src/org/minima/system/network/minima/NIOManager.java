@@ -396,9 +396,15 @@ public class NIOManager extends MessageProcessor {
 				
 				//Do we attempt a reconnect..
 				if(nc.getConnectAttempts() > RECONNECT_ATTEMPTS) {
+					
 					//Do we have ANY connections at all..
-					ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
-					if(conns.size()>0) {
+					int connected = getNumberOfConnectedClients();
+					int connecting = getNumberOfConnnectingClients();
+					
+//					ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+//					int tot = conns.size();
+					
+					if(connected>0 || connecting>3) {
 						
 						//No reconnect
 						reconnect = false;
