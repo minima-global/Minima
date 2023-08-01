@@ -709,7 +709,7 @@ public class mysql extends Command {
 		}else if(action.equals("h2export")) {
 			
 			//Create a temp name
-			String outfile = getParam("file","archivebackup-"+System.currentTimeMillis()+".gz");
+			String outfile = getParam("file","archivebackup-"+System.currentTimeMillis()+".gzip");
 			
 			//Create the file
 			File gzoutput = MiniFile.createBaseFile(outfile);

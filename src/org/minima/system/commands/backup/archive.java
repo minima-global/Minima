@@ -537,7 +537,7 @@ public class archive extends Command {
 		}else if(action.equals("export")) {
 			
 			//The GZIPPED file 
-			String file = getParam("file","archivebackup-"+System.currentTimeMillis()+".gz");
+			String file = getParam("file","archivebackup-"+System.currentTimeMillis()+".gzip");
 			
 			//Create the file
 			File gzoutput = MiniFile.createBaseFile(file);
