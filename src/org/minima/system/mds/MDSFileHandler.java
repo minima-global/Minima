@@ -30,6 +30,8 @@ import org.minima.utils.MinimaLogger;
 
 public class MDSFileHandler implements Runnable {
 	
+	public static String MINIMA_DOWNLOAD_AS_FILE = "_minima_download_as_file_";
+	
 	/**
 	 * The Net Socket
 	 */
@@ -378,6 +380,14 @@ public class MDSFileHandler implements Runnable {
 		    		
 		    	}else {
 		    		
+		    		boolean downloader 	= false;
+		    		String filename 	= webfile.getName();
+		    		if(filename.contains(MINIMA_DOWNLOAD_AS_FILE)){
+		    			//Remove the ending..
+		    			filename 	= filename.replace(MINIMA_DOWNLOAD_AS_FILE, "");
+		    			downloader 	= true;
+		    		}
+		    		
 		    		//Get the data
 					byte[] file = MiniFile.readCompleteFile(webfile);
 		
@@ -388,6 +398,12 @@ public class MDSFileHandler implements Runnable {
 					dos.writeBytes("Content-Type: "+contenttype+"\r\n");
 					dos.writeBytes("Content-Length: " + finallength + "\r\n");
 					dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
+					
+					//Are we downloading this file..
+					if(downloader) {
+						dos.writeBytes("Content-Disposition: attachment; filename=\""+filename+"\"\r\n");
+					}
+					
 					dos.writeBytes("\r\n");
 					dos.write(file, 0, finallength);
 					dos.flush();
