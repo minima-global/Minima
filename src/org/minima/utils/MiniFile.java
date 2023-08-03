@@ -370,10 +370,6 @@ public class MiniFile {
 			}
 		}
 		
-		if(fname.equals("databases")) {
-			int y=0;
-		}
-		
 		zResult.put("total", MiniFormat.formatSize(tot));
 		
 		if(zDepth<zMaxDepthInfo) {
