@@ -869,7 +869,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("block", "default/block-2.1.1.mds.zip", allminis, false);
 			checkInstalled("chatter", "default/chatter-1.4.3.mds.zip", allminis, false);
 			checkInstalled("docs", "default/docs-1.4.0.mds.zip", allminis, false);
-			checkInstalled("filez", "default/filez-1.8.3.mds.zip", allminis, false);
+			checkInstalled("filez", "default/filez-1.9.0.mds.zip", allminis, false);
 			checkInstalled("future cash", "default/futurecash-1.11.1.mds.zip", allminis, false);
 			checkInstalled("health", "default/health-1.1.2.mds.zip", allminis, false);
 			checkInstalled("logs", "default/logs-1.0.0.mds.zip", allminis, false);
