@@ -106,7 +106,7 @@ public class tutorial extends Command {
 				  + "REPLACE ( STRING STRING STRING )\n"
 				  + "Replace in 1st string all occurrence of 2nd string with 3rd\n"
 				  + "\n"
-				  + "SUBSTR ( STRING NUMBER NUMBER )\n"
+				  + "SUBSTR ( NUMBER NUMBER STRING )\n"
 				  + "Get the substring                                                                                                                                                                             \n"
 				  + "\n"
 				  + "UTF8 ( HEX )\n"
