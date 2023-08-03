@@ -1,9 +1,11 @@
 package org.minima.system.mds;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -388,15 +390,13 @@ public class MDSFileHandler implements Runnable {
 		    			downloader 	= true;
 		    		}
 		    		
-		    		//Get the data
-					byte[] file = MiniFile.readCompleteFile(webfile);
-		
+		    		//Get the data length
+		    		long filelen = webfile.length();
+		    		
 					//Calculate the size of the response
-					int finallength = file.length;
-		            
 					dos.writeBytes("HTTP/1.0 200 OK\r\n");
 					dos.writeBytes("Content-Type: "+contenttype+"\r\n");
-					dos.writeBytes("Content-Length: " + finallength + "\r\n");
+					dos.writeBytes("Content-Length: " + filelen+ "\r\n");
 					dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
 					
 					//Are we downloading this file..
@@ -404,8 +404,19 @@ public class MDSFileHandler implements Runnable {
 						dos.writeBytes("Content-Disposition: attachment; filename=\""+filename+"\"\r\n");
 					}
 					
+					//End Headers..
 					dos.writeBytes("\r\n");
-					dos.write(file, 0, finallength);
+					
+					//Now write the data out.. stream..
+					FileInputStream fis = new FileInputStream(webfile);
+					byte[] buffer 		= new byte[32768];
+			        int length;
+			        while ((length = fis.read(buffer)) > 0) {
+			        	dos.write(buffer, 0, length);
+			        }
+				    fis.close();
+			        
+					//Flush the stream
 					dos.flush();
 		    	}
 			}
