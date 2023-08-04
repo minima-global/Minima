@@ -40,13 +40,15 @@ public class mysql extends Command {
 	public String getFullHelp() {
 		return "\nmysql\n"
 				+ "\n"
-				+ "Export the archive data of this node to a MySQL database.\n"
+				+ "Export the archive data of this node to a MySQL d.\n"
 				+ "\n"
 				+ "The MySQL db can be used to perform a chain re-sync to put users on the correct chain,\n"
 				+ "\n"
-				+ "or a seed re-sync to restore access to lost funds, using the 24 word seed phrase.\n"
+				+ "or a seed re-sync to restore access to lost funds, using the seed phrase.\n"
 				+ "\n"
-				+ "Can also be used to query an address for its history of spent and unspent coins.\n"
+				+ "Can query an address for its history of spent and unspent coins.\n"
+				+ "\n"
+				+ "Additionally export the MySQL db to a gzip file for resyncing with 'reset' or 'archive' command.\n"
 				+ "\n"
 				+ "host:\n"
 				+ "    The ip:port (or name of Docker container) running the MySQL db.\n"
@@ -69,9 +71,11 @@ public class mysql extends Command {
 				+ "    resync : Perform a chain or seed re-sync from the specified MySQL db.\n"
 				+ "             Will shutdown the node so you must restart it once complete.\n"
 				+ "    wipe :  Be careful. Wipe the MySQL db.\n"
+				+ "    h2export : export the MySQL db to an archive gzip file which can be used to resync a node.\n"
+				+ "    h2import : import an archive gzip file to the MySQL db.\n"
 				+ "\n"
 				+ "phrase: (optional)\n"
-				+ "     Use with action:resync. The BIP39 seed phrase of the node to re-sync.\n"
+				+ "     Use with action:resync. The 24 word seed phrase of the node to re-sync.\n"
 				+ "     If provided, the node will be wiped and re-synced.\n"
 				+ "     If not provided, the node will be re-synced to the chain and will not be wiped.\n"
 				+ "\n"
@@ -89,6 +93,9 @@ public class mysql extends Command {
 				+ "enable: (optional)\n"
 				+ "    Use with action:autobackup. Automatically save data to MySQL archive DB.\n"
 				+ "\n"
+				+ "file: (optional)\n"
+				+ "    Name or path of the archive gzip file to export to or import from.\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:info\n"
@@ -104,7 +111,8 @@ public class mysql extends Command {
 				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:resync\n"
 				+ "\n"
 				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:resync phrase:\"24 WORDS HERE\" keys:90 keyuses:2000\n"
-				+ "\n";
+				+ "\n"
+				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:h2export file:archivexport-DDMMYY.gzip\n";
 	}
 	
 	@Override
