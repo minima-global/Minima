@@ -20,18 +20,19 @@ public class FILEcommand {
 	/**
 	 * Base FILE Functions
 	 */
-	public static final String FILECOMMAND_LIST 		= "LIST";
-	public static final String FILECOMMAND_SAVE 		= "SAVE";
-	public static final String FILECOMMAND_LOAD 		= "LOAD";
-	public static final String FILECOMMAND_DELETE 		= "DELETE";
-	public static final String FILECOMMAND_SAVEBINARY 	= "SAVE_BINARY";
-	public static final String FILECOMMAND_LOADBINARY 	= "LOAD_BINARY";
-	public static final String FILECOMMAND_GETPATH 		= "GETPATH";
-	public static final String FILECOMMAND_MAKEDIR 		= "MAKEDIR";
-	public static final String FILECOMMAND_COPY 		= "COPY";
-	public static final String FILECOMMAND_MOVE 		= "MOVE";
-	public static final String FILECOMMAND_DOWNLOAD 	= "DOWNLOAD";
-	public static final String FILECOMMAND_COPYTOWEB 	= "COPYTOWEB";
+	public static final String FILECOMMAND_LIST 			= "LIST";
+	public static final String FILECOMMAND_SAVE 			= "SAVE";
+	public static final String FILECOMMAND_LOAD 			= "LOAD";
+	public static final String FILECOMMAND_DELETE 			= "DELETE";
+	public static final String FILECOMMAND_SAVEBINARY 		= "SAVE_BINARY";
+	public static final String FILECOMMAND_LOADBINARY 		= "LOAD_BINARY";
+	public static final String FILECOMMAND_GETPATH 			= "GETPATH";
+	public static final String FILECOMMAND_MAKEDIR 			= "MAKEDIR";
+	public static final String FILECOMMAND_COPY 			= "COPY";
+	public static final String FILECOMMAND_MOVE 			= "MOVE";
+	public static final String FILECOMMAND_DOWNLOAD 		= "DOWNLOAD";
+	public static final String FILECOMMAND_COPYTOWEB 		= "COPYTOWEB";
+	public static final String FILECOMMAND_DELETEFROMWEB 	= "DELETEFROMWEB";
 	
 	/**
 	 * Main MDS Manager
@@ -115,6 +116,7 @@ public class FILEcommand {
 					fdata.put("name", ff.getName());
 					fdata.put("location", getCanonicalPath(rootfiles,ff));
 					fdata.put("size", ff.length());
+					fdata.put("modified", ff.lastModified());
 					fdata.put("isdir", ff.isDirectory());
 					fdata.put("isfile", ff.isFile());
 					listfiles.add(fdata);
@@ -339,6 +341,25 @@ public class FILEcommand {
 				fdata.put("webfile", mData);
 				
 				resp.put("copytoweb", fdata);
+			
+			}else if(mFileCommand.equals(FILECOMMAND_DELETEFROMWEB)) {
+				
+				//Get the web Folder
+				File webfiles = mMDS.getMiniDAPPWebFolder(mMiniDAPPID);
+				
+				//The new file..
+				File webfile = new File(webfiles,mFile);
+				
+				//Does it exist
+				boolean existed = webfile.exists();
+				
+				JSONObject fdata = new JSONObject();
+				fdata.put("name", webfile.getName());
+				fdata.put("existed", existed);
+				
+				MiniFile.deleteFileOrFolder(webfiles.getAbsolutePath(), webfile);
+				
+				resp.put("deletefromweb", fdata);
 			}
 			
 			JSONObject stattrue = new JSONObject();

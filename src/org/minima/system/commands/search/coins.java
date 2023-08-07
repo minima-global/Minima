@@ -9,12 +9,14 @@ import org.minima.database.MinimaDB;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Coin;
+import org.minima.objects.Token;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.send.send;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -81,7 +83,7 @@ public class coins extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"relevant","sendable","coinid","amount",
-				"address","tokenid","checkmempool","order","coinage"}));
+				"address","tokenid","checkmempool","order","coinage","simplestate","totalamount"}));
 	}
 	
 	@Override
@@ -99,6 +101,9 @@ public class coins extends Command {
 		if(hardsetrel) {
 			relevant = true;
 		}
+		
+		//Are we using ther simplestate output
+		boolean simplestate = getBooleanParam("simplestate", false);
 		
 		boolean simple		= getBooleanParam("sendable",false);
 		
@@ -125,7 +130,6 @@ public class coins extends Command {
 		if(stokenid) {
 			tokenid = new MiniData(getParam("tokenid", "0x01"));
 		}
-		
 		
 		//How old do the coins need to be.. used by consolidate
 		MiniNumber coinage = getNumberParam("coinage", MiniNumber.ZERO);
@@ -200,10 +204,27 @@ public class coins extends Command {
 			});
 		}
 		
+		//Are we listing a total amount of coins..
+		if(existsParam("totalamount")) {
+			//How much do we need..
+			MiniNumber totalamount = getNumberParam("totalamount");
+			
+			//Get the converted amount
+			MiniNumber tokenamount = totalamount;
+			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
+				if(finalcoins.size()>0) {
+					tokenamount = finalcoins.get(0).getToken().getScaledMinimaAmount(totalamount);
+				}
+			}
+			
+			//Get just this number..
+			finalcoins = send.selectCoins(finalcoins, tokenamount);
+		}
+		
 		//Put it all in an array
 		JSONArray coinarr = new JSONArray();
 		for(Coin cc : finalcoins) {
-			coinarr.add(cc.toJSON());
+			coinarr.add(cc.toJSON(simplestate));
 		}
 		
 		ret.put("response", coinarr);

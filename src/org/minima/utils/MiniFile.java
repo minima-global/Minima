@@ -11,6 +11,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.zip.GZIPInputStream;
@@ -266,11 +267,26 @@ public class MiniFile {
 			return;
 		}
 		
-		//read in the original..
-		byte[] orig = readCompleteFile(zOrig);
-		
-		//And now write..
-		writeDataToFile(zCopy, orig);
+		InputStream is 	= null;
+	    OutputStream os = null;
+	    try {
+	        is = new FileInputStream(zOrig);
+	        os = new FileOutputStream(zCopy);
+	        byte[] buffer = new byte[16384];
+	        int length;
+	        while ((length = is.read(buffer)) > 0) {
+	            os.write(buffer, 0, length);
+	        }
+	    } finally {
+	        is.close();
+	        os.close();
+	    }
+	    
+//		//read in the original..
+//		byte[] orig = readCompleteFile(zOrig);
+//		
+//		//And now write..
+//		writeDataToFile(zCopy, orig);
 	}
 	
 	public static void deleteFileOrFolder(String mParentCheck, File zFile) {
@@ -352,10 +368,6 @@ public class MiniFile {
 			}else {
 				tot += file.length();
 			}
-		}
-		
-		if(fname.equals("databases")) {
-			int y=0;
 		}
 		
 		zResult.put("total", MiniFormat.formatSize(tot));

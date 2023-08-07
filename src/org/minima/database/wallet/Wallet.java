@@ -1,6 +1,5 @@
 package org.minima.database.wallet;
 
-import java.io.File;
 import java.math.BigInteger;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

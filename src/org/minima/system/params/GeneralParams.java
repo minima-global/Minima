@@ -1,7 +1,6 @@
 package org.minima.system.params;
 
 import org.minima.objects.base.MiniNumber;
-import org.minima.system.commands.base.newaddress;
 
 public class GeneralParams {
 

@@ -24,6 +24,7 @@ import org.minima.system.network.maxima.message.MaximaPackage;
 import org.minima.system.network.maxima.mls.MLSPacketGETResp;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.encrypt.CryptoPackage;
 import org.minima.utils.encrypt.SignVerify;
@@ -75,11 +76,15 @@ public class MaxMsgHandler extends MessageProcessor {
 				if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_OK)) {
 					//All fine.. 
 				}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_FAIL)) {
-					MinimaLogger.log("Warning : Maxima message not delivered to.. "+host+":"+port);
+					if(GeneralParams.MAXIMA_LOGS) {
+						MinimaLogger.log("Warning : Maxima message not delivered to.. "+host+":"+port);
+					}
 				}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_TOOBIG)) {
 					MinimaLogger.log("Warning : Maxima message too big not delivered to.. "+host+":"+port);
 				}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_UNKNOWN)) {
-					MinimaLogger.log("Warning : Maxima message Unknown Address not delivered to.. "+host+":"+port);
+					if(GeneralParams.MAXIMA_LOGS) {
+						MinimaLogger.log("Warning : Maxima message Unknown Address not delivered to.. "+host+":"+port);
+					}
 				}else if(validresp.isEqual(MaximaManager.MAXIMA_RESPONSE_WRONGHASH)) {
 					MinimaLogger.log("Warning : Maxima message TxPoW Hash wrong not delivered to.. "+host+":"+port);
 				}else {

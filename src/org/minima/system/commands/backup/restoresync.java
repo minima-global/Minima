@@ -154,7 +154,7 @@ public class restoresync extends Command {
 		}
 		
 		//If it has not stopped - First stop everything.. and get ready to restore the files..
-		Main.getInstance().restoreReady();
+		Main.getInstance().restoreReady(false);
 		
 		//Now load the sql
 		MinimaDB.getDB().getWallet().restoreFromFile(new File(restorefolder,"wallet.sql"));
@@ -202,7 +202,6 @@ public class restoresync extends Command {
 			MinimaDB.getDB().getWallet().updateIncrementAllKeyUses(keyuses);
 			
 			//And NOW shut down..
-			//Main.getInstance().getTxPoWProcessor().stopMessageProcessor();
 			Main.getInstance().shutdownFinalProcs();
 			
 			//Now save the Databases..
@@ -243,7 +242,6 @@ public class restoresync extends Command {
 		MinimaLogger.log("End sync on "+tip.getBlockNumber());
 		
 		//And NOW shut down..
-		//Main.getInstance().getTxPoWProcessor().stopMessageProcessor();
 		Main.getInstance().shutdownFinalProcs();
 		
 		//Now shutdown and save everything
@@ -404,7 +402,7 @@ public class restoresync extends Command {
 				endblock		= last.getTxPoW().getBlockNumber();
 				startblock 		= endblock.increment();
 				
-				MinimaLogger.log("Archive IBD received start : "+start.getTxPoW().getBlockNumber()+" end : "+endblock);
+				//MinimaLogger.log("Archive IBD received start : "+start.getTxPoW().getBlockNumber()+" end : "+endblock);
 			
 				//Notify the Android Listener
 				archive.NotifyListener(minimalistener,"Loading "+start.getTxPoW().getBlockNumber()+" @ "+new Date(start.getTxPoW().getTimeMilli().getAsLong()).toString());
@@ -423,7 +421,7 @@ public class restoresync extends Command {
 				Thread.sleep(250);
 				tip = MinimaDB.getDB().getTxPoWTree().getTip();
 				attempts++;
-				if(attempts>128) {
+				if(attempts>5000) {
 					error = true;
 					break;
 				}
@@ -436,7 +434,7 @@ public class restoresync extends Command {
 			
 			//Now wait to catch up..
 			long timenow = System.currentTimeMillis();
-			MinimaLogger.log("Waiting for chain to catch up.. please wait");
+			//MinimaLogger.log("Waiting for chain to catch up.. please wait");
 			attempts = 0;
 			while(foundsome) {
 				if(!tip.getBlockNumber().isEqual(endblock)) {
@@ -448,13 +446,13 @@ public class restoresync extends Command {
 				tip = MinimaDB.getDB().getTxPoWTree().getTip();
 				
 				attempts++;
-				if(attempts>4000) {
+				if(attempts>20000) {
 					error = true;
 					break;
 				}
 			}
 			long timediff = System.currentTimeMillis() - timenow;
-			MinimaLogger.log("IBD Processed.. time :"+timediff+"ms");
+			MinimaLogger.log("IBD Processed.. block:"+startblock+" time:"+timediff+"ms");
 			
 			if(error) {
 				MinimaLogger.log("ERROR : There was an error processing that IBD - took too long");

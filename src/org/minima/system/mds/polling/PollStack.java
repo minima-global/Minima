@@ -7,7 +7,7 @@ import org.minima.utils.json.JSONObject;
 
 public class PollStack {
 
-	public static final int MAX_MESSAGES = 256;
+	public static final int MAX_MESSAGES = 512;
 	
 	String mSeries;
 	

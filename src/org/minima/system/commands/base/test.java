@@ -1,12 +1,9 @@
 package org.minima.system.commands.base;
 
-import java.io.BufferedReader;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPowTree;

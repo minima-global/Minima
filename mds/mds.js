@@ -376,12 +376,33 @@ var MDS = {
 		},
 		
 		/**
+		 * Upload a file in chunks to the /fileupload folder		
+		 */
+		upload : function(file, callback){
+			
+			//Start the file recursion..
+			_recurseUploadMDS(file,0,callback);
+		},
+		
+		/**
 		 * Copy a file to your web folder
 		 */
 		copytoweb : function(file, webfile, callback){
 			
 			//Create the single line
 			var commsline = "copytoweb&"+file+"&"+webfile;
+			
+			//Send via POST
+			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);	
+		},
+		
+		/**
+		 * Delete a file or folder from web folder
+		 */
+		deletefromweb : function(file, callback){
+			
+			//Create the single line
+			var commsline = "deletefromweb&"+file;
 			
 			//Send via POST
 			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);	
@@ -613,4 +634,96 @@ function httpPostAsyncPoll(theUrl, params, callback){
     xmlHttp.open("POST", theUrl, true); // true for asynchronous 
 	xmlHttp.overrideMimeType('text/plain; charset=UTF-8');
     xmlHttp.send(encodeURIComponent(params));
+}
+
+/**
+ * Internal recursive function for file upload 
+ */
+function _recurseUploadMDS(thefullfile, chunk, callback){
+		
+	//Get some details
+	var filename 	= thefullfile.name;
+	var filesize 	= thefullfile.size;
+	
+	//1MB MAX Chunk size..
+	var chunk_size 	= 1024 * 1024;
+	var allchunks  	= Math.ceil(filesize / chunk_size);
+	
+	//Have we finished..
+	if(chunk>allchunks-1){
+		return;
+	}
+	
+	var startbyte = chunk_size * chunk;
+	var endbyte   = startbyte + chunk_size;
+	if(endbyte>filesize){
+		endbyte = filesize;
+	}
+	
+	//Get a piece of the file
+	var filepiece = thefullfile.slice(startbyte,endbyte);
+	
+	//Create a form..
+	var formdata = new FormData();
+	formdata.append("uid", MDS.minidappuid);
+	
+	//Filedata handled a little differently
+	formdata.append("filename", filename);
+	formdata.append("filesize", filesize);
+	formdata.append("allchunks", allchunks);
+	formdata.append("chunknum", chunk);
+	formdata.append("fileupload", filepiece);
+  
+	var request = new XMLHttpRequest();
+	request.open("POST", "/fileuploadchunk.html");
+	request.onreadystatechange = function() { 
+	        
+		var status = request.status;
+		if (request.readyState == XMLHttpRequest.DONE){
+			if (status === 0 || (status >= 200 && status < 400)) {
+				
+				//Send it to the callback function..
+	        	if(callback){
+	        		var resp 		= {};
+	        		resp.status		= true;
+	        		resp.filename 	= filename;
+	        		resp.size 		= filesize;
+	        		resp.allchunks 	= allchunks;
+	        		resp.chunk 		= chunk+1;
+	        		resp.start 		= startbyte;
+	        		resp.end 		= endbyte;
+	        		
+	        		callback(resp);
+	        	}
+	        
+				//And now continue uploading..
+				if(callback){
+					_recurseUploadMDS(thefullfile,chunk+1, callback);	
+				}else{
+					_recurseUploadMDS(thefullfile,chunk+1);
+				}				
+				
+			}else{
+				if(callback){
+	        		var resp 		= {};
+	        		resp.status		= false;
+	        		resp.error		= request.responseText;
+	        		resp.filename 	= filename;
+	        		resp.size 		= filesize;
+	        		resp.allchunks 	= allchunks;
+	        		resp.chunk 		= chunk;
+	        		resp.start 		= startbyte;
+	        		resp.end 		= endbyte;
+	        		
+	        		callback(resp);
+	        	}
+					
+				//Some error..
+				MDS.log("MDS FILEUPLOAD CHUNK ERROR: "+request.responseText);
+			}
+		}
+    }
+
+	//And finally send the POST request
+	request.send(formdata);
 }

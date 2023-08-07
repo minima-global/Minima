@@ -29,7 +29,6 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
-import org.minima.system.commands.base.logs;
 import org.minima.system.commands.network.connect;
 import org.minima.system.network.NetworkManager;
 import org.minima.system.network.maxima.MaximaManager;
@@ -397,9 +396,15 @@ public class NIOManager extends MessageProcessor {
 				
 				//Do we attempt a reconnect..
 				if(nc.getConnectAttempts() > RECONNECT_ATTEMPTS) {
+					
 					//Do we have ANY connections at all..
-					ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
-					if(conns.size()>0) {
+					int connected = getNumberOfConnectedClients();
+					int connecting = getNumberOfConnnectingClients();
+					
+//					ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+//					int tot = conns.size();
+					
+					if(connected>0 || connecting>3) {
 						
 						//No reconnect
 						reconnect = false;

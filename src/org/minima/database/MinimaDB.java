@@ -326,7 +326,7 @@ public class MinimaDB {
 			File txtree = new File(basedb,"chaintree.db");
 			MinimaLogger.log("Loading TxPowTree size : "+MiniFormat.formatSize(txtree.length()));
 			mTxPoWTree.loadDB(new File(basedb,"chaintree.db"));
-			MinimaLogger.log("TxPowTree loaded size : "+mTxPoWTree.getSize());
+			//MinimaLogger.log("TxPowTree loaded size : "+mTxPoWTree.getSize());
 			
 			//Clean Mem after that
 			System.gc();

@@ -3,7 +3,10 @@ package org.minima.system.commands.network;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.StringTokenizer;
 
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
@@ -18,7 +21,7 @@ import org.minima.utils.messages.Message;
 public class peers extends Command {
 
 	public peers() {
-		super("peers","(action:list|addpeers) (peerslist:[]) - Prints the peers list this node has");
+		super("peers","(action:list|addpeers) (peerslist:) - Prints the peers list this node has");
 	}
 	
 	@Override
@@ -34,7 +37,7 @@ public class peers extends Command {
 				+ "    addpeers : Add a list of new peers. \n"
 				+ "\n"
 				+ "peerslist: (optional)\n"
-				+ "    JSON array of new peers [ip:port,ip:port,..]\n"
+				+ "    CSV list of new peers [ip:port,ip:port,..]\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
@@ -42,7 +45,7 @@ public class peers extends Command {
 				+ "\n"
 				+ "peers action:list\n"
 				+ "\n"
-				+ "peers action:addpeers peerslist:[\"31.125.188.214:9001\",\"94.0.239.117:9001\"]\n";
+				+ "peers action:addpeers peerslist:31.125.188.214:9001,94.0.239.117:9001\n";
 	}
 
 	@Override
@@ -57,7 +60,7 @@ public class peers extends Command {
 		//Is the P2P Enable..
 		if(!GeneralParams.P2P_ENABLED) {
 			JSONObject resp = new JSONObject();
-			resp.put("peers-list", "[]");
+			resp.put("peers-list", "");
 			resp.put("havepeers",false);
 			resp.put("p2penabled",false);
 			resp.put("message","P2P System NOT enabled");
@@ -71,21 +74,38 @@ public class peers extends Command {
 			
 			P2PManager p2PManager = (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();
 			
+			//How many peers to show
+			int maxpeers = getNumberParam("max", MiniNumber.THOUSAND).getAsInt();
+			
 			//Get the peers list
 			ArrayList<InetSocketAddress> peers = p2PManager.getPeersCopy();
-			if(existsParam("max")) {
-				int max = getNumberParam("max").getAsInt();
-				if(max<peers.size()) {
-					ArrayList<InetSocketAddress> newpeers = new ArrayList<>();
-					for(int i=0;i<max;i++) {
-						newpeers.add(peers.get(i));
-					}
-					peers=newpeers;
+			
+			//Shuffle it..
+			Collections.shuffle(peers);
+			
+			//Now add to the list..
+			String peerslist = "";
+			int counter=0;
+			for(InetSocketAddress peer : peers) {
+				
+				//Check limit
+				if(counter>maxpeers) {
+					break;
 				}
+				
+				//Add it..
+				peerslist += peer.getAddress().getHostAddress() + ":" + peer.getPort()+",";
+			
+				counter++;
+			}
+			
+			//Remove the final ,
+			if(peerslist.endsWith(",")) {
+				peerslist = peerslist.substring(0, peerslist.length()-1);
 			}
 			
 			JSONObject resp = new JSONObject();
-			resp.put("peers-list", InetSocketAddressIO.addressesListToJSONArray(peers));
+			resp.put("peerslist", peerslist);
 			resp.put("havepeers",p2PManager.haveAnyPeers());
 			resp.put("p2penabled",true);
 			ret.put("response", resp);
@@ -97,45 +117,26 @@ public class peers extends Command {
 	        
 			//Is it a single IP
 			String peerstr = getParam("peerslist"); 
-			if(!peerstr.startsWith("[")) {
+			
+			//Break up 
+			StringTokenizer strtok = new StringTokenizer(peerstr,",");
+			while(strtok.hasMoreTokens()) {
+				String peer = strtok.nextToken();
 				
 				//Get the IP..
-				Message checker = connect.createConnectMessage(peerstr);
+				Message checker = connect.createConnectMessage(peer);
 				if(checker == null) {
-					throw new CommandException("Invalid peer : "+peerstr);
+					throw new CommandException("Invalid peer : "+peer);
 				}
 				
 				//Create an address
 				InetSocketAddress addr = new InetSocketAddress(checker.getString("host"), checker.getInteger("port"));
 				
-				//Otherwise add
+				//Now send to the peers checker..
 				Message msg = new Message(P2PPeersChecker.PEERS_CHECKPEERS).addObject("address", addr);
 				msg.addBoolean("force", true);
 				
 				p2pchecker.PostMessage(msg);
-				
-			}else {
-			
-				JSONArray peers = getJSONArrayParam("peerslist");
-				for(Object peerobj : peers) {
-					
-					String peer = (String)peerobj; 
-					
-					//Check is a valid host:port
-					Message checker = connect.createConnectMessage(peer);
-					if(checker == null) {
-						throw new CommandException("Invalid peer : "+peer);
-					}
-					
-					//Create an address
-					InetSocketAddress addr = new InetSocketAddress(checker.getString("host"), checker.getInteger("port"));
-					
-					//Otherwise add
-					Message msg = new Message(P2PPeersChecker.PEERS_CHECKPEERS).addObject("address", addr);
-					msg.addBoolean("force", true);
-					
-					p2pchecker.PostMessage(msg);
-				}
 			}
 			
 			JSONObject resp = new JSONObject();

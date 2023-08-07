@@ -76,18 +76,18 @@
 	function downloadFile(mdsfile, name){
 		
 		//Load the file..
-		MDS.file.loadbinary(mdsfile,function(msg){
+		if(window.navigator.userAgent.includes("Minima Browser")){
 			
-			var filedata 	= msg.response.load.data.substring(2);
+			MDS.log("Trying with internal JavaScriptInterface");
 			
-			if(window.navigator.userAgent.includes("Minima Browser")){
+			//Use the inbuilt blob downloader
+			Android.fileDownload(MDS.minidappuid, mdsfile);
+			
+		}else{
+	
+			MDS.file.loadbinary(mdsfile,function(msg){
 				
-				MDS.log("Trying with internal JavaScriptInterface");
-				
-				//Use the inbuilt blob downloader
-				Android.blobDownload(mdsfile,filedata);
-				
-			}else{
+				var filedata 	= msg.response.load.data.substring(2);
 				
 				var b64 		= MDS.util.hexToBase64(filedata);
 				var binaryData 	= MDS.util.base64ToArrayBuffer(b64);
@@ -103,8 +103,8 @@
 				link.click();
 
 				URL.revokeObjectURL(url);
-			}
-		});
+			});
+		}
 	}
 	
 	//Create a ROW in the files table

@@ -1,9 +1,22 @@
 <html>
 
 <head>
-	<title>TEST</title>
+	<title>BASIC</title>
+	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
 	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="jslib.js"></script>
+	
 </head>
 
 <body>
@@ -12,16 +25,11 @@
 
 	<br>
 
-	<h2>HELLO</h2>
-
-<br>
-<br>
-<div id=blocklink>..</div>
+	<h2>Hello World!</h2>
 	
 </center>
 
 <script type="text/javascript">
-
 	
 	//Main message handler..
 	MDS.init(function(msg){
@@ -29,19 +37,8 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			
-			var blink = document.getElementById("blocklink");
-			
-			//Get a link to a different DApp
-			MDS.dapplink("block",function(result){
-				MDS.log(JSON.stringify(result));
-				
-				if(!result.status){
-					blink.innerHTML = "DAPP NOT FOUND";	
-				}else{
-					blink.innerHTML = "<a target=_blank href='"+result.base+"'>BLOCK</a>";
-				}
-			});			
-			
+			//Do stuff.. from now..		
+			//MDS.file.save
 		}
 	});
 

@@ -16,6 +16,7 @@ import org.minima.system.Main;
 import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.backup;
 import org.minima.system.commands.backup.mysql;
+import org.minima.system.commands.backup.reset;
 import org.minima.system.commands.backup.restore;
 import org.minima.system.commands.backup.restoresync;
 import org.minima.system.commands.backup.vault;
@@ -62,6 +63,7 @@ import org.minima.system.commands.maxima.maxsign;
 import org.minima.system.commands.maxima.maxverify;
 import org.minima.system.commands.mds.checkmode;
 import org.minima.system.commands.mds.checkpending;
+import org.minima.system.commands.mds.checkrestore;
 import org.minima.system.commands.mds.mds;
 import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.disconnect;
@@ -91,6 +93,7 @@ import org.minima.system.commands.send.sendsign;
 import org.minima.system.commands.send.sendview;
 import org.minima.system.commands.signatures.sign;
 import org.minima.system.commands.signatures.verify;
+import org.minima.system.commands.txn.txnaddamount;
 import org.minima.system.commands.txn.txnauto;
 import org.minima.system.commands.txn.txnbasics;
 import org.minima.system.commands.txn.txncheck;
@@ -101,6 +104,7 @@ import org.minima.system.commands.txn.txnexport;
 import org.minima.system.commands.txn.txnimport;
 import org.minima.system.commands.txn.txninput;
 import org.minima.system.commands.txn.txnlist;
+import org.minima.system.commands.txn.txnlock;
 import org.minima.system.commands.txn.txnoutput;
 import org.minima.system.commands.txn.txnpost;
 import org.minima.system.commands.txn.txnscript;
@@ -118,9 +122,9 @@ public abstract class Command {
 		{   new quit(), new status(), new coins(), new txpow(), new connect(), new disconnect(), new network(),
 			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(), new rpc(),
 			new send(), new balance(), new tokencreate(), new tokenvalidate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
-			new incentivecash(), new webhooks(), new peers(), new p2pstate(), new nodecount(),
+			new incentivecash(), new webhooks(), new peers(), new p2pstate(),
 
-			new mds(), new sendpoll(), new healthcheck(), new mempool(), new block(),
+			new mds(), new sendpoll(), new healthcheck(), new mempool(), new block(), new reset(),
 			
 			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(), new sendview(),
 			
@@ -129,7 +133,7 @@ public abstract class Command {
 			new multisig(), new checkaddress(),
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
 			
-			new ping(), new random(), new mysql(), new slavenode(),
+			new ping(), new random(), new mysql(), new slavenode(), new checkrestore(),
 			//new file(),
 			
 			new vault(), new consolidate(),
@@ -141,6 +145,7 @@ public abstract class Command {
 			new txnbasics(),new txncreate(), new txninput(),new txnlist(), new txnclear(),
 			new txnoutput(),new txnstate(),new txnsign(),new txnpost(),new txndelete(),
 			new txnexport(),new txnimport(),new txncheck(), new txnscript(), new txnauto(),
+			new txnaddamount(),new txnlock(),
 			
 			new coinimport(), new coinexport(),new cointrack(), new coincheck(),
 			
@@ -538,7 +543,6 @@ public abstract class Command {
 				return new missingcmd(command,"Invalid parameters for "+command+" @ "+token);
 			}
 			
-			
 			String name  = token.substring(0, index).trim();
 			String value = token.substring(index+1).trim();
 			
@@ -603,8 +607,12 @@ public abstract class Command {
 		
 		//Are there any JSON in this.. if not use super fast method..
 		if(!zForceNormal) {
+			
+			//Check for windows files.. as : screws up
+			boolean iswindowsfile = (zInput.indexOf(":\\")!=-1);
+			
 			//If it's big use the fast one.. but can have issues if : used weirdly.. :( 
-			if(zInput.indexOf("{") == -1 && zInput.indexOf("[") == -1) {
+			if(!iswindowsfile && zInput.indexOf("{") == -1 && zInput.indexOf("[") == -1) {
 				String[] fastres = splitterQuotedPattern(zInput);
 				if(fastres != null) {
 					return fastres;

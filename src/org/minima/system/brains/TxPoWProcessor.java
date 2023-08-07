@@ -21,6 +21,7 @@ import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Stack;
+import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 
@@ -59,7 +60,17 @@ public class TxPoWProcessor extends MessageProcessor {
 		}
 		
 		//Add / Update last access to the DB
-		MinimaDB.getDB().getTxPoWDB().addTxPoW(zTxPoW);
+		boolean relevant = MinimaDB.getDB().getTxPoWDB().addTxPoW(zTxPoW);
+		
+		//If Relevant - post a message
+		if(relevant) {
+			JSONObject data = new JSONObject();
+			data.put("relevant", true);
+			data.put("txpow", zTxPoW.toJSON());
+			
+			//And Post it..
+			Main.getInstance().PostNotifyEvent("NEWTXPOW", data);
+		}
 		
 		//Do NOT process if you are a txblock node
 		if(GeneralParams.TXBLOCK_NODE) {

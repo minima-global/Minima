@@ -1,11 +1,13 @@
 package org.minima.system.commands.backup;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
+import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.UserDB;
 import org.minima.database.wallet.Wallet;
@@ -21,6 +23,8 @@ import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.BIP39;
+import org.minima.utils.MiniFile;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -36,13 +40,15 @@ public class mysql extends Command {
 	public String getFullHelp() {
 		return "\nmysql\n"
 				+ "\n"
-				+ "Export the archive data of this node to a MySQL database.\n"
+				+ "Export the archive data of this node to a MySQL d.\n"
 				+ "\n"
 				+ "The MySQL db can be used to perform a chain re-sync to put users on the correct chain,\n"
 				+ "\n"
-				+ "or a seed re-sync to restore access to lost funds, using the 24 word seed phrase.\n"
+				+ "or a seed re-sync to restore access to lost funds, using the seed phrase.\n"
 				+ "\n"
-				+ "Can also be used to query an address for its history of spent and unspent coins.\n"
+				+ "Can query an address for its history of spent and unspent coins.\n"
+				+ "\n"
+				+ "Additionally export the MySQL db to a gzip file for resyncing with 'reset' or 'archive' command.\n"
 				+ "\n"
 				+ "host:\n"
 				+ "    The ip:port (or name of Docker container) running the MySQL db.\n"
@@ -65,9 +71,11 @@ public class mysql extends Command {
 				+ "    resync : Perform a chain or seed re-sync from the specified MySQL db.\n"
 				+ "             Will shutdown the node so you must restart it once complete.\n"
 				+ "    wipe :  Be careful. Wipe the MySQL db.\n"
+				+ "    h2export : export the MySQL db to an archive gzip file which can be used to resync a node.\n"
+				+ "    h2import : import an archive gzip file to the MySQL db.\n"
 				+ "\n"
 				+ "phrase: (optional)\n"
-				+ "     Use with action:resync. The BIP39 seed phrase of the node to re-sync.\n"
+				+ "     Use with action:resync. The 24 word seed phrase of the node to re-sync.\n"
 				+ "     If provided, the node will be wiped and re-synced.\n"
 				+ "     If not provided, the node will be re-synced to the chain and will not be wiped.\n"
 				+ "\n"
@@ -85,6 +93,9 @@ public class mysql extends Command {
 				+ "enable: (optional)\n"
 				+ "    Use with action:autobackup. Automatically save data to MySQL archive DB.\n"
 				+ "\n"
+				+ "file: (optional)\n"
+				+ "    Name or path of the archive gzip file to export to or import from.\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:info\n"
@@ -100,12 +111,13 @@ public class mysql extends Command {
 				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:resync\n"
 				+ "\n"
 				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:resync phrase:\"24 WORDS HERE\" keys:90 keyuses:2000\n"
-				+ "\n";
+				+ "\n"
+				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:h2export file:archivexport-DDMMYY.gzip\n";
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database","user","password","keys","keyuses","phrase","address","enable"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database","user","password","keys","keyuses","phrase","address","enable","file"}));
 	}
 	
 	@Override
@@ -482,7 +494,7 @@ public class mysql extends Command {
 				attempts = 0;
 				while(foundsome) {
 					if(!tip.getBlockNumber().isEqual(endblock)) {
-						Thread.sleep(250);
+						Thread.sleep(50);
 					}else {
 						break;
 					}
@@ -490,7 +502,7 @@ public class mysql extends Command {
 					tip = MinimaDB.getDB().getTxPoWTree().getTip();
 					
 					attempts++;
-					if(attempts>1024) {
+					if(attempts>10000) {
 						error = true;
 						break;
 					}
@@ -607,6 +619,192 @@ public class mysql extends Command {
 			resp.put("created", outarr);
 			resp.put("spent", inarr);
 			ret.put("coins", resp);
+		
+		}else if(action.equals("h2import")) {
+			
+			long timestart = System.currentTimeMillis();
+			
+			//Create a temp name
+			String infile = getParam("file");
+			
+			//Create  tyemp DB
+			ArchiveManager archtemp = new ArchiveManager();
+			
+			//Create a temp DB file..
+			File restorefolder = new File(GeneralParams.DATA_FOLDER,"archiverestore");
+			restorefolder.mkdirs();
+			
+			File tempdb = new File(restorefolder,"archivetemp");
+			if(tempdb.exists()) {
+				tempdb.delete();
+			}
+			archtemp.loadDB(tempdb);
+			
+			//And now restore..
+			MinimaLogger.log("Restoring H2 Archive DB..");
+			archtemp.restoreFromFile(new File(infile), true);
+			
+			//Wipe the old data
+			mysql.wipeAll();
+			
+			//And recreate the tables
+			mysql.init();
+			
+			//Is there a cascade..
+			Cascade casc = archtemp.loadCascade();
+			if(casc != null) {
+				MinimaLogger.log("Cascade found.. ");
+				mysql.saveCascade(casc);
+			}
+			
+			//Load the H2 Data
+			long mysqllastblock 	= archtemp.loadLastBlock().getTxPoW().getBlockNumber().getAsLong();
+			long mysqlfirstblock 	= archtemp.loadFirstBlock().getTxPoW().getBlockNumber().getAsLong();
+			
+			MinimaLogger.log("First block:"+mysqllastblock);
+			MinimaLogger.log("Last block:"+mysqlfirstblock);
+			
+			//Load a range..
+			long endblock 	= -1;
+			TxBlock lastblock = null;
+			
+			long startload 	= mysqllastblock-1;
+			int counter = 0;
+			while(true) {
+				MinimaLogger.log("Loading from H2 @ "+startload);
+				long endload = startload+250;
+				
+				ArrayList<TxBlock> blocks = archtemp.loadBlockRange(new MiniNumber(startload), new MiniNumber(endload),false);
+				if(blocks.size()==0) {
+					//All blocks checked
+					break;
+				}
+				
+				//Cycle and add to our DB..
+				for(TxBlock block : blocks) {
+					
+					//Send to H2
+					mysql.saveBlock(block);
+					//MinimaLogger.log("Save block : "+block.getTxPoW().getBlockNumber());
+					
+					//New firstblock
+					startload 	= block.getTxPoW().getBlockNumber().getAsLong();
+				}
+				endblock = startload; 
+				
+				//Clean up..
+				counter++;
+				if(counter % 10 == 0) {
+					System.gc();
+				}
+			}
+			
+			//Shutdown TEMP DB
+			archtemp.saveDB(false);
+			
+			//Delete the restore folder
+			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
+			
+			long timediff = System.currentTimeMillis() - timestart;
+			
+			JSONObject resp = new JSONObject();
+			resp.put("start", mysqllastblock-1);
+			resp.put("end", endblock);
+			resp.put("time", MiniFormat.ConvertMilliToTime(timediff));
+			
+			ret.put("response", resp);
+			
+		}else if(action.equals("h2export")) {
+			
+			//Create a temp name
+			String outfile = getParam("file","archivebackup-"+System.currentTimeMillis()+".gzip");
+			
+			//Create the file
+			File gzoutput = MiniFile.createBaseFile(outfile);
+			if(gzoutput.exists()) {
+				gzoutput.delete();
+			}
+			
+			//Create  tyemp DB
+			ArchiveManager archtemp = new ArchiveManager();
+			
+			//Create a temp DB file..
+			File restorefolder = new File(GeneralParams.DATA_FOLDER,"archiverestore");
+			restorefolder.mkdirs();
+			
+			File tempdb = new File(restorefolder,"archivetemp");
+			if(tempdb.exists()) {
+				tempdb.delete();
+			}
+			archtemp.loadDB(tempdb);
+			
+			//Load the MySQL and output to the H2
+			long mysqllastblock 	= mysql.loadLastBlock();
+			long mysqlfirstblock 	= mysql.loadFirstBlock();
+			
+			//Load a range..
+			long firstblock = -1;
+			long endblock 	= -1;
+			TxBlock lastblock = null;
+			
+			long startload 	= mysqllastblock;
+			int counter = 0;
+			while(true) {
+				MinimaLogger.log("Loading from MySQL @ "+startload);
+				ArrayList<TxBlock> blocks = mysql.loadBlockRange(new MiniNumber(startload));
+				if(blocks.size()==0) {
+					//All blocks checked
+					break;
+				}
+				
+				//Cycle and add to our DB..
+				for(TxBlock block : blocks) {
+					
+					//Send to H2
+					archtemp.saveBlock(block);
+					
+					if(lastblock == null) {
+						firstblock = block.getTxPoW().getBlockNumber().getAsLong();
+					}
+					lastblock = block;
+					endblock = block.getTxPoW().getBlockNumber().getAsLong();
+				}
+				
+				startload = endblock+1;
+				
+				//Clean up..
+				counter++;
+				if(counter % 20 == 0) {
+					System.gc();
+				}
+			}
+
+			//Load the cascade if it is there
+			Cascade casc = mysql.loadCascade();
+			if(casc!=null) {
+				archtemp.checkCascadeRequired(casc);
+			}else {
+				MinimaLogger.log("No cascade found in MySQL..");
+			}
+			
+			//And Now export to File..
+			MinimaLogger.log("Exporting to H2 SQL file..");
+			archtemp.backupToFile(gzoutput,true);
+			
+			//Shutdown TEMP DB
+			archtemp.saveDB(false);
+			
+			//Delete the restore folder
+			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
+			
+			JSONObject resp = new JSONObject();
+			resp.put("start", firstblock);
+			resp.put("end", endblock);
+			resp.put("file", gzoutput.getName());
+			resp.put("path", gzoutput.getAbsolutePath());
+			resp.put("size", MiniFormat.formatSize(gzoutput.length()));
+			
+			ret.put("response", resp);
 			
 		}else {
 			throw new CommandException("Invalid action : "+action);

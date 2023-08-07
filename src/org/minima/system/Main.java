@@ -3,7 +3,6 @@ package org.minima.system;
 import java.io.File;
 import java.util.ArrayList;
 
-import org.minima.Minima;
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.UserDB;
@@ -472,6 +471,10 @@ public class Main extends MessageProcessor {
 	}
 	
 	public void restoreReady() {
+		restoreReady(true);
+	}
+	
+	public void restoreReady(boolean zShutdownMDS) {
 		//we are about to restore..
 		mRestoring = true;
 		
@@ -479,7 +482,7 @@ public class Main extends MessageProcessor {
 		shutdownGenProcs();
 		
 		//Stop the main TxPoW processor
-		shutdownFinalProcs();
+		shutdownFinalProcs(zShutdownMDS);
 	}
 	
 	public void restoreReadyForSync() {
@@ -556,18 +559,28 @@ public class Main extends MessageProcessor {
 	}
 	
 	public void shutdownFinalProcs() {
+		shutdownFinalProcs(true);
+	}
+	
+	public void shutdownFinalProcs(boolean zShutDownMDS) {
 				
+		if(zShutDownMDS) {
+			shutdownMDS();
+		}
+				
+		//Stop the main TxPoW processor
+		MinimaLogger.log("TxPoWProcessor shutdown..");
+		mTxPoWProcessor.stopMessageProcessor();
+		mTxPoWProcessor.waitToShutDown();
+	}
+	
+	public void shutdownMDS() {
 		//ShutDown MDS
 		MinimaLogger.log("Shutdown MDS..");
 		mMDS.shutdown();
 		
 		//Shut down the Notify Manager
 		mNotifyManager.shutDown();
-				
-		//Stop the main TxPoW processor
-		MinimaLogger.log("TxPoWProcessor shutdown..");
-		mTxPoWProcessor.stopMessageProcessor();
-		mTxPoWProcessor.waitToShutDown();
 	}
 	
 	/**

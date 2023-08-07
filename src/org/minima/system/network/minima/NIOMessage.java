@@ -380,12 +380,19 @@ public class NIOMessage implements Runnable {
 					boolean heavier = IBD.checkOurChainHeavier(ibd);
 					
 					if(!heavier) {
-						MinimaLogger.log("[!] CONNECTED TO HEAVIER CHAIN.. from "+mClientUID);
+						//Post a message
+						Main.getInstance().PostNotifyEvent("MDS_HEAVIER_CHAIN", new JSONObject());
+						
+						MinimaLogger.log("[!] CONNECTED TO HEAVIER CHAIN.. from "+mClientUID+" ..disconnecting");
+						
+						//Disconnect
+						Main.getInstance().getNIOManager().disconnect(mClientUID);
+						
+						return;
+						
 					}else {
 						MinimaLogger.log("[!] Received IBD with cascade even though we have one.. from "+mClientUID);
 					}
-					
-					//return;
 				}
 								
 				//A small message..

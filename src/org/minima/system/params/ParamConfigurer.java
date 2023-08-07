@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.function.BiConsumer;
 
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.utils.MinimaLogger;
@@ -352,6 +353,12 @@ public class ParamConfigurer {
             if ("true".equals(args)) {
                 GeneralParams.TEST_PARAMS 		= true;
                 TestParams.setTestParams();
+            }
+        }),
+        testchainlength("testchainlength", "Specify length of tree to keep in -test mode (default is 32)", (arg, configurer) -> {
+            TestParams.MINIMA_CASCADE_START_DEPTH 	= new MiniNumber(arg.trim());
+            if(GeneralParams.TEST_PARAMS) {
+            	TestParams.setTestParams();
             }
         }),
         help("help", "Print this help", (args, configurer) -> {

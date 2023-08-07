@@ -1,10 +1,12 @@
 package org.minima.system.mds;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -20,35 +22,17 @@ import java.util.StringTokenizer;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 
-import org.minima.database.MinimaDB;
-import org.minima.database.minidapps.MDSDB;
-import org.minima.database.minidapps.MiniDAPP;
-import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
-import org.minima.system.commands.CommandException;
-import org.minima.system.mds.handler.CMDcommand;
-import org.minima.system.mds.hub.MDSHub;
-import org.minima.system.mds.hub.MDSHubDelete;
-import org.minima.system.mds.hub.MDSHubError;
-import org.minima.system.mds.hub.MDSHubInstall;
-import org.minima.system.mds.hub.MDSHubInstallError;
-import org.minima.system.mds.hub.MDSHubLoggedOn;
-import org.minima.system.mds.hub.MDSHubLogon;
-import org.minima.system.mds.hub.MDSHubPending;
-import org.minima.system.mds.hub.MDSHubPendingAction;
-import org.minima.system.mds.hub.MDSHubPermission;
-import org.minima.system.mds.hub.MDSHubUpdate;
 import org.minima.system.mds.multipart.MultipartData;
 import org.minima.system.mds.multipart.MultipartParser;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.ZipExtractor;
-import org.minima.utils.json.JSONObject;
-import org.minima.utils.json.parser.JSONParser;
-import org.minima.utils.messages.Message;
 
 public class MDSFileHandler implements Runnable {
+	
+	public static String MINIMA_DOWNLOAD_AS_FILE = "_minima_download_as_file_";
 	
 	/**
 	 * The Net Socket
@@ -118,6 +102,8 @@ public class MDSFileHandler implements Runnable {
 			// we get file requested
 			fileRequested = parse.nextToken();
 			
+			//MinimaLogger.log("FILE REQUESTED : "+fileRequested);
+			
 			//Remove slashes..
 			if(fileRequested.startsWith("/")) {
 				fileRequested = fileRequested.substring(1);
@@ -155,6 +141,8 @@ public class MDSFileHandler implements Runnable {
 			}
 			
 			if(	fileRequested.equals("index.html") ||
+				fileRequested.equals("invalid.html") ||
+				fileRequested.equals("httperror.html") ||
 				fileRequested.equals("favicon.png") ||
 				fileRequested.equals("Manrope-Regular.ttf") ||
 				fileRequested.equals("background.svg")) {
@@ -202,6 +190,173 @@ public class MDSFileHandler implements Runnable {
 				//And write that out..
 				writeHTMLPage(dos, success);
 			
+			}else if(fileRequested.startsWith("fileupload.html")){
+				
+				//get the POST data
+				int contentlength = Integer.parseInt(allheaders.get("Content-Length"));
+				
+				//Read the data..
+				byte[] alldata = new byte[contentlength];
+				
+				//Read it ALL in
+				int len,total=0;
+				while( (len = inputStream.read(alldata,total,contentlength-total)) != -1) {
+					total += len;
+					if(total == contentlength) {
+						break;
+					}
+				}
+				
+				//Get the bits..
+				Hashtable<String, MultipartData> data = MultipartParser.parseMultipartData(alldata);
+				
+				//Which MiniDAPP..
+				MultipartData minidappidpart = data.get("uid");
+				if(minidappidpart==null) {
+					throw new IllegalArgumentException("NO minidappuid specified in form for uploadfile");
+				}
+				String minidappsessionid = minidappidpart.getTextData();
+				
+				//Check it..
+				String minidappid = mMDS.convertSessionID(minidappsessionid);
+				if(minidappid == null) {
+					throw new IllegalArgumentException("Invalid session id for uploadfile "+minidappsessionid);
+				}
+				
+				//Get the jumppage
+				MultipartData jumppagepart = data.get("jumppage");
+				if(jumppagepart==null) {
+					throw new IllegalArgumentException("NO jumppage specified in form for uploadfile");
+				}
+				String jumppage = jumppagepart.getTextData();
+				
+				//Get the extradata
+				MultipartData extradatapart = data.get("extradata");
+				String extradata = "";
+				if(extradatapart!=null) {
+					extradata = URLEncoder.encode(extradatapart.getTextData(), "UTF-8");
+				}
+				
+				//Now.. save the file..
+				MultipartData filepart = data.get("fileupload"); 
+				String filename 	= URLEncoder.encode(filepart.getFileName(), "UTF-8");
+				String contenttype 	= URLEncoder.encode(filepart.getContentType(), "UTF-8");
+				
+				//Save the data
+				byte[] filedata = filepart.getFileData();
+				File root = new File(mMDS.getMiniDAPPFileFolder(minidappid),"fileupload");
+				if(!root.exists()) {
+					root.mkdirs();
+				}
+				MiniFile.writeDataToFile(new File(root,filepart.getFileName()), filedata);
+				
+				//Jump to the correct page..
+				String base = "/"+minidappid+"/"+jumppage+"?uid="+minidappsessionid
+						+"&fileupload="+filename
+						+"&size="+filedata.length
+						+"&contenttype="+contenttype;
+				
+				if(!extradata.equals("")) {
+					base += "&extradata="+extradata;
+				}
+				
+				//Create the web redirect paghe
+				String webredirect = "<html>\r\n"
+						+ "  <head>\r\n"
+						+ "    <meta http-equiv='refresh' content=\"0; url='"+base+"\" />\r\n"
+						+ "  </head>\r\n"
+						+ "  <body>\r\n"
+						+ "    <p>Please follow <a href='"+base+"'>this link</a>.</p>\r\n"
+						+ "  </body>\r\n"
+						+ "</html>";
+				
+				//Write this redirect page..
+				writeHTMLPage(dos, webredirect);
+				
+			}else if(fileRequested.startsWith("fileuploadchunk.html")){
+				
+				//get the POST data
+				int contentlength = Integer.parseInt(allheaders.get("Content-Length"));
+				
+				//Read the data..
+				byte[] alldata = new byte[contentlength];
+				
+				//Read it ALL in
+				int len,total=0;
+				while( (len = inputStream.read(alldata,total,contentlength-total)) != -1) {
+					total += len;
+					if(total == contentlength) {
+						break;
+					}
+				}
+				
+				//Get the bits..
+				Hashtable<String, MultipartData> data = MultipartParser.parseMultipartData(alldata);
+				
+				//Which MiniDAPP..
+				MultipartData minidappidpart = data.get("uid");
+				if(minidappidpart==null) {
+					throw new IllegalArgumentException("NO minidappuid specified in form for uploadfile");
+				}
+				String minidappsessionid = minidappidpart.getTextData();
+				
+				//Check it..
+				String minidappid = mMDS.convertSessionID(minidappsessionid);
+				if(minidappid == null) {
+					throw new IllegalArgumentException("Invalid session id for uploadfile "+minidappsessionid);
+				}
+				
+				//Now.. save the file..
+				MultipartData filepart = data.get("fileupload"); 
+				
+				//Get other data
+				String filename = data.get("filename").getTextData();
+				int allchunks 	= Integer.parseInt(data.get("allchunks").getTextData());
+				int chunk 	 	= Integer.parseInt(data.get("chunknum").getTextData());;
+				
+				//Save the data
+				File root = new File(mMDS.getMiniDAPPFileFolder(minidappid),"fileupload");
+				if(!root.exists()) {
+					root.mkdirs();
+				}
+				File chunkroot 	= new File(root,"chunkupload");
+				if(chunk == 0) {
+					//First time..
+					MiniFile.deleteFileOrFolder(root.getAbsolutePath(), chunkroot);
+				}
+				File chunkfile  = new File(chunkroot,"chunk_"+chunk);
+				
+				//Get the data
+				byte[] filedata = filepart.getFileData();
+				MiniFile.writeDataToFile(chunkfile, filedata);
+				
+				//Are we stitching it all together..
+				if(chunk >= allchunks-1) {
+					
+					File finalfile = new File(root,filename);
+					if(finalfile.exists()) {
+						finalfile.delete();
+					}
+					
+					for(int i=0;i<allchunks;i++) {
+						File readchunkfile  = new File(chunkroot,"chunk_"+i);
+						
+						//Read in the complete file..
+						byte[] chunkdata = MiniFile.readCompleteFile(readchunkfile);
+						
+						//And write it out..
+						MiniFile.writeDataToFile(finalfile, chunkdata, true);
+					}
+					
+					//And finally delete the chunk folder..
+					MiniFile.deleteFileOrFolder(root.getAbsolutePath(), chunkroot);
+				}
+				
+				//Write this page..
+				dos.writeBytes("HTTP/1.0 200 OK\r\n");
+				dos.writeBytes("\r\n");
+				dos.flush();
+				
 			}else {
 			
 				//Remove the params..
@@ -229,18 +384,41 @@ public class MDSFileHandler implements Runnable {
 		    		
 		    	}else {
 		    		
-		    		//Get the data
-					byte[] file = MiniFile.readCompleteFile(webfile);
-		
+		    		boolean downloader 	= false;
+		    		String filename 	= webfile.getName();
+		    		if(filename.contains(MINIMA_DOWNLOAD_AS_FILE)){
+		    			//Remove the ending..
+		    			filename 	= filename.replace(MINIMA_DOWNLOAD_AS_FILE, "");
+		    			downloader 	= true;
+		    		}
+		    		
+		    		//Get the data length
+		    		long filelen = webfile.length();
+		    		
 					//Calculate the size of the response
-					int finallength = file.length;
-		            
 					dos.writeBytes("HTTP/1.0 200 OK\r\n");
 					dos.writeBytes("Content-Type: "+contenttype+"\r\n");
-					dos.writeBytes("Content-Length: " + finallength + "\r\n");
+					dos.writeBytes("Content-Length: " + filelen+ "\r\n");
 					dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
+					
+					//Are we downloading this file..
+					if(downloader) {
+						dos.writeBytes("Content-Disposition: attachment; filename=\""+filename+"\"\r\n");
+					}
+					
+					//End Headers..
 					dos.writeBytes("\r\n");
-					dos.write(file, 0, finallength);
+					
+					//Now write the data out.. stream..
+					FileInputStream fis = new FileInputStream(webfile);
+					byte[] buffer 		= new byte[32768];
+			        int length;
+			        while ((length = fis.read(buffer)) > 0) {
+			        	dos.write(buffer, 0, length);
+			        }
+				    fis.close();
+			        
+					//Flush the stream
 					dos.flush();
 		    	}
 			}
@@ -289,7 +467,11 @@ public class MDSFileHandler implements Runnable {
 	    try {
 	    	for (String param : params) {  
 		        String name = param.split("=")[0];  
-		        String value = param.split("=")[1];  
+		        String value = param.split("=")[1];
+		        
+		        //URL decode.
+		        value = URLDecoder.decode(value,"UTF-8").trim();
+		        
 		        map.put(name, value);  
 		    }
 	    }catch(Exception exc) {

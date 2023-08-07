@@ -187,6 +187,12 @@ public abstract class SqlDB {
 	public void saveDB(boolean zCompact) {
 		try {
 		
+			//Check..
+			if(mSQLConnection == null) {
+				MinimaLogger.log("Trying to saveDB on NULL SQLDB");
+				return;
+			}
+			
 			//Are we already closed..
 			if(mSQLConnection.isClosed()) {
 				return;

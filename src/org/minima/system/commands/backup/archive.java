@@ -38,7 +38,6 @@ import org.minima.system.params.GeneralParams;
 import org.minima.utils.BIP39;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
-import org.minima.utils.MiniUtil;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -64,28 +63,36 @@ public class archive extends Command {
 	public String getFullHelp() {
 		return "\narchive\n"
 				+ "\n"
-				+ "Perform a chain or seed re-sync from an archive node.\n"
+				+ "Perform a chain or seed re-sync from an archive node or archive export file.\n"
 				+ "\n"
-				+ "A chain re-sync will put your node on the correct chain so you are in sync with the latest tip block.\n"
+				+ "A chain re-sync will put your node on the correct chain.\n"
 				+ "\n"
 				+ "Use a chain re-sync if your node has been offline for too long and cannot catchup. Seed Phrase is not required.\n"
 				+ "\n"
-				+ "A seed re-sync will wipe the wallet and re-generate your keys from your seed phrase. Your coins will be restored.\n"
+				+ "A seed re-sync will wipe the wallet, re-generate your private keys and restore your coins.\n"
 				+ "\n"
 				+ "Only use a seed re-sync if you have lost your node and do not have a backup.\n"
 				+ "\n"
-				+ "You can also check the integrity of your archive db.\n"
+				+ "You can also perform checks on your archive db or archive file and check an address.\n"
 				+ "\n"
 				+ "action:\n"
-				+ "    resync : do a resync. If you wish to perform a chain re-sync only, do not provide your 24 word seed phrase.\n"
-				+ "    integrity : on an Archive node, check the integrity of your Archive db. No host required.\n"
+				+ "    resync : do a chain or seed re-sync. For chain re-sync do not provide phrase. Use with 'host'.\n"
+				+ "    integrity : Check the integrity of your archive db. No host required.\n"
+				+ "    export : Export your archive db to a gzip file. \n"
+				+ "    import : do a chain or seed re-sync using an archive gzip file. Use with 'file'.\n"
+				+ "    inspect : inspect an archive export gzip file. If 'last:1' then the file can re-sync any node from genesis.\n"
+				+ "    addresscheck : check your archive db for spent and unspent coins at a specific address.\n"
 				+ "\n"
 				+ "host: (optional) \n"
 				+ "    ip:port of the archive node to sync from or check the integrity of.\n"
 				+ "    Use 'auto' to connect to a default archive node.\n"
+				+ "    Only use with 'action:resync'.\n"
+				+ "\n"
+				+ "file: (optional) \n"
+				+ "    name or path of the archive export gzip file to export/import/inspect\n"
 				+ "\n"
 				+ "phrase: (optional)\n"
-				+ "    Your 24 word seed phrase in double quotes, to perform a seed re-sync. Use with action:resync.\n"
+				+ "    Your 24 word seed phrase in double quotes, to perform a seed re-sync. Use with action:resync or import.\n"
 				+ "    This will wipe the wallet of this node. You do NOT have to do this if you still have access to your wallet.\n"
 				+ "    In this case, just do a re-sync without 'phrase' to get on the correct chain.\n"
 				+ "\n"
@@ -97,15 +104,25 @@ public class archive extends Command {
 				+ "    Every time you re-sync with seed phrase this needs to be higher as Minima Signatures are stateful.\n"
 				+ "    Defaults to 1000 - the max is 262144 for normal keys.\n"
 				+ "\n"
+				+ "address: (optional) \n"
+				+ "    The wallet address to check. Use with 'action:addresscheck'.\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "archive action:resync host:89.98.89.98:9001\n"
 				+ "\n"
-				+ "archive action:resync host:auto phrase:\"YOUR 24 WORD SEED PHRASE\"\n"
+				+ "archive action:resync host:89.98.89.98:9001 phrase:\"YOUR 24 WORD SEED PHRASE\" keyuses:2000\n"
 				+ "\n"
-				+ "archive action:resync host:89.98.89.98:9001 phrase:\"YOUR 24 WORD SEED PHRASE\" keys:90 keyuses:2000\n"
+				+ "archive action:integrity\n"
 				+ "\n"
-				+ "archive action:integrity\n";
+				+ "archive action:export file:archiveexport-ddmmyy.gzip\n"
+				+ "\n"
+				+ "archive action:import file:archiveexport-ddmmyy.gzip\n"
+				+ "\n"
+				+ "archive action:inspect file:archiveexport-ddmmyy.gzip\n"
+				+ "\n"
+				+ "archive action:addresscheck address:Mx..\n"
+				+ "\n";
 	}
 	
 	@Override
@@ -305,6 +322,12 @@ public class archive extends Command {
 			String host = null;
 			int port 	= 0;
 			if(!usinglocal) {
+				
+				//Check a valid host
+				if(connectdata == null) {
+					throw new CommandException("Invalid HOST format for resync : "+fullhost);
+				}
+				
 				host = connectdata.getString("host");
 				port = connectdata.getInteger("port");
 			}
@@ -430,7 +453,7 @@ public class archive extends Command {
 					endblock		= last.getTxPoW().getBlockNumber();
 					startblock 		= endblock.increment();
 					
-					MinimaLogger.log("Archive IBD received start : "+start.getTxPoW().getBlockNumber()+" end : "+endblock);
+					//MinimaLogger.log("Archive IBD received start : "+start.getTxPoW().getBlockNumber()+" end : "+endblock);
 				
 					//Notify the Android Listener
 					NotifyListener(minimalistener,"Loading "+start.getTxPoW().getBlockNumber()+" @ "+new Date(start.getTxPoW().getTimeMilli().getAsLong()).toString());
@@ -449,7 +472,7 @@ public class archive extends Command {
 					Thread.sleep(250);
 					tip = MinimaDB.getDB().getTxPoWTree().getTip();
 					attempts++;
-					if(attempts>1000) {
+					if(attempts>5000) {
 						error = true;
 						break;
 					}
@@ -462,7 +485,8 @@ public class archive extends Command {
 				
 				//Now wait to catch up..
 				long timenow = System.currentTimeMillis();
-				MinimaLogger.log("Waiting for chain to catch up.. please wait");
+				
+				//MinimaLogger.log("Waiting for chain to catch up.. please wait");
 				attempts = 0;
 				while(foundsome) {
 					if(!tip.getBlockNumber().isEqual(endblock)) {
@@ -474,13 +498,14 @@ public class archive extends Command {
 					tip = MinimaDB.getDB().getTxPoWTree().getTip();
 					
 					attempts++;
-					if(attempts>4000) {
+					if(attempts>20000) {
 						error = true;
 						break;
 					}
 				}
+				
 				long timediff = System.currentTimeMillis() - timenow;
-				MinimaLogger.log("IBD Processed.. time :"+timediff+"ms");
+				MinimaLogger.log("IBD Processed.. block:"+startblock+" time:"+timediff+"ms");
 				
 				if(error) {
 					MinimaLogger.log("ERROR : There was an error processing that IBD - took too long");
@@ -491,6 +516,12 @@ public class archive extends Command {
 				if(size==0) {
 					break;
 				}
+				
+				//HACK
+				//if(startblock.isMore(new MiniNumber(100000))) {
+				//	MinimaLogger.log("FORCE ARCHIVE STOP @ 100000");
+				//	break;
+				//}
 			}
 			
 			//Notify the Android Listener
@@ -504,7 +535,6 @@ public class archive extends Command {
 			ret.put("response", resp);
 			
 			//And NOW shut down..
-			//Main.getInstance().getTxPoWProcessor().stopMessageProcessor();
 			Main.getInstance().shutdownFinalProcs();
 			
 			//Now shutdown and save everything
@@ -525,7 +555,7 @@ public class archive extends Command {
 		}else if(action.equals("export")) {
 			
 			//The GZIPPED file 
-			String file = getParam("file","archivebackup-"+System.currentTimeMillis()+".gz");
+			String file = getParam("file","archivebackup-"+System.currentTimeMillis()+".gzip");
 			
 			//Create the file
 			File gzoutput = MiniFile.createBaseFile(file);
