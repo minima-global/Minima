@@ -53,7 +53,7 @@ public class TxPoWDB {
 	/**
 	 * Add a TxPoW to the Database - both RAM and SQL
 	 */
-	public void addTxPoW(TxPoW zTxPoW) {
+	public boolean addTxPoW(TxPoW zTxPoW) {
 		//Get the ID
 		String txpid = zTxPoW.getTxPoWID();
 		
@@ -72,7 +72,12 @@ public class TxPoWDB {
 			
 			//Add it to the SQL..
 			mSqlDB.addTxPoW(zTxPoW, relevant);
+			
+			return relevant;
 		}
+		
+		//Check if relevant
+		return TxPoWSearcher.checkTxPoWRelevant(zTxPoW, MinimaDB.getDB().getWallet());
 	}
 	
 	public void addSQLTxPoW(TxPoW zTxPoW) {
