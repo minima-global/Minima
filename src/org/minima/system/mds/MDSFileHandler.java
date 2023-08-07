@@ -141,6 +141,8 @@ public class MDSFileHandler implements Runnable {
 			}
 			
 			if(	fileRequested.equals("index.html") ||
+				fileRequested.equals("invalid.html") ||
+				fileRequested.equals("httperror.html") ||
 				fileRequested.equals("favicon.png") ||
 				fileRequested.equals("Manrope-Regular.ttf") ||
 				fileRequested.equals("background.svg")) {
