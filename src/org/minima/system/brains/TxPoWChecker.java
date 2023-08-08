@@ -281,12 +281,12 @@ public class TxPoWChecker {
 		if(coinset.size() != allcoinid.size()) {
 			MinimaLogger.log("Invalid TxPoW Transaction / Burn with non unique CoinIDs "+zTxPoW.getTxPoWID()+" uniquesize:"+coinset.size()+" txncoins:"+allcoinid.size());
 
-//			for(String coin : coinset) {
-//				MinimaLogger.log("[!] Unique coinid : "+coin);
-//			}
-//			for(String coin : allcoinid) {
-//				MinimaLogger.log("[!] All coinid : "+coin);
-//			}
+			for(String coin : coinset) {
+				MinimaLogger.log("[!] Unique coinid : "+coin);
+			}
+			for(String coin : allcoinid) {
+				MinimaLogger.log("[!] All coinid : "+coin);
+			}
 			
 			return false;
 		}
