@@ -138,7 +138,6 @@ public class MinimaRPCClient {
 				System.out.println(MiniFormat.JSONPretty(json));
 				
 			} catch (ParseException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
