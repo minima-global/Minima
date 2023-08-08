@@ -25,6 +25,7 @@ import org.minima.system.Main;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONObject;
 
 public class TxPoWTreeNode implements Streamable {
 
@@ -155,7 +156,19 @@ public class TxPoWTreeNode implements Streamable {
 					mRelevantMMRCoins.add(entrynumber);
 					
 					//Message..
-					MinimaLogger.log("NEW Spent Coin : "+spentcoin.toJSON());
+					JSONObject coinjson = spentcoin.toJSON();
+					MinimaLogger.log("NEW Spent Coin : "+coinjson);
+					
+					//Send a message
+					JSONObject data = new JSONObject();
+					data.put("relevant", true);
+					data.put("spent", true);
+					data.put("coin", coinjson);
+					
+					//And Post it..
+					Main.getInstance().PostNotifyEvent(Main.MAIN_NEWCOIN, data);
+				
+					//There has been a balance change
 					balancechange = true;
 				}
 			}
@@ -189,7 +202,18 @@ public class TxPoWTreeNode implements Streamable {
 					mRelevantMMRCoins.add(entrynumber);
 					
 					//Message..
-					MinimaLogger.log("NEW Unspent Coin : "+newcoin.toJSON());
+					JSONObject coinjson = newcoin.toJSON();
+					MinimaLogger.log("NEW Unspent Coin : "+coinjson);
+					
+					//Send a message
+					JSONObject data = new JSONObject();
+					data.put("relevant", true);
+					data.put("spent", false);
+					data.put("coin", coinjson);
+					
+					//And Post it..
+					Main.getInstance().PostNotifyEvent(Main.MAIN_NEWCOIN, data);
+					
 					balancechange = true;
 				}
 			}

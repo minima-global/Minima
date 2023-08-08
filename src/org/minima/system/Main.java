@@ -135,6 +135,8 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_BALANCE 	= "MAIN_BALANCE";
 	public static final String MAIN_MINING 		= "MAIN_MINING";
 	
+	public static final String MAIN_NEWCOIN 	= "NEWCOIN";
+	
 	/**
 	 * Are we on Normal mine mode or LOW
 	 */
