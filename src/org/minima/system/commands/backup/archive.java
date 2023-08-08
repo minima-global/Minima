@@ -85,7 +85,6 @@ public class archive extends Command {
 				+ "\n"
 				+ "host: (optional) \n"
 				+ "    ip:port of the archive node to sync from or check the integrity of.\n"
-				+ "    Use 'auto' to connect to a default archive node.\n"
 				+ "    Only use with 'action:resync'.\n"
 				+ "\n"
 				+ "file: (optional) \n"
@@ -294,20 +293,21 @@ public class archive extends Command {
 			
 			//Is it auto
 			boolean usinglocal = false;
-			if(fullhost.equals("auto")) {
-				
-				//Choose one from our default list
-				int size  	= P2PParams.DEFAULT_ARCHIVENODE_LIST.size();
-				int rand  	= new Random().nextInt(size);
-				
-				InetSocketAddress archaddr = P2PParams.DEFAULT_ARCHIVENODE_LIST.get(rand);
-				String ip 	= archaddr.getHostString();
-				int port    = archaddr.getPort();
-				fullhost	= ip+":"+port;
-				
-				MinimaLogger.log("RANDOM ARCHIVE HOST : "+rand+" host:"+fullhost);
-			
-			}else if(fullhost.equals(LOCAL_ARCHIVE)) {
+//			if(fullhost.equals("auto")) {
+//				
+//				//Choose one from our default list
+//				int size  	= P2PParams.DEFAULT_ARCHIVENODE_LIST.size();
+//				int rand  	= new Random().nextInt(size);
+//				
+//				InetSocketAddress archaddr = P2PParams.DEFAULT_ARCHIVENODE_LIST.get(rand);
+//				String ip 	= archaddr.getHostString();
+//				int port    = archaddr.getPort();
+//				fullhost	= ip+":"+port;
+//				
+//				MinimaLogger.log("RANDOM ARCHIVE HOST : "+rand+" host:"+fullhost);
+//			
+//			}else 
+			if(fullhost.equals(LOCAL_ARCHIVE)) {
 				
 				//Using the local DB..
 				if(STATIC_TEMPARCHIVE == null) {

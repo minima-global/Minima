@@ -62,7 +62,6 @@ public class restoresync extends Command {
 				+ "\n"
 				+ "host: (optional)\n"
 				+ "    ip:port of the archive node to sync from.\n"
-				+ "    Use 'auto' to connect to a default archive node.\n"
 				+ "\n"
 				+ "keyuses: (optional) \n"
 				+ "    Increment (not set) the number of key uses per key.\n"
@@ -230,7 +229,7 @@ public class restoresync extends Command {
 		MinimaLogger.log("Start sync from "+startblock);
 		
 		//Is there a host
-		String host = getParam("host", "auto");
+		String host = getParam("host");
 		
 		//Now do a resync..
 		performResync(	host, keyuses, startblock, true);
@@ -302,19 +301,19 @@ public class restoresync extends Command {
 		String fullhost = zHost;
 		
 		//Is it auto
-		if(fullhost.equals("auto")) {
-			
-			//Choose one from our default list
-			int size  	= P2PParams.DEFAULT_ARCHIVENODE_LIST.size();
-			int rand  	= new Random().nextInt(size);
-			
-			InetSocketAddress archaddr = P2PParams.DEFAULT_ARCHIVENODE_LIST.get(rand);
-			String ip 	= archaddr.getHostString();
-			int port    = archaddr.getPort();
-			fullhost	= ip+":"+port;
-			
-			MinimaLogger.log("RANDOM ARCHIVE HOST : "+rand+" host:"+fullhost);
-		}
+//		if(fullhost.equals("auto")) {
+//			
+//			//Choose one from our default list
+//			int size  	= P2PParams.DEFAULT_ARCHIVENODE_LIST.size();
+//			int rand  	= new Random().nextInt(size);
+//			
+//			InetSocketAddress archaddr = P2PParams.DEFAULT_ARCHIVENODE_LIST.get(rand);
+//			String ip 	= archaddr.getHostString();
+//			int port    = archaddr.getPort();
+//			fullhost	= ip+":"+port;
+//			
+//			MinimaLogger.log("RANDOM ARCHIVE HOST : "+rand+" host:"+fullhost);
+//		}
 		
 		Message connectdata = connect.createConnectMessage(fullhost);
 		
