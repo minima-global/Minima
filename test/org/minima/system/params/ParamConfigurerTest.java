@@ -39,7 +39,7 @@ public class ParamConfigurerTest {
                 "-daemon",
                 "-host", "124.0.1.10",
                 //"-data", "mydaatafolder",
-                "-p2pnode", "124.0.1.9",
+                "-p2prootnode", "124.0.1.9",
                 "-genesis",
                 "-nop2p",
                 "-noconnect",
