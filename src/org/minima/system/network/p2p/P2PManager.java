@@ -7,9 +7,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.StringTokenizer;
 
 import org.minima.database.MinimaDB;
 import org.minima.objects.Greeting;
+import org.minima.system.commands.CommandException;
+import org.minima.system.commands.network.connect;
 import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOClientInfo;
 import org.minima.system.network.minima.NIOManager;
@@ -73,7 +76,9 @@ public class P2PManager extends MessageProcessor {
         //And start the loop timer..
         PostTimerMessage(new TimerMessage(10_000, P2P_LOOP));
         PostTimerMessage(new TimerMessage(P2PParams.NODE_NOT_ACCEPTING_CHECK_DELAY, P2P_ASSESS_CONNECTIVITY));
-        PostTimerMessage(new TimerMessage(P2PParams.SAVE_DATA_DELAY, P2P_SAVE_DATA));
+        
+        //First time save after 5 minutes
+        PostTimerMessage(new TimerMessage(1000 * 60 * 5, P2P_SAVE_DATA));
     }
     
     public P2PPeersChecker getPeersChecker() {
@@ -106,6 +111,33 @@ public class P2PManager extends MessageProcessor {
         MinimaLogger.log("[+] P2P Version: " + P2PParams.VERSION);
 
         List<InetSocketAddress> peers = p2pdb.getPeersList();
+        
+        //Do we add any nodes..
+        if(!GeneralParams.P2P_ADDNODES.equals("") && peers.size()==0) {
+        	
+        	MinimaLogger.log("Peers list empty - adding specified hosts..");
+        	
+        	//Add the nodes..
+        	StringTokenizer strtok = new StringTokenizer(GeneralParams.P2P_ADDNODES,",");
+        	while(strtok.hasMoreTokens()) {
+        		String node = strtok.nextToken().trim();
+        		
+        		//Get the IP..
+				Message checker = connect.createConnectMessage(node);
+				if(checker == null) {
+					MinimaLogger.log("Invalid P2P node : "+node);
+					
+				}else {
+					//Create an address
+					InetSocketAddress addr = new InetSocketAddress(checker.getString("host"), checker.getInteger("port"));
+				
+					//Add to our list
+					peers.add(addr);
+				}
+        	}
+        }
+        
+        //Cycle our known peers
         for(InetSocketAddress peer: peers){
             mPeersChecker.PostMessage(new Message(P2PPeersChecker.PEERS_ADDPEERS).addObject("address", peer));
         }
