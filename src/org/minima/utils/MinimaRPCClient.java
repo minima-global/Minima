@@ -12,6 +12,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
+import org.minima.utils.json.parser.ParseException;
 import org.minima.utils.ssl.MinimaTrustManager;
 
 public class MinimaRPCClient {
@@ -23,6 +24,9 @@ public class MinimaRPCClient {
 		boolean bpass = false;
 		String password  = "password";
 		String sslpubkey = "";
+		
+		//One time function
+		String command = "";
 		
 		//Are there any Args
 		int arglen 	= zArgs.length;
@@ -41,6 +45,9 @@ public class MinimaRPCClient {
 					
 				}else if(arg.equals("-sslpubkey")) {
 					sslpubkey = zArgs[counter++];
+				
+				}else if(arg.equals("-command")) {
+					command = zArgs[counter++];
 					
 				}else if(arg.equals("-help")) {
 					
@@ -89,73 +96,102 @@ public class MinimaRPCClient {
 		}
 		
 		//Now lets go..
-		MinimaLogger.log("**********************************************");
-		MinimaLogger.log("*  __  __  ____  _  _  ____  __  __    __    *");
-		MinimaLogger.log("* (  \\/  )(_  _)( \\( )(_  _)(  \\/  )  /__\\   *");
-		MinimaLogger.log("*  )    (  _)(_  )  (  _)(_  )    (  /(__)\\  *");
-		MinimaLogger.log("* (_/\\/\\_)(____)(_)\\_)(____)(_/\\/\\_)(__)(__) *");
-		MinimaLogger.log("*                                            *");
-		MinimaLogger.log("**********************************************");
-		MinimaLogger.log("Welcome to the Minima RPCClient - for assistance type help. Then press enter.");
+		if(command.equals("")) {
+			MinimaLogger.log("**********************************************");
+			MinimaLogger.log("*  __  __  ____  _  _  ____  __  __    __    *");
+			MinimaLogger.log("* (  \\/  )(_  _)( \\( )(_  _)(  \\/  )  /__\\   *");
+			MinimaLogger.log("*  )    (  _)(_  )  (  _)(_  )    (  /(__)\\  *");
+			MinimaLogger.log("* (_/\\/\\_)(____)(_)\\_)(____)(_/\\/\\_)(__)(__) *");
+			MinimaLogger.log("*                                            *");
+			MinimaLogger.log("**********************************************");
+			MinimaLogger.log("Welcome to the Minima RPCClient - for assistance type help. Then press enter.");
+			MinimaLogger.log("host        :"+host);
+			MinimaLogger.log("ssl         :"+ssl);
+			MinimaLogger.log("usepassword :"+bpass);
+			MinimaLogger.log("sslpubkey   :"+sslpubkey);
+			MinimaLogger.log("To exit this app use 'exit'. 'quit' will shutdown Minima");
+		}
 		
-		MinimaLogger.log("host        :"+host);
-		MinimaLogger.log("ssl         :"+ssl);
-		MinimaLogger.log("usepassword :"+bpass);
-		MinimaLogger.log("sslpubkey   :"+sslpubkey);
-		
-		MinimaLogger.log("To exit this app use 'exit'. 'quit' will shutdown Minima");
-		
-		//Listen for input
-		InputStreamReader is    = new InputStreamReader(System.in, MiniString.MINIMA_CHARSET);
-	    BufferedReader bis      = new BufferedReader(is);
-	    
 	    //Loop until finished..
 	    String result = null;
-	    while(true){
-	        try {
-	            //Get a line of input
-	            String input = bis.readLine();
-	            
-	            //Check valid..
-	            if(input!=null && !input.equals("")) {
-	            	//trim it..
-	            	input = input.trim();
-	            	if(input.equals("exit")) {
-	        			break;
-	            	}
-	            	
-	            	//URLEncode..
-	            	input = URLEncoder.encode(input, MiniString.MINIMA_CHARSET);
-	            	
-	            	//Now run this function..
-	            	if(ssl) {
-	            		result = RPCClient.sendGETBasicAuthSSL(host+input, "minima", password, sslcontext);
-	            	}else{
-	            		result = RPCClient.sendGETBasicAuth(host+input,"minima",password);
-	            	}
-	    			
-	    			//Create a JSON
-	    			JSONObject json = (JSONObject) new JSONParser().parse(result);
-	    			
-	    			//Output the result..
-	    			System.out.println(MiniFormat.JSONPretty(json));
-	    			
-	            	if(input.equals("quit")) {
-	        			break;
-	            	}
-	            }
-	            
-	        } catch (Exception ex) {
-	            MinimaLogger.log(ex);
-	        }
-	    }
 	    
-	    //Cross the streams..
-	    try {
-	        bis.close();
-	        is.close();
-	    } catch (IOException ex) {
-	    	MinimaLogger.log(""+ex);
+	    //One time or multi..
+	    if(!command.equals("")) {
+	    	
+	    	//URLEncode..
+        	command = URLEncoder.encode(command, MiniString.MINIMA_CHARSET);
+	    	
+	    	//Now run this function..
+        	if(ssl) {
+        		result = RPCClient.sendGETBasicAuthSSL(host+command, "minima", password, sslcontext);
+        	}else{
+        		result = RPCClient.sendGETBasicAuth(host+command,"minima",password);
+        	}
+			
+			//Create a JSON
+			JSONObject json;
+			try {
+				json = (JSONObject) new JSONParser().parse(result);
+				
+				//Output the result..
+				System.out.println(MiniFormat.JSONPretty(json));
+				
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+	    }else {
+	    	//Listen for input
+			InputStreamReader is    = new InputStreamReader(System.in, MiniString.MINIMA_CHARSET);
+		    BufferedReader bis      = new BufferedReader(is);
+		    
+	        while(true){
+		        try {
+		            //Get a line of input
+		            String input = bis.readLine();
+		            
+		            //Check valid..
+		            if(input!=null && !input.equals("")) {
+		            	//trim it..
+		            	input = input.trim();
+		            	if(input.equals("exit")) {
+		        			break;
+		            	}
+		            	
+		            	//URLEncode..
+		            	input = URLEncoder.encode(input, MiniString.MINIMA_CHARSET);
+		            	
+		            	//Now run this function..
+		            	if(ssl) {
+		            		result = RPCClient.sendGETBasicAuthSSL(host+input, "minima", password, sslcontext);
+		            	}else{
+		            		result = RPCClient.sendGETBasicAuth(host+input,"minima",password);
+		            	}
+		    			
+		    			//Create a JSON
+		    			JSONObject json = (JSONObject) new JSONParser().parse(result);
+		    			
+		    			//Output the result..
+		    			System.out.println(MiniFormat.JSONPretty(json));
+		    			
+		            	if(input.equals("quit")) {
+		        			break;
+		            	}
+		            }
+		            
+		        } catch (Exception ex) {
+		            MinimaLogger.log(ex);
+		        }
+		        
+		        //Cross the streams..
+			    try {
+			        bis.close();
+			        is.close();
+			    } catch (IOException ex) {
+			    	MinimaLogger.log(""+ex);
+			    }
+		    }
 	    }
 	}
 }
