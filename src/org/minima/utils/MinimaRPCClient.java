@@ -54,6 +54,7 @@ public class MinimaRPCClient {
 					System.out.println("MinimaRPCClient Help");
 					System.out.println(" -host       : Specify the host IP:PORT");
 					System.out.println(" -password   : Specify the RPC Basic AUTH password (use with SSL)");
+					System.out.println(" -command    : Specify a single command to run");
 					System.out.println(" -sslpubkey  : The SSL public key from Minima rpc command ( if using SSL )");
 					System.out.println(" -help       : Print this help");
 					
