@@ -404,7 +404,7 @@ public class NIOManager extends MessageProcessor {
 //					ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
 //					int tot = conns.size();
 					
-					if(connected>0 || connecting>2) {
+					if(connected>0 || connecting>1) {
 						
 						//No reconnect
 						reconnect = false;
