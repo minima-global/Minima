@@ -851,7 +851,7 @@ public class MDSManager extends MessageProcessor {
 		ArrayList<MiniDAPP> allminis = MinimaDB.getDB().getMDSDB().getAllMiniDAPPs();
 				
 		//Check for HUB
-		checkInstalled("minihub", "minihub/minihub-0.9.3.mds.zip", allminis, true, true);
+		checkInstalled("minihub", "minihub/minihub-0.10.1.mds.zip", allminis, true, true);
 		
 		//Do we Install the Default MiniDAPPs
 		if(GeneralParams.DEFAULT_MINIDAPPS) {
@@ -863,7 +863,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("security", "default/security-0.17.2.mds.zip", allminis, true);
 			
 			//Dappstore gets write permissions
-			checkInstalled("dapp store", "default/dapp_store-1.0.5.mds.zip", allminis, true);
+			checkInstalled("dapp store", "default/dapp_store-1.0.6.mds.zip", allminis, true);
 			
 			//The rest are normal
 			checkInstalled("block", "default/block-2.1.1.mds.zip", allminis, false);
@@ -871,7 +871,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("docs", "default/docs-1.4.0.mds.zip", allminis, false);
 			checkInstalled("filez", "default/filez-1.9.2.mds.zip", allminis, false);
 			checkInstalled("future cash", "default/futurecash-1.11.1.mds.zip", allminis, false);
-			checkInstalled("health", "default/health-1.1.3.mds.zip", allminis, false);
+			checkInstalled("health", "default/health-1.1.4.mds.zip", allminis, false);
 			checkInstalled("logs", "default/logs-1.0.1.mds.zip", allminis, false);
 			checkInstalled("maxcontacts", "default/maxcontacts-1.7.1.mds.zip", allminis, false);
 			checkInstalled("maxsolo", "default/maxsolo-2.4.4.mds.zip", allminis, false);
