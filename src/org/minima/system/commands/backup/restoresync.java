@@ -193,10 +193,12 @@ public class restoresync extends Command {
 		int keyuses = getNumberParam("keyuses", new MiniNumber(256)).getAsInt();
 				
 		//Do we even need to do a sync..
-		if(timediff < maxtime) {
+		if(timediff < maxtime || !existsParam("host")) {
 			
-			MinimaLogger.log("No Sync required as new backup");
-
+			if(existsParam("host")) {
+				MinimaLogger.log("No Sync required as new backup");
+			}
+			
 			//Update key uses
 			MinimaDB.getDB().getWallet().updateIncrementAllKeyUses(keyuses);
 			
@@ -221,24 +223,27 @@ public class restoresync extends Command {
 			return ret;
 		}
 		
-		//Get the TxPowTree
-		TxPoWTreeNode nottip = tip.getParent(128);
-		
-		//What block
-		MiniNumber startblock = nottip.getBlockNumber(); 
-		MinimaLogger.log("Start sync from "+startblock);
-		
 		//Is there a host
-		String host = getParam("host");
+		if(existsParam("host")) {
+				
+			//Get the TxPowTree
+			TxPoWTreeNode nottip = tip.getParent(128);
+			
+			//What block
+			MiniNumber startblock = nottip.getBlockNumber(); 
+			MinimaLogger.log("Start sync from "+startblock);
 		
-		//Now do a resync..
-		performResync(	host, keyuses, startblock, true);
-		
-		//Get the TxPowTree
-		tip = MinimaDB.getDB().getTxPoWTree().getTip();
-		
-		//What block
-		MinimaLogger.log("End sync on "+tip.getBlockNumber());
+			String host = getParam("host");
+			
+			//Now do a resync..
+			performResync(	host, keyuses, startblock, true);
+			
+			//Get the TxPowTree
+			tip = MinimaDB.getDB().getTxPoWTree().getTip();
+			
+			//What block
+			MinimaLogger.log("End sync on "+tip.getBlockNumber());
+		}
 		
 		//And NOW shut down..
 		Main.getInstance().shutdownFinalProcs();
