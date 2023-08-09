@@ -771,8 +771,8 @@ public class TxPoWProcessor extends MessageProcessor {
 				}catch(Exception exc) {
 					MinimaLogger.log(exc.toString());
 					
-					//Something funny going on.. disconnect
-					Main.getInstance().getNIOManager().disconnect(uid);
+					//Something funny going on.. disconnect and remove from list
+					Main.getInstance().getNIOManager().disconnect(uid,true);
 					
 					break;
 				}
@@ -786,7 +786,6 @@ public class TxPoWProcessor extends MessageProcessor {
 			if(GeneralParams.IBDSYNC_LOGS) {
 				MinimaLogger.log("Processing main IBD finished "+timediff+"ms");
 			}
-			
 			
 			//we are not syncing..
 			Main.getInstance().setSyncIBD(false);
