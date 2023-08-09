@@ -3,6 +3,7 @@ package org.minima.system.network.p2p;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +52,8 @@ public class P2PManager extends MessageProcessor {
     public static final String P2P_ADD_PEER = "P2P_ADD_PEER";
     public static final String P2P_REMOVE_PEER = "P2P_REMOVE_PEER";
     public static final String P2P_SAVE_DATA = "P2P_SAVE_DATA";
-
+    public int LAST_SAVED_PEERS_AMOUNT = 0;
+    
     public static final String ADDRESS_LITERAL = "address";
 
     private static final Random rand = new Random();
@@ -111,6 +113,8 @@ public class P2PManager extends MessageProcessor {
         MinimaLogger.log("[+] P2P Version: " + P2PParams.VERSION);
 
         List<InetSocketAddress> peers = p2pdb.getPeersList();
+        int size = peers.size();
+        MinimaLogger.log("P2P Peers found : " + size);
         
         //Do we add any nodes..
         if(!GeneralParams.P2P_ADDNODES.equals("") && peers.size()==0) {
@@ -243,10 +247,24 @@ public class P2PManager extends MessageProcessor {
             sendMsgs.addAll(init(state));
         } else if (zMessage.isMessageType(P2PFunctions.P2P_SHUTDOWN)) {
             shutdown();
+        
         } else if (zMessage.isMessageType(P2P_SAVE_DATA)) {
+        	
+        	int size = state.getKnownPeers().size();
+        	if(size == 0) {
+        		//Don't save
+        		return;
+        	}
+        	
+        	//Get the known peers and save
             P2PDB p2pdb = MinimaDB.getDB().getP2PDB();
             p2pdb.setPeersList(new ArrayList<>(state.getKnownPeers()));
+            MinimaDB.getDB().saveP2PDB();
+            
+            //MinimaLogger.log("SAVE P2P LIST : "+size);
+            
             PostTimerMessage(new TimerMessage(P2PParams.SAVE_DATA_DELAY, P2P_SAVE_DATA));
+            
         } else if (zMessage.isMessageType(P2PFunctions.P2P_CONNECTED)) {
             String uid = zMessage.getString("uid");
             NIOClient client = (NIOClient) zMessage.getObject("client");
@@ -304,12 +322,15 @@ public class P2PManager extends MessageProcessor {
                 }
 
             }
+        
         } else if (zMessage.isMessageType(P2P_ASSESS_CONNECTIVITY)) {
             sendMsgs.addAll(assessConnectivity(state));
             PostTimerMessage(new TimerMessage(P2PParams.NODE_NOT_ACCEPTING_CHECK_DELAY, P2P_ASSESS_CONNECTIVITY));
+        
         } else if (zMessage.isMessageType(P2P_REMOVE_PEER)) {
             InetSocketAddress address = (InetSocketAddress) zMessage.getObject("address");
             state.getKnownPeers().remove(address);
+            
         } else if (zMessage.isMessageType(P2P_ADD_PEER)) {
             if(state.getKnownPeers().size() < 250) {
                 InetSocketAddress address = (InetSocketAddress) zMessage.getObject("address");

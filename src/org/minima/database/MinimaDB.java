@@ -553,6 +553,8 @@ public class MinimaDB {
 //			mUserDB.saveEncryptedDB(GeneralParams.MAIN_DBPASSWORD, new File(basedb,"userprefs.db"));
 //			mP2PDB.saveEncryptedDB(GeneralParams.MAIN_DBPASSWORD, new File(basedb,"p2p.db"));
 			mUserDB.saveDB(new File(basedb,"userprefs.db"));
+			
+			//MinimaLogger.log("SAVE P2P DB.. "+mP2PDB.getPeersList().size());
 			mP2PDB.saveDB(new File(basedb,"p2p.db"));
 			
 			//Custom
@@ -579,6 +581,26 @@ public class MinimaDB {
 			//JsonDBs
 //			mUserDB.saveEncryptedDB(GeneralParams.MAIN_DBPASSWORD, new File(basedb,"userprefs.db"));
 			mUserDB.saveDB(new File(basedb,"userprefs.db"));
+			
+		}catch(Exception exc) {
+			MinimaLogger.log(exc);
+		}
+		
+		//Release the krakken
+		readLock(false);
+	}
+	
+	public void saveP2PDB() {
+		
+		//We need read lock 
+		readLock(true);
+		
+		try {
+			//Get the base Database folder
+			File basedb = getBaseDBFolder();
+			
+			//JsonDBs
+			mP2PDB.saveDB(new File(basedb,"p2p.db"));
 			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
