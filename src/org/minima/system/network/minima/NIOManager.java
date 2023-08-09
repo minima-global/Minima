@@ -786,6 +786,9 @@ public class NIOManager extends MessageProcessor {
 				
 				MinimaLogger.log("Disconnecting and Removing PEER from P2P "+nioc.getFullAddress());
 				
+				//Make it invalid.
+				P2PFunctions.addInvalidPeer(nioc.getFullAddress());
+				
 				//Create an address
 				InetSocketAddress addr = new InetSocketAddress(nioc.getHost(), nioc.getPort());
 				
