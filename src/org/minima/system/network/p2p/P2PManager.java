@@ -186,17 +186,17 @@ public class P2PManager extends MessageProcessor {
                 connectionAddress = new InetSocketAddress(host, port);
                 mPeersChecker.PostMessage(new Message(P2PPeersChecker.PEERS_ADDPEERS).addObject("address", connectionAddress));
                 P2PFunctions.log_info("[+] Connecting to specified node: " + connectionAddress);
-                MinimaLogger.log("[+] Connecting to specified node: " + connectionAddress);
+                //MinimaLogger.log("[+] Connecting to specified node: " + connectionAddress);
                 
             } else if (!peers.isEmpty()) {
                 connectionAddress = peers.get(rand.nextInt(peers.size()));
                 P2PFunctions.log_info("[+] Connecting to saved node: " + connectionAddress);
-                MinimaLogger.log("[+] Connecting to saved node: " + connectionAddress);
+                //MinimaLogger.log("[+] Connecting to saved node: " + connectionAddress);
             
             } else {
                 state.setDoingDiscoveryConnection(true);
                 P2PFunctions.log_info("[+] Doing discovery connection with default node");
-                MinimaLogger.log("[+] Doing discovery connection with default node");
+                //MinimaLogger.log("[+] Doing discovery connection with default node");
                 
                 doDiscoveryPing();
             }
