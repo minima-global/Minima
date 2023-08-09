@@ -779,7 +779,7 @@ public class NIOManager extends MessageProcessor {
 		}
 		
 		//Do we remove from p2p as well..
-		if(zRemoveP2P) {
+		if(zRemoveP2P && GeneralParams.P2P_ENABLED) {
 			
 			NIOClient nioc =  getNIOClientFromUID(zClientUID);
 			if(nioc!=null) {
