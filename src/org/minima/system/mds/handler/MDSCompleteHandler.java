@@ -429,9 +429,13 @@ public class MDSCompleteHandler implements Runnable {
 			
 		}catch(SSLHandshakeException exc) {
 		}catch(SSLException exc) {
-		}catch(Exception ioe) {
+		}catch(IllegalArgumentException ioe) {
 			MinimaLogger.log("MDSCompleteHandler : "+ioe.toString());
 			outputError(out);
+			
+		}catch(Exception ioe) {
+//			MinimaLogger.log("MDSCompleteHandler : "+ioe.toString());
+//			outputError(out);
 			
 		} finally {
 			try {
