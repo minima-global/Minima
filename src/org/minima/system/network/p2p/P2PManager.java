@@ -59,6 +59,8 @@ public class P2PManager extends MessageProcessor {
     private static final Random rand = new Random();
     private final P2PState state = new P2PState();
 
+    public int INITIAL_PEERS_LIST_NUM = 0;
+    
     /**
      * Separate thread for checking peers
      */
@@ -100,21 +102,22 @@ public class P2PManager extends MessageProcessor {
         return (float) state.getNoneP2PLinks().size() / P2PParams.MIN_NUM_CONNECTIONS;
     }
 
+    boolean firstgo = false;
     protected List<Message> init(P2PState state) {
         List<Message> msgs = new ArrayList<>();
         //Get the P2P DB
         P2PDB p2pdb = MinimaDB.getDB().getP2PDB();
         String p2pVersion = p2pdb.getVersion();
-        if (!p2pVersion.split("\\.")[0].equals(P2PParams.VERSION.split("\\.")[0])) {
-            P2PFunctions.log_info("[-] P2P DB is not compatible with this P2P version. P2P DB Version: " + p2pVersion + " Running P2P Version: " + P2PParams.VERSION);
-            p2pdb.setVersion();
-            p2pdb.setPeersList(new ArrayList<>());
-        }
+//        if (!p2pVersion.split("\\.")[0].equals(P2PParams.VERSION.split("\\.")[0])) {
+//            P2PFunctions.log_info("[-] P2P DB is not compatible with this P2P version. P2P DB Version: " + p2pVersion + " Running P2P Version: " + P2PParams.VERSION);
+//            p2pdb.setVersion();
+//            p2pdb.setPeersList(new ArrayList<>());
+//        }
         MinimaLogger.log("[+] P2P Version: " + P2PParams.VERSION);
 
         List<InetSocketAddress> peers = p2pdb.getPeersList();
-        int size = peers.size();
-        MinimaLogger.log("P2P Peers found : " + size);
+        INITIAL_PEERS_LIST_NUM = peers.size();
+        MinimaLogger.log("P2P Peers found : " + INITIAL_PEERS_LIST_NUM);
         
         //Do we add any nodes..
         if(!GeneralParams.P2P_ADDNODES.equals("") && peers.size()==0) {
@@ -143,8 +146,13 @@ public class P2PManager extends MessageProcessor {
         
         //Cycle our known peers
         for(InetSocketAddress peer: peers){
-            mPeersChecker.PostMessage(new Message(P2PPeersChecker.PEERS_ADDPEERS).addObject("address", peer));
+        	
+        	Message addpeer = new Message(P2PPeersChecker.PEERS_CHECKPEERS)
+        			.addObject("address", peer)
+        			.addBoolean("force", true);
+        	mPeersChecker.PostMessage(addpeer);
         }
+        
         state.setAcceptingInLinks(GeneralParams.IS_ACCEPTING_IN_LINKS);
         state.setMyMinimaAddress(GeneralParams.MINIMA_HOST);
 
@@ -165,18 +173,31 @@ public class P2PManager extends MessageProcessor {
 
         InetSocketAddress connectionAddress = null;
         if (!state.isNoConnect()) {
-            if (!GeneralParams.P2P_ROOTNODE.isEmpty()) {
+            
+        	if(firstgo) {
+        		firstgo = false;
+        		
+        		connectionAddress = new InetSocketAddress("65.108.211.228", 9001);
+        		MinimaLogger.log("[+] HACK Connect to wrong node: " + connectionAddress);
+        		
+        	}else if (!GeneralParams.P2P_ROOTNODE.isEmpty()) {
                 String host = GeneralParams.P2P_ROOTNODE.split(":")[0];
                 int port = Integer.parseInt(GeneralParams.P2P_ROOTNODE.split(":")[1]);
                 connectionAddress = new InetSocketAddress(host, port);
                 mPeersChecker.PostMessage(new Message(P2PPeersChecker.PEERS_ADDPEERS).addObject("address", connectionAddress));
                 P2PFunctions.log_info("[+] Connecting to specified node: " + connectionAddress);
+                MinimaLogger.log("[+] Connecting to specified node: " + connectionAddress);
+                
             } else if (!peers.isEmpty()) {
                 connectionAddress = peers.get(rand.nextInt(peers.size()));
                 P2PFunctions.log_info("[+] Connecting to saved node: " + connectionAddress);
+                MinimaLogger.log("[+] Connecting to saved node: " + connectionAddress);
+            
             } else {
                 state.setDoingDiscoveryConnection(true);
                 P2PFunctions.log_info("[+] Doing discovery connection with default node");
+                MinimaLogger.log("[+] Doing discovery connection with default node");
+                
                 doDiscoveryPing();
             }
         }
@@ -205,38 +226,38 @@ public class P2PManager extends MessageProcessor {
     		return;
     	}
     	
-    	int attempts=0;
-    	
-    	while (state.isDoingDiscoveryConnection() && isRunning()){
-            
-    		//Only check a few times - will try again later on next process loop
-    		if(attempts>=3) {
-    			MinimaLogger.log("Discovery node connection paused.. tried "+attempts+" times..");
-    			return;
-    		}
-    		
-    		InetSocketAddress address = P2PParams.DEFAULT_NODE_LIST.get(rand.nextInt(P2PParams.DEFAULT_NODE_LIST.size()));
-            Greeting greet = NIOManager.sendPingMessage(address.getHostString(), address.getPort(), true);
-            if (greet != null) {
-                JSONArray peersArrayList = (JSONArray) greet.getExtraData().get("peers-list");
-                if (peersArrayList != null){
-                    List<InetSocketAddress> peers = InetSocketAddressIO.addressesJSONArrayToList(peersArrayList);
-                    Collections.shuffle(peers);
-                    state.getKnownPeers().addAll(peers);
-                    mPeersChecker.getVerifiedPeers().addAll(peers);
-                    P2PFunctions.log_info("[+] Discovery Completed");
-                    state.setDoingDiscoveryConnection(false);
-                }
-            } else {
-                try {
-                    Thread.sleep(5000);
-                } catch (Exception ex){
-                    P2PFunctions.log_debug("Wait interrupted");
-                }
-            }
-            
-            attempts++;
-        }
+//    	int attempts=0;
+//    	
+//    	while (state.isDoingDiscoveryConnection() && isRunning()){
+//            
+//    		//Only check a few times - will try again later on next process loop
+//    		if(attempts>=3) {
+//    			MinimaLogger.log("Discovery node connection paused.. tried "+attempts+" times..");
+//    			return;
+//    		}
+//    		
+//    		InetSocketAddress address = P2PParams.DEFAULT_NODE_LIST.get(rand.nextInt(P2PParams.DEFAULT_NODE_LIST.size()));
+//            Greeting greet = NIOManager.sendPingMessage(address.getHostString(), address.getPort(), true);
+//            if (greet != null) {
+//                JSONArray peersArrayList = (JSONArray) greet.getExtraData().get("peers-list");
+//                if (peersArrayList != null){
+//                    List<InetSocketAddress> peers = InetSocketAddressIO.addressesJSONArrayToList(peersArrayList);
+//                    Collections.shuffle(peers);
+//                    state.getKnownPeers().addAll(peers);
+//                    mPeersChecker.getVerifiedPeers().addAll(peers);
+//                    P2PFunctions.log_info("[+] Discovery Completed");
+//                    state.setDoingDiscoveryConnection(false);
+//                }
+//            } else {
+//                try {
+//                    Thread.sleep(5000);
+//                } catch (Exception ex){
+//                    P2PFunctions.log_debug("Wait interrupted");
+//                }
+//            }
+//            
+//            attempts++;
+//        }
     }
     
     @Override
@@ -250,18 +271,11 @@ public class P2PManager extends MessageProcessor {
         
         } else if (zMessage.isMessageType(P2P_SAVE_DATA)) {
         	
-        	int size = state.getKnownPeers().size();
-        	if(size == 0) {
-        		//Don't save
-        		return;
-        	}
-        	
-        	//Get the known peers and save
-            P2PDB p2pdb = MinimaDB.getDB().getP2PDB();
-            p2pdb.setPeersList(new ArrayList<>(state.getKnownPeers()));
-            MinimaDB.getDB().saveP2PDB();
+        	//Update the peers
+        	updateP2PPeersList();
             
-            //MinimaLogger.log("SAVE P2P LIST : "+size);
+        	//And save
+        	MinimaDB.getDB().saveP2PDB();
             
             PostTimerMessage(new TimerMessage(P2PParams.SAVE_DATA_DELAY, P2P_SAVE_DATA));
             
@@ -308,6 +322,7 @@ public class P2PManager extends MessageProcessor {
             NIOClient client = (NIOClient) zMessage.getObject("client");
             InetSocketAddress conn = new InetSocketAddress(client.getHost(), client.getPort());
             state.getKnownPeers().remove(conn);
+            
             P2PFunctions.log_debug("[-] Unable to connect to peer removing from peers list");
             List<String> uidsToRemove = new ArrayList<>();
             if (state.getInLinks().containsValue(conn)){
@@ -417,7 +432,7 @@ public class P2PManager extends MessageProcessor {
             state.setLoopDelay(10_000 + (long) rand.nextInt(3_000));
         }
         state.getKnownPeers().remove(state.getMyMinimaAddress());
-
+        
         if (!state.isNoConnect()) {
 
             if (!state.getKnownPeers().isEmpty()) {
@@ -554,13 +569,29 @@ public class P2PManager extends MessageProcessor {
         }
     }
 
+    public void updateP2PPeersList() {
+    	
+    	P2PDB p2pdb = MinimaDB.getDB().getP2PDB();
+    	
+    	//Current list..
+    	int size = state.getKnownPeers().size();
+    	
+    	//Is it within limits..
+    	if(size>0 && size >= INITIAL_PEERS_LIST_NUM/2) {
+    		p2pdb.setPeersList(new ArrayList<>(state.getKnownPeers()));
+    	}
+    }
+    
     public void shutdown() {
         //Write stuff to P2P DB..
         P2PDB p2pdb = MinimaDB.getDB().getP2PDB();
         p2pdb.setVersion();
-        if (state.getKnownPeers().size() > 0){
-            p2pdb.setPeersList(new ArrayList<>(state.getKnownPeers()));
-        }
+        
+        //Updater thew peers list
+        updateP2PPeersList();
+//        if (state.getKnownPeers().size() > 0){
+//            p2pdb.setPeersList(new ArrayList<>(state.getKnownPeers()));
+//        }
 
         //Stop the peers checker
         mPeersChecker.stopMessageProcessor();
@@ -578,6 +609,10 @@ public class P2PManager extends MessageProcessor {
     	
     	//Check our DB
     	if(MinimaDB.getDB().getP2PDB().getPeersList().size()>0) {
+    		return true;
+    	}
+    	
+    	if(state.getKnownPeers().size()>0) {
     		return true;
     	}
     	
