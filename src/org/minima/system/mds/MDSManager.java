@@ -844,11 +844,14 @@ public class MDSManager extends MessageProcessor {
 	 */
 	private void doDefaultMiniHUB() throws Exception {
 		
+		//The main MDS DB
+		MDSDB mdb = MinimaDB.getDB().getMDSDB();
+		
 		//Do we have a MiniHUB installed..
 		DEFAULT_MINIHUB = MinimaDB.getDB().getUserDB().getDefaultMiniHUB();
 		
 		//And install some default dapps..
-		ArrayList<MiniDAPP> allminis = MinimaDB.getDB().getMDSDB().getAllMiniDAPPs();
+		ArrayList<MiniDAPP> allminis = mdb.getAllMiniDAPPs();
 				
 		//Check for HUB
 		checkInstalled("minihub", "minihub/minihub-0.10.2.mds.zip", allminis, true, true);
@@ -860,7 +863,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("pending", "default/pending-1.0.5.mds.zip", allminis, true);
 			
 			//Security MiniDAPP - backups / restore
-			checkInstalled("security", "default/security-0.17.4.mds.zip", allminis, true);
+			checkInstalled("security", "default/security-0.17.5.mds.zip", allminis, true);
 			
 			//Dappstore gets write permissions
 			checkInstalled("dapp store", "default/dapp_store-1.0.6.mds.zip", allminis, true);
@@ -879,7 +882,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("script ide", "default/scriptide-2.0.1.mds.zip", allminis, false);
 			checkInstalled("sql bench", "default/sqlbench-0.4.mds.zip", allminis, false);
 			checkInstalled("terminal", "default/terminal-2.3.0.mds.zip", allminis, false);
-			checkInstalled("vestr", "default/vestr-1.4.4.mds.zip", allminis, false);
+			checkInstalled("vestr", "default/vestr-1.5.0.mds.zip", allminis, false);
 			checkInstalled("wallet", "default/wallet-2.25.0.mds.zip", allminis, false);
 		}
 	}
@@ -907,6 +910,9 @@ public class MDSManager extends MessageProcessor {
 	
 	private boolean checkInstalled(String zName, String zResource,  ArrayList<MiniDAPP> zAllDapps, boolean zWrite, boolean zIsMiniHUB) {		
 		
+		//The main MDS DB
+		MDSDB mdb = MinimaDB.getDB().getMDSDB();
+				
 		try {
 			
 			//Is it already installed
@@ -935,6 +941,12 @@ public class MDSManager extends MessageProcessor {
 							MinimaDB.getDB().getUserDB().setDefaultMiniHUB(DEFAULT_MINIHUB);
 							MinimaDB.getDB().saveUserDB();
 						}
+						
+						//Always set MiniHUB to WRITE
+						MiniDAPP minihubmd = mdb.getMiniDAPP(DEFAULT_MINIHUB);
+						minihubmd.setPermission("write");
+						mdb.deleteMiniDAPP(DEFAULT_MINIHUB);
+						mdb.insertMiniDAPP(minihubmd);
 					}
 					
 					return true;
