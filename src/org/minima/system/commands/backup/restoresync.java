@@ -353,6 +353,8 @@ public class restoresync extends Command {
 		boolean firstrun 		= true;
 		MiniNumber firstStart   = MiniNumber.ZERO;
 		
+		long lastlogmessage = 0;
+		
 		int counter = 0;
 		MinimaLogger.log("System clean..");
 		System.gc();
@@ -455,8 +457,15 @@ public class restoresync extends Command {
 					break;
 				}
 			}
-			long timediff = System.currentTimeMillis() - timenow;
-			MinimaLogger.log("IBD Processed.. block:"+startblock+" time:"+timediff+"ms");
+			
+			//Do we print a log..
+			if((System.currentTimeMillis() - lastlogmessage)>10000) {
+				MinimaLogger.log("IBD Processed.. block:"+startblock);
+				lastlogmessage = System.currentTimeMillis();
+			}
+			
+//			long timediff = System.currentTimeMillis() - timenow;
+//			MinimaLogger.log("IBD Processed.. block:"+startblock+" time:"+timediff+"ms");
 			
 			if(error) {
 				MinimaLogger.log("ERROR : There was an error processing that IBD - took too long");

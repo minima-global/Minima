@@ -395,6 +395,8 @@ public class archive extends Command {
 			boolean firstrun 		= true;
 			MiniNumber firstStart   = MiniNumber.ZERO;
 			
+			long lastlogmessage = 0;
+			
 			int counter = 0;
 			MinimaLogger.log("System clean..");
 			System.gc();
@@ -504,8 +506,11 @@ public class archive extends Command {
 					}
 				}
 				
-				long timediff = System.currentTimeMillis() - timenow;
-				MinimaLogger.log("IBD Processed.. block:"+startblock+" time:"+timediff+"ms");
+				//Do we print a log..
+				if((System.currentTimeMillis() - lastlogmessage)>10000) {
+					MinimaLogger.log("IBD Processed.. block:"+startblock);
+					lastlogmessage = System.currentTimeMillis();
+				}
 				
 				if(error) {
 					MinimaLogger.log("ERROR : There was an error processing that IBD - took too long");
