@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.StringTokenizer;
 
+import org.minima.database.MinimaDB;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
@@ -58,11 +59,11 @@ public class peers extends Command {
 		JSONObject ret = getJSONReply();
 
 		//Is the P2P Enable..
-		if(!GeneralParams.P2P_ENABLED) {
+		if(!GeneralParams.P2P_ENABLED || MinimaDB.getDB().getUserDB().isSlaveNode()) {
 			JSONObject resp = new JSONObject();
 			resp.put("peers-list", "");
-			resp.put("havepeers",false);
-			resp.put("p2penabled",false);
+			resp.put("havepeers",true);
+			resp.put("p2penabled",GeneralParams.P2P_ENABLED);
 			resp.put("message","P2P System NOT enabled");
 			ret.put("response", resp);
 			return ret;
@@ -107,7 +108,7 @@ public class peers extends Command {
 			JSONObject resp = new JSONObject();
 			resp.put("peerslist", peerslist);
 			resp.put("havepeers",p2PManager.haveAnyPeers());
-			resp.put("p2penabled",true);
+			resp.put("p2penabled",GeneralParams.P2P_ENABLED);
 			ret.put("response", resp);
 			
 		}else if(action.equals("addpeers")) {

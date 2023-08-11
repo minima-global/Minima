@@ -183,14 +183,14 @@ public class MinimaRPCClient {
 		        } catch (Exception ex) {
 		            MinimaLogger.log(ex);
 		        }
-		        
-		        //Cross the streams..
-			    try {
-			        bis.close();
-			        is.close();
-			    } catch (IOException ex) {
-			    	MinimaLogger.log(""+ex);
-			    }
+		    }
+	        
+	        //Cross the streams..
+		    try {
+		        bis.close();
+		        is.close();
+		    } catch (IOException ex) {
+		    	MinimaLogger.log(""+ex);
 		    }
 	    }
 	}
