@@ -9,6 +9,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URLDecoder;
+import java.util.Date;
 import java.util.StringTokenizer;
 
 import org.minima.objects.base.MiniString;
@@ -16,6 +17,8 @@ import org.minima.utils.MinimaLogger;
 
 public class DexManager implements Runnable {
 
+	public static boolean LOGGING_ENABLED = false;
+	
 	Socket mSocket;
 	
 	public DexManager(Socket zSocket) {
@@ -72,33 +75,9 @@ public class DexManager implements Runnable {
 			//And finally URL decode..
 			fileRequested = URLDecoder.decode(fileRequested,"UTF-8").trim();
 			
-			MinimaLogger.log(fileRequested,false);
-			
-//			//Get the command / params only
-//			int index 		= fileRequested.indexOf("?");
-//			String command 	= fileRequested.substring(0,index);
-//			String params 	= fileRequested.substring(index+1);
-//			
-//			//Get the UID
-//			String uid = "";
-//			StringTokenizer strtok = new StringTokenizer(params,"&");
-//			while(strtok.hasMoreElements()) {
-//				String tok = strtok.nextToken();
-//				
-//				index 			= tok.indexOf("=");
-//				String param 	= tok.substring(0,index);
-//				String value 	= tok.substring(index+1,tok.length());
-//				
-//				if(param.equals("uid")) {
-//					uid=value;
-//				}
-//			}
-			
-//			//Convert ther sessionid
-//			String minidappid = mMDS.convertSessionID(uid);
-//			if(minidappid == null) {
-//				throw new IllegalArgumentException("Invalid session id for MiniDAPP "+uid);
-//			}
+			if(LOGGING_ENABLED) {
+				MinimaLogger.log("FILE : "+fileRequested,false);
+			}
 			
 			//Get the Headers..
 			int contentlength = 0;
@@ -137,7 +116,12 @@ public class DexManager implements Runnable {
 				String dataenc 	= new String(cbuf).trim();
 				String data 	= URLDecoder.decode(dataenc, "UTF-8");
 		
-				MinimaLogger.log("DATA REQUEST : "+data);
+				if(LOGGING_ENABLED) {
+					MinimaLogger.log("DATA : "+data);
+				}
+				
+				//Write out echo
+				writedata(out,data);
 			}
 		
         } catch (Exception e) {
@@ -152,7 +136,22 @@ public class DexManager implements Runnable {
 				MinimaLogger.log(e);
 			}
 		}
-        
+	}
+	
+	public void writedata(PrintWriter zOut, String zData) {
+		
+		int datalen = zData.getBytes().length;
+		
+		// send HTTP Headers
+		zOut.println("HTTP/1.1 200 OK");
+		zOut.println("Server: HTTP DEX Server 1.0");
+		zOut.println("Date: " + new Date());
+		zOut.println("Content-type: text/plain");
+		zOut.println("Content-length: " + datalen);
+		zOut.println("Access-Control-Allow-Origin: *");
+		zOut.println(); // blank line between headers and content, very important !
+		zOut.println(zData);
+		zOut.flush(); // flush character output stream buffer
 	}
 
 }

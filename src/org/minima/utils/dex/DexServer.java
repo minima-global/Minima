@@ -7,10 +7,12 @@ import org.minima.utils.MinimaLogger;
 
 public class DexServer {
 
+	static HTTPServer mServer = null;
+	
 	public static void main(String[] zArgs) {
 		
 		//Start an HTTP server
-		HTTPServer server = new HTTPServer(8080) {
+		mServer = new HTTPServer(8080) {
 			
 			@Override
 			public Runnable getSocketHandler(Socket zSocket) {
@@ -23,8 +25,7 @@ public class DexServer {
 		Runtime.getRuntime().addShutdownHook(new Thread(){
 			@Override
 			public void run(){
-				
-				
+				mServer.shutdown();
 			}
 		});
 		
