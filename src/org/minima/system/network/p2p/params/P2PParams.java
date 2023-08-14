@@ -71,9 +71,6 @@ public class P2PParams {
 
     public static int METRICS_DELAY = 600_000;
 
-    //NOT USED
-    public static String METRICS_URL = "http://35.242.245.96/network";
-
     public static List<InetSocketAddress> DEFAULT_NODE_LIST = Arrays.asList(
             
     		new InetSocketAddress("35.185.184.164", 9001),
