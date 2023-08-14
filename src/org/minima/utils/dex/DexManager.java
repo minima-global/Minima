@@ -1,157 +1,71 @@
 package org.minima.utils.dex;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.Socket;
-import java.net.URLDecoder;
-import java.util.Date;
-import java.util.StringTokenizer;
+import org.minima.utils.json.JSONObject;
+import org.minima.utils.json.parser.JSONParser;
+import org.minima.utils.json.parser.ParseException;
 
-import org.minima.objects.base.MiniString;
-import org.minima.utils.MinimaLogger;
+public class DexManager {
 
-public class DexManager implements Runnable {
-
-	public static boolean LOGGING_ENABLED = false;
+	DexData mDexData;
 	
-	Socket mSocket;
-	
-	public DexManager(Socket zSocket) {
-		mSocket = zSocket;
+	public DexManager() {
+		mDexData = new DexData();
 	}
 	
-	@Override
-	public void run() {
+	public void init() {
 		
-		// we manage our particular client connection
-		BufferedReader in 	 		 	= null; 
-		PrintWriter out 	 			= null; 
 		
-		try {
-			// Input Stream
-			in = new BufferedReader(new InputStreamReader(mSocket.getInputStream(), MiniString.MINIMA_CHARSET));
-			
-			// Output Stream
-			out = new PrintWriter(new OutputStreamWriter(mSocket.getOutputStream(), MiniString.MINIMA_CHARSET));
-			
-			// get first line of the request from the client
-			String input = in.readLine();
-			int counter = 0;
-			while(input == null && counter<100){
-				//Wait a sec
-				Thread.sleep(1000);
-				
-				input = in.readLine();
-				counter++;
-			}
-			
-			//Is it still NULL
-			if(input == null) {
-				throw new IllegalArgumentException("Invalid NULL MDS request ");
-			}
-			
-			// we parse the request with a string tokenizer
-			StringTokenizer parse = new StringTokenizer(input);
-			
-			//Get the METHOD
-			String method = parse.nextToken().toUpperCase(); // we get the HTTP method of the client
-			
-			//Get the requested file
-			String fileRequested = parse.nextToken();
-			
-			//Remove slashes..
-			if(fileRequested.startsWith("/")) {
-				fileRequested = fileRequested.substring(1);
-			}
-			if(fileRequested.endsWith("/")) {
-				fileRequested = fileRequested.substring(0,fileRequested.length()-1);
-			}
-			
-			//And finally URL decode..
-			fileRequested = URLDecoder.decode(fileRequested,"UTF-8").trim();
-			
-			if(LOGGING_ENABLED) {
-				MinimaLogger.log("FILE : "+fileRequested,false);
-			}
-			
-			//Get the Headers..
-			int contentlength = 0;
-			while(input != null && !input.trim().equals("")) {
-				//MinimaLogger.log("RPC : "+input);
-				int ref = input.indexOf("Content-Length:"); 
-				if(ref != -1) {
-					//Get it..
-					int start     = input.indexOf(":");
-					contentlength = Integer.parseInt(input.substring(start+1).trim());
-				}	
-				input = in.readLine();
-			}
-			
-			//Is it a POST request
-			if(!method.equals("POST")) {
-				
-				//Not a valid request
-				throw new IOException("Invalid request not POST");
-				
-			}else{
-				
-				//How much data
-				char[] cbuf 	= new char[contentlength];
-				
-				//Read it ALL in
-				int len,total=0;
-				while( (len = in.read(cbuf,total,contentlength-total)) != -1) {
-					total += len;
-					if(total == contentlength) {
-						break;
-					}
-				}
-				
-				//Set this..
-				String dataenc 	= new String(cbuf).trim();
-				String data 	= URLDecoder.decode(dataenc, "UTF-8");
 		
-				if(LOGGING_ENABLED) {
-					MinimaLogger.log("DATA : "+data);
-				}
-				
-				//Write out echo
-				writedata(out,data);
-			}
+	}
+	
+	/**
+	 * Check Public keys, details, allowed lists etc..
+	 */
+	public boolean checkOffer(Offer zOffer) {
+		return true;
+	}
+	
+	public synchronized JSONObject processRequest(String zRequest, String zData) throws Exception {
 		
-        } catch (Exception e) {
-        	MinimaLogger.log(e);
+		JSONObject ret = new JSONObject();
+		ret.put("status", true);
+		
+		if(zRequest.equals("get")) {
 			
-        }finally {
-        	try {
-				in.close();
-				out.close();
-				mSocket.close(); // we close socket connection
-			} catch (Exception e) {
-				MinimaLogger.log(e);
+			//Add all the offers
+			ret.put("offers", mDexData.getAllOffers());
+			
+			return ret;
+			
+		}else if(zRequest.equals("set")) {
+			
+			//Convert data to JSON
+			JSONObject json =  (JSONObject) new JSONParser().parse(zData);
+			
+			//Convert to an offer object
+			Offer offer = new Offer(json);
+			
+			//Check the request Data
+			if(!checkOffer(offer)) {
+				ret = new JSONObject();
+				ret.put("status", false);
+				ret.put("error", "Invalid offer : ");
+				return ret;
 			}
+			
+			//Now set this offer..
+			mDexData.updateOffer(offer);
+			
+			//And return true
+			ret.put("comment", "Offer updated");
+			
+			return ret;
 		}
-	}
-	
-	public void writedata(PrintWriter zOut, String zData) {
 		
-		int datalen = zData.getBytes().length;
+		ret = new JSONObject();
+		ret.put("status", false);
+		ret.put("error", "Undefined command : "+zRequest);
 		
-		// send HTTP Headers
-		zOut.println("HTTP/1.1 200 OK");
-		zOut.println("Server: HTTP DEX Server 1.0");
-		zOut.println("Date: " + new Date());
-		zOut.println("Content-type: text/plain");
-		zOut.println("Content-length: " + datalen);
-		zOut.println("Access-Control-Allow-Origin: *");
-		zOut.println(); // blank line between headers and content, very important !
-		zOut.println(zData);
-		zOut.flush(); // flush character output stream buffer
+		return ret;
 	}
-
 }

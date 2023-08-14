@@ -9,7 +9,15 @@ public class DexServer {
 
 	static HTTPServer mServer = null;
 	
+	static DexManager mDexManager = null;
+	public static DexManager getDexManager() {
+		return mDexManager;
+	}
+	
 	public static void main(String[] zArgs) {
+		
+		//Create a global DexManager
+		mDexManager = new DexManager();
 		
 		//Start an HTTP server
 		mServer = new HTTPServer(8080) {
@@ -17,7 +25,7 @@ public class DexServer {
 			@Override
 			public Runnable getSocketHandler(Socket zSocket) {
 				// TODO Auto-generated method stub
-				return new DexManager(zSocket);
+				return new DexHandler(zSocket);
 			}
 		};
 		
@@ -27,7 +35,6 @@ public class DexServer {
 			public void run(){
 				mServer.shutdown();
 			}
-		});
-		
+		});	
 	}
 }
