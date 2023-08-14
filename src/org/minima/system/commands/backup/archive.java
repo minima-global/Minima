@@ -664,6 +664,9 @@ public class archive extends Command {
 			//Where the temp db will go..
 			File restorefolder 	= new File(GeneralParams.DATA_FOLDER,"archiverestore");
 			
+			//Delete the restore folder - just in case is already there
+			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
+			
 			//Do we load one..
 			ArchiveManager archtemp = null;
 			if(!file.equals("")) {
@@ -728,11 +731,11 @@ public class archive extends Command {
 			//Shutdwon TEMP DB
 			if(!file.equals("")) {
 				archtemp.saveDB(false);
-				
-				//Delete the restore folder
-				MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
 			}
 			
+			//Delete the restore folder
+			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
+		
 			ret.put("response", resp);
 			
 		}else if(action.equals("addresscheck")) {
