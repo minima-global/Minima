@@ -74,30 +74,30 @@ public class P2PParams {
     //NOT USED
     public static String METRICS_URL = "http://35.242.245.96/network";
 
-//    public static List<InetSocketAddress> DEFAULT_NODE_LIST = Arrays.asList(
-//            
-//    		new InetSocketAddress("35.185.184.164", 9001),
-//            new InetSocketAddress("35.197.193.30", 9001),
-//            new InetSocketAddress("34.142.123.158", 9001),
-//            new InetSocketAddress("34.89.23.209", 9001),
-//            new InetSocketAddress("34.135.149.22", 9001),
-//            
-//            new InetSocketAddress("34.28.118.235", 9001),
-//            new InetSocketAddress("34.171.105.59", 9001),
-//            new InetSocketAddress("34.122.109.104", 9001),
-//            new InetSocketAddress("34.142.197.222", 9001),
-//            new InetSocketAddress("34.124.175.150", 9001),
-//            
-//            new InetSocketAddress("35.198.247.214", 9001),
-//            new InetSocketAddress("34.165.238.9", 9001),
-//            new InetSocketAddress("34.165.93.170", 9001),
-//            new InetSocketAddress("34.165.41.114", 9001),
-//            new InetSocketAddress("34.165.177.125", 9001),
-//            
-//            new InetSocketAddress("34.142.47.222", 9001)
-//            );
+    public static List<InetSocketAddress> DEFAULT_NODE_LIST = Arrays.asList(
+            
+    		new InetSocketAddress("35.185.184.164", 9001),
+            new InetSocketAddress("35.197.193.30", 9001),
+            new InetSocketAddress("34.142.123.158", 9001),
+            new InetSocketAddress("34.89.23.209", 9001),
+            new InetSocketAddress("34.135.149.22", 9001),
+            
+            new InetSocketAddress("34.28.118.235", 9001),
+            new InetSocketAddress("34.171.105.59", 9001),
+            new InetSocketAddress("34.122.109.104", 9001),
+            new InetSocketAddress("34.142.197.222", 9001),
+            new InetSocketAddress("34.124.175.150", 9001),
+            
+            new InetSocketAddress("35.198.247.214", 9001),
+            new InetSocketAddress("34.165.238.9", 9001),
+            new InetSocketAddress("34.165.93.170", 9001),
+            new InetSocketAddress("34.165.41.114", 9001),
+            new InetSocketAddress("34.165.177.125", 9001),
+            
+            new InetSocketAddress("34.142.47.222", 9001)
+            );
     
-    public static List<InetSocketAddress> DEFAULT_NODE_LIST = Arrays.asList();
+//    public static List<InetSocketAddress> DEFAULT_NODE_LIST = Arrays.asList();
     
 //    public static List<InetSocketAddress> DEFAULT_ARCHIVENODE_LIST = Arrays.asList();
 //    public static List<InetSocketAddress> DEFAULT_ARCHIVENODE_LIST = Arrays.asList(
