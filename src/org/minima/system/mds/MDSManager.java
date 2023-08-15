@@ -854,23 +854,23 @@ public class MDSManager extends MessageProcessor {
 		ArrayList<MiniDAPP> allminis = mdb.getAllMiniDAPPs();
 				
 		//Check for HUB
-		checkInstalled("minihub", "minihub/minihub-0.11.2.mds.zip", allminis, true, true);
+		checkInstalled("minihub", "minihub/minihub-0.11.3.mds.zip", allminis, true, true);
 		
 		//Do we Install the Default MiniDAPPs
 		if(GeneralParams.DEFAULT_MINIDAPPS) {
 		
 			//Pending gets write permissions
-			checkInstalled("pending", "default/pending-1.0.5.mds.zip", allminis, true);
+			checkInstalled("pending", "default/pending-1.0.6.mds.zip", allminis, true);
 			
 			//Security MiniDAPP - backups / restore
-			checkInstalled("security", "default/security-0.17.5.mds.zip", allminis, true);
+			checkInstalled("security", "default/security-0.18.0.mds.zip", allminis, true);
 			
 			//Dappstore gets write permissions
 			checkInstalled("dapp store", "default/dapp_store-1.0.6.mds.zip", allminis, true);
 			
 			//The rest are normal
 			checkInstalled("block", "default/block-2.1.1.mds.zip", allminis, false);
-			checkInstalled("chatter", "default/chatter-1.6.0.mds.zip", allminis, false);
+			checkInstalled("chatter", "default/chatter-1.7.0.mds.zip", allminis, false);
 			checkInstalled("docs", "default/docs-1.4.0.mds.zip", allminis, false);
 			checkInstalled("filez", "default/filez-1.9.2.mds.zip", allminis, false);
 			checkInstalled("future cash", "default/futurecash-1.11.1.mds.zip", allminis, false);
