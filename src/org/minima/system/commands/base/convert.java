@@ -54,7 +54,15 @@ public class convert extends Command {
 		
 		String from = getParam("from").toLowerCase();
 		String to 	= getParam("to").toLowerCase();
-		String data = getParam("data");
+		
+		String data = null;
+		if(isParamJSONObject("data")) {
+			data = getJSONObjectParam("data").toString();
+		}else if(isParamJSONArray("data")){
+			data = getJSONArrayParam("data").toString();
+		}else{
+			data = getParam("data");
+		}
 		
 		JSONObject resp = new JSONObject();
 		
