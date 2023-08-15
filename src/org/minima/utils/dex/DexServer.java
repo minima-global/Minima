@@ -1,9 +1,10 @@
 package org.minima.utils.dex;
 
 import java.net.Socket;
+import java.security.Security;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.minima.system.network.rpc.HTTPServer;
-import org.minima.utils.MinimaLogger;
 
 public class DexServer {
 
@@ -16,6 +17,9 @@ public class DexServer {
 	
 	public static void main(String[] zArgs) {
 		
+		//We use Bouncy
+		Security.addProvider(new BouncyCastleProvider());
+				
 		//Create a global DexManager
 		mDexManager = new DexManager();
 		

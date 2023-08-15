@@ -30,6 +30,7 @@
 	//Globals..
 	var PUBLIC_KEY	 	= "";
 	var MAXIMA_CONTACT 	= "";
+	var ALL_MESSAGES 	= [];
 	
 	//Main message handler..
 	MDS.init(function(msg){
@@ -42,14 +43,48 @@
 				PUBLIC_KEY 		= resp.response.publickey;
 				MAXIMA_CONTACT 	= resp.response.contact;
 				
-				MDS.log("PUBLIC KEY     : "+PUBLIC_KEY);
-				MDS.log("MAXIMA CONTACT : "+MAXIMA_CONTACT);
+				//MDS.log("PUBLIC KEY     : "+PUBLIC_KEY);
+				//MDS.log("MAXIMA CONTACT : "+MAXIMA_CONTACT);
 			
 				showAllOffers();
 			});
+		}else if(msg.event == "MAXIMA"){
+			
+			//Is it for this app
+			if(msg.data.application == "dexxed"){
+				MDS.log("REC:"+JSON.stringify(msg.data));
+				MDS.cmd("convert from:hex to:string data:"+msg.data.data,function(resp){
+					MDS.log("MESSAGE:"+resp.response.conversion);
+					ALL_MESSAGES.push(resp.response.conversion);
+					showAllMessages();
+				});
+				
+			}
 		}
 	});
 
+	function showAllMessages(){
+		var tablestr = "<table class=allmessagestable >";
+		var len = ALL_MESSAGES.length;
+		for(var i=0;i<len;i++){
+			var obj = JSON.parse(ALL_MESSAGES[i]);
+			tablestr += "<tr><td>";
+			
+			if(obj.buysell){
+				tablestr += "Hi! I would like to BUY some Minima.. <button>ADD CONTACT</button>";	
+			}else{
+				tablestr += "Hi! I would like to SELL some Minima.. <button>ADD CONTACT</button>";
+			}
+			
+			tablestr += "</td></tr>";
+		}
+		
+		tablestr += "<table>";
+		
+		//Now write to webpage
+		document.getElementById("allmessages").innerHTML = tablestr;
+	}
+	
 	function showAllOffers(){
 		
 		//Do stuff.. from now..		
@@ -65,7 +100,7 @@
 			var fullresponse = JSON.parse(resp.response);
 			
 			var len = fullresponse.offers.length;
-			MDS.log("OFFERS FOUND : "+len);
+			//MDS.log("OFFERS FOUND : "+len);
 			
 			//Start the Table
 			var tablestr = "<table class=offerstable>";
@@ -75,7 +110,7 @@
 			for(var i=0;i<len;i++){
 			
 				var offer = fullresponse.offers[i];
-				MDS.log("OFFER : "+JSON.stringify(offer));
+				//MDS.log("OFFER : "+JSON.stringify(offer));
 				
 				tablestr += "<tr>";
 				tablestr += "<td>"+offer.pair+"</td>";
@@ -89,13 +124,7 @@
 				tablestr += "<td>"+offer.min+"</td>";
 				tablestr += "<td>"+offer.max+"</td>";
 				tablestr += "<td>"+offer.price+"</td>";
-				
-				if(offer.publickey == PUBLIC_KEY){
-					tablestr += "<td><button onclick='contactOffer(\""+offer.maxcontact+"\");'>CONTACT</button></td>";
-				}else{
-					tablestr += "<td><button onclick='contactOffer(\""+offer.maxcontact+"\");'>CONTACT</button></td>";	
-				}
-				
+				tablestr += "<td><button onclick='contactOffer("+offer.buysell+",\""+offer.maxcontact+"\");'>CONTACT</button></td>";	
 				tablestr += "</tr>";
 			}
 			
@@ -107,8 +136,22 @@
 		
 	}
 	
-	function contactOffer(maxcontact){
-		MDS.log("CONTACT:"+maxcontact);
+	function contactOffer(buysell,maxcontact){
+		
+		//Create a greeting message
+		var greeting 	 = {};
+		greeting.from	 = MAXIMA_CONTACT;
+		greeting.buysell = buysell;
+		
+		//Convert..
+		var greetstr = JSON.stringify(greeting);
+		
+		//And send..
+		MDS.cmd("maxima action:send to:"+maxcontact+" application:dexxed data:\""+greetstr+"\"",function(resp){
+			//MDS.log(JSON.stringify(resp));
+			
+		});
+		
 	}
 	
 	function createOffer(){
@@ -123,27 +166,35 @@
 		offer.price 		= document.getElementById("offer_price").value;
 		offer.publickey		= PUBLIC_KEY;
 		offer.maxcontact	= MAXIMA_CONTACT;
+		offer.create		= true;
 		
 		//Need to sign this data
 		var data = JSON.stringify(offer);
 		
 		//Convert to HEX..
 		MDS.cmd("convert from:string to:hex data:"+data,function(resp){
-			MDS.log(JSON.stringify(resp));
+			var conversion = resp.response.conversion;
 			
-			
-		});
+			//Now sign it..
+			MDS.cmd("maxsign data:"+conversion,function(resp){
+				var signature = resp.response.signature;
+				
+				//Now create the full message
+				var fullmessage 		= {};
+				fullmessage.offer 		= offer;
+				fullmessage.signature 	= signature;
 		
-		var fullmessage = {};
-		
-		MDS.log(data);
-		
-		//Send to server
-		MDS.net.POST("http://127.0.0.1:8080/set",data,function(resp){
-			MDS.log(JSON.stringify(resp));
-			
-			//And now reload offers
-			showAllOffers();
+				//Now get this datastr
+				var fstr = JSON.stringify(fullmessage);
+				
+				//Send to server
+				MDS.net.POST("http://127.0.0.1:8080/set",fstr,function(resp){
+					MDS.log(JSON.stringify(resp));
+					
+					//And now reload offers
+					showAllOffers();
+				});
+			});
 		});
 	} 
 	
@@ -153,10 +204,9 @@
 <div id=alloffers>
 	No Offers yet..
 </div>
-<br><br><br>
+<br><br>
 
 <h3>Create an Offer</h3>
-
 <table class=createoffertable>
 	<tr><td>PAIR</td><td>MINIMA/USDT</td></tr>
 	<tr><td>BUY/SELL</td><td><input type=checkbox id=offer_buysell></td></tr>
@@ -165,6 +215,12 @@
 	<tr><td>PRICE</td><td><input type=text id=offer_price value=0.02></td></tr>
 	<tr><td colspan=2><input type=submit value="Create Offer" onclick="createOffer();"></td></tr>
 </table>
+<br><br>
+
+<h3>Messages</h3>
+<div id=allmessages>
+	No Messages yet..
+</div>
 
 </center>
 

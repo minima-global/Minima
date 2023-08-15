@@ -18,7 +18,7 @@ import org.minima.utils.json.JSONObject;
 
 public class DexHandler implements Runnable {
 
-	public static boolean LOGGING_ENABLED = false;
+	public static boolean LOGGING_ENABLED = true;
 	
 	Socket mSocket;
 	
@@ -76,10 +76,6 @@ public class DexHandler implements Runnable {
 			//And finally URL decode..
 			command = URLDecoder.decode(command,"UTF-8").trim();
 			
-			if(LOGGING_ENABLED) {
-				MinimaLogger.log("FILE : "+command,false);
-			}
-			
 			//Get the Headers..
 			int contentlength = 0;
 			while(input != null && !input.trim().equals("")) {
@@ -118,7 +114,7 @@ public class DexHandler implements Runnable {
 				String data 	= URLDecoder.decode(dataenc, "UTF-8");
 		
 				if(LOGGING_ENABLED) {
-					MinimaLogger.log("DATA : "+data);
+					MinimaLogger.log("COMMAND:"+command+" DATA:"+data);
 				}
 				
 				//Process this request..
