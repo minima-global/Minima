@@ -1,0 +1,18 @@
+
+.offerstable {
+	 border: solid 1px green;
+}
+
+.offerstable th, .offerstable td {
+  padding: 10px;
+  border: solid 1px green;
+}
+
+.createoffertable {
+	 border: solid 1px red;
+}
+
+.createoffertable th, .createoffertable td {
+  padding: 5px;
+  border: solid 1px red;
+}

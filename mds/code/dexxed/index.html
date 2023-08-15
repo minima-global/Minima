@@ -1,7 +1,7 @@
 <html>
 
 <head>
-	<title>BASIC</title>
+	<title>DEXXED</title>
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
@@ -23,13 +23,13 @@
 
 <center>
 
-	<br>
-
-	<h2>Hello World!</h2>
-	
-</center>
+<br>
 
 <script type="text/javascript">
+	
+	//Globals..
+	var PUBLIC_KEY	 	= "";
+	var MAXIMA_CONTACT 	= "";
 	
 	//Main message handler..
 	MDS.init(function(msg){
@@ -37,12 +37,136 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			
-			//Do stuff.. from now..		
+			//Get MAXIMA details
+			MDS.cmd("maxima",function(resp){
+				PUBLIC_KEY 		= resp.response.publickey;
+				MAXIMA_CONTACT 	= resp.response.contact;
+				
+				MDS.log("PUBLIC KEY     : "+PUBLIC_KEY);
+				MDS.log("MAXIMA CONTACT : "+MAXIMA_CONTACT);
 			
+				showAllOffers();
+			});
 		}
 	});
 
+	function showAllOffers(){
+		
+		//Do stuff.. from now..		
+		MDS.net.POST("http://127.0.0.1:8080/get","",function(resp){
+			
+			//Failed..!
+			if(!resp.status){
+				MDS.log("ERROR getting offers : "+resp.error);
+				return;
+			}
+			
+			//Get the response..
+			var fullresponse = JSON.parse(resp.response);
+			
+			var len = fullresponse.offers.length;
+			MDS.log("OFFERS FOUND : "+len);
+			
+			//Start the Table
+			var tablestr = "<table class=offerstable>";
+			tablestr += "<th>PAIR</th> <th>BUYSELL</th> <th>MIN</th> <th>MAX</th> <th>PRICE</th> <th>CONTACT</th>";
+			
+			//Cycle through the offers
+			for(var i=0;i<len;i++){
+			
+				var offer = fullresponse.offers[i];
+				MDS.log("OFFER : "+JSON.stringify(offer));
+				
+				tablestr += "<tr>";
+				tablestr += "<td>"+offer.pair+"</td>";
+				
+				if(offer.buysell){
+					tablestr += "<td>BUY</td>";	
+				}else{
+					tablestr += "<td>SELL</td>";
+				}
+				
+				tablestr += "<td>"+offer.min+"</td>";
+				tablestr += "<td>"+offer.max+"</td>";
+				tablestr += "<td>"+offer.price+"</td>";
+				
+				if(offer.publickey == PUBLIC_KEY){
+					tablestr += "<td><button onclick='contactOffer(\""+offer.maxcontact+"\");'>CONTACT</button></td>";
+				}else{
+					tablestr += "<td><button onclick='contactOffer(\""+offer.maxcontact+"\");'>CONTACT</button></td>";	
+				}
+				
+				tablestr += "</tr>";
+			}
+			
+			tablestr += "</table>";
+			
+			//Now write to webpage
+			document.getElementById("alloffers").innerHTML = tablestr;
+		});
+		
+	}
+	
+	function contactOffer(maxcontact){
+		MDS.log("CONTACT:"+maxcontact);
+	}
+	
+	function createOffer(){
+		
+		var offer = {};
+		
+		//Get the details
+		offer.pair			= "MINIMA/USDT";
+		offer.buysell 		= document.getElementById("offer_buysell").checked;
+		offer.min 			= document.getElementById("offer_min").value;
+		offer.max 			= document.getElementById("offer_max").value;
+		offer.price 		= document.getElementById("offer_price").value;
+		offer.publickey		= PUBLIC_KEY;
+		offer.maxcontact	= MAXIMA_CONTACT;
+		
+		//Need to sign this data
+		var data = JSON.stringify(offer);
+		
+		//Convert to HEX..
+		MDS.cmd("convert from:string to:hex data:"+data,function(resp){
+			MDS.log(JSON.stringify(resp));
+			
+			
+		});
+		
+		var fullmessage = {};
+		
+		MDS.log(data);
+		
+		//Send to server
+		MDS.net.POST("http://127.0.0.1:8080/set",data,function(resp){
+			MDS.log(JSON.stringify(resp));
+			
+			//And now reload offers
+			showAllOffers();
+		});
+	} 
+	
 </script>
+
+<h3>All Offers</h3>
+<div id=alloffers>
+	No Offers yet..
+</div>
+<br><br><br>
+
+<h3>Create an Offer</h3>
+
+<table class=createoffertable>
+	<tr><td>PAIR</td><td>MINIMA/USDT</td></tr>
+	<tr><td>BUY/SELL</td><td><input type=checkbox id=offer_buysell></td></tr>
+	<tr><td>MIN</td><td><input type=text id=offer_min value=1></td></tr>
+	<tr><td>MAX</td><td><input type=text id=offer_max value=10></td></tr>
+	<tr><td>PRICE</td><td><input type=text id=offer_price value=0.02></td></tr>
+	<tr><td colspan=2><input type=submit value="Create Offer" onclick="createOffer();"></td></tr>
+</table>
+
+</center>
 
 </body>
 
