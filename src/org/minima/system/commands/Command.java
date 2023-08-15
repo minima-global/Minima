@@ -442,7 +442,7 @@ public abstract class Command {
 					MiniDAPP md = MinimaDB.getDB().getMDSDB().getMiniDAPP(zMiniDAPPID);
 					
 					//Does it have WRITE permission..
-					if(md.getPermission().equals("read")) {
+					if(!md.getPermission().equalsIgnoreCase("write")) {
 					
 						//Add to pending..
 						String puid = Main.getInstance().getMDSManager().addPendingCommand(md, command);
