@@ -38,6 +38,7 @@ public class checkmode extends Command {
 		if(minidappid.equals("0x00")) {
 			resp.put("name", "MINIMA");
 			resp.put("mode", "WRITE");
+			resp.put("writemode", true);
 		}else {
 			//Get that MiniDAPP..
 			MiniDAPP md = MinimaDB.getDB().getMDSDB().getMiniDAPP(minidappid);
@@ -45,6 +46,7 @@ public class checkmode extends Command {
 			//Return the result
 			resp.put("name", md.getName());
 			resp.put("mode", md.getPermission().toUpperCase());
+			resp.put("writemode", md.getPermission().equalsIgnoreCase("write"));
 		}
 		
 		ret.put("response", resp);
