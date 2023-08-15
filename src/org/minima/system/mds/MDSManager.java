@@ -860,7 +860,7 @@ public class MDSManager extends MessageProcessor {
 		if(GeneralParams.DEFAULT_MINIDAPPS) {
 		
 			//Pending gets write permissions
-			checkInstalled("pending", "default/pending-1.0.6.mds.zip", allminis, true);
+			checkInstalled("pending", "default/pending-1.0.7.mds.zip", allminis, true);
 			
 			//Security MiniDAPP - backups / restore
 			checkInstalled("security", "default/security-0.18.0.mds.zip", allminis, true);
