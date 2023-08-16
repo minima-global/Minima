@@ -163,6 +163,7 @@ public class TxPoWTreeNode implements Streamable {
 					JSONObject data = new JSONObject();
 					data.put("relevant", true);
 					data.put("txblockid", mTxBlock.getTxPoW().getTxPoWID());
+					data.put("txblock", block.toString());
 					data.put("spent", true);
 					data.put("coin", coinjson);
 					
@@ -210,6 +211,7 @@ public class TxPoWTreeNode implements Streamable {
 					JSONObject data = new JSONObject();
 					data.put("relevant", true);
 					data.put("txblockid", mTxBlock.getTxPoW().getTxPoWID());
+					data.put("txblock", block.toString());
 					data.put("spent", false);
 					data.put("coin", coinjson);
 					
