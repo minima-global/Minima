@@ -870,7 +870,7 @@ public class MDSManager extends MessageProcessor {
 			
 			//The rest are normal
 			checkInstalled("block", "default/block-2.1.1.mds.zip", allminis, false);
-			checkInstalled("chatter", "default/chatter-1.7.0.mds.zip", allminis, false);
+			checkInstalled("chatter", "default/chatter-1.7.1.mds.zip", allminis, false);
 			checkInstalled("docs", "default/docs-1.4.0.mds.zip", allminis, false);
 			checkInstalled("filez", "default/filez-1.9.2.mds.zip", allminis, false);
 			checkInstalled("future cash", "default/futurecash-1.11.1.mds.zip", allminis, false);
