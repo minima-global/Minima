@@ -62,7 +62,6 @@ public class restoresync extends Command {
 				+ "\n"
 				+ "host: (optional)\n"
 				+ "    ip:port of the archive node to sync from.\n"
-				+ "    Use 'auto' to connect to a default archive node.\n"
 				+ "\n"
 				+ "keyuses: (optional) \n"
 				+ "    Increment (not set) the number of key uses per key.\n"
@@ -194,10 +193,12 @@ public class restoresync extends Command {
 		int keyuses = getNumberParam("keyuses", new MiniNumber(256)).getAsInt();
 				
 		//Do we even need to do a sync..
-		if(timediff < maxtime) {
+		if(timediff < maxtime || !existsParam("host")) {
 			
-			MinimaLogger.log("No Sync required as new backup");
-
+			if(existsParam("host")) {
+				MinimaLogger.log("No Sync required as new backup");
+			}
+			
 			//Update key uses
 			MinimaDB.getDB().getWallet().updateIncrementAllKeyUses(keyuses);
 			
@@ -222,24 +223,27 @@ public class restoresync extends Command {
 			return ret;
 		}
 		
-		//Get the TxPowTree
-		TxPoWTreeNode nottip = tip.getParent(128);
-		
-		//What block
-		MiniNumber startblock = nottip.getBlockNumber(); 
-		MinimaLogger.log("Start sync from "+startblock);
-		
 		//Is there a host
-		String host = getParam("host", "auto");
+		if(existsParam("host")) {
+				
+			//Get the TxPowTree
+			TxPoWTreeNode nottip = tip.getParent(128);
+			
+			//What block
+			MiniNumber startblock = nottip.getBlockNumber(); 
+			MinimaLogger.log("Start sync from "+startblock);
 		
-		//Now do a resync..
-		performResync(	host, keyuses, startblock, true);
-		
-		//Get the TxPowTree
-		tip = MinimaDB.getDB().getTxPoWTree().getTip();
-		
-		//What block
-		MinimaLogger.log("End sync on "+tip.getBlockNumber());
+			String host = getParam("host");
+			
+			//Now do a resync..
+			performResync(	host, keyuses, startblock, true);
+			
+			//Get the TxPowTree
+			tip = MinimaDB.getDB().getTxPoWTree().getTip();
+			
+			//What block
+			MinimaLogger.log("End sync on "+tip.getBlockNumber());
+		}
 		
 		//And NOW shut down..
 		Main.getInstance().shutdownFinalProcs();
@@ -302,19 +306,19 @@ public class restoresync extends Command {
 		String fullhost = zHost;
 		
 		//Is it auto
-		if(fullhost.equals("auto")) {
-			
-			//Choose one from our default list
-			int size  	= P2PParams.DEFAULT_ARCHIVENODE_LIST.size();
-			int rand  	= new Random().nextInt(size);
-			
-			InetSocketAddress archaddr = P2PParams.DEFAULT_ARCHIVENODE_LIST.get(rand);
-			String ip 	= archaddr.getHostString();
-			int port    = archaddr.getPort();
-			fullhost	= ip+":"+port;
-			
-			MinimaLogger.log("RANDOM ARCHIVE HOST : "+rand+" host:"+fullhost);
-		}
+//		if(fullhost.equals("auto")) {
+//			
+//			//Choose one from our default list
+//			int size  	= P2PParams.DEFAULT_ARCHIVENODE_LIST.size();
+//			int rand  	= new Random().nextInt(size);
+//			
+//			InetSocketAddress archaddr = P2PParams.DEFAULT_ARCHIVENODE_LIST.get(rand);
+//			String ip 	= archaddr.getHostString();
+//			int port    = archaddr.getPort();
+//			fullhost	= ip+":"+port;
+//			
+//			MinimaLogger.log("RANDOM ARCHIVE HOST : "+rand+" host:"+fullhost);
+//		}
 		
 		Message connectdata = connect.createConnectMessage(fullhost);
 		
@@ -348,6 +352,8 @@ public class restoresync extends Command {
 		boolean foundsome 		= false;
 		boolean firstrun 		= true;
 		MiniNumber firstStart   = MiniNumber.ZERO;
+		
+		long lastlogmessage = 0;
 		
 		int counter = 0;
 		MinimaLogger.log("System clean..");
@@ -451,8 +457,15 @@ public class restoresync extends Command {
 					break;
 				}
 			}
-			long timediff = System.currentTimeMillis() - timenow;
-			MinimaLogger.log("IBD Processed.. block:"+startblock+" time:"+timediff+"ms");
+			
+			//Do we print a log..
+			if((System.currentTimeMillis() - lastlogmessage)>10000) {
+				MinimaLogger.log("IBD Processed.. block:"+startblock);
+				lastlogmessage = System.currentTimeMillis();
+			}
+			
+//			long timediff = System.currentTimeMillis() - timenow;
+//			MinimaLogger.log("IBD Processed.. block:"+startblock+" time:"+timediff+"ms");
 			
 			if(error) {
 				MinimaLogger.log("ERROR : There was an error processing that IBD - took too long");

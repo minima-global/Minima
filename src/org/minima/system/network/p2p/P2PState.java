@@ -90,9 +90,9 @@ public class P2PState {
         return new ArrayList<>(knownPeers);
     }
 
-    public synchronized void setKnownPeers(Set<InetSocketAddress> knownPeers) {
-        this.knownPeers = knownPeers;
-    }
+//    public synchronized void setKnownPeers(Set<InetSocketAddress> knownPeers) {
+//        this.knownPeers = knownPeers;
+//    }
 
     public boolean isAcceptingInLinks() {
         return isAcceptingInLinks;

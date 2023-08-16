@@ -33,6 +33,7 @@ import org.minima.system.commands.network.connect;
 import org.minima.system.network.NetworkManager;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.p2p.P2PFunctions;
+import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
@@ -404,7 +405,7 @@ public class NIOManager extends MessageProcessor {
 //					ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
 //					int tot = conns.size();
 					
-					if(connected>0 || connecting>3) {
+					if(connected>0 || connecting>1) {
 						
 						//No reconnect
 						reconnect = false;
@@ -761,6 +762,10 @@ public class NIOManager extends MessageProcessor {
 	 * Disconnect a client
 	 */
 	public void disconnect(String zClientUID) {
+		disconnect(zClientUID, false);
+	}
+	
+	public void disconnect(String zClientUID, boolean zRemoveP2P) {
 		
 		//Logs
 		if(GeneralParams.TXBLOCK_NODE) {
@@ -773,6 +778,25 @@ public class NIOManager extends MessageProcessor {
 			}
 		}
 		
+		//Do we remove from p2p as well..
+		if(zRemoveP2P && GeneralParams.P2P_ENABLED) {
+			
+			NIOClient nioc =  getNIOClientFromUID(zClientUID);
+			if(nioc!=null) {
+				
+				MinimaLogger.log("Disconnecting and Removing PEER from P2P "+nioc.getFullAddress());
+				
+				//Make it invalid.
+				P2PFunctions.addInvalidPeer(nioc.getFullAddress());
+				
+				//Create an address
+				InetSocketAddress addr = new InetSocketAddress(nioc.getHost(), nioc.getPort());
+				
+				//Post it..
+				Message msg = new Message(P2PManager.P2P_REMOVE_PEER).addObject("address", addr);
+                Main.getInstance().getNetworkManager().getP2PManager().PostMessage(msg);
+			}
+		}
 		
 		Message msg = new Message(NIOManager.NIO_DISCONNECT).addString("uid", zClientUID);
 		PostMessage(msg);

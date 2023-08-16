@@ -116,6 +116,11 @@ public class GeneralParams {
 	public static String P2P_ROOTNODE = "";
 	
 	/**
+	 * Host and IP of the first P2P node..
+	 */
+	public static String P2P_ADDNODES = "";
+	
+	/**
 	 * Are all IP allowed for Maxima Hosts
 	 */
 	public static boolean ALLOW_ALL_IP = false;
@@ -179,7 +184,7 @@ public class GeneralParams {
 	/**
 	 * Enable Full logs for script errors
 	 */
-	public static boolean SCRIPTLOGS = false;
+	public static boolean SCRIPTLOGS = true;
 	
 	/**
 	 * Enable full logs for mining..

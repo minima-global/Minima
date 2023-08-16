@@ -369,7 +369,7 @@ public class NIOMessage implements Runnable {
 					MinimaLogger.log("Received INVALID IBD from "+mClientUID);
 					
 					//Disconnect
-					Main.getInstance().getNIOManager().disconnect(mClientUID);
+					Main.getInstance().getNIOManager().disconnect(mClientUID,true);
 					
 					return;
 				}
@@ -386,7 +386,7 @@ public class NIOMessage implements Runnable {
 						MinimaLogger.log("[!] CONNECTED TO HEAVIER CHAIN.. from "+mClientUID+" ..disconnecting");
 						
 						//Disconnect
-						Main.getInstance().getNIOManager().disconnect(mClientUID);
+						Main.getInstance().getNIOManager().disconnect(mClientUID,true);
 						
 						return;
 						
@@ -854,7 +854,7 @@ public class NIOMessage implements Runnable {
 					
 					//Hmm something funny..
 					MinimaLogger.log("[!] No Crossover found whilst syncing with new node. They are on a different chain. Please check you are on the correct chain.. disconnecting from "+ nioclient.getHost() + ":" + port);
-					Main.getInstance().getNIOManager().disconnect(mClientUID);
+					Main.getInstance().getNIOManager().disconnect(mClientUID, true);
 				}
 				
 			}else if(type.isEqual(MSG_MAXIMA_CTRL)) {

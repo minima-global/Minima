@@ -85,7 +85,6 @@ public class archive extends Command {
 				+ "\n"
 				+ "host: (optional) \n"
 				+ "    ip:port of the archive node to sync from or check the integrity of.\n"
-				+ "    Use 'auto' to connect to a default archive node.\n"
 				+ "    Only use with 'action:resync'.\n"
 				+ "\n"
 				+ "file: (optional) \n"
@@ -294,20 +293,21 @@ public class archive extends Command {
 			
 			//Is it auto
 			boolean usinglocal = false;
-			if(fullhost.equals("auto")) {
-				
-				//Choose one from our default list
-				int size  	= P2PParams.DEFAULT_ARCHIVENODE_LIST.size();
-				int rand  	= new Random().nextInt(size);
-				
-				InetSocketAddress archaddr = P2PParams.DEFAULT_ARCHIVENODE_LIST.get(rand);
-				String ip 	= archaddr.getHostString();
-				int port    = archaddr.getPort();
-				fullhost	= ip+":"+port;
-				
-				MinimaLogger.log("RANDOM ARCHIVE HOST : "+rand+" host:"+fullhost);
-			
-			}else if(fullhost.equals(LOCAL_ARCHIVE)) {
+//			if(fullhost.equals("auto")) {
+//				
+//				//Choose one from our default list
+//				int size  	= P2PParams.DEFAULT_ARCHIVENODE_LIST.size();
+//				int rand  	= new Random().nextInt(size);
+//				
+//				InetSocketAddress archaddr = P2PParams.DEFAULT_ARCHIVENODE_LIST.get(rand);
+//				String ip 	= archaddr.getHostString();
+//				int port    = archaddr.getPort();
+//				fullhost	= ip+":"+port;
+//				
+//				MinimaLogger.log("RANDOM ARCHIVE HOST : "+rand+" host:"+fullhost);
+//			
+//			}else 
+			if(fullhost.equals(LOCAL_ARCHIVE)) {
 				
 				//Using the local DB..
 				if(STATIC_TEMPARCHIVE == null) {
@@ -394,6 +394,8 @@ public class archive extends Command {
 			boolean foundsome 		= false;
 			boolean firstrun 		= true;
 			MiniNumber firstStart   = MiniNumber.ZERO;
+			
+			long lastlogmessage = 0;
 			
 			int counter = 0;
 			MinimaLogger.log("System clean..");
@@ -504,8 +506,11 @@ public class archive extends Command {
 					}
 				}
 				
-				long timediff = System.currentTimeMillis() - timenow;
-				MinimaLogger.log("IBD Processed.. block:"+startblock+" time:"+timediff+"ms");
+				//Do we print a log..
+				if((System.currentTimeMillis() - lastlogmessage)>10000) {
+					MinimaLogger.log("IBD Processed.. block:"+startblock);
+					lastlogmessage = System.currentTimeMillis();
+				}
 				
 				if(error) {
 					MinimaLogger.log("ERROR : There was an error processing that IBD - took too long");
@@ -659,6 +664,9 @@ public class archive extends Command {
 			//Where the temp db will go..
 			File restorefolder 	= new File(GeneralParams.DATA_FOLDER,"archiverestore");
 			
+			//Delete the restore folder - just in case is already there
+			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
+			
 			//Do we load one..
 			ArchiveManager archtemp = null;
 			if(!file.equals("")) {
@@ -723,11 +731,11 @@ public class archive extends Command {
 			//Shutdwon TEMP DB
 			if(!file.equals("")) {
 				archtemp.saveDB(false);
-				
-				//Delete the restore folder
-				MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
 			}
 			
+			//Delete the restore folder
+			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
+		
 			ret.put("response", resp);
 			
 		}else if(action.equals("addresscheck")) {

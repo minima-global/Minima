@@ -1,0 +1,229 @@
+<html>
+
+<head>
+	<title>DEXXED</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="jslib.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+
+<br>
+
+<script type="text/javascript">
+	
+	//Globals..
+	var PUBLIC_KEY	 	= "";
+	var MAXIMA_CONTACT 	= "";
+	var ALL_MESSAGES 	= [];
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//Get MAXIMA details
+			MDS.cmd("maxima",function(resp){
+				PUBLIC_KEY 		= resp.response.publickey;
+				MAXIMA_CONTACT 	= resp.response.contact;
+				
+				//MDS.log("PUBLIC KEY     : "+PUBLIC_KEY);
+				//MDS.log("MAXIMA CONTACT : "+MAXIMA_CONTACT);
+			
+				showAllOffers();
+			});
+		}else if(msg.event == "MAXIMA"){
+			
+			//Is it for this app
+			if(msg.data.application == "dexxed"){
+				MDS.log("REC:"+JSON.stringify(msg.data));
+				MDS.cmd("convert from:hex to:string data:"+msg.data.data,function(resp){
+					MDS.log("MESSAGE:"+resp.response.conversion);
+					ALL_MESSAGES.push(resp.response.conversion);
+					showAllMessages();
+				});
+				
+			}
+		}
+	});
+
+	function showAllMessages(){
+		var tablestr = "<table class=allmessagestable >";
+		var len = ALL_MESSAGES.length;
+		for(var i=0;i<len;i++){
+			var obj = JSON.parse(ALL_MESSAGES[i]);
+			tablestr += "<tr><td>";
+			
+			if(obj.buysell){
+				tablestr += "Hi! I would like to BUY some Minima.. <button>ADD CONTACT</button>";	
+			}else{
+				tablestr += "Hi! I would like to SELL some Minima.. <button>ADD CONTACT</button>";
+			}
+			
+			tablestr += "</td></tr>";
+		}
+		
+		tablestr += "<table>";
+		
+		//Now write to webpage
+		document.getElementById("allmessages").innerHTML = tablestr;
+	}
+	
+	function showAllOffers(){
+		
+		//Do stuff.. from now..		
+		MDS.net.POST("http://127.0.0.1:8080/get","",function(resp){
+			
+			//Failed..!
+			if(!resp.status){
+				MDS.log("ERROR getting offers : "+resp.error);
+				return;
+			}
+			
+			//Get the response..
+			var fullresponse = JSON.parse(resp.response);
+			
+			var len = fullresponse.offers.length;
+			//MDS.log("OFFERS FOUND : "+len);
+			
+			//Start the Table
+			var tablestr = "<table class=offerstable>";
+			tablestr += "<th>PAIR</th> <th>BUYSELL</th> <th>MIN</th> <th>MAX</th> <th>PRICE</th> <th>CONTACT</th>";
+			
+			//Cycle through the offers
+			for(var i=0;i<len;i++){
+			
+				var offer = fullresponse.offers[i];
+				//MDS.log("OFFER : "+JSON.stringify(offer));
+				
+				tablestr += "<tr>";
+				tablestr += "<td>"+offer.pair+"</td>";
+				
+				if(offer.buysell){
+					tablestr += "<td>BUY</td>";	
+				}else{
+					tablestr += "<td>SELL</td>";
+				}
+				
+				tablestr += "<td>"+offer.min+"</td>";
+				tablestr += "<td>"+offer.max+"</td>";
+				tablestr += "<td>"+offer.price+"</td>";
+				tablestr += "<td><button onclick='contactOffer("+offer.buysell+",\""+offer.maxcontact+"\");'>CONTACT</button></td>";	
+				tablestr += "</tr>";
+			}
+			
+			tablestr += "</table>";
+			
+			//Now write to webpage
+			document.getElementById("alloffers").innerHTML = tablestr;
+		});
+		
+	}
+	
+	function contactOffer(buysell,maxcontact){
+		
+		//Create a greeting message
+		var greeting 	 = {};
+		greeting.from	 = MAXIMA_CONTACT;
+		greeting.buysell = buysell;
+		
+		//Convert..
+		var greetstr = JSON.stringify(greeting);
+		
+		//And send..
+		MDS.cmd("maxima action:send to:"+maxcontact+" application:dexxed data:\""+greetstr+"\"",function(resp){
+			//MDS.log(JSON.stringify(resp));
+			
+		});
+		
+	}
+	
+	function createOffer(){
+		
+		var offer = {};
+		
+		//Get the details
+		offer.pair			= "MINIMA/USDT";
+		offer.buysell 		= document.getElementById("offer_buysell").checked;
+		offer.min 			= document.getElementById("offer_min").value;
+		offer.max 			= document.getElementById("offer_max").value;
+		offer.price 		= document.getElementById("offer_price").value;
+		offer.publickey		= PUBLIC_KEY;
+		offer.maxcontact	= MAXIMA_CONTACT;
+		offer.create		= true;
+		
+		//Need to sign this data
+		var data = JSON.stringify(offer);
+		
+		//Convert to HEX..
+		MDS.cmd("convert from:string to:hex data:"+data,function(resp){
+			var conversion = resp.response.conversion;
+			
+			//Now sign it..
+			MDS.cmd("maxsign data:"+conversion,function(resp){
+				var signature = resp.response.signature;
+				
+				//Now create the full message
+				var fullmessage 		= {};
+				fullmessage.offer 		= offer;
+				fullmessage.signature 	= signature;
+		
+				//Now get this datastr
+				var fstr = JSON.stringify(fullmessage);
+				
+				//Send to server
+				MDS.net.POST("http://127.0.0.1:8080/set",fstr,function(resp){
+					MDS.log(JSON.stringify(resp));
+					
+					//And now reload offers
+					showAllOffers();
+				});
+			});
+		});
+	} 
+	
+</script>
+
+<h3>All Offers</h3>
+<div id=alloffers>
+	No Offers yet..
+</div>
+<br><br>
+
+<h3>Create an Offer</h3>
+<table class=createoffertable>
+	<tr><td>PAIR</td><td>MINIMA/USDT</td></tr>
+	<tr><td>BUY/SELL</td><td><input type=checkbox id=offer_buysell></td></tr>
+	<tr><td>MIN</td><td><input type=text id=offer_min value=1></td></tr>
+	<tr><td>MAX</td><td><input type=text id=offer_max value=10></td></tr>
+	<tr><td>PRICE</td><td><input type=text id=offer_price value=0.02></td></tr>
+	<tr><td colspan=2><input type=submit value="Create Offer" onclick="createOffer();"></td></tr>
+</table>
+<br><br>
+
+<h3>Messages</h3>
+<div id=allmessages>
+	No Messages yet..
+</div>
+
+</center>
+
+</body>
+
+</html>

@@ -303,8 +303,11 @@ public class ParamConfigurer {
                 GeneralParams.NOCONNECT = true;
             }
         }),
-        p2pnode("p2pnode", "Specify the initial P2P host:port list to connect to", (args, configurer) -> {
+        p2prootnode("p2prootnode", "Specify the initial P2P host:port to connect to", (args, configurer) -> {
             GeneralParams.P2P_ROOTNODE = args;
+        }),
+        p2pnodes("p2pnodes", "Specify a list of nodes to use IF your peers list is empty", (args, configurer) -> {
+            GeneralParams.P2P_ADDNODES = args;
         }),
         p2ploglevelinfo("p2p-log-level-info", "Set the P2P log level to info", (args, configurer) -> {
             P2PParams.LOG_LEVEL = P2PFunctions.Level.INFO;
