@@ -97,7 +97,14 @@ public class UserDB extends JsonDB{
 	}
 	
 	public String getMaximaName() {
-		return getString("maximaname", "noname");
+		
+		String name = getString("maximaname", "noname");
+		
+		//Remove emojis..
+		String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
+		String emotionless = name.replaceAll(characterFilter,"");
+				
+		return emotionless;
 	}
 	
 	/**
