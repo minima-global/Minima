@@ -119,20 +119,6 @@ public class P2PManager extends MessageProcessor {
         INITIAL_PEERS_LIST_NUM = peers.size();
         MinimaLogger.log("P2P Peers found : " + INITIAL_PEERS_LIST_NUM);
         
-        //ONE LAST TIME..
-//        if(INITIAL_PEERS_LIST_NUM == 0 && GeneralParams.P2P_ADDNODES.equals("")) {
-//        	
-//        	//Add some - FOR JUST THIS RELEASAE..
-//        	GeneralParams.P2P_ADDNODES = "35.185.184.164:9001,"
-//        			+ "35.197.193.30:9001,"
-//        			+ "34.142.123.158:9001,"
-//        			+ "34.89.23.209:9001,"
-//        			+ "34.135.149.22:9001,"
-//        			+ "34.28.118.235:9001";
-//        	
-//        	MinimaLogger.log("Adding some defualt nodes.. " + GeneralParams.P2P_ADDNODES);
-//        }
-        
         //Do we add any nodes..
         if(!GeneralParams.P2P_ADDNODES.equals("") && peers.size()==0) {
         	
