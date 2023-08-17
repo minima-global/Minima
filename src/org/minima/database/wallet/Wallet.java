@@ -235,11 +235,11 @@ public class Wallet extends SqlDB {
 			//Store
 			mBaseSeed = new SeedRow(rs);
 
-			if(isBaseSeedAvailable()) {
+			/*if(isBaseSeedAvailable()) {
 				MinimaLogger.log("Base Private Seed Keys found");
 			}else {
 				MinimaLogger.log("Base Private Seed LOCKED");
-			}
+			}*/
 			
 			return;
 		}

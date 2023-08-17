@@ -492,6 +492,8 @@ public class MinimaDB {
 				
 		try {
 			
+			//MinimaLogger.log("Memory clear started..");
+			
 			//Get the base Database folder
 			File basedb = getBaseDBFolder();
 			
@@ -501,14 +503,14 @@ public class MinimaDB {
 			mArchive.checkForCleanDB();
 			
 			//Shut them down
-			MinimaLogger.log("Save TxPoWDB..");
+			//MinimaLogger.log("Save TxPoWDB..");
 			mTxPoWDB.saveDB(true);
-			MinimaLogger.log("Save ArchiveDB..");
+			//MinimaLogger.log("Save ArchiveDB..");
 			mArchive.saveDB(true);
-			MinimaLogger.log("Save WalletDB..");
+			//MinimaLogger.log("Save WalletDB..");
 			mWallet.saveDB(true);
 			
-			MinimaLogger.log("Load DBs..");
+			//MinimaLogger.log("Load DBs..");
 			
 			//Wallet
 			mWallet					= new Wallet();
@@ -529,7 +531,7 @@ public class MinimaDB {
 			File txpowsqlfolder = new File(basedb,"txpowsql");
 			mTxPoWDB.loadSQLDB(new File(txpowsqlfolder,"txpow"));
 			
-			MinimaLogger.log("Memory clear finished..");
+			//MinimaLogger.log("Memory clear finished..");
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
