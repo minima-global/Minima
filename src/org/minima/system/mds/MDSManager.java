@@ -854,7 +854,7 @@ public class MDSManager extends MessageProcessor {
 		ArrayList<MiniDAPP> allminis = mdb.getAllMiniDAPPs();
 				
 		//Check for HUB
-		checkInstalled("minihub", "minihub/minihub-0.12.1.mds.zip", allminis, true, true);
+		checkInstalled("minihub", "minihub/minihub-0.12.4.mds.zip", allminis, true, true);
 		
 		//Do we Install the Default MiniDAPPs
 		if(GeneralParams.DEFAULT_MINIDAPPS) {
@@ -863,7 +863,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("pending", "default/pending-1.1.0.mds.zip", allminis, true);
 			
 			//Security MiniDAPP - backups / restore
-			checkInstalled("security", "default/security-0.19.0.mds.zip", allminis, true);
+			checkInstalled("security", "default/security-0.21.0.mds.zip", allminis, true);
 			
 			//Dappstore gets write permissions
 			checkInstalled("dapp store", "default/dapp_store-1.0.6.mds.zip", allminis, true);
