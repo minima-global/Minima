@@ -236,14 +236,17 @@ public class NIOManager extends MessageProcessor {
 	}
 	
 	public NIOClient getNIOClientFromUID(String zUID) {
-		ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
-		for(NIOClient conn : conns) {
-			if(conn.getUID().equals(zUID)) {
-				return conn;
-			}
-		}
 		
-		return null;
+		return Main.getInstance().getNIOManager().getNIOServer().getClient(zUID);
+		
+//		ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+//		for(NIOClient conn : conns) {
+//			if(conn.getUID().equals(zUID)) {
+//				return conn;
+//			}
+//		}
+//		
+//		return null;
 	}
 	
 	public NIOTraffic getTrafficListener() {

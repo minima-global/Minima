@@ -854,6 +854,10 @@ public class NIOMessage implements Runnable {
 					
 					//Hmm something funny..
 					MinimaLogger.log("[!] No Crossover found whilst syncing with new node. They are on a different chain. Please check you are on the correct chain.. disconnecting from "+ nioclient.getHost() + ":" + port);
+					
+					//Make it invalid.
+					P2PFunctions.addInvalidPeer(nioclient.getFullAddress());
+					
 					Main.getInstance().getNIOManager().disconnect(mClientUID, true);
 				}
 				

@@ -626,6 +626,8 @@ public class MaximaManager extends MessageProcessor {
 			//Is it valid..
 			if(nioc != null) {
 				
+				MinimaLogger.log("MAXIMA HOST CONNECTED "+nioc.getUID()+" "+nioc.getFullAddress());
+				
 				//Ok - we should be connected..
 				MaximaHost mxhost = maxdb.loadHost(nioc.getFullAddress());
 				if(mxhost == null) {
