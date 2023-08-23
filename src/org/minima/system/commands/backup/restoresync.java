@@ -202,14 +202,14 @@ public class restoresync extends Command {
 			//Update key uses
 			MinimaDB.getDB().getWallet().updateIncrementAllKeyUses(keyuses);
 			
+			//Don't do the usual shutdown hook
+			Main.getInstance().setHasShutDown();
+			
 			//And NOW shut down..
 			Main.getInstance().shutdownFinalProcs();
 			
 			//Now save the Databases..
 			MinimaDB.getDB().saveSQL(false);
-			
-			//Don't do the usual shutdown hook
-			Main.getInstance().setHasShutDown();
 			
 			//And NOW shut down..
 			Main.getInstance().stopMessageProcessor();
@@ -245,14 +245,14 @@ public class restoresync extends Command {
 			MinimaLogger.log("End sync on "+tip.getBlockNumber());
 		}
 		
+		//Don't do the usual shutdown hook
+		Main.getInstance().setHasShutDown();
+				
 		//And NOW shut down..
 		Main.getInstance().shutdownFinalProcs();
 		
 		//Now shutdown and save everything
 		MinimaDB.getDB().saveAllDB();
-		
-		//Don't do the usual shutdown hook
-		Main.getInstance().setHasShutDown();
 		
 		//And NOW shut down..
 		Main.getInstance().stopMessageProcessor();

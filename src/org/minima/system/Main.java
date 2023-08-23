@@ -411,6 +411,7 @@ public class Main extends MessageProcessor {
 	public void shutdown(boolean zCompact) {
 		//Are we already shutting down..
 		if(mShuttingdown) {
+			MinimaLogger.log("Shutdown called when already shutting down..");
 			return;
 		}
 		

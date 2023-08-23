@@ -542,14 +542,14 @@ public class archive extends Command {
 			resp.put("end", endblock.toString());
 			ret.put("response", resp);
 			
+			//Don't do the usual shutdown hook
+			Main.getInstance().setHasShutDown();
+			
 			//And NOW shut down..
 			Main.getInstance().shutdownFinalProcs();
 			
 			//Now shutdown and save everything
 			MinimaDB.getDB().saveAllDB();
-			
-			//Don't do the usual shutdown hook
-			Main.getInstance().setHasShutDown();
 			
 			//And NOW shut down..
 			Main.getInstance().stopMessageProcessor();
