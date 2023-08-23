@@ -98,6 +98,9 @@ public class Minima {
 		//Depends on the VERSION
 		File minimafolder 			= new File(dataFolder,GlobalParams.MINIMA_BASE_VERSION);
 		
+		//Reset ALL the GeneralParams - ANDROID KEEPS THEM after a shutdown
+		GeneralParams.resetDefaults();
+		
 		//Set this globally
 		GeneralParams.DATA_FOLDER 	= minimafolder.getAbsolutePath();
 		
@@ -140,7 +143,7 @@ public class Minima {
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
 		} catch (ClassNotFoundException e1) {
-			e1.printStackTrace();
+			//e1.printStackTrace();
 		}
 		
 		//Main handler..

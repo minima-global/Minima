@@ -235,4 +235,61 @@ public class GeneralParams {
 	public static String RPC_AUTHSTYLE 		= "basic";
 	public static String RPC_PASSWORD 		= "none";
 	
+	/**
+	 * Reset all params to their default settings.. ANDROID keeps them after shutdown
+	 */
+	public static void resetDefaults() {
+		IS_MOBILE = false;
+		IS_ACCEPTING_IN_LINKS = true;
+		GENESIS = false;
+		CLEAN = false;
+		ARCHIVE = false;
+		TXBLOCK_NODE = false;
+		IS_MAIN_DBPASSWORD_SET = false;
+		MAIN_DBPASSWORD 		 = "minima"; 
+		DATA_FOLDER = "";
+		BASE_FILE_FOLDER = "";
+		MINIMA_HOST = "";
+		IS_HOST_SET = false;
+		MINIMA_PORT = 9001;
+		MDSFILE_PORT = MINIMA_PORT+2;
+		MDSCOMMAND_PORT = MINIMA_PORT+3;
+		RPC_PORT = MINIMA_PORT+4;
+		MDS_PASSWORD = "";
+		MDS_INITFOLDER = "";
+		MDS_WRITE = "";
+		MDS_ENABLED = false;
+		TEST_PARAMS = false;
+		P2P_ENABLED = true;
+		P2P_ROOTNODE = "";
+		P2P_ADDNODES = "";
+		ALLOW_ALL_IP = false;
+		NOCONNECT = false;
+		CONNECT_LIST = "";
+		SHOW_PARAMS = false;
+		NO_SYNC_IBD = false;
+		MAX_RELAY_OUTPUTCOINS = 15;
+		MAX_SPLIT_COINS = new MiniNumber(10);
+		NUMBER_DAYS_SQLTXPOWDB = 3;
+		NUMBER_HOURS_RAMTXPOWDB = 1;
+		NUMBER_DAYS_ARCHIVE = 50;
+		USER_PULSE_FREQ   = 1000 * 60 * 10;
+		DEBUGFLAG = false;
+		DEBUGVAR 	= "";
+		SCRIPTLOGS = true;
+		MINING_LOGS = false;
+		MAXIMA_LOGS = false;
+		NETWORKING_LOGS = false;
+		IBDSYNC_LOGS = false;
+		BLOCK_LOGS = false;
+		ARCHIVESYNC_LIMIT_BANDWIDTH = false;
+		RPC_CRLF = false;
+		DEFAULT_MINIDAPPS 	= true;
+		RPC_ENABLED 		= false;
+		RPC_AUTHENTICATE 	= false;
+		RPC_SSL				= false;
+		RPC_AUTHSTYLE 		= "basic";
+		RPC_PASSWORD 		= "none";
+	}
+	
 }
