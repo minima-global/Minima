@@ -125,6 +125,17 @@ public class peers extends Command {
 			//Is it a single IP
 			String peerstr = getParam("peerslist"); 
 			
+			//Is it an URL ? Download the list
+			if(peerstr.startsWith("http")) {
+				
+				//Download the list
+				String urllist = RPCClient.sendGET(peerstr);
+				if(urllist.equals("")) {
+					throw new CommandException("No peers found @ "+peerstr);
+				}
+				peerstr = urllist;
+			}
+			
 			//Break up 
 			StringTokenizer strtok = new StringTokenizer(peerstr,",");
 			while(strtok.hasMoreTokens()) {
