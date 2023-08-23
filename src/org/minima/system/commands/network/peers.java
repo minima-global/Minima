@@ -1,5 +1,6 @@
 package org.minima.system.commands.network;
 
+import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,6 +16,8 @@ import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.network.p2p.P2PPeersChecker;
 import org.minima.system.network.p2p.messages.InetSocketAddressIO;
 import org.minima.system.params.GeneralParams;
+import org.minima.utils.MiniFile;
+import org.minima.utils.RPCClient;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -51,7 +54,7 @@ public class peers extends Command {
 
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","peerslist","max"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","peerslist","max","file","url"}));
 	}
 	
 	@Override
@@ -73,37 +76,40 @@ public class peers extends Command {
 		String action = getParam("action","list");
 		if(action.equals("list")) {
 			
-			P2PManager p2PManager = (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();
-			
 			//How many peers to show
 			int maxpeers = getNumberParam("max", MiniNumber.THOUSAND).getAsInt();
 			
-			//Get the peers list
-			ArrayList<InetSocketAddress> peers = p2PManager.getPeersCopy();
+			String peerslist = getPeersList(maxpeers);
 			
-			//Shuffle it..
-			Collections.shuffle(peers);
+			P2PManager p2PManager = (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();
 			
-			//Now add to the list..
-			String peerslist = "";
-			int counter=0;
-			for(InetSocketAddress peer : peers) {
-				
-				//Check limit
-				if(counter>maxpeers) {
-					break;
-				}
-				
-				//Add it..
-				peerslist += peer.getAddress().getHostAddress() + ":" + peer.getPort()+",";
 			
-				counter++;
-			}
-			
-			//Remove the final ,
-			if(peerslist.endsWith(",")) {
-				peerslist = peerslist.substring(0, peerslist.length()-1);
-			}
+//			//Get the peers list
+//			ArrayList<InetSocketAddress> peers = p2PManager.getPeersCopy();
+//			
+//			//Shuffle it..
+//			Collections.shuffle(peers);
+//			
+//			//Now add to the list..
+//			String peerslist = "";
+//			int counter=0;
+//			for(InetSocketAddress peer : peers) {
+//				
+//				//Check limit
+//				if(counter>maxpeers) {
+//					break;
+//				}
+//				
+//				//Add it..
+//				peerslist += peer.getAddress().getHostAddress() + ":" + peer.getPort()+",";
+//			
+//				counter++;
+//			}
+//			
+//			//Remove the final ,
+//			if(peerslist.endsWith(",")) {
+//				peerslist = peerslist.substring(0, peerslist.length()-1);
+//			}
 			
 			JSONObject resp = new JSONObject();
 			resp.put("peerslist", peerslist);
@@ -144,6 +150,73 @@ public class peers extends Command {
 			resp.put("message","Peers added to checking queue..");
 			ret.put("response", resp);
 			
+		}else if(action.equals("publish")) {
+			
+			String file=getParam("file","peerslist.txt");
+			
+			String peerslist = getPeersList(20);
+		
+			//And now publish to the file..
+			File ff = MiniFile.createBaseFile(file);
+			
+			MiniFile.writeDataToFile(ff, peerslist.getBytes());
+		
+			JSONObject resp = new JSONObject();
+			resp.put("peers",peerslist);
+			resp.put("file",ff.getAbsolutePath());
+			ret.put("response", resp);
+			
+		}else if(action.equals("fetch")) {
+			
+			String peerstr = "";
+			
+			String url = "";
+			if(existsParam("file")) {
+				url = getParam("file");
+				File ff = MiniFile.createBaseFile(url);
+				byte[] pdata = MiniFile.readCompleteFile(ff);
+				peerstr = new String(pdata);
+			}else{
+				url = getParam("url");
+				peerstr = RPCClient.sendGET(url);
+			}
+			
+			
+			if(peerstr.equals("")) {
+				throw new CommandException("No peers found in location "+url);
+			}
+			
+			P2PManager p2pmanager 		= (P2PManager)Main.getInstance().getNetworkManager().getP2PManager();
+			P2PPeersChecker p2pchecker 	= p2pmanager.getPeersChecker();
+	        
+			//And now add those peers
+			//Break up 
+			StringTokenizer strtok = new StringTokenizer(peerstr,",");
+			while(strtok.hasMoreTokens()) {
+				String peer = strtok.nextToken();
+				
+				//Get the IP..
+				Message checker = connect.createConnectMessage(peer);
+				if(checker == null) {
+					throw new CommandException("Invalid peer : "+peer);
+				}
+				
+				//Create an address
+				InetSocketAddress addr = new InetSocketAddress(checker.getString("host"), checker.getInteger("port"));
+				
+				//Now send to the peers checker..
+				Message msg = new Message(P2PPeersChecker.PEERS_CHECKPEERS).addObject("address", addr);
+				msg.addBoolean("force", true);
+				
+				p2pchecker.PostMessage(msg);
+			}
+			
+			JSONObject resp = new JSONObject();
+			resp.put("peers",peerstr);
+			resp.put("location",url);
+			resp.put("message","Peers added to checking queue..");
+			ret.put("response", resp);
+			
 		}else {
 			throw new CommandException("Invalid action : "+action);
 		}
@@ -151,6 +224,39 @@ public class peers extends Command {
 		return ret;
 	}
 
+	public String getPeersList(int zMaxPeers) {
+		P2PManager p2PManager = (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();
+		
+		//Get the peers list
+		ArrayList<InetSocketAddress> peers = p2PManager.getPeersCopy();
+		
+		//Shuffle it..
+		Collections.shuffle(peers);
+		
+		//Now add to the list..
+		String peerslist = "";
+		int counter=0;
+		for(InetSocketAddress peer : peers) {
+			
+			//Check limit
+			if(counter>zMaxPeers) {
+				break;
+			}
+			
+			//Add it..
+			peerslist += peer.getAddress().getHostAddress() + ":" + peer.getPort()+",";
+		
+			counter++;
+		}
+		
+		//Remove the final ,
+		if(peerslist.endsWith(",")) {
+			peerslist = peerslist.substring(0, peerslist.length()-1);
+		}
+		
+		return peerslist;
+	}
+	
 	@Override
 	public Command getFunction() {
 		return new peers();
