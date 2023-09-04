@@ -785,6 +785,9 @@ public class Main extends MessageProcessor {
 			//Now save the state - in case system crashed..
 			MinimaDB.getDB().saveState();
 			
+			//Clear the Maxima Poll Stack
+			getMaxima().checkPollMessages();
+			
 		}else if(zMessage.getMessageType().equals(MAIN_AUTOBACKUP_MYSQL)) {
 			
 			//Do it again..
