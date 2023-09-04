@@ -873,7 +873,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("chatter", "default/chatter-1.7.6.mds.zip", allminis, false);
 			checkInstalled("docs", "default/docs-1.4.0.mds.zip", allminis, false);
 			checkInstalled("filez", "default/filez-1.9.2.mds.zip", allminis, false);
-			checkInstalled("future cash", "default/futurecash-1.11.1.mds.zip", allminis, false);
+			checkInstalled("future cash", "default/futurecash-2.0.0.mds.zip", allminis, false);
 			checkInstalled("health", "default/health-1.1.4.mds.zip", allminis, false);
 			checkInstalled("logs", "default/logs-1.0.1.mds.zip", allminis, false);
 			checkInstalled("maxcontacts", "default/maxcontacts-1.8.6.mds.zip", allminis, false);
