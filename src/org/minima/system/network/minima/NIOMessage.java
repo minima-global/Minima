@@ -847,6 +847,12 @@ public class NIOMessage implements Runnable {
 					
 				}else{
 					NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(mClientUID);
+					if(nioclient == null) {
+						//No client - already disconnected..
+						Main.getInstance().getNIOManager().disconnect(mClientUID, true);
+						return;
+					}
+					
 					int port = nioclient.getPort();
 					if (nioclient.getMinimaPort() == -1){
 						port = nioclient.getMinimaPort();
