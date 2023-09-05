@@ -20,9 +20,11 @@ import java.util.StringTokenizer;
 import java.util.function.BiConsumer;
 
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.commands.CommandException;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.RPCClient;
 
 public class ParamConfigurer {
 
@@ -306,8 +308,22 @@ public class ParamConfigurer {
         p2prootnode("p2prootnode", "Specify the initial P2P host:port to connect to", (args, configurer) -> {
             GeneralParams.P2P_ROOTNODE = args;
         }),
-        p2pnodes("p2pnodes", "Specify a list of nodes to use IF your peers list is empty", (args, configurer) -> {
-            GeneralParams.P2P_ADDNODES = args;
+        p2pnodes("p2pnodes", "Specify a list of nodes (or an URL to a file with the list) to use IF your peers list is empty", (args, configurer) -> {
+            
+        	//Is it an URL
+        	if(args.startsWith("http")) {
+        		
+        		//Load the list..
+        		try {
+					GeneralParams.P2P_ADDNODES = RPCClient.sendGET(args);
+				} catch (IOException e) {
+					MinimaLogger.log("Error trying -p2pnodes URL:"+args+" "+e.toString());
+				}
+				
+        	}else {
+        		GeneralParams.P2P_ADDNODES = args;
+        	}
+        	
         }),
         p2ploglevelinfo("p2p-log-level-info", "Set the P2P log level to info", (args, configurer) -> {
             P2PParams.LOG_LEVEL = P2PFunctions.Level.INFO;

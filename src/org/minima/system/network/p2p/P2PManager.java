@@ -122,7 +122,7 @@ public class P2PManager extends MessageProcessor {
         //Do we add any nodes..
         if(!GeneralParams.P2P_ADDNODES.equals("") && peers.size()==0) {
         	
-        	MinimaLogger.log("Peers list empty - adding specified hosts..");
+        	MinimaLogger.log("Peers list empty - adding specified p2pnodes.. "+GeneralParams.P2P_ADDNODES);
         	
         	//Add the nodes..
         	StringTokenizer strtok = new StringTokenizer(GeneralParams.P2P_ADDNODES,",");
