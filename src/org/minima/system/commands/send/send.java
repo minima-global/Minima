@@ -707,6 +707,37 @@ public class send extends Command {
 		ret.put("dryrun", dryrun);
 		ret.put("response", txpow.toJSON());
 		
+		//Work out some sizes..
+		if(dryrun) {
+			
+			JSONObject sizes = new JSONObject();
+			
+			sizes.put("txpow", txpow.getSizeinBytes());
+			
+			JSONObject inputcoins=new JSONObject();
+			ArrayList<Coin> incoins = txpow.getTransaction().getAllInputs();
+			for(Coin cc : incoins) {
+				MiniData cd = MiniData.getMiniDataVersion(cc);
+				inputcoins.put(cc.getCoinID(), cd.getLength());
+			}
+			
+			JSONObject outputcoins=new JSONObject();
+			ArrayList<Coin> outcoins = txpow.getTransaction().getAllOutputs();
+			for(Coin cc : outcoins) {
+				MiniData cd = MiniData.getMiniDataVersion(cc);
+				outputcoins.put(cc.getCoinID(), cd.getLength());
+			}
+			
+			sizes.put("inputcoins", inputcoins);
+			sizes.put("outputcoins", outputcoins);
+			
+			//And the Witness data..
+			MiniData wd = MiniData.getMiniDataVersion(txpow.getWitness());
+			sizes.put("witness", wd.getLength());
+			
+			ret.put("bytesize", sizes);
+		}
+		
 		return ret;
 	}
 
