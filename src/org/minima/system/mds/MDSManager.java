@@ -886,7 +886,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("sql bench", "default/sqlbench-0.4.mds.zip", allminis, false);
 			checkInstalled("terminal", "default/terminal-2.3.0.mds.zip", allminis, false);
 			checkInstalled("vestr", "default/vestr-1.7.1.mds.zip", allminis, false);
-			checkInstalled("wallet", "default/wallet-2.27.0.mds.zip", allminis, false);
+			checkInstalled("wallet", "default/wallet-2.30.0.mds.zip", allminis, false);
 		}
 	}
 	
