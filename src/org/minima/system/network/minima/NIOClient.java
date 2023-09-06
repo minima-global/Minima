@@ -381,6 +381,7 @@ public class NIOClient {
 					//Post it !
 					Message msg = new Message(NIOManager.NIO_INCOMINGMSG);
 					msg.addString("uid", mUID);
+					msg.addString("fullhost", getFullAddress());
 					msg.addObject("data", new MiniData(allreaddata));
 					mNIOManager.PostMessage(msg);
 					

@@ -519,6 +519,7 @@ public class MDSManager extends MessageProcessor {
 		}else if(zMessage.getMessageType().equals(MDS_SHUTDOWN)) {
 
 			//Shutdown the Runnables
+			MinimaLogger.log("Shutdown MDS runnables..");
 			for(MDSJS mds : mRunnables) {
 				try {
 					mds.shutdown();
@@ -528,12 +529,14 @@ public class MDSManager extends MessageProcessor {
 			}
 			
 			//Shut down the servers
+			MinimaLogger.log("Shutdown MDS File and Command servers..");
 			if(GeneralParams.MDS_ENABLED) {
 				mMDSFileServer.shutdown();
 				mMDSCommand.shutdown();
 			}
 			
 			//Save all the DBs
+			MinimaLogger.log("Shutdown MDS databases..");
 			Enumeration<MiniDAPPDB> dbs = mSqlDB.elements();
 			while(dbs.hasMoreElements()) {
 				dbs.nextElement().saveDB(false);

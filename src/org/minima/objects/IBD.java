@@ -211,7 +211,7 @@ public class IBD implements Streamable {
 							tip = tip.getParent();
 						}
 					}else {
-						MinimaLogger.log("[!] No Crossover found whilst syncing with new node. They are on a different chain. Please check you are on the correct chain");
+						MinimaLogger.log("[!] When creating IBD - No Crossover found whilst syncing with new node. They are on a different chain. Please check you are on the correct chain");
 						createCompleteIBD();
 					}
 				}

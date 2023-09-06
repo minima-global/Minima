@@ -156,7 +156,14 @@ public class ArchiveManager extends SqlDB {
 			
 			//if not.. store our one..
 			if(casc == null) {
+				//Check is Valid..
+				if(!Cascade.checkCascadeCorrect(zCascade)) {
+					MinimaLogger.log("[!] INCONSISTENT Cascade to save in Archive.. not saving..");
+					return;
+				}
+				
 				MinimaLogger.log("Saving Cascade in ARCHIVEDB.. tip : "+zCascade.getTip().getTxPoW().getBlockNumber());
+				
 				saveCascade(zCascade);
 			}else {
 				

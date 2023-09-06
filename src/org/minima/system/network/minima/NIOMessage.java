@@ -148,9 +148,15 @@ public class NIOMessage implements Runnable {
  	
 	public static long LAST_TXBLOCKMINE_MSG = 0;
 	
+	public String mFullAdrress = "";
+	
 	public NIOMessage(String zClientUID, MiniData zData) {
 		mClientUID 	= zClientUID;
 		mData 		= zData;
+	}
+	
+	public void setFullAddress(String zAddress) {
+		mFullAdrress = zAddress;
 	}
 	
 	public void setTrace(boolean zTrace, String zFilter) {
@@ -369,6 +375,10 @@ public class NIOMessage implements Runnable {
 					MinimaLogger.log("Received INVALID IBD from "+mClientUID);
 					
 					//Disconnect
+					if(!mFullAdrress.equals("")) {
+						P2PFunctions.addInvalidPeer(mFullAdrress);
+					}
+					
 					Main.getInstance().getNIOManager().disconnect(mClientUID,true);
 					
 					return;
@@ -846,6 +856,13 @@ public class NIOMessage implements Runnable {
 					}
 					
 				}else{
+					//Remove from our list
+					if(!mFullAdrress.equals("")) {
+						P2PFunctions.addInvalidPeer(mFullAdrress);
+					}else {
+						
+					}
+					
 					NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(mClientUID);
 					if(nioclient == null) {
 						//No client - already disconnected..

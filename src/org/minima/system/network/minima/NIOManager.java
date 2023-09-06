@@ -373,6 +373,7 @@ public class NIOManager extends MessageProcessor {
 			boolean reconnect = true;
 			
 			//Are we in slave mode..
+			boolean p2pmessagesent = false;
 			if(GeneralParams.TXBLOCK_NODE) {
 				
 				if(nc.getConnectAttempts() > RECONNECT_ATTEMPTS) {
@@ -414,6 +415,7 @@ public class NIOManager extends MessageProcessor {
 						reconnect = false;
 						
 						//Tell the P2P..
+						p2pmessagesent = true;
 						Message newconn = new Message(P2PFunctions.P2P_NOCONNECT);
 						newconn.addObject("client", nc);
 						newconn.addString("uid", nc.getUID());
@@ -429,6 +431,19 @@ public class NIOManager extends MessageProcessor {
 					}
 				}
 			}
+			
+			//Is it on the Invalid List..
+			if(reconnect && P2PFunctions.isInvalidPeer(nc.getFullAddress())) {
+	        	MinimaLogger.log("NIO_RECONNECT : Trying to connect to Invalid Peer - disallowed @ "+nc.getFullAddress());
+	        	reconnect = false;
+	        	
+	        	if(!p2pmessagesent) {
+	        		Message newconn = new Message(P2PFunctions.P2P_NOCONNECT);
+					newconn.addObject("client", nc);
+					newconn.addString("uid", nc.getUID());
+					mNetworkManager.getP2PManager().PostMessage(newconn);
+	        	}
+	        }
 			
 			//Try and reconnect
 			if(reconnect) {
@@ -499,6 +514,12 @@ public class NIOManager extends MessageProcessor {
 			if(nioc.isIncoming()) {
 				reconnect = false;
 			}
+			
+			//Is it on the Invalid List..
+			if(reconnect && P2PFunctions.isInvalidPeer(nioc.getFullAddress())) {
+	        	MinimaLogger.log("NIO_DISCONNECT : Trying to connect to Invalid Peer - disallowed @ "+nioc.getFullAddress());
+	        	reconnect = false;
+	        }
 			
 			//Slave node logs
 			if(GeneralParams.TXBLOCK_NODE) {
@@ -580,6 +601,11 @@ public class NIOManager extends MessageProcessor {
 			//Create a handler task
 			NIOMessage niomsg = new NIOMessage(uid, data);
 			niomsg.setTrace(isTrace(), getTraceFilter());
+			
+			//Is there a full address..
+			if(zMessage.exists("fullhost")) {
+				niomsg.setFullAddress(zMessage.getString("fullhost"));
+			}
 			
 			//Process it.. in a thread pool..
 			THREAD_POOL.execute(niomsg);

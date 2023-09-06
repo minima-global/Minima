@@ -15,6 +15,7 @@ import org.minima.database.txpowtree.TxPowTree;
 import org.minima.database.userprefs.UserDB;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.wallet.Wallet;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.network.p2p.P2PDB;
 import org.minima.system.params.GeneralParams;
@@ -322,16 +323,25 @@ public class MinimaDB {
 			//Load the Cascade
 			mCascade.loadDB(new File(basedb,"cascade.db"));
 			
-			//Check YOUR cascade..
-			if(!Cascade.checkCascadeCorrect(mCascade)) {
-				throw new Exception("Your Cascade is BROKEN.. please 'reset' with an archive file or restore from an archive server..");
-			}
-			
 			//Load the TxPoWTree
 			File txtree = new File(basedb,"chaintree.db");
 			MinimaLogger.log("Loading TxPowTree size : "+MiniFormat.formatSize(txtree.length()));
 			mTxPoWTree.loadDB(new File(basedb,"chaintree.db"));
 			//MinimaLogger.log("TxPowTree loaded size : "+mTxPoWTree.getSize());
+			
+			//Check YOUR cascade..
+			if(!Cascade.checkCascadeCorrect(mCascade)) {
+				throw new Exception("Your Cascade is BROKEN.. please 'reset' with an archive file or restore from an archive server..");
+			}
+
+			//And check it ends where the tree ends..
+			if(mCascade.getTip() != null && mTxPoWTree.getRoot()!=null) {
+				MiniNumber cascstart = mCascade.getTip().getTxPoW().getBlockNumber();
+				MiniNumber treeroot  = mTxPoWTree.getRoot().getTxPoW().getBlockNumber();
+				if(!treeroot.isEqual(cascstart.increment())) {
+					throw new Exception("Your Cascade does not start where your TxPoWTree ends.. please 'reset' with an archive file or restore from an archive server..");
+				}
+			}
 			
 			//Clean Mem after that
 			System.gc();

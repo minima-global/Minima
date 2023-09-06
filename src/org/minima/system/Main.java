@@ -121,7 +121,7 @@ public class Main extends MessageProcessor {
 	 * Create all the initial Keys
 	 */
 	public static final String MAIN_INIT_KEYS 	= "MAIN_INIT_KEYS";
-	long INIT_KEYS_TIMER = 1000 * 15;
+	long INIT_KEYS_TIMER = 1000 * 10;
 	
 	/**
 	 * Main loop to check various values every 180 seconds..
