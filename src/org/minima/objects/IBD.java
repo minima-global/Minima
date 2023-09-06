@@ -435,6 +435,13 @@ public class IBD implements Streamable {
 					
 					return false;
 				}
+				
+				//Check Cascade data is consistent
+				boolean checkcascade = Cascade.checkCascadeCorrect(getCascade());
+				if(!checkcascade) {
+					MinimaLogger.log("[!] INCONSISTENT Cascade received! length:"+getCascade().getLength());
+					return false;
+				}
 			}
 		}
 		

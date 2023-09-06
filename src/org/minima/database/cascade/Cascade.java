@@ -252,4 +252,94 @@ public class Cascade implements Streamable {
 		cascade.readDataStream(zIn);
 		return cascade;
 	}
+	
+	public static boolean checkCascadeCorrect(Cascade zCascade) {
+		
+		//Start at the top..
+		CascadeNode cnode = zCascade.getTip();
+		int counter	=0;
+		int oldlevel=0;
+		while(cnode!=null) {
+			
+			//Get the txpow..
+			TxPoW txp = cnode.getTxPoW();
+			
+			//What level is this..
+			int clevel = cnode.getLevel();
+			if(clevel!=oldlevel) {
+				counter	 =0;
+				oldlevel =clevel;
+			}
+			
+			//System.out.println("Checking.. "+counter+" "+cnode.getLevel()+" "+txp.getTxPoWID());
+			
+			//Now check that all the parents are in the cascade..
+			boolean foundzero = false;
+			for(int i=clevel;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
+				
+				//Get the super parent..
+				String sparent = txp.getSuperParent(i).to0xString();
+				
+				//Is it 0x00..
+				if(sparent.equals("0x00")) {
+					foundzero = true;
+				}else {
+					if(foundzero) {
+						//Should ALL be zero..
+						System.out.println("NON zero node found in cascade..");
+						return false;
+					}
+					
+					//Check we have it..
+					if(counter == GlobalParams.MINIMA_CASCADE_LEVEL_NODES-1) {
+						if(i>clevel) {
+							if(!checkNodeExists(zCascade, sparent)) {
+								System.out.println("Parent not found in cascade.. "+sparent+" @ slevel "+i);
+								return false;
+							}
+						}
+					}else {
+						if(!checkNodeExists(zCascade, sparent)) {
+							System.out.println("Parent not found in cascade.. "+sparent+" @ slevel "+i);
+							return false;
+						}
+					}
+				}
+			}
+			
+			//And jump to the parent..
+			cnode = cnode.getParent();
+			counter++;
+		}
+		
+		return true;
+	}
+	
+	public static boolean checkNodeExists(Cascade zCascade, String zTxPoWID) {
+		CascadeNode cnode = zCascade.getTip();
+		while(cnode!=null) {
+			if(cnode.getTxPoW().getTxPoWID().equals(zTxPoWID)) {
+				return true;
+			}
+			
+			cnode = cnode.getParent();
+		}
+		
+		return false;
+	}
+	
+	public static void main(String[] zArgs) {
+		
+		File cfile = new File("C:\\Users\\spartacusrex\\.minima\\1.0\\databases\\cascade.db");
+		
+		Cascade casc = new Cascade();
+		casc.loadDB(cfile);
+		
+		//Check it..
+		boolean correct = checkCascadeCorrect(casc);
+		
+		System.out.println("Correct:"+correct);
+		
+		
+	}
 }

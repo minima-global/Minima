@@ -322,6 +322,11 @@ public class MinimaDB {
 			//Load the Cascade
 			mCascade.loadDB(new File(basedb,"cascade.db"));
 			
+			//Check YOUR cascade..
+			if(!Cascade.checkCascadeCorrect(mCascade)) {
+				throw new Exception("Your Cascade is BROKEN.. please 'reset' with an archive file or restore from an archive server..");
+			}
+			
 			//Load the TxPoWTree
 			File txtree = new File(basedb,"chaintree.db");
 			MinimaLogger.log("Loading TxPowTree size : "+MiniFormat.formatSize(txtree.length()));
