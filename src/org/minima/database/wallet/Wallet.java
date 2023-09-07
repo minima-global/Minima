@@ -251,7 +251,13 @@ public class Wallet extends SqlDB {
 		String[] words = BIP39.getNewWordList();
 		
 		//Convert to a string
-		String phrase = BIP39.convertWordListToString(words);
+		String phrase = "";
+		if(!GeneralParams.SEED_PHRASE.equals("")) {
+			MinimaLogger.log("Using provided seed phrase from params..");
+			phrase = BIP39.cleanSeedPhrase(GeneralParams.SEED_PHRASE);
+		}else{
+			phrase = BIP39.convertWordListToString(words);
+		}
 		
 		//Convert that into a seed..
 		MiniData seed = BIP39.convertStringToSeed(phrase);

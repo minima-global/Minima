@@ -236,6 +236,11 @@ public class GeneralParams {
 	public static String RPC_PASSWORD 		= "none";
 	
 	/**
+	 * Specify seed phrase on launch!
+	 */
+	public static String SEED_PHRASE = ""; 
+	
+	/**
 	 * Reset all params to their default settings.. ANDROID keeps them after shutdown
 	 */
 	public static void resetDefaults() {
@@ -290,6 +295,7 @@ public class GeneralParams {
 		RPC_SSL				= false;
 		RPC_AUTHSTYLE 		= "basic";
 		RPC_PASSWORD 		= "none";
+		SEED_PHRASE 		= "";
 	}
 	
 }

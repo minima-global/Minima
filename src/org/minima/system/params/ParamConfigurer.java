@@ -380,13 +380,17 @@ public class ParamConfigurer {
             	TestParams.setTestParams();
             }
         }),
+        
         help("help", "Print this help", (args, configurer) -> {
             System.out.println("Minima Help");
             stream(values())
                     .forEach(pk -> System.out.format("%-20s%-15s%n", new Object[] {"-" + pk.key,pk.helpMsg}));
             System.exit(1);
+        }),
+    	seed("seed", "Use this seed phrase if starting a new node", (args, configurer) -> {
+            GeneralParams.SEED_PHRASE = args;
         });
-
+    	
         private final String key;
         private String helpMsg;
         private final BiConsumer<String, ParamConfigurer> consumer;
