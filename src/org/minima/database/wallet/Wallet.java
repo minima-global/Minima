@@ -254,7 +254,7 @@ public class Wallet extends SqlDB {
 		String phrase = "";
 		if(!GeneralParams.SEED_PHRASE.equals("")) {
 			MinimaLogger.log("Using provided seed phrase from params..");
-			phrase = BIP39.cleanSeedPhrase(GeneralParams.SEED_PHRASE);
+			phrase = BIP39.cleanSeedPhrase(GeneralParams.SEED_PHRASE.trim());
 			
 			//And wipe it..
 			GeneralParams.SEED_PHRASE = "";
