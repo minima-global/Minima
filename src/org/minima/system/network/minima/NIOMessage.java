@@ -349,7 +349,18 @@ public class NIOMessage implements Runnable {
 				
 				//Create an IBD response to that Greeting..
 				IBD ibd = new IBD();
-				ibd.createIBD(greet);
+				boolean isvalid = ibd.createIBD(greet);
+				
+				//Was it a vaild IBD - with a crossover..
+				if(!isvalid) {
+					 //Add him to the invalid peers list
+					if(!mFullAdrress.equals("")) {
+						P2PFunctions.addInvalidPeer(mFullAdrress);
+					}
+					
+					//Stil send him OUR IBD so they know they are on the wrong chain  aswell.
+					//..
+				}
 				
 				//Send it
 				NIOManager.sendNetworkMessage(mClientUID, MSG_IBD, ibd);
