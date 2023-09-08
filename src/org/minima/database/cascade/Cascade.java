@@ -302,7 +302,7 @@ public class Cascade implements Streamable {
 				lastnode = pnode.getLevel() != clevel;
 			}
 			
-			System.out.println("Checking.. "+counter+" "+cnode.getLevel()+" "+txp.getTxPoWID()+" lastnode:"+lastnode);
+			//System.out.println("Checking.. "+counter+" "+cnode.getLevel()+" "+txp.getTxPoWID()+" lastnode:"+lastnode);
 			
 			//Now check that all the parents are in the cascade..
 			boolean foundzero = false;
