@@ -268,8 +268,14 @@ public class Cascade implements Streamable {
 			
 			//What level is this..
 			int clevel = cnode.getLevel();
+			
+			//Have we switched to a new Level
 			if(clevel!=oldlevel) {
+				
+				//reset counter for this level
 				counter	 =0;
+				
+				//Remember..
 				oldlevel =clevel;
 			}
 			
@@ -282,7 +288,7 @@ public class Cascade implements Streamable {
 				//Get the super parent..
 				String sparent = txp.getSuperParent(i).to0xString();
 				
-				//Is it 0x00..
+				//Is it 0x00.. means there was not a node at this super level when the block was made
 				if(sparent.equals("0x00")) {
 					foundzero = true;
 				}else {
