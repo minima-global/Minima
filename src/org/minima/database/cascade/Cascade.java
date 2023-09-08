@@ -258,9 +258,17 @@ public class Cascade implements Streamable {
 		//Start at the top..
 		CascadeNode cnode = zCascade.getTip();
 		
+		//Make sure starts at 0
+		if(cnode!=null) {
+			if(cnode.getLevel()!=0) {
+				System.out.println("Cascade does not start at level 0.. "+cnode.getLevel());
+				return false;
+			}
+		}
+		
 		//Which node at the current level
-		int counter	=0;
-		int oldlevel=0;
+		int counter		= 0;
+		int oldlevel	= 0;
 		while(cnode!=null) {
 			
 			//Get the txpow..
@@ -272,14 +280,29 @@ public class Cascade implements Streamable {
 			//Have we switched to a new Level
 			if(clevel!=oldlevel) {
 				
+				//The new level MUST be 1 more than the old level..
+				if(clevel!=oldlevel+1) {
+					System.out.println("NEXT level up is not a single increment @ clevel:"+clevel+" oldlevel:"+oldlevel);
+					return false;
+				}
+				
 				//reset counter for this level
-				counter	 =0;
+				counter	 = 0;
 				
 				//Remember..
-				oldlevel =clevel;
+				oldlevel = clevel;
 			}
 			
-			//System.out.println("Checking.. "+counter+" "+cnode.getLevel()+" "+txp.getTxPoWID());
+			//Is this the last node at this super level..
+			CascadeNode pnode 	= cnode.getParent();
+			boolean lastnode 	= false;
+			if(pnode==null) {
+				lastnode = true;
+			}else {
+				lastnode = pnode.getLevel() != clevel;
+			}
+			
+			System.out.println("Checking.. "+counter+" "+cnode.getLevel()+" "+txp.getTxPoWID()+" lastnode:"+lastnode);
 			
 			//Now check that all the parents are in the cascade..
 			boolean foundzero = false;
@@ -299,7 +322,7 @@ public class Cascade implements Streamable {
 					}
 					
 					//Check we have it..
-					if(counter >= GlobalParams.MINIMA_CASCADE_LEVEL_NODES-1) {
+					if(lastnode) {
 						if(i>clevel) {
 							if(!checkPastNodeExists(cnode, sparent)) {
 								System.out.println("Parent not found in cascade.. "+sparent+" @ slevel "+i+"/"+clevel+" counter:"+counter);
