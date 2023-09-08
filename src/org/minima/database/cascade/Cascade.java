@@ -294,7 +294,7 @@ public class Cascade implements Streamable {
 				}else {
 					if(foundzero) {
 						//Should ALL be zero..
-						System.out.println("NON zero node found in cascade after first zero node..");
+						System.out.println("NON zero node found in cascade after first zero node.."+sparent+" @ slevel "+i+"/"+clevel+" counter:"+counter);
 						return false;
 					}
 					
@@ -302,13 +302,13 @@ public class Cascade implements Streamable {
 					if(counter >= GlobalParams.MINIMA_CASCADE_LEVEL_NODES-1) {
 						if(i>clevel) {
 							if(!checkPastNodeExists(cnode, sparent)) {
-								System.out.println("Parent not found in cascade.. "+sparent+" @ slevel "+i+"/"+clevel);
+								System.out.println("Parent not found in cascade.. "+sparent+" @ slevel "+i+"/"+clevel+" counter:"+counter);
 								return false;
 							}
 						}
 					}else {
 						if(!checkPastNodeExists(cnode, sparent)) {
-							System.out.println("Parent not found in cascade.. "+sparent+" @ slevel "+i+"/"+clevel);
+							System.out.println("Parent not found in cascade.. "+sparent+" @ slevel "+i+"/"+clevel+" counter:"+counter);
 							return false;
 						}
 					}
