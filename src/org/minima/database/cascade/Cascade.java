@@ -257,6 +257,8 @@ public class Cascade implements Streamable {
 		
 		//Start at the top..
 		CascadeNode cnode = zCascade.getTip();
+		
+		//Which node at the current level
 		int counter	=0;
 		int oldlevel=0;
 		while(cnode!=null) {
@@ -286,21 +288,21 @@ public class Cascade implements Streamable {
 				}else {
 					if(foundzero) {
 						//Should ALL be zero..
-						System.out.println("NON zero node found in cascade..");
+						System.out.println("NON zero node found in cascade after first zero node..");
 						return false;
 					}
 					
 					//Check we have it..
-					if(counter == GlobalParams.MINIMA_CASCADE_LEVEL_NODES-1) {
+					if(counter >= GlobalParams.MINIMA_CASCADE_LEVEL_NODES-1) {
 						if(i>clevel) {
-							if(!checkNodeExists(zCascade, sparent)) {
-								System.out.println("Parent not found in cascade.. "+sparent+" @ slevel "+i);
+							if(!checkPastNodeExists(cnode, sparent)) {
+								System.out.println("Parent not found in cascade.. "+sparent+" @ slevel "+i+"/"+clevel);
 								return false;
 							}
 						}
 					}else {
-						if(!checkNodeExists(zCascade, sparent)) {
-							System.out.println("Parent not found in cascade.. "+sparent+" @ slevel "+i);
+						if(!checkPastNodeExists(cnode, sparent)) {
+							System.out.println("Parent not found in cascade.. "+sparent+" @ slevel "+i+"/"+clevel);
 							return false;
 						}
 					}
@@ -315,8 +317,8 @@ public class Cascade implements Streamable {
 		return true;
 	}
 	
-	public static boolean checkNodeExists(Cascade zCascade, String zTxPoWID) {
-		CascadeNode cnode = zCascade.getTip();
+	public static boolean checkPastNodeExists(CascadeNode zCascadeNode, String zTxPoWID) {
+		CascadeNode cnode = zCascadeNode;
 		while(cnode!=null) {
 			if(cnode.getTxPoW().getTxPoWID().equals(zTxPoWID)) {
 				return true;
