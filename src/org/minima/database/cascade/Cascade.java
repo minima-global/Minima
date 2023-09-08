@@ -261,7 +261,7 @@ public class Cascade implements Streamable {
 		//Make sure starts at 0
 		if(cnode!=null) {
 			if(cnode.getLevel()!=0) {
-				System.out.println("Cascade does not start at level 0.. "+cnode.getLevel());
+				MinimaLogger.log("Cascade does not start at level 0.. "+cnode.getLevel());
 				return false;
 			}
 		}
@@ -282,7 +282,7 @@ public class Cascade implements Streamable {
 				
 				//The new level MUST be 1 more than the old level..
 				if(clevel!=oldlevel+1) {
-					System.out.println("NEXT level up is not a single increment @ clevel:"+clevel+" oldlevel:"+oldlevel);
+					MinimaLogger.log("NEXT level up is not a single increment @ clevel:"+clevel+" oldlevel:"+oldlevel);
 					return false;
 				}
 				
@@ -302,7 +302,7 @@ public class Cascade implements Streamable {
 				lastnode = pnode.getLevel() != clevel;
 			}
 			
-			//System.out.println("Checking.. "+counter+" "+cnode.getLevel()+" "+txp.getTxPoWID()+" lastnode:"+lastnode);
+			//MinimaLogger.log("Checking.. "+counter+" "+cnode.getLevel()+" "+txp.getTxPoWID()+" lastnode:"+lastnode);
 			
 			//Now check that all the parents are in the cascade..
 			boolean foundzero = false;
@@ -317,7 +317,7 @@ public class Cascade implements Streamable {
 				}else {
 					if(foundzero) {
 						//Should ALL be zero..
-						System.out.println("NON zero node found in cascade after first zero node.."+sparent+" @ slevel "+i+"/"+clevel+" counter:"+counter);
+						MinimaLogger.log("NON zero node found in cascade after first zero node.."+sparent+" @ slevel "+i+"/"+clevel+" counter:"+counter);
 						return false;
 					}
 					
@@ -325,13 +325,13 @@ public class Cascade implements Streamable {
 					if(lastnode) {
 						if(i>clevel) {
 							if(!checkPastNodeExists(cnode, sparent)) {
-								System.out.println("Parent not found in cascade.. "+sparent+" @ slevel "+i+"/"+clevel+" counter:"+counter);
+								MinimaLogger.log("Parent not found in cascade.. "+sparent+" @ slevel "+i+"/"+clevel+" counter:"+counter);
 								return false;
 							}
 						}
 					}else {
 						if(!checkPastNodeExists(cnode, sparent)) {
-							System.out.println("Parent not found in cascade.. "+sparent+" @ slevel "+i+"/"+clevel+" counter:"+counter);
+							MinimaLogger.log("Parent not found in cascade.. "+sparent+" @ slevel "+i+"/"+clevel+" counter:"+counter);
 							return false;
 						}
 					}
