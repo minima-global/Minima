@@ -71,10 +71,11 @@ public class MDSFileHandler implements Runnable {
 	@Override
 	public void run() {
 		
-		String fileRequested		= "";
-		InputStream inputStream 	= null;
-		OutputStream outputStream 	= null;
-		DataOutputStream dos		= null;
+		String fileRequested			= "";
+		InputStream inputStream 		= null;
+		OutputStream outputStream 		= null;
+		BufferedReader bufferedReader	= null;
+		DataOutputStream dos			= null;
 		
 		try {
 			
@@ -82,8 +83,8 @@ public class MDSFileHandler implements Runnable {
 	        inputStream 	= mSocket.getInputStream();
 	        outputStream 	= mSocket.getOutputStream();
 	         
-	        BufferedReader bufferedReader 	= new BufferedReader(new InputStreamReader(inputStream, MiniString.MINIMA_CHARSET));
-	        dos 							= new DataOutputStream(outputStream);
+	        bufferedReader 	= new BufferedReader(new InputStreamReader(inputStream, MiniString.MINIMA_CHARSET));
+	        dos 			= new DataOutputStream(outputStream);
 	        
 	        // get first line of the request from the client
 	     	String input = bufferedReader.readLine();
@@ -547,11 +548,16 @@ public class MDSFileHandler implements Runnable {
 			
 		}finally {
 			try {
+				bufferedReader.close();
 				inputStream.close();
+				
+				dos.close();
 				outputStream.close();
+				
 				mSocket.close(); // we close socket connection
+				
 			} catch (Exception e) {
-//				MinimaLogger.log(e);
+				MinimaLogger.log(e);
 			} 	
 		}	
 	}	
