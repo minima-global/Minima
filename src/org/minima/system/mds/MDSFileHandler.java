@@ -548,16 +548,26 @@ public class MDSFileHandler implements Runnable {
 			
 		}finally {
 			try {
-				bufferedReader.close();
-				inputStream.close();
+				if(bufferedReader!=null) {
+					bufferedReader.close();
+				}
 				
-				dos.close();
-				outputStream.close();
+				if(inputStream!=null) {
+					inputStream.close();
+				}
+				
+				if(dos!=null) {
+					dos.close();
+				}
+				
+				if(outputStream!=null) {
+					outputStream.close();
+				}
 				
 				mSocket.close(); // we close socket connection
 				
 			} catch (Exception e) {
-				MinimaLogger.log(e);
+				//MinimaLogger.log(e);
 			} 	
 		}	
 	}	
