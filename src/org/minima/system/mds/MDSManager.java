@@ -857,7 +857,7 @@ public class MDSManager extends MessageProcessor {
 		ArrayList<MiniDAPP> allminis = mdb.getAllMiniDAPPs();
 				
 		//Check for HUB
-		checkInstalled("minihub", "minihub/minihub-0.12.11.mds.zip", allminis, true, true);
+		checkInstalled("minihub", "minihub/minihub-0.13.1.mds.zip", allminis, true, true);
 		
 		//Do we Install the Default MiniDAPPs
 		if(GeneralParams.DEFAULT_MINIDAPPS) {
@@ -866,7 +866,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("pending", "default/pending-1.1.0.mds.zip", allminis, true);
 			
 			//Security MiniDAPP - backups / restore
-			checkInstalled("security", "default/security-0.26.0.mds.zip", allminis, true);
+			checkInstalled("security", "default/security-0.26.1.mds.zip", allminis, true);
 			
 			//Dappstore gets write permissions
 			checkInstalled("dapp store", "default/dapp_store-1.0.7.mds.zip", allminis, true);
@@ -876,7 +876,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("chatter", "default/chatter-1.7.6.mds.zip", allminis, false);
 			checkInstalled("docs", "default/docs-1.4.0.mds.zip", allminis, false);
 			checkInstalled("filez", "default/filez-1.9.2.mds.zip", allminis, false);
-			checkInstalled("future cash", "default/futurecash-2.3.0.mds.zip", allminis, false);
+			checkInstalled("future cash", "default/futurecash-2.3.1.mds.zip", allminis, false);
 			checkInstalled("health", "default/health-1.1.4.mds.zip", allminis, false);
 			checkInstalled("logs", "default/logs-1.0.1.mds.zip", allminis, false);
 			checkInstalled("maxcontacts", "default/maxcontacts-1.8.6.mds.zip", allminis, false);
@@ -886,7 +886,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("sql bench", "default/sqlbench-0.4.mds.zip", allminis, false);
 			checkInstalled("terminal", "default/terminal-2.3.0.mds.zip", allminis, false);
 			checkInstalled("vestr", "default/vestr-1.7.1.mds.zip", allminis, false);
-			checkInstalled("wallet", "default/wallet-2.31.0.mds.zip", allminis, false);
+			checkInstalled("wallet", "default/wallet-2.33.0.mds.zip", allminis, false);
 		}
 	}
 	
