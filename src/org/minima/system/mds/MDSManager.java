@@ -866,7 +866,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("pending", "default/pending-1.1.1.mds.zip", allminis, true);
 			
 			//Security MiniDAPP - backups / restore
-			checkInstalled("security", "default/security-0.26.2.mds.zip", allminis, true);
+			checkInstalled("security", "default/security-0.26.6.mds.zip", allminis, true);
 			
 			//Dappstore gets write permissions
 			checkInstalled("dapp store", "default/dapp_store-1.0.8.mds.zip", allminis, true);
@@ -880,7 +880,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("health", "default/health-1.1.5.mds.zip", allminis, false);
 			checkInstalled("logs", "default/logs-1.0.2.mds.zip", allminis, false);
 			checkInstalled("maxcontacts", "default/maxcontacts-1.8.7.mds.zip", allminis, false);
-			checkInstalled("maxsolo", "default/maxsolo-2.4.5.mds.zip", allminis, false);
+			checkInstalled("maxsolo", "default/maxsolo-2.4.6.mds.zip", allminis, false);
 			checkInstalled("miniswap", "default/miniswap-1.0.4.mds.zip", allminis, false);
 			checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
 			checkInstalled("script ide", "default/scriptide-2.0.1.mds.zip", allminis, false);
