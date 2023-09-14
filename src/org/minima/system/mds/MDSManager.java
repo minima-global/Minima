@@ -883,7 +883,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("maxsolo", "default/maxsolo-2.4.6.mds.zip", allminis, false);
 			checkInstalled("miniswap", "default/miniswap-1.0.4.mds.zip", allminis, false);
 			checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
-			checkInstalled("script ide", "default/scriptide-2.0.1.mds.zip", allminis, false);
+			checkInstalled("script ide", "default/scriptide-2.0.2.mds.zip", allminis, false);
 			checkInstalled("sql bench", "default/sqlbench-0.5.mds.zip", allminis, false);
 			checkInstalled("terminal", "default/terminal-2.3.1.mds.zip", allminis, false);
 			checkInstalled("vestr", "default/vestr-1.7.2.mds.zip", allminis, false);
