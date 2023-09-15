@@ -784,7 +784,7 @@ public class MDSManager extends MessageProcessor {
 			String rand = MiniData.getRandomData(32).to0xString();
 			
 			//The file where the package is extracted..
-			File dest 	= new File( Main.getInstance().getMDSManager().getWebFolder() , rand);
+			File dest 	= new File(getWebFolder(),rand);
 			if(dest.exists()) {
 				MiniFile.deleteFileOrFolder(dest.getAbsolutePath(), dest);
 			}
@@ -989,7 +989,7 @@ public class MDSManager extends MessageProcessor {
 			String rand = MiniData.getRandomData(32).to0xString();
 			
 			//The file where the package is extracted..
-			dest 	= new File( Main.getInstance().getMDSManager().getWebFolder() , rand);
+			dest 	= new File(getWebFolder(), rand);
 			if(dest.exists()) {
 				MiniFile.deleteFileOrFolder(dest.getAbsolutePath(), dest);
 			}
@@ -1076,8 +1076,8 @@ public class MDSManager extends MessageProcessor {
 			JSONObject miniconf = md.getConfData();
 			
 			//Delete ONLY the old WEB files
-			String mdsroot 	= Main.getInstance().getMDSManager().getRootMDSFolder().getAbsolutePath();
-			minidapp 		= new File(Main.getInstance().getMDSManager().getWebFolder(),zMiniDAPPID);
+			String mdsroot 	= getRootMDSFolder().getAbsolutePath();
+			minidapp 		= new File(getWebFolder(),zMiniDAPPID);
 			if(minidapp.exists()) {
 				MiniFile.deleteFileOrFolder(mdsroot, minidapp);
 			}
