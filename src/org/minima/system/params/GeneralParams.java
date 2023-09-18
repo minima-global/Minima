@@ -184,7 +184,7 @@ public class GeneralParams {
 	/**
 	 * Enable Full logs for script errors
 	 */
-	public static boolean SCRIPTLOGS = true;
+	public static boolean SCRIPTLOGS = false;
 	
 	/**
 	 * Enable full logs for mining..
@@ -281,7 +281,7 @@ public class GeneralParams {
 		USER_PULSE_FREQ   = 1000 * 60 * 10;
 		DEBUGFLAG = false;
 		DEBUGVAR 	= "";
-		SCRIPTLOGS = true;
+		SCRIPTLOGS = false;
 		MINING_LOGS = false;
 		MAXIMA_LOGS = false;
 		NETWORKING_LOGS = false;
