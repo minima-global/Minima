@@ -265,6 +265,10 @@ public class Main extends MessageProcessor {
 		//Calculate the User hashrate.. start her up as seems to make a difference.. initialises..
 		TxPoWMiner.calculateHashRateOld(new MiniNumber(10000));
 		
+		//Delete the Archive restore folder - if it exists..
+		File restorefolder = new File(GeneralParams.DATA_FOLDER,"archiverestore");
+		MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
+		
 		//Now do the actual check..
 		MiniNumber hashcheck 	= new MiniNumber("250000");
 		MiniNumber hashrate 	= TxPoWMiner.calculateHashSpeed(hashcheck);
