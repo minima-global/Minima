@@ -62,6 +62,9 @@ public class mysql extends Command {
 				+ "password:\n"
 				+ "    MySQL password for the user provided.\n"
 				+ "\n"
+				+ "logs:\n"
+				+ "    Show detailed logs - default true.\n"
+				+ "\n"
 				+ "action:\n"
 				+ "    info : Show the blocks stored in the archive db and compare to the MySQL db.\n"
 				+ "    integrity : Check the block order and block parents are correct in the MySQL db.\n"
@@ -137,6 +140,8 @@ public class mysql extends Command {
 		String db 			= getParam("database");
 		String user 		= getParam("user");
 		String password 	= getParam("password");
+		
+		boolean logs		= getBooleanParam("logs", true);
 		
 		//Get the login details..
 		MySQLConnect mysql = new MySQLConnect(host, db, user, password);
@@ -226,7 +231,9 @@ public class mysql extends Command {
 			
 			long startload 	= mysqllastblock; 
 			while(true) {
-				MinimaLogger.log("MySQL Verifying from : "+startload);
+				if(logs) {
+					MinimaLogger.log("MySQL Verifying from : "+startload);
+				}
 				ArrayList<TxBlock> blocks = mysql.loadBlockRange(new MiniNumber(startload));
 				if(blocks.size()==0) {
 					//All blocks checked
@@ -288,7 +295,9 @@ public class mysql extends Command {
 			while(!finished){
 			
 				long ender = startload+100;
-				MinimaLogger.log("Transfer from "+startload+" to "+(ender-1));
+				if(logs) {
+					MinimaLogger.log("Transfer from "+startload+" to "+(ender-1));
+				}
 				
 				//Load blocks from the archive
 				ArrayList<TxBlock> blocks = arch.loadBlockRange(new MiniNumber(startload), new MiniNumber(ender),false);
@@ -671,7 +680,9 @@ public class mysql extends Command {
 			long startload 	= mysqllastblock-1;
 			int counter = 0;
 			while(true) {
-				MinimaLogger.log("Loading from H2 @ "+startload);
+				if(logs) {
+					MinimaLogger.log("Loading from H2 @ "+startload);
+				}
 				long endload = startload+250;
 				
 				ArrayList<TxBlock> blocks = archtemp.loadBlockRange(new MiniNumber(startload), new MiniNumber(endload),false);
@@ -750,7 +761,9 @@ public class mysql extends Command {
 			long startload 	= mysqllastblock;
 			int counter = 0;
 			while(true) {
-				MinimaLogger.log("Loading from MySQL @ "+startload);
+				if(logs) {
+					MinimaLogger.log("Loading from MySQL @ "+startload);
+				}
 				ArrayList<TxBlock> blocks = mysql.loadBlockRange(new MiniNumber(startload));
 				if(blocks.size()==0) {
 					//All blocks checked

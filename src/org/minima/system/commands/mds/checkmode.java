@@ -8,7 +8,7 @@ import org.minima.utils.json.JSONObject;
 public class checkmode extends Command {
 
 	public checkmode() {
-		super("checkmode","Check status of a pending command");
+		super("checkmode","Show if this MiniDAPP is READ or WRITE mode");
 	}
 	
 	@Override

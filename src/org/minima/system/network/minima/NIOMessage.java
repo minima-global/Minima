@@ -148,9 +148,15 @@ public class NIOMessage implements Runnable {
  	
 	public static long LAST_TXBLOCKMINE_MSG = 0;
 	
+	public String mFullAdrress = "";
+	
 	public NIOMessage(String zClientUID, MiniData zData) {
 		mClientUID 	= zClientUID;
 		mData 		= zData;
+	}
+	
+	public void setFullAddress(String zAddress) {
+		mFullAdrress = zAddress;
 	}
 	
 	public void setTrace(boolean zTrace, String zFilter) {
@@ -343,7 +349,18 @@ public class NIOMessage implements Runnable {
 				
 				//Create an IBD response to that Greeting..
 				IBD ibd = new IBD();
-				ibd.createIBD(greet);
+				boolean isvalid = ibd.createIBD(greet);
+				
+				//Was it a vaild IBD - with a crossover..
+				if(!isvalid) {
+					 //Add him to the invalid peers list
+					if(!mFullAdrress.equals("")) {
+						P2PFunctions.addInvalidPeer(mFullAdrress);
+					}
+					
+					//Stil send him OUR IBD so they know they are on the wrong chain  aswell.
+					//..
+				}
 				
 				//Send it
 				NIOManager.sendNetworkMessage(mClientUID, MSG_IBD, ibd);
@@ -369,6 +386,10 @@ public class NIOMessage implements Runnable {
 					MinimaLogger.log("Received INVALID IBD from "+mClientUID);
 					
 					//Disconnect
+					if(!mFullAdrress.equals("")) {
+						P2PFunctions.addInvalidPeer(mFullAdrress);
+					}
+					
 					Main.getInstance().getNIOManager().disconnect(mClientUID,true);
 					
 					return;
@@ -501,9 +522,9 @@ public class NIOMessage implements Runnable {
 				}
 				
 				boolean beforecascade = false;
-				if(block.isLessEqual(cascadeblock)) {
+				if(block.isLess(cascadeblock)) {
 					//Block before cascade
-					MinimaLogger.log("Received block before cascade.. "+block+" / "+cascadeblock+" difficulty:"+blockdiffratio+" from "+mClientUID);
+					//MinimaLogger.log("Received block before cascade.. "+block+" / "+cascadeblock+" difficulty:"+blockdiffratio+" from "+mClientUID);
 					fullyvalid 		= false;
 					beforecascade 	= true;
 				}
@@ -846,7 +867,20 @@ public class NIOMessage implements Runnable {
 					}
 					
 				}else{
+					//Remove from our list
+					if(!mFullAdrress.equals("")) {
+						P2PFunctions.addInvalidPeer(mFullAdrress);
+					}else {
+						
+					}
+					
 					NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(mClientUID);
+					if(nioclient == null) {
+						//No client - already disconnected..
+						Main.getInstance().getNIOManager().disconnect(mClientUID, true);
+						return;
+					}
+					
 					int port = nioclient.getPort();
 					if (nioclient.getMinimaPort() == -1){
 						port = nioclient.getMinimaPort();
@@ -854,6 +888,10 @@ public class NIOMessage implements Runnable {
 					
 					//Hmm something funny..
 					MinimaLogger.log("[!] No Crossover found whilst syncing with new node. They are on a different chain. Please check you are on the correct chain.. disconnecting from "+ nioclient.getHost() + ":" + port);
+					
+					//Make it invalid.
+					P2PFunctions.addInvalidPeer(nioclient.getFullAddress());
+					
 					Main.getInstance().getNIOManager().disconnect(mClientUID, true);
 				}
 				

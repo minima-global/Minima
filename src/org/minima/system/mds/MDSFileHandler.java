@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -26,6 +27,7 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.mds.multipart.MultipartData;
 import org.minima.system.mds.multipart.MultipartParser;
+import org.minima.system.mds.polling.PollStack;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
@@ -48,25 +50,32 @@ public class MDSFileHandler implements Runnable {
 	 * The MDS Manager
 	 */
 	MDSManager mMDS;
+
+	/**
+	 * MDS Command Handler
+	 */
+	MDSCommandHandler mCommands;
 	
 	/**
 	 * Main Constructor
 	 * @param zSocket
 	 */
-	public MDSFileHandler(File zRootFolder, Socket zSocket, MDSManager zMDS) {
+	public MDSFileHandler(File zRootFolder, Socket zSocket, MDSManager zMDS, PollStack zPStack) {
 		//Store..
-		mSocket = zSocket;
-		mRoot 	= zRootFolder;
-		mMDS 	= zMDS;
+		mSocket 	= zSocket;
+		mRoot 		= zRootFolder;
+		mMDS 		= zMDS;
+		mCommands 	= new MDSCommandHandler(mMDS, zPStack);
 	}
 	
 	@Override
 	public void run() {
 		
-		String fileRequested		= "";
-		InputStream inputStream 	= null;
-		OutputStream outputStream 	= null;
-		DataOutputStream dos		= null;
+		String fileRequested			= "";
+		InputStream inputStream 		= null;
+		OutputStream outputStream 		= null;
+		BufferedReader bufferedReader	= null;
+		DataOutputStream dos			= null;
 		
 		try {
 			
@@ -74,8 +83,8 @@ public class MDSFileHandler implements Runnable {
 	        inputStream 	= mSocket.getInputStream();
 	        outputStream 	= mSocket.getOutputStream();
 	         
-	        BufferedReader bufferedReader 	= new BufferedReader(new InputStreamReader(inputStream, MiniString.MINIMA_CHARSET));
-	        dos 							= new DataOutputStream(outputStream);
+	        bufferedReader 	= new BufferedReader(new InputStreamReader(inputStream, MiniString.MINIMA_CHARSET));
+	        dos 			= new DataOutputStream(outputStream);
 	        
 	        // get first line of the request from the client
 	     	String input = bufferedReader.readLine();
@@ -102,8 +111,6 @@ public class MDSFileHandler implements Runnable {
 			// we get file requested
 			fileRequested = parse.nextToken();
 			
-			//MinimaLogger.log("FILE REQUESTED : "+fileRequested);
-			
 			//Remove slashes..
 			if(fileRequested.startsWith("/")) {
 				fileRequested = fileRequested.substring(1);
@@ -113,7 +120,7 @@ public class MDSFileHandler implements Runnable {
 			}
 			
 			//And finally URL decode..
-			fileRequested 		= URLDecoder.decode(fileRequested,"UTF-8").trim();
+			fileRequested = URLDecoder.decode(fileRequested,"UTF-8").trim();
 		
 			//Get all the headers
 			Hashtable<String, String> allheaders=new Hashtable<>();
@@ -133,19 +140,92 @@ public class MDSFileHandler implements Runnable {
 				input = bufferedReader.readLine();
 			}
 			
-			//MinimaLogger.log("File Requested : "+fileRequested);
+			//MinimaLogger.log("File Requested : "+fileRequested,false);
 			
 			//Is it the minihub..
 			if(fileRequested.equals("")) {
 				fileRequested = "index.html";
 			}
 			
-			if(	fileRequested.equals("index.html") ||
-				fileRequested.equals("invalid.html") ||
-				fileRequested.equals("httperror.html") ||
-				fileRequested.equals("favicon.png") ||
-				fileRequested.equals("Manrope-Regular.ttf") ||
-				fileRequested.equals("background.svg")) {
+			//Is it an MDS Command
+			if(	fileRequested.startsWith("mdscommand_/") ) {
+				
+				//Get the command..
+				fileRequested=fileRequested.substring(12); 
+				
+				//Get the command / params only
+				int index 		= fileRequested.indexOf("?");
+				String command 	= fileRequested.substring(0,index);
+				String params 	= fileRequested.substring(index+1);
+				
+				//Get the UID
+				String uid = "";
+				StringTokenizer strtok = new StringTokenizer(params,"&");
+				while(strtok.hasMoreElements()) {
+					String tok = strtok.nextToken();
+					
+					index 			= tok.indexOf("=");
+					String param 	= tok.substring(0,index);
+					String value 	= tok.substring(index+1,tok.length());
+					
+					if(param.equals("uid")) {
+						uid=value;
+						break;
+					}
+				}
+				
+				//Convert the sessionid
+				String minidappid = mMDS.convertSessionID(uid);
+				if(minidappid == null) {
+					throw new MDSCommandException("Invalid session id for MiniDAPP "+uid);
+				}
+				
+				//get the POST data
+				int contentlength = Integer.parseInt(allheaders.get("Content-Length"));
+				
+				//Read the data..
+				char[] cbuf 	= new char[contentlength];
+				
+				//Read it ALL in
+				int len,total=0;
+				while( (len = bufferedReader.read(cbuf,total,contentlength-total)) != -1) {
+					total += len;
+					if(total == contentlength) {
+						break;
+					}
+				}
+				
+				//It's an MDS command..
+				String dataenc = new String(cbuf).trim();
+				String data 	= URLDecoder.decode(dataenc, "UTF-8");
+				
+				//Run IT!
+				String result = mCommands.runCommand(minidappid, command, data);
+				
+				//The final data
+				byte[] fdata = result.getBytes(MiniString.MINIMA_CHARSET);
+				
+				//Calculate the size of the response
+				int finallength = fdata.length;
+				
+				// send HTTP Headers
+				dos.writeBytes("HTTP/1.1 200 OK\r\n");
+				dos.writeBytes("Server: Minima MDS Command server 1.3\r\n");
+				dos.writeBytes("Date: " + new Date()+"\r\n");
+				dos.writeBytes("Content-type: text/plain\r\n");
+				dos.writeBytes("Content-length: " + finallength+"\r\n");
+				dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
+				dos.writeBytes("\r\n"); // blank line between headers and content, very important !
+				dos.write(fdata,0,finallength);
+				dos.flush(); // flush character output stream buffer
+				
+			}else if(	fileRequested.equals("index.html") ||
+						fileRequested.equals("invalid.html") ||
+						fileRequested.equals("httperror.html") ||
+						fileRequested.equals("noconnect.html") ||
+						fileRequested.equals("favicon.png") ||
+						fileRequested.equals("Manrope-Regular.ttf") ||
+						fileRequested.equals("background.svg")) {
 				
 				writeHTMLResouceFile(dos, "hublogin/"+fileRequested);
 				
@@ -426,6 +506,22 @@ public class MDSFileHandler implements Runnable {
 		
 		}catch(SSLHandshakeException exc) {
 		}catch(SSLException exc) {
+		}catch(MDSCommandException exc) {
+			MinimaLogger.log("MDSCommandException : "+exc.toString());
+			
+			// send HTTP Headers
+			try {
+				dos.writeBytes("HTTP/1.1 500 Internal Server Error\r\n");
+				dos.writeBytes("Server: HTTP MDS Server from Minima 1.3\r\n");
+				dos.writeBytes("Date: " + new Date()+"\r\n");
+				dos.writeBytes("Content-type: text/plain\r\n");
+				dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
+				dos.writeBytes("\r\n"); // blank line between headers and content, very important !
+				dos.flush(); // flush character output stream buffer
+			}catch (Exception e) {
+				// TODO: handle exception
+			}
+			
 		}catch(IllegalArgumentException exc) {
 			
 			MinimaLogger.log(exc);
@@ -452,11 +548,26 @@ public class MDSFileHandler implements Runnable {
 			
 		}finally {
 			try {
-				inputStream.close();
-				outputStream.close();
+				if(bufferedReader!=null) {
+					bufferedReader.close();
+				}
+				
+				if(inputStream!=null) {
+					inputStream.close();
+				}
+				
+				if(dos!=null) {
+					dos.close();
+				}
+				
+				if(outputStream!=null) {
+					outputStream.close();
+				}
+				
 				mSocket.close(); // we close socket connection
+				
 			} catch (Exception e) {
-//				MinimaLogger.log(e);
+				//MinimaLogger.log(e);
 			} 	
 		}	
 	}	

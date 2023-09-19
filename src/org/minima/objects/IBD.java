@@ -43,15 +43,20 @@ public class IBD implements Streamable {
 		mTxBlocks 	= new ArrayList<>();
 	}
 	
-	public void createIBD(Greeting zGreeting) {
+	/**
+	 * Return whether or not this user gave us a valid greeting
+	 */
+	public boolean createIBD(Greeting zGreeting) {
 		
 		//The tree..
 		TxPowTree txptree = MinimaDB.getDB().getTxPoWTree();
 		
+		boolean isvalid = true;
+		
 		//Are we a fresh user..
 		if(txptree.getTip() == null) {
 			//We have nothing.. !
-			return;
+			return isvalid;
 		}
 		
 		//Lock the DB - cascade and tree tip / root cannot change while doing this..
@@ -211,7 +216,11 @@ public class IBD implements Streamable {
 							tip = tip.getParent();
 						}
 					}else {
-						MinimaLogger.log("[!] No Crossover found whilst syncing with new node. They are on a different chain. Please check you are on the correct chain");
+						MinimaLogger.log("[!] When creating IBD - No Crossover found whilst syncing with new node. They are on a different chain. Please check you are on the correct chain");
+						
+						//This user should not be connected to again..
+						isvalid = false;
+						
 						createCompleteIBD();
 					}
 				}
@@ -223,6 +232,8 @@ public class IBD implements Streamable {
 		
 		//Unlock..
 		MinimaDB.getDB().readLock(false);
+		
+		return isvalid;
 	}
 	
 	public void createCompleteIBD() throws IOException {
@@ -433,6 +444,13 @@ public class IBD implements Streamable {
 					//Something wrong..
 					MinimaLogger.log("[!] Received INVALID IBD with cascade tip:"+casctip+" and tree start:"+treestart);
 					
+					return false;
+				}
+				
+				//Check Cascade data is consistent
+				boolean checkcascade = Cascade.checkCascadeCorrect(getCascade());
+				if(!checkcascade) {
+					MinimaLogger.log("[!] INCONSISTENT Cascade received! length:"+getCascade().getLength());
 					return false;
 				}
 			}

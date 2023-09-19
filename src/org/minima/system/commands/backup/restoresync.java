@@ -202,14 +202,14 @@ public class restoresync extends Command {
 			//Update key uses
 			MinimaDB.getDB().getWallet().updateIncrementAllKeyUses(keyuses);
 			
+			//Don't do the usual shutdown hook
+			Main.getInstance().setHasShutDown();
+			
 			//And NOW shut down..
 			Main.getInstance().shutdownFinalProcs();
 			
 			//Now save the Databases..
 			MinimaDB.getDB().saveSQL(false);
-			
-			//Don't do the usual shutdown hook
-			Main.getInstance().setHasShutDown();
 			
 			//And NOW shut down..
 			Main.getInstance().stopMessageProcessor();
@@ -245,14 +245,14 @@ public class restoresync extends Command {
 			MinimaLogger.log("End sync on "+tip.getBlockNumber());
 		}
 		
+		//Don't do the usual shutdown hook
+		Main.getInstance().setHasShutDown();
+				
 		//And NOW shut down..
 		Main.getInstance().shutdownFinalProcs();
 		
 		//Now shutdown and save everything
 		MinimaDB.getDB().saveAllDB();
-		
-		//Don't do the usual shutdown hook
-		Main.getInstance().setHasShutDown();
 		
 		//And NOW shut down..
 		Main.getInstance().stopMessageProcessor();
@@ -348,6 +348,7 @@ public class restoresync extends Command {
 		
 		//Now cycle through the chain..
 		MiniNumber startblock 	= zStartBlock;
+		long starttime			= 0;
 		MiniNumber endblock 	= MiniNumber.ZERO;
 		boolean foundsome 		= false;
 		boolean firstrun 		= true;
@@ -366,12 +367,12 @@ public class restoresync extends Command {
 			
 			//Clean system counter
 			counter++;
-			if(counter % 10 == 0) {
+			if(counter % 5 == 0) {
 				long mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 				if(mem > 250 * 1024 * 1024) {
 					Main.getInstance().resetMemFull();
 				}else {
-					MinimaLogger.log("RAM memory usage still low.. wait for cleanup");
+					//MinimaLogger.log("RAM memory usage still low.. wait for cleanup");
 				}
 			}
 			
@@ -406,7 +407,9 @@ public class restoresync extends Command {
 				
 				TxBlock last 	= ibd.getTxBlocks().get(size-1);
 				endblock		= last.getTxPoW().getBlockNumber();
+				
 				startblock 		= endblock.increment();
+				starttime		= last.getTxPoW().getTimeMilli().getAsLong();
 				
 				//MinimaLogger.log("Archive IBD received start : "+start.getTxPoW().getBlockNumber()+" end : "+endblock);
 			
@@ -459,8 +462,8 @@ public class restoresync extends Command {
 			}
 			
 			//Do we print a log..
-			if((System.currentTimeMillis() - lastlogmessage)>10000) {
-				MinimaLogger.log("IBD Processed.. block:"+startblock);
+			if((System.currentTimeMillis() - lastlogmessage)>5000) {
+				MinimaLogger.log("IBD Processed.. block:"+startblock+" @ "+MinimaLogger.DATEFORMAT.format(new Date(starttime)));
 				lastlogmessage = System.currentTimeMillis();
 			}
 			

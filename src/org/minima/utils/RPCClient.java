@@ -19,7 +19,11 @@ public class RPCClient {
 	public static String USER_AGENT = "Minima/1.0";
 	
 	public static String sendGET(String zHost) throws IOException {
-		return sendGETBasicAuth(zHost, "", "");
+		if(zHost.startsWith("https")) {
+			return sendGETHTTPS(zHost);
+		}else {
+			return sendGETBasicAuth(zHost, "", "");
+		}
 	}
 	
 	public static String sendGETBasicAuth(String zHost, String zUser, String zPassword) throws IOException {
@@ -44,6 +48,40 @@ public class RPCClient {
 		StringBuffer response = new StringBuffer();
 		
 		if (responseCode == HttpURLConnection.HTTP_OK) { // success
+			InputStream is = con.getInputStream();
+			
+			BufferedReader in = new BufferedReader(new InputStreamReader(is));
+			String inputLine;
+			
+			while ((inputLine = in.readLine()) != null) {
+				response.append(inputLine);
+			}
+			
+			in.close();
+			is.close();
+			
+		} else {
+			System.out.println("GET request not HTTP_OK resp:"+responseCode+" @ "+zHost);
+		}
+			
+		return response.toString(); 
+	}
+	
+	public static String sendGETHTTPS(String zHost) throws IOException {
+		//Create the URL
+		URL obj = new URL(zHost);
+		
+		//Open her up
+		HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
+		con.setConnectTimeout(10000);
+		con.setRequestMethod("GET");
+		con.setRequestProperty("User-Agent", USER_AGENT);
+		con.setRequestProperty("Connection", "close");
+		
+		int responseCode = con.getResponseCode();
+		StringBuffer response = new StringBuffer();
+		
+		if (responseCode == HttpsURLConnection.HTTP_OK) { // success
 			InputStream is = con.getInputStream();
 			
 			BufferedReader in = new BufferedReader(new InputStreamReader(is));
@@ -144,7 +182,11 @@ public class RPCClient {
 	}
 
 	public static String sendPOST(String zHost, String zParams) throws IOException {
-		return sendPOST(zHost, zParams, null);
+		if(zHost.startsWith("https")) {
+			return sendPOSTHTTPS(zHost, zParams, null);
+		}else {
+			return sendPOST(zHost, zParams, null);
+		}
 	}
 	
 	public static String sendPOST(String zHost, String zParams, String zType) throws IOException {
@@ -172,6 +214,46 @@ public class RPCClient {
 		int responseCode = con.getResponseCode();
 		
 		if (responseCode == HttpURLConnection.HTTP_OK) { //success
+			BufferedReader in 		= new BufferedReader(new InputStreamReader(con.getInputStream(),MiniString.MINIMA_CHARSET));
+			StringBuffer response 	= new StringBuffer();
+
+			String inputLine;
+			while ((inputLine = in.readLine()) != null) {
+				response.append(inputLine);
+			}
+			in.close();
+
+			return response.toString();
+		} 
+		
+		throw new IOException("POST request not HTTP_OK resp:"+responseCode+" @ "+zHost+" params "+zParams);
+	}
+	
+	public static String sendPOSTHTTPS(String zHost, String zParams, String zType) throws IOException {
+		URL obj = new URL(zHost);
+		HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
+		con.setConnectTimeout(10000);
+		con.setInstanceFollowRedirects(true);
+		con.setRequestMethod("POST");
+		con.setRequestProperty("User-Agent", USER_AGENT);
+		con.setRequestProperty("Connection", "close");
+		
+		//Type specified..
+		if(zType != null) {
+			con.setRequestProperty("Content-Type", zType);
+		}
+		
+		// For POST only - START
+		con.setDoOutput(true);
+		OutputStream os = con.getOutputStream();
+		os.write(zParams.getBytes(MiniString.MINIMA_CHARSET));
+		os.flush();
+		os.close();
+		// For POST only - END
+
+		int responseCode = con.getResponseCode();
+		
+		if (responseCode == HttpsURLConnection.HTTP_OK) { //success
 			BufferedReader in 		= new BufferedReader(new InputStreamReader(con.getInputStream(),MiniString.MINIMA_CHARSET));
 			StringBuffer response 	= new StringBuffer();
 

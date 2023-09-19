@@ -14,6 +14,9 @@ var MDS_MAIN_CALLBACK = null;
  */
 var MDS = {
 	
+	//Main File host
+	filehost : "",
+	
 	//RPC Host for Minima
 	mainhost : "",
 	
@@ -66,13 +69,9 @@ var MDS = {
 			MDS.log("No MiniDAPP UID specified.. using test value");
 		}
 		
-		//The ports..
-		var mainport 	= port+1;
-		
-		MDS.log("MDS FILEHOST  : https://"+host+":"+port+"/");
-		
-		MDS.mainhost 	= "https://"+host+":"+mainport+"/";
-		MDS.log("MDS MAINHOST : "+MDS.mainhost);
+		MDS.filehost = "https://"+host+":"+port+"/";
+		MDS.mainhost = "https://"+host+":"+port+"/mdscommand_/";
+		MDS.log("MDS HOST  : "+MDS.filehost);
 		
 		//Store this for poll messages
 		MDS_MAIN_CALLBACK = callback;
@@ -96,7 +95,7 @@ var MDS = {
 	 */
 	notify : function(output){
 		//Send via POST
-		httpPostAsync(MDS.mainhost+"notify?"+"uid="+MDS.minidappuid, output);
+		httpPostAsync("notify", output);
 	},
 	
 	/**
@@ -104,7 +103,7 @@ var MDS = {
 	 */
 	notifycancel : function(){
 		//Send via POST
-		httpPostAsync(MDS.mainhost+"notifycancel?"+"uid="+MDS.minidappuid, "*");
+		httpPostAsync("notifycancel", "*");
 	},
 	
 	/**
@@ -112,7 +111,7 @@ var MDS = {
 	 */
 	cmd : function(command, callback){
 		//Send via POST
-		httpPostAsync(MDS.mainhost+"cmd?"+"uid="+MDS.minidappuid, command, callback);
+		httpPostAsync("cmd", command, callback);
 	},
 	
 	/**
@@ -120,7 +119,31 @@ var MDS = {
 	 */
 	sql : function(command, callback){
 		//Send via POST
-		httpPostAsync(MDS.mainhost+"sql?"+"uid="+MDS.minidappuid, command, callback);
+		httpPostAsync("sql", command, callback);
+	},
+	
+	/**
+	 * Get a link to a different Dapp. READ dapps can only get READ DAPPS. WRITE can get all dapps.
+	 */
+	dapplink : function(dappname, callback){
+		//Send via POST
+		httpPostAsync("dapplink", dappname, function(result){
+			
+			var linkdata 	= {};
+			linkdata.status = result.status;
+			 
+			//Create the link..
+			if(result.status){
+				linkdata.uid 		= result.response.uid;
+				linkdata.sessionid 	= result.response.sessionid;
+				linkdata.base 		= MDS.filehost+linkdata.uid+"/index.html?uid="+result.response.sessionid;
+			}else{
+				//Not found..
+				linkdata.error = result.error;
+			}
+			
+			callback(linkdata);
+		});
 	},
 	
 	/**	
@@ -133,7 +156,7 @@ var MDS = {
 		 */
 		GET : function(url, callback){
 			//Send via POST
-			httpPostAsync(MDS.mainhost+"net?"+"uid="+MDS.minidappuid, url, callback);	
+			httpPostAsync("net", url, callback);	
 		},
 		
 		/**
@@ -145,9 +168,39 @@ var MDS = {
 			var postline = url+"&"+data;
 			
 			//Send via POST
-			httpPostAsync(MDS.mainhost+"netpost?"+"uid="+MDS.minidappuid, postline, callback);	
+			httpPostAsync("netpost", postline, callback);	
 		}
 		
+	},
+	
+	/**	
+	 *  Simple GET and SET key value pairs that are saved persistently
+	 */
+	keypair : {
+		
+		/**
+		 * GET a value
+		 */
+		get : function(key, callback){
+			
+			//Create the single line
+			var commsline = "get&"+key;		
+			
+			//Send via POST
+			httpPostAsync("keypair", commsline, callback);	
+		},
+		
+		/**
+		 * SET a value
+		 */
+		set : function(key, value, callback){
+			
+			//Create the single line
+			var commsline = "set&"+key+"&"+value;		
+			
+			//Send via POST
+			httpPostAsync("keypair", commsline, callback);	
+		}
 	},
 	
 	/**	
@@ -164,7 +217,7 @@ var MDS = {
 			var commsline = "public&"+msg;		
 			
 			//Send via POST
-			httpPostAsync(MDS.mainhost+"comms?"+"uid="+MDS.minidappuid, commsline, callback);	
+			httpPostAsync("comms", commsline, callback);	
 		},
 		
 		/**
@@ -176,7 +229,7 @@ var MDS = {
 			var commsline = "private&"+msg;		
 			
 			//Send via POST
-			httpPostAsync(MDS.mainhost+"comms?"+"uid="+MDS.minidappuid, commsline, callback);	
+			httpPostAsync("comms", commsline, callback);	
 		}
 		
 	},
@@ -194,7 +247,7 @@ var MDS = {
 			var commsline = "list&"+folder;		
 			
 			//Send via POST
-			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+			httpPostAsync("file", commsline, callback);
 		},
 		
 		/**
@@ -206,7 +259,19 @@ var MDS = {
 			var commsline = "save&"+filename+"&"+text;		
 			
 			//Send via POST
-			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+			httpPostAsync("file", commsline, callback);
+		},
+		
+		/**
+		 * Save Binary Data - supply as a HEX string
+		 */
+		savebinary : function(filename, hexdata, callback){
+			
+			//Create the single line
+			var commsline = "savebinary&"+filename+"&"+hexdata;		
+			
+			//Send via POST
+			httpPostAsync("file", commsline, callback);
 		},
 		
 		/**
@@ -218,7 +283,19 @@ var MDS = {
 			var commsline = "load&"+filename;		
 			
 			//Send via POST
-			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+			httpPostAsync("file", commsline, callback);
+		},
+		
+		/**
+		 * Load Binary data - returns the HEX data
+		 */
+		loadbinary : function(filename, callback){
+			
+			//Create the single line
+			var commsline = "loadbinary&"+filename;		
+			
+			//Send via POST
+			httpPostAsync("file", commsline, callback);
 		},
 		
 		/**
@@ -230,13 +307,106 @@ var MDS = {
 			var commsline = "delete&"+filename;		
 			
 			//Send via POST
-			httpPostAsync(MDS.mainhost+"file?"+"uid="+MDS.minidappuid, commsline, callback);
+			httpPostAsync("file", commsline, callback);
+		},
+		
+		/**
+		 * Get the full path - if you want to run a command on the file / import a txn / unsigned txn etc
+		 */
+		getpath : function(filename, callback){
+			
+			//Create the single line
+			var commsline = "getpath&"+filename;		
+			
+			//Send via POST
+			httpPostAsync("file", commsline, callback);
+		},
+		
+		/**
+		 * Make a directory
+		 */
+		makedir : function(filename, callback){
+			
+			//Create the single line
+			var commsline = "makedir&"+filename;		
+			
+			//Send via POST
+			httpPostAsync("file", commsline, callback);
+		},
+		
+		/**
+		 * Copy a file
+		 */
+		copy : function(filename, newfilename, callback){
+			
+			//Create the single line
+			var commsline = "copy&"+filename+"&"+newfilename;		
+			
+			//Send via POST
+			httpPostAsync("file", commsline, callback);
+		},
+		
+		/**
+		 * Move a file
+		 */
+		move : function(filename, newfilename, callback){
+			
+			//Create the single line
+			var commsline = "move&"+filename+"&"+newfilename;		
+			
+			//Send via POST
+			httpPostAsync("file", commsline, callback);
+		},
+		
+		/**
+		 * Download a File from the InterWeb - Will be put in Downloads folder
+		 */
+		download : function(url, callback){
+			
+			//Create the single line
+			var commsline = "download&"+url;
+			
+			//Send via POST
+			httpPostAsync("file", commsline, callback);	
+		},
+		
+		/**
+		 * Upload a file in chunks to the /fileupload folder		
+		 */
+		upload : function(file, callback){
+			
+			//Start the file recursion..
+			_recurseUploadMDS(file,0,callback);
+		},
+		
+		/**
+		 * Copy a file to your web folder
+		 */
+		copytoweb : function(file, webfile, callback){
+			
+			//Create the single line
+			var commsline = "copytoweb&"+file+"&"+webfile;
+			
+			//Send via POST
+			httpPostAsync("file", commsline, callback);	
+		},
+		
+		/**
+		 * Delete a file or folder from web folder
+		 */
+		deletefromweb : function(file, callback){
+			
+			//Create the single line
+			var commsline = "deletefromweb&"+file;
+			
+			//Send via POST
+			httpPostAsync("file", commsline, callback);	
 		}
 		
 	}, 
 	
 	/**
-	 * Utility function for GET parameters..
+	 * Function for GET parameters..
 	 */
 	form : {
 		
@@ -252,6 +422,63 @@ var MDS = {
 			    }
 			    return result;
 		}		
+	},
+	
+	/**
+	 * UTILITY functions.. very useful
+	 */
+	util : {
+		
+		//Convert HEX to Base 64 - removes the 0x if necessary
+		hexToBase64(hexstring) {
+			//Check if starts with 0x
+			var thex = hexstring;
+			if(hexstring.startsWith("0x")){
+				thex = hexstring.substring(2);
+			}	
+			
+		    return btoa(thex.match(/\w{2}/g).map(function(a) {
+		        return String.fromCharCode(parseInt(a, 16));
+		    }).join(""));
+		},
+	
+		//Convert Base64 to HEX	
+		base64ToHex(str) {
+			const raw = atob(str);
+			let result = '';
+			for (let i = 0; i < raw.length; i++) {
+				const hex = raw.charCodeAt(i).toString(16);
+				result += (hex.length === 2 ? hex : '0' + hex);
+			}
+			return result.toUpperCase();
+		},
+		
+		//Convert Base64 to a Uint8Array - useful for Blobs
+		base64ToArrayBuffer(base64) {
+		    var binary_string = window.atob(base64);
+		    var len = binary_string.length;
+		    var bytes = new Uint8Array(len);
+		    for (var i = 0; i < len; i++) {
+		        bytes[i] = binary_string.charCodeAt(i);
+		    }
+		    return bytes.buffer;
+		},
+		
+		//Return a state variable given the coin
+		getStateVariable(coin,port){
+			
+			//Get the state vars
+			var statvars = coin.state;
+			var len = statvars.length;
+			for (var i = 0; i < len; i++) {
+				var state = statvars[i];
+				if(state.port == port){
+					return state.data;
+				} 	
+			}
+			
+			return undefined;
+		}
 	}
 };
 
@@ -301,6 +528,24 @@ function PollListener(){
 	});
 }
 
+function postMDSFail(command, params, status){
+	//Some error..
+	if(MDS.logging){
+		MDS.log("** An error occurred during an MDS command!");
+	}
+	
+	//Create the message
+	var errormsg = {};
+	errormsg.event = "MDSFAIL";
+	errormsg.data = {};
+	errormsg.data.command 	= command;
+	errormsg.data.params 	= params;
+	errormsg.data.error 	= status;
+				
+	//Post it to the stack			
+	MDSPostMessage(errormsg);
+}
+
 /**
  * Utility function for GET request
  * 
@@ -310,62 +555,49 @@ function PollListener(){
  * @returns
  */
 function httpPostAsync(theUrl, params, callback){
+	
+	//Add the MiniDAPP UID..
+	var finalurl = MDS.mainhost+theUrl+"?uid="+MDS.minidappuid;
+	
 	//Do we log it..
 	if(MDS.logging){
-		MDS.log("POST_RPC:"+theUrl+" PARAMS:"+params);
+		MDS.log("POST_RPC:"+finalurl+" PARAMS:"+params);
 	}
 
 	var xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = function() { 
-        if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
-			//Do we log it..
-        	if(MDS.logging){
-        		MDS.log("RESPONSE:"+xmlHttp.responseText);
-        	}
-
-        	//Send it to the callback function..
-        	if(callback){
-        		callback(JSON.parse(xmlHttp.responseText));
-        	}
-        }
+        
+		var status = xmlHttp.status;
+		if (xmlHttp.readyState == XMLHttpRequest.DONE){
+			if (status === 0 || (status >= 200 && status < 400)) {
+			
+				//Do we log it..
+	        	if(MDS.logging){
+	        		MDS.log("RESPONSE:"+xmlHttp.responseText);
+	        	}
+	
+	        	//Send it to the callback function..
+	        	if(callback){
+	        		callback(JSON.parse(xmlHttp.responseText));
+	        	}
+	        
+			}else{
+				//Some error..
+				postMDSFail(finalurl,params,xmlHttp.status);
+			}
+		}
     }
-    xmlHttp.open("POST", theUrl, true); // true for asynchronous 
+    xmlHttp.open("POST", finalurl, true); // true for asynchronous 
 	xmlHttp.overrideMimeType('text/plain; charset=UTF-8');
-    //xmlHttp.setRequestHeader('Content-Type', 'application/json');    
-	xmlHttp.send(encodeURIComponent(params));
-	//xmlHttp.send(params);
+    xmlHttp.send(encodeURIComponent(params));
+	//xmlHttp.onerror = function () {
+	//  console.log("** An error occurred during the transaction");
+	//};
 }
 
 /**
- * Utility function for GET request (UNUSED for now..)
- * 
- * @param theUrl
- * @param callback
- * @returns
+ * POLLING Call
  */
-/*function httpGetAsync(theUrl, callback)
-{	
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = function() { 
-        if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
-        	if(MDS.logging){
-				console.log("RPC      : "+theUrl);
-				console.log("RESPONSE : "+xmlHttp.responseText);
-			}
-
-			//Always a JSON ..
-        	var rpcjson = JSON.parse(xmlHttp.responseText);
-        	
-        	//Send it to the callback function..
-        	if(callback){
-        		callback(rpcjson);
-        	}
-        }
-    }
-	xmlHttp.open("GET", theUrl, true); // true for asynchronous 
-    xmlHttp.send(null);
-}*/
-
 function httpPostAsyncPoll(theUrl, params, callback){
 	//Do we log it..
 	if(MDS.logging){
@@ -374,17 +606,25 @@ function httpPostAsyncPoll(theUrl, params, callback){
 
 	var xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = function() { 
-        if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
-			//Do we log it..
-        	if(MDS.logging){
-        		MDS.log("RESPONSE:"+xmlHttp.responseText);
-        	}
-
-        	//Send it to the callback function..
-        	if(callback){
-        		callback(JSON.parse(xmlHttp.responseText));
-        	}
-        }
+        var status = xmlHttp.status;
+		if (xmlHttp.readyState == XMLHttpRequest.DONE){
+			if (status === 0 || (status >= 200 && status < 400)) {
+			
+				//Do we log it..
+	        	if(MDS.logging){
+	        		MDS.log("RESPONSE:"+xmlHttp.responseText);
+	        	}
+	
+	        	//Send it to the callback function..
+	        	if(callback){
+	        		callback(JSON.parse(xmlHttp.responseText));
+	        	}
+	        
+			}else{
+				//Some error..
+				postMDSFail(theUrl,params,xmlHttp.status);
+			}
+		}
     }
     xmlHttp.addEventListener('error', function(ev){
 		MDS.log("Error Polling - reconnect in 10s");
@@ -393,4 +633,96 @@ function httpPostAsyncPoll(theUrl, params, callback){
     xmlHttp.open("POST", theUrl, true); // true for asynchronous 
 	xmlHttp.overrideMimeType('text/plain; charset=UTF-8');
     xmlHttp.send(encodeURIComponent(params));
+}
+
+/**
+ * Internal recursive function for file upload 
+ */
+function _recurseUploadMDS(thefullfile, chunk, callback){
+		
+	//Get some details
+	var filename 	= thefullfile.name;
+	var filesize 	= thefullfile.size;
+	
+	//1MB MAX Chunk size..
+	var chunk_size 	= 1024 * 1024;
+	var allchunks  	= Math.ceil(filesize / chunk_size);
+	
+	//Have we finished..
+	if(chunk>allchunks-1){
+		return;
+	}
+	
+	var startbyte = chunk_size * chunk;
+	var endbyte   = startbyte + chunk_size;
+	if(endbyte>filesize){
+		endbyte = filesize;
+	}
+	
+	//Get a piece of the file
+	var filepiece = thefullfile.slice(startbyte,endbyte);
+	
+	//Create a form..
+	var formdata = new FormData();
+	formdata.append("uid", MDS.minidappuid);
+	
+	//Filedata handled a little differently
+	formdata.append("filename", filename);
+	formdata.append("filesize", filesize);
+	formdata.append("allchunks", allchunks);
+	formdata.append("chunknum", chunk);
+	formdata.append("fileupload", filepiece);
+  
+	var request = new XMLHttpRequest();
+	request.open("POST", "/fileuploadchunk.html");
+	request.onreadystatechange = function() { 
+	        
+		var status = request.status;
+		if (request.readyState == XMLHttpRequest.DONE){
+			if (status === 0 || (status >= 200 && status < 400)) {
+				
+				//Send it to the callback function..
+	        	if(callback){
+	        		var resp 		= {};
+	        		resp.status		= true;
+	        		resp.filename 	= filename;
+	        		resp.size 		= filesize;
+	        		resp.allchunks 	= allchunks;
+	        		resp.chunk 		= chunk+1;
+	        		resp.start 		= startbyte;
+	        		resp.end 		= endbyte;
+	        		
+	        		callback(resp);
+	        	}
+	        
+				//And now continue uploading..
+				if(callback){
+					_recurseUploadMDS(thefullfile,chunk+1, callback);	
+				}else{
+					_recurseUploadMDS(thefullfile,chunk+1);
+				}				
+				
+			}else{
+				if(callback){
+	        		var resp 		= {};
+	        		resp.status		= false;
+	        		resp.error		= request.responseText;
+	        		resp.filename 	= filename;
+	        		resp.size 		= filesize;
+	        		resp.allchunks 	= allchunks;
+	        		resp.chunk 		= chunk;
+	        		resp.start 		= startbyte;
+	        		resp.end 		= endbyte;
+	        		
+	        		callback(resp);
+	        	}
+					
+				//Some error..
+				MDS.log("MDS FILEUPLOAD CHUNK ERROR: "+request.responseText);
+			}
+		}
+    }
+
+	//And finally send the POST request
+	request.send(formdata);
 }

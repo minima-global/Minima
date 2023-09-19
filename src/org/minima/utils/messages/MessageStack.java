@@ -103,4 +103,13 @@ public class MessageStack{
 		}
     	return len;
     }
+    
+    /**
+     * Clear ALL messages
+     */
+    public void clear(){
+        synchronized (mMessages) {
+			mMessages.clear();
+		}
+    }
 }

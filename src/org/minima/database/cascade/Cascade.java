@@ -252,4 +252,125 @@ public class Cascade implements Streamable {
 		cascade.readDataStream(zIn);
 		return cascade;
 	}
+	
+	public static boolean checkCascadeCorrect(Cascade zCascade) {
+		
+		//Start at the top..
+		CascadeNode cnode = zCascade.getTip();
+		
+		//Make sure starts at 0
+		if(cnode!=null) {
+			if(cnode.getLevel()!=0) {
+				MinimaLogger.log("Cascade does not start at level 0.. "+cnode.getLevel());
+				return false;
+			}
+		}
+		
+		//Which node at the current level
+		int counter		= 0;
+		int oldlevel	= 0;
+		while(cnode!=null) {
+			
+			//Get the txpow..
+			TxPoW txp = cnode.getTxPoW();
+			
+			//What level is this..
+			int clevel = cnode.getLevel();
+			
+			//Have we switched to a new Level
+			if(clevel!=oldlevel) {
+				
+				//The new level MUST be 1 more than the old level..
+				if(clevel!=oldlevel+1) {
+					MinimaLogger.log("NEXT level up is not a single increment @ clevel:"+clevel+" oldlevel:"+oldlevel);
+					return false;
+				}
+				
+				//reset counter for this level
+				counter	 = 0;
+				
+				//Remember..
+				oldlevel = clevel;
+			}
+			
+			//Is this the last node at this super level..
+			CascadeNode pnode 	= cnode.getParent();
+			boolean lastnode 	= false;
+			if(pnode==null) {
+				lastnode = true;
+			}else {
+				lastnode = pnode.getLevel() != clevel;
+			}
+			
+			//MinimaLogger.log("Checking.. "+counter+" "+cnode.getLevel()+" "+txp.getTxPoWID()+" lastnode:"+lastnode);
+			
+			//Now check that all the parents are in the cascade..
+			boolean foundzero = false;
+			for(int i=clevel;i<GlobalParams.MINIMA_CASCADE_LEVELS;i++) {
+				
+				//Get the super parent..
+				String sparent = txp.getSuperParent(i).to0xString();
+				
+				//Is it 0x00.. means there was not a node at this super level when the block was made
+				if(sparent.equals("0x00")) {
+					foundzero = true;
+				}else {
+					if(foundzero) {
+						//Should ALL be zero..
+						MinimaLogger.log("NON zero node found in cascade after first zero node.."+sparent+" @ slevel "+i+"/"+clevel+" counter:"+counter);
+						return false;
+					}
+					
+					//Check we have it..
+					if(lastnode) {
+						if(i>clevel) {
+							if(!checkPastNodeExists(cnode, sparent)) {
+								MinimaLogger.log("Parent not found in cascade.. "+sparent+" @ slevel "+i+"/"+clevel+" counter:"+counter);
+								return false;
+							}
+						}
+					}else {
+						if(!checkPastNodeExists(cnode, sparent)) {
+							MinimaLogger.log("Parent not found in cascade.. "+sparent+" @ slevel "+i+"/"+clevel+" counter:"+counter);
+							return false;
+						}
+					}
+				}
+			}
+			
+			//And jump to the parent..
+			cnode = cnode.getParent();
+			counter++;
+		}
+		
+		return true;
+	}
+	
+	public static boolean checkPastNodeExists(CascadeNode zCascadeNode, String zTxPoWID) {
+		CascadeNode cnode = zCascadeNode;
+		while(cnode!=null) {
+			if(cnode.getTxPoW().getTxPoWID().equals(zTxPoWID)) {
+				return true;
+			}
+			
+			cnode = cnode.getParent();
+		}
+		
+		return false;
+	}
+	
+	public static void main(String[] zArgs) {
+		
+		File cfile = new File("C:\\Users\\spartacusrex\\.minima\\1.0\\databases\\cascade.db");
+		
+		Cascade casc = new Cascade();
+		casc.loadDB(cfile);
+		
+		//Check it..
+		boolean correct = checkCascadeCorrect(casc);
+		
+		System.out.println("Correct:"+correct);
+		
+		
+	}
 }

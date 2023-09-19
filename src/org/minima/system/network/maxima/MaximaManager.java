@@ -189,6 +189,16 @@ public class MaximaManager extends MessageProcessor {
 		return mMaxSender;
 	}
 	
+	/**
+	 * Sometime the message stack can grow too much
+	 */
+	public void checkPollMessages() {
+		if(getMaxSender().getSize()>256) {
+			MinimaLogger.log("Maxima POLL stack > 256.. clearing.. ");
+			getMaxSender().clear();
+		}
+	}
+	
 	public String getMaximaIdentity() {
 		return mMaximaAddress;
 	}
@@ -625,6 +635,8 @@ public class MaximaManager extends MessageProcessor {
 			
 			//Is it valid..
 			if(nioc != null) {
+				
+				MinimaLogger.log("MAXIMA HOST CONNECTED "+nioc.getUID()+" "+nioc.getFullAddress());
 				
 				//Ok - we should be connected..
 				MaximaHost mxhost = maxdb.loadHost(nioc.getFullAddress());

@@ -15,6 +15,7 @@ import org.minima.database.txpowtree.TxPowTree;
 import org.minima.database.userprefs.UserDB;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.wallet.Wallet;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.network.p2p.P2PDB;
 import org.minima.system.params.GeneralParams;
@@ -328,6 +329,20 @@ public class MinimaDB {
 			mTxPoWTree.loadDB(new File(basedb,"chaintree.db"));
 			//MinimaLogger.log("TxPowTree loaded size : "+mTxPoWTree.getSize());
 			
+			//Check YOUR cascade..
+			if(!Cascade.checkCascadeCorrect(mCascade)) {
+				throw new Exception("Your Cascade is BROKEN.. please 'reset' with an archive file or restore from an archive server..");
+			}
+
+			//And check it ends where the tree ends..
+			if(mCascade.getTip() != null && mTxPoWTree.getRoot()!=null) {
+				MiniNumber cascstart = mCascade.getTip().getTxPoW().getBlockNumber();
+				MiniNumber treeroot  = mTxPoWTree.getRoot().getTxPoW().getBlockNumber();
+				if(!treeroot.isEqual(cascstart.increment())) {
+					throw new Exception("Your Cascade does not start where your TxPoWTree ends.. please 'reset' with an archive file or restore from an archive server..");
+				}
+			}
+			
 			//Clean Mem after that
 			System.gc();
 			
@@ -492,6 +507,8 @@ public class MinimaDB {
 				
 		try {
 			
+			//MinimaLogger.log("Memory clear started..");
+			
 			//Get the base Database folder
 			File basedb = getBaseDBFolder();
 			
@@ -501,14 +518,14 @@ public class MinimaDB {
 			mArchive.checkForCleanDB();
 			
 			//Shut them down
-			MinimaLogger.log("Save TxPoWDB..");
+			//MinimaLogger.log("Save TxPoWDB..");
 			mTxPoWDB.saveDB(true);
-			MinimaLogger.log("Save ArchiveDB..");
+			//MinimaLogger.log("Save ArchiveDB..");
 			mArchive.saveDB(true);
-			MinimaLogger.log("Save WalletDB..");
+			//MinimaLogger.log("Save WalletDB..");
 			mWallet.saveDB(true);
 			
-			MinimaLogger.log("Load DBs..");
+			//MinimaLogger.log("Load DBs..");
 			
 			//Wallet
 			mWallet					= new Wallet();
@@ -529,7 +546,7 @@ public class MinimaDB {
 			File txpowsqlfolder = new File(basedb,"txpowsql");
 			mTxPoWDB.loadSQLDB(new File(txpowsqlfolder,"txpow"));
 			
-			MinimaLogger.log("Memory clear finished..");
+			//MinimaLogger.log("Memory clear finished..");
 			
 		} catch (SQLException e) {
 			e.printStackTrace();

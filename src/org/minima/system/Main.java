@@ -121,7 +121,7 @@ public class Main extends MessageProcessor {
 	 * Create all the initial Keys
 	 */
 	public static final String MAIN_INIT_KEYS 	= "MAIN_INIT_KEYS";
-	long INIT_KEYS_TIMER = 1000 * 15;
+	long INIT_KEYS_TIMER = 1000 * 10;
 	
 	/**
 	 * Main loop to check various values every 180 seconds..
@@ -264,6 +264,10 @@ public class Main extends MessageProcessor {
 		}
 		//Calculate the User hashrate.. start her up as seems to make a difference.. initialises..
 		TxPoWMiner.calculateHashRateOld(new MiniNumber(10000));
+		
+		//Delete the Archive restore folder - if it exists..
+		File restorefolder = new File(GeneralParams.DATA_FOLDER,"archiverestore");
+		MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
 		
 		//Now do the actual check..
 		MiniNumber hashcheck 	= new MiniNumber("250000");
@@ -411,6 +415,7 @@ public class Main extends MessageProcessor {
 	public void shutdown(boolean zCompact) {
 		//Are we already shutting down..
 		if(mShuttingdown) {
+			MinimaLogger.log("Shutdown called when already shutting down..");
 			return;
 		}
 		
@@ -589,7 +594,7 @@ public class Main extends MessageProcessor {
 	 * USed when Syncing to clear memory
 	 */
 	public void resetMemFull() {
-		MinimaLogger.log("System full memory clean..");
+		//MinimaLogger.log("System full memory clean..");
 		
 		//Reset all the DBs..
 		MinimaDB.getDB().fullDBRestartMemFree();
@@ -783,6 +788,9 @@ public class Main extends MessageProcessor {
 			
 			//Now save the state - in case system crashed..
 			MinimaDB.getDB().saveState();
+			
+			//Clear the Maxima Poll Stack
+			getMaxima().checkPollMessages();
 			
 		}else if(zMessage.getMessageType().equals(MAIN_AUTOBACKUP_MYSQL)) {
 			

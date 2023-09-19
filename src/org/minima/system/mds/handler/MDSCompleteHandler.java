@@ -1,10 +1,12 @@
 package org.minima.system.mds.handler;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.URLDecoder;
 import java.util.Date;
 import java.util.StringTokenizer;
@@ -427,13 +429,17 @@ public class MDSCompleteHandler implements Runnable {
 				out.flush(); // flush character output stream buffer
 			}
 			
-		}catch(SSLHandshakeException exc) {
-		}catch(SSLException exc) {
 		}catch(IllegalArgumentException ioe) {
 			MinimaLogger.log("MDSCompleteHandler : "+ioe.toString());
 			outputError(out);
 			
+		}catch(SSLHandshakeException exc) {
+		}catch(SSLException exc) {
+		}catch(SocketException exc) {
+		}catch(IOException exc) {	
 		}catch(Exception ioe) {
+			
+			//Any other exception we can output
 //			MinimaLogger.log("MDSCompleteHandler : "+ioe.toString());
 //			outputError(out);
 			
