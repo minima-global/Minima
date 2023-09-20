@@ -14,16 +14,16 @@ plugins {
     id 'application'
 
     // test coverage
-    id 'jacoco'
+    //id 'jacoco'
 
     // eclipse classpath generation: ./gradlew cleanEclipse eclipse
-    id 'eclipse'
+    //id 'eclipse'
 
     // shadowJar plugin to build fat jar
     id 'com.github.johnrengelman.shadow' version '6.1.0'
 
     // Plugin to publish artifacts to github and maven
-    id 'maven-publish'
+    //id 'maven-publish'
 
     id 'com.palantir.docker' version '0.34.0'
 }
@@ -105,7 +105,7 @@ jar {
     }
 }
 
-publishing {
+/*publishing {
     repositories {
         maven {
             name = "GitHubPackages"
@@ -121,7 +121,7 @@ publishing {
             from(components.java)
         }
     }
-}
+}*/
 
 docker {
     name 'minimaglobal/minima:dev'

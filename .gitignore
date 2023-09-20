@@ -1,4 +1,5 @@
-/bin/
+#ignore the main bin
+bin/
 
 # Ignore Gradle project-specific cache directory
 .gradle
@@ -6,14 +7,11 @@
 # Ignore Gradle build output directory
 build
 
-# ignore IDE config and use instead the following command to re-generate them correctly: ./gradlew cleanEclipse eclipse 
 .settings/*
 .vscode/*
 #.settings/org.eclipse.buildship.core.prefs
 #.settings/org.eclipse.jdt.core.prefs
 .idea/*
 
-/.nb-gradle/
+.nb-gradle/
 
-
-/.DS_Store
