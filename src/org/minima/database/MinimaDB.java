@@ -327,11 +327,19 @@ public class MinimaDB {
 			File txtree = new File(basedb,"chaintree.db");
 			MinimaLogger.log("Loading TxPowTree size : "+MiniFormat.formatSize(txtree.length()));
 			mTxPoWTree.loadDB(new File(basedb,"chaintree.db"));
-			//MinimaLogger.log("TxPowTree loaded size : "+mTxPoWTree.getSize());
+			
+			//Load P2P DB
+//			mP2PDB.loadEncryptedDB(GeneralParams.MAIN_DBPASSWORD, new File(basedb,"p2p.db"));
+			mP2PDB.loadDB(new File(basedb,"p2p.db"));
 			
 			//Check YOUR cascade..
 			if(!Cascade.checkCascadeCorrect(mCascade)) {
-				throw new Exception("Your Cascade is BROKEN.. please 'reset' with an archive file or restore from an archive server..");
+				if(GeneralParams.IS_MOBILE) {
+					//Set this param
+					Main.getInstance().setStartUpError(true, "Your Cascade is BROKEN..");
+				}else {
+					throw new Exception("Your Cascade is BROKEN.. please 'reset' with an archive file or restore from an archive server..");
+				}
 			}
 
 			//And check it ends where the tree ends..
@@ -339,16 +347,17 @@ public class MinimaDB {
 				MiniNumber cascstart = mCascade.getTip().getTxPoW().getBlockNumber();
 				MiniNumber treeroot  = mTxPoWTree.getRoot().getTxPoW().getBlockNumber();
 				if(!treeroot.isEqual(cascstart.increment())) {
-					throw new Exception("Your Cascade does not start where your TxPoWTree ends.. please 'reset' with an archive file or restore from an archive server..");
+					if(GeneralParams.IS_MOBILE) {
+						//Set this param
+						Main.getInstance().setStartUpError(true, "Your Cascade is BROKEN..");
+					}else {
+						throw new Exception("Your Cascade is BROKEN.. please 'reset' with an archive file or restore from an archive server..");
+					}
 				}
 			}
 			
 			//Clean Mem after that
 			System.gc();
-			
-			//And finally..
-//			mP2PDB.loadEncryptedDB(GeneralParams.MAIN_DBPASSWORD, new File(basedb,"p2p.db"));
-			mP2PDB.loadDB(new File(basedb,"p2p.db"));
 			
 			//Do we need to store the cascade in the ArchiveDB
 			getArchive().checkCascadeRequired(getCascade());
@@ -357,9 +366,16 @@ public class MinimaDB {
 			MinimaLogger.log("SERIOUS ERROR loadAllDB ");
 			MinimaLogger.log(exc);
 			
-			//At this point.. STOP..
-			Runtime.getRuntime().halt(0);
-//			System.exit(1);
+			//Are we on mobile
+			if(GeneralParams.IS_MOBILE) {
+			
+				//Set this param
+				Main.getInstance().setStartUpError(true, exc.toString());
+				
+			}else {
+				//At this point.. STOP..
+				Runtime.getRuntime().halt(0);
+			}
 		}
 		
 		//Release the krakken

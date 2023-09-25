@@ -273,7 +273,8 @@ public class ParamConfigurer {
         }),
         desktop("desktop", "Use Desktop settings - this node can't accept incoming connections", (args, configurer) -> {
             if ("true".equals(args)) {
-                GeneralParams.IS_ACCEPTING_IN_LINKS = false;
+            	GeneralParams.IS_DESKTOP 			= true;
+            	GeneralParams.IS_ACCEPTING_IN_LINKS = false;
             }
         }),
         server("server", "Use Server settings - this node can accept incoming connections", (args, configurer) -> {

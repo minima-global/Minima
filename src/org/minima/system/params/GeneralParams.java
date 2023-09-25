@@ -5,9 +5,14 @@ import org.minima.objects.base.MiniNumber;
 public class GeneralParams {
 
 	/**
-	 * Are you running on a mobile - mainly for metrics
+	 * Are you running on a mobile
 	 */
 	public static boolean IS_MOBILE = false;
+	
+	/**
+	 * Are you running on a desktop
+	 */
+	public static boolean IS_DESKTOP = false;
 	
 	/**
 	 * Can you accept incoming connections.. 
@@ -245,6 +250,7 @@ public class GeneralParams {
 	 */
 	public static void resetDefaults() {
 		IS_MOBILE = false;
+		IS_DESKTOP = false;
 		IS_ACCEPTING_IN_LINKS = true;
 		GENESIS = false;
 		CLEAN = false;
