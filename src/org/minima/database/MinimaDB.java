@@ -334,12 +334,7 @@ public class MinimaDB {
 			
 			//Check YOUR cascade..
 			if(!Cascade.checkCascadeCorrect(mCascade)) {
-				if(GeneralParams.IS_MOBILE) {
-					//Set this param
-					Main.getInstance().setStartUpError(true, "Your Cascade is BROKEN..");
-				}else {
-					throw new Exception("Your Cascade is BROKEN.. please 'reset' with an archive file or restore from an archive server..");
-				}
+				throw new Exception("Your Cascade is BROKEN.. please 'reset' your node.");
 			}
 
 			//And check it ends where the tree ends..
@@ -347,12 +342,7 @@ public class MinimaDB {
 				MiniNumber cascstart = mCascade.getTip().getTxPoW().getBlockNumber();
 				MiniNumber treeroot  = mTxPoWTree.getRoot().getTxPoW().getBlockNumber();
 				if(!treeroot.isEqual(cascstart.increment())) {
-					if(GeneralParams.IS_MOBILE) {
-						//Set this param
-						Main.getInstance().setStartUpError(true, "Your Cascade is BROKEN..");
-					}else {
-						throw new Exception("Your Cascade is BROKEN.. please 'reset' with an archive file or restore from an archive server..");
-					}
+					throw new Exception("Your Cascade is BROKEN.. please 'reset' your node.");
 				}
 			}
 			
@@ -366,8 +356,8 @@ public class MinimaDB {
 			MinimaLogger.log("SERIOUS ERROR loadAllDB ");
 			MinimaLogger.log(exc);
 			
-			//Are we on mobile
-			if(GeneralParams.IS_MOBILE) {
+			//Are we on mobile or JNLP
+			if(GeneralParams.IS_MOBILE || GeneralParams.IS_JNLP) {
 			
 				//Set this param
 				Main.getInstance().setStartUpError(true, exc.toString());

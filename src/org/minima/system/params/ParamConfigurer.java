@@ -288,6 +288,11 @@ public class ParamConfigurer {
                 GeneralParams.IS_MOBILE 			= true;
             }
         }),
+        jnlp("jnlp", "Are we running from the JNLP", (args, configurer) -> {
+            if ("true".equals(args)) {
+            	GeneralParams.IS_JNLP = true;
+            }
+        }),
         showparams("showparams", "Show startup params on launch", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.SHOW_PARAMS = true;
