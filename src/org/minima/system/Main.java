@@ -43,6 +43,12 @@ public class Main extends MessageProcessor {
 	public static boolean STARTUP_DEBUG_LOGS = false;
 	
 	/**
+	 * ERROR on Startup
+	 */
+	public boolean 	STARTUP_ERROR 		= false; 
+	public String 	STARTUP_ERROR_MSG 	= "";
+	
+	/**
 	 * Uptime for the node
 	 */
 	long mUptimeMilli = System.currentTimeMillis();
@@ -475,6 +481,19 @@ public class Main extends MessageProcessor {
 		} catch (Exception e) {
 			MinimaLogger.log(e);
 		}
+	}
+	
+	public void setStartUpError(boolean zStartError, String zMessage) {
+		STARTUP_ERROR 		= zStartError;
+		STARTUP_ERROR_MSG 	= zMessage;
+	}
+	
+	public boolean isStartupError() {
+		return STARTUP_ERROR;
+	}
+	
+	public String getStartupErrorMsg() {
+		return STARTUP_ERROR_MSG;
 	}
 	
 	public void restoreReady() {
