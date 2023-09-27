@@ -473,7 +473,7 @@ function checkRoundTwoGame(blocknum, coin){
 				
 		}else if(isplayer){
 			
-			//We are the lotto..
+			//We are the player..
 			playerRoundTwo(coin, address);
 		}
 	});
@@ -511,11 +511,11 @@ function playerRoundTwo(coin,address){
 				var iswin = resp.response.variables.iswin == "TRUE";
 				if(iswin){
 					MDS.log("PLAYER WINS!");
-					finalCollectWin(coin,address,pubkey, preimage);
+					finalCollectWin(coin,address,pubkey, preimage, true);
 					
 				}else{
 					MDS.log("LOTTO WINS!");
-					finalCollectWin(coin,lottoaddress,pubkey, preimage);
+					finalCollectWin(coin,lottoaddress,pubkey, preimage, false);
 				}
 				
 			});
@@ -525,7 +525,7 @@ function playerRoundTwo(coin,address){
 	});
 }
 
-function finalCollectWin(coin, address, pubkey, secret){
+function finalCollectWin(coin, address, pubkey, secret, playerwins){
 	
 	var txnname="collectwin_"+coin.coinid;
 	
@@ -538,8 +538,26 @@ function finalCollectWin(coin, address, pubkey, secret){
 	//Set the round state var..
 	creator += ";txnstate id:"+txnname+" port:0 value:2";
 	
+	//Set the secret - different for every game
+	creator += ";txnstate id:"+txnname+" port:2 value:"+coin.state[2];
+	
+	//Set the Odds
+	creator += ";txnstate id:"+txnname+" port:3 value:"+coin.state[3];
+	
+	//Set the UID of the Game
+	creator += ";txnstate id:"+txnname+" port:6 value:"+coin.state[6];
+	
+	//Set the FEE of the Game
+	creator += ";txnstate id:"+txnname+" port:7 value:"+coin.state[7];
+	
 	//Set the Preimage secret
 	creator += ";txnstate id:"+txnname+" port:9 value:"+secret;
+	
+	//Set if the Player is the Winner!
+	creator += ";txnstate id:"+txnname+" port:10 value:"+playerwins;
+	
+	//Set the Amount - info..
+	creator += ";txnstate id:"+txnname+" port:11 value:"+coin.amount;
 	
 	//Sign and post and delete
 	creator		+= ";txnsign id:"+txnname+" publickey:"+pubkey;

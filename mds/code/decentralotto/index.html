@@ -285,6 +285,66 @@
 			
 		}else if(msg.event == "NEWBLOCK"){
 			refreshData();
+		
+		}else if(msg.event == "NEWTXPOW"){
+			
+			var txpow 	= msg.data.txpow;
+			var txpowid = txpow.txpowid;
+			
+			var inputcoins = txpow.body.txn.inputs;
+			var len = inputcoins.length;
+			
+			var foundgamecoin = false;
+			for(var i=0;i<len;i++){
+				var coin 	= inputcoins[i];
+				var address = coin.miniaddress;
+				
+				if(coin.miniaddress == LOTTERY_GAME_ADDRESS){
+					foundgamecoin = true;
+					break;
+				}	
+			}
+			
+			var betamount = 0;
+			if(!foundgamecoin){
+				//Check the outputs
+				var outputcoins = txpow.body.txn.outputs;
+				var len 		= outputcoins.length;
+				for(var i=0;i<len;i++){
+					var coin 	= outputcoins[i];
+					var address = coin.miniaddress;
+					
+					if(coin.miniaddress == LOTTERY_GAME_ADDRESS){
+						foundgamecoin 	= true;
+						betamount 		= coin.amount;
+						break;
+					}	
+				}
+			}
+			
+			if(foundgamecoin){
+				MDS.log("NEW LOTTO TXPOWID "+txpowid);
+				
+				//This is a LOTTO GAME..
+				var round 		= MDS.util.getStateVariable(txpow.body.txn,0);
+				var secret 		= MDS.util.getStateVariable(txpow.body.txn,2);
+				var odds 		= MDS.util.getStateVariable(txpow.body.txn,3);
+				var uid 		= MDS.util.getStateVariable(txpow.body.txn,6);
+				var fee 		= MDS.util.getStateVariable(txpow.body.txn,7);
+				
+				if(round == 0){
+					MDS.log("BET AMOUNT "+betamount);
+				}
+				
+				if(round==2){
+					var playwins	= MDS.util.getStateVariable(txpow.body.txn,10);
+					var amount		= MDS.util.getStateVariable(txpow.body.txn,11);
+					MDS.log("ROUND:"+round+" uid:"+uid+" secret:"+secret+" odds:"+odds+" fees:"+fee+" playerwins:"+playwins+" amount:"+amount);	
+				}else{
+					MDS.log("ROUND:"+round+" uid:"+uid+" secret:"+secret+" odds:"+odds+" fees:"+fee);
+				}
+			}
+			
 		}
 	});
 
