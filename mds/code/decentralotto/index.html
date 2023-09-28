@@ -166,7 +166,9 @@
 			
 			if(length == 0){
 				var tablerow 		= thetable.insertRow(1);
+				tablerow.setAttribute("align", "center");
 				var cell1 	 		= tablerow.insertCell(0);
+				cell1.colSpan		= 4;
 				cell1.innerHTML		= "No Lotto games..";
 			}
 			
@@ -233,7 +235,9 @@
 			
 			if(length == 0){
 				var tablerow 		= thetable.insertRow(1);
+				tablerow.setAttribute("align", "center");
 				var cell1 	 		= tablerow.insertCell(0);
+				cell1.colSpan		= 5;
 				cell1.innerHTML		= "No current games..";
 			}
 			
@@ -285,7 +289,9 @@
 			
 			if(length == 0){
 				var tablerow 		= thetable.insertRow(1);
+				tablerow.setAttribute("align", "center");
 				var cell1 	 		= tablerow.insertCell(0);
+				cell1.colSpan		= 6;
 				cell1.innerHTML		= "No old games..";
 			}
 			
