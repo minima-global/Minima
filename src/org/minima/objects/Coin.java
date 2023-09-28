@@ -197,6 +197,15 @@ public class Coin implements Streamable {
 		mState = zCompleteState;
 	}
 	
+	public boolean checkForStateVariable(String zCheckState) {
+		for(StateVariable sv : mState) {
+			if(sv.getData().toString().equals(zCheckState)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	@Override
 	public String toString() {
 		return toJSON().toString();
