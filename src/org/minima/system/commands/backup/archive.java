@@ -57,7 +57,7 @@ public class archive extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","host","phrase","keys","keyuses","file","address"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","host","phrase","keys","keyuses","file","address","statecheck"}));
 	}
 	
 	@Override
