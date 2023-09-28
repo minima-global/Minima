@@ -29,7 +29,22 @@ function createDB(callback){
 				+" )";
 		
 		MDS.sql(secretsql,function(msg){
-			callback();	
+			
+			//And create a secrets table..
+			var mygames = "CREATE TABLE IF NOT EXISTS `mygames` ( "
+				+"  `id` bigint auto_increment, "
+				+"  `gameuid` varchar(128) NOT NULL, "
+				+"  `secretid` varchar(128) NOT NULL, "
+				+"  `odds` varchar(128) NOT NULL, "
+				+"  `fee` varchar(128) NOT NULL, "
+				+"  `finalamount` varchar(128) NOT NULL, "
+				+"  `playerwins` int NOT NULL, "
+				+"  `created` bigint NOT NULL "
+				+" )";
+				
+			MDS.sql(mygames,function(msg){
+				callback();	
+			});	
 		});
 	});
 }
@@ -126,4 +141,60 @@ function cleanUpSecrets(callback){
 			callback();	
 		}
 	});
+}
+
+function loadOldGames(callback){
+	var sql = "SELECT * FROM mygames ORDER BY created DESC";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		//MDS.log(JSON.stringify(msg));
+		callback(msg.rows);
+	});
+}
+
+function loadGame(secretid, callback){
+	var sql = "SELECT * FROM mygames WHERE secretid='"+secretid+"'";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		//MDS.log(JSON.stringify(msg));
+		callback(msg.rows);
+	});
+}
+
+function addOldGame(gameuid,secretid,odds,fee,finalamount,playerwins, callback){
+	
+	//Check if allready added..
+	loadGame(secretid, function(oldgame){
+		
+		//Was there a game
+		if(oldgame.length==0){
+			//Date as of NOW
+			var startdate = new Date();
+			var timemilli = startdate.getTime()
+			
+			var playw = 0;
+			if(playerwins){
+				playw = 1;
+			}
+			
+			//Create the DB if not exists
+			var sql = "INSERT INTO mygames(gameuid,secretid,odds,fee,finalamount,playerwins,created) VALUES "+
+					"('"+gameuid+"','"+secretid+"','"+odds+"','"+fee+"','"+finalamount+"',"+playw+", "+timemilli+")";
+						
+			//Run this..
+			MDS.sql(sql,function(msg){
+				MDS.log(JSON.stringify(msg));
+				if(callback){
+					callback(msg);	
+				}
+			});
+				
+		}else{
+			//Already added..
+		}	
+	});
+	
+	
 }
