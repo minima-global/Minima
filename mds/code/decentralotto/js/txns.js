@@ -365,7 +365,7 @@ function lottoRoundOne(coin, random){
 						}else{
 														
 							//Lets play!
-							MDS.log("LETS PLAY! amount:"+coinamount+" odds:"+odds);
+							//MDS.log("LETS PLAY! amount:"+coinamount+" odds:"+odds);
 			
 							var requiredfees 	= coinamount.mul(fees);
 							var actualamount 	= coinamount.sub(requiredfees);
@@ -511,11 +511,11 @@ function playerRoundTwo(coin,address){
 				//Did we win..
 				var iswin = resp.response.variables.iswin == "TRUE";
 				if(iswin){
-					MDS.log("PLAYER WINS!");
+					//MDS.log("PLAYER WINS!");
 					finalCollectWin(coin,address,pubkey, preimage, true);
 					
 				}else{
-					MDS.log("LOTTO WINS!");
+					//MDS.log("LOTTO WINS!");
 					finalCollectWin(coin,lottoaddress,pubkey, preimage, false);
 				}
 				
@@ -645,7 +645,7 @@ function checkForGameEnd(txpow){
 		if(round==2){
 			var playwins	= getTxnStateVariable(txn,10);
 			var amount		= getTxnStateVariable(txn,11);
-			MDS.log("ROUND:"+round+" uid:"+uid+" secret:"+secret+" odds:"+odds+" fees:"+fee+" playerwins:"+playwins+" amount:"+amount);	
+			//MDS.log("ROUND:"+round+" uid:"+uid+" secret:"+secret+" odds:"+odds+" fees:"+fee+" playerwins:"+playwins+" amount:"+amount);	
 		
 			//Add to the adatabase..
 			if(playwins == "TRUE"){
@@ -655,7 +655,7 @@ function checkForGameEnd(txpow){
 			}
 			
 		}else{
-			MDS.log("ROUND:"+round+" uid:"+uid+" secret:"+secret+" odds:"+odds+" fees:"+fee);
+			//MDS.log("ROUND:"+round+" uid:"+uid+" secret:"+secret+" odds:"+odds+" fees:"+fee);
 		}
 	}
 }
