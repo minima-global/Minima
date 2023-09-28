@@ -55,6 +55,12 @@ MDS.init(function(msg){
 		if(block % 5 == 0){
 			//Check Advert Coin Age
 			checkAdvertAge();
-		}		
+		}
+				
+	}else if(msg.event == "NEWTXPOW"){
+		
+		//Check if this is a game..
+		checkForGameEnd(msg.data.txpow)
+		
 	}
 });

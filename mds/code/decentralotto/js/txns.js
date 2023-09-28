@@ -9,7 +9,8 @@ var LOTTERY_ADVERT_AMOUNT  = "0.00000000000000000001";
 var LOTTERY_GAME_SCRIPT 	= "LET round=STATE(0) LET prevround=PREVSTATE(0) ASSERT round EQ INC(prevround) LET playerpubkey=PREVSTATE(1) LET secret=PREVSTATE(2) LET odds=PREVSTATE(3) LET lottopubkey=PREVSTATE(4) LET lottoaddress=PREVSTATE(5) LET fees=PREVSTATE(7) ASSERT (odds GT 0) AND (odds LT 1) IF round EQ 1 THEN IF @COINAGE GT 20 AND SIGNEDBY(playerpubkey) THEN RETURN TRUE ENDIF ASSERT SIGNEDBY(lottopubkey) ASSERT SAMESTATE(1 7) LET lottorand=STATE(8) ASSERT ((HEX(lottorand) EQ lottorand) AND (LEN(lottorand) LTE 32)) LET requiredfees=@AMOUNT*fees LET actualamount=@AMOUNT-requiredfees LET requiredamount=actualamount/odds RETURN VERIFYOUT(@INPUT @ADDRESS requiredamount @TOKENID TRUE) ELSEIF round EQ 2 THEN IF @COINAGE GT 20 AND SIGNEDBY(lottopubkey) THEN RETURN TRUE ENDIF ASSERT SIGNEDBY(playerpubkey) LET preimage=STATE(9) LET checkhash=SHA3(preimage) ASSERT checkhash EQ secret LET lottorand=PREVSTATE(8) LET decider=SHA3(CONCAT(preimage lottorand)) LET hexsubset=SUBSET(0 8 decider) LET numvalue=NUMBER(hexsubset) LET maxvalue=NUMBER(0xFFFFFFFFFFFFFFFF) LET target=FLOOR(maxvalue*odds) LET iswin=numvalue LTE target IF iswin THEN RETURN TRUE ELSE RETURN VERIFYOUT(@INPUT lottoaddress @AMOUNT @TOKENID TRUE) ENDIF ENDIF";
 var LOTTERY_GAME_ADDRESS 	= "MxG08433GUWZ9F25Z0AWCJA6FAZQCV4FVQJCTZS5U906QP991VUVBCGNPCQP53C";
 
-var MIN_COIN_DEPTH = 4;
+var MIN_COIN_DEPTH = 5;
+var MAX_ADVERT_AGE = 500;
 
 /**
  * Add the required scripts 
@@ -130,7 +131,7 @@ function checkAdvertTxn(mylotteries, callback){
 					//MDS.log("ADVERT FOUND age : "+coinage);
 					
 					//Found one..
-					if(coinage > 60){
+					if(coinage > MAX_ADVERT_AGE){
 						MDS.log("RESUBMIT NEW ADVERT FOUND age : "+coinage);
 						found = true;	
 					}
@@ -596,4 +597,65 @@ function checkForWin(secret, odds, lottorand ,callback){
 			callback("UNKNOWN");
 		}
 	});
+}
+
+//Return a state variable given the coin
+function getTxnStateVariable(coinortxn,port){
+	//Get the state vars
+	var statvars = coinortxn.state;
+	var len = statvars.length;
+	for (var i = 0; i < len; i++) {
+		var state = statvars[i];
+		if(state.port == port){
+			return state.data;
+		} 	
+	}
+	
+	return undefined;
+}
+
+function checkForGameEnd(txpow){
+	
+	//Check Input Coins.. 
+	var txn			= txpow.body.txn;
+	var inputcoins 	= txn.inputs;
+	var len 		= inputcoins.length;
+	
+	var foundgamecoin = false;
+	for(var i=0;i<len;i++){
+		var coin 	= inputcoins[i];
+		var address = coin.miniaddress;
+		if(coin.miniaddress == LOTTERY_GAME_ADDRESS){
+			foundgamecoin = true;
+			break;
+		}	
+	}
+	
+	//Did we find it ?
+	if(foundgamecoin){
+		
+		//This is a LOTTO GAME..
+		var round 		= getTxnStateVariable(txn,0);
+		var secret 		= getTxnStateVariable(txn,2);
+		var odds 		= getTxnStateVariable(txn,3);
+		var uid 		= getTxnStateVariable(txn,6);
+		var fee 		= getTxnStateVariable(txn,7);
+		
+		//Is it the Last Round
+		if(round==2){
+			var playwins	= getTxnStateVariable(txn,10);
+			var amount		= getTxnStateVariable(txn,11);
+			MDS.log("ROUND:"+round+" uid:"+uid+" secret:"+secret+" odds:"+odds+" fees:"+fee+" playerwins:"+playwins+" amount:"+amount);	
+		
+			//Add to the adatabase..
+			if(playwins == "TRUE"){
+				addOldGame(uid,secret,odds,fee,amount,true);	
+			}else{
+				addOldGame(uid,secret,odds,fee,amount,false);
+			}
+			
+		}else{
+			MDS.log("ROUND:"+round+" uid:"+uid+" secret:"+secret+" odds:"+odds+" fees:"+fee);
+		}
+	}
 }

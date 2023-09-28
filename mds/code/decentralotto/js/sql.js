@@ -163,6 +163,18 @@ function loadGame(secretid, callback){
 	});
 }
 
+function clearOldGames(callback){
+	var sql = "DELETE FROM  mygames WHERE secretid!=''";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		//MDS.log(JSON.stringify(msg));
+		if(callback){
+			callback();	
+		}
+	});
+}
+
 function addOldGame(gameuid,secretid,odds,fee,finalamount,playerwins, callback){
 	
 	//Check if allready added..

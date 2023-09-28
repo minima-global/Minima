@@ -47,6 +47,10 @@
 	
 	<p class="texttitle">Old Games</p>
 	<table id="oldgames" class="alllotto"></table>
+	<br>
+	<table id="totalwins" class="alllotto"></table>
+	<br>
+	<button class="solobutton" onclick="clearGames();">Clear Old Games</button>
 	<br><br>
 	
 	<p class="smalltexttitle">
@@ -67,6 +71,13 @@
 	
 	function jumpStartLotto(){
 		location.href = "startlotto.html?uid="+MDS.minidappuid;
+	}
+	
+	function clearGames(){
+		clearOldGames(function(){
+			//Refresh the page
+			location.href = "index.html?uid="+MDS.minidappuid;
+		});
 	}
 	
 	function showTitleOnAndroid(){
@@ -148,10 +159,16 @@
 			// Create an empty <thead> element and add it to the table:
 			var header 		= thetable.createTHead();
 			var headerrow 	= header.insertRow(0);
-			headerrow.insertCell(0).innerHTML="ODDS";
-			headerrow.insertCell(1).innerHTML="MIN";
-			headerrow.insertCell(2).innerHTML="MAX";
-			headerrow.insertCell(3).innerHTML="FEE";
+			headerrow.insertCell(0).innerHTML="<b>Odds</b>";
+			headerrow.insertCell(1).innerHTML="<b>Min</b>";
+			headerrow.insertCell(2).innerHTML="<b>Max</b>";
+			headerrow.insertCell(3).innerHTML="<b>Fee</b>";
+			
+			if(length == 0){
+				var tablerow 		= thetable.insertRow(1);
+				var cell1 	 		= tablerow.insertCell(0);
+				cell1.innerHTML		= "No Lotto games..";
+			}
 			
 			//Create data
 			var counter = 0;
@@ -160,7 +177,7 @@
 				
 				//Check coin age..
 				var age = block - Number(coin.created);
-				if(age>80){
+				if(age>(MAX_ADVERT_AGE+20)){
 					//Too old.. Advert must be resent every hour.. to prevent shut down lottos
 					continue;
 				}
@@ -208,16 +225,16 @@
 			// Create an empty <thead> element and add it to the table:
 			var header 		= thetable.createTHead();
 			var headerrow 	= header.insertRow(0);
-			headerrow.insertCell(0).innerHTML="Round";
-			headerrow.insertCell(1).innerHTML="Odds";
-			headerrow.insertCell(2).innerHTML="Amount";
-			headerrow.insertCell(3).innerHTML="Age";
-			headerrow.insertCell(4).innerHTML="Status";
+			headerrow.insertCell(0).innerHTML="<b>Round</b>";
+			headerrow.insertCell(1).innerHTML="<b>Odds</b>";
+			headerrow.insertCell(2).innerHTML="<b>Amount</b>";
+			headerrow.insertCell(3).innerHTML="<b>Age</b>";
+			headerrow.insertCell(4).innerHTML="<b>Status</b>";
 			
 			if(length == 0){
 				var tablerow 		= thetable.insertRow(1);
 				var cell1 	 		= tablerow.insertCell(0);
-				cell1.innerHTML		= "NO GAMES.."
+				cell1.innerHTML		= "No current games..";
 			}
 			
 			//Create data
@@ -258,38 +275,98 @@
 			// Create an empty <thead> element and add it to the table:
 			var header 		= thetable.createTHead();
 			var headerrow 	= header.insertRow(0);
-			headerrow.insertCell(0).innerHTML="Amount";
-			headerrow.insertCell(1).innerHTML="Player Wins";
-			headerrow.insertCell(2).innerHTML="Date";
+			//headerrow.insertCell(0).innerHTML="<b>Total</b>";
+			headerrow.insertCell(0).innerHTML="<b>Bet</b>";
+			headerrow.insertCell(1).innerHTML="<b>Fee</b>";
+			headerrow.insertCell(2).innerHTML="<b>Odds</b>";
+			headerrow.insertCell(3).innerHTML="<b>Status</b>";
+			headerrow.insertCell(4).innerHTML="<b>Amount</b>";
+			headerrow.insertCell(5).innerHTML="<b>Date</b>";
 			
 			if(length == 0){
 				var tablerow 		= thetable.insertRow(1);
 				var cell1 	 		= tablerow.insertCell(0);
-				cell1.innerHTML		= "NO OLD GAMES.."
+				cell1.innerHTML		= "No old games..";
 			}
+			
+			var minusone 	= new Decimal(-1);
+			var zero 		= new Decimal(0);
+			
+			var totalplayer = zero;
+			var totallotto = zero;
 			
 			//Create data
 			for(var i=0;i<length;i++){
 				var game 			= games[i];
-				//MDS.log(JSON.stringify(game));
 				
 				var tablerow 		= thetable.insertRow(i+1);
 				var cell1 	 		= tablerow.insertCell(0);
 				var cell2 	 		= tablerow.insertCell(1);
 				var cell3 	 		= tablerow.insertCell(2);
+				var cell4 	 		= tablerow.insertCell(3);
+				var cell5 	 		= tablerow.insertCell(4);
+				var cell6 	 		= tablerow.insertCell(5);
 				
-				cell1.innerHTML		= game.FINALAMOUNT;
+				//Work out some values..
+				var famt 		= new Decimal(game.FINALAMOUNT);
+				var multiplier 	= new Decimal(1).div(new Decimal(game.ODDS));
+				var initial		= famt.div(multiplier); 
+				var feechange 	= new Decimal(1).sub(new Decimal(game.FEE));
+				var bet			= initial.div(feechange);
+				var feeamount	= bet.sub(initial);
 				
+				cell1.innerHTML	= bet;
+				
+				//Odds and fee..
+				var showfee  	= new Decimal(100).mul(new Decimal(game.FEE))+"%";
+				cell2.innerHTML	= showfee;
+				
+				var showodds 	= new Decimal(100).mul(new Decimal(game.ODDS))+"%";
+				cell3.innerHTML	= showodds;
+				
+				var playerwins,lottowins;
 				if(game.PLAYERWINS == 0){
-					cell2.innerHTML		= "NO";	
+					playerwins 	= bet.mul(minusone);
+					lottowins	= bet;
 				}else{
-					cell2.innerHTML		= "YES";
+					playerwins 	= famt.sub(bet);
+					lottowins	= playerwins.mul(minusone);
 				}
 				
+				totalplayer = totalplayer.add(playerwins);
+				totallotto 	= totallotto.add(lottowins);
+				
+				if(game.PLAYERWINS == 0){
+					cell4.innerHTML		= "Lose";
+					cell5.innerHTML		= lottowins;
+				}else{
+					cell4.innerHTML		= "Win";
+					cell5.innerHTML		= playerwins;
+				}
+				
+				//And finally the date..
 				var date = Number(game.CREATED);
 				var startdate = new Date(date);
-				cell3.innerHTML		= startdate.toLocaleString();
+				cell6.innerHTML		= startdate.toLocaleString();
 			}
+			
+			//Now show the totals
+			var thetable = document.getElementById("totalwins");
+			
+			//Blank it..
+			thetable.innerHTML 	= "";
+			
+			// Create an empty <thead> element and add it to the table:
+			var header 		= thetable.createTHead();
+			var headerrow 	= header.insertRow(0);
+			headerrow.setAttribute("align", "center");
+			//headerrow.insertCell(0).innerHTML="<b>Total</b>";
+			headerrow.insertCell(0).innerHTML="<b>Total Player Winnings</b>";
+			
+			var tablerow 		= thetable.insertRow(1);
+			tablerow.setAttribute("align", "center");
+			var cell1 	 		= tablerow.insertCell(0);
+			cell1.innerHTML		= totalplayer;
 		});
 	
 	}
@@ -344,75 +421,6 @@
 			
 		}else if(msg.event == "NEWBLOCK"){
 			refreshData();
-		
-		}else if(msg.event == "NEWTXPOW"){
-			
-			var txpow 	= msg.data.txpow;
-			var txpowid = txpow.txpowid;
-			
-			var inputcoins = txpow.body.txn.inputs;
-			var len = inputcoins.length;
-			
-			var foundgamecoin = false;
-			for(var i=0;i<len;i++){
-				var coin 	= inputcoins[i];
-				var address = coin.miniaddress;
-				
-				if(coin.miniaddress == LOTTERY_GAME_ADDRESS){
-					foundgamecoin = true;
-					break;
-				}	
-			}
-			
-			var betamount = 0;
-			if(!foundgamecoin){
-				//Check the outputs
-				var outputcoins = txpow.body.txn.outputs;
-				var len 		= outputcoins.length;
-				for(var i=0;i<len;i++){
-					var coin 	= outputcoins[i];
-					var address = coin.miniaddress;
-					
-					if(coin.miniaddress == LOTTERY_GAME_ADDRESS){
-						foundgamecoin 	= true;
-						betamount 		= coin.amount;
-						break;
-					}	
-				}
-			}
-			
-			if(foundgamecoin){
-				MDS.log("NEW LOTTO TXPOWID "+txpowid);
-				
-				//This is a LOTTO GAME..
-				var round 		= MDS.util.getStateVariable(txpow.body.txn,0);
-				var secret 		= MDS.util.getStateVariable(txpow.body.txn,2);
-				var odds 		= MDS.util.getStateVariable(txpow.body.txn,3);
-				var uid 		= MDS.util.getStateVariable(txpow.body.txn,6);
-				var fee 		= MDS.util.getStateVariable(txpow.body.txn,7);
-				
-				if(round == 0){
-					MDS.log("BET AMOUNT "+betamount);
-				}
-				
-				if(round==2){
-					var playwins	= MDS.util.getStateVariable(txpow.body.txn,10);
-					var amount		= MDS.util.getStateVariable(txpow.body.txn,11);
-					MDS.log("ROUND:"+round+" uid:"+uid+" secret:"+secret+" odds:"+odds+" fees:"+fee+" playerwins:"+playwins+" amount:"+amount);	
-				
-					//Add to the adatabase..
-					if(playwins == "TRUE"){
-						addOldGame(uid,secret,amount,true);	
-					}else{
-						addOldGame(uid,secret,amount,false);
-					}
-					
-				
-				}else{
-					MDS.log("ROUND:"+round+" uid:"+uid+" secret:"+secret+" odds:"+odds+" fees:"+fee);
-				}
-			}
-			
 		}
 	});
 
