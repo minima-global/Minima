@@ -18,6 +18,7 @@ import org.minima.database.archive.ArchiveManager;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.wallet.Wallet;
+import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
 import org.minima.objects.IBD;
@@ -748,6 +749,11 @@ public class archive extends Command {
 			
 			//Is there a state aswell ? 
 			String statecheck = getParam("statecheck", "");
+			if(	statecheck.toLowerCase().startsWith("mx") && 
+				statecheck.indexOf("@")==-1) {
+				//Convert to 0x format - as all statevariables are
+				statecheck = Address.convertMinimaAddress(statecheck).to0xString();
+			}
 			
 			//Cycle through
 			JSONObject resp 	= new JSONObject();
