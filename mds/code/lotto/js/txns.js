@@ -353,8 +353,16 @@ function lottoRoundOne(coin, random){
 						var fees = new Decimal(row.FEE);
 						
 						var valid = true;
-						if(!coinodds.equals(odds) || !fees.equals(coinfees)){
+						
+						//Check this game is LIVE
+						if(row.LIVE!=1){
 							valid = false;
+							MDS.log("[!] INVALID GAME NO LONGER LIVE..");
+							return;
+							
+						}if(!coinodds.equals(odds) || !fees.equals(coinfees)){
+							valid = false;
+							
 						}else if(coinamount.lt(min) || coinamount.gt(max)){
 							valid = false;
 						}

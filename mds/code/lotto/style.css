@@ -4,8 +4,8 @@
 }
 
 body {
-	background: url(./images/gambler.jpg) no-repeat;
-	background-size:cover;
+	background: url(./images/gambler.jpg);
+	background-size:contain;
 	font-family: Manrope;
 	font-size:20px;	
 }

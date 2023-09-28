@@ -14,6 +14,7 @@ function createDB(callback){
 				+"  `fee` varchar(64) NOT NULL, "
 				+"  `random` varchar(128) NOT NULL, "
 				+"  `uid` varchar(128) NOT NULL, "
+				+"  `live` int NOT NULL, "
 				+"  `started` bigint NOT NULL "
 				+" )";
 				
@@ -51,7 +52,7 @@ function createDB(callback){
 
 function loadMyLotteries(callback){
 	//Run this..
-	MDS.sql("SELECT * FROM mylottories",function(msg){
+	MDS.sql("SELECT * FROM mylottories WHERE live=1",function(msg){
 		//MDS.log(JSON.stringify(msg));
 		callback(msg.rows);
 	});
@@ -71,8 +72,8 @@ function newLottery(publickey, odds, min, max, fee, random, uid, callback){
 	var timemilli = startdate.getTime()
 	
 	//Create the DB if not exists
-	var sql = "INSERT INTO mylottories(publickey,odds,min,max,fee,random,uid,started) VALUES "+
-			"('"+publickey+"','"+odds+"','"+min+"','"+max+"','"+fee+"','"+random+"','"+uid+"',"+timemilli+")";
+	var sql = "INSERT INTO mylottories(publickey,odds,min,max,fee,random,uid,live,started) VALUES "+
+			"('"+publickey+"','"+odds+"','"+min+"','"+max+"','"+fee+"','"+random+"','"+uid+"',1,"+timemilli+")";
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
@@ -83,8 +84,8 @@ function newLottery(publickey, odds, min, max, fee, random, uid, callback){
 
 function deleteLottery(uid, callback){
 	
-	//Create the DB if not exists
-	var sql = "DELETE FROM mylottories WHERE uid='"+uid+"'";
+	//Need to keep the Lottery for games that are still running!..
+	var sql = "UPDATE mylottories SET live=0 WHERE uid='"+uid+"'";
 				
 	//Run this..
 	MDS.sql(sql,function(msg){

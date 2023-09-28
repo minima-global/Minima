@@ -218,14 +218,16 @@
 	}
 	
 	function cancelLottery(uid){
+		
+		alert("Deleting Lottery - pls wait for update..");
+		
 		cancelAdvertTxn(uid, function(resp){
 			
 			//Did we find it..
 			if(!resp){
 				alert("Lottery Coin not found!");
+				return;
 			}
-			
-			alert("Lottery deleted - pls wait for update..");
 			
 			//Delete it from the SQL
 			deleteLottery(uid, function(msg){
