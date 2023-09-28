@@ -91,7 +91,7 @@ public class mysql extends Command {
 				+ "    Default is 1000.\n"
 				+ "\n"
 				+ "address: (optional)\n"
-				+ "    Use with action:checkaddress. The address to check the history of spent and unspent coins for.\n"
+				+ "    Use with action:addresscheck. The address to check the history of spent and unspent coins for.\n"
 				+ "\n"
 				+ "enable: (optional)\n"
 				+ "    Use with action:autobackup. Automatically save data to MySQL archive DB.\n"
