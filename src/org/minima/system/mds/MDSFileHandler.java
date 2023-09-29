@@ -465,7 +465,7 @@ public class MDSFileHandler implements Runnable {
 		    		
 		    	}else {
 		    		
-		    		MinimaLogger.log("File Requested : "+fileRequested,false);
+		    		//MinimaLogger.log("File Requested : "+fileRequested,false);
 		    		
 		    		boolean downloader 	= false;
 		    		String filename 	= webfile.getName();
