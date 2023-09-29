@@ -465,6 +465,8 @@ public class MDSFileHandler implements Runnable {
 		    		
 		    	}else {
 		    		
+		    		MinimaLogger.log("File Requested : "+fileRequested,false);
+		    		
 		    		boolean downloader 	= false;
 		    		String filename 	= webfile.getName();
 		    		if(filename.contains(MINIMA_DOWNLOAD_AS_FILE)){
@@ -478,10 +480,16 @@ public class MDSFileHandler implements Runnable {
 		    		
 					//Calculate the size of the response
 					dos.writeBytes("HTTP/1.0 200 OK\r\n");
-					dos.writeBytes("Content-Type: "+contenttype+"\r\n");
+					if(contenttype.startsWith("text/")) {
+						dos.writeBytes("Content-Type: "+contenttype+"; charset=UTF-8\r\n");
+					}else {
+						dos.writeBytes("Content-Type: "+contenttype+"\r\n");
+					}
+					
 					dos.writeBytes("Content-Length: " + filelen+ "\r\n");
 					dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
-					
+					dos.writeBytes("Cache-Control: max-age=604800: *\r\n");
+							
 					//Are we downloading this file..
 					if(downloader) {
 						dos.writeBytes("Content-Disposition: attachment; filename=\""+filename+"\"\r\n");
