@@ -1,0 +1,207 @@
+
+@font-face {
+	font-family: Manrope;
+	src: url('./Manrope-Regular.ttf');
+}
+
+body {
+	font-family: Manrope; 
+    margin: 0;   /* Remove body margins */
+}
+
+video { 
+    max-width:100%;
+  	max-height:100%;
+}
+
+.maincontainer {
+	width:100%;
+}
+
+.homediv {
+  position: fixed;
+  top: 20;
+  left: 20;
+}
+
+.blackout {
+  display:none;
+  position: fixed;
+  width:100%;
+  height:100%;
+  background-color: #aaaaaaaa;
+  z-index: 5;
+}
+
+.previewdiv {
+  position: fixed;
+  display:none;
+  text-align:center; 
+  left: 0; 
+  right: 0;
+  top:50;
+  bottom:0; 
+  margin-left: auto;
+  margin-right: auto; 
+  width: 100%;
+  z-index: 10;
+}
+
+.widthcontainer{
+	width: 80%;
+  	max-width:800;
+}
+
+.messagetextarea {
+  width: 80%;
+  max-width:800;
+  min-width:400;
+  min-height:160;
+  height: 130px;
+  padding: 12px 20px;
+  box-sizing: border-box;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background-color: #f8f8f8;
+  font-family: Manrope; 
+  font-size: 14px;
+  resize: vertical;
+}
+
+.messagetable {
+	width:80%;
+	max-width:800;
+	min-width:400;
+	margin-left: auto;
+  	margin-right: auto;
+	border: 2px solid #0000ff;
+	border-radius: 10px;
+	background-color: #fff;
+}
+
+.messagetableusername {
+	vertical-align:top;
+	width:50;
+	background:#ccccff;
+	padding:10;
+	border-radius: 10px;
+	white-space: nowrap;
+}
+
+.namefont {
+	font-size: 1.2em;
+}
+
+.messagetablemessage {
+	vertical-align:top;
+	width:100%;
+	background:#aaaaff;
+	padding:10;
+	border-radius: 10px;
+	font-size: 1.1em;
+}
+
+.messagetablemessagediv {
+	max-height:500;
+	overflow-y:auto;
+}
+
+.messagetablereply {
+	width:100%;
+	border-radius: 10px;
+	padding:2;
+	padding-left:10;
+	background:#ddddff;
+	font-size: 0.9em;
+}
+
+.messagetableactions {
+	width:80%;
+	max-width:800;
+	margin-left: auto;
+  	margin-right: auto;
+  	min-width:400;
+  	white-space: nowrap;
+}
+
+img {
+	max-width:100%;
+	max-height:500;
+}
+
+a:link {
+  text-decoration: none;
+  color: blue;
+}
+
+a:visited {
+  text-decoration: none;
+  color: blue;
+}
+
+a:hover {
+  text-decoration: none;
+  color: blue;
+}
+
+a:active {
+  text-decoration: none;
+  color: blue;
+}
+
+.solobutton {
+    background-color: #eee;
+    border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	font-family: Manrope;
+  	font-size: 14px;
+}
+.solobutton-edit {
+	font-family: Manrope;
+	background: #fff;
+}
+.solobutton-edit:focus {
+	font-family: Manrope;
+	border: 0.5px solid #EDEDED;
+}
+
+.solobutton:hover {
+	font-family: Manrope;
+	cursor: pointer;
+    color: #fff;
+	background-color: #0000ff;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+	border-color: #16181C;
+}
+
+.solobutton[disabled]:hover {
+	cursor: default;
+    color: #fff;
+    background-color: #eee;
+    border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	font-size: 14px;
+}
+
+.solobutton:active {
+  	opacity: 0.8;
+	font-style: italic;
+}
+
+.youtubecontainer {
+	position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%;
+}
+
+.youtubevideo {
+	position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
