@@ -12,7 +12,7 @@ MDS.load("./js/txns.js");
 //Check the age of your lottery advert
 function checkAdvertAge(){
 	//Load all my games
-	loadMyLotteries(function(rows){
+	loadMyLotteries(true,function(rows){
 		//And now check those..
 		checkAdvertTxn(rows,function(){});
 	});

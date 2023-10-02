@@ -46,8 +46,11 @@ function createAdvertTxn(pubkey, lottoaddress,  odds, min, max, fee, uid, callba
 	MDS.cmd(sendcommand,function(resp){
 		if(!resp.status){
 			//Something went wrong..
+			MDS.log("Could not create Advert Txn..");
 		}
-		callback(resp.status);	
+		if(callback){
+			callback(resp.status);	
+		}
 	});
 }
 
@@ -96,7 +99,9 @@ function cancelAdvertTxn(uid, callback){
 		}
 		
 		//Coin not found!
-		callback(false);
+		if(callback){
+			callback(false);	
+		}
 	});
 }
 
@@ -126,15 +131,24 @@ function checkAdvertTxn(mylotteries, callback){
 				if(gameuid == mylotteries[l].UID){
 					
 					//Check the coin age..
-					var coinage = Number(block) - Number(coin.created); 
+					var coinage = Number(block) - Number(coin.created);
 					
-					//MDS.log("ADVERT FOUND age : "+coinage);
-					
-					//Found one..
-					if(coinage > MAX_ADVERT_AGE){
-						MDS.log("RESUBMIT NEW ADVERT FOUND age : "+coinage);
-						found = true;	
+					//Is it LIVE..
+					if(mylotteries[l].LIVE!=1){
+						
+						MDS.log("FOUND ADVERT that has been deleted.. but coin still exists.. removing.. "+mylotteries[l].UID);
+						
+						//Been deleted.. but coin still exists..
+						cancelAdvertTxn(mylotteries[l].UID);
+						
+					}else{
+						//Found one..
+						if(coinage > MAX_ADVERT_AGE){
+							MDS.log("RESUBMIT NEW ADVERT FOUND age : "+coinage);
+							found = true;	
+						}
 					}
+					
 					break;
 				}
 			}	
@@ -171,6 +185,10 @@ function checkAdvertTxn(mylotteries, callback){
 					//MDS.log(JSON.stringify(resp))
 				});
 			}
+		}
+		
+		if(callback){
+			callback();
 		}
 	});
 }
@@ -317,7 +335,11 @@ function collectExpiredGame(round, coin, address, pubkey){
 	
 	//Run it..
 	MDS.cmd(creator,function(resp){
-		MDS.log("COLLECT EXPIRED COIN!");
+		if(round==1){
+			MDS.log("Collecting expired game coin as PLAYER.. round:"+round+" amount:"+coin.amount);	
+		}else{
+			MDS.log("Collecting expired game coin as LOTTO.. round:"+round+" amount:"+coin.amount);
+		}
 	});
 }
 
@@ -357,8 +379,7 @@ function lottoRoundOne(coin, random){
 						//Check this game is LIVE
 						if(row.LIVE!=1){
 							valid = false;
-							MDS.log("[!] INVALID GAME NO LONGER LIVE..");
-							return;
+							MDS.log("[!] INVALID GAME STARTED NO LONGER LIVE.. leaving for Player to collect after 20 blocks");
 							
 						}if(!coinodds.equals(odds) || !fees.equals(coinfees)){
 							valid = false;
@@ -477,7 +498,7 @@ function checkRoundTwoGame(blocknum, coin){
 		//Is it one of ours..
 		if(islotto && age>20){
 			
-			//It's one of ours.. as PLAYER.. collect it..
+			//It's one of ours.. as LOTTO.. collect it..
 			collectExpiredGame(2,coin,address,lottopubkey);
 				
 		}else if(isplayer){

@@ -15,7 +15,7 @@
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	
 	<!-- Load the local JS lib -->
-	<script type="text/javascript" src="./js/decimal.min.js"></script>
+	<script type="text/javascript" src="./js/decimal.js"></script>
 	<script type="text/javascript" src="./js/sql.js"></script>
 	<script type="text/javascript" src="./js/txns.js"></script>
 	
@@ -35,9 +35,11 @@
 	</div>
 	
 	<br><br>
-	<p class="texttitle">Current Games</p>
+	<p class="texttitle">Your Current Games</p>
 	<table id="mygames" class="alllotto"></table>
 	<br>
+	<button class="solobutton" onclick="jumpAllLotto();">View ALL Games</button>
+	<br><br>
 	
 	<p class="texttitle">Lotto Games</p>	
 	<table id="lottotable" class="alllotto"></table>
@@ -71,6 +73,10 @@
 	
 	function jumpStartLotto(){
 		location.href = "startlotto.html?uid="+MDS.minidappuid;
+	}
+	
+	function jumpAllLotto(){
+		location.href = "alllotto.html?uid="+MDS.minidappuid;
 	}
 	
 	function clearGames(){

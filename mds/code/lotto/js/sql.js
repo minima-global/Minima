@@ -50,9 +50,15 @@ function createDB(callback){
 	});
 }
 
-function loadMyLotteries(callback){
+function loadMyLotteries(includedeleted, callback){
+	
+	var sql = "SELECT * FROM mylottories WHERE live=1";
+	if(includedeleted){
+		sql = "SELECT * FROM mylottories";
+	}
+	
 	//Run this..
-	MDS.sql("SELECT * FROM mylottories WHERE live=1",function(msg){
+	MDS.sql(sql,function(msg){
 		//MDS.log(JSON.stringify(msg));
 		callback(msg.rows);
 	});

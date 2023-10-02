@@ -176,7 +176,7 @@
 		
 	function loadlotts(){
 		
-		loadMyLotteries(function(rows){
+		loadMyLotteries(false,function(rows){
 			
 			//get the table
 			var thetable 		= document.getElementById("mylotteries");
@@ -219,7 +219,7 @@
 	
 	function cancelLottery(uid){
 		
-		alert("Deleting Lottery - pls wait for update..");
+		alert("Deleting Lottery - pls wait for coins to update..");
 		
 		cancelAdvertTxn(uid, function(resp){
 			
