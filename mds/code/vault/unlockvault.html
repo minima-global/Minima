@@ -149,16 +149,25 @@
 						creator 	+= ";txnoutput id:"+txnname+" tokenid:"+coin.tokenid+" amount:"+coin.tokenamount+" address:"+collect_address;
 					}
 					
-					creator 	+= ";txnsign id:"+txnname+" publickey:custom keyuses:"+keyuses+" privatekey:"+privkey;			
-					creator 	+= ";txnpost id:"+txnname+" auto:true";
-					creator 	+= ";txndelete id:"+txnname;
-
+					//Sign post and delete
+					creator 	+= ";txnsign id:"+txnname+" txnpostauto:true txndelete:true publickey:custom keyuses:"+keyuses+" privatekey:"+privkey;			
+					
 					MDS.cmd(creator,function(resp){
-						//MDS.log(JSON.stringify(resp));
 						
-						alert("Coin UN-locked..\n\nPlease wait for the coin to confirm..");
+						//Check if pending..
+						if(resp.length==5){
+							if(resp[4].pending){
+								alert("Vault txn is now pending..");	
+							}else{
+								alert("Coin UN-locked..\n\nPlease wait for the coin to confirm..");	
+							}
 						
-						jumpToHome();
+							jumpToHome();
+							
+						}else{
+							MDS.log(JSON.stringify(resp));
+							alert("Something went wrong.. check console logs"); 
+						}
 					});
 				});
 			});
@@ -189,7 +198,6 @@
 				
 				var keyuses;
 				MDS.keypair.get("vault_uses",function(resp){
-					MDS.log(JSON.stringify(resp));
 					if(resp.status){
 						keyuses = Number(resp.value);
 					}else{
