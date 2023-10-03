@@ -321,8 +321,7 @@
 				
 				//Work out some values..
 				var famt 		= new Decimal(game.FINALAMOUNT);
-				var multiplier 	= new Decimal(1).div(new Decimal(game.ODDS));
-				var initial		= famt.div(multiplier); 
+				var initial		= famt.mul(new Decimal(game.ODDS));
 				var feechange 	= new Decimal(1).sub(new Decimal(game.FEE));
 				var bet			= initial.div(feechange);
 				var feeamount	= bet.sub(initial);
