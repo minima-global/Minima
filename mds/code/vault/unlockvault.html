@@ -1,0 +1,210 @@
+<html>
+
+<head>
+	<title>Vault</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="vaulttrans.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="jslib.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+
+	<br>
+
+	<h2>Unlock Vault</h2>
+	
+	<table class="maintable">
+		<tr>
+			<td class="tablename">Amount : </td>
+			<td><div id=camt class="coinamount"></div></td>
+		</tr>
+	
+		<tr>
+			<td class="tablename">Token : </td>
+			<td><div id=cname class="coinamount"></div></td>
+		</tr>
+		
+		<tr>
+			<td class="tablename" nowrap>Lock Phrase : </td>
+			<td><textarea id="unlock_phrase" rows=6 cols=40></textarea></td>
+		</tr>
+		
+		<tr>
+			<td class="tablename" nowrap>Key Uses : </td>
+			<td><input class="coinamount" type=text id="unlock_keyuses"></td>
+		</tr>
+		
+		<!--  <tr>
+		<td>Message:</td>
+			<td><textarea readonly id="vault_message" rows=5 cols=60 placeholder="This message is public and optional.. but you can use for your own reference"></textarea></td>
+		</tr>
+		-->
+		
+		<tr>
+			<td colspan=2 style="text-align:right"><br><button onclick="unlockVault();" class="solobutton">UNLOCK VAULT</button></td>
+		</tr>
+	
+	</table> 
+	<br><br>
+	<div style="text-align:left;width:450;">
+	Your Key Uses <b>MUST</b> be unique for every unlock.<br>
+	<br>
+	Vault remembers and increments this value for you..<br>
+	<Br>
+	BUT - If you have just restored and reinstalled this MiniDAPP..<br>
+	<Br>
+	Then you must set this number to a value higher than any number you have used before.<br>
+	<br>
+	( max 250,000 ) 
+	</div>
+	
+	<br><br>
+	<button class="solobutton" onclick="jumpToHome();">Back Home</button>
+	
+</center>
+
+<script type="text/javascript">
+	
+	function jumpToHome(){
+		location.href = "index.html?uid="+MDS.minidappuid;
+	}
+	
+	function unlockVault(){
+		
+		//Get the Phrase..
+		var phrase = document.getElementById("unlock_phrase").value.trim();
+		if(phrase == ""){
+			alert("Cannot have a blank phrase!");
+			return;
+		}
+		
+		//Check amount exists..
+		var stramount = document.getElementById("unlock_keyuses").value.trim();
+		if(stramount == ""){
+			alert("Cannot have a blank amount!");
+			return;
+		}	
+		
+		//What is the amount..
+		var keyuses = Number(document.getElementById("unlock_keyuses").value);
+		if(isNaN(keyuses)){
+			alert("Invalid Key Uses - MUST be a number");
+			return;
+		}
+		
+		if(confirm("We will now unlock this vault and send the coins back to you")){
+			
+			//What is the coin..
+			var coinid = MDS.form.getParams("vaultid");
+			
+			var genkey = "keys action:genkey phrase:\""+phrase+"\""; 
+			
+			//First lets convert the phrase into a KEY
+			MDS.cmd(genkey+";getaddress;coins simplestate:true coinid:"+coinid,function(resp){
+				//MDS.log(JSON.stringify(resp));
+				
+				//Get the private key..
+				var privkey 		= resp[0].response.privatekey;
+				var pubkey 			= resp[0].response.publickey;
+				var collect_address	= resp[1].response.miniaddress;
+				var coin			= resp[2].response[0];
+				
+				//Get the required pubkey
+				var reqkey			= coin.state[0];
+				
+				//Check it is correct
+				if(reqkey != pubkey){
+					alert("Incorrect phrase!.. Keys do not match..");
+					return;
+				}
+				
+				//And now increment key uses
+				MDS.keypair.set("vault_uses",keyuses+1, function(resp){
+					//MDS.log(JSON.stringify(resp));
+					
+					//Now construct a txn sending coins back to you
+					var txnname = "cancel_"+coin.coinid;
+					var creator  = "";
+					creator 	+= "txndelete id:"+txnname;
+					creator 	+= ";txncreate id:"+txnname;
+					creator 	+= ";txninput id:"+txnname+" coinid:"+coin.coinid;
+					
+					if(coin.tokenid == "0x00"){
+						creator 	+= ";txnoutput id:"+txnname+" tokenid:"+coin.tokenid+" amount:"+coin.amount+" address:"+collect_address;	
+					}else{
+						creator 	+= ";txnoutput id:"+txnname+" tokenid:"+coin.tokenid+" amount:"+coin.tokenamount+" address:"+collect_address;
+					}
+					
+					creator 	+= ";txnsign id:"+txnname+" publickey:custom keyuses:"+keyuses+" privatekey:"+privkey;			
+					creator 	+= ";txnpost id:"+txnname+" auto:true";
+					creator 	+= ";txndelete id:"+txnname;
+
+					MDS.cmd(creator,function(resp){
+						//MDS.log(JSON.stringify(resp));
+						
+						alert("Coin UN-locked..\n\nPlease wait for the coin to confirm..");
+						
+						jumpToHome();
+					});
+				});
+			});
+		}
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//What is the coin..
+			var coinid = MDS.form.getParams("vaultid");
+			
+			MDS.cmd("coins simplestate:true coinid:"+coinid,function(resp){
+				
+				var coin=resp.response[0];
+				
+				//Now construct a txn sending coins back to you
+				if(coin.tokenid == "0x00"){
+					document.getElementById("camt").innerHTML = coin.amount;
+					document.getElementById("cname").innerHTML = "Minima";
+				}else{
+					document.getElementById("camt").innerHTML = coin.tokenamount;
+					document.getElementById("cname").innerHTML = coin.token.name.name;
+				}
+				
+				var keyuses;
+				MDS.keypair.get("vault_uses",function(resp){
+					MDS.log(JSON.stringify(resp));
+					if(resp.status){
+						keyuses = Number(resp.value);
+					}else{
+						keyuses = Number("0");
+					}
+					
+					//Set this..
+					document.getElementById("unlock_keyuses").value = keyuses;
+				});
+			});
+		}
+	});
+
+</script>
+
+</body>
+
+</html>
