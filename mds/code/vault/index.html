@@ -69,9 +69,9 @@
 			var header 		= thetable.createTHead();
 			var headerrow 	= header.insertRow(0);
 			headerrow.insertCell(0).innerHTML="<b>Amount</b>";
-			headerrow.insertCell(1).innerHTML="<b>Token</b>";
-			//headerrow.insertCell(2).innerHTML="&nbsp;&nbsp;<b>Message</b>";
-			headerrow.insertCell(2).innerHTML="<b>Collect</b>";
+			headerrow.insertCell(1).innerHTML="&nbsp;&nbsp;<b>Token</b>";
+			headerrow.insertCell(2).innerHTML="&nbsp;&nbsp;<b>Message</b>";
+			headerrow.insertCell(3).innerHTML="&nbsp;&nbsp;<b>Collect</b>";
 			
 			var length = resp.response.length;
 			
@@ -79,7 +79,7 @@
 				var tablerow 		= thetable.insertRow(1);
 				tablerow.setAttribute("align", "center");
 				var cell1 	 		= tablerow.insertCell(0);
-				cell1.colSpan		= 3;
+				cell1.colSpan		= 4;
 				cell1.innerHTML		= "<br>No Vaults found<br><br>";
 				return;
 			}
@@ -92,13 +92,13 @@
 				var cell1 	 		= tablerow.insertCell(0);
 				var cell2 	 		= tablerow.insertCell(1);
 				var cell3 	 		= tablerow.insertCell(2);
-				//var cell4 	 		= tablerow.insertCell(3);
+				var cell4 	 		= tablerow.insertCell(3);
 				
-				/*var len = coin.state[2].length;
+				var len = coin.state[2].length;
 				var msg = coin.state[2].substring(1,len-1).trim();
 				if(msg==""){
 					msg = "No message..";
-				}*/
+				}
 				
 				if(coin.tokenid == "0x00"){
 					cell1.innerHTML		= "<br><div class='coinamount'>"+coin.amount+"</div>";	
@@ -108,8 +108,8 @@
 					cell2.innerHTML		= "<br>&nbsp;&nbsp;"+coin.token.name.name+"&nbsp;&nbsp;";
 				}
 				
-				//cell3.innerHTML		= "<br><textarea style='resize:none' readonly cols=40 rows=3>"+msg+"</textarea><br><br>";
-				cell3.innerHTML		= "<br>&nbsp;&nbsp;<button class='solobutton' onclick='jumpToUnlock(\""+coin.coinid+"\");'>UNLOCK</button>"
+				cell3.innerHTML		= "<br><div style='max-width:200;'>"+msg+"</div>";
+				cell4.innerHTML		= "<br>&nbsp;&nbsp;<button class='solobutton' onclick='jumpToUnlock(\""+coin.coinid+"\");'>UNLOCK</button>"
 			}
 		});	
 	}

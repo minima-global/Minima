@@ -44,15 +44,14 @@
 		</tr>
 		
 		<tr>
+			<td>Message:</td>
+			<td><textarea readonly id="vault_message" rows=4 cols=40></textarea></td>
+		</tr>
+		
+		<tr>
 			<td class="tablename" nowrap>Key Uses : </td>
 			<td><input class="coinamount" type=text id="unlock_keyuses"></td>
 		</tr>
-		
-		<!--  <tr>
-		<td>Message:</td>
-			<td><textarea readonly id="vault_message" rows=5 cols=60 placeholder="This message is public and optional.. but you can use for your own reference"></textarea></td>
-		</tr>
-		-->
 		
 		<tr>
 			<td colspan=2 style="text-align:right"><br><button onclick="unlockVault();" class="solobutton">UNLOCK VAULT</button></td>
@@ -72,8 +71,10 @@
 	( max 250,000 ) 
 	</div>
 	
-	<br><br>
+	<br>
 	<button class="solobutton" onclick="jumpToHome();">Back Home</button>
+	<br><br>
+	
 	
 </center>
 
@@ -194,6 +195,19 @@
 				}else{
 					document.getElementById("camt").innerHTML = coin.tokenamount;
 					document.getElementById("cname").innerHTML = coin.token.name.name;
+				}
+				
+				//Set the message..
+				if(coin.state[2]){
+					var len = coin.state[2].length;
+					var msg = coin.state[2].substring(1,len-1).trim();
+					if(msg==""){
+						msg = "No message..";
+					}
+					
+					document.getElementById("vault_message").innerHTML = msg;	
+				}else{
+					document.getElementById("vault_message").innerHTML = "No message..";
 				}
 				
 				var keyuses;

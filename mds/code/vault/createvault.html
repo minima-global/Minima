@@ -43,11 +43,10 @@
 			<td><textarea id="lock_phrase" rows=6 cols=40></textarea></td>
 		</tr>
 		
-		<!--  <tr>
-			<td>Message:</td>
-			<td><textarea id="vault_message" rows=5 cols=60 placeholder="This message is public and optional.. but you can use for your own reference"></textarea></td>
+		<tr>
+			<td class="tablename">Message : </td>
+			<td><textarea id="vault_message" rows=4 cols=40 placeholder="This message is public and optional.. but you can use for your own reference"></textarea></td>
 		</tr>
-		-->
 		
 		<tr>
 			<td colspan=2 style="text-align:right"><br><button onclick="createVault();" class="solobutton">CREATE VAULT</button></td>
@@ -56,7 +55,7 @@
 	</table> 
 	<br><br>
 	<div style="text-align:left;width:450;">
-	Use <b>the same lock phrase</b> for all your vaults.<br>
+	We recommend using <b>the same lock phrase</b> for all your vaults.<br>
 	<br>
 	If you don't have a Lock Phrase yet.. you can use this one.<br>
 	<br>
@@ -69,13 +68,13 @@
 	<table class="maintable">
 		<tr>
 			<td>
-				<textarea rows=6 cols=40 id="gen_lock_phrase"></textarea>
+				<textarea rows=6 cols=40 id="gen_lock_phrase" readonly></textarea>
 			</td>
 		</tr>
 	</table>
 	
 	
-	<br><br>
+	<br>
 	<button class="solobutton" onclick="jumpToHome();">Back Home</button>
 	<br><br>
 	
@@ -137,7 +136,7 @@
 				statevars[1]  = key;
 				
 				//The message..
-				//statevars[2]  = "["+document.getElementById("vault_message").value+"]";
+				statevars[2]  = "["+document.getElementById("vault_message").value+"]";
 				
 				//Now lets send the coins to the vault address
 				var func = "send tokenid:"+tokenid+" amount:"+amount+" address:"+VAULT_ADDRESS+" state:"+JSON.stringify(statevars);
