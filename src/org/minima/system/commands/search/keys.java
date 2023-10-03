@@ -1,15 +1,19 @@
 package org.minima.system.commands.search;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.Wallet;
+import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.TreeKey;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.utils.BIP39;
+import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -51,7 +55,7 @@ public class keys extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","publickey"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","publickey","phrase"}));
 	}
 	
 	@Override
@@ -107,6 +111,50 @@ public class keys extends Command {
 			resp.put("total", arr.size());
 			resp.put("maxuses", maxuses);
 			
+			//Put the details in the response..
+			ret.put("response", resp);
+		
+		}else if(action.equals("genkey")) {
+			
+			//Have we specifird the Phrase
+			String passphrase="";
+			if(!existsParam("phrase")) {
+				//Create a new seed phrase
+				String[] words = BIP39.getNewWordList();
+				
+				//Generate a new KEY and Passphrase..
+				passphrase = BIP39.convertWordListToString(words);
+			}else {
+				passphrase = getParam("phrase");
+			}
+			
+			//Convert to seed..
+			MiniData seed = BIP39.convertStringToSeed(passphrase);
+
+			//Use 0 as modifier
+			MiniData modifier 	= new MiniData(new BigInteger("0"));
+
+			//Now create a random private seed using the modifier
+			MiniData privseed 	= Crypto.getInstance().hashObjects(seed, modifier);
+			
+			//Make the TreeKey
+			TreeKey treekey 	= TreeKey.createDefault(privseed);
+			
+			//Now create a simple address..
+			String script = new String("RETURN SIGNEDBY("+treekey.getPublicKey()+")");
+			
+			//Create the address
+			Address newaddress 	= new Address(script);
+			
+			JSONObject resp = new JSONObject();
+			resp.put("phrase", passphrase);
+			resp.put("privatekey", treekey.getPrivateKey().to0xString());
+			resp.put("modifier", 0);
+			resp.put("publickey", treekey.getPublicKey().to0xString());
+			resp.put("script", script);
+			resp.put("address", newaddress.getAddressData().to0xString());
+			resp.put("miniaddress", Address.makeMinimaAddress(newaddress.getAddressData()));
+
 			//Put the details in the response..
 			ret.put("response", resp);
 			

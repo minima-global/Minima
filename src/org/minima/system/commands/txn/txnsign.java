@@ -13,8 +13,10 @@ import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.Signature;
+import org.minima.objects.keys.TreeKey;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
@@ -67,7 +69,7 @@ public class txnsign extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id","publickey","txndelete","txnpostauto","txnpostburn","txnpostmine","password"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","publickey","txndelete","txnpostauto","txnpostburn","txnpostmine","password","privatekey","keyuses"}));
 	}
 	
 	@Override
@@ -141,6 +143,26 @@ public class txnsign extends Command {
 					wit.addSignature(signature);
 				}
 			}
+			
+		}else if(pubk.equals("custom")) {
+			
+			//Get the private key
+			MiniData privkey = getDataParam("privatekey");
+			
+			//Get uses..
+			MiniNumber uses = getNumberParam("keyuses");
+			
+			//Make the TreeKey
+			TreeKey treekey = TreeKey.createDefault(privkey);
+			
+			//Set uses..
+			treekey.setUses(uses.getAsInt());
+			
+			//Now we have the Key.. sign the Txn ID
+			Signature signature = treekey.sign(txn.getTransactionID());
+			
+			//Add it..
+			wit.addSignature(signature);
 			
 		}else {
 			//Check we have it
