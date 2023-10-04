@@ -5,6 +5,8 @@
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
+	<meta charset="utf-8" />
+	
 	<!-- Load the main MDS JS lib -->
 	<script type="text/javascript" src="mds.js"></script>
 	
@@ -16,6 +18,7 @@
 	
 	<!-- Load the local JS lib -->
 	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="decimal.min.js"></script>
 	
 </head>
 
@@ -29,7 +32,7 @@
 	
 	<table class="maintable">
 		<tr>
-			<td class="tablename">Amount : </td>
+			<td class="tablename">Locked : </td>
 			<td><div id=camt class="coinamount"></div></td>
 		</tr>
 	
@@ -39,12 +42,34 @@
 		</tr>
 		
 		<tr>
+			<td class="tablename">Withdraw : </td>
+			<td><input class="coinamount" type=text id="cwithdraw"></td>
+		</tr>
+		
+		
+		<tr>
+			<td class="tablename">Address : </td>
+			<td>
+			
+				<input type="radio" id="mywallet" name="withdrawradio" value="mywallet" checked>
+			  	<label class="coinamount" for="mywallet">My Wallet</label><br>
+				<br>
+			
+				<input type="radio" id="customwallet" name="withdrawradio" value="customwallet" >
+			  	<label class="coinamount" for="mywallet">This Address</label><br><br>
+				<input class="coinamount" type=text id="unlock_address">
+				
+			</td>
+		</tr>
+		
+		
+		<tr>
 			<td class="tablename" nowrap>Lock Phrase : </td>
 			<td><textarea id="unlock_phrase" rows=6 cols=40></textarea></td>
 		</tr>
 		
 		<tr>
-			<td>Message:</td>
+			<td class="tablename">Message : </td>
 			<td><textarea readonly id="vault_message" rows=4 cols=40></textarea></td>
 		</tr>
 		
@@ -54,7 +79,7 @@
 		</tr>
 		
 		<tr>
-			<td colspan=2 style="text-align:right"><br><button onclick="unlockVault();" class="solobutton">UNLOCK VAULT</button></td>
+			<td colspan=2 style="text-align:right"><br><button onclick="unlockVault();" class="solobutton">WITHDRAW</button></td>
 		</tr>
 	
 	</table> 
@@ -80,6 +105,9 @@
 
 <script type="text/javascript">
 	
+	var TOKEN_NAME 	 = "";
+	var VAULT_AMOUNT = new Decimal(0);
+	
 	function jumpToHome(){
 		location.href = "index.html?uid="+MDS.minidappuid;
 	}
@@ -94,34 +122,76 @@
 		}
 		
 		//Check amount exists..
-		var stramount = document.getElementById("unlock_keyuses").value.trim();
-		if(stramount == ""){
-			alert("Cannot have a blank amount!");
+		if(document.getElementById("unlock_keyuses").value.trim() == ""){
+			alert("Cannot have a blank Key Uses!");
 			return;
 		}	
 		
+		//How much do we withdraw..
+		if(document.getElementById("cwithdraw").value.trim() == ""){
+			alert("Cannot have a blank withdraw amount!");
+			return;
+		}
+		
 		//What is the amount..
-		var keyuses = Number(document.getElementById("unlock_keyuses").value);
-		if(isNaN(keyuses)){
+		var keyuses;
+		try {
+			keyuses = new Decimal(document.getElementById("unlock_keyuses").value.trim());
+		} catch (e) {
 			alert("Invalid Key Uses - MUST be a number");
 			return;
 		}
 		
-		if(confirm("We will now unlock this vault and send the coins back to you")){
+		var withdrawamount;
+		try {
+			withdrawamount = new Decimal(document.getElementById("cwithdraw").value.trim());
+		} catch (e) {
+			alert("Invalid Withdraw amount - MUST be a number");
+			return;
+		}
+		
+		if(withdrawamount.lessThan(new Decimal(0))){
+			alert("Negative Withdraw amount!");
+			return;
+		}
+		
+		var changeamount = VAULT_AMOUNT.sub(withdrawamount); 
+		if(changeamount.lessThan(new Decimal(0))){
+			alert("Withdraw amount greater than vault amount!");
+			return;
+		}
+		
+		var withdrawaddress = document.getElementById("unlock_address").value.trim();
+		var message  = "Will now unlock this vault and send "+withdrawamount+" "+TOKEN_NAME+" back to you ?";
+		if(document.getElementById("customwallet").checked){
+			message  = "Will now unlock this vault and send "+withdrawamount+" "+TOKEN_NAME+" to "+withdrawaddress+" ?";
+			if(withdrawaddress == ""){
+				alert("Cannot have blank withdraw address");
+				return;
+			}
+		}
+		
+		//Now confirm they want to do this
+		if(confirm(message)){
 			
 			//What is the coin..
 			var coinid = MDS.form.getParams("vaultid");
 			
-			var genkey = "keys action:genkey phrase:\""+phrase+"\""; 
-			
 			//First lets convert the phrase into a KEY
+			var genkey = "keys action:genkey phrase:\""+phrase+"\""; 
 			MDS.cmd(genkey+";getaddress;coins simplestate:true coinid:"+coinid,function(resp){
-				//MDS.log(JSON.stringify(resp));
 				
 				//Get the private key..
 				var privkey 		= resp[0].response.privatekey;
 				var pubkey 			= resp[0].response.publickey;
+				
+				//Where to collect
 				var collect_address	= resp[1].response.miniaddress;
+				if(document.getElementById("customwallet").checked){
+					collect_address	= withdrawaddress;
+				}
+				
+				//Get the coin..
 				var coin			= resp[2].response[0];
 				
 				//Get the required pubkey
@@ -134,8 +204,8 @@
 				}
 				
 				//And now increment key uses
-				MDS.keypair.set("vault_uses",keyuses+1, function(resp){
-					//MDS.log(JSON.stringify(resp));
+				var newkeyuses = new Decimal(1).add(keyuses);
+				MDS.keypair.set("vault_uses",newkeyuses, function(resp){
 					
 					//Now construct a txn sending coins back to you
 					var txnname = "cancel_"+coin.coinid;
@@ -144,23 +214,45 @@
 					creator 	+= ";txncreate id:"+txnname;
 					creator 	+= ";txninput id:"+txnname+" coinid:"+coin.coinid;
 					
-					if(coin.tokenid == "0x00"){
-						creator 	+= ";txnoutput id:"+txnname+" tokenid:"+coin.tokenid+" amount:"+coin.amount+" address:"+collect_address;	
-					}else{
-						creator 	+= ";txnoutput id:"+txnname+" tokenid:"+coin.tokenid+" amount:"+coin.tokenamount+" address:"+collect_address;
+					//Outputs!
+					creator 	+= ";txnoutput id:"+txnname
+								+" tokenid:"+coin.tokenid
+								+" amount:"+withdrawamount
+								+" address:"+collect_address
+								+" storestate:false";
+
+					//Is there change.. sent back to the VAULT.. with state vars
+					var resplen = 5;
+					if(!changeamount.lessThanOrEqualTo(new Decimal(0))){
+						resplen = 9;
+						
+						creator 	+= ";txnoutput id:"+txnname
+									+" tokenid:"+coin.tokenid
+									+" amount:"+changeamount
+									+" address:"+VAULT_ADDRESS
+									+" storestate:true";
+						
+						//State Variables..
+						creator 	+= ";txnstate id:"+txnname+" port:0 value:"+coin.state[0];
+						creator 	+= ";txnstate id:"+txnname+" port:1 value:"+coin.state[1];
+						creator 	+= ";txnstate id:"+txnname+" port:2 value:"+coin.state[2];
 					}
 					
 					//Sign post and delete
-					creator 	+= ";txnsign id:"+txnname+" txnpostauto:true txndelete:true publickey:custom keyuses:"+keyuses+" privatekey:"+privkey;			
+					creator 	+= ";txnsign id:"+txnname
+								+" txnpostauto:true txndelete:true publickey:custom"
+								+" keyuses:"+keyuses
+								+" privatekey:"+privkey;			
 					
+					//Run it..
 					MDS.cmd(creator,function(resp){
 						
 						//Check if pending..
-						if(resp.length==5){
-							if(resp[4].pending){
+						if(resp.length==resplen){
+							if(resp[resplen-1].pending){
 								alert("Vault txn is now pending..");	
 							}else{
-								alert("Coin UN-locked..\n\nPlease wait for the coin to confirm..");	
+								alert("Funds sent..\n\nPlease wait for the txn to confirm..");	
 							}
 						
 							jumpToHome();
@@ -190,11 +282,17 @@
 				
 				//Now construct a txn sending coins back to you
 				if(coin.tokenid == "0x00"){
+					TOKEN_NAME 		= "Minima";
+					VAULT_AMOUNT 	= new Decimal(coin.amount);
 					document.getElementById("camt").innerHTML = coin.amount;
 					document.getElementById("cname").innerHTML = "Minima";
+					document.getElementById("cwithdraw").value = coin.amount;
 				}else{
+					TOKEN_NAME 		= coin.token.name.name;
+					VAULT_AMOUNT 	= new Decimal(coin.tokenamount);
 					document.getElementById("camt").innerHTML = coin.tokenamount;
 					document.getElementById("cname").innerHTML = coin.token.name.name;
+					document.getElementById("cwithdraw").value = coin.tokenamount;
 				}
 				
 				//Set the message..
