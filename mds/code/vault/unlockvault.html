@@ -311,9 +311,9 @@
 				var keyuses;
 				MDS.keypair.get("vault_uses",function(resp){
 					if(resp.status){
-						keyuses = Number(resp.value);
+						keyuses = new Decimal(resp.value);
 					}else{
-						keyuses = Number("0");
+						keyuses = new Decimal(0);
 					}
 					
 					//Set this..

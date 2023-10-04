@@ -32,13 +32,16 @@
 	
 	<br>
 	
+	<button class="solobutton" onclick="jumpToCreate();">Create Vault</button>
+	
+	<!--
 	<table>
 		<tr>
 			<td><button class="solobutton" onclick="jumpToHome();">Refresh</button>&nbsp;&nbsp;</td>
 			<td>&nbsp;&nbsp;<button class="solobutton" onclick="jumpToCreate();">Create Vault</button></td>
 		</tr>
 	</table>
-	
+	-->
 	
 </center>
 
@@ -126,6 +129,9 @@
 				//And now load the vault..
 				loadVaultCoins();
 			});
+			
+		}else if(msg.event == "NEWBALANCE"){
+			loadVaultCoins();
 		}
 	});
 
