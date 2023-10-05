@@ -25,6 +25,16 @@ public class GeneralParams {
 	public static boolean IS_ACCEPTING_IN_LINKS = true;
 	
 	/**
+	 * Runs a private network..
+	 * 
+	 *  If no configuration files are found with use -genesis
+	 *  If configuration files are found wil not use -genesis
+	 *  
+	 *  Also adds -test and -nop2p
+	 */
+	public static boolean PRIVATE = false;
+	
+	/**
 	 * Are we creating the genesis block 
 	 */
 	public static boolean GENESIS = false;
@@ -259,6 +269,7 @@ public class GeneralParams {
 		IS_JNLP = false;
 		IS_ACCEPTING_IN_LINKS = true;
 		GENESIS = false;
+		PRIVATE = false;
 		CLEAN = false;
 		ARCHIVE = false;
 		TXBLOCK_NODE = false;
