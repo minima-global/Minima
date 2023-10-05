@@ -9,6 +9,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.utils.json.JSONObject;
 
 public class mmrproof extends Command {
@@ -60,7 +61,7 @@ public class mmrproof extends Command {
 		JSONObject ret = getJSONReply();
 		
 		if(!existsParam("root") || !existsParam("proof") || !existsParam("data")) {
-			throw new Exception("MUST Specify both root and proof");
+			throw new CommandException("MUST Specify data, root and proof");
 		}
 		
 		//Get the details
