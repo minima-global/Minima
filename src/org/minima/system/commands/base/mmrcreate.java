@@ -62,10 +62,6 @@ public class mmrcreate extends Command {
 	public JSONObject runCommand() throws Exception{
 		JSONObject ret = getJSONReply();
 		
-		if(!existsParam("nodes")) {
-			throw new Exception("MUST Specify a nodes JSONArray");
-		}
-		
 		JSONArray mmrdata = getJSONArrayParam("nodes");
 		
 		//Create an MMR
