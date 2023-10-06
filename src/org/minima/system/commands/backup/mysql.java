@@ -121,7 +121,7 @@ public class mysql extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database","user","password","keys","keyuses","phrase","address","enable","file","statecheck"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database","user","password","keys","keyuses","phrase","address","enable","file","statecheck","logs"}));
 	}
 	
 	@Override
@@ -661,7 +661,8 @@ public class mysql extends Command {
 			long timestart = System.currentTimeMillis();
 			
 			//Create a temp name
-			String infile = getParam("file");
+			String infile 	= getParam("file");
+			File fileinfile = MiniFile.createBaseFile(infile);
 			
 			//Create  tyemp DB
 			ArchiveManager archtemp = new ArchiveManager();
@@ -678,7 +679,7 @@ public class mysql extends Command {
 			
 			//And now restore..
 			MinimaLogger.log("Restoring H2 Archive DB..");
-			archtemp.restoreFromFile(new File(infile), true);
+			archtemp.restoreFromFile(fileinfile, true);
 			
 			//Wipe the old data
 			mysql.wipeAll();
