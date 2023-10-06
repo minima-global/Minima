@@ -26,6 +26,7 @@ import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.webhooks.NotifyManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
+import org.minima.system.params.TestParams;
 import org.minima.system.sendpoll.SendPollManager;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
@@ -223,6 +224,24 @@ public class Main extends MessageProcessor {
 		
 		//Create the timer processor
 		TimerProcessor.createTimerProcessor();
+		
+		//Are we running a PRIVATE network..
+		if(GeneralParams.PRIVATE) {
+			
+			//Get the base folder
+			File basefolder = new File(GeneralParams.DATA_FOLDER,"databases");
+			
+			//Is this the first run.. Check if files exist..
+			File userdb = new File(basefolder, "userprefs.db");
+			if(userdb.exists()) {
+				//This is not the first run..
+				MinimaLogger.log("SOLO NETWORK : not first run.. no -genesis..");
+			}else {
+				MinimaLogger.log("SOLO NETWORK : FIRST RUN.. creating genesis coins..");
+				GeneralParams.CLEAN 	= true;
+                GeneralParams.GENESIS 	= true;
+			}
+		}
 		
 		//Are we deleting previous..
 		if(GeneralParams.CLEAN) {

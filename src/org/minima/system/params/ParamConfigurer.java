@@ -380,6 +380,14 @@ public class ParamConfigurer {
                 TestParams.setTestParams();
             }
         }),
+        solo("solo", "Run a solo/private network (-test -nop2p) and will run -genesis ONLY the first time", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.PRIVATE 		= true;
+                GeneralParams.TEST_PARAMS 	= true;
+                TestParams.setTestParams();
+                GeneralParams.P2P_ENABLED 	= false;
+            }
+        }),
         testchainlength("testchainlength", "Specify length of tree to keep in -test mode (default is 32)", (arg, configurer) -> {
             TestParams.MINIMA_CASCADE_START_DEPTH 	= new MiniNumber(arg.trim());
             if(GeneralParams.TEST_PARAMS) {
