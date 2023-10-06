@@ -235,9 +235,9 @@ public class Main extends MessageProcessor {
 			File userdb = new File(basefolder, "userprefs.db");
 			if(userdb.exists()) {
 				//This is not the first run..
-				MinimaLogger.log("SOLO NETWORK : not first run.. no -genesis..");
+				MinimaLogger.log("SOLO NETWORK : userdb found : not first run.. no -genesis..");
 			}else {
-				MinimaLogger.log("SOLO NETWORK : FIRST RUN.. creating genesis coins..");
+				MinimaLogger.log("SOLO NETWORK : userdb not found : FIRST RUN.. creating genesis coins..");
 				GeneralParams.CLEAN 	= true;
                 GeneralParams.GENESIS 	= true;
 			}
