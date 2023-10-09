@@ -57,7 +57,7 @@ public class archive extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","host","phrase","keys","keyuses","file","address","statecheck"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","host","phrase","anyphrase","keys","keyuses","file","address","statecheck"}));
 	}
 	
 	@Override
@@ -352,8 +352,14 @@ public class archive extends Command {
 			String phrase = getParam("phrase","");
 			if(!phrase.equals("")) {
 			
+				//Are we allowing ANY phrase..
+				boolean anyphrase = getBooleanParam("anyphrase", false);
+				
 				//Clean it up..
-				String cleanphrase = BIP39.cleanSeedPhrase(phrase);
+				String cleanphrase = phrase;
+				if(!anyphrase) {
+					cleanphrase = BIP39.cleanSeedPhrase(phrase);
+				}
 				
 				//reset ALL the default data
 				Main.getInstance().archiveResetReady(true);
