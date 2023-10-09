@@ -1,0 +1,94 @@
+<html>
+
+<head>
+	<title>MiniStamp</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="sql.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+
+	<br>
+
+	<h2>Mini Stamp</h2>
+	<br>
+	<table id="alltimestamps" class="tablestyle"></table>
+	<br>
+	<button onclick="createTimestamp()" class="solobutton">Create Timestamp</button>
+</center>
+
+<script type="text/javascript">
+	
+	function createTimestamp(){
+		location.href = "create.html?uid="+MDS.minidappuid;
+	}
+	
+	function createMainTable(){
+		
+		//Get all the timestamps
+		getAllTimeStamps(function(res){
+			
+			//get the table
+			var thetable = document.getElementById("alltimestamps");
+			
+			//Blank it..
+			thetable.innerHTML 	= "";
+			
+			// Create an empty <thead> element and add it to the table:
+			var header 		= thetable.createTHead();
+			var headerrow 	= header.insertRow(0);
+			headerrow.insertCell(0).innerHTML="<b>File</b>";
+			headerrow.insertCell(1).innerHTML="<b>Hash</b>";
+			headerrow.insertCell(2).innerHTML="<b>Created</b>";
+			
+			if(length == 0){
+				var tablerow 		= thetable.insertRow(1);
+				tablerow.setAttribute("align", "center");
+				var cell1 	 		= tablerow.insertCell(0);
+				cell1.colSpan		= 3;
+				cell1.innerHTML		= "No current timestamps..";
+			}
+			
+			
+		});
+		
+		
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//Create the DB..
+			createDB(function(){
+				
+				//And create the main table
+				createMainTable();
+				
+			});
+		}
+	});
+
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,69 @@
+@font-face {
+	font-family: Manrope;
+	src: url('./Manrope-Regular.ttf');
+}
+
+body {
+	font-family: Manrope;
+	font-size:20px;	
+}
+
+.tablestyle{
+  padding: 20px;
+  border-spacing: 10px;
+  font-style:bold;
+  background-color:#ddd;
+  opacity:0.8;
+  border-radius: 10px;
+  border: 2px solid;
+  min-width:380;
+}
+
+.tablename{
+	font-size: 18px;
+	font-style: bold;
+	text-align:right;
+	vertical-align:top;
+}
+
+.solobutton {
+    background-color: #eee;
+    border: 1.5px solid #ED0000;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	font-family: Manrope;
+  	font-size: 14px;
+}
+.solobutton-edit {
+	font-family: Manrope;
+	background: #fff;
+}
+.solobutton-edit:focus {
+	font-family: Manrope;
+	border: 0.5px solid #EDEDED;
+}
+
+.solobutton:hover {
+	font-family: Manrope;
+	cursor: pointer;
+    color: #fff;
+	background-color: #0000ff;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+	border-color: #16181C;
+}
+
+.solobutton[disabled]:hover {
+	cursor: default;
+    color: #fff;
+    background-color: #eee;
+    border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	font-size: 14px;
+}
+
+.solobutton:active {
+  	opacity: 0.8;
+	font-style: italic;
+}

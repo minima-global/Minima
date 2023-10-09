@@ -1,0 +1,89 @@
+<html>
+
+<head>
+	<title>Create</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<meta charset="utf-8" />
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="sql.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+
+	<br>
+
+	<h2>Create</h2>
+	<br>
+	
+	<table class="tablestyle">
+		<tr>
+			<td class="tablename">File : </td>
+			<td><input type="file" name="stamp_file"></td>
+		</tr>
+		
+		<tr>
+			<td class="tablename">Stamp Type : </td>
+			<td>
+				
+				<input type="radio" id="type_onchain" name="stamp_type" value="onchain" checked>
+			  	<label class="coinamount" for="type_onchain">I do 1 on chain txn</label><br>
+				<br>
+			
+				<input type="radio" id="type_server" name="stamp_type" value="server" >
+			  	<label class="coinamount" for="type_server">Use Mini Stamp Server</label><br><br>
+				<input class="coinamount" type=text id="unlock_address" value="127.0.0.1:8888">
+			
+			</td>
+		</tr>
+		
+	</table>
+	
+	<button onclick="createStamp()" class="solobutton">Create Time Stamp</button>
+	
+	
+	<br>
+	<button onclick="goHome()" class="solobutton">Back Home</button>
+</center>
+
+<script type="text/javascript">
+	
+	function goHome(){
+		location.href = "index.html?uid="+MDS.minidappuid;
+	}
+		
+	function createStamp(){
+		
+		
+		
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+		}
+	});
+
+</script>
+
+</body>
+
+</html>
