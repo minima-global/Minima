@@ -869,13 +869,22 @@ public class archive extends Command {
 					ArrayList<Coin> outputs 		= block.getOutputCoins();
 					for(Coin cc : outputs) {
 						if(cc.getAddress().to0xString().equals(address)) {
-							MinimaLogger.log("BLOCK "+blocknumber+" CREATED COIN : "+cc.toString());
 							
-							JSONObject created = new JSONObject();
-							created.put("block", blocknumber);
-							created.put("date", date);
-							created.put("coin", cc.toJSON());
-							outarr.add(created);
+							boolean found = true;
+							if(!statecheck.equals("")) {
+								//Check for state aswell..
+								found = cc.checkForStateVariable(statecheck);
+							}
+							
+							if(found) {
+								MinimaLogger.log("BLOCK "+blocknumber+" CREATED COIN : "+cc.toString());
+								
+								JSONObject created = new JSONObject();
+								created.put("block", blocknumber);
+								created.put("date", date);
+								created.put("coin", cc.toJSON());
+								outarr.add(created);
+							}
 						}
 					}
 					
