@@ -34,7 +34,7 @@
 	<table class="tablestyle">
 		<tr>
 			<td class="tablename">File : </td>
-			<td><input type="file" name="stamp_file"></td>
+			<td><input type="file" id="stamp_file" name="stamp_file"></td>
 		</tr>
 		
 		<tr>
@@ -54,9 +54,10 @@
 		
 	</table>
 	
+	<br>
 	<button onclick="createStamp()" class="solobutton">Create Time Stamp</button>
 	
-	
+	<br>
 	<br>
 	<button onclick="goHome()" class="solobutton">Back Home</button>
 </center>
@@ -66,10 +67,80 @@
 	function goHome(){
 		location.href = "index.html?uid="+MDS.minidappuid;
 	}
-		
+	
+	function randomInteger(min, max) {
+	  return Math.floor(Math.random() * (max - min + 1)) + min;
+	}
+	
 	function createStamp(){
 		
+		//Get the chosen file..
+		var file = document.getElementById("stamp_file").files[0];
+		if(!file){
+			alert("MUST choose a file..");
+			return;
+		}
 		
+		//Get the file..
+		MDS.file.upload(file,function(resp){
+			//MDS.log(JSON.stringify(resp))
+			
+			//Is it the final chunk..
+			if(resp.chunk == resp.allchunks){
+				
+				//Move the file to a Unique File position..
+				var filename 	= resp.filename;
+				var cpath 		= "/fileupload/"+resp.filename;
+				var randfolder 	= randomInteger(1,100000000)+"_folder";
+				var npath		= randfolder+"/"+filename; 
+				
+				MDS.log("Move "+cpath+" to "+npath);
+				
+				MDS.file.move(cpath,npath,function(moveresp){
+					//MDS.log(JSON.stringify(moveresp));
+					
+					//Get the full path..
+					MDS.file.getpath(npath,function(pathres){
+						var fpath = pathres.response.getpath.path;
+						
+						MDS.cmd("getaddress;hash file:\""+fpath+"\"",function(hashres){						
+							//MDS.log(JSON.stringify(hashres))
+							
+							var filename = hashres[1].response.file;
+							var hash 	 = hashres[1].response.hash;
+							
+							//Send a TXN !
+							var state = {};
+							state[0]  = hashres[0].response.publickey;
+							state[1]  = hash;
+							state[2]  = "0x00";
+							
+							var txn = "send amount:0.0000001 address:"+TS_ADDRESS+" state:"+JSON.stringify(state);
+							
+							MDS.cmd(txn,function(sendresp){
+								MDS.log(JSON.stringify(sendresp));
+								var pending = sendresp.pending;
+								
+								//Now store this in the Database..
+								insertDataOnChain(npath, filename, hash, function(insresp){
+									MDS.log(JSON.stringify(insresp));
+									
+									if(pending){
+										alert("TXN Pending.. ");
+									}else{
+										alert("TXN Sent.. Pls wait for it to confirm ");	
+									}
+										 
+									goHome();
+								});	
+								
+							});
+							
+						});
+					});
+				});	
+			}
+		});
 		
 	}
 	

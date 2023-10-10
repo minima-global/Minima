@@ -1,0 +1,177 @@
+<html>
+
+<head>
+	<title>Proof</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<meta charset="utf-8" />
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="sql.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+
+	<br>
+
+	<h2>Proof</h2>
+	<br>
+	
+	<table class="tablestyle">
+		<tr>
+			<td class="tablename">Filename : </td>
+			<td><div id="proof_filename"></div></td>
+		</tr>
+		
+		<tr>
+			<td class="tablename">Hash : </td>
+			<td><div id="proof_hash">..</div></td>
+		</tr>
+		
+		<tr>
+			<td class="tablename">Found in block : </td>
+			<td><div id="proof_found">..</div></td>
+		</tr>
+		
+		<tr>
+			<td class="tablename">CoinID : </td>
+			<td><div id="proof_coinid">..</div></td>
+		</tr>
+		
+		<tr>
+			<td colspan=2><div id="proof_genproof"></div></td>
+		</tr>
+		
+	</table>
+	
+	<br>
+	<br>
+	<button onclick="goHome()" class="solobutton">Back Home</button>
+</center>
+
+<script type="text/javascript">
+	
+	function goHome(){
+		location.href = "index.html?uid="+MDS.minidappuid;
+	}
+	
+	//Download a file given the raw byte data
+	var mds_file 		= "";
+	var mds_filename 	= "";
+	function downloadFile(){
+		
+		//Load the file..
+		if(window.navigator.userAgent.includes("Minima Browser")){
+			
+			MDS.log("Trying with internal JavaScriptInterface");
+			
+			//Use the inbuilt blob downloader
+			Android.fileDownload(MDS.minidappuid, mds_file);
+			
+		}else{
+	
+			MDS.file.loadbinary(mds_file,function(msg){
+				
+				var filedata 	= msg.response.load.data.substring(2);
+				var b64 		= MDS.util.hexToBase64(filedata);
+				var binaryData 	= MDS.util.base64ToArrayBuffer(b64);
+				var blob 		= new Blob([binaryData], { type: 'application/octet-stream' });
+				var url 		= URL.createObjectURL(blob);
+
+				// Create a link element
+				var link 		= document.createElement('a');
+				link.href 		= url;
+				link.download 	= mds_filename;
+				document.body.appendChild(link);
+				link.click();
+
+				URL.revokeObjectURL(url);
+			});
+		}
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			var tsuid = MDS.form.getParams("tsuid");
+			
+			//Load the TS db entry
+			getTimeStamp(tsuid,function(getresp){
+				//MDS.log(JSON.stringify(getresp));
+				
+				var fname  	= document.getElementById("proof_filename");
+				var ffound 	= document.getElementById("proof_found");
+				var fcoinid = document.getElementById("proof_coinid");
+				var fhash 	= document.getElementById("proof_hash");
+				var fproof 	= document.getElementById("proof_genproof");
+				
+				var row = getresp[0];
+				
+				fname.innerHTML = row.FILENAME+" &nbsp;&nbsp;&nbsp;<button onclick='downloadFile();'>DOWNLOAD</button>";
+				fhash.innerHTML = row.DATAHASH;
+				
+				//If you want to download..
+				mds_file 		= row.DATAFILE;
+				mds_filename 	= row.FILENAME;
+				
+				//Now run a coin search
+				var coinsearch = "coins simplestate:true relevant:true address:"+TS_ADDRESS;
+				MDS.cmd(coinsearch,function(coinresp){
+					//MDS.log(JSON.stringify(coinresp));
+					
+					var len = coinresp.response.length;
+					var found = false;
+					for(var i=0;i<len;i++){
+						var coin = coinresp.response[i];
+						
+						//Is the hash there..!
+						if(coin.state[1] == row.DATAHASH){
+							found = true;
+							ffound.innerHTML = coin.created;
+							fcoinid.innerHTML = coin.coinid;
+							
+							
+							//Generic proof for any node..
+							proof_genproof.innerHTML = 
+								"<br><b>Any User can do this to check the timestamp..</b><br><br>"
+								+"This code checks the Hash is correct - after you download the file :<br><br>"
+								+"<code>hash file:"+mds_filename+"</code><br><br>"
+								+"And this code finds the hash on chain :<br><br>"
+								+"<code>archive action:addresscheck address:"+TS_ADDRESS+" statecheck:"+row.DATAHASH+"</code>";
+							
+							break;
+						}
+					}
+					
+					if(!found){
+						ffound.innerHTML = "Not found.. Wait for txn to confirm";
+					}
+				});
+				
+				
+			});
+		}
+	});
+
+</script>
+
+</body>
+
+</html>

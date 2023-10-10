@@ -28,7 +28,7 @@ body {
 
 .solobutton {
     background-color: #eee;
-    border: 1.5px solid #ED0000;
+    border: 1.5px solid rgb(0, 0, 0);
   	border-radius: 8px;
   	padding: 8px 8px;
   	font-family: Manrope;
