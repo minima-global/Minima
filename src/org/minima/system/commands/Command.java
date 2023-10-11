@@ -478,7 +478,7 @@ public abstract class Command {
 				
 				result = cmd.getJSONReply();
 				result.put("status", false);
-				result.put("error", exc.getMessage());
+				result.put("error", exc.toString());
 			}
 			
 			//Add it..

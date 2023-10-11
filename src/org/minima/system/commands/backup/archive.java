@@ -908,6 +908,8 @@ public class archive extends Command {
 			}
 			
 			
+			MinimaLogger.log("All checks complete..");
+			
 			resp.put("created", outarr);
 			resp.put("spent", inarr);
 			ret.put("coins", resp);
