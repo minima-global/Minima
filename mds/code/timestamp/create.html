@@ -47,7 +47,7 @@
 			
 				<input type="radio" id="type_server" name="stamp_type" value="server" >
 			  	<label class="coinamount" for="type_server">Use Mini Stamp Server</label><br><br>
-				<input class="coinamount" type=text id="unlock_address" value="127.0.0.1:8888">
+				<input class="coinamount" type=text id="stamp_server" value="http://host.docker.internal">
 			
 			</td>
 		</tr>
@@ -94,8 +94,6 @@
 				var randfolder 	= randomInteger(1,100000000)+"_folder";
 				var npath		= randfolder+"/"+filename; 
 				
-				MDS.log("Move "+cpath+" to "+npath);
-				
 				MDS.file.move(cpath,npath,function(moveresp){
 					//MDS.log(JSON.stringify(moveresp));
 					
@@ -109,33 +107,64 @@
 							var filename = hashres[1].response.file;
 							var hash 	 = hashres[1].response.hash;
 							
-							//Send a TXN !
-							var state = {};
-							state[0]  = hashres[0].response.publickey;
-							state[1]  = hash;
-							state[2]  = "0x00";
-							
-							var txn = "send amount:0.0000001 address:"+TS_ADDRESS+" state:"+JSON.stringify(state);
-							
-							MDS.cmd(txn,function(sendresp){
-								MDS.log(JSON.stringify(sendresp));
-								var pending = sendresp.pending;
+							//Are we doing it ourselves..
+							if(document.getElementById("type_server").checked){
 								
-								//Now store this in the Database..
-								insertDataOnChain(npath, filename, hash, function(insresp){
-									MDS.log(JSON.stringify(insresp));
+								//Send to server
+								var server = document.getElementById("stamp_server").value;
+								var getreq = server+"/timestampapi.php?tsdata="+hash;
+								
+								//MDS.log("Send to Server! "+getreq);
+								
+								MDS.net.GET(getreq,function(getresp){
+									MDS.log(JSON.stringify(getresp))
 									
-									if(pending){
-										alert("TXN Pending.. ");
+									if(!getresp.status){
+										alert("Something went wrong..\n\n"+getresp.error);
+										return;
 									}else{
-										alert("TXN Sent.. Pls wait for it to confirm ");	
+										
+										//Get the data
+										var jsonresp = JSON.parse(getresp.response);
+										
+										//Now add to database..
+										insertDataServer(npath, filename, hash, server, jsonresp.uid, function(insresp){
+											MDS.log(JSON.stringify(insresp));
+											
+											alert("Server request sent!");	
+											goHome();
+										});
 									}
-										 
-									goHome();
-								});	
+								});
 								
-							});
-							
+							}else{
+								
+								//Send a TXN !
+								var state = {};
+								state[0]  = hashres[0].response.publickey;
+								state[1]  = hash;
+								state[2]  = "0x00";
+								
+								var txn = "send amount:0.0000001 address:"+TS_ADDRESS+" state:"+JSON.stringify(state);
+								
+								MDS.cmd(txn,function(sendresp){
+									MDS.log(JSON.stringify(sendresp));
+									var pending = sendresp.pending;
+									
+									//Now store this in the Database..
+									insertDataOnChain(npath, filename, hash, function(insresp){
+										MDS.log(JSON.stringify(insresp));
+										
+										if(pending){
+											alert("TXN Pending.. ");
+										}else{
+											alert("TXN Sent.. Pls wait for it to confirm ");	
+										}
+											 
+										goHome();
+									});	
+								});
+							}
 						});
 					});
 				});	
