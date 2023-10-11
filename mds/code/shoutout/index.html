@@ -1,7 +1,7 @@
 <html>
 
 <head>
-	<title>BASIC</title>
+	<title>Shout Out</title>
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
@@ -15,21 +15,170 @@
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	
 	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="sha1.js"></script>
 	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="sql.js"></script>
 	
 </head>
 
 <body>
 
 <center>
+<br>
 
-	<br>
-
-	<h2>Hello World!</h2>
+	<div class="mainview">
+	
+		<table width=100% border=0>
+			<tr>
+				<td class="table_left">Category : </td>
+				<td class="table_right">
+					<input type="text" id="currentcategory">
+					<button onclick="jumpCategory()">GO</button>
+				</td>
+			</tr>
+		
+			<tr>
+				<td class="table_left">Sub Category : </td>
+				<td class="table_right">
+					<select id="subcategories"></select>
+					<button onclick="jumpSubCategory()">GO SUB</button>
+				</td>
+			</tr>
+			
+			<tr><td>&nbsp;</td></tr>
+			
+			<tr>
+				<td>&nbsp;</td>
+				
+				<td>
+				<div class="mainview">
+					<table border=0 style="width:100%">
+						<tr>
+							<td style="width:100%"><input type="text" id="newtopictext" class="newtopicstyle"></td>
+							<td>&nbsp;&nbsp;</td>
+							<td nowrap><button class="solobutton" onclick="newtopic();">NEW TOPIC</button></td>
+						</tr>
+					</table>
+				</div>
+				</td>
+			</tr>
+			
+			<tr><td>&nbsp;</td></tr>
+			
+			<tr>
+				<td class="table_left">Topics : </td>
+				<td class="table_right">
+					<div id="alltopics">
+					</div>
+				</td>
+			</tr>
+			
+		</table>
+	</div>
+	
+	<br><br>
+	Categories:
+	<div id="categories">
+		
+	</div>
 	
 </center>
 
 <script type="text/javascript">
+	
+	function newtopic(){
+		var cat = MDS.form.getParams("category");
+		if(!cat){
+			alert("MUST be in a category..!");
+			return;
+		}
+		
+		var topic = newtopictext.value;
+		
+		insertMessage(cat, topic, "Spartacus", "0x00", "",function(){
+			setTopics();
+			newtopictext.value = "";
+		});
+	}
+	
+	function setCategories(){
+		//Which category
+		var cat = MDS.form.getParams("category");
+		if(cat){
+			//Set the currect Category
+			currentcategory.value=cat;
+		}
+		
+		selectCategories(function(cats){			
+			var len = cats.length;
+			var list = "";
+			for(var i=0;i<len;i++){
+				list += "<a href='index.html?uid="+MDS.minidappuid+"&category="+cats[i].CATEGORY+"'>"+cats[i].CATEGORY+"</a><br>";
+			}
+			categories.innerHTML = list;
+			
+			//Set the subcategories..
+			if(cat){
+				var lowercat 	= cat.toLowerCase();
+				var catlen 		= lowercat.length+1; 
+				
+				//Cycle through
+				for(var i=0;i<len;i++){
+					var subcat = cats[i].CATEGORY.toLowerCase();
+					if(subcat.startsWith(lowercat)){
+						var justcat = cats[i].CATEGORY.substring(catlen);
+						if(!justcat.includes(".")){
+							var option 	 = document.createElement("option");
+							option.text  = justcat;
+							subcategories.add(option);	
+						}
+					}
+				}
+			}	
+		});
+	}
+	
+	function jumpCategory(){
+		var cat = currentcategory.value;
+		location.href="index.html?uid="+MDS.minidappuid+"&category="+cat;
+	}
+	
+	function jumpSubCategory(){
+		var cat 	= currentcategory.value;
+		var subcat 	= subcategories.value;
+		var fullcat = cat+"."+subcat; 
+		location.href="index.html?uid="+MDS.minidappuid+"&category="+fullcat;
+	}
+	
+	function setTopics(){
+		var cat = MDS.form.getParams("category");
+		if(!cat){
+			return;
+		}		
+		
+		//Get all the topics..
+		selectTopics(cat,function(topics){
+			var len = topics.length;
+			var list = "";
+			for(var i=0;i<len;i++){
+				var topic = topics[i];
+				//list += JSON.stringify(topic)+"<br><br>";
+				list += createTopicView(topic);
+			}
+			
+			alltopics.innerHTML = list;
+		});
+	}
+	
+	function createTopicView(topic){
+		
+		var topicstr = "<table class='topiclist'><tr><td>";
+		topicstr += "<a href='topic.html?uid="+MDS.minidappuid+"&topicid="+topic.CATEGORYTITLEID+"'>"+topic.TITLE+"</a>";
+		topicstr += "</td></tr></table>";
+		topicstr += "<br>"
+		
+		return topicstr;
+	}
 	
 	//Main message handler..
 	MDS.init(function(msg){
@@ -37,8 +186,41 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			
-			//Do stuff.. from now..		
+			if(false){
+				wipeDB();
+				MDS.log("DB Wiped")
+			}else{
 			
+				//Do stuff.. from now..		
+				createDB(function(){
+					
+					//Add som stuff..
+					if(false){
+						insertMessage("XMinima.tester", "First Topic", "Spartacus", "0x00", "This is a message!");
+						
+						insertMessage("XMinima.General.one", "First Topic", "Spartacus", "0x00", "This is another message!");
+						insertMessage("XMinima.one", "Second Topic", "Spartacus", "0x00", "This is a message!");
+						insertMessage("XMinima.dev.one", "Third Topic", "Spartacus", "0x00", "0 This is a message!");
+						insertMessage("XMinima.dev.one", "Third Topic", "Spartacus", "0x00", "1 This is a message!");
+						insertMessage("XMinima.dev.one", "Third Topic", "Spartacus", "0x00", "2 This is a message!");
+						
+					}else{
+						//Which category
+						var cat = MDS.form.getParams("category");
+						if(cat){
+							currentcategory.value=cat;
+						}	
+						
+						//Load all the categories
+						setCategories();	
+						
+						//Load all the topics..
+						setTopics();
+					}
+					
+					
+				});
+			}
 		}
 	});
 

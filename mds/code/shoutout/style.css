@@ -1,0 +1,88 @@
+
+@font-face {
+	font-family: Manrope;
+	src: url('./Manrope-Regular.ttf');
+}
+
+body {
+	font-family: Manrope; 
+    margin: 0;   /* Remove body margins */
+}
+
+.mainview{
+	max-width:800;
+	min-width:400;
+	margin-left: auto;
+  	margin-right: auto;
+	padding:20;
+	border: 2px solid #0000ff;
+	border-radius: 10px;
+	background-color: #fff;	
+}
+
+.table_left{
+	white-space: nowrap;
+	text-align:right;
+	vertical-align:top;
+}
+
+.table_right{
+	white-space: nowrap;
+	width:100%;
+	text-align:left;
+}
+
+.newtopicstyle{
+	width:100%;
+	font-size: 18px;
+}
+
+.topiclist{
+	width:100%;
+	padding:10;
+	border: 2px solid #0000ff;
+	border-radius: 10px;
+	background-color: #fff;
+}
+
+.solobutton {
+    background-color: #eee;
+    border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	font-family: Manrope;
+  	font-size: 14px;
+}
+.solobutton-edit {
+	font-family: Manrope;
+	background: #fff;
+}
+.solobutton-edit:focus {
+	font-family: Manrope;
+	border: 0.5px solid #EDEDED;
+}
+
+.solobutton:hover {
+	font-family: Manrope;
+	cursor: pointer;
+    color: #fff;
+	background-color: #0000ff;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+	border-color: #16181C;
+}
+
+.solobutton[disabled]:hover {
+	cursor: default;
+    color: #fff;
+    background-color: #eee;
+    border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	font-size: 14px;
+}
+
+.solobutton:active {
+  	opacity: 0.8;
+	font-style: italic;
+}

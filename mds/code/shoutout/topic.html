@@ -1,0 +1,110 @@
+<html>
+
+<head>
+	<title>Shout Out</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="sha1.js"></script>
+	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="sql.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+<br>
+
+	<div class="mainview" id="topictitle">
+		TOPIC TITLE
+	</div>
+	<br>
+	<div class="mainview" id="messagelist">
+	</div>
+	
+	<br>
+	<textarea id="replytext"></textarea><br>
+	<br>
+	<button onclick="sendMessage();">SEND</button>
+</center>
+
+<script type="text/javascript">
+
+	var TOPIC_CATEGORY 	= "";
+	var TOPIC_TITLE 	= "";
+
+	function sendMessage(){
+		var message = replytext.value;
+		
+		//SEND TXN..
+		
+		insertMessage(TOPIC_CATEGORY, TOPIC_TITLE, "Spartacus", "0x00", message, function(){
+			//message added..
+			setMessages();
+			
+			replytext.value = "";
+		});
+	}
+
+	function setMessages(){
+		var topicid = MDS.form.getParams("topicid");
+		MDS.log("TOPICID : "+topicid);
+		
+		selectMessages(topicid,function(messages){
+			var len = messages.length;
+			MDS.log("MESSAGES : "+len);
+			
+			var list = "";
+			var first=true;
+			for(var i=0;i<len;i++){
+				
+				if(first){
+					first = false;
+					TOPIC_CATEGORY 	= messages[i].CATEGORY;
+					TOPIC_TITLE 	= messages[i].TITLE;
+					topictitle.innerHTML = messages[i].TITLE+" @ "+messages[i].CATEGORY;
+				}
+				
+				if(messages[i].MESSAGE!=""){
+					list += createMessageView(messages[i]);
+				}
+			}
+			messagelist.innerHTML = list;
+		});
+	}
+	
+	function createMessageView(message){
+		var msg = "";
+		msg += message.USERNAME+" : "+message.MESSAGE;
+		msg += "<br><br>";
+		return msg;
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//Set the topic messages..
+			setMessages();
+			
+		}
+	});
+
+</script>
+
+</body>
+
+</html>
