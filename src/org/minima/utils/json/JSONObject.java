@@ -46,7 +46,7 @@ public class JSONObject extends LinkedHashMap implements JSONAware, JSONStreamAw
      * @param map
      * @param out
      */
-	public static void writeJSONString(Map map, Writer out) throws IOException {
+	public static void writeJSONString(Map map, JSONWriter out) throws IOException {
 		if(map == null){
 			out.write("null");
 			return;
@@ -72,7 +72,7 @@ public class JSONObject extends LinkedHashMap implements JSONAware, JSONStreamAw
 		out.write('}');
 	}
 
-	public void writeJSONString(Writer out) throws IOException{
+	public void writeJSONString(JSONWriter out) throws IOException{
 		writeJSONString(this, out);
 	}
 	
@@ -86,16 +86,18 @@ public class JSONObject extends LinkedHashMap implements JSONAware, JSONStreamAw
 	 * @return JSON text, or "null" if map is null.
 	 */
 	public static String toJSONString(Map map){
-		final StringWriter writer = new StringWriter();
+//		final StringWriter writer = new StringWriter();
+		final JSONWriter writer = new JSONWriter();
 		
 		try {
 			writeJSONString(map, writer);
 			
 			//Create a UTF-8 String..
-			return new String(writer.toString().getBytes(Charset.forName("UTF-8")));
+			//return new String(writer.toString().getBytes(Charset.forName("UTF-8")));
 			
 			//Old way
-//			return writer.toString();
+			return writer.toString();
+			
 		} catch (IOException e) {
 			// This should never happen with a StringWriter
 			throw new RuntimeException(e);

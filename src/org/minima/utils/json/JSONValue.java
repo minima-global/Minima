@@ -117,7 +117,7 @@ public class JSONValue {
      * @param value
      * @param writer
      */
-	public static void writeJSONString(Object value, Writer out) throws IOException {
+	public static void writeJSONString(Object value, JSONWriter out) throws IOException {
 		if(value == null){
 			out.write("null");
 			return;
@@ -239,7 +239,8 @@ public class JSONValue {
 	 * @return JSON text, or "null" if value is null or it's an NaN or an INF number.
 	 */
 	public static String toJSONString(Object value){
-		final StringWriter writer = new StringWriter();
+		//final StringWriter writer = new StringWriter();
+		final JSONWriter writer = new JSONWriter();
 		
 		try{
 			writeJSONString(value, writer);
