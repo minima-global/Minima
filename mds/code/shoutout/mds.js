@@ -561,7 +561,7 @@ function httpPostAsync(theUrl, params, callback){
 	
 	//Do we log it..
 	if(MDS.logging){
-		MDS.log("POST_RPC:"+finalurl+" PARAMS:"+params);
+		MDS.log("POST_RPC:"+finalurl+" PARAMS:"+params+" "+encodeURIComponent(params));
 	}
 
 	var xmlHttp = new XMLHttpRequest();

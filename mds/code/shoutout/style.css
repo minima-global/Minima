@@ -32,6 +32,10 @@ body {
 	text-align:left;
 }
 
+.inputtype{
+	min-width:200;
+}
+
 .newtopicstyle{
 	width:100%;
 	font-size: 18px;
