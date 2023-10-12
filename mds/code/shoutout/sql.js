@@ -66,10 +66,34 @@ function selectCategories(callback){
 
 function selectTopics(category, callback){
 	//Create the DB if not exists
-	var sql = "SELECT DISTINCT categorytitleid, title, username FROM shoutout WHERE category='"+category+"' ORDER BY created DESC";
+	var sql = "SELECT DISTINCT categorytitleid FROM shoutout WHERE category='"+category+"' ORDER BY created DESC";
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
+		callback(msg.rows);
+	});
+}
+
+function selectTopMessage(catid, callback){
+	//Create the DB if not exists
+	var sql = "SELECT * FROM shoutout WHERE categorytitleid='"+catid+"'  ORDER BY created DESC LIMIT 1";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		callback(msg.rows);
+	});
+}
+
+function selectTopicsX(category, callback){
+	//Create the DB if not exists
+	
+	var dist = "SELECT categorytitleid, title, username, message FROM shoutout GROUP BY categorytitleid";
+	
+	//var sql = "SELECT * FROM shoutout WHERE categorytitleid IN ("+dist+")";
+	
+				
+	//Run this..
+	MDS.sql(dist,function(msg){
 		callback(msg.rows);
 	});
 }

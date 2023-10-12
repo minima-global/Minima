@@ -73,8 +73,7 @@
 			<tr>
 				<td class="table_left">Topics : </td>
 				<td class="table_right">
-					<div id="alltopics">
-					</div>
+					<table id="alltopics_table" width=100%></table>
 				</td>
 			</tr>
 			
@@ -87,7 +86,7 @@
 		
 	</div>
 	
-	кириллицакириллица
+	<!--   кириллицакириллица -->
 	
 </center>
 
@@ -170,28 +169,40 @@
 			return;
 		}		
 		
+		//Clear the table
+		alltopics_table.innerHTML = "";
+		
 		//Get all the topics..
 		selectTopics(cat,function(topics){
 			var len = topics.length;
 			var list = "";
 			for(var i=0;i<len;i++){
-				var topic = topics[i];
-				//list += JSON.stringify(topic)+"<br><br>";
-				list += createTopicView(topic);
+				
+				//Create a new CELL
+				var tablerow 	= alltopics_table.insertRow(i);
+				var cell 	 	= tablerow.insertCell(0);
+				
+				var catid = topics[i].CATEGORYTITLEID;
+				
+				createTopicView(catid,cell);
 			}
-			
-			alltopics.innerHTML = list;
 		});
 	}
 	
-	function createTopicView(topic){
+	function createTopicView(catid, cell){
 		
-		var topicstr = "<table class='topiclist'><tr><td>";
-		topicstr += "<a href='topic.html?uid="+MDS.minidappuid+"&topicid="+topic.CATEGORYTITLEID+"'>"+topic.TITLE+"</a>";
-		topicstr += "</td></tr></table>";
-		topicstr += "<br>"
-		
-		return topicstr;
+		selectTopMessage(catid, function(rows){
+			MDS.log(JSON.stringify(rows));
+			
+			var msg = rows[0];
+			
+			var topicstr = "<table class='topiclist'><tr><td>";
+			topicstr += "<a href='topic.html?uid="+MDS.minidappuid+"&topicid="+catid+"'>"+msg.TITLE+"</a>";
+			topicstr += "<br><br>"+msg.USERNAME+" : "+msg.MESSAGE;
+			topicstr += "</td></tr></table>";
+			topicstr += "<br>"
+			cell.innerHTML = topicstr;	
+		}); 
 	}
 	
 	//Main message handler..
@@ -200,10 +211,10 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 
-			MDS.logging = true;
-			MDS.keypair.set("test","кириллицакириллица",function(resp){
-				MDS.log(JSON.stringify(resp));
-			});
+			/*selectTopicsX("Minima",function(res){
+				MDS.log(JSON.stringify(res));
+			});*/
+			
 			
 			if(false){
 				wipeDB();
