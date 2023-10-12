@@ -1,12 +1,9 @@
 package org.minima.system.mds;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -28,7 +25,6 @@ import org.minima.system.Main;
 import org.minima.system.mds.multipart.MultipartData;
 import org.minima.system.mds.multipart.MultipartParser;
 import org.minima.system.mds.polling.PollStack;
-import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 
@@ -196,7 +192,7 @@ public class MDSFileHandler implements Runnable {
 				}
 				
 				//It's an MDS command..
-				String dataenc = new String(cbuf).trim();
+				String dataenc  = new String(cbuf).trim();
 				String data 	= URLDecoder.decode(dataenc, "UTF-8");
 				
 				//Run IT!
