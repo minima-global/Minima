@@ -92,9 +92,6 @@ public class JSONObject extends LinkedHashMap implements JSONAware, JSONStreamAw
 		try {
 			writeJSONString(map, writer);
 			
-			//Create a UTF-8 String..
-			//return new String(writer.toString().getBytes(Charset.forName("UTF-8")));
-			
 			//Old way
 			return writer.toString();
 			
