@@ -59,7 +59,7 @@ public class MiniDAPPDB extends SqlDB {
 					counter++;
 					JSONObject row = new JSONObject();
 					for(int i=1;i<=columnnum;i++) {
-						String column = rsmd.getColumnName(i);
+						String column = rsmd.getColumnLabel(i);
 						Object obj    = resset.getObject(i);
 						
 						//Make sure NOT NULL - or Omit.. 
