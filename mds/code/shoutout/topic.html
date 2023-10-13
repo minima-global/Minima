@@ -16,6 +16,7 @@
 	
 	<!-- Load the local JS lib -->
 	<script src="https://unpkg.com/xregexp/xregexp-all.js"></script>
+	<script type="text/javascript" src="purify.min.js"></script>
 	
 	<script type="text/javascript" src="sha1.js"></script>
 	<script type="text/javascript" src="jslib.js"></script>
@@ -26,19 +27,27 @@
 <body>
 
 <center>
-<br>
 
-	<div class="mainview" id="topictitle">
+	<div class="topicheader" id="topictitle">
 		TOPIC TITLE
 	</div>
 	<br>
-	<div class="mainview" id="messagelist">
+	<div class="topicwindow" id="messagelist">
+	</div>
+	<br>
+	<div class="mainview">
+		<textarea id="replytext" class="topicinput" rows=5></textarea><br>
+		<br>
+		<table width=100%>
+			<tr>
+				<td style="text-align:left"><button onclick="history.back();" class="solobutton">&nbsp;&nbsp;Back&nbsp;&nbsp;</button></td>
+				<td style="text-align:right"><button onclick="sendMessage();" class="solobutton">&nbsp;Send Message&nbsp;</button></td>
+			</tr>
+		</table>
+			
 	</div>
 	
-	<br>
-	<textarea id="replytext"></textarea><br>
-	<br>
-	<button onclick="sendMessage();">SEND</button>
+	
 </center>
 
 <script type="text/javascript">
@@ -50,25 +59,24 @@
 		var message = replytext.value;
 		
 		//SEND TXN..
+		//..
 		
 		insertMessage(TOPIC_CATEGORY, TOPIC_TITLE, "Spartacus", "0x00", message, function(){
 			//message added..
 			setMessages();
-			
 			replytext.value = "";
 		});
 	}
 
 	function setMessages(){
 		var topicid = MDS.form.getParams("topicid");
-		MDS.log("TOPICID : "+topicid);
 		
 		selectMessages(topicid,function(messages){
 			var len = messages.length;
-			MDS.log("MESSAGES : "+len);
 			
 			var list = "";
 			var first=true;
+			var nomessages = true;
 			for(var i=0;i<len;i++){
 				
 				if(first){
@@ -79,17 +87,30 @@
 				}
 				
 				if(messages[i].MESSAGE!=""){
+					nomessages = false;
 					list += createMessageView(messages[i]);
 				}
 			}
-			messagelist.innerHTML = list;
+			
+			if(nomessages){
+				messagelist.innerHTML = "No comments yet..";
+			}else{
+				messagelist.innerHTML = list;	
+			}
+			
 		});
 	}
 	
 	function createMessageView(message){
-		var msg = "";
-		msg += message.USERNAME+" : "+message.MESSAGE;
-		msg += "<br><br>";
+		var date = new Date(+message.CREATED);
+		var msg = "<table width=100% border=0>";
+		msg += "<tr><td class='topicusername' nowrap>"+message.USERNAME+" : </td>";
+		
+		var htmlmsg = DOMPurify.sanitize(message.MESSAGE.replaceAll("\n","<br>"));
+		
+		msg += "<td class='topicmessage'>"+htmlmsg+"</td></tr>";
+		msg += "<tr><td colspan=2 class='topicdate'>"+date.toLocaleString()+"</td></tr>"
+		msg += "</table>";
 		return msg;
 	}
 	

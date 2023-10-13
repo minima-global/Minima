@@ -17,8 +17,11 @@ function createDB(callback){
 				+"  `title` varchar(1024) NOT NULL, "
 				+"  `categorytitleid` varchar(128) NOT NULL, "
 				+"  `username` varchar(128) NOT NULL, "
+				+"  `useraddress` varchar(128), "
 				+"  `userpubkey` varchar(128) NOT NULL, "
 				+"  `message` varchar(8192) NOT NULL, "
+				+"  `messageid` varchar(128) NOT NULL, "
+				+"  `read` int NOT NULL, "
 				+"  `created` bigint NOT NULL "
 				+" )";
 				
@@ -34,24 +37,57 @@ function getCategoryTitleID(category,title){
 	return sha1(category+" "+title);
 }
 
-function insertMessage(category, title, user, pubkey, message,callback){
-	
-	//Date as of NOW
-	var startdate = new Date();
-	var timemilli = startdate.getTime()
-	
-	//Calculate the titleid
-	var titleid = getCategoryTitleID(category,title);
-	
-	var sql = "INSERT INTO shoutout(category,title,categorytitleid,username,userpubkey,message,created) VALUES "+
-				"('"+category+"','"+title+"','"+titleid+"','"+user+"','"+pubkey+"','"+message+"',"+timemilli+")";
-	
-	//Run this..
-	MDS.sql(sql,function(msg){
-		if(callback){
-			callback(msg);
+function getUniqueMsgID(category,title,userpubkey,message){
+	return sha1(category+" "+title+" "+userpubkey+" "+message);
+}
+
+function messageExists(msgid, callback){
+	var sql = "SELECT * FROM shoutout WHERE messageid='"+msgid+"'";
+	MDS.sql(sql,function(sqlresp){
+		if(sqlresp.count>0){
+			callback(true);
+		}else{
+			callback(false);
 		}
-	});	
+	});
+}
+
+function insertMessage(category, title, user, pubkey, message, callback){
+	
+	//Has this message been added already
+	var msgid = getUniqueMsgID(category,title,pubkey,message);
+	
+	//See if it's already added..
+	messageExists(msgid,function(exists){
+		
+		//If already added do nothing..
+		if(exists){
+			if(callback){
+				callback(false);	
+			}
+			return;
+		}
+		
+		//OK - add this message
+		var startdate = new Date();
+		var timemilli = startdate.getTime()
+		
+		//Calculate the titleid
+		var titleid = getCategoryTitleID(category,title);
+		
+		var sql = "INSERT INTO shoutout(category,title,categorytitleid,username,"
+					+"userpubkey,message,messageid,read,created) VALUES "+
+					"('"+category+"','"+title+"','"+titleid+"','"+user
+					+"','"+pubkey+"','"+message+"','"+msgid+"',0,"+timemilli+")";
+		
+		//Run this..
+		MDS.sql(sql,function(msg){
+			//MDS.log(JSON.stringify(msg));
+			if(callback){
+				callback(true);
+			}
+		});		
+	});
 }
 
 function selectCategories(callback){
@@ -64,12 +100,38 @@ function selectCategories(callback){
 	});
 }
 
-function selectTopics(category, callback){
+function selectTopics(maxnum, maxdate, category, callback){
 	//Create the DB if not exists
-	var sql = "SELECT DISTINCT categorytitleid FROM shoutout WHERE category='"+category+"' ORDER BY created DESC";
+	var sql = "SELECT DISTINCT categorytitleid "
+			+"FROM shoutout "
+			+"WHERE category='"+category+"' "
+			+"ORDER BY created DESC LIMIT "+maxnum;
+			
+	/*var sql = "SELECT DISTINCT categorytitleid,title "
+			+"FROM shoutout "
+			+"WHERE category='"+category+"' "
+			+"AND created<"+maxdate
+			+" ORDER BY created DESC LIMIT "+maxnum;
+	*/
+	
+	//MDS.log("SQL:"+sql);
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
+		callback(msg.rows);
+	});
+}
+
+function selectTopicsX(maxnum, maxdate, category, callback){
+	//Create the DB if not exists
+	var sql = "SELECT DISTINCT categorytitleid "
+			+"FROM shoutout "
+			+"WHERE category='"+category+"' "
+			+" ORDER BY created DESC LIMIT "+maxnum;
+	
+	//Run this..
+	MDS.sql(sql,function(msg){
+		MDS.log(JSON.stringify(msg));
 		callback(msg.rows);
 	});
 }
@@ -84,24 +146,10 @@ function selectTopMessage(catid, callback){
 	});
 }
 
-function selectTopicsX(category, callback){
-	//Create the DB if not exists
-	
-	var dist = "SELECT categorytitleid, title, username, message FROM shoutout GROUP BY categorytitleid";
-	
-	//var sql = "SELECT * FROM shoutout WHERE categorytitleid IN ("+dist+")";
-	
-				
-	//Run this..
-	MDS.sql(dist,function(msg){
-		callback(msg.rows);
-	});
-}
-
 function selectMessages(categorytitleid, callback){
 	//Create the DB if not exists
 	var sql = "SELECT * FROM shoutout "
-			+"WHERE categorytitleid='"+categorytitleid+"' ORDER BY created DESC";
+			+"WHERE categorytitleid='"+categorytitleid+"' ORDER BY created ASC";
 				
 	//Run this..
 	MDS.sql(sql,function(msg){

@@ -29,62 +29,77 @@
 <body>
 
 <center>
-<br>
 
 	<div class="mainview">
+		
+		<table width=100% border=0>
+			
+			<tr>
+				<td>Category : </td>
+			</tr>
+			
+			<tr>
+				<td class="table_right">
+					<input type="text" id="currentcategory" class="maincategory">
+				</td>
+				<td nowrap>
+					&nbsp;
+					<button class="solobutton" onclick="jumpCategory()">&nbsp;GO&nbsp;</button>&nbsp;
+					<button class="solobutton" onclick="jumpUpCategory()">&nbsp;UP&nbsp;</button>&nbsp;
+					<button class="solobutton" onclick="jumpViewAllCategory()">VIEW ALL</button>
+				</td>
+			</tr>
+			
+			<tr>
+				<td>Sub Category : </td>
+			</tr>
+			
+			<tr>
+				<td colspan=2>
+					<select id="subcategories" class="subcategory" onchange="subChange()"></select>
+				</td>
+			</tr>
+		</table>
+	
+	</div>
+	<br>
+	
+	<div class="mainview" id="topicstable">
 	
 		<table width=100% border=0>
-			<tr>
-				<td class="table_left">Category : </td>
-				<td class="table_right">
-					<input type="text" id="currentcategory" class="inputtype">
-					<button onclick="jumpCategory()">GO</button>
-				</td>
-			</tr>
-		
-			<tr>
-				<td class="table_left">Sub Category : </td>
-				<td class="table_right">
-					<select id="subcategories" class="inputtype"></select>
-					<button onclick="jumpSubCategory()">GO SUB</button>
-				</td>
-			</tr>
-			
-			<tr><td>&nbsp;</td></tr>
-			
-			<tr>
-				<td>&nbsp;</td>
 				
+			<tr>
 				<td>
 				<div class="mainview">
 					<table border=0 style="width:100%">
 						<tr>
-							<td style="width:100%"><input type="text" id="newtopictext" class="newtopicstyle"></td>
-							<td>&nbsp;&nbsp;</td>
-							<td nowrap><button class="solobutton" onclick="newtopic();">NEW TOPIC</button></td>
+							<td style="width:100%"><input placeholder="Topic Title" type="text" id="newtopictitle" class="newtopicstyle"></td>
+							<td nowrap>&nbsp;&nbsp;<button class="solobutton" onclick="newtopic();">NEW TOPIC</button></td>
+						</tr>
+						<tr>
+							<td colspan=2><textarea id="newtopictext" class="topicinput" rows=5></textarea></td>
 						</tr>
 					</table>
 				</div>
 				</td>
 			</tr>
 			
-			<tr><td>&nbsp;</td></tr>
-			
 			<tr>
-				<td class="table_left">Topics : </td>
 				<td class="table_right">
 					<table id="alltopics_table" width=100%></table>
 				</td>
 			</tr>
 			
 		</table>
-	</div>
-	
-	<br><br>
-	Categories:
-	<div id="categories">
+		
+		<!--  
+		<br>
+		<button class="solobutton" onclick="backTopics();">BACK</button>&nbsp;&nbsp;<button class="solobutton"  onclick="nextTopics();">NEXT</button>
+		-->
 		
 	</div>
+	
+	<div id="emptycat"></div>
 	
 	<!--   кириллицакириллица -->
 	
@@ -92,68 +107,50 @@
 
 <script type="text/javascript">
 	
-	checkCategory("hello");
+	/*checkCategory("hello");
 	checkCategory("TWO BYE");
 	checkCategory("TWOBYE");
 	checkCategory("кириллица");
 	checkCategory("1234");
-	checkCategory("1234.sdsd,");
+	checkCategory("1234.sdsd,");*/
 	
-	function newtopic(){
-		var cat = currentcategory.value;
-		if(!cat){
-			alert("MUST be in a category..!");
-			return;
-		}
-		
-		var topic = newtopictext.value;
-		
-		insertMessage(cat, topic, "Spartacus", "0x00", "",function(){
-			//Jump to it..
-			location.href="index.html?uid="+MDS.minidappuid+"&category="+cat;
-		});
+	var CURRENT_CATEGORY = "";
+	var BACK_TOPICS 	 = false;
+	var NEXT_TOPICS 	 = false;
+	var CURRENT_MAXDATE  = 8640000000000000;
+	
+	function backTopics(){
+		if(BACK_TOPICS){
+			history.back();
+		}	
 	}
 	
-	function setCategories(){
-		//Which category
-		var cat = MDS.form.getParams("category");
-		if(cat){
-			//Set the currect Category
-			currentcategory.value=cat;
+	function nextTopics(){
+		if(NEXT_TOPICS){
+			location.href="index.html?uid="+MDS.minidappuid+"&category="+CURRENT_CATEGORY+"&maxdate="+CURRENT_MAXDATE;	
 		}
-		
-		selectCategories(function(cats){			
-			var len = cats.length;
-			var list = "";
-			for(var i=0;i<len;i++){
-				list += "<a href='index.html?uid="+MDS.minidappuid+"&category="+cats[i].CATEGORY+"'>"+cats[i].CATEGORY+"</a><br>";
-			}
-			categories.innerHTML = list;
-			
-			//Set the subcategories..
-			if(cat){
-				var lowercat 	= cat.toLowerCase();
-				var catlen 		= lowercat.length+1; 
-				
-				//Cycle through
-				for(var i=0;i<len;i++){
-					var subcat = cats[i].CATEGORY.toLowerCase();
-					if(subcat.startsWith(lowercat)){
-						var justcat = cats[i].CATEGORY.substring(catlen);
-						if(!justcat.includes(".")){
-							var option 	 = document.createElement("option");
-							option.text  = justcat;
-							subcategories.add(option);	
-						}
-					}
-				}
-			}	
-		});
 	}
 	
 	function jumpCategory(){
 		var cat = currentcategory.value;
+		
+		//Check is a valid Category name..
+		if(!checkCategory(cat)){
+			alert("Invalid category!\n\nMUST be word.word.word etc..\n\nNO spaces or punctuation..");
+			return;
+		}
+		
 		location.href="index.html?uid="+MDS.minidappuid+"&category="+cat;
+	}
+	
+	function jumpUpCategory(){
+		var cat = currentcategory.value;
+		var pos = cat.lastIndexOf(".");
+		if(pos == -1){
+			return;
+		}
+		var newcat = cat.substring(0,pos);
+		location.href="index.html?uid="+MDS.minidappuid+"&category="+newcat;
 	}
 	
 	function jumpSubCategory(){
@@ -163,6 +160,73 @@
 		location.href="index.html?uid="+MDS.minidappuid+"&category="+fullcat;
 	}
 	
+	function jumpViewAllCategory(){
+		location.href="allcategories.html?uid="+MDS.minidappuid;
+	}
+	
+	function subChange(){
+		var sub = subcategories.value;
+		location.href="index.html?uid="+MDS.minidappuid+"&category="+sub;
+	}
+	
+	function newtopic(){
+		var cat = currentcategory.value;
+		if(!cat){
+			alert("MUST be in a category..!");
+			return;
+		}
+		
+		var topictitle = newtopictitle.value;
+		var topictext  = newtopictext.value;
+		insertMessage(cat, topictitle, "Spartacus", "0x00", topictext,function(){
+			//Jump to it..
+			location.href="index.html?uid="+MDS.minidappuid+"&category="+cat;
+		});
+	}
+	
+	function setCategories(){
+		
+		//Main Title Category
+		currentcategory.value=CURRENT_CATEGORY;
+		
+		selectCategories(function(cats){			
+			var len = cats.length;
+			
+			//Set the subcategories..
+			var lowercat 	= CURRENT_CATEGORY.toLowerCase();
+			var catlen 		= lowercat.length; 
+			
+			//Add Base option
+			var option = document.createElement("option");
+			option.text   = "Select a sub-category :";
+			option.value  = "";	
+			subcategories.add(option);
+			
+			//Cycle through
+			for(var i=0;i<len;i++){
+				var subcat = cats[i].CATEGORY.toLowerCase();
+				
+				if(subcat.startsWith(lowercat)){
+					var justcat = cats[i].CATEGORY.substring(catlen+1);
+					if(catlen==0){
+						justcat = cats[i].CATEGORY.substring(catlen);
+					}
+					
+					if(!justcat.includes(".")){
+						option = document.createElement("option");
+						if(justcat != ""){
+							option.text   = justcat;
+							option.value  = cats[i].CATEGORY;
+							subcategories.add(option);
+						}
+					}
+				}
+			}
+			
+		});
+	}
+	
+	var ffMAX;
 	function setTopics(){
 		var cat = MDS.form.getParams("category");
 		if(!cat){
@@ -172,36 +236,70 @@
 		//Clear the table
 		alltopics_table.innerHTML = "";
 		
+		var maxDate = MDS.form.getParams("maxdate");
+		if(!maxDate){
+			MDS.log("NO MAX DATE - Choose latest")
+			maxDate = 8640000000000000;
+			BACK_TOPICS = false;
+		}else{
+			MDS.log("MAX DATE FOUND - "+maxDate)
+			BACK_TOPICS = true;
+		}
+		
+		ffMAX = maxDate;
+		
 		//Get all the topics..
-		selectTopics(cat,function(topics){
-			var len = topics.length;
+		var maxnum=50;
+		selectTopics(maxnum, maxDate, cat,function(topics){
+			var len  = topics.length;
+			if(len>=maxnum){
+				NEXT_TOPICS=true;
+			}else{
+				NEXT_TOPICS=false;
+			}
+			
 			var list = "";
 			for(var i=0;i<len;i++){
 				
 				//Create a new CELL
 				var tablerow 	= alltopics_table.insertRow(i);
 				var cell 	 	= tablerow.insertCell(0);
+				var catid 		= topics[i].CATEGORYTITLEID;
 				
-				var catid = topics[i].CATEGORYTITLEID;
-				
-				createTopicView(catid,cell);
+				createTopicView(i==len-1,catid,cell);
 			}
 		});
 	}
 	
-	function createTopicView(catid, cell){
+	function createTopicView(islast, catid, cell){
 		
 		selectTopMessage(catid, function(rows){
-			MDS.log(JSON.stringify(rows));
+			var msg 	 = rows[0];
+			var topicstr = "<br><table class='topiclist' border=0>";
+			topicstr    += "<tr><td colspan=2><a class='topictitle' href='topic.html?uid="+MDS.minidappuid+"&topicid="+catid+"'>"+msg.TITLE+"</a></td></tr>";
+			topicstr    += "<tr><td>&nbsp;</td></tr>";
+			if(msg.MESSAGE.trim() == ""){
+				topicstr += "<tr><td>No comments yet..</td></tr>";
+			}else{
+				var text = msg.USERNAME+" : "+msg.MESSAGE;
+				var date = new Date(+msg.CREATED);
+				topicstr += "<tr><td width=100% class='ellipsistext'>"+msg.USERNAME+" : "+msg.MESSAGE+"</td>"
+							+"<td nowrap>"+date.toLocaleString()+"</td></tr>";	
+			}
+			topicstr += "</table>";
+			cell.innerHTML = topicstr;
 			
-			var msg = rows[0];
-			
-			var topicstr = "<table class='topiclist'><tr><td>";
-			topicstr += "<a href='topic.html?uid="+MDS.minidappuid+"&topicid="+catid+"'>"+msg.TITLE+"</a>";
-			topicstr += "<br><br>"+msg.USERNAME+" : "+msg.MESSAGE;
-			topicstr += "</td></tr></table>";
-			topicstr += "<br>"
-			cell.innerHTML = topicstr;	
+			//Remember this..
+			if(islast){
+				/*if(msg.CREATED<ffMAX){
+					MDS.log("LESS THAN");	
+				}else{
+					MDS.log("ERROR");
+				}*/
+				
+				CURRENT_MAXDATE = msg.CREATED;
+				//MDS.log("MAXDATE : "+CURRENT_MAXDATE);	
+			}
 		}); 
 	}
 	
@@ -210,11 +308,6 @@
 		
 		//Do initialisation
 		if(msg.event == "inited"){
-
-			/*selectTopicsX("Minima",function(res){
-				MDS.log(JSON.stringify(res));
-			});*/
-			
 			
 			if(false){
 				wipeDB();
@@ -223,32 +316,32 @@
 			
 				//Do stuff.. from now..		
 				createDB(function(){
-					
-					//Add som stuff..
-					if(false){
-						insertMessage("XMinima.tester", "First Topic", "Spartacus", "0x00", "This is a message!");
-						
-						insertMessage("XMinima.General.one", "First Topic", "Spartacus", "0x00", "This is another message!");
-						insertMessage("XMinima.one", "Second Topic", "Spartacus", "0x00", "This is a message!");
-						insertMessage("XMinima.dev.one", "Third Topic", "Spartacus", "0x00", "0 This is a message!");
-						insertMessage("XMinima.dev.one", "Third Topic", "Spartacus", "0x00", "1 This is a message!");
-						insertMessage("XMinima.dev.one", "Third Topic", "Spartacus", "0x00", "2 This is a message!");
-						
-					}else{
-						//Which category
-						var cat = MDS.form.getParams("category");
-						if(cat){
-							currentcategory.value=cat;
-						}	
-						
-						//Load all the categories
-						setCategories();	
-						
-						//Load all the topics..
-						setTopics();
+			
+				//Try to insert a message
+				insertMessage("Minima", "Start Here!", "Spartacus", "0x00", "Blah Blah Blah!", function(res){
+					if(res){
+						location.href="index.html?uid="+MDS.minidappuid;
+						return;
 					}
-					
-					
+				});
+				
+				//Which category
+				CURRENT_CATEGORY = MDS.form.getParams("category");
+				if(!CURRENT_CATEGORY){
+					CURRENT_CATEGORY = "";
+				}	
+				CURRENT_CATEGORY = CURRENT_CATEGORY.trim();
+				
+				//Load all the categories
+				setCategories();	
+			
+				if(CURRENT_CATEGORY == ""){
+					topicstable.style.display = "none";
+					emptycat.innerHTML = "Create your own Category or chose a sub-category to start.."
+				}else{
+					//Load all the topics..
+					setTopics();	
+				}
 				});
 			}
 		}
