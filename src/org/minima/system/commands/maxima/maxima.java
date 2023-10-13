@@ -132,7 +132,7 @@ public class maxima extends Command {
 			
 			//Remove naughty chars
 			name = name.replace("\"", "");
-			name = name.replace("'", "");
+//			name = name.replace("'", "");
 			name = name.replace(";", "");
 						
 			//Remove emojis..
