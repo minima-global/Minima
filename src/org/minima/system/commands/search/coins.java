@@ -83,7 +83,7 @@ public class coins extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"relevant","sendable","coinid","amount",
-				"address","tokenid","checkmempool","order","coinage","simplestate","totalamount"}));
+				"address","tokenid","checkmempool","order","coinage","simplestate","totalamount","depth"}));
 	}
 	
 	@Override
@@ -134,6 +134,9 @@ public class coins extends Command {
 		//How old do the coins need to be.. used by consolidate
 		MiniNumber coinage = getNumberParam("coinage", MiniNumber.ZERO);
 		
+		//Max Depth
+		int maxdepth = getNumberParam("depth", MiniNumber.MILLION).getAsInt();
+		
 		//Get the tree tip..
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 
@@ -148,7 +151,7 @@ public class coins extends Command {
 															scoinid, coinid,
 															samount,amount,
 															saddress, address, 
-															stokenid, tokenid, simple);
+															stokenid, tokenid, simple, maxdepth);
 		
 		//Make sure coins old enough..
 		ArrayList<Coin> agecoins = new ArrayList<>();

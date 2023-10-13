@@ -78,12 +78,24 @@ public class TxPoWSearcher {
 		}
 	}
 	
+	public static ArrayList<Coin> searchCoins(	TxPoWTreeNode zStartNode, boolean zRelevant, 
+			boolean zCheckCoinID, MiniData zCoinID,
+			boolean zCheckAmount, MiniNumber zAmount,
+			boolean zCheckAddress, MiniData zAddress,
+			boolean zCheckTokenID, MiniData zTokenID,
+			boolean zSimpleOnly) {
+		
+		//Search for any depth
+		return searchCoins(zStartNode, zRelevant, zCheckCoinID, zCoinID, zCheckAmount, 
+				zAmount, zCheckAddress, zAddress, zCheckTokenID, zTokenID, zSimpleOnly, 1000000);
+	}
+	
 	public static synchronized ArrayList<Coin> searchCoins(	TxPoWTreeNode zStartNode, boolean zRelevant, 
 												boolean zCheckCoinID, MiniData zCoinID,
 												boolean zCheckAmount, MiniNumber zAmount,
 												boolean zCheckAddress, MiniData zAddress,
 												boolean zCheckTokenID, MiniData zTokenID,
-												boolean zSimpleOnly) {
+												boolean zSimpleOnly, int zDepth) {
 		
 		//The list of Coins
 		ArrayList<Coin> coinentry = new ArrayList<>();
@@ -95,7 +107,13 @@ public class TxPoWSearcher {
 		HashSet<String> spentcoins = new HashSet<>();
 		
 		//Now cycle through and get all your coins..
+		int depth = 0;
 		while(tip != null) {
+			
+			//Are we deep enough
+			if(depth++>zDepth) {
+				break;
+			}
 			
 			//Get the Relevant coins..
 			ArrayList<Coin> coins = null;
