@@ -156,7 +156,7 @@ public class TxPoWTreeNode implements Streamable {
 					mRelevantMMRCoins.add(entrynumber);
 					
 					//Message..
-					JSONObject coinjson = spentcoin.toJSON();
+					JSONObject coinjson = spentcoin.toJSON(true);
 					MinimaLogger.log("NEW Spent Coin : "+coinjson);
 					
 					//Send a message
@@ -179,7 +179,7 @@ public class TxPoWTreeNode implements Streamable {
 				if(MinimaDB.getDB().checkCoinNotify(coinaddress)) {
 					
 					//Message..
-					JSONObject coinjson = spentcoin.toJSON();
+					JSONObject coinjson = spentcoin.toJSON(true);
 					MinimaLogger.log("NOTIFY Spent Coin : "+coinjson);
 					
 					//Send a message
@@ -224,7 +224,7 @@ public class TxPoWTreeNode implements Streamable {
 					mRelevantMMRCoins.add(entrynumber);
 					
 					//Message..
-					JSONObject coinjson = newcoin.toJSON();
+					JSONObject coinjson = newcoin.toJSON(true);
 					MinimaLogger.log("NEW Unspent Coin : "+coinjson);
 					
 					//Send a message
@@ -246,7 +246,7 @@ public class TxPoWTreeNode implements Streamable {
 				if(MinimaDB.getDB().checkCoinNotify(coinaddress)) {
 					
 					//Message..
-					JSONObject coinjson = newcoin.toJSON();
+					JSONObject coinjson = newcoin.toJSON(true);
 					MinimaLogger.log("NOTIFY Unspent Coin : "+coinjson);
 					
 					//Send a message
