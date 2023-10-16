@@ -175,7 +175,8 @@ public class TxPoWTreeNode implements Streamable {
 				}
 				
 				//Check the Coin Notify Details..
-				if(MinimaDB.getDB().checkCoinNotify(spentcoin.getAddress().to0xString())) {
+				String coinaddress = spentcoin.getAddress().to0xString();
+				if(MinimaDB.getDB().checkCoinNotify(coinaddress)) {
 					
 					//Message..
 					JSONObject coinjson = spentcoin.toJSON();
@@ -183,6 +184,7 @@ public class TxPoWTreeNode implements Streamable {
 					
 					//Send a message
 					JSONObject data = new JSONObject();
+					data.put("address", coinaddress);
 					data.put("txblockid", mTxBlock.getTxPoW().getTxPoWID());
 					data.put("txblock", block.toString());
 					data.put("spent", true);
@@ -240,17 +242,19 @@ public class TxPoWTreeNode implements Streamable {
 				}
 				
 				//Check the Coin Notify Details..
-				if(MinimaDB.getDB().checkCoinNotify(newcoin.getAddress().to0xString())) {
+				String coinaddress = newcoin.getAddress().to0xString();
+				if(MinimaDB.getDB().checkCoinNotify(coinaddress)) {
 					
 					//Message..
 					JSONObject coinjson = newcoin.toJSON();
-					MinimaLogger.log("NOTIFY Un-Spent Coin : "+coinjson);
+					MinimaLogger.log("NOTIFY Unspent Coin : "+coinjson);
 					
 					//Send a message
 					JSONObject data = new JSONObject();
+					data.put("address", coinaddress);
 					data.put("txblockid", mTxBlock.getTxPoW().getTxPoWID());
 					data.put("txblock", block.toString());
-					data.put("spent", true);
+					data.put("spent", false);
 					data.put("coin", coinjson);
 					
 					//And Post it..
