@@ -84,14 +84,14 @@ public class MDSFileHandler implements Runnable {
 	        
 	        // get first line of the request from the client
 	     	String input = bufferedReader.readLine();
- 			int counter = 0;
- 			while(input == null && counter<100){
- 				//Wait a sec
- 				Thread.sleep(1000);
- 				
- 				input = bufferedReader.readLine();
- 				counter++;
- 			}
+// 			int counter = 0;
+// 			while(input == null && counter<100){
+// 				//Wait a sec
+// 				Thread.sleep(1000);
+// 				
+// 				input = bufferedReader.readLine();
+// 				counter++;
+// 			}
  			
  			//Is it still NULL
  			if(input == null) {

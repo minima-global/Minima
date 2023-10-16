@@ -334,7 +334,8 @@ public abstract class Command {
 		//If it's an 0x address check converts to MiniData correctly
 		if(address.startsWith("0x")) {
 			try {
-				MiniData data = new MiniData(address);
+				MiniData data 	= new MiniData(address);
+				address 		= data.to0xString();
 			}catch(Exception exc) {
 				throw new CommandException(exc.toString());
 			}
