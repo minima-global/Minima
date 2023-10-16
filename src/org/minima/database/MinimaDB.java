@@ -650,8 +650,8 @@ public class MinimaDB {
 		mCoinNotify.add(zAddress);
 	}
 	
-	public void removeCoinNotify(String zAddress) {
-		mCoinNotify.remove(zAddress);
+	public boolean removeCoinNotify(String zAddress) {
+		return mCoinNotify.remove(zAddress);
 	}
 	
 	public boolean checkCoinNotify(String zAddress) {
