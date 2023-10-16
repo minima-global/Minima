@@ -191,6 +191,10 @@
 		//Send txn!
 		sendTxnMessage(cleancat, topictitle, topictext, "Popo", function(sendresp){
 			
+			//Clear the edit window
+			newtopictitle.value = "";
+			newtopictext.value  = "";
+			
 			if(sendresp.pending){
 				alert("TXN is now pending!..");
 				return;
@@ -198,7 +202,8 @@
 				alert("Error sending txn..\n\n"+sendresp.error);
 				return;
 			}else{
-				//All good add to your DB..
+				alert("TXN sent.. pls wait to confirm");
+				/*//All good add to your DB..
 				insertMessage(cat, topictitle, "Popo", "0x00", topictext,function(){
 					
 					//Clear the edit window
@@ -208,7 +213,7 @@
 					//Jump to it..
 					setTopics();
 					//location.href="index.html?uid="+MDS.minidappuid+"&category="+cat;
-				});	
+				});*/	
 			}
 		});
 	}
@@ -342,7 +347,7 @@
 			
 			//Notify of new messages..
 			MDS.cmd("coinnotify action:add address:"+SHOUTOUT_ADDRESS,function(notifymsg){
-				MDS.log(JSON.stringify(notifymsg));
+				//MDS.log(JSON.stringify(notifymsg));
 			});
 			
 			if(false){
@@ -366,7 +371,7 @@
 					if(!CURRENT_CATEGORY){
 						CURRENT_CATEGORY = "";
 					}	
-					CURRENT_CATEGORY = CURRENT_CATEGORY.trim();
+					CURRENT_CATEGORY = cleanCategory(CURRENT_CATEGORY);
 					
 					//Load all the categories
 					setCategories();	
@@ -384,7 +389,35 @@
 			}
 			
 		}else if(msg.event == "NOTIFYCOIN"){
-			MDS.log(JSON.stringify(msg.data));
+			
+			//Is it the one that matters
+			if(msg.data.address ==  SHOUTOUT_ADDRESS){
+				MDS.log("NEW SHOUTOUT : "+JSON.stringify(msg.data))
+				
+				//Check is Valid..
+				//..
+				
+				//Add to the DB..
+				var msg_category = stripBrackets(msg.data.coin.state[0]);
+				var msg_title 	 = stripBrackets(msg.data.coin.state[1]);
+				var msg_message  = stripBrackets(msg.data.coin.state[2]);
+				var msg_user 	 = stripBrackets(msg.data.coin.state[3]);
+				
+				insertMessage(msg_category, msg_title, msg_user, "0x00", msg_message,function(sqlresp){
+					
+					//It's a message..
+					if(msg_category == CURRENT_CATEGORY){
+						MDS.log("NEW MESSAGE in this category.. ")
+						
+						//Jump to it..
+						setTopics();	
+					}else{
+						MDS.log("NEW MESSAGE NOT in this category.. ")
+						//Show somewhere..
+						//..
+					}
+				});
+			}
 		}
 	});
 

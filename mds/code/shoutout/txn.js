@@ -1,5 +1,5 @@
 
-var SHOUTOUT_ADDRESS = "0x73686f75746f7574"
+var SHOUTOUT_ADDRESS = "0x73686F75746F7574"
 
 function sendTxnMessage(category, title, message, user, callback){
 	
