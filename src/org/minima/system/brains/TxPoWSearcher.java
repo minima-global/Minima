@@ -87,7 +87,7 @@ public class TxPoWSearcher {
 		
 		//Search for any depth
 		return searchCoins(zStartNode, zRelevant, zCheckCoinID, zCoinID, zCheckAmount, 
-				zAmount, zCheckAddress, zAddress, zCheckTokenID, zTokenID, zSimpleOnly, 1000000);
+				zAmount, zCheckAddress, zAddress, zCheckTokenID, zTokenID, zSimpleOnly, Integer.MAX_VALUE);
 	}
 	
 	public static synchronized ArrayList<Coin> searchCoins(	TxPoWTreeNode zStartNode, boolean zRelevant, 
