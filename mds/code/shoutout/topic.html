@@ -15,12 +15,12 @@
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	
 	<!-- Load the local JS lib -->
-	<script src="https://unpkg.com/xregexp/xregexp-all.js"></script>
+	<script type="text/javascript" src="xregexp-all.js"></script>
 	<script type="text/javascript" src="purify.min.js"></script>
-	
 	<script type="text/javascript" src="sha1.js"></script>
 	<script type="text/javascript" src="jslib.js"></script>
 	<script type="text/javascript" src="sql.js"></script>
+	<script type="text/javascript" src="txn.js"></script>
 	
 </head>
 
@@ -74,7 +74,7 @@
 		selectMessages(topicid,function(messages){
 			var len = messages.length;
 			
-			var list = "";
+			var list = "<table width=100% border=0>";
 			var first=true;
 			var nomessages = true;
 			for(var i=0;i<len;i++){
@@ -83,7 +83,8 @@
 					first = false;
 					TOPIC_CATEGORY 	= messages[i].CATEGORY;
 					TOPIC_TITLE 	= messages[i].TITLE;
-					topictitle.innerHTML = messages[i].TITLE+" @ "+messages[i].CATEGORY;
+					var safetitle 	= DOMPurify.sanitize(messages[i].TITLE+" @ "+messages[i].CATEGORY);
+					topictitle.innerHTML = safetitle;
 				}
 				
 				if(messages[i].MESSAGE!=""){
@@ -92,26 +93,27 @@
 				}
 			}
 			
+			list += "</table>";
+			
 			if(nomessages){
 				messagelist.innerHTML = "No comments yet..";
 			}else{
-				messagelist.innerHTML = list;	
+				messagelist.innerHTML = DOMPurify.sanitize(list);	
 			}
-			
 		});
 	}
 	
 	function createMessageView(message){
 		var date = new Date(+message.CREATED);
-		var msg = "<table width=100% border=0>";
+		
+		var msg = "";
 		msg += "<tr><td class='topicusername' nowrap>"+message.USERNAME+" : </td>";
-		
-		var htmlmsg = DOMPurify.sanitize(message.MESSAGE.replaceAll("\n","<br>"));
-		
-		msg += "<td class='topicmessage'>"+htmlmsg+"</td></tr>";
+		msg += "<td class='topicmessage'>"+message.MESSAGE+"</td></tr>";
 		msg += "<tr><td colspan=2 class='topicdate'>"+date.toLocaleString()+"</td></tr>"
-		msg += "</table>";
-		return msg;
+		
+		var breakmsg = msg.replaceAll("\n","<br>");
+		
+		return breakmsg;
 	}
 	
 	//Main message handler..
@@ -119,10 +121,8 @@
 		
 		//Do initialisation
 		if(msg.event == "inited"){
-			
 			//Set the topic messages..
 			setMessages();
-			
 		}
 	});
 

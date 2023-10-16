@@ -17,12 +17,12 @@
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	
 	<!-- Load the local JS lib -->
-	<script src="https://unpkg.com/xregexp/xregexp-all.js"></script>
-	
+	<script type="text/javascript" src="xregexp-all.js"></script>
+	<script type="text/javascript" src="purify.min.js"></script>
 	<script type="text/javascript" src="sha1.js"></script>
 	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="txn.js"></script>
 	<script type="text/javascript" src="sql.js"></script>
-	
 	
 </head>
 
@@ -64,7 +64,7 @@
 	</div>
 	<br>
 	
-	<div class="mainview" id="topicstable">
+	<div class="mainview" id="topicstable" style="display:none;">
 	
 		<table width=100% border=0>
 				
@@ -92,11 +92,6 @@
 			
 		</table>
 		
-		<!--  
-		<br>
-		<button class="solobutton" onclick="backTopics();">BACK</button>&nbsp;&nbsp;<button class="solobutton"  onclick="nextTopics();">NEXT</button>
-		-->
-		
 	</div>
 	
 	<div id="emptycat"></div>
@@ -107,12 +102,15 @@
 
 <script type="text/javascript">
 	
-	/*checkCategory("hello");
+	checkCategory(".hello");
+	checkCategory("hello");
+	checkCategory("hello..popo");
+	checkCategory("hello.df dfd.df");
 	checkCategory("TWO BYE");
 	checkCategory("TWOBYE");
 	checkCategory("кириллица");
 	checkCategory("1234");
-	checkCategory("1234.sdsd,");*/
+	checkCategory("1234.sdsd,");
 	
 	var CURRENT_CATEGORY = "";
 	var BACK_TOPICS 	 = false;
@@ -134,13 +132,16 @@
 	function jumpCategory(){
 		var cat = currentcategory.value;
 		
+		//Clean up..
+		var cleancat = cleanCategory(cat);
+		
 		//Check is a valid Category name..
-		if(!checkCategory(cat)){
-			alert("Invalid category!\n\nMUST be word.word.word etc..\n\nNO spaces or punctuation..");
+		if(!checkCategory(cleancat)){
+			alert("Invalid category!\n\nMUST be word.word.word etc..\n\nNO spaces or punctuation..\n\n"+cleancat);
 			return;
 		}
 		
-		location.href="index.html?uid="+MDS.minidappuid+"&category="+cat;
+		location.href="index.html?uid="+MDS.minidappuid+"&category="+cleancat;
 	}
 	
 	function jumpUpCategory(){
@@ -176,11 +177,39 @@
 			return;
 		}
 		
+		var cleancat = cleanCategory(cat);
+		
+		//Check is a valid Category name..
+		if(!checkCategory(cleancat)){
+			alert("Invalid category!\n\nMUST be word.word.word etc..\n\nNO spaces or punctuation..\n\n"+cleancat);
+			return;
+		}
+		
 		var topictitle = newtopictitle.value;
 		var topictext  = newtopictext.value;
-		insertMessage(cat, topictitle, "Spartacus", "0x00", topictext,function(){
-			//Jump to it..
-			location.href="index.html?uid="+MDS.minidappuid+"&category="+cat;
+		
+		//Send txn!
+		sendTxnMessage(cleancat, topictitle, topictext, "Popo", function(sendresp){
+			
+			if(sendresp.pending){
+				alert("TXN is now pending!..");
+				return;
+			}else if(!sendresp.status){
+				alert("Error sending txn..\n\n"+sendresp.error);
+				return;
+			}else{
+				//All good add to your DB..
+				insertMessage(cat, topictitle, "Popo", "0x00", topictext,function(){
+					
+					//Clear the edit window
+					newtopictitle.value = "";
+					newtopictext.value  = "";
+					
+					//Jump to it..
+					setTopics();
+					//location.href="index.html?uid="+MDS.minidappuid+"&category="+cat;
+				});	
+			}
 		});
 	}
 	
@@ -287,7 +316,9 @@
 							+"<td nowrap>"+date.toLocaleString()+"</td></tr>";	
 			}
 			topicstr += "</table>";
-			cell.innerHTML = topicstr;
+			
+			//Make safe
+			cell.innerHTML = DOMPurify.sanitize(topicstr);
 			
 			//Remember this..
 			if(islast){
@@ -309,6 +340,11 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			
+			//Notify of new messages..
+			MDS.cmd("coinnotify action:add address:"+SHOUTOUT_ADDRESS,function(notifymsg){
+				MDS.log(JSON.stringify(notifymsg));
+			});
+			
 			if(false){
 				wipeDB();
 				MDS.log("DB Wiped")
@@ -317,33 +353,38 @@
 				//Do stuff.. from now..		
 				createDB(function(){
 			
-				//Try to insert a message
-				insertMessage("Minima", "Start Here!", "Spartacus", "0x00", "Blah Blah Blah!", function(res){
-					if(res){
-						location.href="index.html?uid="+MDS.minidappuid;
-						return;
+					//Try to insert a message
+					insertMessage("Minima", "Start Here!", "Spartacus", "0x00", "Blah Blah Blah!", function(res){
+						if(res){
+							location.href="index.html?uid="+MDS.minidappuid;
+							return;
+						}
+					});
+					
+					//Which category
+					CURRENT_CATEGORY = MDS.form.getParams("category");
+					if(!CURRENT_CATEGORY){
+						CURRENT_CATEGORY = "";
+					}	
+					CURRENT_CATEGORY = CURRENT_CATEGORY.trim();
+					
+					//Load all the categories
+					setCategories();	
+				
+					if(CURRENT_CATEGORY == ""){
+						topicstable.style.display = "none";
+						emptycat.innerHTML = "Create your own Category or chose a sub-category to start.."
+					}else{
+						topicstable.style.display = "block";
+						
+						//Load all the topics..
+						setTopics();	
 					}
 				});
-				
-				//Which category
-				CURRENT_CATEGORY = MDS.form.getParams("category");
-				if(!CURRENT_CATEGORY){
-					CURRENT_CATEGORY = "";
-				}	
-				CURRENT_CATEGORY = CURRENT_CATEGORY.trim();
-				
-				//Load all the categories
-				setCategories();	
-			
-				if(CURRENT_CATEGORY == ""){
-					topicstable.style.display = "none";
-					emptycat.innerHTML = "Create your own Category or chose a sub-category to start.."
-				}else{
-					//Load all the topics..
-					setTopics();	
-				}
-				});
 			}
+			
+		}else if(msg.event == "NOTIFYCOIN"){
+			MDS.log(JSON.stringify(msg.data));
 		}
 	});
 
