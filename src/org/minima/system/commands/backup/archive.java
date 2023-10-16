@@ -815,6 +815,7 @@ public class archive extends Command {
 								JSONObject created = new JSONObject();
 								created.put("block", blocknumber);
 								created.put("date", date);
+								created.put("datemilli", txp.getTimeMilli().toString());
 								created.put("coin", cc.toJSON());
 								outarr.add(created);
 							}
@@ -839,6 +840,7 @@ public class archive extends Command {
 								JSONObject spent = new JSONObject();
 								spent.put("block", blocknumber);
 								spent.put("date", date);
+								spent.put("datemilli", txp.getTimeMilli().toString());
 								spent.put("coin", incoin.getCoin().toJSON());
 								inarr.add(spent);
 							}
@@ -882,6 +884,7 @@ public class archive extends Command {
 								JSONObject created = new JSONObject();
 								created.put("block", blocknumber);
 								created.put("date", date);
+								created.put("datemilli", txp.getTimeMilli().toString());
 								created.put("coin", cc.toJSON());
 								outarr.add(created);
 							}
@@ -897,11 +900,11 @@ public class archive extends Command {
 							JSONObject spent = new JSONObject();
 							spent.put("block", blocknumber);
 							spent.put("date", date);
+							spent.put("datemilli", txp.getTimeMilli().toString());
 							spent.put("coin", incoin.getCoin().toJSON());
 							inarr.add(spent);
 						}
 					}
-					
 					
 					top = top.getParent();
 				}
