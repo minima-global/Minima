@@ -173,6 +173,24 @@ public class TxPoWTreeNode implements Streamable {
 					//There has been a balance change
 					balancechange = true;
 				}
+				
+				//Check the Coin Notify Details..
+				if(MinimaDB.getDB().checkCoinNotify(spentcoin.getAddress().to0xString())) {
+					
+					//Message..
+					JSONObject coinjson = spentcoin.toJSON();
+					MinimaLogger.log("NOTIFY Spent Coin : "+coinjson);
+					
+					//Send a message
+					JSONObject data = new JSONObject();
+					data.put("txblockid", mTxBlock.getTxPoW().getTxPoWID());
+					data.put("txblock", block.toString());
+					data.put("spent", true);
+					data.put("coin", coinjson);
+					
+					//And Post it..
+					Main.getInstance().PostNotifyEvent(Main.MAIN_NOTIFYCOIN, data);
+				}
 			}
 		}
 		
@@ -219,6 +237,24 @@ public class TxPoWTreeNode implements Streamable {
 					Main.getInstance().PostNotifyEvent(Main.MAIN_NEWCOIN, data);
 					
 					balancechange = true;
+				}
+				
+				//Check the Coin Notify Details..
+				if(MinimaDB.getDB().checkCoinNotify(newcoin.getAddress().to0xString())) {
+					
+					//Message..
+					JSONObject coinjson = newcoin.toJSON();
+					MinimaLogger.log("NOTIFY Un-Spent Coin : "+coinjson);
+					
+					//Send a message
+					JSONObject data = new JSONObject();
+					data.put("txblockid", mTxBlock.getTxPoW().getTxPoWID());
+					data.put("txblock", block.toString());
+					data.put("spent", true);
+					data.put("coin", coinjson);
+					
+					//And Post it..
+					Main.getInstance().PostNotifyEvent(Main.MAIN_NOTIFYCOIN, data);
 				}
 			}
 		}

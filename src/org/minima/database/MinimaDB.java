@@ -2,6 +2,7 @@ package org.minima.database;
 
 import java.io.File;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -59,6 +60,11 @@ public class MinimaDB {
 	ReadWriteLock mRWLock;
 	
 	/**
+	 * The coin Addresses to Notify
+	 */
+	HashSet<String> mCoinNotify;
+	
+	/**
 	 * Main Constructor
 	 */
 	public MinimaDB() {
@@ -74,7 +80,9 @@ public class MinimaDB {
 		
 		mP2PDB		= new P2PDB();
 		
-		mRWLock = new ReentrantReadWriteLock();
+		mRWLock 	= new ReentrantReadWriteLock();
+		
+		mCoinNotify	= new HashSet<>();
 	}
 	
 	/**
@@ -631,5 +639,22 @@ public class MinimaDB {
 		
 		//Release the krakken
 		readLock(false);
+	}
+	
+	/**
+	 * Coin Notification
+	 * 
+	 * Different to tracking as can be any coin without the script
+	 */
+	public void addCoinNotify(String zAddress) {
+		mCoinNotify.add(zAddress);
+	}
+	
+	public void removeCoinNotify(String zAddress) {
+		mCoinNotify.remove(zAddress);
+	}
+	
+	public boolean checkCoinNotify(String zAddress) {
+		return mCoinNotify.contains(zAddress);
 	}
 }

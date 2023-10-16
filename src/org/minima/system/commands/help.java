@@ -54,6 +54,7 @@ import org.minima.system.commands.scripts.newscript;
 import org.minima.system.commands.scripts.removescript;
 import org.minima.system.commands.scripts.runscript;
 import org.minima.system.commands.scripts.scripts;
+import org.minima.system.commands.search.coinnotify;
 import org.minima.system.commands.search.coins;
 import org.minima.system.commands.search.history;
 import org.minima.system.commands.search.keys;
@@ -170,6 +171,7 @@ public class help extends Command {
 			addCommand(details, new coinimport());
 			addCommand(details, new coinexport());
 			addCommand(details, new cointrack());
+			addCommand(details, new coinnotify());
 			
 			addCommand(details, new sign());
 			addCommand(details, new verify());

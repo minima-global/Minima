@@ -79,6 +79,7 @@ import org.minima.system.commands.scripts.newscript;
 import org.minima.system.commands.scripts.removescript;
 import org.minima.system.commands.scripts.runscript;
 import org.minima.system.commands.scripts.scripts;
+import org.minima.system.commands.search.coinnotify;
 import org.minima.system.commands.search.coins;
 import org.minima.system.commands.search.history;
 import org.minima.system.commands.search.keys;
@@ -136,7 +137,7 @@ public abstract class Command {
 			new ping(), new random(), new mysql(), new slavenode(), new checkrestore(),
 			//new file(),
 			
-			new vault(), new consolidate(),
+			new vault(), new consolidate(), new coinnotify(),
 			new backup(), new restore(), new test(), 
 			new runscript(), new tutorial(),new keys(),
 			new scripts(), new newscript(), new removescript(),
