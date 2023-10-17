@@ -204,6 +204,12 @@ public class MDSJS {
 	 */
 	public void load(String zFile) {
 		
+		//Check no ..
+		if(zFile.indexOf("..")!=-1) {
+			log("Invalid file for load as has .. in location");
+			return;
+		}
+		
 		//Get base folder..
 		File base = mMDS.getMiniDAPPWebFolder(mMiniDAPPID);
 		
