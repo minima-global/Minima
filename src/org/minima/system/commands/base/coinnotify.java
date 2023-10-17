@@ -1,4 +1,4 @@
-package org.minima.system.commands.search;
+package org.minima.system.commands.base;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
