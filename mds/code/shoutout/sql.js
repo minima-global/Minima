@@ -52,7 +52,7 @@ function messageExists(msgid, callback){
 	});
 }
 
-function insertMessage(category, title, user, pubkey, message, callback){
+function insertMessage(category, title, user, pubkey, message, read, callback){
 	
 	//Has this message been added already
 	var msgid = getUniqueMsgID(category,title,pubkey,message);
@@ -78,7 +78,7 @@ function insertMessage(category, title, user, pubkey, message, callback){
 		var sql = "INSERT INTO shoutout(category,title,categorytitleid,username,"
 					+"userpubkey,message,messageid,read,created) VALUES "+
 					"('"+category+"','"+title+"','"+titleid+"','"+user
-					+"','"+pubkey+"','"+message+"','"+msgid+"',0,"+timemilli+")";
+					+"','"+pubkey+"','"+message+"','"+msgid+"',"+read+","+timemilli+")";
 		
 		//Run this..
 		MDS.sql(sql,function(msg){
@@ -154,5 +154,17 @@ function selectMessages(categorytitleid, callback){
 	//Run this..
 	MDS.sql(sql,function(msg){
 		callback(msg.rows);
+	});
+}
+
+function setAllRead(categorytitleid, callback){
+	//Create the DB if not exists
+	var sql = "UPDATE shoutout SET read=1 WHERE categorytitleid='"+categorytitleid+"'";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		if(callback){
+			callback(msg);	
+		}
 	});
 }

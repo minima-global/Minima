@@ -19,7 +19,7 @@
 	<!-- Load the local JS lib -->
 	<script type="text/javascript" src="xregexp-all.js"></script>
 	<script type="text/javascript" src="purify.min.js"></script>
-	<script type="text/javascript" src="sha1.js"></script>
+	<script type="text/javascript" src="puresha1.js"></script>
 	<script type="text/javascript" src="jslib.js"></script>
 	<script type="text/javascript" src="txn.js"></script>
 	<script type="text/javascript" src="sql.js"></script>
@@ -74,7 +74,7 @@
 					<table border=0 style="width:100%">
 						<tr>
 							<td style="width:100%"><input placeholder="Topic Title" type="text" id="newtopictitle" class="newtopicstyle"></td>
-							<td nowrap>&nbsp;&nbsp;<button class="solobutton" onclick="newtopic();">NEW TOPIC</button></td>
+							<td nowrap>&nbsp;&nbsp;<button id="newtopicbutton" class="solobutton" onclick="newtopic();">NEW TOPIC</button></td>
 						</tr>
 						<tr>
 							<td colspan=2><textarea id="newtopictext" class="topicinput" rows=5></textarea></td>
@@ -94,7 +94,7 @@
 		
 	</div>
 	
-	<div id="emptycat"></div>
+	<div id="emptycat" class="mainview"></div>
 	
 	<!--   кириллицакириллица -->
 	
@@ -102,7 +102,7 @@
 
 <script type="text/javascript">
 	
-	checkCategory(".hello");
+	/*checkCategory(".hello");
 	checkCategory("hello");
 	checkCategory("hello..popo");
 	checkCategory("hello.df dfd.df");
@@ -111,8 +111,14 @@
 	checkCategory("кириллица");
 	checkCategory("1234");
 	checkCategory("1234.sdsd,");
+	*/
 	
-	var CURRENT_CATEGORY = "";
+	//User details
+	var USER_NAME 			= "";
+	var USER_PUBKEY 		= "";
+	var CURRENT_CATEGORY 	= "";
+	
+	//Not used for now..
 	var BACK_TOPICS 	 = false;
 	var NEXT_TOPICS 	 = false;
 	var CURRENT_MAXDATE  = 8640000000000000;
@@ -145,19 +151,17 @@
 	}
 	
 	function jumpUpCategory(){
-		var cat = currentcategory.value;
-		var pos = cat.lastIndexOf(".");
+		var pos = CURRENT_CATEGORY.lastIndexOf(".");
 		if(pos == -1){
 			return;
 		}
-		var newcat = cat.substring(0,pos);
+		var newcat = CURRENT_CATEGORY.substring(0,pos);
 		location.href="index.html?uid="+MDS.minidappuid+"&category="+newcat;
 	}
 	
 	function jumpSubCategory(){
-		var cat 	= currentcategory.value;
 		var subcat 	= subcategories.value;
-		var fullcat = cat+"."+subcat; 
+		var fullcat = CURRENT_CATEGORY+"."+subcat; 
 		location.href="index.html?uid="+MDS.minidappuid+"&category="+fullcat;
 	}
 	
@@ -171,29 +175,24 @@
 	}
 	
 	function newtopic(){
-		var cat = currentcategory.value;
-		if(!cat){
-			alert("MUST be in a category..!");
+		var topictitle = newtopictitle.value.trim();
+		var topictext  = newtopictext.value.trim();
+		
+		if(topictitle == ""){
 			return;
 		}
 		
-		var cleancat = cleanCategory(cat);
-		
-		//Check is a valid Category name..
-		if(!checkCategory(cleancat)){
-			alert("Invalid category!\n\nMUST be word.word.word etc..\n\nNO spaces or punctuation..\n\n"+cleancat);
-			return;
-		}
-		
-		var topictitle = newtopictitle.value;
-		var topictext  = newtopictext.value;
+		//Disable button
+		newtopicbutton.disabled=true;
 		
 		//Send txn!
-		sendTxnMessage(cleancat, topictitle, topictext, "Popo", function(sendresp){
+		sendTxnMessage(CURRENT_CATEGORY, topictitle, topictext, USER_NAME, function(sendresp){
 			
 			//Clear the edit window
 			newtopictitle.value = "";
 			newtopictext.value  = "";
+			
+			newtopicbutton.disabled=false;
 			
 			if(sendresp.pending){
 				alert("TXN is now pending!..");
@@ -202,9 +201,8 @@
 				alert("Error sending txn..\n\n"+sendresp.error);
 				return;
 			}else{
-				alert("TXN sent.. pls wait to confirm");
-				/*//All good add to your DB..
-				insertMessage(cat, topictitle, "Popo", "0x00", topictext,function(){
+				//All good add to your DB..
+				insertMessage(CURRENT_CATEGORY, topictitle, USER_NAME, "0x00", topictext, 1, function(){
 					
 					//Clear the edit window
 					newtopictitle.value = "";
@@ -212,8 +210,7 @@
 					
 					//Jump to it..
 					setTopics();
-					//location.href="index.html?uid="+MDS.minidappuid+"&category="+cat;
-				});*/	
+				});	
 			}
 		});
 	}
@@ -272,11 +269,11 @@
 		
 		var maxDate = MDS.form.getParams("maxdate");
 		if(!maxDate){
-			MDS.log("NO MAX DATE - Choose latest")
+			//MDS.log("NO MAX DATE - Choose latest")
 			maxDate = 8640000000000000;
 			BACK_TOPICS = false;
 		}else{
-			MDS.log("MAX DATE FOUND - "+maxDate)
+			//MDS.log("MAX DATE FOUND - "+maxDate)
 			BACK_TOPICS = true;
 		}
 		
@@ -309,15 +306,23 @@
 		
 		selectTopMessage(catid, function(rows){
 			var msg 	 = rows[0];
+			//MDS.log(JSON.stringify(msg));
+			
 			var topicstr = "<br><table class='topiclist' border=0>";
 			topicstr    += "<tr><td colspan=2><a class='topictitle' href='topic.html?uid="+MDS.minidappuid+"&topicid="+catid+"'>"+msg.TITLE+"</a></td></tr>";
 			topicstr    += "<tr><td>&nbsp;</td></tr>";
 			if(msg.MESSAGE.trim() == ""){
 				topicstr += "<tr><td>No comments yet..</td></tr>";
 			}else{
-				var text = msg.USERNAME+" : "+msg.MESSAGE;
+				var text;
+				if(msg.READ == "0"){
+					text = "[NEW] "+msg.USERNAME+" : "+msg.MESSAGE;
+				}else{
+					text = msg.USERNAME+" : "+msg.MESSAGE;
+				}
+				
 				var date = new Date(+msg.CREATED);
-				topicstr += "<tr><td width=100% class='ellipsistext'>"+msg.USERNAME+" : "+msg.MESSAGE+"</td>"
+				topicstr += "<tr><td width=100% class='ellipsistext'>"+text+"</td>"
 							+"<td nowrap>"+date.toLocaleString()+"</td></tr>";	
 			}
 			topicstr += "</table>";
@@ -346,53 +351,54 @@
 		if(msg.event == "inited"){
 			
 			//Notify of new messages..
-			MDS.cmd("coinnotify action:add address:"+SHOUTOUT_ADDRESS,function(notifymsg){
-				//MDS.log(JSON.stringify(notifymsg));
+			MDS.cmd("maxima",function(startup){
+				//Get the user details
+				USER_NAME 	= startup.response.name;
+				USER_PUBKEY = startup.response.publickey;
 			});
 			
 			if(false){
 				wipeDB();
 				MDS.log("DB Wiped")
 			}else{
-			
-				//Do stuff.. from now..		
-				createDB(function(){
-			
-					//Try to insert a message
-					insertMessage("Minima", "Start Here!", "Spartacus", "0x00", "Blah Blah Blah!", function(res){
-						if(res){
-							location.href="index.html?uid="+MDS.minidappuid;
-							return;
-						}
-					});
 					
-					//Which category
-					CURRENT_CATEGORY = MDS.form.getParams("category");
-					if(!CURRENT_CATEGORY){
-						CURRENT_CATEGORY = "";
-					}	
-					CURRENT_CATEGORY = cleanCategory(CURRENT_CATEGORY);
-					
-					//Load all the categories
-					setCategories();	
+				//Which category
+				CURRENT_CATEGORY = MDS.form.getParams("category");
+				if(!CURRENT_CATEGORY){
+					CURRENT_CATEGORY = "";
+				}	
+				CURRENT_CATEGORY = cleanCategory(CURRENT_CATEGORY);
 				
-					if(CURRENT_CATEGORY == ""){
-						topicstable.style.display = "none";
-						emptycat.innerHTML = "Create your own Category or chose a sub-category to start.."
-					}else{
-						topicstable.style.display = "block";
-						
-						//Load all the topics..
-						setTopics();	
-					}
-				});
+				//Load all the categories
+				setCategories();	
+			
+				if(CURRENT_CATEGORY == ""){
+					topicstable.style.display 	= "none";
+					emptycat.style.display 		= "block";
+					
+					emptycat.innerHTML = 
+				"<h3>Welcome to Shout Out!</h3>"+
+				"<br>"+
+				"<div style='text-align:left'>"+
+				"Create your own Category or choose a sub-category to start<br><br>"+
+				"Categories MUST be of the form <b>WORD</b>.<b>WORD</b>.<b>WORD</b>. etc..<br><br>"+
+				"Messages are NOT free. They are sent over Layer 1 and currently cost 0.01 Minima.<br><br>"+
+				"All Minima users can receive these messages in this app.<br><br>"+
+				"</div>";
+				}else{
+					emptycat.style.display = "none";
+					topicstable.style.display = "block";
+					
+					//Load all the topics..
+					setTopics();	
+				}
 			}
 			
 		}else if(msg.event == "NOTIFYCOIN"){
 			
 			//Is it the one that matters
 			if(msg.data.address ==  SHOUTOUT_ADDRESS){
-				MDS.log("NEW SHOUTOUT : "+JSON.stringify(msg.data))
+				//MDS.log("NEW SHOUTOUT : "+JSON.stringify(msg.data))
 				
 				//Check is Valid..
 				//..
@@ -403,20 +409,18 @@
 				var msg_message  = stripBrackets(msg.data.coin.state[2]);
 				var msg_user 	 = stripBrackets(msg.data.coin.state[3]);
 				
-				insertMessage(msg_category, msg_title, msg_user, "0x00", msg_message,function(sqlresp){
+				//It's a message..
+				if(msg_category == CURRENT_CATEGORY){
+					//MDS.log("NEW MESSAGE in this category.. ")
 					
-					//It's a message..
-					if(msg_category == CURRENT_CATEGORY){
-						MDS.log("NEW MESSAGE in this category.. ")
-						
-						//Jump to it..
-						setTopics();	
-					}else{
-						MDS.log("NEW MESSAGE NOT in this category.. ")
-						//Show somewhere..
-						//..
-					}
-				});
+					//Update page
+					setTopics();
+					
+				}else{
+					//MDS.log("NEW MESSAGE NOT in this category.. ")
+					//Show somewhere..
+					//..
+				}
 			}
 		}
 	});
