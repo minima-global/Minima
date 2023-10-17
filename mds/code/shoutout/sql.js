@@ -27,9 +27,19 @@ function createDB(callback){
 				
 	//Run this..
 	MDS.sql(initsql,function(msg){
-		if(callback){
-			callback(msg);
-		}
+		
+		//And now the notify table..
+		var notifysql = "CREATE TABLE IF NOT EXISTS `notify` ( "
+					+"  `id` bigint auto_increment, "
+					+"  `categorytitleid` varchar(128) NOT NULL, "
+					+"  `created` bigint NOT NULL "
+					+" )";
+		
+		MDS.sql(notifysql,function(msg){
+			if(callback){
+				callback(msg);
+			}
+		});
 	});
 }
 
@@ -149,11 +159,12 @@ function selectTopMessage(catid, callback){
 function selectMessages(categorytitleid, callback){
 	//Create the DB if not exists
 	var sql = "SELECT * FROM shoutout "
-			+"WHERE categorytitleid='"+categorytitleid+"' ORDER BY created ASC";
+			+"WHERE categorytitleid='"+categorytitleid+"' ORDER BY created DESC LIMIT 256";
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
-		callback(msg.rows);
+		//Reverse the rows..
+		callback(msg.rows.reverse());
 	});
 }
 
@@ -165,6 +176,50 @@ function setAllRead(categorytitleid, callback){
 	MDS.sql(sql,function(msg){
 		if(callback){
 			callback(msg);	
+		}
+	});
+}
+
+function isNotify(catid, callback){
+	var sql = "SELECT * FROM notify WHERE categorytitleid='"+catid+"'";
+	MDS.sql(sql,function(sqlresp){
+		if(sqlresp.count>0){
+			callback(true);
+		}else{
+			callback(false);
+		}
+	});
+}
+
+function removeNotify(catid, callback){
+	var sql = "DELETE FROM notify WHERE categorytitleid='"+catid+"'";
+	MDS.sql(sql,function(sqlresp){
+		if(callback){
+			callback();
+		}
+	});
+}
+
+function newNotifyTopic(catid, callback){
+	isNotify(catid, function(alreadyadded){
+		if(!alreadyadded){
+			var startdate = new Date();
+			var timemilli = startdate.getTime()
+			
+			//Add to the notify table..
+			var sql = "INSERT INTO notify(categorytitleid,created) VALUES "+
+					"('"+catid+"',"+timemilli+")";
+				
+			MDS.sql(sql,function(sqlresp){
+				if(callback){
+					callback(true);	
+				}
+			});
+			
+		}else{
+			if(callback){
+				callback(false);
+			}
 		}
 	});
 }

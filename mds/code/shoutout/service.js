@@ -63,7 +63,21 @@ MDS.init(function(msg){
 			var msg_user 	 = stripBrackets(msg.data.coin.state[3]);
 			
 			//Insert unread message - if not already added
-			insertMessage(msg_category, msg_title, msg_user, "0x00", msg_message, 0, function(sqlresp){});
+			insertMessage(msg_category, msg_title, msg_user, "0x00", msg_message, 0, function(inserted){
+				//Do we notify the User
+				if(inserted){
+					var cattitleid = getCategoryTitleID(msg_category, msg_title);
+					isNotify(cattitleid,function(notify){
+						if(notify){
+							var notmsg = msg_user+" : "+msg_message;
+							if(notmsg.length>30){
+								notmsg = notmsg.substring(0,30)+"..";
+							}
+							MDS.notify(notmsg);		
+						}
+					});
+				}	
+			});
 		}
 	}
 });		

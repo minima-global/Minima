@@ -40,11 +40,14 @@
 		<br>
 		<table width=100%>
 			<tr>
-				<td style="text-align:left"><button onclick="history.back();" class="solobutton">&nbsp;&nbsp;Back&nbsp;&nbsp;</button></td>
-				<td style="text-align:right"><button id="sendbutton" onclick="sendMessage();" class="solobutton">&nbsp;Send Message&nbsp;</button></td>
+				<td style="text-align:left;width:33%" nowrap><button onclick="history.back();" class="solobutton">&nbsp;&nbsp;Back&nbsp;&nbsp;</button></td>
+				<td style="text-align:center;width:34%" nowrap>
+					<input type="checkbox" id="notifybox" onclick="notifyCheckbox();">
+					<label for="vehicle1">Notify</label>
+				</td>
+				<td style="text-align:right;width:33%" nowrap><button id="sendbutton" onclick="sendMessage();" class="solobutton">&nbsp;Send Message&nbsp;</button></td>
 			</tr>
 		</table>
-			
 	</div>
 	
 	
@@ -55,9 +58,18 @@
 	var USER_NAME = "";
 	var USER_PUBKEY = "";
 	
-	var TOPIC_CATEGORY 	= "";
-	var TOPIC_TITLE 	= "";
+	var TOPIC_CATEGORY 		= "";
+	var TOPIC_TITLE 		= "";
+	var CATEGORY_TITLE_ID 	= "";
 
+	function notifyCheckbox(){
+		if(notifybox.checked){
+			newNotifyTopic(CATEGORY_TITLE_ID);
+		}else{
+			removeNotify(CATEGORY_TITLE_ID);
+		}
+	}
+	
 	function sendMessage(){
 		var message = replytext.value.trim();
 		if(message == ""){
@@ -85,8 +97,10 @@
 			}else{
 				//All good add to your DB..
 				insertMessage(TOPIC_CATEGORY, TOPIC_TITLE, USER_NAME, "0x00", message, 1, function(insresp){
-					//Reset the messages
-					setMessages();
+					//Add to the notify stack
+					newNotifyTopic(CATEGORY_TITLE_ID, function(){
+						setMessages();	
+					});
 				});	
 			}
 		});
@@ -126,6 +140,13 @@
 			}
 			
 			setAllRead(topicid);
+			
+			//Do we notify
+			CATEGORY_TITLE_ID = getCategoryTitleID(TOPIC_CATEGORY,TOPIC_TITLE);
+			isNotify(CATEGORY_TITLE_ID,function(noti){
+				//Is it checked..
+				notifybox.checked = noti;	
+			});
 		});
 	}
 	
@@ -157,7 +178,7 @@
 			
 			//Set the topic messages..
 			setMessages();
-		
+			
 		}else if(msg.event == "NOTIFYCOIN"){
 			
 			//Is it the one that matters

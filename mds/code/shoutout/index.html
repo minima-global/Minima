@@ -178,7 +178,8 @@
 		var topictitle = newtopictitle.value.trim();
 		var topictext  = newtopictext.value.trim();
 		
-		if(topictitle == ""){
+		if(topictitle == "" || topictext==""){
+			alert("Cannot have blank title or message..");
 			return;
 		}
 		
@@ -208,8 +209,12 @@
 					newtopictitle.value = "";
 					newtopictext.value  = "";
 					
-					//Jump to it..
-					setTopics();
+					//Add to the notify stack
+					var cattitleid = getCategoryTitleID(CURRENT_CATEGORY,topictitle);
+					newNotifyTopic(cattitleid, function(){
+						//Jump to it..
+						setTopics();	
+					});
 				});	
 			}
 		});
