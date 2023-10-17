@@ -95,7 +95,8 @@ public class MDSFileHandler implements Runnable {
  			
  			//Is it still NULL
  			if(input == null) {
- 				throw new IllegalArgumentException("Invalid NULL MDS File request ");
+ 				return;
+ 				//throw new IllegalArgumentException("Invalid NULL MDS File request ");
  			}
  			
 			// we parse the request with a string tokenizer
