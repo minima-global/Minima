@@ -110,7 +110,11 @@ public class MDSJS {
 	}
 	
 	public void log(String zMessage, boolean zNotifyAll) {
-		MinimaLogger.log("MDS_"+mMiniDAPPName+"_"+mMiniDAPPID+" > [NOTIFY:"+zNotifyAll+"] "+zMessage, zNotifyAll);
+		if(!zNotifyAll) {
+			MinimaLogger.log("MDS_"+mMiniDAPPName+"_"+mMiniDAPPID+" > [NOTIFY:"+zNotifyAll+"] "+zMessage, zNotifyAll);
+		}else {
+			MinimaLogger.log("MDS_"+mMiniDAPPName+"_"+mMiniDAPPID+" > "+zMessage, zNotifyAll);
+		}
 	}
 	
 	/**
