@@ -29,13 +29,23 @@
 <body>
 
 <center>
-
+	
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table>
+			<tr>
+				<td><img height=45 src="shoutout.png"></td>
+				<td style="font-size:26px">&nbsp;<b>Shout Out</b></td>
+			</tr>
+		</table>
+	</div>
+	<br>
+	
 	<div class="mainview">
 		
 		<table width=100% border=0>
 			
 			<tr>
-				<td>Category : </td>
+				<td colspan=2 nowrap>Category : </td>
 			</tr>
 			
 			<tr>
@@ -51,7 +61,7 @@
 			</tr>
 			
 			<tr>
-				<td>Sub Category : </td>
+				<td colspan=2 nowrap>Sub Category : </td>
 			</tr>
 			
 			<tr>
@@ -123,6 +133,12 @@
 	var NEXT_TOPICS 	 = false;
 	var CURRENT_MAXDATE  = 8640000000000000;
 	
+	function showTitleOnAndroid(){
+		if (window.navigator.userAgent.includes('Minima Browser')) {
+			Android.showTitleBar();
+    	}
+	}
+	
 	function backTopics(){
 		if(BACK_TOPICS){
 			history.back();
@@ -189,19 +205,23 @@
 		//Send txn!
 		sendTxnMessage(CURRENT_CATEGORY, topictitle, topictext, USER_NAME, function(sendresp){
 			
-			//Clear the edit window
-			newtopictitle.value = "";
-			newtopictext.value  = "";
-			
 			newtopicbutton.disabled=false;
 			
 			if(sendresp.pending){
+				//Clear the edit window
+				newtopictitle.value = "";
+				newtopictext.value  = "";
+				
 				alert("TXN is now pending!..");
 				return;
 			}else if(!sendresp.status){
 				alert("Error sending txn..\n\n"+sendresp.error);
 				return;
 			}else{
+				//Clear the edit window
+				newtopictitle.value = "";
+				newtopictext.value  = "";
+				
 				//All good add to your DB..
 				insertMessage(CURRENT_CATEGORY, topictitle, USER_NAME, "0x00", topictext, 1, function(){
 					
@@ -313,22 +333,25 @@
 			var msg 	 = rows[0];
 			//MDS.log(JSON.stringify(msg));
 			
+			var dec_title 	= decodeStringFromDB(msg.TITLE);
+			var dec_user 	= decodeStringFromDB(msg.USERNAME);
+			var dec_msg 	= decodeStringFromDB(msg.MESSAGE);
+			
 			var topicstr = "<br><table class='topiclist' border=0>";
-			topicstr    += "<tr><td colspan=2><a class='topictitle' href='topic.html?uid="+MDS.minidappuid+"&topicid="+catid+"'>"+msg.TITLE+"</a></td></tr>";
+			topicstr    += "<tr><td><a class='topictitle' href='topic.html?uid="+MDS.minidappuid+"&topicid="+catid+"'>"+dec_title+"</a></td></tr>";
 			topicstr    += "<tr><td>&nbsp;</td></tr>";
 			if(msg.MESSAGE.trim() == ""){
 				topicstr += "<tr><td>No comments yet..</td></tr>";
 			}else{
-				var text;
+				var text="";
 				if(msg.READ == "0"){
-					text = "[NEW] "+msg.USERNAME+" : "+msg.MESSAGE;
-				}else{
-					text = msg.USERNAME+" : "+msg.MESSAGE;
+					text = "[NEW] ";
 				}
+				text += dec_user+" : "+dec_msg;
 				
 				var date = new Date(+msg.CREATED);
-				topicstr += "<tr><td width=100% class='ellipsistext'>"+text+"</td>"
-							+"<td nowrap>"+date.toLocaleString()+"</td></tr>";	
+				topicstr += "<tr><td width=100% class='ellipsistext'>"+text+"</td></tr>";
+				topicstr += "<tr><td class='topicdate' nowrap>"+date.toLocaleString()+"</td></tr>";
 			}
 			topicstr += "</table>";
 			
@@ -372,7 +395,10 @@
 				if(!CURRENT_CATEGORY){
 					CURRENT_CATEGORY = "";
 				}	
+				
 				CURRENT_CATEGORY = cleanCategory(CURRENT_CATEGORY);
+				
+				MDS.log("CATEGORY : "+CURRENT_CATEGORY);
 				
 				//Load all the categories
 				setCategories();	
@@ -386,7 +412,7 @@
 				"<br>"+
 				"<div style='text-align:left'>"+
 				"Create your own Category or choose a sub-category to start<br><br>"+
-				"Categories MUST be of the form <b>WORD</b>.<b>WORD</b>.<b>WORD</b>. etc..<br><br>"+
+				"Categories MUST be of the form <b>word</b>.<b>word</b>.<b>word</b>. etc..<br><br>"+
 				"Messages are NOT free. They are sent over Layer 1 and currently cost 0.01 Minima.<br><br>"+
 				"All Minima users can receive these messages in this app.<br><br>"+
 				"</div>";

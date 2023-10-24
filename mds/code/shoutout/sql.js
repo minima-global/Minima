@@ -8,6 +8,16 @@ function wipeDB(callback){
 	});
 }
 
+function encodeStringForDB(str){
+	return encodeURIComponent(str).split("'").join("%27");
+	//return encodeURIComponent(str).replaceAll("'", "%27");
+}
+
+function decodeStringFromDB(str){
+	return decodeURIComponent(str).split("%27").join("'");
+	//return decodeURIComponent(str).replaceAll("%27", "'");
+}
+
 function createDB(callback){
 	
 	//Create the DB if not exists
@@ -85,10 +95,15 @@ function insertMessage(category, title, user, pubkey, message, read, callback){
 		//Calculate the titleid
 		var titleid = getCategoryTitleID(category,title);
 		
+		//URL encode strings.. removes chance of SQL errors
+		var enc_user 	=  encodeStringForDB(user);
+		var enc_title 	=  encodeStringForDB(title);
+		var enc_msg 	=  encodeStringForDB(message);
+		
 		var sql = "INSERT INTO shoutout(category,title,categorytitleid,username,"
 					+"userpubkey,message,messageid,read,created) VALUES "+
-					"('"+category+"','"+title+"','"+titleid+"','"+user
-					+"','"+pubkey+"','"+message+"','"+msgid+"',"+read+","+timemilli+")";
+					"('"+category+"','"+enc_title+"','"+titleid+"','"+enc_user
+					+"','"+pubkey+"','"+enc_msg+"','"+msgid+"',"+read+","+timemilli+")";
 		
 		//Run this..
 		MDS.sql(sql,function(msg){

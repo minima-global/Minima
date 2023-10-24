@@ -17,12 +17,24 @@ function cleanCategory(incategory){
 		newcat = newcat.substring(0,newcat.length-1);
 	}
 	
-	return newcat;
+	return newcat.toLowerCase();
 }
 
 function checkCategory(category){
-	var valid = VALID_CATEGORY_REGEX.test(category);
-	MDS.log("REGEX : "+category+" "+valid);
+	
+	//Check is clean
+	var valid = true;
+	if(cleanCategory(category) != category){
+		valid = false;
+	}else{
+		valid = VALID_CATEGORY_REGEX.test(category);
+	}
+	
+	//Log it..
+	if(!valid){
+		MDS.log("Invalid check category : "+category);
+	}
+	
 	return valid;
 }
 

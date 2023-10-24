@@ -39,7 +39,7 @@ MDS.init(function(msg){
 		createDB(function(){
 	
 			//Try to insert a message
-			insertMessage("Minima", "Start Here!", "Spartacus", "0x00", "Blah Blah Blah!", 0, function(res){});
+			insertMessage("minima", "Start Here!", "Spartacus", "0x00", "Blah Blah Blah!", 0, function(res){});
 			
 			//Notify of new messages..
 			MDS.cmd("coinnotify action:add address:"+SHOUTOUT_ADDRESS,function(startup){});
@@ -58,6 +58,12 @@ MDS.init(function(msg){
 			
 			//Add to the DB..
 			var msg_category = stripBrackets(msg.data.coin.state[0]);
+			if(msg_category.indexOf(" ") != -1){
+				//ERROR
+				MDS.log("Category Invalid : "+msg_category);
+				return;
+			}
+			
 			var msg_title 	 = stripBrackets(msg.data.coin.state[1]);
 			var msg_message  = stripBrackets(msg.data.coin.state[2]);
 			var msg_user 	 = stripBrackets(msg.data.coin.state[3]);

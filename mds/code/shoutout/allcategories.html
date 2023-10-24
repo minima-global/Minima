@@ -29,8 +29,17 @@
 <body>
 
 <center>
-<br>
 	
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table>
+			<tr>
+				<td><img height=45 src="shoutout.png"></td>
+				<td style="font-size:26px">&nbsp;<b>Shout Out</b></td>
+			</tr>
+		</table>
+	</div>
+	<br>
+		
 	<div class="allcatsview" id="allcats">
 	</div>
 	
@@ -38,6 +47,12 @@
 
 <script type="text/javascript">
 	
+	function showTitleOnAndroid(){
+		if (window.navigator.userAgent.includes('Minima Browser')) {
+			Android.showTitleBar();
+		}
+	}
+
 	function writeAllCategories(){
 		
 		selectCategories(function(cats){
