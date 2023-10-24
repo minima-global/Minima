@@ -82,8 +82,10 @@ public class burn extends Command {
 					//Get the Transaction
 					TxPoW txp = txpdb.getTxPoW(txn.to0xString());
 					
-					//Adjust Burn values..
-					checkBurn(txp, counter);
+					//Adjust Burn values.. if we have the txns..
+					if(txp != null) {
+						checkBurn(txp, counter);
+					}
 				}
 				
 				//And check the parent
