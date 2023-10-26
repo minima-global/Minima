@@ -482,6 +482,9 @@ public class Main extends MessageProcessor {
 			//Tell listener..
 			NotifyMainListenerOfShutDown();
 			
+			//NULL main instance..
+			mMainInstance = null;
+			
 		}catch(Exception exc) {
 			MinimaLogger.log("ERROR Shutting down..");
 			MinimaLogger.log(exc);

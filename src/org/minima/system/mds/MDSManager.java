@@ -164,6 +164,9 @@ public class MDSManager extends MessageProcessor {
 		
 		//Waiting for shutdown..
 		waitToShutDown();
+		
+		//No longer started
+		mHasStarted = false;
 	}
 	
 	public File getRootMDSFolder() {
