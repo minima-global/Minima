@@ -256,7 +256,7 @@
 	
 	function chooseCategories(){
 		//Main Title Category
-		currentcategory.value=CURRENT_CATEGORY;
+		currentcategory.value = DOMPurify.sanitize(CURRENT_CATEGORY);
 		
 		if(CURRENT_CATEGORY == ""){
 			selectRootCategories(function(cats){
