@@ -486,9 +486,10 @@ public class MDSFileHandler implements Runnable {
 					dos.writeBytes("Content-Length: " + filelen+ "\r\n");
 					dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
 					
-					if(contenttype.startsWith("image")) {
+					//Only cache Images ?
+					//if(contenttype.startsWith("image")) {
 						dos.writeBytes("Cache-Control: max-age=604800: *\r\n");
-					}
+					//}
 							
 					//Are we downloading this file..
 					if(downloader) {
