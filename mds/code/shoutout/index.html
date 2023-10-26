@@ -65,8 +65,12 @@
 			</tr>
 			
 			<tr>
-				<td colspan=2>
+				<td>
 					<select id="subcategories" class="subcategory" onchange="subChange()"></select>
+				</td>
+				<td nowrap>
+					&nbsp;
+					<button class="solobutton" onclick="jumpRecent()">&nbsp;All Recent Messages&nbsp;</button>
 				</td>
 			</tr>
 		</table>
@@ -151,6 +155,10 @@
 		}
 	}
 	
+	function jumpRecent(){
+		location.href="recent.html?uid="+MDS.minidappuid;
+	}
+	
 	function jumpCategory(){
 		var cat = currentcategory.value;
 		
@@ -169,6 +177,8 @@
 	function jumpUpCategory(){
 		var pos = CURRENT_CATEGORY.lastIndexOf(".");
 		if(pos == -1){
+			//Jump to start page
+			location.href="index.html?uid="+MDS.minidappuid;
 			return;
 		}
 		var newcat = CURRENT_CATEGORY.substring(0,pos);
@@ -192,8 +202,12 @@
 	
 	function newtopic(){
 		var topictitle = newtopictitle.value.trim();
-		var topictext  = newtopictext.value.trim();
 		
+		//Strip all tags from title..
+		topictitle = topictitle.replace(/<\/?[^>]+(>|$)/g, "");
+		
+		var topictext  = newtopictext.value.trim();
+				
 		if(topictitle == "" || topictext==""){
 			alert("Cannot have blank title or message..");
 			return;
@@ -240,46 +254,55 @@
 		});
 	}
 	
-	function setCategories(){
-		
+	function chooseCategories(){
 		//Main Title Category
 		currentcategory.value=CURRENT_CATEGORY;
 		
-		selectCategories(function(cats){			
-			var len = cats.length;
+		if(CURRENT_CATEGORY == ""){
+			selectRootCategories(function(cats){
+				setCategories(cats);
+			});	
+		}else{
+			selectChildCategories(CURRENT_CATEGORY,function(cats){
+				setCategories(cats);
+			});
+		}
+	}
+	
+	function setCategories(cats){
+		
+		var len = cats.length;
+		
+		//Set the subcategories..
+		var lowercat 	= CURRENT_CATEGORY.toLowerCase();
+		var catlen 		= lowercat.length; 
+		
+		//Add Base option
+		var option = document.createElement("option");
+		option.text   = "Select a sub-category :";
+		option.value  = "";	
+		subcategories.add(option);
+		
+		//Cycle through
+		for(var i=0;i<len;i++){
+			var subcat = cats[i].CATEGORY.toLowerCase();
 			
-			//Set the subcategories..
-			var lowercat 	= CURRENT_CATEGORY.toLowerCase();
-			var catlen 		= lowercat.length; 
-			
-			//Add Base option
-			var option = document.createElement("option");
-			option.text   = "Select a sub-category :";
-			option.value  = "";	
-			subcategories.add(option);
-			
-			//Cycle through
-			for(var i=0;i<len;i++){
-				var subcat = cats[i].CATEGORY.toLowerCase();
+			if(subcat.startsWith(lowercat)){
+				var justcat = cats[i].CATEGORY.substring(catlen+1);
+				if(catlen==0){
+					justcat = cats[i].CATEGORY.substring(catlen);
+				}
 				
-				if(subcat.startsWith(lowercat)){
-					var justcat = cats[i].CATEGORY.substring(catlen+1);
-					if(catlen==0){
-						justcat = cats[i].CATEGORY.substring(catlen);
-					}
-					
-					if(!justcat.includes(".")){
-						option = document.createElement("option");
-						if(justcat != ""){
-							option.text   = justcat;
-							option.value  = cats[i].CATEGORY;
-							subcategories.add(option);
-						}
+				if(!justcat.includes(".")){
+					option = document.createElement("option");
+					if(justcat != ""){
+						option.text   = justcat;
+						option.value  = cats[i].CATEGORY;
+						subcategories.add(option);
 					}
 				}
 			}
-			
-		});
+		}
 	}
 	
 	var ffMAX;
@@ -401,7 +424,7 @@
 				MDS.log("CATEGORY : "+CURRENT_CATEGORY);
 				
 				//Load all the categories
-				setCategories();	
+				chooseCategories();	
 			
 				if(CURRENT_CATEGORY == ""){
 					topicstable.style.display 	= "none";
@@ -411,10 +434,11 @@
 				"<h3>Welcome to Shout Out!</h3>"+
 				"<br>"+
 				"<div style='text-align:left'>"+
-				"Create your own Category or choose a sub-category to start<br><br>"+
+				"Shout Out is a censorship-resistant blockchain based forum.<br><br>"+
+				"Create your own Category or choose a sub-category to start.<br><br>"+
 				"Categories MUST be of the form <b>word</b>.<b>word</b>.<b>word</b>. etc..<br><br>"+
 				"Messages are NOT free. They are sent over Layer 1 and currently cost 0.01 Minima.<br><br>"+
-				"All Minima users can receive these messages in this app.<br><br>"+
+				"All Minima users can see these messages.<br><br>"+
 				"</div>";
 				}else{
 					emptycat.style.display = "none";

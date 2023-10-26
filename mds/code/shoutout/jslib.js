@@ -17,6 +17,8 @@ function cleanCategory(incategory){
 		newcat = newcat.substring(0,newcat.length-1);
 	}
 	
+	newcat = newcat.replace(/<\/?[^>]+(>|$)/g, "");
+	
 	return newcat.toLowerCase();
 }
 

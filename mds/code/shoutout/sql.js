@@ -125,21 +125,58 @@ function selectCategories(callback){
 	});
 }
 
+function selectChildCategories(currentcategory, callback){
+	
+	var sql = "SELECT DISTINCT category FROM shoutout "
+			 +"WHERE REGEXP_LIKE(category, '"+currentcategory+"') ORDER BY LOWER(category) ASC";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		//MDS.log(JSON.stringify(msg));
+		callback(msg.rows);
+	});
+}
+
+function selectRootCategories(callback){
+	var sql = "SELECT DISTINCT category FROM shoutout "
+			 +"WHERE REGEXP_LIKE(category, '^[^.]*$') ORDER BY LOWER(category) ASC";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		//MDS.log(JSON.stringify(msg));
+		callback(msg.rows);
+	});
+}
+
 function selectTopics(maxnum, maxdate, category, callback){
 	//Create the DB if not exists
 	var sql = "SELECT DISTINCT categorytitleid "
 			+"FROM shoutout "
 			+"WHERE category='"+category+"' "
 			+"ORDER BY created DESC LIMIT "+maxnum;
-			
-	/*var sql = "SELECT DISTINCT categorytitleid,title "
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		callback(msg.rows);
+	});
+}
+
+function selectRecentMessages(limit, offset, callback){
+	//Create the DB if not exists
+	var sql = "SELECT * FROM shoutout ORDER BY created DESC LIMIT "+limit+" OFFSET "+offset;
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		callback(msg.rows);
+	});
+}
+
+function selectTopics(maxnum, maxdate, category, callback){
+	//Create the DB if not exists
+	var sql = "SELECT DISTINCT categorytitleid "
 			+"FROM shoutout "
 			+"WHERE category='"+category+"' "
-			+"AND created<"+maxdate
-			+" ORDER BY created DESC LIMIT "+maxnum;
-	*/
-	
-	//MDS.log("SQL:"+sql);
+			+"ORDER BY created DESC LIMIT "+maxnum;
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
@@ -174,7 +211,7 @@ function selectTopMessage(catid, callback){
 function selectMessages(categorytitleid, callback){
 	//Create the DB if not exists
 	var sql = "SELECT * FROM shoutout "
-			+"WHERE categorytitleid='"+categorytitleid+"' ORDER BY created DESC LIMIT 256";
+			+"WHERE categorytitleid='"+categorytitleid+"' ORDER BY created DESC LIMIT 1024";
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
