@@ -420,6 +420,7 @@ public class archive extends Command {
 					long mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 					if(mem > 250 * 1024 * 1024) {
 						Main.getInstance().resetMemFull();
+						MinimaLogger.log("Clean up memory..");
 					}else {
 						//MinimaLogger.log("RAM memory usage still low.. wait for cleanup");
 					}
