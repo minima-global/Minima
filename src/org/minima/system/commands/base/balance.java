@@ -263,8 +263,8 @@ public class balance extends Command {
 				if(tokendetails) {
 					JSONObject tdetails = new JSONObject();
 					tdetails.put("decimals", tok.getDecimalPlaces());
-					tdetails.put("script", tok.getTokenScript());
-					tdetails.put("totalamount", tok.getAmount());
+					tdetails.put("script", tok.getTokenScript().toString());
+					tdetails.put("totalamount", tok.getAmount().toString());
 					tdetails.put("scale", tok.getScale().toString());
 					tdetails.put("created", tok.getCreated().toString());
 					
