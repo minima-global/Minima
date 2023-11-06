@@ -479,16 +479,21 @@ public class Main extends MessageProcessor {
 			
 			MinimaLogger.log("Shut down completed OK..");
 			
+			//NULL main instance..
+			ClearMainInstance();
+			
 			//Tell listener..
 			NotifyMainListenerOfShutDown();
-			
-			//NULL main instance..
-			mMainInstance = null;
 			
 		}catch(Exception exc) {
 			MinimaLogger.log("ERROR Shutting down..");
 			MinimaLogger.log(exc);
 		}
+	}
+	
+	public static void ClearMainInstance() {
+		//NULL main instance..
+		mMainInstance = null;
 	}
 	
 	public void NotifyMainListenerOfShutDown() {
