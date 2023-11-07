@@ -18,6 +18,7 @@ import java.util.zip.GZIPInputStream;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
+import org.minima.database.archive.RawArchiveInput;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.wallet.Wallet;
@@ -50,10 +51,15 @@ import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageListener;
 
 public class archive extends Command {
-
-	private static ArchiveManager STATIC_TEMPARCHIVE 	= null;
+	
+	//Are we restoring from a local archive..
 	private final String LOCAL_ARCHIVE 					= "archiverestore";
 	
+	//H2 local
+	private static boolean H2_TEMPARCHIVE 				= true;
+	
+	private static ArchiveManager STATIC_TEMPARCHIVE 	= null;
+	private static RawArchiveInput STATIC_RAW		 	= null;
 	
 	public archive() {
 		super("archive","[action:] (host:) (phrase:) (keys:) (keyuses:) - Resync your chain with seed phrase if necessary (otherwise wallet remains the same)");
@@ -298,24 +304,10 @@ public class archive extends Command {
 			
 			//Is it auto
 			boolean usinglocal = false;
-//			if(fullhost.equals("auto")) {
-//				
-//				//Choose one from our default list
-//				int size  	= P2PParams.DEFAULT_ARCHIVENODE_LIST.size();
-//				int rand  	= new Random().nextInt(size);
-//				
-//				InetSocketAddress archaddr = P2PParams.DEFAULT_ARCHIVENODE_LIST.get(rand);
-//				String ip 	= archaddr.getHostString();
-//				int port    = archaddr.getPort();
-//				fullhost	= ip+":"+port;
-//				
-//				MinimaLogger.log("RANDOM ARCHIVE HOST : "+rand+" host:"+fullhost);
-//			
-//			}else 
 			if(fullhost.equals(LOCAL_ARCHIVE)) {
 				
 				//Using the local DB..
-				if(STATIC_TEMPARCHIVE == null) {
+				if(H2_TEMPARCHIVE && STATIC_TEMPARCHIVE == null) {
 					throw new CommandException("No Local STATIC Archive DB Found..");
 				}
 				
@@ -440,13 +432,18 @@ public class archive extends Command {
 				if(!usinglocal) {
 					ibd = sendArchiveReq(host, port, startblock);
 				}else {
-					ibd = new IBD();
-					ibd.createArchiveIBD(startblock, STATIC_TEMPARCHIVE, true);
+					
+					if(H2_TEMPARCHIVE) {
+						ibd = new IBD();
+						ibd.createArchiveIBD(startblock, STATIC_TEMPARCHIVE, true);
+					}else {
+						ibd = STATIC_RAW.getNextIBD();
+					}
 				}
 				
+				//Make sure something returned..
 				if(ibd == null) {
 					ibd = new IBD();
-					//throw new CommandException("Connection error @ "+host+":"+port);
 				}
 				
 				//Is there a cascade..
@@ -602,7 +599,7 @@ public class archive extends Command {
 			resp.put("size", MiniFormat.formatSize(gziplen));
 			ret.put("response", resp);
 		
-		}else if(action.equals("import")) {
+		}else if(action.equals("importold")) {
 			
 			//Get the file
 			String file = getParam("file");
@@ -677,6 +674,129 @@ public class archive extends Command {
 			resp.put("archiveresync", result);
 			ret.put("response", resp);
 				
+		}else if(action.equals("import")) {
+			
+			//Get the file
+			String file = getParam("file");
+			
+			//Does it exist..
+			File restorefile = MiniFile.createBaseFile(file);
+			if(!restorefile.exists()) {
+				throw new Exception("Restore file doesn't exist : "+restorefile.getAbsolutePath());
+			}
+			
+			//Is it an H2 gzip or a raw dat
+			boolean h2import = true; 
+			if(file.endsWith(".dat")) {
+				h2import = false;
+			}
+			
+			if(h2import) {
+				MinimaLogger.log("H2 archive imprt started..");
+				
+				//And now restore
+				ArchiveManager archtemp = new ArchiveManager();
+				H2_TEMPARCHIVE			= true;
+				
+				//Create a temp DB file..
+				File restorefolder = new File(GeneralParams.DATA_FOLDER,"archiverestore");
+				restorefolder.mkdirs();
+				
+				File tempdb = new File(restorefolder,"archivetemp");
+				if(tempdb.exists()) {
+					tempdb.delete();
+				}
+				archtemp.loadDB(tempdb);
+				
+				//Restore from File..
+				MinimaLogger.log("Restoring ArchiveDB from file..");
+				archtemp.restoreFromFile(restorefile,true);
+				
+				Cascade casc = archtemp.loadCascade();
+				if(casc != null) {
+					MinimaLogger.log("Archive DB cascade start : "+casc.getTip().getTxPoW().getBlockNumber()+" length:"+casc.getLength());
+				}
+				
+				TxBlock first 	= archtemp.loadFirstBlock();
+				if(first!=null) {
+					MinimaLogger.log("Archive DB first block : "+first.getTxPoW().getBlockNumber());
+				}
+				TxBlock last 	= archtemp.loadLastBlock();
+				if(last!=null) {
+					MinimaLogger.log("Archive DB last block : "+last.getTxPoW().getBlockNumber());
+				}
+				
+				//Set this statically..
+				STATIC_TEMPARCHIVE = archtemp;
+			
+				//Now run a chain sync.. with correct params
+				String command = "archive action:resync host:"+LOCAL_ARCHIVE;
+				if(existsParam("phrase")) {
+					command = command+" phrase:\""+getParam("phrase")+"\"";
+				}
+				
+				if(existsParam("keys")) {
+					command = command+" keys:"+getParam("keys");
+				}
+				
+				if(existsParam("keyuses")) {
+					command = command+" keyuses:"+getParam("keyuses");
+				}
+				
+				JSONArray res 		= Command.runMultiCommand(command);
+				JSONObject result 	= (JSONObject) res.get(0);
+				
+				//Shutdown TEMP DB
+				archtemp.saveDB(false);
+				
+				//Delete the restore folder
+				MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
+				
+				//Reset 
+				STATIC_TEMPARCHIVE = null;
+				
+				JSONObject resp = new JSONObject();
+				resp.put("archiveresync", result);
+				ret.put("response", resp);
+			
+			}else {
+				MinimaLogger.log("RAW archive imprt started..");
+				
+				//RAW import..
+				H2_TEMPARCHIVE	= false;
+				
+				//Set this statically..
+				STATIC_RAW = new RawArchiveInput(restorefile);
+				STATIC_RAW.connect();
+				
+				//Now run a chain sync.. with correct params
+				String command = "archive action:resync host:"+LOCAL_ARCHIVE;
+				if(existsParam("phrase")) {
+					command = command+" phrase:\""+getParam("phrase")+"\"";
+				}
+				
+				if(existsParam("keys")) {
+					command = command+" keys:"+getParam("keys");
+				}
+				
+				if(existsParam("keyuses")) {
+					command = command+" keyuses:"+getParam("keyuses");
+				}
+				
+				JSONArray res 		= Command.runMultiCommand(command);
+				JSONObject result 	= (JSONObject) res.get(0);
+				
+				//Shutdown TEMP DB
+				STATIC_RAW.stop();
+				
+				//Reset 
+				STATIC_RAW = null;
+				
+				JSONObject resp = new JSONObject();
+				resp.put("archiveresync", result);
+				ret.put("response", resp);
+			}
+			
 		}else if(action.equals("dataimport")) {
 			
 			//Get the file
@@ -691,42 +811,19 @@ public class archive extends Command {
 			//reset ALL the default data
 			Main.getInstance().archiveResetReady(false);
 			
-			//Open up the file..
-			FileInputStream fix 	= new FileInputStream(restorefile);
-			BufferedInputStream bis = new BufferedInputStream(fix,65536);
-			GZIPInputStream gzin 	= new GZIPInputStream(bis);
-			DataInputStream dix 	= new DataInputStream(gzin);
+			RawArchiveInput rawin = new RawArchiveInput(restorefile);
+			rawin.connect();
 			
-			//How many blocks..
-			int total = MiniNumber.ReadFromStream(dix).getAsInt();
-			MinimaLogger.log("Blocks found : "+total);
-			
-			
-			
-			//Load in all the blocks..
-			TxBlock block 	= null;
-			IBD syncibd 	= null;
-			int totaladded  = 0;
-			int ibdcount	= 0;
-			while(totaladded<total) {
+			int ibdcount = 0;
+			while(true) {
 				
-				//Create a new IBD
-				syncibd = new IBD();
+				//Get the next IBD
+				IBD syncibd = rawin.getNextIBD();
 				
-				//Try and load 256 blocks
-				for(int i=0;i<256;i++) {
-					
-					//Load a block
-					block = TxBlock.ReadFromStream(dix);
-					
-					//Add to IBD..
-					syncibd.getTxBlocks().add(block);
-					
-					totaladded++;
-					if(totaladded>=total) {
-						//We are done..
-						break;
-					}
+				//Are there any blocks..
+				int size = syncibd.getTxBlocks().size();
+				if(size==0) {
+					break;
 				}
 				
 				//Get the main processor
@@ -735,7 +832,10 @@ public class archive extends Command {
 				ibdcount++;
 				
 				//Do this every 10 IBD..
-				if(ibdcount % 40 == 0) {
+				if(ibdcount % 10 == 0) {
+					
+					//Last block
+					TxBlock block = syncibd.getTxBlocks().get(size-1);
 					
 					//Now wait for something to happen
 					TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
@@ -756,6 +856,9 @@ public class archive extends Command {
 					Main.getInstance().resetMemFull();
 				}
 			}
+			
+			//Close it down..
+			rawin.stop();
 			
 			MinimaLogger.log("All blocks processed..");
 			

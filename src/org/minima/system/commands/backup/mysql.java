@@ -863,7 +863,7 @@ public class mysql extends Command {
 		}else if(action.equals("rawexport")) {
 			
 			//Create a temp name
-			String outfile = getParam("file","dataraw-"+System.currentTimeMillis()+".dat");
+			String outfile = getParam("file","archiveraw-"+System.currentTimeMillis()+".dat");
 			
 			//Create the file
 			File gzoutput = MiniFile.createBaseFile(outfile);
@@ -876,6 +876,19 @@ public class mysql extends Command {
 			BufferedOutputStream bos 	= new BufferedOutputStream(fix, 65536);
 			GZIPOutputStream gout 		= new GZIPOutputStream(bos);
 			DataOutputStream dos 		= new DataOutputStream(gout);
+			
+			//Load the cascade if it is there
+			Cascade casc = mysql.loadCascade();
+			if(casc!=null) {
+				MinimaLogger.log("Cascade found in MySQL..");
+				
+				//Write cacade out..
+				MiniByte.TRUE.writeDataStream(dos);
+				casc.writeDataStream(dos);
+			}else {
+				MiniByte.FALSE.writeDataStream(dos);
+				MinimaLogger.log("No cascade found in MySQL..");
+			}
 			
 			//How many entries..
 			int total = mysql.getCount();
@@ -942,20 +955,7 @@ public class mysql extends Command {
 				if(counter % 20 == 0) {
 					System.gc();
 				}
-			}
-
-			//Load the cascade if it is there
-			Cascade casc = mysql.loadCascade();
-			if(casc!=null) {
-				MinimaLogger.log("Cascade found in MySQL..");
-				
-				//Write cacade out..
-				MiniByte.TRUE.writeDataStream(dos);
-				casc.writeDataStream(dos);
-			}else {
-				MiniByte.FALSE.writeDataStream(dos);
-				MinimaLogger.log("No cascade found in MySQL..");
-			}
+			}			
 			
 			//Flush data
 			dos.flush();
