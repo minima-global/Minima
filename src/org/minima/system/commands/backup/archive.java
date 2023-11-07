@@ -1,9 +1,11 @@
 package org.minima.system.commands.backup;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -12,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Random;
+import java.util.zip.GZIPInputStream;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
@@ -28,6 +31,7 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
+import org.minima.system.brains.TxPoWProcessor;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.network.connect;
@@ -416,14 +420,20 @@ public class archive extends Command {
 				
 				//Clean system counter
 				counter++;
-				if(counter % 5 == 0) {
-					long mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-					if(mem > 250 * 1024 * 1024) {
-						Main.getInstance().resetMemFull();
-						MinimaLogger.log("Clean up memory..");
-					}else {
-						//MinimaLogger.log("RAM memory usage still low.. wait for cleanup");
-					}
+//				if(counter % 5 == 0) {
+//					long mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+//					if(mem > 250 * 1024 * 1024) {
+//						Main.getInstance().resetMemFull();
+//						MinimaLogger.log("Clean up memory..");
+//					}else {
+//						//MinimaLogger.log("RAM memory usage still low.. wait for cleanup");
+//					}
+//				}
+				
+				//HARD RESET - H2 database doesn't like it if I don't do this
+				if(counter % 10 == 0) {
+					MinimaLogger.log("Clean up memory..");
+					Main.getInstance().resetMemFull();
 				}
 				
 				//Send him a message..
@@ -666,6 +676,107 @@ public class archive extends Command {
 			JSONObject resp = new JSONObject();
 			resp.put("archiveresync", result);
 			ret.put("response", resp);
+				
+		}else if(action.equals("dataimport")) {
+			
+			//Get the file
+			String file = getParam("file");
+			
+			//Does it exist..
+			File restorefile = MiniFile.createBaseFile(file);
+			if(!restorefile.exists()) {
+				throw new Exception("Restore file doesn't exist : "+restorefile.getAbsolutePath());
+			}
+			
+			//reset ALL the default data
+			Main.getInstance().archiveResetReady(false);
+			
+			//Open up the file..
+			FileInputStream fix 	= new FileInputStream(restorefile);
+			BufferedInputStream bis = new BufferedInputStream(fix,65536);
+			GZIPInputStream gzin 	= new GZIPInputStream(bis);
+			DataInputStream dix 	= new DataInputStream(gzin);
+			
+			//How many blocks..
+			int total = MiniNumber.ReadFromStream(dix).getAsInt();
+			MinimaLogger.log("Blocks found : "+total);
+			
+			
+			
+			//Load in all the blocks..
+			TxBlock block 	= null;
+			IBD syncibd 	= null;
+			int totaladded  = 0;
+			int ibdcount	= 0;
+			while(totaladded<total) {
+				
+				//Create a new IBD
+				syncibd = new IBD();
+				
+				//Try and load 256 blocks
+				for(int i=0;i<256;i++) {
+					
+					//Load a block
+					block = TxBlock.ReadFromStream(dix);
+					
+					//Add to IBD..
+					syncibd.getTxBlocks().add(block);
+					
+					totaladded++;
+					if(totaladded>=total) {
+						//We are done..
+						break;
+					}
+				}
+				
+				//Get the main processor
+				TxPoWProcessor proc = Main.getInstance().getTxPoWProcessor();
+				proc.postProcessArchiveIBD(syncibd, "0x00");
+				ibdcount++;
+				
+				//Do this every 10 IBD..
+				if(ibdcount % 40 == 0) {
+					
+					//Now wait for something to happen
+					TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+					while(tip == null) {
+						Thread.sleep(50);
+						tip = MinimaDB.getDB().getTxPoWTree().getTip();
+					}
+					
+					long starttime = block.getTxPoW().getTimeMilli().getAsLong();
+					MinimaLogger.log("Processing block:"+block.getTxPoW().getBlockNumber()+" @ "+MinimaLogger.DATEFORMAT.format(new Date(starttime)));
+					
+					while(!tip.getBlockNumber().isEqual(block.getTxPoW().getBlockNumber())) {
+						Thread.sleep(50);
+						tip = MinimaDB.getDB().getTxPoWTree().getTip();
+					}
+					
+					//Clean up..
+					Main.getInstance().resetMemFull();
+				}
+			}
+			
+			MinimaLogger.log("All blocks processed..");
+			
+			JSONObject resp = new JSONObject();
+			resp.put("message", "Archive sync completed.. shutting down now.. please restart after");
+			ret.put("response", resp);
+			
+			//Don't do the usual shutdown hook
+			Main.getInstance().setHasShutDown();
+			
+			//And NOW shut down..
+			Main.getInstance().shutdownFinalProcs();
+			
+			//Now shutdown and save everything
+			MinimaDB.getDB().saveAllDB();
+			
+			//And NOW shut down..
+			Main.getInstance().stopMessageProcessor();
+			
+			//Tell listener..
+			Main.getInstance().NotifyMainListenerOfShutDown();
 			
 		}else if(action.equals("inspect")) {
 			

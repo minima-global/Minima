@@ -533,11 +533,11 @@ public class MinimaDB {
 			
 			//Shut them down
 			//MinimaLogger.log("Save TxPoWDB..");
-			mTxPoWDB.saveDB(true);
+			mTxPoWDB.saveDB(false);
 			//MinimaLogger.log("Save ArchiveDB..");
-			mArchive.saveDB(true);
+			mArchive.saveDB(false);
 			//MinimaLogger.log("Save WalletDB..");
-			mWallet.saveDB(true);
+			mWallet.saveDB(false);
 			
 			//MinimaLogger.log("Load DBs..");
 			

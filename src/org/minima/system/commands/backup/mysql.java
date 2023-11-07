@@ -1,9 +1,13 @@
 package org.minima.system.commands.backup;
 
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.zip.GZIPOutputStream;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
@@ -17,6 +21,7 @@ import org.minima.objects.CoinProof;
 import org.minima.objects.IBD;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
+import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
@@ -837,6 +842,132 @@ public class mysql extends Command {
 			
 			//Delete the restore folder
 			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
+			
+			JSONObject resp = new JSONObject();
+			resp.put("start", firstblock);
+			resp.put("end", endblock);
+			resp.put("file", gzoutput.getName());
+			resp.put("path", gzoutput.getAbsolutePath());
+			resp.put("size", MiniFormat.formatSize(gzoutput.length()));
+			
+			ret.put("response", resp);
+		
+		}else if(action.equals("size")) {
+			
+			int total = mysql.getCount();
+			
+			JSONObject resp = new JSONObject();
+			resp.put("size", total);
+			ret.put("response", resp);
+			
+		}else if(action.equals("rawexport")) {
+			
+			//Create a temp name
+			String outfile = getParam("file","dataraw-"+System.currentTimeMillis()+".dat");
+			
+			//Create the file
+			File gzoutput = MiniFile.createBaseFile(outfile);
+			if(gzoutput.exists()) {
+				gzoutput.delete();
+			}
+			
+			//Create output streams..
+			FileOutputStream fix 		= new FileOutputStream(gzoutput);
+			BufferedOutputStream bos 	= new BufferedOutputStream(fix, 65536);
+			GZIPOutputStream gout 		= new GZIPOutputStream(bos);
+			DataOutputStream dos 		= new DataOutputStream(gout);
+			
+			//How many entries..
+			int total = mysql.getCount();
+			if(total>10000) {
+				total = 10000;
+			}
+			MinimaLogger.log("Total records found : "+total);
+			
+			MiniNumber tot = new MiniNumber(total);
+			tot.writeDataStream(dos);
+			
+			int outcounter = 0;
+			
+			//Load the MySQL and output to the H2
+			long mysqllastblock 	= mysql.loadLastBlock();
+			long mysqlfirstblock 	= mysql.loadFirstBlock();
+			
+			//Load a range..
+			long firstblock = -1;
+			long endblock 	= -1;
+			TxBlock lastblock = null;
+			
+			long startload 	= mysqllastblock;
+			int counter = 0;
+			while(true) {
+				if(logs) {
+					MinimaLogger.log("Loading from MySQL @ "+startload);
+				}
+				ArrayList<TxBlock> blocks = mysql.loadBlockRange(new MiniNumber(startload));
+				if(blocks.size()==0) {
+					//All blocks checked
+					break;
+				}
+				
+				//Cycle and add to our DB..
+				for(TxBlock block : blocks) {
+					
+					//Send to data export file..
+					block.writeDataStream(dos);
+					//archtemp.saveBlock(block);
+					
+					if(lastblock == null) {
+						firstblock = block.getTxPoW().getBlockNumber().getAsLong();
+					}
+					lastblock = block;
+					endblock = block.getTxPoW().getBlockNumber().getAsLong();
+					
+					//Increase counter
+					outcounter++;
+					if(outcounter>=total) {
+						break;
+					}
+				}
+				
+				if(outcounter>=total) {
+					MinimaLogger.log("Finished loading blocks..");
+					break;
+				}
+				
+				startload = endblock+1;
+				
+				//Clean up..
+				counter++;
+				if(counter % 20 == 0) {
+					System.gc();
+				}
+			}
+
+			//Load the cascade if it is there
+			Cascade casc = mysql.loadCascade();
+			if(casc!=null) {
+				MinimaLogger.log("Cascade found in MySQL..");
+				
+				//Write cacade out..
+				MiniByte.TRUE.writeDataStream(dos);
+				casc.writeDataStream(dos);
+			}else {
+				MiniByte.FALSE.writeDataStream(dos);
+				MinimaLogger.log("No cascade found in MySQL..");
+			}
+			
+			//Flush data
+			dos.flush();
+			
+			try {
+				dos.close();
+				gout.close();
+				bos.close();
+				fix.close();
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
 			
 			JSONObject resp = new JSONObject();
 			resp.put("start", firstblock);

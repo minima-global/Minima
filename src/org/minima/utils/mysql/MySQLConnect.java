@@ -37,6 +37,8 @@ public class MySQLConnect {
 	PreparedStatement SQL_SELECT_LAST_BLOCK		= null;
 	PreparedStatement SQL_SELECT_FIRST_BLOCK	= null;
 	
+	PreparedStatement SQL_COUNT					= null;
+	
 	PreparedStatement SAVE_CASCADE				= null;
 	PreparedStatement LOAD_CASCADE				= null;
 	
@@ -89,6 +91,8 @@ public class MySQLConnect {
 		
 		SQL_SELECT_LAST_BLOCK	= mConnection.prepareStatement("SELECT block FROM syncblock ORDER BY block ASC LIMIT 1");
 		SQL_SELECT_FIRST_BLOCK	= mConnection.prepareStatement("SELECT block FROM syncblock ORDER BY block DESC LIMIT 1");
+		
+		SQL_COUNT				= mConnection.prepareStatement("SELECT Count(*) as tot FROM syncblock");
 		
 		SAVE_CASCADE = mConnection.prepareStatement("INSERT INTO cascadedata ( cascadetip, fulldata ) VALUES ( ?, ? )");
 		LOAD_CASCADE = mConnection.prepareStatement("SELECT fulldata FROM cascadedata ORDER BY cascadetip ASC LIMIT 1");
@@ -154,6 +158,29 @@ public class MySQLConnect {
 		}
 		
 		return null;
+	}
+	
+	public synchronized int getCount() throws SQLException {
+		
+		try {
+			
+			//Run the query
+			ResultSet rs = SQL_COUNT.executeQuery();
+			
+			//Is there a valid result.. ?
+			if(rs.next()) {
+				
+				//Get the total count..
+				int total = rs.getInt("tot");
+				
+				return total;
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return -1;
 	}
 	
 	public synchronized boolean saveBlock(TxBlock zBlock) {
