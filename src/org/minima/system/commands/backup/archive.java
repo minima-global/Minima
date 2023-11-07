@@ -424,7 +424,7 @@ public class archive extends Command {
 				
 				//HARD RESET - H2 database doesn't like it if I don't do this
 				if(counter % 10 == 0) {
-					MinimaLogger.log("Clean up memory..");
+					//MinimaLogger.log("Clean up memory..");
 					Main.getInstance().resetMemFull();
 				}
 				

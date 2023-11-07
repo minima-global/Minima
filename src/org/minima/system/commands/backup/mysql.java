@@ -923,9 +923,14 @@ public class mysql extends Command {
 			long startload 	= mysqllastblock;
 			int counter = 0;
 			while(true) {
-				if(logs) {
-					MinimaLogger.log("Loading from MySQL @ "+startload);
+				
+				//Small log message
+				if(counter % 20 == 0) {
+					if(logs) {
+						MinimaLogger.log("Loading from MySQL @ "+startload);
+					}
 				}
+				
 				ArrayList<TxBlock> blocks = mysql.loadBlockRange(new MiniNumber(startload));
 				if(blocks.size()==0) {
 					//All blocks checked
