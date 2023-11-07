@@ -42,11 +42,18 @@ public class MySQLConnect {
 	PreparedStatement SAVE_CASCADE				= null;
 	PreparedStatement LOAD_CASCADE				= null;
 	
+	boolean mReadOnly;
+	
 	public MySQLConnect(String zHost, String zDatabase, String zUsername, String zPassword) {
+		this(zHost, zDatabase, zUsername, zPassword, false);
+	}
+	
+	public MySQLConnect(String zHost, String zDatabase, String zUsername, String zPassword, boolean zReadOnly) {
 		mMySQLHost 	= zHost;
 		mDatabase	= zDatabase;
 		mUsername	= zUsername;
 		mPassword	= zPassword;
+		mReadOnly	= zReadOnly;
 	}
 	
 	public void init() throws SQLException {
@@ -55,32 +62,35 @@ public class MySQLConnect {
 				
 		mConnection = DriverManager.getConnection(mysqldb,mUsername,mPassword);
 	
-		Statement stmt = mConnection.createStatement();
-		
-		//Create a new DB
-		String create = "CREATE TABLE IF NOT EXISTS `syncblock` ("
-						+ "  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-						+ "  `txpowid` varchar(80) NOT NULL UNIQUE,"
-						+ "  `block` bigint NOT NULL UNIQUE,"
-						+ "  `timemilli` bigint NOT NULL,"
-						+ "  `syncdata` mediumblob NOT NULL"
-						+ ")";
-		
-		//Run it..
-		stmt.execute(create);
-		
-		//Create the cascade table
-		String cascade = "CREATE TABLE IF NOT EXISTS `cascadedata` ("
-						+ "		`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-						+ "		`cascadetip` BIGINT NOT NULL,"
-						+ "		`fulldata` mediumblob NOT NULL"
-						+ ")";
-		
-		//Run it..
-		stmt.execute(cascade);
-		
-		//All done..
-		stmt.close();
+		//Read only mode doesn't create the DB
+		if(!mReadOnly) {
+			Statement stmt = mConnection.createStatement();
+			
+			//Create a new DB
+			String create = "CREATE TABLE IF NOT EXISTS `syncblock` ("
+							+ "  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
+							+ "  `txpowid` varchar(80) NOT NULL UNIQUE,"
+							+ "  `block` bigint NOT NULL UNIQUE,"
+							+ "  `timemilli` bigint NOT NULL,"
+							+ "  `syncdata` mediumblob NOT NULL"
+							+ ")";
+			
+			//Run it..
+			stmt.execute(create);
+			
+			//Create the cascade table
+			String cascade = "CREATE TABLE IF NOT EXISTS `cascadedata` ("
+							+ "		`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
+							+ "		`cascadetip` BIGINT NOT NULL,"
+							+ "		`fulldata` mediumblob NOT NULL"
+							+ ")";
+			
+			//Run it..
+			stmt.execute(cascade);
+			
+			//All done..
+			stmt.close();
+		}
 		
 		//Create some prepared statements..
 		String insert 			= "INSERT IGNORE INTO syncblock ( txpowid, block, timemilli, syncdata ) VALUES ( ?, ? ,? ,? )";
@@ -202,8 +212,6 @@ public class MySQLConnect {
 			
 			//Do it.
 			SQL_INSERT_SYNCBLOCK.execute();
-			
-//			MinimaLogger.log("MYSQL stored synvblock "+zBlock.getTxPoW().getBlockNumber());
 			
 			return true;
 			
