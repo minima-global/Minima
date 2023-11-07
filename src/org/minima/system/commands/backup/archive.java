@@ -797,7 +797,7 @@ public class archive extends Command {
 				ret.put("response", resp);
 			}
 			
-		}else if(action.equals("dataimport")) {
+		}else if(action.equals("importraw")) {
 			
 			//Get the file
 			String file = getParam("file");
@@ -832,7 +832,7 @@ public class archive extends Command {
 				ibdcount++;
 				
 				//Do this every 10 IBD..
-				if(ibdcount % 10 == 0) {
+				if(ibdcount % 20 == 0) {
 					
 					//Last block
 					TxBlock block = syncibd.getTxBlocks().get(size-1);
