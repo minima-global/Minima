@@ -760,7 +760,7 @@ public class archive extends Command {
 				ret.put("response", resp);
 			
 			}else {
-				MinimaLogger.log("RAW archive imprt started..");
+				MinimaLogger.log("RAW archive import started..");
 				
 				//RAW import..
 				H2_TEMPARCHIVE	= false;
