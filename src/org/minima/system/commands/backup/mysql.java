@@ -68,6 +68,8 @@ public class mysql extends Command {
 				+ "password:\n"
 				+ "    MySQL password for the user provided.\n"
 				+ "\n"
+				+ "readonly:\n"
+				+ "    true or false, Connect in readonly mode.\n"
 				+ "logs:\n"
 				+ "    Show detailed logs - default true.\n"
 				+ "\n"
@@ -150,7 +152,8 @@ public class mysql extends Command {
 		boolean logs		= getBooleanParam("logs", true);
 		
 		//Get the login details..
-		MySQLConnect mysql = new MySQLConnect(host, db, user, password);
+		boolean readonly 	= getBooleanParam("readonly", false);
+		MySQLConnect mysql 	= new MySQLConnect(host, db, user, password, readonly);
 		mysql.init();
 		
 		//Get the ArchiveManager
@@ -761,7 +764,7 @@ public class mysql extends Command {
 		}else if(action.equals("h2export")) {
 			
 			//Create a temp name
-			String outfile = getParam("file","archivebackup-"+System.currentTimeMillis()+".gzip");
+			String outfile = getParam("file","archivebackup-"+System.currentTimeMillis()+".h2.gzip");
 			
 			//Create the file
 			File gzoutput = MiniFile.createBaseFile(outfile);
@@ -863,18 +866,18 @@ public class mysql extends Command {
 		}else if(action.equals("rawexport")) {
 			
 			//Create a temp name
-			String outfile = getParam("file","archiveraw-"+System.currentTimeMillis()+".dat");
+			String outfile = getParam("file","archivebackup-"+System.currentTimeMillis()+".raw.dat");
 			
 			//Create the file
-			File gzoutput = MiniFile.createBaseFile(outfile);
-			if(gzoutput.exists()) {
-				gzoutput.delete();
+			File rawoutput = MiniFile.createBaseFile(outfile);
+			if(rawoutput.exists()) {
+				rawoutput.delete();
 			}
 			
 			//Create output streams..
-			FileOutputStream fix 		= new FileOutputStream(gzoutput);
+			FileOutputStream fix 		= new FileOutputStream(rawoutput);
 			BufferedOutputStream bos 	= new BufferedOutputStream(fix, 65536);
-			GZIPOutputStream gout 		= new GZIPOutputStream(bos);
+			GZIPOutputStream gout 		= new GZIPOutputStream(bos, 65536);
 			DataOutputStream dos 		= new DataOutputStream(gout);
 			
 			//Load the cascade if it is there
@@ -892,10 +895,16 @@ public class mysql extends Command {
 			
 			//How many entries..
 			int total = mysql.getCount();
-			if(total>10000) {
-				total = 10000;
-			}
 			MinimaLogger.log("Total records found : "+total);
+			
+			//Max specified..
+			if(existsParam("maxexport")) {
+				int max = getNumberParam("maxexport").getAsInt();
+				MinimaLogger.log("Max export specified.. : "+max);
+				if(total>max) {
+					total = max;
+				}
+			}
 			
 			MiniNumber tot = new MiniNumber(total);
 			tot.writeDataStream(dos);
@@ -972,9 +981,9 @@ public class mysql extends Command {
 			JSONObject resp = new JSONObject();
 			resp.put("start", firstblock);
 			resp.put("end", endblock);
-			resp.put("file", gzoutput.getName());
-			resp.put("path", gzoutput.getAbsolutePath());
-			resp.put("size", MiniFormat.formatSize(gzoutput.length()));
+			resp.put("file", rawoutput.getName());
+			resp.put("path", rawoutput.getAbsolutePath());
+			resp.put("size", MiniFormat.formatSize(rawoutput.length()));
 			
 			ret.put("response", resp);
 			
