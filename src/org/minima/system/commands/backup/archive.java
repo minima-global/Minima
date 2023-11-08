@@ -1137,7 +1137,6 @@ public class archive extends Command {
 				}
 			}
 			
-			
 			MinimaLogger.log("All checks complete..");
 			
 			resp.put("created", outarr);
