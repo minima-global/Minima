@@ -188,8 +188,9 @@ public class Main extends MessageProcessor {
 	/**
 	 * Are we shutting down..
 	 */
-	boolean mShuttingdown = false;
-	
+	boolean mShuttingdown 				= false;
+	boolean mHaveShutDownTxPowProcessor = false;
+	boolean mHaveShutDownMDS 			= false;
 	/**
 	 * Are we restoring..
 	 */
@@ -623,13 +624,20 @@ public class Main extends MessageProcessor {
 	public void shutdownFinalProcs(boolean zShutDownMDS) {
 				
 		if(zShutDownMDS) {
-			shutdownMDS();
+			if(!mHaveShutDownMDS) {
+				mHaveShutDownMDS = true;
+				shutdownMDS();
+			}
 		}
 				
 		//Stop the main TxPoW processor
-		MinimaLogger.log("TxPoWProcessor shutdown..");
-		mTxPoWProcessor.stopMessageProcessor();
-		mTxPoWProcessor.waitToShutDown();
+		if(!mHaveShutDownTxPowProcessor) {
+			mHaveShutDownTxPowProcessor = true;
+			
+			MinimaLogger.log("Shutdown TxPoWProcessor..");
+			mTxPoWProcessor.stopMessageProcessor();
+			mTxPoWProcessor.waitToShutDown();
+		}
 	}
 	
 	public void shutdownMDS() {
