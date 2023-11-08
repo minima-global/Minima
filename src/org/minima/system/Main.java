@@ -479,9 +479,6 @@ public class Main extends MessageProcessor {
 			
 			MinimaLogger.log("Shut down completed OK..");
 			
-			//NULL main instance..
-			ClearMainInstance();
-			
 			//Tell listener..
 			NotifyMainListenerOfShutDown();
 			
@@ -493,10 +490,16 @@ public class Main extends MessageProcessor {
 	
 	public static void ClearMainInstance() {
 		//NULL main instance..
-		mMainInstance = null;
+		if(mMainInstance != null) {
+			mMainInstance = null;
+			MinimaLogger.log("Main Instance Cleared..");
+		}
 	}
 	
 	public void NotifyMainListenerOfShutDown() {
+		
+		//Called from various functions
+		ClearMainInstance();
 		
 		//Have we done this already
 		if(mShutDownSentToListener) {

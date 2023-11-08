@@ -214,6 +214,9 @@ public class restoresync extends Command {
 			//And NOW shut down..
 			Main.getInstance().stopMessageProcessor();
 			
+			//Tell listener..
+			Main.getInstance().NotifyMainListenerOfShutDown();
+			
 			//And send data
 			JSONObject resp2 = new JSONObject();
 			resp2.put("file", restorefile.getAbsolutePath());

@@ -39,7 +39,9 @@ public class quit extends Command {
 		
 		boolean compact = getBooleanParam("compact", false);
 		
-		Main.getInstance().shutdown(compact);
+		if(Main.getInstance()!=null) {
+			Main.getInstance().shutdown(compact);
+		}
 		
 		ret.put("message", "Shutdown complete");
 		

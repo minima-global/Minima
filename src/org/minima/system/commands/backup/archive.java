@@ -569,9 +569,6 @@ public class archive extends Command {
 			//And NOW shut down..
 			Main.getInstance().stopMessageProcessor();
 			
-			//Tell the listener
-			NotifyListener(minimalistener,"SHUTDOWN");
-			
 			//Tell listener..
 			Main.getInstance().NotifyMainListenerOfShutDown();
 		
