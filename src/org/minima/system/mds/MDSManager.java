@@ -118,8 +118,8 @@ public class MDSManager extends MessageProcessor {
 	/**
 	 * Has MDS inited
 	 */
-	boolean mHasStarted = false;
-	
+	boolean mHasStarted 	= false;
+	boolean mIsShuttingDown = false;
 	/**
 	 * Main Constructor
 	 */
@@ -146,12 +146,19 @@ public class MDSManager extends MessageProcessor {
 		return mHasStarted;
 	}
 	
+	public boolean isShuttingDown() {
+		return mIsShuttingDown;
+	}
+	
 	public void shutdown() {
 		//Is it even enabled
 		if(!GeneralParams.MDS_ENABLED) {
 			stopMessageProcessor();
 			return;
 		}
+		
+		//Notify SQL calls not to happen
+		mIsShuttingDown = true;
 		
 		//Send a SHUTDOWN message to all the MiniDAPPs..
 		Main.getInstance().PostNotifyEvent("MDS_SHUTDOWN", new JSONObject());
@@ -376,6 +383,15 @@ public class MDSManager extends MessageProcessor {
 	}
 	
 	public JSONObject runSQL(String zUID, String zSQL) {
+		
+		//Are we shutting down..
+		if(isShuttingDown()) {
+			JSONObject err = new JSONObject();
+			err.put("sql", zSQL);
+			err.put("status", false);
+			err.put("err", "MDS Shutting down..");
+			return err;
+		}
 		
 		//The MiniDAPPID
 		String minidappid = zUID;
