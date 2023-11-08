@@ -1113,14 +1113,23 @@ public class archive extends Command {
 					ArrayList<CoinProof> inputs  	= block.getInputCoinProofs();
 					for(CoinProof incoin : inputs) {
 						if(incoin.getCoin().getAddress().to0xString().equals(address)) {
-							MinimaLogger.log("BLOCK "+blocknumber+" SPENT COIN : "+incoin.getCoin().toString());
 							
-							JSONObject spent = new JSONObject();
-							spent.put("block", blocknumber);
-							spent.put("date", date);
-							spent.put("datemilli", txp.getTimeMilli().toString());
-							spent.put("coin", incoin.getCoin().toJSON());
-							inarr.add(spent);
+							boolean found = true;
+							if(!statecheck.equals("")) {
+								//Check for state aswell..
+								found = incoin.getCoin().checkForStateVariable(statecheck);
+							}
+							
+							if(found) {
+								MinimaLogger.log("BLOCK "+blocknumber+" SPENT COIN : "+incoin.getCoin().toString());
+								
+								JSONObject spent = new JSONObject();
+								spent.put("block", blocknumber);
+								spent.put("date", date);
+								spent.put("datemilli", txp.getTimeMilli().toString());
+								spent.put("coin", incoin.getCoin().toJSON());
+								inarr.add(spent);
+							}
 						}
 					}
 					
