@@ -885,6 +885,9 @@ public class archive extends Command {
 			
 			//Get the file
 			String file = getParam("file","");
+			if(file.endsWith(".dat")) {
+				throw new CommandException("inspect only works for H2 archive files");
+			}
 			
 			//Where the temp db will go..
 			File restorefolder 	= new File(GeneralParams.DATA_FOLDER,"archiverestore");
