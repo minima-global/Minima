@@ -26,7 +26,6 @@ import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.webhooks.NotifyManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
-import org.minima.system.params.TestParams;
 import org.minima.system.sendpoll.SendPollManager;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;

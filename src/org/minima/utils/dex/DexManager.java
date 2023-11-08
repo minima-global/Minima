@@ -5,7 +5,6 @@ import org.minima.objects.base.MiniString;
 import org.minima.utils.encrypt.SignVerify;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
-import org.minima.utils.json.parser.ParseException;
 
 public class DexManager {
 

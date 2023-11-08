@@ -1,21 +1,11 @@
 package org.minima.system.commands.base;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.wallet.KeyRow;
-import org.minima.database.wallet.Wallet;
-import org.minima.objects.Address;
-import org.minima.objects.base.MiniData;
-import org.minima.objects.keys.TreeKey;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
-import org.minima.utils.BIP39;
-import org.minima.utils.Crypto;
-import org.minima.utils.MinimaLogger;
-import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class coinnotify extends Command {

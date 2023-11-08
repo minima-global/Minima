@@ -1,30 +1,13 @@
 package org.minima.system.commands.backup;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.zip.GZIPInputStream;
 
-import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
-
-import org.minima.database.MinimaDB;
-import org.minima.database.txpowdb.sql.TxPoWList;
-import org.minima.database.txpowdb.sql.TxPoWSqlDB;
-import org.minima.objects.TxPoW;
-import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
-import org.minima.system.params.GeneralParams;
-import org.minima.utils.MiniFile;
-import org.minima.utils.encrypt.GenerateKey;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
-import org.minima.utils.ssl.SSLManager;
 
 public class reset extends Command {
 

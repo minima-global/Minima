@@ -1,11 +1,9 @@
 package org.minima.system.commands.backup;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -13,8 +11,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Random;
-import java.util.zip.GZIPInputStream;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
@@ -38,7 +34,6 @@ import org.minima.system.commands.CommandException;
 import org.minima.system.commands.network.connect;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
-import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.system.network.webhooks.NotifyManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.BIP39;

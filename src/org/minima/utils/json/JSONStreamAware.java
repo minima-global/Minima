@@ -1,7 +1,6 @@
 package org.minima.utils.json;
 
 import java.io.IOException;
-import java.io.Writer;
 
 /**
  * Beans that support customized output of JSON text to a writer shall implement this interface.  

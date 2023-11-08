@@ -70,7 +70,6 @@ import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.disconnect;
 import org.minima.system.commands.network.message;
 import org.minima.system.commands.network.network;
-import org.minima.system.commands.network.nodecount;
 import org.minima.system.commands.network.p2pstate;
 import org.minima.system.commands.network.peers;
 import org.minima.system.commands.network.ping;

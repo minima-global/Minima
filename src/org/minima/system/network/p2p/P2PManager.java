@@ -3,7 +3,6 @@ package org.minima.system.network.p2p;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +11,6 @@ import java.util.StringTokenizer;
 
 import org.minima.database.MinimaDB;
 import org.minima.objects.Greeting;
-import org.minima.system.commands.CommandException;
 import org.minima.system.commands.network.connect;
 import org.minima.system.network.minima.NIOClient;
 import org.minima.system.network.minima.NIOClientInfo;

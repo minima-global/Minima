@@ -20,7 +20,6 @@ import java.util.StringTokenizer;
 import java.util.function.BiConsumer;
 
 import org.minima.objects.base.MiniNumber;
-import org.minima.system.commands.CommandException;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.utils.MinimaLogger;
