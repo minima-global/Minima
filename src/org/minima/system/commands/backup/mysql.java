@@ -11,6 +11,7 @@ import java.util.zip.GZIPOutputStream;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
+import org.minima.database.archive.RawArchiveInput;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.UserDB;
@@ -989,6 +990,78 @@ public class mysql extends Command {
 			resp.put("file", rawoutput.getName());
 			resp.put("path", rawoutput.getAbsolutePath());
 			resp.put("size", MiniFormat.formatSize(rawoutput.length()));
+			
+			ret.put("response", resp);
+				
+		}else if(action.equals("rawimport")) {
+			
+			long timestart = System.currentTimeMillis();
+			
+			//Create a temp name
+			String infile 	= getParam("file");
+			File fileinfile = MiniFile.createBaseFile(infile);
+			
+			RawArchiveInput rawin = new RawArchiveInput(fileinfile);
+			rawin.connect();
+			
+			//Wipe the old data
+			mysql.wipeAll();
+			
+			//And recreate the tables
+			mysql.init();
+			
+			//Is there a cascade..
+			Cascade casc = rawin.getCascade();
+			if(casc != null) {
+				MinimaLogger.log("Cascade found.. ");
+				mysql.saveCascade(casc);
+			}
+			
+			
+			//Load a range..
+			long endblock 	= -1;
+			TxBlock lastblock = null;
+			int counter = 0;
+			while(true) {
+				//Get the next batch of data..
+				IBD syncibd 				= rawin.getNextIBD();
+				ArrayList<TxBlock> blocks 	= syncibd.getTxBlocks();
+				
+				if(logs) {
+					if(counter % 10 ==0) {
+						if(blocks.size()>0) {
+							MinimaLogger.log("Loading from RAW Block : "+blocks.get(0).getTxPoW().getBlockNumber());
+						}
+					}
+				}
+				
+				if(blocks.size()==0) {
+					//All blocks checked
+					break;
+				}
+				
+				//Cycle and add to our DB..
+				for(TxBlock block : blocks) {
+					
+					//Send to MySQL
+					mysql.saveBlock(block);
+					//MinimaLogger.log("Save block : "+block.getTxPoW().getBlockNumber());
+				}
+				
+				//Clean up..
+				counter++;
+				if(counter % 10 == 0) {
+					System.gc();
+				}
+			}
+			
+			//Shutdown TEMP DB
+			rawin.stop();
+			
+			long timediff = System.currentTimeMillis() - timestart;
+			
+			JSONObject resp = new JSONObject();
+			resp.put("time", MiniFormat.ConvertMilliToTime(timediff));
 			
 			ret.put("response", resp);
 			
