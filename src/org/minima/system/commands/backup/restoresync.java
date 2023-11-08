@@ -148,8 +148,6 @@ public class restoresync extends Command {
 		txpsqldb.wipeDB();
 		for(TxPoW txp : txplist.mTxPoWs) {
 			txpsqldb.addTxPoW(txp, true);
-			
-			MinimaLogger.log("Added history TxPoW..");
 		}
 		
 		//If it has not stopped - First stop everything.. and get ready to restore the files..
