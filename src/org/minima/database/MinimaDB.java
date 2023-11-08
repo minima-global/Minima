@@ -569,7 +569,7 @@ public class MinimaDB {
 		writeLock(false);
 	}
 	
-	public void setAllowaveState(boolean zAllow) {
+	public void setAllowSaveState(boolean zAllow) {
 		mAllowSaveState = zAllow;
 	}
 	

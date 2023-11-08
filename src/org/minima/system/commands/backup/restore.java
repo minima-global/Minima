@@ -123,7 +123,7 @@ public class restore extends Command {
 		total += readNextBackup(new File(restorefolder,"wallet.sql"), disciph);
 		
 		//Stop saving state
-		MinimaDB.getDB().setAllowaveState(false);
+		MinimaDB.getDB().setAllowSaveState(false);
 		
 			//The rest write directly 
 			File basedb = MinimaDB.getDB().getBaseDBFolder();
@@ -149,7 +149,7 @@ public class restore extends Command {
 			}
 			
 		//Allow saving state
-		MinimaDB.getDB().setAllowaveState(true);
+		MinimaDB.getDB().setAllowSaveState(true);
 				
 		//If it has not stopped - First stop everything.. and get ready to restore the files..
 		Main.getInstance().restoreReady(doshutdown);
