@@ -260,10 +260,6 @@ public class restoresync extends Command {
 		//And NOW shut down..
 		Main.getInstance().stopMessageProcessor();
 		
-		//Get the Minima Listener..
-		MessageListener minimalistener = Main.getInstance().getMinimaListener();
-		archive.NotifyListener(minimalistener,"SHUTDOWN");
-		
 		//Tell listener..
 		Main.getInstance().NotifyMainListenerOfShutDown();
 		
