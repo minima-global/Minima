@@ -47,15 +47,9 @@ public class mysqlcoins extends Command {
 	public String getFullHelp() {
 		return "\nmysqlcoins\n"
 				+ "\n"
-				+ "Export the archive data of this node to a MySQL d.\n"
+				+ "Create a coins db from your mysql data and search it.\n"
 				+ "\n"
-				+ "The MySQL db can be used to perform a chain re-sync to put users on the correct chain,\n"
-				+ "\n"
-				+ "or a seed re-sync to restore access to lost funds, using the seed phrase.\n"
-				+ "\n"
-				+ "Can query an address for its history of spent and unspent coins.\n"
-				+ "\n"
-				+ "Additionally export the MySQL db to a gzip file for resyncing with 'reset' or 'archive' command.\n"
+				+ "Use the same database you already use for your TxBlocks. Just creates a new table.\n"
 				+ "\n"
 				+ "host:\n"
 				+ "    The ip:port (or name of Docker container) running the MySQL db.\n"
@@ -74,62 +68,24 @@ public class mysqlcoins extends Command {
 				+ "logs:\n"
 				+ "    Show detailed logs - default true.\n"
 				+ "\n"
+				+ "query:\n"
+				+ "    The search criteria. String data MUST be in single quotes. You can use multiple parameters.\n"
+				+ "\n"
 				+ "action:\n"
-				+ "    info : Show the blocks stored in the archive db and compare to the MySQL db.\n"
-				+ "    integrity : Check the block order and block parents are correct in the MySQL db.\n"
-				+ "    update : Update the MySQL db with the latest syncblocks from the node's archive db.\n"
-				+ "    addresscheck : Check the history of all the spent and unspent coins from an address.\n"
-				+ "    autobackup : Automatically save archive data to MySQL DB. Use with enable.\n"
-				+ "    resync : Perform a chain or seed re-sync from the specified MySQL db.\n"
-				+ "             Will shutdown the node so you must restart it once complete.\n"
-				+ "    wipe :  Be careful. Wipe the MySQL db.\n"
-				+ "    h2export : export the MySQL db to an archive gzip file which can be used to resync a node.\n"
-				+ "    h2import : import an archive gzip file to the MySQL db.\n"
-				+ "\n"
-				+ "phrase: (optional)\n"
-				+ "     Use with action:resync. The 24 word seed phrase of the node to re-sync.\n"
-				+ "     If provided, the node will be wiped and re-synced.\n"
-				+ "     If not provided, the node will be re-synced to the chain and will not be wiped.\n"
-				+ "\n"
-				+ "keys: (optional)\n"
-				+ "    If the seed phrase is provided, optionally set the number of keys to create.\n"
-				+ "    Default is 80.\n"
-				+ "\n"
-				+ "keyuses: (optional)\n"
-				+ "    If the seed phrase is provided, optionally set the number of previous uses for each key created.\n"
-				+ "    Default is 1000.\n"
-				+ "\n"
-				+ "address: (optional)\n"
-				+ "    Use with action:addresscheck. The address to check the history of spent and unspent coins for.\n"
-				+ "\n"
-				+ "enable: (optional)\n"
-				+ "    Use with action:autobackup. Automatically save data to MySQL archive DB.\n"
-				+ "\n"
-				+ "file: (optional)\n"
-				+ "    Name or path of the archive gzip file to export to or import from.\n"
+				+ "    createdb : Take the MySQL data and make a coins database. Takes a while. Logs output to stdout.\n"
+				+ "    search : Perform a search on the data. You can specify any valid query params.\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
-				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:info\n"
+				+ "mysqlcoins host:127.0.0.1:3306 database:coinsdb user:myuser password:myuser action:search query:\"address='0x791E78C60652B0E19B8FE9EB035B122B261490C477FD76E38C0C928187076103'\"\n"
 				+ "\n"
-				+ "mysql host:dockermysql database:archivedb user:archiveuser password:archivepassword action:info\n"
-				+ "\n"
-				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:integrity\n"
-				+ "\n"
-				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:update\n"
-				+ "\n"
-				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:addresscheck address:MxG08.. \n"
-				+ "\n"
-				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:resync\n"
-				+ "\n"
-				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:resync phrase:\"24 WORDS HERE\" keys:90 keyuses:2000\n"
-				+ "\n"
-				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:h2export file:archivexport-DDMMYY.gzip\n";
+				+ "mysqlcoins host:127.0.0.1:3306 database:coinsdb user:myuser password:myuser action:search query:\"address='0x791E78C60652B0E19B8FE9EB035B122B261490C477FD76E38C0C928187076103' AND state LIKE '0xFFEEDD' \"\n"
+				;
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database","user","password","keys","keyuses","phrase","address","enable","file","statecheck","logs","maxexport","readonly"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database","user","password","logs","readonly","query"}));
 	}
 	
 	@Override
@@ -179,8 +135,12 @@ public class mysqlcoins extends Command {
 			long endblock 	= -1;
 			TxBlock lastblock = null;
 			
-			long startload 	= mysqllastblock;
-			int counter = 0;
+			long startload 		= mysqllastblock;
+			int counter 		= 0;
+			int coincounter 	= 0;
+			int blockcounter 	= 0;
+			long starttimer = System.currentTimeMillis();
+			long timer	 	= starttimer;
 			while(true) {
 				
 				ArrayList<TxBlock> blocks = mysql.loadBlockRange(new MiniNumber(startload));
@@ -189,33 +149,43 @@ public class mysqlcoins extends Command {
 					break;
 				}
 				
-				//Small log message
-				if(counter % 20 == 0) {
-					System.gc();
-					if(logs) {
-						MinimaLogger.log("Loading from MySQL @ "+startload+" Blocks:"+blocks.size());
+				//Do we show a message
+				if(logs) {
+					long timenow = System.currentTimeMillis();
+					if(timenow - timer > 5000) {
+						timer = timenow;
+						MinimaLogger.log("Loading from MySQL @ "+startload);
 					}
+				}
+				
+				//Small log message
+				if(counter % 10 == 0) {
+					System.gc();
 				}
 				
 				//Cycle and add to our DB..
 				for(TxBlock block : blocks) {
+					blockcounter++;
 					
 					MiniNumber blocknum = block.getTxPoW().getBlockNumber();
 					
 					//Get the input coins
 					ArrayList<CoinProof> inputs = block.getInputCoinProofs();
 					for(CoinProof cc : inputs) {
-						MinimaLogger.log("Found Input coin @ "+blocknum+" : "+cc.getCoin().getCoinID());
+						//MinimaLogger.log("Found Input coin @ "+blocknum+" : "+cc.getCoin().getCoinID());
 						cc.getCoin().setSpent(true);
 						mysql.insertCoin(cc.getCoin());
+						coincounter++;
 					}
 					
 					//Get the output coins
 					ArrayList<Coin> outputs = block.getOutputCoins();
 					for(Coin cc : outputs) {
-						MinimaLogger.log("Found Output coin @ "+blocknum+" : "+cc.getCoinID());
+						//MinimaLogger.log("Found Output coin @ "+blocknum+" : "+cc.getCoinID());
 						cc.setSpent(false);
+						cc.setBlockCreated(blocknum);
 						mysql.insertCoin(cc);
+						coincounter++;
 					}
 					
 					if(lastblock == null) {
@@ -223,16 +193,35 @@ public class mysqlcoins extends Command {
 					}
 					lastblock = block;
 					endblock = block.getTxPoW().getBlockNumber().getAsLong();
-					
-					//Increase counter
-					counter++;
 				}
+				
+				//Increase counter
+				counter++;
 				
 				startload = endblock+1;
 			}
 			
-			ret.put("response", "MySQL CoinsDB Created..");
+			long endtimer = System.currentTimeMillis();
+			long timediff = endtimer - starttimer;
+			
+			JSONObject resp = new JSONObject();
+			resp.put("duration", timediff);
+			resp.put("blocks", blockcounter);
+			resp.put("coinsadded", coincounter);
+			resp.put("message", "MySQL CoinsDB Created..");
+			ret.put("response", resp);
 					
+		}else if(action.equals("search")) {
+			
+			//Get the generic query
+			String query = getParam("query");
+			
+			//Run it..
+			JSONObject res = mysql.searchCoins(query);
+			
+			//Return the results..
+			ret.put("response", res);
+			
 		}else {
 			throw new CommandException("Invalid action : "+action);
 		}

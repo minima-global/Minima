@@ -47,7 +47,7 @@ public class mysql extends Command {
 	public String getFullHelp() {
 		return "\nmysql\n"
 				+ "\n"
-				+ "Export the archive data of this node to a MySQL d.\n"
+				+ "Export archive data to a MySQL server.\n"
 				+ "\n"
 				+ "The MySQL db can be used to perform a chain re-sync to put users on the correct chain,\n"
 				+ "\n"

@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -15,6 +16,8 @@ import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
 
 public class MySQLConnect {
 
@@ -466,6 +469,88 @@ public class MySQLConnect {
 		}
 	}
 	
+	public synchronized JSONObject searchCoins(String zQuery) {
+		JSONObject error = new JSONObject();
+		
+		try {
+		
+			//Create the various tables..
+			Statement stmt = mConnection.createStatement();
+		
+			//Create the SQL
+			String sql = "SELECT * FROM coins WHERE "+zQuery;
+			
+			JSONObject results = new JSONObject();
+			results.put("sql", sql);
+			error.put("sql", sql);
+			
+			//Execute the SQL..
+			boolean res = stmt.execute(sql);
+			
+			if(res) {
+				
+				//Get the Results..
+				ResultSet resset = stmt.getResultSet();
+			
+				//The data arrays
+				JSONArray allrows      = new JSONArray();
+				
+				//Get the Headers..
+				ResultSetMetaData rsmd = resset.getMetaData();
+				int columnnum          = rsmd.getColumnCount();
+				
+				//Get the Results..
+				int counter=0;
+				while(resset.next()) {
+					counter++;
+					JSONObject row = new JSONObject();
+					for(int i=1;i<=columnnum;i++) {
+						String column = rsmd.getColumnName(i);
+						Object obj    = resset.getObject(i);
+						
+						//Make sure NOT NULL - or Omit.. 
+						if(obj!=null) {
+							//Treat some type special
+							if(rsmd.getColumnClassName(i).equals("java.sql.Clob")) {
+								java.sql.Clob clob = (java.sql.Clob)obj;
+	                        	String strvalue = clob.getSubString(1, (int) clob.length());
+	                        	row.put(column, strvalue);
+							
+							}else {
+								row.put(column, obj.toString());
+							}
+						}
+					}
+					allrows.add(row);
+				}
+				
+				//There are results..
+				results.put("status", true);
+				results.put("results", true);
+				results.put("count",counter);
+				results.put("rows", allrows);
+				
+			}else {
+				//There are results..
+				results.put("status", true);
+				results.put("results", false);
+			}
+			
+			//Close
+			stmt.close();
+		
+			return results;
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+			error.put("status", false);
+			error.put("results", false);
+			error.put("error", true);
+		}
+		
+		return error;
+	}
+	
 	public static void main(String[] zArgs) throws SQLException {
 		
 		//Load the required classes
@@ -478,11 +563,10 @@ public class MySQLConnect {
 		MySQLConnect mysql = new MySQLConnect("localhost:3306", "coinsdb", "myuser", "myuser");
 		mysql.init();
 		
-		Coin cc = new Coin(new MiniData("0xFFEEDD"), new MiniNumber("100"), new MiniData("0x00"));
-		mysql.insertCoin(cc);
+		JSONObject res = mysql.searchCoins("address='0x791E78C60652B0E19B8FE9EB035B122B261490C477FD76E38C0C928187076103'");
 		
-		MinimaLogger.log("Coin inserted");
-		
+		MinimaLogger.log(res.toString());		
+				
 //		//Add some TxPoW..
 //		TxPoW txp = new TxPoW();
 //		txp.setBlockNumber(MiniNumber.ZERO);

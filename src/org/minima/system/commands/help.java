@@ -5,6 +5,8 @@ import java.util.Arrays;
 
 import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.backup;
+import org.minima.system.commands.backup.mysql;
+import org.minima.system.commands.backup.mysqlcoins;
 import org.minima.system.commands.backup.reset;
 import org.minima.system.commands.backup.restore;
 import org.minima.system.commands.backup.restoresync;
@@ -218,8 +220,9 @@ public class help extends Command {
 			addCommand(details, new archive());
 			addCommand(details, new vault());
 			
-			addCommand(details, new incentivecash());
-	
+			addCommand(details, new mysql());
+			addCommand(details, new mysqlcoins());
+			
 			//addCommand(details, new nodecount());
 			addCommand(details, new quit());
 		}
