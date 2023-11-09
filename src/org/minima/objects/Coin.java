@@ -182,6 +182,9 @@ public class Coin implements Streamable {
 	}
 	
 	public MiniNumber getTokenAmount() {
+		if(getToken() == null) {
+			return getAmount();
+		}
 		return getToken().getScaledTokenAmount(getAmount());
 	}
 
@@ -253,12 +256,19 @@ public class Coin implements Streamable {
 			obj.put("state", starr);
 		}
 		
-		
 		obj.put("spent", mSpent.isTrue());
 		obj.put("mmrentry", mMMREntryNumber.toString());
 		obj.put("created", mBlockCreated.toString());
 		
 		return obj;
+	}
+	
+	public String getStateAsJSON() {
+		JSONObject state = new JSONObject();
+		for(StateVariable sv : mState) {
+			state.put(""+sv.getPort(), sv.getData().toString());
+		}
+		return state.toString();
 	}
 	
 	/**

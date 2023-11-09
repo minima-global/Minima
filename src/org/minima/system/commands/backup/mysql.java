@@ -693,9 +693,6 @@ public class mysql extends Command {
 			//Wipe the old data
 			mysql.wipeAll();
 			
-			//And recreate the tables
-			mysql.init();
-			
 			//Is there a cascade..
 			Cascade casc = archtemp.loadCascade();
 			if(casc != null) {
@@ -1007,16 +1004,12 @@ public class mysql extends Command {
 			//Wipe the old data
 			mysql.wipeAll();
 			
-			//And recreate the tables
-			mysql.init();
-			
 			//Is there a cascade..
 			Cascade casc = rawin.getCascade();
 			if(casc != null) {
 				MinimaLogger.log("Cascade found.. ");
 				mysql.saveCascade(casc);
 			}
-			
 			
 			//Load a range..
 			long endblock 	= -1;

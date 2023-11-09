@@ -9,6 +9,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 import org.minima.database.cascade.Cascade;
+import org.minima.objects.Coin;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
@@ -41,6 +42,8 @@ public class MySQLConnect {
 	
 	PreparedStatement SAVE_CASCADE				= null;
 	PreparedStatement LOAD_CASCADE				= null;
+	
+	PreparedStatement SQL_INSERT_COIN			= null;
 	
 	boolean mReadOnly;
 	
@@ -88,6 +91,26 @@ public class MySQLConnect {
 			//Run it..
 			stmt.execute(cascade);
 			
+			//Create the coins table
+			String coins = "CREATE TABLE IF NOT EXISTS `coins` ("
+					+ "	 `id` bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,"
+					+ "  `coinid` varchar(128) NOT NULL,"
+					+ "  `address` varchar(128) NOT NULL,"
+					+ "  `amount` varchar(128) NOT NULL,"
+					+ "  `amountdouble` double NOT NULL,"
+					+ "  `tokenid` varchar(128) NOT NULL,"
+					+ "  `storestate` int NOT NULL,"
+					+ "  `state` text,"
+					+ "  `mmrentrynumber` bigint NOT NULL,"
+					+ "  `spent` int NOT NULL,"
+					+ "  `blockcreated` bigint NOT NULL,"
+					+ "  `token` text,"
+					+ "  `tokenamount` double NOT NULL"
+					+ ")";
+			
+			//Run it..
+			stmt.execute(coins);
+			
 			//All done..
 			stmt.close();
 		}
@@ -106,6 +129,9 @@ public class MySQLConnect {
 		
 		SAVE_CASCADE = mConnection.prepareStatement("INSERT INTO cascadedata ( cascadetip, fulldata ) VALUES ( ?, ? )");
 		LOAD_CASCADE = mConnection.prepareStatement("SELECT fulldata FROM cascadedata ORDER BY cascadetip ASC LIMIT 1");
+	
+		SQL_INSERT_COIN = mConnection.prepareStatement("INSERT INTO coins(coinid,address,amount,amountdouble,tokenid,storestate,state,mmrentrynumber,spent,blockcreated,token,tokenamount) "
+					+ "VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )");
 	}
 	
 	public void shutdown() {
@@ -122,7 +148,26 @@ public class MySQLConnect {
 		Statement stmt = mConnection.createStatement();
 		stmt.execute("DROP TABLE syncblock");
 		stmt.execute("DROP TABLE cascadedata");
+		stmt.execute("DROP TABLE coins");
 		stmt.close();
+		
+		//close..
+		shutdown();
+		
+		//And restart
+		init();
+	}
+	
+	public void wipeCoinsDB() throws SQLException {
+		Statement stmt = mConnection.createStatement();
+		stmt.execute("DROP TABLE coins");
+		stmt.close();
+		
+		//close..
+		shutdown();
+		
+		//And restart
+		init();
 	}
 	
 	public boolean saveCascade(Cascade zCascade) throws SQLException {
@@ -376,39 +421,50 @@ public class MySQLConnect {
 		return blocks;
 	}
 	
-//	/**
-//	 * Non Synchronized version of LoadBlockRange
-//	 * @throws SQLException 
-//	 */
-//	public ArrayList<TxBlock> loadBlockRangeNoSync(MiniNumber zStartBlock) throws SQLException {
-//		
-//		ArrayList<TxBlock> blocks = new ArrayList<>();
-//		
-//		//Set Search params
-//		SQL_SELECT_RANGE.clearParameters();
-//		SQL_SELECT_RANGE.setLong(1,zStartBlock.getAsLong());
-//		
-//		//Run the query
-//		ResultSet rs = SQL_SELECT_RANGE.executeQuery();
-//		
-//		//Multiple results
-//		while(rs.next()) {
-//			
-//			//Get the details..
-//			byte[] syncdata 	= rs.getBytes("syncdata");
-//			
-//			//Create MiniData version
-//			MiniData minisync = new MiniData(syncdata);
-//			
-//			//Convert
-//			TxBlock sb = TxBlock.convertMiniDataVersion(minisync);
-//			
-//			//Add to our list
-//			blocks.add(sb);
-//		}
-//		
-//		return blocks;
-//	}
+	public synchronized void insertCoin(Coin zCoin) {
+		
+		try {
+			
+			//Set Search params
+			SQL_INSERT_COIN.clearParameters();
+			SQL_INSERT_COIN.setString(1,zCoin.getCoinID().to0xString());
+			SQL_INSERT_COIN.setString(2,zCoin.getAddress().to0xString());
+			SQL_INSERT_COIN.setString(3,zCoin.getAmount().toString());
+			SQL_INSERT_COIN.setDouble(4,zCoin.getAmount().getAsDouble());
+			SQL_INSERT_COIN.setString(5,zCoin.getTokenID().to0xString());
+			
+			if(zCoin.storeState()) {
+				SQL_INSERT_COIN.setInt(6,1);
+			}else {
+				SQL_INSERT_COIN.setInt(6,0);
+			}
+			
+			SQL_INSERT_COIN.setString(7,zCoin.getStateAsJSON());
+			SQL_INSERT_COIN.setLong(8,zCoin.getMMREntryNumber().getBigDecimal().longValue());
+			
+			if(zCoin.getSpent()) {
+				SQL_INSERT_COIN.setInt(9,1);
+			}else {
+				SQL_INSERT_COIN.setInt(9,0);
+			}
+			
+			SQL_INSERT_COIN.setLong(10,zCoin.getBlockCreated().getAsLong());
+			
+			if(zCoin.getToken() == null) {
+				SQL_INSERT_COIN.setString(11,"");
+			}else {
+				SQL_INSERT_COIN.setString(11,zCoin.getToken().toJSON().toString());
+			}
+			
+			SQL_INSERT_COIN.setDouble(12,zCoin.getTokenAmount().getAsDouble());
+			
+			//Run the query
+			SQL_INSERT_COIN.execute();
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+	}
 	
 	public static void main(String[] zArgs) throws SQLException {
 		
@@ -419,40 +475,45 @@ public class MySQLConnect {
 			e1.printStackTrace();
 		}
 		
-		MySQLConnect mysql = new MySQLConnect("localhost:3306", "mydatabase", "myuser", "myuser");
+		MySQLConnect mysql = new MySQLConnect("localhost:3306", "coinsdb", "myuser", "myuser");
 		mysql.init();
 		
-		//Add some TxPoW..
-		TxPoW txp = new TxPoW();
-		txp.setBlockNumber(MiniNumber.ZERO);
-		txp.calculateTXPOWID();
-		TxBlock txblk = new TxBlock(txp);
+		Coin cc = new Coin(new MiniData("0xFFEEDD"), new MiniNumber("100"), new MiniData("0x00"));
+		mysql.insertCoin(cc);
 		
-		txp = new TxPoW();
-		txp.setBlockNumber(MiniNumber.ONE);
-		txp.calculateTXPOWID();
-		txblk = new TxBlock(txp);
+		MinimaLogger.log("Coin inserted");
 		
-		mysql.saveBlock(txblk);
-		
-		//Now search for the top block..
-		long firstblock = mysql.loadFirstBlock();
-		long lastblock 	= mysql.loadLastBlock();
-		
-		System.out.println("FIRST : "+firstblock);
-		System.out.println("LAST  : "+lastblock);
-		
-//		String txpid = "0x0003E914FBF1C04C9E1B52E37A171CA870E5310B33E50B9DFA9DF0C044A24150";
-//		TxBlock block = mysql.loadBlockFromID(txpid);
-		
-//		TxBlock block = mysql.loadBlockFromNum(3);
-//		MinimaLogger.log(block.getTxPoW().toJSON().toString());
-		
-		ArrayList<TxBlock> blocks = mysql.loadBlockRange(MiniNumber.ZERO);
-		MinimaLogger.log("FOUND : "+blocks.size());
-		for(TxBlock block : blocks) {
-			MinimaLogger.log(block.getTxPoW().getBlockNumber().toString());
-		}
+//		//Add some TxPoW..
+//		TxPoW txp = new TxPoW();
+//		txp.setBlockNumber(MiniNumber.ZERO);
+//		txp.calculateTXPOWID();
+//		TxBlock txblk = new TxBlock(txp);
+//		
+//		txp = new TxPoW();
+//		txp.setBlockNumber(MiniNumber.ONE);
+//		txp.calculateTXPOWID();
+//		txblk = new TxBlock(txp);
+//		
+//		mysql.saveBlock(txblk);
+//		
+//		//Now search for the top block..
+//		long firstblock = mysql.loadFirstBlock();
+//		long lastblock 	= mysql.loadLastBlock();
+//		
+//		System.out.println("FIRST : "+firstblock);
+//		System.out.println("LAST  : "+lastblock);
+//		
+////		String txpid = "0x0003E914FBF1C04C9E1B52E37A171CA870E5310B33E50B9DFA9DF0C044A24150";
+////		TxBlock block = mysql.loadBlockFromID(txpid);
+//		
+////		TxBlock block = mysql.loadBlockFromNum(3);
+////		MinimaLogger.log(block.getTxPoW().toJSON().toString());
+//		
+//		ArrayList<TxBlock> blocks = mysql.loadBlockRange(MiniNumber.ZERO);
+//		MinimaLogger.log("FOUND : "+blocks.size());
+//		for(TxBlock block : blocks) {
+//			MinimaLogger.log(block.getTxPoW().getBlockNumber().toString());
+//		}
 		
 		mysql.shutdown();
 	}

@@ -16,6 +16,7 @@ import org.minima.system.Main;
 import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.backup;
 import org.minima.system.commands.backup.mysql;
+import org.minima.system.commands.backup.mysqlcoins;
 import org.minima.system.commands.backup.reset;
 import org.minima.system.commands.backup.restore;
 import org.minima.system.commands.backup.restoresync;
@@ -133,7 +134,7 @@ public abstract class Command {
 			new multisig(), new checkaddress(),
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
 			
-			new ping(), new random(), new mysql(), new slavenode(), new checkrestore(),
+			new ping(), new random(), new mysql(), new mysqlcoins(), new slavenode(), new checkrestore(),
 			//new file(),
 			
 			new vault(), new consolidate(), new coinnotify(),
