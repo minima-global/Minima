@@ -161,6 +161,7 @@ public class MDSManager extends MessageProcessor {
 		mIsShuttingDown = true;
 		
 		//Send a SHUTDOWN message to all the MiniDAPPs..
+		mPollStack.onlyShutDown();
 		Main.getInstance().PostNotifyEvent("MDS_SHUTDOWN", new JSONObject());
 		
 		//Wait 2 seconds for it to be processed..
