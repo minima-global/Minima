@@ -47,6 +47,8 @@ public class MySQLConnect {
 	PreparedStatement LOAD_CASCADE				= null;
 	
 	PreparedStatement SQL_INSERT_COIN			= null;
+	PreparedStatement SQL_LATEST_COIN			= null;
+	PreparedStatement SQL_TOTAL_COIN			= null;
 	
 	boolean mReadOnly;
 	
@@ -135,6 +137,8 @@ public class MySQLConnect {
 	
 		SQL_INSERT_COIN = mConnection.prepareStatement("INSERT INTO coins(coinid,address,amount,amountdouble,tokenid,storestate,state,mmrentrynumber,spent,blockcreated,token,tokenamount) "
 					+ "VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )");
+		SQL_LATEST_COIN = mConnection.prepareStatement("SELECT MAX(blockcreated) as maxblock from coins");
+		SQL_TOTAL_COIN = mConnection.prepareStatement("SELECT COUNT(*) as tot from coins");
 	}
 	
 	public void shutdown() {
@@ -469,7 +473,49 @@ public class MySQLConnect {
 		}
 	}
 	
+	public long getMaxCoinBlock() {
+		try {
+			
+			//Run the query
+			ResultSet rs = SQL_LATEST_COIN.executeQuery();
+			
+			//Multiple results
+			if(rs.next()) {
+				long maxblock = rs.getLong("maxblock");
+				return maxblock;
+			}
+		
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return -1;
+	}
+	
+	public long getTotalCoins() {
+		try {
+			
+			//Run the query
+			ResultSet rs = SQL_TOTAL_COIN.executeQuery();
+			
+			//Multiple results
+			if(rs.next()) {
+				long count = rs.getLong("tot");
+				return count;
+			}
+		
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return 0;
+	}
+	
 	public synchronized JSONObject searchCoins(String zQuery) {
+		return searchCoins(zQuery, false);
+	}
+	
+	public synchronized JSONObject searchCoins(String zQuery,boolean zHideToken) {
 		JSONObject error = new JSONObject();
 		
 		try {
@@ -477,15 +523,12 @@ public class MySQLConnect {
 			//Create the various tables..
 			Statement stmt = mConnection.createStatement();
 		
-			//Create the SQL
-			String sql = "SELECT * FROM coins WHERE "+zQuery;
-			
 			JSONObject results = new JSONObject();
-			results.put("sql", sql);
-			error.put("sql", sql);
+			results.put("sql", zQuery);
+			error.put("sql", zQuery);
 			
 			//Execute the SQL..
-			boolean res = stmt.execute(sql);
+			boolean res = stmt.execute(zQuery);
 			
 			if(res) {
 				
@@ -508,14 +551,22 @@ public class MySQLConnect {
 						String column = rsmd.getColumnName(i);
 						Object obj    = resset.getObject(i);
 						
+						//Sometimes the tokens are large..
+						if(zHideToken && column.equals("token")) {
+							obj = new String("_hidden_");
+						}
+						
 						//Make sure NOT NULL - or Omit.. 
 						if(obj!=null) {
 							//Treat some type special
 							if(rsmd.getColumnClassName(i).equals("java.sql.Clob")) {
-								java.sql.Clob clob = (java.sql.Clob)obj;
-	                        	String strvalue = clob.getSubString(1, (int) clob.length());
-	                        	row.put(column, strvalue);
-							
+								if(zHideToken && column.equals("token")) {
+									row.put(column, obj.toString());
+								}else {
+									java.sql.Clob clob = (java.sql.Clob)obj;
+		                        	String strvalue = clob.getSubString(1, (int) clob.length());
+		                        	row.put(column, strvalue);
+								}
 							}else {
 								row.put(column, obj.toString());
 							}
