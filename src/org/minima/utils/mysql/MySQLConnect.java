@@ -109,6 +109,8 @@ public class MySQLConnect {
 					+ "  `mmrentrynumber` bigint NOT NULL,"
 					+ "  `spent` int NOT NULL,"
 					+ "  `blockcreated` bigint NOT NULL,"
+					+ "  `blockspent` bigint NOT NULL,"
+					+ "  `date` varchar(128) NOT NULL,"
 					+ "  `token` text,"
 					+ "  `tokenamount` double NOT NULL"
 					+ ")";
@@ -135,8 +137,8 @@ public class MySQLConnect {
 		SAVE_CASCADE = mConnection.prepareStatement("INSERT INTO cascadedata ( cascadetip, fulldata ) VALUES ( ?, ? )");
 		LOAD_CASCADE = mConnection.prepareStatement("SELECT fulldata FROM cascadedata ORDER BY cascadetip ASC LIMIT 1");
 	
-		SQL_INSERT_COIN = mConnection.prepareStatement("INSERT INTO coins(coinid,address,amount,amountdouble,tokenid,storestate,state,mmrentrynumber,spent,blockcreated,token,tokenamount) "
-					+ "VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )");
+		SQL_INSERT_COIN = mConnection.prepareStatement("INSERT INTO coins(coinid,address,amount,amountdouble,tokenid,storestate,state,mmrentrynumber,spent,blockcreated,blockspent,date,token,tokenamount) "
+					+ "VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )");
 		SQL_LATEST_COIN = mConnection.prepareStatement("SELECT MAX(blockcreated) as maxblock from coins");
 		SQL_TOTAL_COIN = mConnection.prepareStatement("SELECT COUNT(*) as tot from coins");
 	}
@@ -428,7 +430,7 @@ public class MySQLConnect {
 		return blocks;
 	}
 	
-	public synchronized void insertCoin(Coin zCoin) {
+	public synchronized void insertCoin(Coin zCoin, long zBlockSpent, String zDate) {
 		
 		try {
 			
@@ -456,14 +458,16 @@ public class MySQLConnect {
 			}
 			
 			SQL_INSERT_COIN.setLong(10,zCoin.getBlockCreated().getAsLong());
+			SQL_INSERT_COIN.setLong(11,zBlockSpent);
+			SQL_INSERT_COIN.setString(12,zDate);
 			
 			if(zCoin.getToken() == null) {
-				SQL_INSERT_COIN.setString(11,"");
+				SQL_INSERT_COIN.setString(13,"");
 			}else {
-				SQL_INSERT_COIN.setString(11,zCoin.getToken().toJSON().toString());
+				SQL_INSERT_COIN.setString(13,zCoin.getToken().toJSON().toString());
 			}
 			
-			SQL_INSERT_COIN.setDouble(12,zCoin.getTokenAmount().getAsDouble());
+			SQL_INSERT_COIN.setDouble(14,zCoin.getTokenAmount().getAsDouble());
 			
 			//Run the query
 			SQL_INSERT_COIN.execute();
@@ -509,10 +513,6 @@ public class MySQLConnect {
 		}
 		
 		return 0;
-	}
-	
-	public synchronized JSONObject searchCoins(String zQuery) {
-		return searchCoins(zQuery, false);
 	}
 	
 	public synchronized JSONObject searchCoins(String zQuery,boolean zHideToken) {
@@ -613,10 +613,6 @@ public class MySQLConnect {
 		
 		MySQLConnect mysql = new MySQLConnect("localhost:3306", "coinsdb", "myuser", "myuser");
 		mysql.init();
-		
-		JSONObject res = mysql.searchCoins("address='0x791E78C60652B0E19B8FE9EB035B122B261490C477FD76E38C0C928187076103'");
-		
-		MinimaLogger.log(res.toString());		
 				
 //		//Add some TxPoW..
 //		TxPoW txp = new TxPoW();

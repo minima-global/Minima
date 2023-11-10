@@ -68,24 +68,31 @@ public class mysqlcoins extends Command {
 				+ "logs:\n"
 				+ "    Show detailed logs - default true.\n"
 				+ "\n"
-				+ "query:\n"
+				+ "where:\n"
 				+ "    The search criteria. String data MUST be in single quotes. You can use multiple parameters.\n"
 				+ "\n"
+				+ "maxcoins:\n"
+				+ "    The maximum numnber of coins to add. The update can take a VERY long time so this way you can limit it.\n"
+				+ "\n"
 				+ "action:\n"
-				+ "    createdb : Take the MySQL data and make a coins database. Takes a while. Logs output to stdout.\n"
+				+ "    info : Get information about the Coins DB.\n"
+				+ "    wipe : Wipe the Coins DB.\n"
+				+ "    update : Update the coins db from the latest coin added with MySQL data.\n"
 				+ "    search : Perform a search on the data. You can specify any valid query params.\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
-				+ "mysqlcoins host:127.0.0.1:3306 database:coinsdb user:myuser password:myuser action:search query:\"address='0x791E78C60652B0E19B8FE9EB035B122B261490C477FD76E38C0C928187076103'\"\n"
+				+ "mysqlcoins host:127.0.0.1:3306 database:coinsdb user:myuser password:myuser action:update maxcoins:100\n"
 				+ "\n"
-				+ "mysqlcoins host:127.0.0.1:3306 database:coinsdb user:myuser password:myuser action:search query:\"address='0x791E78C60652B0E19B8FE9EB035B122B261490C477FD76E38C0C928187076103' AND state LIKE '0xFFEEDD' \"\n"
+				+ "mysqlcoins host:127.0.0.1:3306 database:coinsdb user:myuser password:myuser action:search where:\"address='0x791E78C60652B0E19B8FE9EB035B122B261490C477FD76E38C0C928187076103'\"\n"
+				+ "\n"
+				+ "mysqlcoins host:127.0.0.1:3306 database:coinsdb user:myuser password:myuser action:search query:\"address='0x791E78C60652B0E19B8FE9EB035B122B261490C477FD76E38C0C928187076103' AND state LIKE '%0xFFEEDD%' LIMIT 10\"\n"
 				;
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database","user","password","logs","readonly","query","where","maxblocks","maxcoins","hidetoken"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database","user","password","logs","readonly","query","where","maxblocks","maxcoins","hidetoken","address"}));
 	}
 	
 	@Override
@@ -200,27 +207,30 @@ public class mysqlcoins extends Command {
 					if(firstblock == -1) {
 						firstblock = blocknum.getAsLong();
 					}
+					long timemilli 	= block.getTxPoW().getTimeMilli().getAsLong();
+					String date 	= MinimaLogger.DATEFORMAT.format(new Date(timemilli));
 					
 					//Get the input coins
 					ArrayList<CoinProof> inputs = block.getInputCoinProofs();
 					for(CoinProof cc : inputs) {
+						cc.getCoin().setSpent(true);
 						if(logs) {
 							MinimaLogger.log("Found Input coin @ "+blocknum+" : "+cc.getCoin().toJSON().toString());
 						}
-						cc.getCoin().setSpent(true);
-						mysql.insertCoin(cc.getCoin());
+						
+						mysql.insertCoin(cc.getCoin(),blocknum.getAsLong(),date);
 						coincounter++;
 					}
 					
 					//Get the output coins
 					ArrayList<Coin> outputs = block.getOutputCoins();
 					for(Coin cc : outputs) {
+						cc.setSpent(false);
+						cc.setBlockCreated(blocknum);
 						if(logs) {
 							MinimaLogger.log("Found Output coin @ "+blocknum+" : "+cc.toJSON().toString());
 						}
-						cc.setSpent(false);
-						cc.setBlockCreated(blocknum);
-						mysql.insertCoin(cc);
+						mysql.insertCoin(cc,0,date);
 						coincounter++;
 					}
 					
@@ -261,6 +271,13 @@ public class mysqlcoins extends Command {
 				String where = getParam("where");
 				sql = "SELECT * FROM coins WHERE "+where; 
 			
+			}else if(existsParam("address")) {
+				String address = getAddressParam("address");
+				
+				sql = "SELECT * FROM coins "
+						+ "WHERE address='"+address+"' "
+						+ "OR state LIKE '%"+address+"%'";
+				
 			}else if(existsParam("query")) {
 				sql = getParam("query"); 
 				
@@ -272,16 +289,7 @@ public class mysqlcoins extends Command {
 			boolean hidetoken = getBooleanParam("hidetoken", false);
 			
 			//Run it..
-			if(logs) {
-				MinimaLogger.log("Start Coins query : "+sql);
-			}
-			long timestartquery = System.currentTimeMillis();
 			JSONObject res = mysql.searchCoins(sql,hidetoken);
-			long timeendquery = System.currentTimeMillis();
-			if(logs) {
-				MinimaLogger.log("Finished query : "+sql);
-				MinimaLogger.log("Rows : "+res.get("count"));
-			}
 			
 			//Return the results..
 			ret.put("response", res);
