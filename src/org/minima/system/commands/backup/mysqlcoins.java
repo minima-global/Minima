@@ -263,7 +263,7 @@ public class mysqlcoins extends Command {
 			long timediff = endtimer - starttimer;
 			
 			JSONObject resp = new JSONObject();
-			resp.put("duration", (timediff/1000)+" secconds");
+			resp.put("duration", (timediff/1000)+" seconds");
 			resp.put("blocks", blockcounter);
 			resp.put("firstblock", firstblock);
 			resp.put("lastblock", endblock);
