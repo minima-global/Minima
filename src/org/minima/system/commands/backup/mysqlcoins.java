@@ -92,7 +92,7 @@ public class mysqlcoins extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database","user","password","logs","readonly","query","where","maxblocks","maxcoins","hidetoken","address"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database","user","password","logs","readonly","query","where","maxblocks","maxcoins","hidetoken","address","spent","limit"}));
 	}
 	
 	@Override
@@ -275,8 +275,27 @@ public class mysqlcoins extends Command {
 				String address = getAddressParam("address");
 				
 				sql = "SELECT * FROM coins "
-						+ "WHERE address='"+address+"' "
-						+ "OR state LIKE '%"+address+"%'";
+						+ "WHERE ( address='"+address+"' "
+						+ "OR state LIKE '%"+address+"%' )";
+				
+				//Check for spent
+				if(existsParam("spent")) {
+					boolean spent = getBooleanParam("spent");
+					if(spent) {
+						sql += " AND spent=1";
+					}else {
+						sql += " AND spent=0";
+					}
+				}
+				
+				//Order correctly
+				sql += " ORDER BY blockcreated ASC";
+				
+				//Check for Limit..
+				if(existsParam("limit")) {
+					int limit = getNumberParam("limit").getAsInt();
+					sql += " LIMIT "+limit;
+				}
 				
 			}else if(existsParam("query")) {
 				sql = getParam("query"); 

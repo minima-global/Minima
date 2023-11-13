@@ -558,8 +558,10 @@ public class MySQLConnect {
 						
 						//Make sure NOT NULL - or Omit.. 
 						if(obj!=null) {
+
 							//Treat some type special
-							if(rsmd.getColumnClassName(i).equals("java.sql.Clob")) {
+							String type = rsmd.getColumnClassName(i);
+							if(type.equals("java.sql.Clob")) {
 								if(zHideToken && column.equals("token")) {
 									row.put(column, obj.toString());
 								}else {
@@ -567,6 +569,14 @@ public class MySQLConnect {
 		                        	String strvalue = clob.getSubString(1, (int) clob.length());
 		                        	row.put(column, strvalue);
 								}
+								
+							}else if(type.equals("java.lang.Double")) {
+								
+								//Format correctly.. 
+								Double dd = (Double)obj;
+								String val = String.format("%f", dd);
+								row.put(column, val);
+								
 							}else {
 								row.put(column, obj.toString());
 							}
