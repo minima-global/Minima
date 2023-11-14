@@ -1,0 +1,98 @@
+<html>
+
+<head>
+	<title>Shout Out</title>
+	
+	<meta charset="utf-8" />
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="xregexp-all.js"></script>
+	<script type="text/javascript" src="purify.min.js"></script>
+	<script type="text/javascript" src="puresha1.js"></script>
+	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="txn.js"></script>
+	<script type="text/javascript" src="sql.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+	
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table>
+			<tr>
+				<td><img height=45 src="shoutout.png"></td>
+				<td style="font-size:26px">&nbsp;<b>Shout Out</b></td>
+			</tr>
+		</table>
+	</div>
+	<br>
+	
+	<div class="allcatsview" id="usertitle">
+		<table>
+			<tr>
+				<td>User : </td> <td></td>
+			</tr>
+			<tr>
+				<td>Publick key : </td> <td></td>
+			</tr>
+		
+		</table>
+	</div>
+	<br>
+	<div class="allcatsview" id="usersblocked">Users you have blocked</div>
+	<br>
+	<div class="allcatsview" id="catsblocked">Categories you have blocked</div>
+	<br>
+	<div class="allcatsview" id="topicsblocked">Topics you have blocked</div>	
+</center>
+
+<script type="text/javascript">
+	
+	var USER_NAME 	= "";
+	var USER_PUBKEY = "";
+	
+	function setDetails(){
+		
+		var dets = "<table><tr><td>User : </td></tr></table>"
+		
+	}
+	
+	function fillFilters(){
+		
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//Notify of new messages..
+			MDS.cmd("maxima",function(startup){
+				//Get the user details
+				USER_NAME 	 = startup.response.name;
+				USER_PUBKEY  = startup.response.publickey;
+				
+			});
+			
+		}
+	});
+
+</script>
+
+</body>
+
+</html>

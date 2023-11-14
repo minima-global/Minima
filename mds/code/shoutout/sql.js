@@ -42,6 +42,7 @@ function createDB(callback){
 		var notifysql = "CREATE TABLE IF NOT EXISTS `notify` ( "
 					+"  `id` bigint auto_increment, "
 					+"  `categorytitleid` varchar(128) NOT NULL, "
+					+"  `categorytitlename` varchar(1024) , "
 					+"  `created` bigint NOT NULL "
 					+" )";
 		
