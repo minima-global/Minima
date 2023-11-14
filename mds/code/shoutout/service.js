@@ -7,6 +7,7 @@
 //Load js libs
 MDS.load("puresha1.js");
 MDS.load("sql.js");
+MDS.load("txn.js");
 
 //Main Shoutout Address
 var SHOUTOUT_ADDRESS = "0x73686F75746F7574"
@@ -39,7 +40,7 @@ MDS.init(function(msg){
 		createDB(function(){
 	
 			//Try to insert a message
-			insertMessage("minima", "Start Here!", "Spartacus", "0x00", "Blah Blah Blah!", 0, function(res){});
+			insertMessage("minima", "Start Here!", "Shout Out!", "0x00", "Blah Blah Blah!", 0, function(res){});
 			
 			//Notify of new messages..
 			MDS.cmd("coinnotify action:add address:"+SHOUTOUT_ADDRESS,function(startup){});
@@ -67,22 +68,34 @@ MDS.init(function(msg){
 			var msg_title 	 = stripBrackets(msg.data.coin.state[1]);
 			var msg_message  = stripBrackets(msg.data.coin.state[2]);
 			var msg_user 	 = stripBrackets(msg.data.coin.state[3]);
+			var msg_randid 	 = stripBrackets(msg.data.coin.state[4]);
+			var msg_pubkey 	 = stripBrackets(msg.data.coin.state[5]);
+			var msg_sign 	 = stripBrackets(msg.data.coin.state[6]);
 			
-			//Insert unread message - if not already added
-			insertMessage(msg_category, msg_title, msg_user, "0x00", msg_message, 0, function(inserted){
-				//Do we notify the User
-				if(inserted){
-					var cattitleid = getCategoryTitleID(msg_category, msg_title);
-					isNotify(cattitleid,function(notify){
-						if(notify){
-							var notmsg = msg_user+" : "+msg_message;
-							if(notmsg.length>30){
-								notmsg = notmsg.substring(0,30)+"..";
-							}
-							MDS.notify(notmsg);		
-						}
-					});
-				}	
+			//Check the signature..
+			checkMessageSig(msg_category, msg_title, msg_message, 
+						msg_user, msg_pubkey, msg_randid, msg_sign, function(valid){
+							
+				if(!valid){
+					MDS.log("Invalid signature for "+msg_user+" "+msg_pubkey);
+				}else{
+					//Insert unread message - if not already added
+					insertMessage(msg_category, msg_title, msg_user, msg_pubkey, msg_message, msg_randid, 0, function(inserted){
+						//Do we notify the User
+						if(inserted){
+							var cattitleid = getCategoryTitleID(msg_category, msg_title);
+							isNotify(cattitleid,function(notify){
+								if(notify){
+									var notmsg = msg_user+" : "+msg_message;
+									if(notmsg.length>30){
+										notmsg = notmsg.substring(0,30)+"..";
+									}
+									MDS.notify(notmsg);		
+								}
+							});
+						}	
+					});					
+				}
 			});
 		}
 	}

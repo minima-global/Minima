@@ -95,8 +95,11 @@
 		//Disable button
 		sendbutton.disabled = true;
 		
+		//Create a random id for this message
+		var randid = Math.floor(Math.random() * 1000000000);
+		
 		//Send txn!
-		sendTxnMessage(TOPIC_CATEGORY, TOPIC_TITLE, message, USER_NAME, function(sendresp){
+		sendTxnMessage(TOPIC_CATEGORY, TOPIC_TITLE, message, USER_NAME, USER_PUBKEY, randid, function(sendresp){
 			
 			//Clear the edit window
 			replytext.value = "";
@@ -112,7 +115,7 @@
 				return;
 			}else{
 				//All good add to your DB..
-				insertMessage(TOPIC_CATEGORY, TOPIC_TITLE, USER_NAME, "0x00", message, 1, function(insresp){
+				insertMessage(TOPIC_CATEGORY, TOPIC_TITLE, USER_NAME, USER_PUBKEY, message, randid, 1, function(insresp){
 					//Add to the notify stack
 					newNotifyTopic(CATEGORY_TITLE_ID, function(){
 						setMessages();	
@@ -175,8 +178,10 @@
 		var dec_user 	= decodeStringFromDB(message.USERNAME);
 		var dec_msg 	= decodeStringFromDB(message.MESSAGE);
 		
+		var userlink 	= "<a href='usermessages.html?uid="+MDS.minidappuid+"&userpubkey="+message.USERPUBKEY+"'>"+dec_user+"</a>";
+		
 		var msg = "";
-		msg += "<tr><td class='topicusername' nowrap>"+dec_user+" : </td>";
+		msg += "<tr><td class='topicusername' nowrap>"+userlink+" : </td>";
 		msg += "<td class='topicmessage'>"+dec_msg+"</td></tr>";
 		msg += "<tr><td colspan=2 class='topicdate'>"+date.toLocaleString()+"</td></tr>"
 		

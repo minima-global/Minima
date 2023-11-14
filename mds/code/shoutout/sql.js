@@ -28,7 +28,7 @@ function createDB(callback){
 				+"  `categorytitleid` varchar(128) NOT NULL, "
 				+"  `username` varchar(128) NOT NULL, "
 				+"  `useraddress` varchar(128), "
-				+"  `userpubkey` varchar(128) NOT NULL, "
+				+"  `userpubkey` varchar(1024) NOT NULL, "
 				+"  `message` varchar(8192) NOT NULL, "
 				+"  `messageid` varchar(128) NOT NULL, "
 				+"  `read` int NOT NULL, "
@@ -57,8 +57,13 @@ function getCategoryTitleID(category,title){
 	return sha1(category+" "+title);
 }
 
-function getUniqueMsgID(category,title,userpubkey,message){
-	return sha1(category+" "+title+" "+userpubkey+" "+message);
+function getUniqueMsgID(category, title, user, pubkey, message, randomid){
+	return sha1(""+category+title+user+pubkey+message+randomid);
+}
+
+function checkMessageExists(category, title, user, pubkey, message, randomid, callback){
+	var uniquemsgid = getUniqueMsgID(category, title, user, pubkey, message, randomid);
+	messageExists(uniquemsgid, callback);
 }
 
 function messageExists(msgid, callback){
@@ -72,10 +77,10 @@ function messageExists(msgid, callback){
 	});
 }
 
-function insertMessage(category, title, user, pubkey, message, read, callback){
+function insertMessage(category, title, user, pubkey, message, randomid, read, callback){
 	
 	//Has this message been added already
-	var msgid = getUniqueMsgID(category,title,pubkey,message);
+	var msgid = getUniqueMsgID(category, title, user, pubkey, message, randomid);
 	
 	//See if it's already added..
 	messageExists(msgid,function(exists){
@@ -164,6 +169,16 @@ function selectTopics(maxnum, maxdate, category, callback){
 function selectRecentMessages(limit, offset, callback){
 	//Create the DB if not exists
 	var sql = "SELECT * FROM shoutout ORDER BY created DESC LIMIT "+limit+" OFFSET "+offset;
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		callback(msg.rows);
+	});
+}
+
+function selectUserMessages(userpubkey, limit, offset, callback){
+	//Create the DB if not exists
+	var sql = "SELECT * FROM shoutout WHERE userpubkey='"+userpubkey+"' ORDER BY created DESC LIMIT "+limit+" OFFSET "+offset;
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
