@@ -46,9 +46,24 @@ function createDB(callback){
 					+" )";
 		
 		MDS.sql(notifysql,function(msg){
-			if(callback){
-				callback(msg);
-			}
+
+			//And now the filter table - for things you don't want to see..
+			var filtersql = "CREATE TABLE IF NOT EXISTS `filter` ( "
+						+"  `id` bigint auto_increment, "
+						+"  `type` varchar(1024), "
+						+"  `category` varchar(1024), "
+						+"  `categorytitleid` varchar(128), "
+						+"  `categorytitlename` varchar(1024), "
+						+"  `username` varchar(128), "
+						+"  `pubkey` varchar(1024), "
+						+" )";
+			
+			MDS.sql(filtersql,function(msg){
+				if(callback){
+					callback(msg);
+				}
+		});			
+
 		});
 	});
 }
@@ -77,7 +92,7 @@ function messageExists(msgid, callback){
 	});
 }
 
-function insertMessage(category, title, user, pubkey, message, randomid, read, callback){
+function insertMessage(category, title, user, pubkey, address, message, randomid, read, callback){
 	
 	//Has this message been added already
 	var msgid = getUniqueMsgID(category, title, user, pubkey, message, randomid);
@@ -106,9 +121,9 @@ function insertMessage(category, title, user, pubkey, message, randomid, read, c
 		var enc_msg 	=  encodeStringForDB(message);
 		
 		var sql = "INSERT INTO shoutout(category,title,categorytitleid,username,"
-					+"userpubkey,message,messageid,read,created) VALUES "+
+					+"useraddress,userpubkey,message,messageid,read,created) VALUES "+
 					"('"+category+"','"+enc_title+"','"+titleid+"','"+enc_user
-					+"','"+pubkey+"','"+enc_msg+"','"+msgid+"',"+read+","+timemilli+")";
+					+"','"+address+"','"+pubkey+"','"+enc_msg+"','"+msgid+"',"+read+","+timemilli+")";
 		
 		//Run this..
 		MDS.sql(sql,function(msg){

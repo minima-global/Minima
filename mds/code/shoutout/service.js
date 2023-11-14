@@ -6,6 +6,8 @@
 
 //Load js libs
 MDS.load("puresha1.js");
+MDS.load("xregexp-all.js");
+MDS.load("jslib.js");
 MDS.load("sql.js");
 MDS.load("txn.js");
 
@@ -40,7 +42,7 @@ MDS.init(function(msg){
 		createDB(function(){
 	
 			//Try to insert a message
-			insertMessage("minima", "Start Here!", "Shout Out!", "0x00", "Blah Blah Blah!", 0, function(res){});
+			insertMessage("minima", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
 			
 			//Notify of new messages..
 			MDS.cmd("coinnotify action:add address:"+SHOUTOUT_ADDRESS,function(startup){});
@@ -52,14 +54,19 @@ MDS.init(function(msg){
 			
 		//Is it the one that matters
 		if(msg.data.address ==  SHOUTOUT_ADDRESS){
-			//MDS.log("NEW SHOUTOUT : "+JSON.stringify(msg.data))
 			
-			//Check is Valid..
-			//..
+			//Check is Valid amount..
+			if(msg.data.coin.tokenid != "0x00"){
+				MDS.log("Message not sent as Minima.. ! "+msg.data.coin.tokenid);
+				return;
+			}else if(+msg.data.coin.amount < 0.01){
+				MDS.log("Message below 0.01 threshold.. ! "+msg.data.coin.amount);
+				return;
+			}
 			
 			//Add to the DB..
 			var msg_category = stripBrackets(msg.data.coin.state[0]);
-			if(msg_category.indexOf(" ") != -1){
+			if(!checkCategory(msg_category)){
 				//ERROR
 				MDS.log("Category Invalid : "+msg_category);
 				return;
@@ -71,16 +78,19 @@ MDS.init(function(msg){
 			var msg_randid 	 = stripBrackets(msg.data.coin.state[4]);
 			var msg_pubkey 	 = stripBrackets(msg.data.coin.state[5]);
 			var msg_sign 	 = stripBrackets(msg.data.coin.state[6]);
+			var msg_address  = stripBrackets(msg.data.coin.state[7]);
 			
 			//Check the signature..
 			checkMessageSig(msg_category, msg_title, msg_message, 
-						msg_user, msg_pubkey, msg_randid, msg_sign, function(valid){
+						msg_user, msg_pubkey, msg_address, msg_randid, msg_sign, function(valid){
 							
 				if(!valid){
 					MDS.log("Invalid signature for "+msg_user+" "+msg_pubkey);
 				}else{
 					//Insert unread message - if not already added
-					insertMessage(msg_category, msg_title, msg_user, msg_pubkey, msg_message, msg_randid, 0, function(inserted){
+					insertMessage(msg_category, msg_title, 
+						msg_user, msg_pubkey,msg_address, msg_message, msg_randid, 0, function(inserted){
+						
 						//Do we notify the User
 						if(inserted){
 							var cattitleid = getCategoryTitleID(msg_category, msg_title);

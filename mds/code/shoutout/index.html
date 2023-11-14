@@ -31,10 +31,11 @@
 <center>
 	
 	<div class="titlebar" onclick="showTitleOnAndroid();">
-		<table>
+		<table width=100% border=0>
 			<tr>
 				<td><img height=45 src="shoutout.png"></td>
-				<td style="font-size:26px">&nbsp;<b>Shout Out</b></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>Shout Out</b></td>
+				<td class='topicdate'><a href=''>SETTINGS</a>&nbsp;&nbsp;</td>
 			</tr>
 		</table>
 	</div>
@@ -130,6 +131,7 @@
 	//User details
 	var USER_NAME 			= "";
 	var USER_PUBKEY 		= "";
+	var USER_ADDRESS 		= "Mx999";
 	var CURRENT_CATEGORY 	= "";
 	
 	//Not used for now..
@@ -220,7 +222,7 @@
 		var randid = Math.floor(Math.random() * 1000000000);
 		
 		//Send txn!
-		sendTxnMessage(CURRENT_CATEGORY, topictitle, topictext, USER_NAME, USER_PUBKEY, randid, function(sendresp){
+		sendTxnMessage(CURRENT_CATEGORY, topictitle, topictext, USER_NAME, USER_PUBKEY, USER_ADDRESS, randid, function(sendresp){
 			
 			newtopicbutton.disabled=false;
 			
@@ -240,7 +242,7 @@
 				newtopictext.value  = "";
 				
 				//All good add to your DB..
-				insertMessage(CURRENT_CATEGORY, topictitle, USER_NAME, USER_PUBKEY, topictext, randid, 1, function(){
+				insertMessage(CURRENT_CATEGORY, topictitle, USER_NAME, USER_PUBKEY, USER_ADDRESS, topictext, randid, 1, function(){
 					
 					//Clear the edit window
 					newtopictitle.value = "";
@@ -365,7 +367,7 @@
 			
 			var topicstr = "<br><table class='topiclist' border=0>";
 			topicstr    += "<tr><td><a class='topictitle' href='topic.html?uid="+MDS.minidappuid+"&topicid="+catid+"'>"+dec_title+"</a></td></tr>";
-			topicstr    += "<tr><td>&nbsp;</td></tr>";
+			topicstr    += "<tr><td class='topicdate' nowrap>DELETE</td></tr>";
 			if(msg.MESSAGE.trim() == ""){
 				topicstr += "<tr><td>No comments yet..</td></tr>";
 			}else{
@@ -404,13 +406,6 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			
-			//Notify of new messages..
-			MDS.cmd("maxima",function(startup){
-				//Get the user details
-				USER_NAME 	= startup.response.name;
-				USER_PUBKEY = startup.response.publickey;
-			});
-			
 			if(false){
 				wipeDB();
 				MDS.log("DB Wiped")
@@ -447,8 +442,21 @@
 					emptycat.style.display = "none";
 					topicstable.style.display = "block";
 					
-					//Load all the topics..
-					setTopics();	
+					//Disable button
+					newtopicbutton.disabled=true;
+					
+					//Notify of new messages..
+					MDS.cmd("maxima;getaddress",function(startup){
+						//Get the user details
+						USER_NAME 	 = startup[0].response.name;
+						USER_PUBKEY  = startup[0].response.publickey;
+						USER_ADDRESS = startup[1].response.address;
+						
+						//Load all the topics..
+						setTopics();
+						
+						newtopicbutton.disabled=false;
+					});	
 				}
 			}
 			

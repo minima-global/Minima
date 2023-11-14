@@ -39,7 +39,9 @@
 		</table>
 	</div>
 	<br>
-		
+	
+	<div class="allcatsview" id="usertitle"></div>
+	<br>	
 	<div class="allcatsview" id="recentmsg"></div>
 	<br>
 	<button onclick="history.back();" class="solobutton">&nbsp;&nbsp;Back&nbsp;&nbsp;</button>
@@ -82,6 +84,7 @@
 				return;
 			}
 			
+			var firstrun = true;
 			for(var i=0;i<len;i++){
 									
 				//Current
@@ -89,6 +92,22 @@
 				
 				//Add to the List..
 				list += createMessageView(message);
+				
+				if(firstrun){
+					firstrun = false;
+					
+					/*var link = MDS.dapplink("Wallet",function(resp){
+						MDS.log(JSON.stringify(resp));
+						
+						var link = resp.base+"#/send?tokenid=0x00&address="+message.USERADDRESS;
+						
+						var link = "<a href='"+link+"'>TIP!</a>";
+						usertitle.innerHTML = link;
+					});*/
+					
+					var top = "User messages for : <b>"+message.USERNAME+"</b>";
+					usertitle.innerHTML = top;
+				}
 			}
 			
 			//And set it

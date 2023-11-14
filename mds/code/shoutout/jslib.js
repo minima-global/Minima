@@ -4,9 +4,11 @@ const VALID_CATEGORY_REGEX = new XRegExp("^[\\p{L}\\p{N}._]*$");
 function cleanCategory(incategory){
 	
 	//Remove spaces
-	var newcat = incategory.replaceAll(" ","");
+	var newcat = incategory.split(" ").join("");
+	
+	//Remove double dots
 	while(newcat.indexOf("..") != -1){
-		newcat = newcat.replaceAll("..",".");
+		newcat = newcat.split("..").join(".");
 	}
 	
 	if(newcat.startsWith(".")){
