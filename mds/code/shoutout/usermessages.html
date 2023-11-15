@@ -138,7 +138,7 @@
 	function blockUser(){
 		if(confirm("This will delete all messages by this user and block any new messages\n\nYou can undo this in Settings..")){
 			addBlockUsers(USER_NAME, USER_PUBKEY,function(){
-				//jumpHome();
+				jumpHome();
 			});
 		}
 	}

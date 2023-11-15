@@ -136,46 +136,6 @@ function insertMessage(category, title, user, pubkey, address, message, randomid
 	});
 }
 
-function isUserBlocked(userpubkey, callback){
-	var sql = "SELECT * FROM filter WHERE type='userblocked' AND userpubkey='"+userpubkey+"'";
-	MDS.sql(sql,function(sqlresp){
-		if(sqlresp.count>0){
-			callback(true);
-		}else{
-			callback(false);
-		}
-	});
-}
-
-function addBlockUsers(username, userpubkey, callback){
-	
-	//And now delete all messages by that user..
-	var deluser = "DELETE FROM shoutout WHERE userpubkey='"+userpubkey+"'";
-	MDS.sql(deluser,function(del){
-		isUserBlocked(userpubkey, function(allreadyblocked){
-			if(!allreadyblocked){
-				//Add user to blocked list
-				var blockins = "INSERT INTO filter(type,username,userpubkey) VALUES ('userblocked','"+username+"','"+userpubkey+"')";
-				MDS.sql(blockins,function(res){
-					callback();	
-				});		
-			}else{
-				MDS.log("Allready blocked..");
-			}
-		});
-	});
-}
-
-function selectBlockedUsers(callback){
-	//Create the DB if not exists
-	var sql = "SELECT type,username,userpubkey FROM filter WHERE type='userblocked' ORDER BY LOWER(username) ASC";
-				
-	//Run this..
-	MDS.sql(sql,function(msg){
-		callback(msg.rows);
-	});
-}
-
 function selectCategories(callback){
 	//Create the DB if not exists
 	var sql = "SELECT DISTINCT category FROM shoutout ORDER BY LOWER(category) ASC";
@@ -344,5 +304,229 @@ function newNotifyTopic(catid, callback){
 				callback(false);
 			}
 		}
+	});
+}
+
+
+/**
+ * Block Users
+ */
+function isUserBlocked(userpubkey, callback){
+	var sql = "SELECT * FROM filter WHERE type='userblocked' AND userpubkey='"+userpubkey+"'";
+	MDS.sql(sql,function(sqlresp){
+		if(sqlresp.count>0){
+			callback(true);
+		}else{
+			callback(false);
+		}
+	});
+}
+
+function addBlockUsers(username, userpubkey, callback){
+	
+	//And now delete all messages by that user..
+	var deluser = "DELETE FROM shoutout WHERE userpubkey='"+userpubkey+"'";
+	MDS.sql(deluser,function(del){
+		isUserBlocked(userpubkey, function(allreadyblocked){
+			if(!allreadyblocked){
+				//Add user to blocked list
+				var blockins = "INSERT INTO filter(type,username,userpubkey) VALUES ('userblocked','"+username+"','"+userpubkey+"')";
+				MDS.sql(blockins,function(res){
+					callback();	
+				});		
+			}else{
+				MDS.log("Allready blocked..");
+				callback();
+			}
+		});
+	});
+}
+
+function selectBlockedUsers(callback){
+	//Create the DB if not exists
+	var sql = "SELECT type,username,userpubkey FROM filter WHERE type='userblocked' ORDER BY LOWER(username) ASC";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		callback(msg.rows);
+	});
+}
+
+function removeBlockedUser(userpubkey,callback){
+	//Create the DB if not exists
+	var sql = "DELETE FROM filter WHERE type='userblocked' AND userpubkey='"+userpubkey+"'";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		callback(msg);
+	});
+}
+
+function checkMsgBlocked(userpubkey,callback){
+	
+	//Create the DB if not exists
+	var sql = "SELECT * FROM filter";
+	
+	//Run this..
+	MDS.sql(sql,function(msg){
+		var len = msg.rows.length;
+		
+		blocked = false;
+		for(var i=0;i<len;i++){
+			var filter = msg.rows[i];
+			
+			//Check BLocked user
+			if(filter.TYPE == "userblocked"){
+				if(filter.USERPUBKEY == userpubkey){
+					blocked = true;
+					break;
+				}
+			}
+		}
+		
+		callback(blocked);
+	});
+}
+
+/**
+ * Block Topic
+ */
+function isTopicBlocked(categorytitleid, callback){
+	var sql = "SELECT * FROM filter WHERE type='topicblocked' AND categorytitleid='"+categorytitleid+"'";
+	MDS.sql(sql,function(sqlresp){
+		if(sqlresp.count>0){
+			callback(true);
+		}else{
+			callback(false);
+		}
+	});
+}
+
+function addBlockTopic(title, categorytitleid, callback){
+	
+	//And now delete all messages by that user..
+	var deluser = "DELETE FROM shoutout WHERE categorytitleid='"+categorytitleid+"'";
+	MDS.sql(deluser,function(del){
+		isTopicBlocked(categorytitleid, function(allreadyblocked){
+			if(!allreadyblocked){
+				//Add user to blocked list
+				var blockins = "INSERT INTO filter(type,categorytitleid,categorytitlename) "
+									+"VALUES ('topicblocked','"+categorytitleid+"','"+title+"')";
+				MDS.sql(blockins,function(res){
+					callback();	
+				});		
+			}else{
+				MDS.log("Allready blocked..");
+				callback();
+			}
+		});
+	});
+}
+
+function selectBlockedTopics(callback){
+	//Create the DB if not exists
+	var sql = "SELECT type,categorytitleid,categorytitlename FROM filter WHERE type='topicblocked' ORDER BY LOWER(categorytitlename) ASC";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		callback(msg.rows);
+	});
+}
+
+function removeBlockedTopic(categorytitleid,callback){
+	//Create the DB if not exists
+	var sql = "DELETE FROM filter WHERE type='topicblocked' AND categorytitleid='"+categorytitleid+"'";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		callback(msg);
+	});
+}
+
+
+/**
+ * Block Category
+ */
+function isCategoryBlocked(category, callback){
+	var sql = "SELECT * FROM filter WHERE type='categoryblocked' AND category='"+category+"'";
+	MDS.sql(sql,function(sqlresp){
+		if(sqlresp.count>0){
+			callback(true);
+		}else{
+			callback(false);
+		}
+	});
+}
+
+function addBlockCategory(category, callback){
+	
+	//And now delete all messages by that user..
+	var deluser = "DELETE FROM shoutout WHERE category LIKE '"+category+"%'";
+	MDS.sql(deluser,function(del){
+		isCategoryBlocked(category, function(allreadyblocked){
+			if(!allreadyblocked){
+				//Add user to blocked list
+				var blockins = "INSERT INTO filter(type,category) "
+									+"VALUES ('categoryblocked','"+category+"')";
+				MDS.sql(blockins,function(res){
+					callback();	
+				});		
+			}else{
+				MDS.log("Allready blocked..");
+				callback();
+			}
+		});
+	});
+}
+
+function selectBlockedCategories(callback){
+	//Create the DB if not exists
+	var sql = "SELECT type,category FROM filter WHERE type='categoryblocked' ORDER BY LOWER(category) ASC";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		callback(msg.rows);
+	});
+}
+
+function removeBlockedTopic(category,callback){
+	//Create the DB if not exists
+	var sql = "DELETE FROM filter WHERE type='categoryblocked' AND category='"+category+"'";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		callback(msg);
+	});
+}
+
+
+function checkMsgBlocked(userpubkey, categorytitleid, callback){
+	
+	//Create the DB if not exists
+	var sql = "SELECT * FROM filter";
+	
+	//Run this..
+	MDS.sql(sql,function(msg){
+		var len = msg.rows.length;
+		
+		blocked = false;
+		for(var i=0;i<len;i++){
+			var filter = msg.rows[i];
+			
+			//Check BLocked user
+			if(filter.TYPE == "userblocked"){
+				if(filter.USERPUBKEY == userpubkey){
+					blocked = true;
+					break;
+				}
+			}else if(filter.TYPE == "topicblocked"){
+				if(filter.CATEGORYTITLEID == categorytitleid){
+					blocked = true;
+					break;
+				}
+			}
+		}
+		
+		callback(blocked);
 	});
 }

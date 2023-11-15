@@ -48,9 +48,10 @@
 	<br>
 	<div class="allcatsview" id="usersblocked">Users you have blocked</div>
 	<br>
-	<div class="allcatsview" id="catsblocked">Categories you have blocked</div>
+	<div class="allcatsview" id="topicsblocked">Topics you have blocked</div>
 	<br>
-	<div class="allcatsview" id="topicsblocked">Topics you have blocked</div>	
+	<div class="allcatsview" id="catsblocked">Categories you have blocked</div>
+		
 </center>
 
 <script type="text/javascript">
@@ -73,13 +74,58 @@
 	function fillBlockedUsers(){
 		
 		selectBlockedUsers(function(users){
+			usersblocked.innerHTML = "";
 			var len = users.length;
-			var text = "Blocked Users : <br><br>";
+			var text = "<b>Blocked Users</b> : <br><br><table width=100%>";
+			if(len==0){
+				text += "<tr><td colspan=2>None..</td></tr>"
+			}
 			for(var i=0;i<len;i++){
 				var user = users[i];
-				text +=decodeStringFromDB(user.USERNAME)+"<br>"; 
+				var name 	= DOMPurify.sanitize(decodeStringFromDB(user.USERNAME));
+				var pubkey 	= DOMPurify.sanitize(decodeStringFromDB(user.USERPUBKEY));
+				var unblock = "<button class='solobutton' onclick='unblock(\""+pubkey+"\");'>UNBLOCK</button>"; 
+				text += "<tr><td>"+name+"</td><td style='text-align:right;'>"+unblock+"</td></tr>"
+				text += "<tr><td colspan=2><hr></td></tr>"
 			}
+			
+			text +="<table>"
 			usersblocked.innerHTML = text;
+		});
+	}
+	
+	function unblock(userpubkey){
+		removeBlockedUser(userpubkey,function(){
+			jumpSettings();
+		});
+	}
+	
+	function fillBlockedTopic(){
+		
+		selectBlockedTopics(function(topics){
+			topicsblocked.innerHTML = "";
+			var len = topics.length;
+			var text = "<b>Blocked Topics</b> : <br><br><table width=100%>";
+			if(len==0){
+				text += "<tr><td colspan=2>None..</td></tr>"
+			}
+			for(var i=0;i<len;i++){
+				var topic 	= topics[i];
+				var name 	= DOMPurify.sanitize(decodeStringFromDB(topic.CATEGORYTITLENAME));
+				var id 		= DOMPurify.sanitize(decodeStringFromDB(topic.CATEGORYTITLEID));
+				var unblock = "<button class='solobutton' onclick='unblockTopic(\""+id+"\");'>UNBLOCK</button>"; 
+				text += "<tr><td>"+name+"</td><td style='text-align:right;'>"+unblock+"</td></tr>"
+				text += "<tr><td colspan=2><hr></td></tr>"
+			}
+			
+			text +="<table>"
+			topicsblocked.innerHTML = text;
+		});
+	}
+	
+	function unblockTopic(catid){
+		removeBlockedTopic(catid,function(){
+			jumpSettings();
 		});
 	}
 	
@@ -97,6 +143,7 @@
 				
 				setDetails();
 				fillBlockedUsers();
+				fillBlockedTopic();
 			});
 		}
 	});

@@ -80,31 +80,42 @@ MDS.init(function(msg){
 			var msg_sign 	 = stripBrackets(msg.data.coin.state[6]);
 			var msg_address  = stripBrackets(msg.data.coin.state[7]);
 			
-			//Check the signature..
-			checkMessageSig(msg_category, msg_title, msg_message, 
-						msg_user, msg_pubkey, msg_address, msg_randid, msg_sign, function(valid){
-							
-				if(!valid){
-					MDS.log("Invalid signature for "+msg_user+" "+msg_pubkey);
-				}else{
-					//Insert unread message - if not already added
-					insertMessage(msg_category, msg_title, 
-						msg_user, msg_pubkey,msg_address, msg_message, msg_randid, 0, function(inserted){
-						
-						//Do we notify the User
-						if(inserted){
-							var cattitleid = getCategoryTitleID(msg_category, msg_title);
-							isNotify(cattitleid,function(notify){
-								if(notify){
-									var notmsg = msg_user+" : "+msg_message;
-									if(notmsg.length>30){
-										notmsg = notmsg.substring(0,30)+"..";
-									}
-									MDS.notify(notmsg);		
-								}
-							});
-						}	
-					});					
+			//Get the categorytitleid
+			var cattitid = getCategoryTitleID(msg_category,msg_title);
+			
+			//Check if message is blocked..
+			checkMsgBlocked(msg_pubkey,cattitid,function(blocked){
+				
+				//Is it blocked..
+				if(!blocked){
+					
+					//Check the signature..
+					checkMessageSig(msg_category, msg_title, msg_message, 
+								msg_user, msg_pubkey, msg_address, msg_randid, msg_sign, function(valid){
+									
+						if(!valid){
+							MDS.log("Invalid signature for "+msg_user);
+						}else{
+							//Insert unread message - if not already added
+							insertMessage(msg_category, msg_title, 
+								msg_user, msg_pubkey,msg_address, msg_message, msg_randid, 0, function(inserted){
+								
+								//Do we notify the User
+								if(inserted){
+									var cattitleid = getCategoryTitleID(msg_category, msg_title);
+									isNotify(cattitleid,function(notify){
+										if(notify){
+											var notmsg = msg_user+" : "+msg_message;
+											if(notmsg.length>30){
+												notmsg = notmsg.substring(0,30)+"..";
+											}
+											MDS.notify(notmsg);		
+										}
+									});
+								}	
+							});					
+						}
+					});	
 				}
 			});
 		}
