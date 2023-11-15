@@ -1,12 +1,9 @@
 package org.minima.system.mds;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -28,7 +25,6 @@ import org.minima.system.Main;
 import org.minima.system.mds.multipart.MultipartData;
 import org.minima.system.mds.multipart.MultipartParser;
 import org.minima.system.mds.polling.PollStack;
-import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 
@@ -88,18 +84,19 @@ public class MDSFileHandler implements Runnable {
 	        
 	        // get first line of the request from the client
 	     	String input = bufferedReader.readLine();
- 			int counter = 0;
- 			while(input == null && counter<100){
- 				//Wait a sec
- 				Thread.sleep(1000);
- 				
- 				input = bufferedReader.readLine();
- 				counter++;
- 			}
+// 			int counter = 0;
+// 			while(input == null && counter<100){
+// 				//Wait a sec
+// 				Thread.sleep(1000);
+// 				
+// 				input = bufferedReader.readLine();
+// 				counter++;
+// 			}
  			
  			//Is it still NULL
  			if(input == null) {
- 				throw new IllegalArgumentException("Invalid NULL MDS File request ");
+ 				return;
+ 				//throw new IllegalArgumentException("Invalid NULL MDS File request ");
  			}
  			
 			// we parse the request with a string tokenizer
@@ -196,7 +193,7 @@ public class MDSFileHandler implements Runnable {
 				}
 				
 				//It's an MDS command..
-				String dataenc = new String(cbuf).trim();
+				String dataenc  = new String(cbuf).trim();
 				String data 	= URLDecoder.decode(dataenc, "UTF-8");
 				
 				//Run IT!
@@ -465,6 +462,8 @@ public class MDSFileHandler implements Runnable {
 		    		
 		    	}else {
 		    		
+		    		//MinimaLogger.log("File Requested : "+fileRequested,false);
+		    		
 		    		boolean downloader 	= false;
 		    		String filename 	= webfile.getName();
 		    		if(filename.contains(MINIMA_DOWNLOAD_AS_FILE)){
@@ -478,10 +477,20 @@ public class MDSFileHandler implements Runnable {
 		    		
 					//Calculate the size of the response
 					dos.writeBytes("HTTP/1.0 200 OK\r\n");
-					dos.writeBytes("Content-Type: "+contenttype+"\r\n");
+					if(contenttype.startsWith("text/")) {
+						dos.writeBytes("Content-Type: "+contenttype+"; charset=UTF-8\r\n");
+					}else {
+						dos.writeBytes("Content-Type: "+contenttype+"\r\n");
+					}
+					
 					dos.writeBytes("Content-Length: " + filelen+ "\r\n");
 					dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
 					
+					//Only cache Images ?
+					//if(contenttype.startsWith("image")) {
+						dos.writeBytes("Cache-Control: max-age=604800: *\r\n");
+					//}
+							
 					//Are we downloading this file..
 					if(downloader) {
 						dos.writeBytes("Content-Disposition: attachment; filename=\""+filename+"\"\r\n");

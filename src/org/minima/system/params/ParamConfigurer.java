@@ -20,7 +20,6 @@ import java.util.StringTokenizer;
 import java.util.function.BiConsumer;
 
 import org.minima.objects.base.MiniNumber;
-import org.minima.system.commands.CommandException;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.utils.MinimaLogger;
@@ -378,6 +377,14 @@ public class ParamConfigurer {
             if ("true".equals(args)) {
                 GeneralParams.TEST_PARAMS 		= true;
                 TestParams.setTestParams();
+            }
+        }),
+        solo("solo", "Run a solo/private network (-test -nop2p) and will run -genesis ONLY the first time", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.PRIVATE 		= true;
+                GeneralParams.TEST_PARAMS 	= true;
+                TestParams.setTestParams();
+                GeneralParams.P2P_ENABLED 	= false;
             }
         }),
         testchainlength("testchainlength", "Specify length of tree to keep in -test mode (default is 32)", (arg, configurer) -> {

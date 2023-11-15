@@ -36,6 +36,9 @@ public class balance extends Command {
 				+ "tokenid: (optional)\n"
 				+ "    Show the balance for a specific tokenid. Minima is 0x00.\n"
 				+ "\n"
+				+ "tokendetails: (optional)\n"
+				+ "    true or false, show the complete details for the tokens\n"
+				+ "\n"
 				+ "confirmations: (optional)\n"
 				+ "    Set the number of block confirmations required before a coin is considered confirmed in your balance. Default is 3.\n"
 				+ "\n"
@@ -50,7 +53,7 @@ public class balance extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"address","tokenid","confirmations"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"address","tokenid","confirmations","tokendetails"}));
 	}
 	
 	@Override
@@ -196,6 +199,9 @@ public class balance extends Command {
 			}
 		}
 		
+		//Do we print ALL the token details..
+		boolean tokendetails = getBooleanParam("tokendetails", false);
+		
 		//Lets print out..
 		for(String token : alltokens) {
 			
@@ -253,6 +259,17 @@ public class balance extends Command {
 				tokbal.put("sendable", tok.getScaledTokenAmount(send).toString());
 				tokbal.put("coins", totcoins.toString());
 				tokbal.put("total", tok.getTotalTokens().toString());
+				
+				if(tokendetails) {
+					JSONObject tdetails = new JSONObject();
+					tdetails.put("decimals", tok.getDecimalPlaces());
+					tdetails.put("script", tok.getTokenScript().toString());
+					tdetails.put("totalamount", tok.getAmount().toString());
+					tdetails.put("scale", tok.getScale().toString());
+					tdetails.put("created", tok.getCreated().toString());
+					
+					tokbal.put("details", tdetails);
+				}
 				
 				//And add to the total..
 				balance.add(tokbal);

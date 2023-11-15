@@ -2,6 +2,7 @@ package org.minima.database;
 
 import java.io.File;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -59,6 +60,16 @@ public class MinimaDB {
 	ReadWriteLock mRWLock;
 	
 	/**
+	 * The coin Addresses to Notify
+	 */
+	HashSet<String> mCoinNotify;
+	
+	/**
+	 * Do we allow save state
+	 */
+	boolean mAllowSaveState = true;
+	
+	/**
 	 * Main Constructor
 	 */
 	public MinimaDB() {
@@ -74,7 +85,9 @@ public class MinimaDB {
 		
 		mP2PDB		= new P2PDB();
 		
-		mRWLock = new ReentrantReadWriteLock();
+		mRWLock 	= new ReentrantReadWriteLock();
+		
+		mCoinNotify	= new HashSet<>();
 	}
 	
 	/**
@@ -372,14 +385,6 @@ public class MinimaDB {
 		writeLock(false);
 	}
 	
-	public void saveTxPoWTree() {
-		//Get the base Database folder
-		File basedb = getBaseDBFolder();
-		
-		//Save it..
-		mTxPoWTree.saveDB(new File(basedb,"chaintree.db"));
-	}
-	
 	public void loadArchiveAndTxPoWDB(boolean zResetWallet) {
 		
 		//We need read lock 
@@ -498,6 +503,8 @@ public class MinimaDB {
 			MinimaLogger.log("ArchiveDB shutdown..");
 			mArchive.saveDB(zCompact);
 			
+			MinimaLogger.log("All DB Shutdown..");
+			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
 		}
@@ -525,11 +532,11 @@ public class MinimaDB {
 			
 			//Shut them down
 			//MinimaLogger.log("Save TxPoWDB..");
-			mTxPoWDB.saveDB(true);
+			mTxPoWDB.saveDB(false);
 			//MinimaLogger.log("Save ArchiveDB..");
-			mArchive.saveDB(true);
+			mArchive.saveDB(false);
 			//MinimaLogger.log("Save WalletDB..");
-			mWallet.saveDB(true);
+			mWallet.saveDB(false);
 			
 			//MinimaLogger.log("Load DBs..");
 			
@@ -562,7 +569,16 @@ public class MinimaDB {
 		writeLock(false);
 	}
 	
+	public void setAllowSaveState(boolean zAllow) {
+		mAllowSaveState = zAllow;
+	}
+	
 	public void saveState() {
+		
+		//Are we allowed..
+		if(!mAllowSaveState) {
+			return; 
+		}
 		
 		//We need read lock 
 		readLock(true);
@@ -575,7 +591,10 @@ public class MinimaDB {
 			mTxnDB.saveDB();
 //			mUserDB.saveEncryptedDB(GeneralParams.MAIN_DBPASSWORD, new File(basedb,"userprefs.db"));
 //			mP2PDB.saveEncryptedDB(GeneralParams.MAIN_DBPASSWORD, new File(basedb,"p2p.db"));
+			
+			//MinimaLogger.log("SAVESTATE USERDB:"+mUserDB.getAllData().toString());
 			mUserDB.saveDB(new File(basedb,"userprefs.db"));
+			
 			
 			//MinimaLogger.log("SAVE P2P DB.. "+mP2PDB.getPeersList().size());
 			mP2PDB.saveDB(new File(basedb,"p2p.db"));
@@ -594,6 +613,11 @@ public class MinimaDB {
 	
 	public void saveUserDB() {
 		
+		//Are we allowed..
+		if(!mAllowSaveState) {
+			return; 
+		}
+		
 		//We need read lock 
 		readLock(true);
 		
@@ -603,6 +627,8 @@ public class MinimaDB {
 			
 			//JsonDBs
 //			mUserDB.saveEncryptedDB(GeneralParams.MAIN_DBPASSWORD, new File(basedb,"userprefs.db"));
+			
+			//MinimaLogger.log("SAVEUSERDB USERDB:"+mUserDB.getAllData().toString());
 			mUserDB.saveDB(new File(basedb,"userprefs.db"));
 			
 		}catch(Exception exc) {
@@ -614,6 +640,11 @@ public class MinimaDB {
 	}
 	
 	public void saveP2PDB() {
+		
+		//Are we allowed..
+		if(!mAllowSaveState) {
+			return; 
+		}
 		
 		//We need read lock 
 		readLock(true);
@@ -631,5 +662,22 @@ public class MinimaDB {
 		
 		//Release the krakken
 		readLock(false);
+	}
+	
+	/**
+	 * Coin Notification
+	 * 
+	 * Different to tracking as can be any coin without the script
+	 */
+	public void addCoinNotify(String zAddress) {
+		mCoinNotify.add(zAddress);
+	}
+	
+	public boolean removeCoinNotify(String zAddress) {
+		return mCoinNotify.remove(zAddress);
+	}
+	
+	public boolean checkCoinNotify(String zAddress) {
+		return mCoinNotify.contains(zAddress);
 	}
 }

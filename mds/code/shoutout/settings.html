@@ -1,0 +1,155 @@
+<html>
+
+<head>
+	<title>Shout Out</title>
+	
+	<meta charset="utf-8" />
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="xregexp-all.js"></script>
+	<script type="text/javascript" src="purify.min.js"></script>
+	<script type="text/javascript" src="puresha1.js"></script>
+	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="txn.js"></script>
+	<script type="text/javascript" src="sql.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+	
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table width=100% border=0>
+			<tr>
+				<td><img height=45 src="shoutout.png"></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>Shout Out</b></td>
+				<td class='topicdate' nowrap>
+					<img style="cursor:pointer;" onclick="jumpSettings();" height=30 src="settings.png">&nbsp;&nbsp;
+					<img style="cursor:pointer;" onclick="jumpHome();" height=30 src="home.png">&nbsp;&nbsp;
+				</td>
+			</tr>
+		</table>
+	</div>
+	<br>
+	
+	<div class="allcatsview" id="usertitle"></div>
+	<br>
+	<div class="allcatsview" id="usersblocked">Users you have blocked</div>
+	<br>
+	<div class="allcatsview" id="topicsblocked">Topics you have blocked</div>
+	<br>
+	<div class="allcatsview" id="catsblocked">Categories you have blocked</div>
+		
+</center>
+
+<script type="text/javascript">
+	
+	var USER_NAME 	= "";
+	var USER_PUBKEY = "";
+	
+	function jumpSettings(){
+		location.href="settings.html?uid="+MDS.minidappuid;
+	}
+	
+	function jumpHome(){
+		location.href="index.html?uid="+MDS.minidappuid;
+	}
+	
+	function setDetails(){
+		usertitle.innerHTML = "User : <b>"+USER_NAME+"</b>";
+	}
+	
+	function fillBlockedUsers(){
+		
+		selectBlockedUsers(function(users){
+			usersblocked.innerHTML = "";
+			var len = users.length;
+			var text = "<b>Blocked Users</b> : <br><br><table width=100%>";
+			if(len==0){
+				text += "<tr><td colspan=2>None..</td></tr>"
+			}
+			for(var i=0;i<len;i++){
+				var user = users[i];
+				var name 	= DOMPurify.sanitize(decodeStringFromDB(user.USERNAME));
+				var pubkey 	= DOMPurify.sanitize(decodeStringFromDB(user.USERPUBKEY));
+				var unblock = "<button class='solobutton' onclick='unblock(\""+pubkey+"\");'>UNBLOCK</button>"; 
+				text += "<tr><td>"+name+"</td><td style='text-align:right;'>"+unblock+"</td></tr>"
+				text += "<tr><td colspan=2><hr></td></tr>"
+			}
+			
+			text +="<table>"
+			usersblocked.innerHTML = text;
+		});
+	}
+	
+	function unblock(userpubkey){
+		removeBlockedUser(userpubkey,function(){
+			jumpSettings();
+		});
+	}
+	
+	function fillBlockedTopic(){
+		
+		selectBlockedTopics(function(topics){
+			topicsblocked.innerHTML = "";
+			var len = topics.length;
+			var text = "<b>Blocked Topics</b> : <br><br><table width=100%>";
+			if(len==0){
+				text += "<tr><td colspan=2>None..</td></tr>"
+			}
+			for(var i=0;i<len;i++){
+				var topic 	= topics[i];
+				var name 	= DOMPurify.sanitize(decodeStringFromDB(topic.CATEGORYTITLENAME));
+				var id 		= DOMPurify.sanitize(decodeStringFromDB(topic.CATEGORYTITLEID));
+				var unblock = "<button class='solobutton' onclick='unblockTopic(\""+id+"\");'>UNBLOCK</button>"; 
+				text += "<tr><td>"+name+"</td><td style='text-align:right;'>"+unblock+"</td></tr>"
+				text += "<tr><td colspan=2><hr></td></tr>"
+			}
+			
+			text +="<table>"
+			topicsblocked.innerHTML = text;
+		});
+	}
+	
+	function unblockTopic(catid){
+		removeBlockedTopic(catid,function(){
+			jumpSettings();
+		});
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//Notify of new messages..
+			MDS.cmd("maxima",function(startup){
+				//Get the user details
+				USER_NAME 	 = startup.response.name;
+				USER_PUBKEY  = startup.response.publickey;
+				
+				setDetails();
+				fillBlockedUsers();
+				fillBlockedTopic();
+			});
+		}
+	});
+
+</script>
+
+</body>
+
+</html>

@@ -3,6 +3,7 @@ package org.minima.system.mds.polling;
 import java.util.ArrayList;
 
 import org.minima.objects.base.MiniData;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class PollStack {
@@ -14,6 +15,9 @@ public class PollStack {
 	int mCounter;
 	
 	ArrayList<PollMessage> mMessages;
+	
+	//On Shutdown - only send the shutdown message.. ignore the others..
+	boolean mOnlyShutDown = false;
 	
 	public PollStack() {
 		mMessages 		= new ArrayList<>();
@@ -29,7 +33,17 @@ public class PollStack {
 		return mSeries;
 	}
 	
+	public synchronized void onlyShutDown() {
+		mCounter++;
+		mOnlyShutDown = true;
+	}
+	
 	public synchronized void addMessage(JSONObject zMessage, String zMiniDAPPID) {
+		
+		//Don't add anymore messages..
+		if(mOnlyShutDown) {
+			return;
+		}
 		
 		//Create a new Poll Message
 		PollMessage msg = new PollMessage(mCounter, zMessage, zMiniDAPPID);
@@ -52,6 +66,19 @@ public class PollStack {
 		
 		//Are there any messages
 		if(mCounter>zMessageCounter) {
+			
+			//Are we in shutdown mode..
+			if(mOnlyShutDown) {
+				MinimaLogger.log("SHUTDOWN ONLY PollMessage sent to :"+zMiniDAPPID);
+				
+				JSONObject notify = new JSONObject();
+				notify.put("event", "MDS_SHUTDOWN");
+				notify.put("data", new JSONObject());
+				
+				PollMessage shutmsg = new PollMessage(mCounter, notify, "*");
+				
+				return shutmsg;
+			}
 			
 			//Cycle through and add them..
 			for(PollMessage pmsg : mMessages) {

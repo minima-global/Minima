@@ -5,7 +5,6 @@
 package org.minima.utils.json;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,7 +44,7 @@ public class JSONArray extends ArrayList implements JSONAware, JSONStreamAware {
      * @param collection
      * @param out
      */
-	public static void writeJSONString(Collection collection, Writer out) throws IOException{
+	public static void writeJSONString(Collection collection, JSONWriter out) throws IOException{
 		if(collection == null){
 			out.write("null");
 			return;
@@ -72,7 +71,7 @@ public class JSONArray extends ArrayList implements JSONAware, JSONStreamAware {
 		out.write(']');
 	}
 	
-	public void writeJSONString(Writer out) throws IOException{
+	public void writeJSONString(JSONWriter out) throws IOException{
 		writeJSONString(this, out);
 	}
 	
@@ -86,7 +85,8 @@ public class JSONArray extends ArrayList implements JSONAware, JSONStreamAware {
 	 * @return JSON text, or "null" if list is null.
 	 */
 	public static String toJSONString(Collection collection){
-		final StringWriter writer = new StringWriter();
+		//final StringWriter writer = new StringWriter();
+		final JSONWriter writer = new JSONWriter();
 		
 		try {
 			writeJSONString(collection, writer);
@@ -97,7 +97,7 @@ public class JSONArray extends ArrayList implements JSONAware, JSONStreamAware {
 		}
 	}
 
-	public static void writeJSONString(byte[] array, Writer out) throws IOException{
+	public static void writeJSONString(byte[] array, JSONWriter out) throws IOException{
 		if(array == null){
 			out.write("null");
 		} else if(array.length == 0) {
@@ -116,7 +116,8 @@ public class JSONArray extends ArrayList implements JSONAware, JSONStreamAware {
 	}
 	
 	public static String toJSONString(byte[] array){
-		final StringWriter writer = new StringWriter();
+		//final StringWriter writer = new StringWriter();
+		final JSONWriter writer = new JSONWriter();
 		
 		try {
 			writeJSONString(array, writer);
@@ -127,7 +128,7 @@ public class JSONArray extends ArrayList implements JSONAware, JSONStreamAware {
 		}
 	}
 	
-	public static void writeJSONString(short[] array, Writer out) throws IOException{
+	public static void writeJSONString(short[] array, JSONWriter out) throws IOException{
 		if(array == null){
 			out.write("null");
 		} else if(array.length == 0) {
@@ -146,7 +147,8 @@ public class JSONArray extends ArrayList implements JSONAware, JSONStreamAware {
 	}
 	
 	public static String toJSONString(short[] array){
-		final StringWriter writer = new StringWriter();
+		//final StringWriter writer = new StringWriter();
+		final JSONWriter writer = new JSONWriter();
 		
 		try {
 			writeJSONString(array, writer);
@@ -157,7 +159,7 @@ public class JSONArray extends ArrayList implements JSONAware, JSONStreamAware {
 		}
 	}
 	
-	public static void writeJSONString(int[] array, Writer out) throws IOException{
+	public static void writeJSONString(int[] array, JSONWriter out) throws IOException{
 		if(array == null){
 			out.write("null");
 		} else if(array.length == 0) {
@@ -176,7 +178,8 @@ public class JSONArray extends ArrayList implements JSONAware, JSONStreamAware {
 	}
 	
 	public static String toJSONString(int[] array){
-		final StringWriter writer = new StringWriter();
+		//final StringWriter writer = new StringWriter();
+		final JSONWriter writer = new JSONWriter();
 		
 		try {
 			writeJSONString(array, writer);
@@ -187,7 +190,7 @@ public class JSONArray extends ArrayList implements JSONAware, JSONStreamAware {
 		}
 	}
 	
-	public static void writeJSONString(long[] array, Writer out) throws IOException{
+	public static void writeJSONString(long[] array, JSONWriter out) throws IOException{
 		if(array == null){
 			out.write("null");
 		} else if(array.length == 0) {
@@ -206,7 +209,9 @@ public class JSONArray extends ArrayList implements JSONAware, JSONStreamAware {
 	}
 	
 	public static String toJSONString(long[] array){
-		final StringWriter writer = new StringWriter();
+		//final StringWriter writer = new StringWriter();
+		final JSONWriter writer = new JSONWriter();
+				
 		
 		try {
 			writeJSONString(array, writer);
@@ -217,7 +222,7 @@ public class JSONArray extends ArrayList implements JSONAware, JSONStreamAware {
 		}
 	}
 	
-	public static void writeJSONString(float[] array, Writer out) throws IOException{
+	public static void writeJSONString(float[] array, JSONWriter out) throws IOException{
 		if(array == null){
 			out.write("null");
 		} else if(array.length == 0) {
@@ -236,7 +241,8 @@ public class JSONArray extends ArrayList implements JSONAware, JSONStreamAware {
 	}
 	
 	public static String toJSONString(float[] array){
-		final StringWriter writer = new StringWriter();
+		//final StringWriter writer = new StringWriter();
+		final JSONWriter writer = new JSONWriter();
 		
 		try {
 			writeJSONString(array, writer);
@@ -247,7 +253,7 @@ public class JSONArray extends ArrayList implements JSONAware, JSONStreamAware {
 		}
 	}
 	
-	public static void writeJSONString(double[] array, Writer out) throws IOException{
+	public static void writeJSONString(double[] array, JSONWriter out) throws IOException{
 		if(array == null){
 			out.write("null");
 		} else if(array.length == 0) {
@@ -266,7 +272,8 @@ public class JSONArray extends ArrayList implements JSONAware, JSONStreamAware {
 	}
 	
 	public static String toJSONString(double[] array){
-		final StringWriter writer = new StringWriter();
+		//final StringWriter writer = new StringWriter();
+		final JSONWriter writer = new JSONWriter();
 		
 		try {
 			writeJSONString(array, writer);
@@ -277,7 +284,7 @@ public class JSONArray extends ArrayList implements JSONAware, JSONStreamAware {
 		}
 	}
 	
-	public static void writeJSONString(boolean[] array, Writer out) throws IOException{
+	public static void writeJSONString(boolean[] array, JSONWriter out) throws IOException{
 		if(array == null){
 			out.write("null");
 		} else if(array.length == 0) {
@@ -296,7 +303,8 @@ public class JSONArray extends ArrayList implements JSONAware, JSONStreamAware {
 	}
 	
 	public static String toJSONString(boolean[] array){
-		final StringWriter writer = new StringWriter();
+		//final StringWriter writer = new StringWriter();
+		final JSONWriter writer = new JSONWriter();
 		
 		try {
 			writeJSONString(array, writer);
@@ -307,7 +315,7 @@ public class JSONArray extends ArrayList implements JSONAware, JSONStreamAware {
 		}
 	}
 	
-	public static void writeJSONString(char[] array, Writer out) throws IOException{
+	public static void writeJSONString(char[] array, JSONWriter out) throws IOException{
 		if(array == null){
 			out.write("null");
 		} else if(array.length == 0) {
@@ -326,7 +334,8 @@ public class JSONArray extends ArrayList implements JSONAware, JSONStreamAware {
 	}
 	
 	public static String toJSONString(char[] array){
-		final StringWriter writer = new StringWriter();
+		//final StringWriter writer = new StringWriter();
+		final JSONWriter writer = new JSONWriter();
 		
 		try {
 			writeJSONString(array, writer);
@@ -337,7 +346,7 @@ public class JSONArray extends ArrayList implements JSONAware, JSONStreamAware {
 		}
 	}
 	
-	public static void writeJSONString(Object[] array, Writer out) throws IOException{
+	public static void writeJSONString(Object[] array, JSONWriter out) throws IOException{
 		if(array == null){
 			out.write("null");
 		} else if(array.length == 0) {
@@ -356,7 +365,8 @@ public class JSONArray extends ArrayList implements JSONAware, JSONStreamAware {
 	}
 	
 	public static String toJSONString(Object[] array){
-		final StringWriter writer = new StringWriter();
+		//final StringWriter writer = new StringWriter();
+		final JSONWriter writer = new JSONWriter();
 		
 		try {
 			writeJSONString(array, writer);

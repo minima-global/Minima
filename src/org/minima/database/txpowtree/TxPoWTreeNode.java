@@ -156,7 +156,7 @@ public class TxPoWTreeNode implements Streamable {
 					mRelevantMMRCoins.add(entrynumber);
 					
 					//Message..
-					JSONObject coinjson = spentcoin.toJSON();
+					JSONObject coinjson = spentcoin.toJSON(true);
 					MinimaLogger.log("NEW Spent Coin : "+coinjson);
 					
 					//Send a message
@@ -172,6 +172,26 @@ public class TxPoWTreeNode implements Streamable {
 				
 					//There has been a balance change
 					balancechange = true;
+				}
+				
+				//Check the Coin Notify Details..
+				String coinaddress = spentcoin.getAddress().to0xString();
+				if(MinimaDB.getDB().checkCoinNotify(coinaddress)) {
+					
+					//Message..
+					JSONObject coinjson = spentcoin.toJSON(true);
+					MinimaLogger.log("NOTIFY Spent Coin : "+coinjson);
+					
+					//Send a message
+					JSONObject data = new JSONObject();
+					data.put("address", coinaddress);
+					data.put("txblockid", mTxBlock.getTxPoW().getTxPoWID());
+					data.put("txblock", block.toString());
+					data.put("spent", true);
+					data.put("coin", coinjson);
+					
+					//And Post it..
+					Main.getInstance().PostNotifyEvent(Main.MAIN_NOTIFYCOIN, data);
 				}
 			}
 		}
@@ -204,7 +224,7 @@ public class TxPoWTreeNode implements Streamable {
 					mRelevantMMRCoins.add(entrynumber);
 					
 					//Message..
-					JSONObject coinjson = newcoin.toJSON();
+					JSONObject coinjson = newcoin.toJSON(true);
 					MinimaLogger.log("NEW Unspent Coin : "+coinjson);
 					
 					//Send a message
@@ -219,6 +239,26 @@ public class TxPoWTreeNode implements Streamable {
 					Main.getInstance().PostNotifyEvent(Main.MAIN_NEWCOIN, data);
 					
 					balancechange = true;
+				}
+				
+				//Check the Coin Notify Details..
+				String coinaddress = newcoin.getAddress().to0xString();
+				if(MinimaDB.getDB().checkCoinNotify(coinaddress)) {
+					
+					//Message..
+					JSONObject coinjson = newcoin.toJSON(true);
+					MinimaLogger.log("NOTIFY Unspent Coin : "+coinjson);
+					
+					//Send a message
+					JSONObject data = new JSONObject();
+					data.put("address", coinaddress);
+					data.put("txblockid", mTxBlock.getTxPoW().getTxPoWID());
+					data.put("txblock", block.toString());
+					data.put("spent", false);
+					data.put("coin", coinjson);
+					
+					//And Post it..
+					Main.getInstance().PostNotifyEvent(Main.MAIN_NOTIFYCOIN, data);
 				}
 			}
 		}

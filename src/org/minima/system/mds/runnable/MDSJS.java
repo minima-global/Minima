@@ -106,7 +106,15 @@ public class MDSJS {
 	 * Simple Log
 	 */
 	public void log(String zMessage) {
-		MinimaLogger.log("MDS_"+mMiniDAPPName+"_"+mMiniDAPPID+" > "+zMessage, false);
+		log(zMessage, false);
+	}
+	
+	public void log(String zMessage, boolean zNotifyAll) {
+		if(!zNotifyAll) {
+			MinimaLogger.log("MDS_"+mMiniDAPPName+"_"+mMiniDAPPID+" > [NOTIFY:"+zNotifyAll+"] "+zMessage, zNotifyAll);
+		}else {
+			MinimaLogger.log("MDS_"+mMiniDAPPName+"_"+mMiniDAPPID+" > "+zMessage, zNotifyAll);
+		}
 	}
 	
 	/**
@@ -203,6 +211,12 @@ public class MDSJS {
 	 * Load a JS file
 	 */
 	public void load(String zFile) {
+		
+		//Check no ..
+		if(zFile.indexOf("..")!=-1) {
+			log("Invalid file for load as has .. in location");
+			return;
+		}
 		
 		//Get base folder..
 		File base = mMDS.getMiniDAPPWebFolder(mMiniDAPPID);

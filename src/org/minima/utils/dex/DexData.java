@@ -3,7 +3,6 @@ package org.minima.utils.dex;
 import java.util.ArrayList;
 
 import org.minima.utils.json.JSONArray;
-import org.minima.utils.json.JSONObject;
 
 public class DexData {
 

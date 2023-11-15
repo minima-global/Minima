@@ -142,6 +142,7 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_MINING 		= "MAIN_MINING";
 	
 	public static final String MAIN_NEWCOIN 	= "NEWCOIN";
+	public static final String MAIN_NOTIFYCOIN 	= "NOTIFYCOIN";
 	
 	/**
 	 * Are we on Normal mine mode or LOW
@@ -186,8 +187,8 @@ public class Main extends MessageProcessor {
 	/**
 	 * Are we shutting down..
 	 */
-	boolean mShuttingdown = false;
-	
+	boolean mShuttingdown 				= false;
+	boolean mHaveShutDownMDS 			= false;
 	/**
 	 * Are we restoring..
 	 */
@@ -223,6 +224,25 @@ public class Main extends MessageProcessor {
 		
 		//Create the timer processor
 		TimerProcessor.createTimerProcessor();
+		
+		//Are we running a PRIVATE network..
+		if(GeneralParams.PRIVATE) {
+			
+			//Get the base folder
+			File basefolder = new File(GeneralParams.DATA_FOLDER,"databases");
+			
+			//Is this the first run.. Check if files exist..
+			File userdb = new File(basefolder, "userprefs.db");
+			if(userdb.exists() && !GeneralParams.CLEAN) {
+				//This is not the first run..
+				MinimaLogger.log("SOLO NETWORK : userdb found : not first run.. no -genesis..");
+				
+			}else {
+				MinimaLogger.log("SOLO NETWORK : userdb not found : FIRST RUN.. creating genesis coins..");
+				GeneralParams.CLEAN 	= true;
+                GeneralParams.GENESIS 	= true;
+			}
+		}
 		
 		//Are we deleting previous..
 		if(GeneralParams.CLEAN) {
@@ -467,7 +487,18 @@ public class Main extends MessageProcessor {
 		}
 	}
 	
+	public static void ClearMainInstance() {
+		//NULL main instance..
+		if(mMainInstance != null) {
+			mMainInstance = null;
+			MinimaLogger.log("Main Instance Cleared..");
+		}
+	}
+	
 	public void NotifyMainListenerOfShutDown() {
+		
+		//Called from various functions
+		ClearMainInstance();
 		
 		//Have we done this already
 		if(mShutDownSentToListener) {
@@ -591,11 +622,14 @@ public class Main extends MessageProcessor {
 	public void shutdownFinalProcs(boolean zShutDownMDS) {
 				
 		if(zShutDownMDS) {
-			shutdownMDS();
+			if(!mHaveShutDownMDS) {
+				mHaveShutDownMDS = true;
+				shutdownMDS();
+			}
 		}
 				
 		//Stop the main TxPoW processor
-		MinimaLogger.log("TxPoWProcessor shutdown..");
+		MinimaLogger.log("Shutdown TxPoWProcessor..");
 		mTxPoWProcessor.stopMessageProcessor();
 		mTxPoWProcessor.waitToShutDown();
 	}

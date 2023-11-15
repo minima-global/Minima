@@ -11,13 +11,14 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Random;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
+import org.minima.database.archive.RawArchiveInput;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.wallet.Wallet;
+import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
 import org.minima.objects.IBD;
@@ -27,12 +28,12 @@ import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
+import org.minima.system.brains.TxPoWProcessor;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.network.connect;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
-import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.system.network.webhooks.NotifyManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.BIP39;
@@ -45,10 +46,15 @@ import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageListener;
 
 public class archive extends Command {
-
-	private static ArchiveManager STATIC_TEMPARCHIVE 	= null;
+	
+	//Are we restoring from a local archive..
 	private final String LOCAL_ARCHIVE 					= "archiverestore";
 	
+	//H2 local
+	private static boolean H2_TEMPARCHIVE 				= true;
+	
+	private static ArchiveManager STATIC_TEMPARCHIVE 	= null;
+	private static RawArchiveInput STATIC_RAW		 	= null;
 	
 	public archive() {
 		super("archive","[action:] (host:) (phrase:) (keys:) (keyuses:) - Resync your chain with seed phrase if necessary (otherwise wallet remains the same)");
@@ -56,7 +62,7 @@ public class archive extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","host","phrase","keys","keyuses","file","address"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","host","phrase","anyphrase","keys","keyuses","file","address","statecheck"}));
 	}
 	
 	@Override
@@ -293,24 +299,10 @@ public class archive extends Command {
 			
 			//Is it auto
 			boolean usinglocal = false;
-//			if(fullhost.equals("auto")) {
-//				
-//				//Choose one from our default list
-//				int size  	= P2PParams.DEFAULT_ARCHIVENODE_LIST.size();
-//				int rand  	= new Random().nextInt(size);
-//				
-//				InetSocketAddress archaddr = P2PParams.DEFAULT_ARCHIVENODE_LIST.get(rand);
-//				String ip 	= archaddr.getHostString();
-//				int port    = archaddr.getPort();
-//				fullhost	= ip+":"+port;
-//				
-//				MinimaLogger.log("RANDOM ARCHIVE HOST : "+rand+" host:"+fullhost);
-//			
-//			}else 
 			if(fullhost.equals(LOCAL_ARCHIVE)) {
 				
 				//Using the local DB..
-				if(STATIC_TEMPARCHIVE == null) {
+				if(H2_TEMPARCHIVE && STATIC_TEMPARCHIVE == null) {
 					throw new CommandException("No Local STATIC Archive DB Found..");
 				}
 				
@@ -351,8 +343,14 @@ public class archive extends Command {
 			String phrase = getParam("phrase","");
 			if(!phrase.equals("")) {
 			
+				//Are we allowing ANY phrase..
+				boolean anyphrase = getBooleanParam("anyphrase", false);
+				
 				//Clean it up..
-				String cleanphrase = BIP39.cleanSeedPhrase(phrase);
+				String cleanphrase = phrase;
+				if(!anyphrase) {
+					cleanphrase = BIP39.cleanSeedPhrase(phrase);
+				}
 				
 				//reset ALL the default data
 				Main.getInstance().archiveResetReady(true);
@@ -409,26 +407,38 @@ public class archive extends Command {
 				
 				//Clean system counter
 				counter++;
-				if(counter % 5 == 0) {
-					long mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-					if(mem > 250 * 1024 * 1024) {
-						Main.getInstance().resetMemFull();
-					}else {
-						//MinimaLogger.log("RAM memory usage still low.. wait for cleanup");
-					}
+//				if(counter % 5 == 0) {
+//					long mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+//					if(mem > 250 * 1024 * 1024) {
+//						Main.getInstance().resetMemFull();
+//						MinimaLogger.log("Clean up memory..");
+//					}else {
+//						//MinimaLogger.log("RAM memory usage still low.. wait for cleanup");
+//					}
+//				}
+				
+				//HARD RESET - H2 database doesn't like it if I don't do this
+				if(counter % 10 == 0) {
+					//MinimaLogger.log("Clean up memory..");
+					Main.getInstance().resetMemFull();
 				}
 				
 				//Send him a message..
 				if(!usinglocal) {
 					ibd = sendArchiveReq(host, port, startblock);
 				}else {
-					ibd = new IBD();
-					ibd.createArchiveIBD(startblock, STATIC_TEMPARCHIVE, true);
+					
+					if(H2_TEMPARCHIVE) {
+						ibd = new IBD();
+						ibd.createArchiveIBD(startblock, STATIC_TEMPARCHIVE, true);
+					}else {
+						ibd = STATIC_RAW.getNextIBD();
+					}
 				}
 				
+				//Make sure something returned..
 				if(ibd == null) {
 					ibd = new IBD();
-					//throw new CommandException("Connection error @ "+host+":"+port);
 				}
 				
 				//Is there a cascade..
@@ -554,9 +564,6 @@ public class archive extends Command {
 			//And NOW shut down..
 			Main.getInstance().stopMessageProcessor();
 			
-			//Tell the listener
-			NotifyListener(minimalistener,"SHUTDOWN");
-			
 			//Tell listener..
 			Main.getInstance().NotifyMainListenerOfShutDown();
 		
@@ -584,7 +591,7 @@ public class archive extends Command {
 			resp.put("size", MiniFormat.formatSize(gziplen));
 			ret.put("response", resp);
 		
-		}else if(action.equals("import")) {
+		}else if(action.equals("importold")) {
 			
 			//Get the file
 			String file = getParam("file");
@@ -658,11 +665,221 @@ public class archive extends Command {
 			JSONObject resp = new JSONObject();
 			resp.put("archiveresync", result);
 			ret.put("response", resp);
+				
+		}else if(action.equals("import")) {
+			
+			//Get the file
+			String file = getParam("file");
+			
+			//Does it exist..
+			File restorefile = MiniFile.createBaseFile(file);
+			if(!restorefile.exists()) {
+				throw new Exception("Restore file doesn't exist : "+restorefile.getAbsolutePath());
+			}
+			
+			//Is it an H2 gzip or a raw dat
+			boolean h2import = true; 
+			if(file.endsWith(".dat")) {
+				h2import = false;
+			}
+			
+			if(h2import) {
+				MinimaLogger.log("H2 archive imprt started..");
+				
+				//And now restore
+				ArchiveManager archtemp = new ArchiveManager();
+				H2_TEMPARCHIVE			= true;
+				
+				//Create a temp DB file..
+				File restorefolder = new File(GeneralParams.DATA_FOLDER,"archiverestore");
+				restorefolder.mkdirs();
+				
+				File tempdb = new File(restorefolder,"archivetemp");
+				if(tempdb.exists()) {
+					tempdb.delete();
+				}
+				archtemp.loadDB(tempdb);
+				
+				//Restore from File..
+				MinimaLogger.log("Restoring ArchiveDB from file..");
+				archtemp.restoreFromFile(restorefile,true);
+				
+				Cascade casc = archtemp.loadCascade();
+				if(casc != null) {
+					MinimaLogger.log("Archive DB cascade start : "+casc.getTip().getTxPoW().getBlockNumber()+" length:"+casc.getLength());
+				}
+				
+				TxBlock first 	= archtemp.loadFirstBlock();
+				if(first!=null) {
+					MinimaLogger.log("Archive DB first block : "+first.getTxPoW().getBlockNumber());
+				}
+				TxBlock last 	= archtemp.loadLastBlock();
+				if(last!=null) {
+					MinimaLogger.log("Archive DB last block : "+last.getTxPoW().getBlockNumber());
+				}
+				
+				//Set this statically..
+				STATIC_TEMPARCHIVE = archtemp;
+			
+				//Now run a chain sync.. with correct params
+				String command = "archive action:resync host:"+LOCAL_ARCHIVE;
+				if(existsParam("phrase")) {
+					command = command+" phrase:\""+getParam("phrase")+"\"";
+				}
+				
+				if(existsParam("keys")) {
+					command = command+" keys:"+getParam("keys");
+				}
+				
+				if(existsParam("keyuses")) {
+					command = command+" keyuses:"+getParam("keyuses");
+				}
+				
+				JSONArray res 		= Command.runMultiCommand(command);
+				JSONObject result 	= (JSONObject) res.get(0);
+				
+				//Shutdown TEMP DB
+				archtemp.saveDB(false);
+				
+				//Delete the restore folder
+				MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
+				
+				//Reset 
+				STATIC_TEMPARCHIVE = null;
+				
+				JSONObject resp = new JSONObject();
+				resp.put("archiveresync", result);
+				ret.put("response", resp);
+			
+			}else {
+				MinimaLogger.log("RAW archive import started..");
+				
+				//RAW import..
+				H2_TEMPARCHIVE	= false;
+				
+				//Set this statically..
+				STATIC_RAW = new RawArchiveInput(restorefile);
+				STATIC_RAW.connect();
+				
+				//Now run a chain sync.. with correct params
+				String command = "archive action:resync host:"+LOCAL_ARCHIVE;
+				if(existsParam("phrase")) {
+					command = command+" phrase:\""+getParam("phrase")+"\"";
+				}
+				
+				if(existsParam("keys")) {
+					command = command+" keys:"+getParam("keys");
+				}
+				
+				if(existsParam("keyuses")) {
+					command = command+" keyuses:"+getParam("keyuses");
+				}
+				
+				JSONArray res 		= Command.runMultiCommand(command);
+				JSONObject result 	= (JSONObject) res.get(0);
+				
+				//Shutdown TEMP DB
+				STATIC_RAW.stop();
+				
+				//Reset 
+				STATIC_RAW = null;
+				
+				JSONObject resp = new JSONObject();
+				resp.put("archiveresync", result);
+				ret.put("response", resp);
+			}
+			
+		}else if(action.equals("importraw")) {
+			
+			//Get the file
+			String file = getParam("file");
+			
+			//Does it exist..
+			File restorefile = MiniFile.createBaseFile(file);
+			if(!restorefile.exists()) {
+				throw new Exception("Restore file doesn't exist : "+restorefile.getAbsolutePath());
+			}
+			
+			//reset ALL the default data
+			Main.getInstance().archiveResetReady(false);
+			
+			RawArchiveInput rawin = new RawArchiveInput(restorefile);
+			rawin.connect();
+			
+			int ibdcount = 0;
+			while(true) {
+				
+				//Get the next IBD
+				IBD syncibd = rawin.getNextIBD();
+				
+				//Are there any blocks..
+				int size = syncibd.getTxBlocks().size();
+				if(size==0) {
+					break;
+				}
+				
+				//Get the main processor
+				TxPoWProcessor proc = Main.getInstance().getTxPoWProcessor();
+				proc.postProcessArchiveIBD(syncibd, "0x00");
+				ibdcount++;
+				
+				//Do this every 10 IBD..
+				if(ibdcount % 20 == 0) {
+					
+					//Last block
+					TxBlock block = syncibd.getTxBlocks().get(size-1);
+					
+					//Now wait for something to happen
+					TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+					while(tip == null) {
+						Thread.sleep(50);
+						tip = MinimaDB.getDB().getTxPoWTree().getTip();
+					}
+					
+					long starttime = block.getTxPoW().getTimeMilli().getAsLong();
+					MinimaLogger.log("Processing block:"+block.getTxPoW().getBlockNumber()+" @ "+MinimaLogger.DATEFORMAT.format(new Date(starttime)));
+					
+					while(!tip.getBlockNumber().isEqual(block.getTxPoW().getBlockNumber())) {
+						Thread.sleep(50);
+						tip = MinimaDB.getDB().getTxPoWTree().getTip();
+					}
+					
+					//Clean up..
+					Main.getInstance().resetMemFull();
+				}
+			}
+			
+			//Close it down..
+			rawin.stop();
+			
+			MinimaLogger.log("All blocks processed..");
+			
+			JSONObject resp = new JSONObject();
+			resp.put("message", "Archive sync completed.. shutting down now.. please restart after");
+			ret.put("response", resp);
+			
+			//Don't do the usual shutdown hook
+			Main.getInstance().setHasShutDown();
+			
+			//And NOW shut down..
+			Main.getInstance().shutdownFinalProcs();
+			
+			//Now shutdown and save everything
+			MinimaDB.getDB().saveAllDB();
+			
+			//And NOW shut down..
+			Main.getInstance().stopMessageProcessor();
+			
+			//Tell listener..
+			Main.getInstance().NotifyMainListenerOfShutDown();
 			
 		}else if(action.equals("inspect")) {
 			
 			//Get the file
 			String file = getParam("file","");
+			if(file.endsWith(".dat")) {
+				throw new CommandException("inspect only works for H2 archive files");
+			}
 			
 			//Where the temp db will go..
 			File restorefolder 	= new File(GeneralParams.DATA_FOLDER,"archiverestore");
@@ -746,6 +963,14 @@ public class archive extends Command {
 			//Which address are we looking for
 			String address = getAddressParam("address");
 			
+			//Is there a state aswell ? 
+			String statecheck = getParam("statecheck", "");
+			if(	statecheck.toLowerCase().startsWith("mx") && 
+				statecheck.indexOf("@")==-1) {
+				//Convert to 0x format - as all statevariables are
+				statecheck = Address.convertMinimaAddress(statecheck).to0xString();
+			}
+			
 			//Cycle through
 			JSONObject resp 	= new JSONObject();
 			JSONArray inarr 	= new JSONArray();
@@ -787,13 +1012,24 @@ public class archive extends Command {
 					ArrayList<Coin> outputs 		= block.getOutputCoins();
 					for(Coin cc : outputs) {
 						if(cc.getAddress().to0xString().equals(address)) {
-							MinimaLogger.log("BLOCK "+blocknumber+" CREATED COIN : "+cc.toString());
 							
-							JSONObject created = new JSONObject();
-							created.put("block", blocknumber);
-							created.put("date", date);
-							created.put("coin", cc.toJSON());
-							outarr.add(created);
+							boolean found = true;
+							if(!statecheck.equals("")) {
+								//Check for state aswell..
+								found = cc.checkForStateVariable(statecheck);
+							}
+							
+							if(found) {
+								MinimaLogger.log("BLOCK "+blocknumber+" CREATED COIN : "+cc.toString());
+								
+								JSONObject created = new JSONObject();
+								created.put("block", blocknumber);
+								created.put("date", date);
+								created.put("datemilli", txp.getTimeMilli().toString());
+								created.put("coin", cc.toJSON());
+								outarr.add(created);
+							}
+							
 						}
 					}
 					
@@ -801,13 +1037,23 @@ public class archive extends Command {
 					ArrayList<CoinProof> inputs  	= block.getInputCoinProofs();
 					for(CoinProof incoin : inputs) {
 						if(incoin.getCoin().getAddress().to0xString().equals(address)) {
-							MinimaLogger.log("BLOCK "+blocknumber+" SPENT COIN : "+incoin.getCoin().toString());
 							
-							JSONObject spent = new JSONObject();
-							spent.put("block", blocknumber);
-							spent.put("date", date);
-							spent.put("coin", incoin.getCoin().toJSON());
-							inarr.add(spent);
+							boolean found = true;
+							if(!statecheck.equals("")) {
+								//Check for state aswell..
+								found = incoin.getCoin().checkForStateVariable(statecheck);
+							}
+							
+							if(found) {
+								MinimaLogger.log("BLOCK "+blocknumber+" SPENT COIN : "+incoin.getCoin().toString());
+								
+								JSONObject spent = new JSONObject();
+								spent.put("block", blocknumber);
+								spent.put("date", date);
+								spent.put("datemilli", txp.getTimeMilli().toString());
+								spent.put("coin", incoin.getCoin().toJSON());
+								inarr.add(spent);
+							}
 						}
 					}
 				}
@@ -835,13 +1081,23 @@ public class archive extends Command {
 					ArrayList<Coin> outputs 		= block.getOutputCoins();
 					for(Coin cc : outputs) {
 						if(cc.getAddress().to0xString().equals(address)) {
-							MinimaLogger.log("BLOCK "+blocknumber+" CREATED COIN : "+cc.toString());
 							
-							JSONObject created = new JSONObject();
-							created.put("block", blocknumber);
-							created.put("date", date);
-							created.put("coin", cc.toJSON());
-							outarr.add(created);
+							boolean found = true;
+							if(!statecheck.equals("")) {
+								//Check for state aswell..
+								found = cc.checkForStateVariable(statecheck);
+							}
+							
+							if(found) {
+								MinimaLogger.log("BLOCK "+blocknumber+" CREATED COIN : "+cc.toString());
+								
+								JSONObject created = new JSONObject();
+								created.put("block", blocknumber);
+								created.put("date", date);
+								created.put("datemilli", txp.getTimeMilli().toString());
+								created.put("coin", cc.toJSON());
+								outarr.add(created);
+							}
 						}
 					}
 					
@@ -849,21 +1105,31 @@ public class archive extends Command {
 					ArrayList<CoinProof> inputs  	= block.getInputCoinProofs();
 					for(CoinProof incoin : inputs) {
 						if(incoin.getCoin().getAddress().to0xString().equals(address)) {
-							MinimaLogger.log("BLOCK "+blocknumber+" SPENT COIN : "+incoin.getCoin().toString());
 							
-							JSONObject spent = new JSONObject();
-							spent.put("block", blocknumber);
-							spent.put("date", date);
-							spent.put("coin", incoin.getCoin().toJSON());
-							inarr.add(spent);
+							boolean found = true;
+							if(!statecheck.equals("")) {
+								//Check for state aswell..
+								found = incoin.getCoin().checkForStateVariable(statecheck);
+							}
+							
+							if(found) {
+								MinimaLogger.log("BLOCK "+blocknumber+" SPENT COIN : "+incoin.getCoin().toString());
+								
+								JSONObject spent = new JSONObject();
+								spent.put("block", blocknumber);
+								spent.put("date", date);
+								spent.put("datemilli", txp.getTimeMilli().toString());
+								spent.put("coin", incoin.getCoin().toJSON());
+								inarr.add(spent);
+							}
 						}
 					}
-					
 					
 					top = top.getParent();
 				}
 			}
 			
+			MinimaLogger.log("All checks complete..");
 			
 			resp.put("created", outarr);
 			resp.put("spent", inarr);

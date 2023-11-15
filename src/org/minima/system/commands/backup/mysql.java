@@ -1,21 +1,28 @@
 package org.minima.system.commands.backup;
 
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.zip.GZIPOutputStream;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
+import org.minima.database.archive.RawArchiveInput;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.UserDB;
 import org.minima.database.wallet.Wallet;
+import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
 import org.minima.objects.IBD;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
+import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
@@ -40,7 +47,7 @@ public class mysql extends Command {
 	public String getFullHelp() {
 		return "\nmysql\n"
 				+ "\n"
-				+ "Export the archive data of this node to a MySQL d.\n"
+				+ "Export archive data to a MySQL server.\n"
 				+ "\n"
 				+ "The MySQL db can be used to perform a chain re-sync to put users on the correct chain,\n"
 				+ "\n"
@@ -62,6 +69,8 @@ public class mysql extends Command {
 				+ "password:\n"
 				+ "    MySQL password for the user provided.\n"
 				+ "\n"
+				+ "readonly:\n"
+				+ "    true or false, Connect in readonly mode.\n"
 				+ "logs:\n"
 				+ "    Show detailed logs - default true.\n"
 				+ "\n"
@@ -91,7 +100,7 @@ public class mysql extends Command {
 				+ "    Default is 1000.\n"
 				+ "\n"
 				+ "address: (optional)\n"
-				+ "    Use with action:checkaddress. The address to check the history of spent and unspent coins for.\n"
+				+ "    Use with action:addresscheck. The address to check the history of spent and unspent coins for.\n"
 				+ "\n"
 				+ "enable: (optional)\n"
 				+ "    Use with action:autobackup. Automatically save data to MySQL archive DB.\n"
@@ -120,7 +129,7 @@ public class mysql extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database","user","password","keys","keyuses","phrase","address","enable","file"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database","user","password","keys","keyuses","phrase","address","enable","file","statecheck","logs","maxexport","readonly"}));
 	}
 	
 	@Override
@@ -144,7 +153,8 @@ public class mysql extends Command {
 		boolean logs		= getBooleanParam("logs", true);
 		
 		//Get the login details..
-		MySQLConnect mysql = new MySQLConnect(host, db, user, password);
+		boolean readonly 	= getBooleanParam("readonly", false);
+		MySQLConnect mysql 	= new MySQLConnect(host, db, user, password, readonly);
 		mysql.init();
 		
 		//Get the ArchiveManager
@@ -570,6 +580,14 @@ public class mysql extends Command {
 			//Which address are we looking for
 			String address = getAddressParam("address");
 			
+			//Is there a state aswell ? 
+			String statecheck = getParam("statecheck", ""); 
+			if(	statecheck.toLowerCase().startsWith("mx") && 
+				statecheck.indexOf("@")==-1) {
+				//Convert to 0x format - as all statevariables are
+				statecheck = Address.convertMinimaAddress(statecheck).to0xString();
+			}
+			
 			//Cycle through
 			JSONObject resp 	= new JSONObject();
 			JSONArray inarr 	= new JSONArray();
@@ -596,13 +614,22 @@ public class mysql extends Command {
 					ArrayList<Coin> outputs 		= block.getOutputCoins();
 					for(Coin cc : outputs) {
 						if(cc.getAddress().to0xString().equals(address)) {
-							MinimaLogger.log("BLOCK "+blocknumber+" CREATED COIN : "+cc.toString());
 							
-							JSONObject created = new JSONObject();
-							created.put("block", blocknumber);
-							created.put("date", date);
-							created.put("coin", cc.toJSON());
-							outarr.add(created);
+							boolean found = true;
+							if(!statecheck.equals("")) {
+								//Check for state aswell..
+								found = cc.checkForStateVariable(statecheck);
+							}
+							
+							if(found) {
+								MinimaLogger.log("BLOCK "+blocknumber+" CREATED COIN : "+cc.toString());
+								
+								JSONObject created = new JSONObject();
+								created.put("block", blocknumber);
+								created.put("date", date);
+								created.put("coin", cc.toJSON());
+								outarr.add(created);
+							}
 						}
 					}
 					
@@ -610,13 +637,22 @@ public class mysql extends Command {
 					ArrayList<CoinProof> inputs  	= block.getInputCoinProofs();
 					for(CoinProof incoin : inputs) {
 						if(incoin.getCoin().getAddress().to0xString().equals(address)) {
-							MinimaLogger.log("BLOCK "+blocknumber+" SPENT COIN : "+incoin.getCoin().toString());
 							
-							JSONObject spent = new JSONObject();
-							spent.put("block", blocknumber);
-							spent.put("date", date);
-							spent.put("coin", incoin.getCoin().toJSON());
-							inarr.add(spent);
+							boolean found = true;
+							if(!statecheck.equals("")) {
+								//Check for state aswell..
+								found = incoin.getCoin().checkForStateVariable(statecheck);
+							}
+							
+							if(found) {
+								MinimaLogger.log("BLOCK "+blocknumber+" SPENT COIN : "+incoin.getCoin().toString());
+								
+								JSONObject spent = new JSONObject();
+								spent.put("block", blocknumber);
+								spent.put("date", date);
+								spent.put("coin", incoin.getCoin().toJSON());
+								inarr.add(spent);
+							}
 						}
 					}
 					
@@ -634,7 +670,8 @@ public class mysql extends Command {
 			long timestart = System.currentTimeMillis();
 			
 			//Create a temp name
-			String infile = getParam("file");
+			String infile 	= getParam("file");
+			File fileinfile = MiniFile.createBaseFile(infile);
 			
 			//Create  tyemp DB
 			ArchiveManager archtemp = new ArchiveManager();
@@ -651,13 +688,10 @@ public class mysql extends Command {
 			
 			//And now restore..
 			MinimaLogger.log("Restoring H2 Archive DB..");
-			archtemp.restoreFromFile(new File(infile), true);
+			archtemp.restoreFromFile(fileinfile, true);
 			
 			//Wipe the old data
 			mysql.wipeAll();
-			
-			//And recreate the tables
-			mysql.init();
 			
 			//Is there a cascade..
 			Cascade casc = archtemp.loadCascade();
@@ -728,7 +762,7 @@ public class mysql extends Command {
 		}else if(action.equals("h2export")) {
 			
 			//Create a temp name
-			String outfile = getParam("file","archivebackup-"+System.currentTimeMillis()+".gzip");
+			String outfile = getParam("file","archivebackup-"+System.currentTimeMillis()+".h2.gzip");
 			
 			//Create the file
 			File gzoutput = MiniFile.createBaseFile(outfile);
@@ -816,6 +850,211 @@ public class mysql extends Command {
 			resp.put("file", gzoutput.getName());
 			resp.put("path", gzoutput.getAbsolutePath());
 			resp.put("size", MiniFormat.formatSize(gzoutput.length()));
+			
+			ret.put("response", resp);
+		
+		}else if(action.equals("size")) {
+			
+			int total = mysql.getCount();
+			
+			JSONObject resp = new JSONObject();
+			resp.put("size", total);
+			ret.put("response", resp);
+			
+		}else if(action.equals("rawexport")) {
+			
+			//Create a temp name
+			String outfile = getParam("file","archivebackup-"+System.currentTimeMillis()+".raw.dat");
+			
+			//Create the file
+			File rawoutput = MiniFile.createBaseFile(outfile);
+			if(rawoutput.exists()) {
+				rawoutput.delete();
+			}
+			
+			//Create output streams..
+			FileOutputStream fix 		= new FileOutputStream(rawoutput);
+			BufferedOutputStream bos 	= new BufferedOutputStream(fix, 65536);
+			GZIPOutputStream gout 		= new GZIPOutputStream(bos, 65536);
+			DataOutputStream dos 		= new DataOutputStream(gout);
+			
+			//Load the cascade if it is there
+			Cascade casc = mysql.loadCascade();
+			if(casc!=null) {
+				MinimaLogger.log("Cascade found in MySQL..");
+				
+				//Write cacade out..
+				MiniByte.TRUE.writeDataStream(dos);
+				casc.writeDataStream(dos);
+			}else {
+				MiniByte.FALSE.writeDataStream(dos);
+				MinimaLogger.log("No cascade found in MySQL..");
+			}
+			
+			//How many entries..
+			int total = mysql.getCount();
+			MinimaLogger.log("Total records found : "+total);
+			
+			//Max specified..
+			if(existsParam("maxexport")) {
+				int max = getNumberParam("maxexport").getAsInt();
+				MinimaLogger.log("Max export specified.. : "+max);
+				if(total>max) {
+					total = max;
+				}
+			}
+			
+			MiniNumber tot = new MiniNumber(total);
+			tot.writeDataStream(dos);
+			
+			int outcounter = 0;
+			
+			//Load the MySQL and output to the H2
+			long mysqllastblock 	= mysql.loadLastBlock();
+			long mysqlfirstblock 	= mysql.loadFirstBlock();
+			
+			//Load a range..
+			long firstblock = -1;
+			long endblock 	= -1;
+			TxBlock lastblock = null;
+			
+			long startload 	= mysqllastblock;
+			int counter = 0;
+			while(true) {
+				
+				//Small log message
+				if(counter % 20 == 0) {
+					if(logs) {
+						MinimaLogger.log("Loading from MySQL @ "+startload);
+					}
+				}
+				
+				ArrayList<TxBlock> blocks = mysql.loadBlockRange(new MiniNumber(startload));
+				if(blocks.size()==0) {
+					//All blocks checked
+					break;
+				}
+				
+				//Cycle and add to our DB..
+				for(TxBlock block : blocks) {
+					
+					//Send to data export file..
+					block.writeDataStream(dos);
+					//archtemp.saveBlock(block);
+					
+					if(lastblock == null) {
+						firstblock = block.getTxPoW().getBlockNumber().getAsLong();
+					}
+					lastblock = block;
+					endblock = block.getTxPoW().getBlockNumber().getAsLong();
+					
+					//Increase counter
+					outcounter++;
+					if(outcounter>=total) {
+						break;
+					}
+				}
+				
+				if(outcounter>=total) {
+					MinimaLogger.log("Finished loading blocks..");
+					break;
+				}
+				
+				startload = endblock+1;
+				
+				//Clean up..
+				counter++;
+				if(counter % 20 == 0) {
+					System.gc();
+				}
+			}			
+			
+			//Flush data
+			dos.flush();
+			
+			try {
+				dos.close();
+				gout.close();
+				bos.close();
+				fix.close();
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
+			
+			JSONObject resp = new JSONObject();
+			resp.put("start", firstblock);
+			resp.put("end", endblock);
+			resp.put("file", rawoutput.getName());
+			resp.put("path", rawoutput.getAbsolutePath());
+			resp.put("size", MiniFormat.formatSize(rawoutput.length()));
+			
+			ret.put("response", resp);
+				
+		}else if(action.equals("rawimport")) {
+			
+			long timestart = System.currentTimeMillis();
+			
+			//Create a temp name
+			String infile 	= getParam("file");
+			File fileinfile = MiniFile.createBaseFile(infile);
+			
+			RawArchiveInput rawin = new RawArchiveInput(fileinfile);
+			rawin.connect();
+			
+			//Wipe the old data
+			mysql.wipeAll();
+			
+			//Is there a cascade..
+			Cascade casc = rawin.getCascade();
+			if(casc != null) {
+				MinimaLogger.log("Cascade found.. ");
+				mysql.saveCascade(casc);
+			}
+			
+			//Load a range..
+			long endblock 	= -1;
+			TxBlock lastblock = null;
+			int counter = 0;
+			while(true) {
+				//Get the next batch of data..
+				IBD syncibd 				= rawin.getNextIBD();
+				ArrayList<TxBlock> blocks 	= syncibd.getTxBlocks();
+				
+				if(logs) {
+					if(counter % 10 ==0) {
+						if(blocks.size()>0) {
+							MinimaLogger.log("Loading from RAW Block : "+blocks.get(0).getTxPoW().getBlockNumber());
+						}
+					}
+				}
+				
+				if(blocks.size()==0) {
+					//All blocks checked
+					break;
+				}
+				
+				//Cycle and add to our DB..
+				for(TxBlock block : blocks) {
+					
+					//Send to MySQL
+					mysql.saveBlock(block);
+					//MinimaLogger.log("Save block : "+block.getTxPoW().getBlockNumber());
+				}
+				
+				//Clean up..
+				counter++;
+				if(counter % 10 == 0) {
+					System.gc();
+				}
+			}
+			
+			//Shutdown TEMP DB
+			rawin.stop();
+			
+			long timediff = System.currentTimeMillis() - timestart;
+			
+			JSONObject resp = new JSONObject();
+			resp.put("time", MiniFormat.ConvertMilliToTime(timediff));
 			
 			ret.put("response", resp);
 			

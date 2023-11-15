@@ -21,7 +21,6 @@ import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.encrypt.GenerateKey;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.ssl.SSLManager;
@@ -121,23 +120,35 @@ public class restore extends Command {
 		//Read in each section..
 		total += readNextBackup(new File(restorefolder,"wallet.sql"), disciph);
 		
-		//The rest write directly 
-		File basedb = MinimaDB.getDB().getBaseDBFolder();
-		total += readNextBackup(new File(basedb,"cascade.db"), disciph);
-		total += readNextBackup(new File(basedb,"chaintree.db"), disciph);
-		total += readNextBackup(new File(basedb,"userprefs.db"), disciph);
-		total += readNextBackup(new File(basedb,"p2p.db"), disciph);
+		//Stop saving state
+		MinimaDB.getDB().setAllowSaveState(false);
 		
-		//Now load the relevant TxPoW
-		TxPoWList txplist = readNextTxPoWList(disciph);
-		
-		//And add these to the DB
-		TxPoWSqlDB txpsqldb = MinimaDB.getDB().getTxPoWDB().getSQLDB();
-		txpsqldb.wipeDB();
-		for(TxPoW txp : txplist.mTxPoWs) {
-			txpsqldb.addTxPoW(txp, true);
-		}
-		
+			//The rest write directly 
+			File basedb = MinimaDB.getDB().getBaseDBFolder();
+			total += readNextBackup(new File(basedb,"cascade.db"), disciph);
+			total += readNextBackup(new File(basedb,"chaintree.db"), disciph);
+			total += readNextBackup(new File(basedb,"userprefs.db"), disciph);
+			total += readNextBackup(new File(basedb,"p2p.db"), disciph);
+			
+			//Load these values 
+			File udb = new File(basedb,"userprefs.db");
+			MinimaDB.getDB().getUserDB().loadDB(udb);
+			udb = new File(basedb,"p2p.db");
+			MinimaDB.getDB().getP2PDB().loadDB(udb);
+					
+			//Now load the relevant TxPoW
+			TxPoWList txplist = readNextTxPoWList(disciph);
+			
+			//And add these to the DB
+			TxPoWSqlDB txpsqldb = MinimaDB.getDB().getTxPoWDB().getSQLDB();
+			txpsqldb.wipeDB();
+			for(TxPoW txp : txplist.mTxPoWs) {
+				txpsqldb.addTxPoW(txp, true);
+			}
+			
+		//Allow saving state
+		MinimaDB.getDB().setAllowSaveState(true);
+				
 		//If it has not stopped - First stop everything.. and get ready to restore the files..
 		Main.getInstance().restoreReady(doshutdown);
 		

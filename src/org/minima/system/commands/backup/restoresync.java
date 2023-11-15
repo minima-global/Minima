@@ -4,11 +4,9 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Random;
 import java.util.zip.GZIPInputStream;
 
 import javax.crypto.Cipher;
@@ -28,7 +26,6 @@ import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.network.connect;
-import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
@@ -133,25 +130,35 @@ public class restoresync extends Command {
 		//Read in each section..
 		total += readNextBackup(new File(restorefolder,"wallet.sql"), disciph);
 		
-		//The rest write directly 
-		File basedb = MinimaDB.getDB().getBaseDBFolder();
-		total += readNextBackup(new File(basedb,"cascade.db"), disciph);
-		total += readNextBackup(new File(basedb,"chaintree.db"), disciph);
-		total += readNextBackup(new File(basedb,"userprefs.db"), disciph);
-		total += readNextBackup(new File(basedb,"p2p.db"), disciph);
+		//Stop saving state
+		MinimaDB.getDB().setAllowSaveState(false);
+				
+			//The rest write directly 
+			File basedb = MinimaDB.getDB().getBaseDBFolder();
+			total += readNextBackup(new File(basedb,"cascade.db"), disciph);
+			total += readNextBackup(new File(basedb,"chaintree.db"), disciph);
+			total += readNextBackup(new File(basedb,"userprefs.db"), disciph);
+			total += readNextBackup(new File(basedb,"p2p.db"), disciph);
 		
-		//Now load the relevant TxPoW
-		TxPoWList txplist = readNextTxPoWList(disciph);
-		
-		//And add these to the DB
-		TxPoWSqlDB txpsqldb = MinimaDB.getDB().getTxPoWDB().getSQLDB();
-		txpsqldb.wipeDB();
-		for(TxPoW txp : txplist.mTxPoWs) {
-			txpsqldb.addTxPoW(txp, true);
+			//Load these values 
+			File udb = new File(basedb,"userprefs.db");
+			MinimaDB.getDB().getUserDB().loadDB(udb);
+			udb = new File(basedb,"p2p.db");
+			MinimaDB.getDB().getP2PDB().loadDB(udb);
 			
-			MinimaLogger.log("Added history TxPoW..");
-		}
-		
+			//Now load the relevant TxPoW
+			TxPoWList txplist = readNextTxPoWList(disciph);
+			
+			//And add these to the DB
+			TxPoWSqlDB txpsqldb = MinimaDB.getDB().getTxPoWDB().getSQLDB();
+			txpsqldb.wipeDB();
+			for(TxPoW txp : txplist.mTxPoWs) {
+				txpsqldb.addTxPoW(txp, true);
+			}
+			
+		//Allow saving state
+		MinimaDB.getDB().setAllowSaveState(true);
+				
 		//If it has not stopped - First stop everything.. and get ready to restore the files..
 		Main.getInstance().restoreReady(false);
 		
@@ -214,6 +221,9 @@ public class restoresync extends Command {
 			//And NOW shut down..
 			Main.getInstance().stopMessageProcessor();
 			
+			//Tell listener..
+			Main.getInstance().NotifyMainListenerOfShutDown();
+			
 			//And send data
 			JSONObject resp2 = new JSONObject();
 			resp2.put("file", restorefile.getAbsolutePath());
@@ -256,10 +266,6 @@ public class restoresync extends Command {
 		
 		//And NOW shut down..
 		Main.getInstance().stopMessageProcessor();
-		
-		//Get the Minima Listener..
-		MessageListener minimalistener = Main.getInstance().getMinimaListener();
-		archive.NotifyListener(minimalistener,"SHUTDOWN");
 		
 		//Tell listener..
 		Main.getInstance().NotifyMainListenerOfShutDown();

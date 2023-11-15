@@ -16,6 +16,7 @@ import org.minima.system.Main;
 import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.backup;
 import org.minima.system.commands.backup.mysql;
+import org.minima.system.commands.backup.mysqlcoins;
 import org.minima.system.commands.backup.reset;
 import org.minima.system.commands.backup.restore;
 import org.minima.system.commands.backup.restoresync;
@@ -28,6 +29,7 @@ import org.minima.system.commands.base.checkaddress;
 import org.minima.system.commands.base.coincheck;
 import org.minima.system.commands.base.coinexport;
 import org.minima.system.commands.base.coinimport;
+import org.minima.system.commands.base.coinnotify;
 import org.minima.system.commands.base.cointrack;
 import org.minima.system.commands.base.consolidate;
 import org.minima.system.commands.base.convert;
@@ -69,7 +71,6 @@ import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.disconnect;
 import org.minima.system.commands.network.message;
 import org.minima.system.commands.network.network;
-import org.minima.system.commands.network.nodecount;
 import org.minima.system.commands.network.p2pstate;
 import org.minima.system.commands.network.peers;
 import org.minima.system.commands.network.ping;
@@ -133,10 +134,10 @@ public abstract class Command {
 			new multisig(), new checkaddress(),
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
 			
-			new ping(), new random(), new mysql(), new slavenode(), new checkrestore(),
+			new ping(), new random(), new mysql(), new mysqlcoins(), new slavenode(), new checkrestore(),
 			//new file(),
 			
-			new vault(), new consolidate(),
+			new vault(), new consolidate(), new coinnotify(),
 			new backup(), new restore(), new test(), 
 			new runscript(), new tutorial(),new keys(),
 			new scripts(), new newscript(), new removescript(),
@@ -333,7 +334,8 @@ public abstract class Command {
 		//If it's an 0x address check converts to MiniData correctly
 		if(address.startsWith("0x")) {
 			try {
-				MiniData data = new MiniData(address);
+				MiniData data 	= new MiniData(address);
+				address 		= data.to0xString();
 			}catch(Exception exc) {
 				throw new CommandException(exc.toString());
 			}
@@ -478,7 +480,7 @@ public abstract class Command {
 				
 				result = cmd.getJSONReply();
 				result.put("status", false);
-				result.put("error", exc.getMessage());
+				result.put("error", exc.toString());
 			}
 			
 			//Add it..

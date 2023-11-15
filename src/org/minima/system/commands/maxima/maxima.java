@@ -132,17 +132,19 @@ public class maxima extends Command {
 			
 			//Remove naughty chars
 			name = name.replace("\"", "");
-			name = name.replace("'", "");
+//			name = name.replace("'", "");
 			name = name.replace(";", "");
 						
 			//Remove emojis..
-			String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
-			String emotionless = name.replaceAll(characterFilter,"");
+//			String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
+//			String emotionless = name.replaceAll(characterFilter,"");
+//			MinimaDB.getDB().getUserDB().setMaximaName(emotionless);
+			//MinimaLogger.log("Set Maxima Name : "+name);
 			
-			MinimaDB.getDB().getUserDB().setMaximaName(emotionless);
+			MinimaDB.getDB().getUserDB().setMaximaName(name);
 			MinimaDB.getDB().saveUserDB();
 			
-			details.put("name", emotionless);
+			details.put("name", name);
 			
 			ret.put("response", details);
 			

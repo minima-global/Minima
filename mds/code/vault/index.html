@@ -1,0 +1,142 @@
+<html>
+
+<head>
+	<title>Vault</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta charset="utf-8" />
+		
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="vaulttrans.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="jslib.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+
+	<br>
+
+	<h2>Vault</h2>
+	
+	<table id="vaults" class="maintable"></table>
+	
+	<br>
+	
+	<button class="solobutton" onclick="jumpToCreate();">Create Vault</button>
+	
+	<!--
+	<table>
+		<tr>
+			<td><button class="solobutton" onclick="jumpToHome();">Refresh</button>&nbsp;&nbsp;</td>
+			<td>&nbsp;&nbsp;<button class="solobutton" onclick="jumpToCreate();">Create Vault</button></td>
+		</tr>
+	</table>
+	-->
+	
+</center>
+
+<script type="text/javascript">
+	
+	function jumpToHome(){
+		location.href = "index.html?uid="+MDS.minidappuid;
+	}
+	
+	function jumpToCreate(){
+		location.href = "createvault.html?uid="+MDS.minidappuid;
+	}
+	
+	function jumpToUnlock(coinid){
+		location.href = "unlockvault.html?uid="+MDS.minidappuid+"&vaultid="+coinid;
+	}
+	
+	function loadVaultCoins(){
+		MDS.cmd("coins address:"+VAULT_ADDRESS+" relevant:true simplestate:true",function(resp){
+			//MDS.log(JSON.stringify(resp));
+			
+			//get the table
+			var thetable 		= document.getElementById("vaults");
+			
+			//Blank it..
+			thetable.innerHTML 	= "";
+			
+			// Create an empty <thead> element and add it to the table:
+			var header 		= thetable.createTHead();
+			var headerrow 	= header.insertRow(0);
+			headerrow.insertCell(0).innerHTML="<b>Amount</b>";
+			headerrow.insertCell(1).innerHTML="&nbsp;&nbsp;<b>Token</b>";
+			headerrow.insertCell(2).innerHTML="&nbsp;&nbsp;<b>Message</b>";
+			headerrow.insertCell(3).innerHTML="&nbsp;&nbsp;<b>Collect</b>";
+			
+			var length = resp.response.length;
+			
+			if(length == 0){
+				var tablerow 		= thetable.insertRow(1);
+				tablerow.setAttribute("align", "center");
+				var cell1 	 		= tablerow.insertCell(0);
+				cell1.colSpan		= 4;
+				cell1.innerHTML		= "<br>No Vaults found<br><br>";
+				return;
+			}
+			
+			for(var i=0;i<length;i++){
+			
+				var coin = resp.response[i];
+				
+				var tablerow 		= thetable.insertRow(i+1);
+				var cell1 	 		= tablerow.insertCell(0);
+				var cell2 	 		= tablerow.insertCell(1);
+				var cell3 	 		= tablerow.insertCell(2);
+				var cell4 	 		= tablerow.insertCell(3);
+				
+				var len = coin.state[2].length;
+				var msg = coin.state[2].substring(1,len-1).trim();
+				if(msg==""){
+					msg = "No message..";
+				}
+				
+				if(coin.tokenid == "0x00"){
+					cell1.innerHTML		= "<br><div class='coinamount'>"+coin.amount+"</div>";	
+					cell2.innerHTML		= "<br>Minima";
+				}else{
+					cell1.innerHTML		= "<br><div class='coinamount'>"+coin.tokenamount+"</div>";
+					cell2.innerHTML		= "<br>&nbsp;&nbsp;"+coin.token.name.name+"&nbsp;&nbsp;";
+				}
+				
+				cell3.innerHTML		= "<br><div style='max-width:200;'>"+msg+"</div>";
+				cell4.innerHTML		= "<br>&nbsp;&nbsp;<button class='solobutton' onclick='jumpToUnlock(\""+coin.coinid+"\");'>UNLOCK</button>"
+			}
+		});	
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//Init the vault script		
+			MDS.cmd("newscript trackall:false script:\""+VAULT_SCRIPT+"\"",function(resp){
+				//And now load the vault..
+				loadVaultCoins();
+			});
+			
+		}else if(msg.event == "NEWBALANCE"){
+			loadVaultCoins();
+		}
+	});
+
+</script>
+
+</body>
+
+</html>

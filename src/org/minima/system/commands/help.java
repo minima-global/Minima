@@ -5,6 +5,8 @@ import java.util.Arrays;
 
 import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.backup;
+import org.minima.system.commands.backup.mysql;
+import org.minima.system.commands.backup.mysqlcoins;
 import org.minima.system.commands.backup.reset;
 import org.minima.system.commands.backup.restore;
 import org.minima.system.commands.backup.restoresync;
@@ -15,6 +17,7 @@ import org.minima.system.commands.base.burn;
 import org.minima.system.commands.base.checkaddress;
 import org.minima.system.commands.base.coinexport;
 import org.minima.system.commands.base.coinimport;
+import org.minima.system.commands.base.coinnotify;
 import org.minima.system.commands.base.cointrack;
 import org.minima.system.commands.base.consolidate;
 import org.minima.system.commands.base.convert;
@@ -170,6 +173,7 @@ public class help extends Command {
 			addCommand(details, new coinimport());
 			addCommand(details, new coinexport());
 			addCommand(details, new cointrack());
+			addCommand(details, new coinnotify());
 			
 			addCommand(details, new sign());
 			addCommand(details, new verify());
@@ -216,8 +220,9 @@ public class help extends Command {
 			addCommand(details, new archive());
 			addCommand(details, new vault());
 			
-			addCommand(details, new incentivecash());
-	
+			addCommand(details, new mysql());
+			addCommand(details, new mysqlcoins());
+			
 			//addCommand(details, new nodecount());
 			addCommand(details, new quit());
 		}

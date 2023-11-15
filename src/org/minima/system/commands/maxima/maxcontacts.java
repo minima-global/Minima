@@ -2,6 +2,7 @@ package org.minima.system.commands.maxima;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.StringTokenizer;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.maxima.MaximaContact;
@@ -41,6 +42,8 @@ public class maxcontacts extends Command {
 				+ "    add : Add a new contact. Use with the 'contact' parameter.\n"
 				+ "    remove : Remove a Maxima contact. Will also remove you from their contacts. Use with the 'id' parameter.\n"
 				+ "    search : Search for a contact. Use with the 'id' or 'publickey' parameter.\n"
+				+ "    export : Export a list of your contacts. Max addresses change constantly so you MUST import it quickly to your new node.\n"
+				+ "    import : Import a list of your contacts.\n"
 				+ "\n"
 				+ "contact: (optional)\n"
 				+ "    The Maxima contact address of another node. Can be found using the 'maxima' command.\n"
@@ -61,12 +64,16 @@ public class maxcontacts extends Command {
 				+ "\n"
 				+ "maxcontacts action:remove id:1\n"
 				+ "\n"
+				+ "maxcontacts action:export\n"
+				+ "\n"
+				+ "maxcontacts action:import contactlist:MxG1FE..,MxG1768..,etc\n"
+				+ "\n"
 				+ "maxcontacts action:search publickey:0x3081..\n";
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","contact","id","publickey","enable"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","contact","id","publickey","enable","contactlist"}));
 	}
 	
 	@Override
@@ -278,6 +285,42 @@ public class maxcontacts extends Command {
 			}
 			
 			details.put("contact", chosen.toJSON());
+			
+		}else if(func.equals("export")) {
+			
+			//Export all the contacts..
+			String outputlist ="";
+			ArrayList<MaximaContact> contacts = maxdb.getAllContacts();
+			for(MaximaContact contact : contacts) {
+				String address = contact.getCurrentAddress();
+				outputlist+=address+",";
+			}
+			
+			//remove trailing ,
+			if(outputlist.endsWith(",")) {
+				outputlist = outputlist.substring(0,outputlist.length()-1);
+			}
+			
+			details.put("contacts", contacts.size());
+			details.put("contactlist", outputlist);
+			details.put("message", "Maxima addresses change constantly - so import it immediately..");
+			
+		}else if(func.equals("import")) {
+			
+			String contactlist = getParam("contactlist");
+			StringTokenizer strtok = new StringTokenizer(contactlist,",");
+			JSONArray resarray = new JSONArray();
+			while(strtok.hasMoreTokens()) {
+				String contact = strtok.nextToken();
+				String command = "maxcontacts action:add contact:"+contact;
+				
+				JSONArray res 		= Command.runMultiCommand(command);
+				JSONObject result 	= (JSONObject) res.get(0);
+				resarray.add(result);
+			}
+			
+			details.put("size", resarray.size());
+			details.put("contacts", resarray);
 			
 		}else {
 			throw new CommandException("Unknown action : "+func);

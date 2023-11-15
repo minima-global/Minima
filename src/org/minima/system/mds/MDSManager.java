@@ -118,8 +118,8 @@ public class MDSManager extends MessageProcessor {
 	/**
 	 * Has MDS inited
 	 */
-	boolean mHasStarted = false;
-	
+	boolean mHasStarted 	= false;
+	boolean mIsShuttingDown = false;
 	/**
 	 * Main Constructor
 	 */
@@ -146,6 +146,10 @@ public class MDSManager extends MessageProcessor {
 		return mHasStarted;
 	}
 	
+	public boolean isShuttingDown() {
+		return mIsShuttingDown;
+	}
+	
 	public void shutdown() {
 		//Is it even enabled
 		if(!GeneralParams.MDS_ENABLED) {
@@ -153,7 +157,11 @@ public class MDSManager extends MessageProcessor {
 			return;
 		}
 		
+		//Notify SQL calls not to happen
+		mIsShuttingDown = true;
+		
 		//Send a SHUTDOWN message to all the MiniDAPPs..
+		mPollStack.onlyShutDown();
 		Main.getInstance().PostNotifyEvent("MDS_SHUTDOWN", new JSONObject());
 		
 		//Wait 2 seconds for it to be processed..
@@ -164,6 +172,9 @@ public class MDSManager extends MessageProcessor {
 		
 		//Waiting for shutdown..
 		waitToShutDown();
+		
+		//No longer started
+		mHasStarted = false;
 	}
 	
 	public File getRootMDSFolder() {
@@ -373,6 +384,15 @@ public class MDSManager extends MessageProcessor {
 	}
 	
 	public JSONObject runSQL(String zUID, String zSQL) {
+		
+		//Are we shutting down..
+		if(isShuttingDown()) {
+			JSONObject err = new JSONObject();
+			err.put("sql", zSQL);
+			err.put("status", false);
+			err.put("err", "MDS Shutting down..");
+			return err;
+		}
 		
 		//The MiniDAPPID
 		String minidappid = zUID;
@@ -866,7 +886,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("pending", "default/pending-1.1.1.mds.zip", allminis, true);
 			
 			//Security MiniDAPP - backups / restore
-			checkInstalled("security", "default/security-0.26.6.mds.zip", allminis, true);
+			checkInstalled("security", "default/security-0.28.0.mds.zip", allminis, true);
 			
 			//Dappstore gets write permissions
 			checkInstalled("dapp store", "default/dapp_store-1.0.8.mds.zip", allminis, true);
@@ -887,7 +907,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("sql bench", "default/sqlbench-0.5.mds.zip", allminis, false);
 			checkInstalled("terminal", "default/terminal-2.3.1.mds.zip", allminis, false);
 			checkInstalled("vestr", "default/vestr-1.7.2.mds.zip", allminis, false);
-			checkInstalled("wallet", "default/wallet-2.33.2.mds.zip", allminis, false);
+			checkInstalled("wallet", "default/wallet-2.34.13.mds.zip", allminis, false);
 		}
 	}
 	

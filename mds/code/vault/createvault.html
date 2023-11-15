@@ -1,0 +1,213 @@
+<html>
+
+<head>
+	<title>Vault</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta charset="utf-8" />
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="vaulttrans.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="decimal.min.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+
+	<br>
+
+	<h2>Create Vault</h2>
+	
+	<table class="maintable">
+		<tr>
+			<td class="tablename">Amount : </td>
+			<td><input type=text name=amount id="lock_amount" class="coinamount" /></td>
+		</tr>
+	
+		<tr>
+			<td class="tablename">Token : </td>
+			<td><select id="vault_token" name="token" class="coinamount"></select></td>
+		</tr>
+		
+		<tr>
+			<td class="tablename" nowrap>Lock Phrase : </td>
+			<td><textarea id="lock_phrase" rows=6 cols=40></textarea></td>
+		</tr>
+		
+		<tr>
+			<td class="tablename">Message : </td>
+			<td><textarea id="vault_message" rows=4 cols=40 placeholder="This message is public and optional.. but you can use for your own reference"></textarea></td>
+		</tr>
+		
+		<tr>
+			<td colspan=2 style="text-align:right"><br><button onclick="createVault();" class="solobutton">CREATE VAULT</button></td>
+		</tr>
+	
+	</table> 
+	<br><br>
+	<div style="text-align:left;width:450;">
+	We recommend using <b>the same lock phrase</b> for all your vaults.<br>
+	<br>
+	If you don't have a Lock Phrase yet.. you can use this one.<br>
+	<br>
+	Write it down somewhere safe.<br>
+	<br>
+	You will need it to unlock your coins.<br>
+	<br>
+	</div>
+	
+	<table class="maintable">
+		<tr>
+			<td>
+				<textarea rows=6 cols=40 id="gen_lock_phrase" readonly></textarea>
+			</td>
+		</tr>
+	</table>
+	
+	
+	<br>
+	<button class="solobutton" onclick="jumpToHome();">Back Home</button>
+	<br><br>
+	
+</center>
+
+<script type="text/javascript">
+	
+	function jumpToHome(){
+		location.href = "index.html?uid="+MDS.minidappuid;
+	}
+	
+	function createVault(callback){
+		
+		//Check amount exists..
+		if(document.getElementById("lock_amount").value.trim() == ""){
+			alert("Cannot have a blank amount!");
+			return;
+		}	
+		
+		//What is the amount..
+		var amount;
+		try {
+			amount = new Decimal(document.getElementById("lock_amount").value.trim());
+		} catch (e) {
+			alert("Invalid amount - MUST be a number");
+			return;
+		}
+		
+		//Get the Phrase..
+		var phrase = document.getElementById("lock_phrase").value.trim();
+		if(phrase == ""){
+			alert("Cannot have a blank phrase!");
+			return;
+		}
+		
+		//Get the token
+		var selector 	= document.getElementById("vault_token");
+		var tokenname  	= selector.options[selector.selectedIndex].text;
+		var tokenid  	= selector.options[selector.selectedIndex].value;
+		
+		if(confirm("We will now send "+amount+" "+tokenname+" to the vault..")){
+			
+			//Convert phrase into a key
+			var func = "keys action:genkey phrase:\""+phrase+"\";keys";
+			
+			//First lets convert the phrase into a KEY
+			MDS.cmd(func,function(resp){
+				
+				//NEW phrase key..
+				var phrasekey = resp[0].response.publickey;
+				
+				//Get you normal key.. so we can find this coin on a resync
+				var key = resp[1].response.keys[0].publickey;
+				
+				var statevars = {};
+				
+				//The NEW public key based on the phrase
+				statevars[0]  = phrasekey;
+					
+				//Your NORMAL public key = so a chain resync finds your coins
+				statevars[1]  = key;
+				
+				//The message..
+				statevars[2]  = "["+document.getElementById("vault_message").value+"]";
+				
+				//Now lets send the coins to the vault address
+				var func = "send tokenid:"+tokenid
+						+" amount:"+amount
+						+" address:"+VAULT_ADDRESS
+						+" state:"+JSON.stringify(statevars);
+				
+				MDS.cmd(func,function(resp){
+					//Is it pending..
+					if(resp.pending){
+						alert("This txn is now pending..");
+						jumpToHome();
+					}else if(!resp.status){
+						alert("Txn Failed..\n\n"+resp.message);
+					}else{
+						alert("Vault created..!\n\nPlease wait for the txn to confirm..");
+						jumpToHome();
+					}
+				});
+			});
+		}
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//Do stuff.. from now..		
+			MDS.cmd("keys action:genkey;balance",function(resp){
+				
+				//Set the phrase
+				var phrase = resp[0].response.phrase;
+				document.getElementById("gen_lock_phrase").value = phrase;
+				
+				//Set the tokenid..
+				var balance  = resp[1];
+				var len 	 = balance.response.length;
+				var selector = document.getElementById("vault_token");
+				
+				for(var i=0;i<len;i++){
+					
+					//Get the token
+					var token = balance.response[i];
+					
+					//Create the Option
+					var option 		= document.createElement("option");
+				    option.value 	= token.tokenid;
+				    
+					if(token.tokenid == "0x00"){
+						//It's Minima
+					    //option.text  = "Minima ( "+token.confirmed+" )";
+					    option.text  = "Minima";
+					    selector.appendChild(option);
+					}else{
+						//option.text  = token.token.name+" ( "+token.confirmed+" )";
+						option.text  = token.token.name;
+					    selector.appendChild(option);
+					}
+				}
+			});
+		}
+	});
+
+</script>
+
+</body>
+
+</html>
