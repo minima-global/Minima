@@ -29,21 +29,22 @@
 <center>
 
 	<div class="titlebar" onclick="showTitleOnAndroid();">
-		<table>
+		<table width=100% border=0>
 			<tr>
 				<td><img height=45 src="shoutout.png"></td>
-				<td style="font-size:26px">&nbsp;<b>Shout Out</b></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>Shout Out</b></td>
+				<td class='topicdate' nowrap>
+					<img style="cursor:pointer;" onclick="jumpSettings();" height=30 src="settings.png">&nbsp;&nbsp;
+					<img style="cursor:pointer;" onclick="jumpHome();" height=30 src="home.png">&nbsp;&nbsp;
+				</td>
 			</tr>
 		</table>
 	</div>
 	<br>
 	
-	<div class="topicheader" id="topictitle">
-		TOPIC TITLE
-	</div>
+	<div class="topicheader" id="topictitle"></div>
 	<br>
-	<div class="topicwindow" id="messagelist">
-	</div>
+	<div class="topicwindow" id="messagelist">Loading..</div>
 	<br>
 	<div class="mainview">
 		<textarea id="replytext" class="topicinput" rows=5></textarea><br>
@@ -73,6 +74,14 @@
 	var TOPIC_TITLE 		= "";
 	var CATEGORY_TITLE_ID 	= "";
 
+	function jumpSettings(){
+		location.href="settings.html?uid="+MDS.minidappuid;
+	}
+	
+	function jumpHome(){
+		location.href="index.html?uid="+MDS.minidappuid;
+	}
+	
 	function showTitleOnAndroid(){
 		if (window.navigator.userAgent.includes('Minima Browser')) {
 			Android.showTitleBar();

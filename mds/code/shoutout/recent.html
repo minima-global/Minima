@@ -31,10 +31,14 @@
 <center>
 	
 	<div class="titlebar" onclick="showTitleOnAndroid();">
-		<table>
+		<table width=100% border=0>
 			<tr>
 				<td><img height=45 src="shoutout.png"></td>
-				<td style="font-size:26px">&nbsp;<b>Shout Out</b></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>Shout Out</b></td>
+				<td class='topicdate' nowrap>
+					<img style="cursor:pointer;" onclick="jumpSettings();" height=30 src="settings.png">&nbsp;&nbsp;
+					<img style="cursor:pointer;" onclick="jumpHome();" height=30 src="home.png">&nbsp;&nbsp;
+				</td>
 			</tr>
 		</table>
 	</div>
@@ -57,6 +61,14 @@
 	var MSG_OFFSET = MDS.form.getParams("offset");
 	if(!MSG_OFFSET){
 		MSG_OFFSET = 0;
+	}
+
+	function jumpSettings(){
+		location.href="settings.html?uid="+MDS.minidappuid;
+	}
+	
+	function jumpHome(){
+		location.href="index.html?uid="+MDS.minidappuid;
 	}
 	
 	function showTitleOnAndroid(){

@@ -31,26 +31,20 @@
 <center>
 	
 	<div class="titlebar" onclick="showTitleOnAndroid();">
-		<table>
+		<table width=100% border=0>
 			<tr>
 				<td><img height=45 src="shoutout.png"></td>
-				<td style="font-size:26px">&nbsp;<b>Shout Out</b></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>Shout Out</b></td>
+				<td class='topicdate' nowrap>
+					<img style="cursor:pointer;" onclick="jumpSettings();" height=30 src="settings.png">&nbsp;&nbsp;
+					<img style="cursor:pointer;" onclick="jumpHome();" height=30 src="home.png">&nbsp;&nbsp;
+				</td>
 			</tr>
 		</table>
 	</div>
 	<br>
 	
-	<div class="allcatsview" id="usertitle">
-		<table>
-			<tr>
-				<td>User : </td> <td></td>
-			</tr>
-			<tr>
-				<td>Publick key : </td> <td></td>
-			</tr>
-		
-		</table>
-	</div>
+	<div class="allcatsview" id="usertitle"></div>
 	<br>
 	<div class="allcatsview" id="usersblocked">Users you have blocked</div>
 	<br>
@@ -64,14 +58,29 @@
 	var USER_NAME 	= "";
 	var USER_PUBKEY = "";
 	
-	function setDetails(){
-		
-		var dets = "<table><tr><td>User : </td></tr></table>"
-		
+	function jumpSettings(){
+		location.href="settings.html?uid="+MDS.minidappuid;
 	}
 	
-	function fillFilters(){
+	function jumpHome(){
+		location.href="index.html?uid="+MDS.minidappuid;
+	}
+	
+	function setDetails(){
+		usertitle.innerHTML = "User : <b>"+USER_NAME+"</b>";
+	}
+	
+	function fillBlockedUsers(){
 		
+		selectBlockedUsers(function(users){
+			var len = users.length;
+			var text = "Blocked Users : <br><br>";
+			for(var i=0;i<len;i++){
+				var user = users[i];
+				text +=decodeStringFromDB(user.USERNAME)+"<br>"; 
+			}
+			usersblocked.innerHTML = text;
+		});
 	}
 	
 	//Main message handler..
@@ -86,8 +95,9 @@
 				USER_NAME 	 = startup.response.name;
 				USER_PUBKEY  = startup.response.publickey;
 				
+				setDetails();
+				fillBlockedUsers();
 			});
-			
 		}
 	});
 

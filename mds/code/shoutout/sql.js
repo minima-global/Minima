@@ -51,12 +51,12 @@ function createDB(callback){
 			//And now the filter table - for things you don't want to see..
 			var filtersql = "CREATE TABLE IF NOT EXISTS `filter` ( "
 						+"  `id` bigint auto_increment, "
-						+"  `type` varchar(1024), "
+						+"  `type` varchar(1024) NOT NULL, "
 						+"  `category` varchar(1024), "
 						+"  `categorytitleid` varchar(128), "
 						+"  `categorytitlename` varchar(1024), "
 						+"  `username` varchar(128), "
-						+"  `pubkey` varchar(1024), "
+						+"  `userpubkey` varchar(1024) "
 						+" )";
 			
 			MDS.sql(filtersql,function(msg){
@@ -133,6 +133,46 @@ function insertMessage(category, title, user, pubkey, address, message, randomid
 				callback(true);
 			}
 		});		
+	});
+}
+
+function isUserBlocked(userpubkey, callback){
+	var sql = "SELECT * FROM filter WHERE type='userblocked' AND userpubkey='"+userpubkey+"'";
+	MDS.sql(sql,function(sqlresp){
+		if(sqlresp.count>0){
+			callback(true);
+		}else{
+			callback(false);
+		}
+	});
+}
+
+function addBlockUsers(username, userpubkey, callback){
+	
+	//And now delete all messages by that user..
+	var deluser = "DELETE FROM shoutout WHERE userpubkey='"+userpubkey+"'";
+	MDS.sql(deluser,function(del){
+		isUserBlocked(userpubkey, function(allreadyblocked){
+			if(!allreadyblocked){
+				//Add user to blocked list
+				var blockins = "INSERT INTO filter(type,username,userpubkey) VALUES ('userblocked','"+username+"','"+userpubkey+"')";
+				MDS.sql(blockins,function(res){
+					callback();	
+				});		
+			}else{
+				MDS.log("Allready blocked..");
+			}
+		});
+	});
+}
+
+function selectBlockedUsers(callback){
+	//Create the DB if not exists
+	var sql = "SELECT type,username,userpubkey FROM filter WHERE type='userblocked' ORDER BY LOWER(username) ASC";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		callback(msg.rows);
 	});
 }
 

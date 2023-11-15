@@ -35,7 +35,10 @@
 			<tr>
 				<td><img height=45 src="shoutout.png"></td>
 				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>Shout Out</b></td>
-				<td class='topicdate'><img style="cursor:pointer;" onclick="jumpSettings();" height=30 src="settings.png">&nbsp;&nbsp;</td>
+				<td class='topicdate' nowrap>
+					<img style="cursor:pointer;" onclick="jumpSettings();" height=30 src="settings.png">&nbsp;&nbsp;
+					<img style="cursor:pointer;" onclick="jumpHome();" height=30 src="home.png">&nbsp;&nbsp;
+				</td>
 			</tr>
 		</table>
 	</div>
@@ -101,7 +104,9 @@
 			
 			<tr>
 				<td class="table_right">
-					<table id="alltopics_table" width=100%></table>
+					<table id="alltopics_table" width=100%>
+						<tr><td><br>Loading..</td></tr>
+					</table>
 				</td>
 			</tr>
 			
@@ -163,6 +168,10 @@
 	
 	function jumpSettings(){
 		location.href="settings.html?uid="+MDS.minidappuid;
+	}
+	
+	function jumpHome(){
+		location.href="index.html?uid="+MDS.minidappuid;
 	}
 	
 	function jumpCategory(){
