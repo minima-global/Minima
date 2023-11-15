@@ -225,7 +225,7 @@ public class TxPoWTreeNode implements Streamable {
 					
 					//Message..
 					JSONObject coinjson = newcoin.toJSON(true);
-					//MinimaLogger.log("NEW Unspent Coin : "+coinjson);
+					MinimaLogger.log("NEW Unspent Coin : "+coinjson);
 					
 					//Send a message
 					JSONObject data = new JSONObject();
@@ -247,7 +247,7 @@ public class TxPoWTreeNode implements Streamable {
 					
 					//Message..
 					JSONObject coinjson = newcoin.toJSON(true);
-					MinimaLogger.log("NOTIFY Unspent Coin : "+coinjson);
+					//MinimaLogger.log("NOTIFY Unspent Coin : "+coinjson);
 					
 					//Send a message
 					JSONObject data = new JSONObject();
