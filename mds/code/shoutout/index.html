@@ -93,7 +93,7 @@
 						<tr>
 							<td style="width:100%"><input placeholder="Topic Title" type="text" id="newtopictitle" class="newtopicstyle"></td>
 							<td nowrap>&nbsp;&nbsp;
-								<button class="solobutton" onclick="blockTopic();">BLOCK</button>&nbsp;&nbsp;
+								<button class="solobutton" onclick="blockCategory();">BLOCK</button>&nbsp;&nbsp;
 								<button id="newtopicbutton" class="solobutton" onclick="newtopic();">NEW TOPIC</button>
 								</td>
 						</tr>
@@ -177,7 +177,7 @@
 		location.href="index.html?uid="+MDS.minidappuid;
 	}
 	
-	function blockTopic(){
+	function blockCategory(){
 		if(confirm("This will delete this Category and ALL sub-categories and all future messages.\n\nYou can undo this in Settings.")){
 			addBlockCategory(CURRENT_CATEGORY,function(){
 				jumpUpCategory();
