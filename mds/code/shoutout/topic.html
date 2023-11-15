@@ -93,7 +93,7 @@
 	
 	function blockTopic(){
 		if(confirm("This will delete all of this chat and block any further messages.\n\nYou can undo this in settings.")){
-			addBlockTopic(TOPIC_TITLE,CATEGORY_TITLE_ID,function(){
+			addBlockTopic(TOPIC_CATEGORY,TOPIC_TITLE,CATEGORY_TITLE_ID,function(){
 				location.href="index.html?uid="+MDS.minidappuid+"&category="+TOPIC_CATEGORY;
 			});
 		}

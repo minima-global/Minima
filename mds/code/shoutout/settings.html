@@ -111,10 +111,11 @@
 			}
 			for(var i=0;i<len;i++){
 				var topic 	= topics[i];
+				var category= DOMPurify.sanitize(decodeStringFromDB(topic.CATEGORY));
 				var name 	= DOMPurify.sanitize(decodeStringFromDB(topic.CATEGORYTITLENAME));
 				var id 		= DOMPurify.sanitize(decodeStringFromDB(topic.CATEGORYTITLEID));
 				var unblock = "<button class='solobutton' onclick='unblockTopic(\""+id+"\");'>UNBLOCK</button>"; 
-				text += "<tr><td>"+name+"</td><td style='text-align:right;'>"+unblock+"</td></tr>"
+				text += "<tr><td>"+name+" @ "+category+"</td><td style='text-align:right;'>"+unblock+"</td></tr>"
 				text += "<tr><td colspan=2><hr></td></tr>"
 			}
 			
@@ -125,6 +126,34 @@
 	
 	function unblockTopic(catid){
 		removeBlockedTopic(catid,function(){
+			jumpSettings();
+		});
+	}
+	
+	function fillBlockedCategory(){
+		
+		selectBlockedCategories(function(categories){
+			catsblocked.innerHTML = "";
+			var len = categories.length;
+			var text = "<b>Blocked Categories</b> : <br><br><table width=100%>";
+			if(len==0){
+				text += "<tr><td colspan=2>None..</td></tr>"
+			}
+			for(var i=0;i<len;i++){
+				var category = categories[i];
+				var name 	 = DOMPurify.sanitize(decodeStringFromDB(category.CATEGORY));
+				var unblock  = "<button class='solobutton' onclick='unblockCategory(\""+name+"\");'>UNBLOCK</button>"; 
+				text += "<tr><td>"+name+"</td><td style='text-align:right;'>"+unblock+"</td></tr>"
+				text += "<tr><td colspan=2><hr></td></tr>"
+			}
+			
+			text +="<table>"
+			catsblocked.innerHTML = text;
+		});
+	}
+	
+	function unblockCategory(category){
+		removeBlockedCategory(category,function(){
 			jumpSettings();
 		});
 	}
@@ -144,6 +173,7 @@
 				setDetails();
 				fillBlockedUsers();
 				fillBlockedTopic();
+				fillBlockedCategory();
 			});
 		}
 	});

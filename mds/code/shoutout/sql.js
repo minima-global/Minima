@@ -402,7 +402,7 @@ function isTopicBlocked(categorytitleid, callback){
 	});
 }
 
-function addBlockTopic(title, categorytitleid, callback){
+function addBlockTopic(category, title, categorytitleid, callback){
 	
 	//And now delete all messages by that user..
 	var deluser = "DELETE FROM shoutout WHERE categorytitleid='"+categorytitleid+"'";
@@ -410,8 +410,8 @@ function addBlockTopic(title, categorytitleid, callback){
 		isTopicBlocked(categorytitleid, function(allreadyblocked){
 			if(!allreadyblocked){
 				//Add user to blocked list
-				var blockins = "INSERT INTO filter(type,categorytitleid,categorytitlename) "
-									+"VALUES ('topicblocked','"+categorytitleid+"','"+title+"')";
+				var blockins = "INSERT INTO filter(type,category,categorytitleid,categorytitlename) "
+									+"VALUES ('topicblocked','"+category+"','"+categorytitleid+"','"+title+"')";
 				MDS.sql(blockins,function(res){
 					callback();	
 				});		
@@ -425,7 +425,7 @@ function addBlockTopic(title, categorytitleid, callback){
 
 function selectBlockedTopics(callback){
 	//Create the DB if not exists
-	var sql = "SELECT type,categorytitleid,categorytitlename FROM filter WHERE type='topicblocked' ORDER BY LOWER(categorytitlename) ASC";
+	var sql = "SELECT type,category,categorytitleid,categorytitlename FROM filter WHERE type='topicblocked' ORDER BY LOWER(categorytitlename) ASC";
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
@@ -489,7 +489,7 @@ function selectBlockedCategories(callback){
 	});
 }
 
-function removeBlockedTopic(category,callback){
+function removeBlockedCategory(category,callback){
 	//Create the DB if not exists
 	var sql = "DELETE FROM filter WHERE type='categoryblocked' AND category='"+category+"'";
 				
@@ -500,7 +500,7 @@ function removeBlockedTopic(category,callback){
 }
 
 
-function checkMsgBlocked(userpubkey, categorytitleid, callback){
+function checkMsgBlocked(userpubkey, categorytitleid, category, callback){
 	
 	//Create the DB if not exists
 	var sql = "SELECT * FROM filter";
@@ -521,6 +521,11 @@ function checkMsgBlocked(userpubkey, categorytitleid, callback){
 				}
 			}else if(filter.TYPE == "topicblocked"){
 				if(filter.CATEGORYTITLEID == categorytitleid){
+					blocked = true;
+					break;
+				}
+			}else if(filter.TYPE == "categoryblocked"){
+				if(category.startsWith(filter.CATEGORY)){
 					blocked = true;
 					break;
 				}

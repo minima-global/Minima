@@ -84,7 +84,7 @@ MDS.init(function(msg){
 			var cattitid = getCategoryTitleID(msg_category,msg_title);
 			
 			//Check if message is blocked..
-			checkMsgBlocked(msg_pubkey,cattitid,function(blocked){
+			checkMsgBlocked(msg_pubkey,cattitid,msg_category,function(blocked){
 				
 				//Is it blocked..
 				if(!blocked){
