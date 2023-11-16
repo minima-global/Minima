@@ -68,7 +68,7 @@
 	}
 	
 	function setDetails(){
-		usertitle.innerHTML = "User : <b>"+USER_NAME+"</b>";
+		usertitle.innerHTML = DOMPurify.sanitize("User : <b>"+USER_NAME+"</b>");
 	}
 	
 	function fillBlockedUsers(){

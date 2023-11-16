@@ -116,8 +116,68 @@
 		</table>
 		
 	</div>
+		
+	<div id=nextback>
+	<br>
+		<button onclick="history.back();" class="solobutton">&nbsp;&nbsp;Back&nbsp;&nbsp;</button>
+		&nbsp;&nbsp;&nbsp;
+		<button onclick="nextBatch();" class="solobutton">&nbsp;&nbsp;NEXT&nbsp;&nbsp;</button>
+	<br><br>
+	</div>
 	
-	<div id="emptycat" class="mainview"></div>
+	<div id="emptycat" class="mainview">
+		
+		<h2>Welcome to Shout Out!</h2>
+		<br>
+		
+		<div style='text-align:left'>
+			Shout Out is a censorship-resistant blockchain based forum.<br>
+			<br>
+			Create your own Category or choose a sub-category to start.<br>
+			<br>
+			Categories MUST be of the form <b>word</b>.<b>word</b>.<b>word</b>.. (numbers letters lowercase no-spaces)<br>
+			<br>
+			Messages are <b>NOT</b> free. They are sent over Layer 1 and currently cost 0.01 Minima.<br>
+			<br>
+			All Minima users can see these messages but they can also block Users / topics or entire categories..<br>
+			<br>
+			
+			<h3>Categories</h3>
+			
+			A set of default categories is created the first time you run Shout Out. 
+			You can use these and create sub-categories to discuss any topic.<br>
+			<br> 
+			See all categories by clicking the <a href='#' onclick='jumpViewAllCategory();'>VIEW ALL</a> button at the top.<br>
+			<br>
+			You can block any User, topic or category to give you the ability to filter what it is you see.<br>
+			<br>
+			You can create any category you want, but be sure to use the <i>expected</i> location for your new forum.
+			This way people will be able to find what you are trying to discuss.<br>
+			<br>
+			For instance - if you wish to talk about <b>Yourself</b> use the <i>personal</i> category and create a sub-category.<br>
+			<br>
+			If you wish to talk about the latest in Quantum Computer Research use the <i>technology</i> category and create a sub-category.<br>
+			<br>
+			There is no point trying to talk about Crypto signature schemes in the Food section..<br>
+			<br>
+			To create a sub-category simply type the path in the Category window at the top.. and press <b>GO</b> - then create your topic of discussion.<br>
+			<br>
+			Checkout the main <a href='#' onclick='jumpMinima();'>Minima</a> category<br>
+			<br>
+			
+			<h3>Interface</h3>
+			
+			Messages are signed and sent using your Maxima user details.<br>
+			<br>
+			Split some Minima coins - if you want to fire off multiple messages with no delay..<br>
+			<br>
+			Running in WRITE mode allows you to send messages without using Pending transactions.<br>
+			<br>
+			Messages are added from the moment you install this dapp, but you can pre-populate the database by doing a chain-sync.. as this will add every message ever sent as it scans the chain.
+			  
+		</div>
+	
+	</div>
 	
 	<!--   кириллицакириллица -->
 	
@@ -142,10 +202,12 @@
 	var USER_ADDRESS 		= "Mx999";
 	var CURRENT_CATEGORY 	= "";
 	
-	//Not used for now..
-	var BACK_TOPICS 	 = false;
-	var NEXT_TOPICS 	 = false;
-	var CURRENT_MAXDATE  = 8640000000000000;
+	//Get the messages offset
+	var MSG_LIMIT = 20;
+	var MSG_OFFSET = MDS.form.getParams("offset");
+	if(!MSG_OFFSET){
+		MSG_OFFSET = 0;
+	}
 	
 	function showTitleOnAndroid(){
 		if (window.navigator.userAgent.includes('Minima Browser')) {
@@ -153,16 +215,9 @@
     	}
 	}
 	
-	function backTopics(){
-		if(BACK_TOPICS){
-			history.back();
-		}	
-	}
-	
-	function nextTopics(){
-		if(NEXT_TOPICS){
-			location.href="index.html?uid="+MDS.minidappuid+"&category="+CURRENT_CATEGORY+"&maxdate="+CURRENT_MAXDATE;	
-		}
+	function nextBatch(){
+		var offset = +MSG_OFFSET+MSG_LIMIT;
+		location.href="index.html?uid="+MDS.minidappuid+"&category="+CURRENT_CATEGORY+"&offset="+offset;
 	}
 	
 	function jumpRecent(){
@@ -175,6 +230,10 @@
 	
 	function jumpHome(){
 		location.href="index.html?uid="+MDS.minidappuid;
+	}
+	
+	function jumpMinima(){
+		location.href="index.html?uid="+MDS.minidappuid+"&category=minima";
 	}
 	
 	function blockCategory(){
@@ -334,7 +393,6 @@
 		}
 	}
 	
-	var ffMAX;
 	function setTopics(){
 		var cat = MDS.form.getParams("category");
 		if(!cat){
@@ -344,28 +402,10 @@
 		//Clear the table
 		alltopics_table.innerHTML = "";
 		
-		var maxDate = MDS.form.getParams("maxdate");
-		if(!maxDate){
-			//MDS.log("NO MAX DATE - Choose latest")
-			maxDate = 8640000000000000;
-			BACK_TOPICS = false;
-		}else{
-			//MDS.log("MAX DATE FOUND - "+maxDate)
-			BACK_TOPICS = true;
-		}
-		
-		ffMAX = maxDate;
-		
 		//Get all the topics..
-		var maxnum=50;
-		selectTopics(maxnum, maxDate, cat,function(topics){
-			var len  = topics.length;
-			if(len>=maxnum){
-				NEXT_TOPICS=true;
-			}else{
-				NEXT_TOPICS=false;
-			}
+		selectTopics(MSG_LIMIT, MSG_OFFSET, cat,function(topics){
 			
+			var len  = topics.length;
 			var list = "";
 			for(var i=0;i<len;i++){
 				
@@ -383,7 +423,6 @@
 		
 		selectTopMessage(catid, function(rows){
 			var msg 	 = rows[0];
-			//MDS.log(JSON.stringify(msg));
 			
 			var dec_title 	= decodeStringFromDB(msg.TITLE);
 			var dec_user 	= decodeStringFromDB(msg.USERNAME);
@@ -391,7 +430,6 @@
 			
 			var topicstr = "<br><table class='topiclist' border=0>";
 			topicstr    += "<tr><td><a class='topictitle' href='topic.html?uid="+MDS.minidappuid+"&topicid="+catid+"'>"+dec_title+"</a></td></tr>";
-			topicstr    += "<tr><td class='topicdate' nowrap>DELETE</td></tr>";
 			if(msg.MESSAGE.trim() == ""){
 				topicstr += "<tr><td>No comments yet..</td></tr>";
 			}else{
@@ -409,18 +447,6 @@
 			
 			//Make safe
 			cell.innerHTML = DOMPurify.sanitize(topicstr);
-			
-			//Remember this..
-			if(islast){
-				/*if(msg.CREATED<ffMAX){
-					MDS.log("LESS THAN");	
-				}else{
-					MDS.log("ERROR");
-				}*/
-				
-				CURRENT_MAXDATE = msg.CREATED;
-				//MDS.log("MAXDATE : "+CURRENT_MAXDATE);	
-			}
 		}); 
 	}
 	
@@ -450,21 +476,13 @@
 			
 				if(CURRENT_CATEGORY == ""){
 					topicstable.style.display 	= "none";
+					nextback.style.display 		= "none";
 					emptycat.style.display 		= "block";
-					
-					emptycat.innerHTML = 
-				"<h3>Welcome to Shout Out!</h3>"+
-				"<br>"+
-				"<div style='text-align:left'>"+
-				"Shout Out is a censorship-resistant blockchain based forum.<br><br>"+
-				"Create your own Category or choose a sub-category to start.<br><br>"+
-				"Categories MUST be of the form <b>word</b>.<b>word</b>.<b>word</b>. etc..<br><br>"+
-				"Messages are NOT free. They are sent over Layer 1 and currently cost 0.01 Minima.<br><br>"+
-				"All Minima users can see these messages.<br><br>"+
-				"</div>";
+	
 				}else{
-					emptycat.style.display = "none";
-					topicstable.style.display = "block";
+					topicstable.style.display   = "block";
+					nextback.style.display 		= "block";
+					emptycat.style.display 		= "none";
 					
 					//Disable button
 					newtopicbutton.disabled=true;
@@ -488,28 +506,22 @@
 			
 			//Is it the one that matters
 			if(msg.data.address ==  SHOUTOUT_ADDRESS){
-				//MDS.log("NEW SHOUTOUT : "+JSON.stringify(msg.data))
 				
-				//Check is Valid..
-				//..
-				
-				//Add to the DB..
 				var msg_category = stripBrackets(msg.data.coin.state[0]);
-				var msg_title 	 = stripBrackets(msg.data.coin.state[1]);
-				var msg_message  = stripBrackets(msg.data.coin.state[2]);
-				var msg_user 	 = stripBrackets(msg.data.coin.state[3]);
 				
 				//It's a message..
 				if(msg_category == CURRENT_CATEGORY){
-					//MDS.log("NEW MESSAGE in this category.. ")
 					
-					//Update page
-					setTopics();
-					
-				}else{
-					//MDS.log("NEW MESSAGE NOT in this category.. ")
-					//Show somewhere..
-					//..
+					//Are we writing a topic..
+					var topictitle = newtopictitle.value.trim();
+					var topictext  = newtopictext.value.trim();
+							
+					if(topictitle != "" || topictext!=""){
+						//Writing a message..
+					}else{
+						//Update page
+						setTopics();	
+					}
 				}
 			}
 		}

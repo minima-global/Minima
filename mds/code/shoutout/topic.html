@@ -159,15 +159,14 @@
 				
 				if(first){
 					first = false;
-					TOPIC_CATEGORY 	= messages[i].CATEGORY;
+					TOPIC_CATEGORY 	= decodeStringFromDB(messages[i].CATEGORY);
 					
 					var dec_title 	= decodeStringFromDB(messages[i].TITLE);
 					TOPIC_TITLE 	= dec_title;
 					
 					var catlink 	= "<a class='topictitle' href='index.html?uid="+MDS.minidappuid+"&category="+messages[i].CATEGORY+"'>"+messages[i].CATEGORY+"</a>"
 							
-					var safetitle 	= DOMPurify.sanitize(TOPIC_TITLE+" @ "+catlink);
-					topictitle.innerHTML = safetitle;
+					topictitle.innerHTML = DOMPurify.sanitize(TOPIC_TITLE+" @ "+catlink);
 				}
 				
 				if(messages[i].MESSAGE!=""){
@@ -234,10 +233,6 @@
 			
 			//Is it the one that matters
 			if(msg.data.address ==  SHOUTOUT_ADDRESS){
-				//MDS.log("NEW SHOUTOUT : "+JSON.stringify(msg.data))
-				
-				//Check is Valid..
-				//..
 				
 				//Add to the DB..
 				var msg_category = stripBrackets(msg.data.coin.state[0]);
@@ -247,12 +242,12 @@
 				
 				//It's a message..
 				if(msg_category == TOPIC_CATEGORY && msg_title == TOPIC_TITLE){
-					//Update page
-					setMessages();
 					
-				}else{
-					//Show somewhere..
-					//..
+					var reply = replytext.value.trim();
+					if(reply==""){
+						//Update page
+						setMessages();	
+					}
 				}
 			}
 		}

@@ -169,12 +169,12 @@ function selectRootCategories(callback){
 	});
 }
 
-function selectTopics(maxnum, maxdate, category, callback){
+function selectTopics(maxnum, offset, category, callback){
 	//Create the DB if not exists
 	var sql = "SELECT DISTINCT categorytitleid "
 			+"FROM shoutout "
 			+"WHERE category='"+category+"' "
-			+"ORDER BY created DESC LIMIT "+maxnum;
+			+"ORDER BY created DESC LIMIT "+maxnum+" OFFSET "+offset;
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
@@ -198,33 +198,6 @@ function selectUserMessages(userpubkey, limit, offset, callback){
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
-		callback(msg.rows);
-	});
-}
-
-function selectTopics(maxnum, maxdate, category, callback){
-	//Create the DB if not exists
-	var sql = "SELECT DISTINCT categorytitleid "
-			+"FROM shoutout "
-			+"WHERE category='"+category+"' "
-			+"ORDER BY created DESC LIMIT "+maxnum;
-				
-	//Run this..
-	MDS.sql(sql,function(msg){
-		callback(msg.rows);
-	});
-}
-
-function selectTopicsX(maxnum, maxdate, category, callback){
-	//Create the DB if not exists
-	var sql = "SELECT DISTINCT categorytitleid "
-			+"FROM shoutout "
-			+"WHERE category='"+category+"' "
-			+" ORDER BY created DESC LIMIT "+maxnum;
-	
-	//Run this..
-	MDS.sql(sql,function(msg){
-		MDS.log(JSON.stringify(msg));
 		callback(msg.rows);
 	});
 }

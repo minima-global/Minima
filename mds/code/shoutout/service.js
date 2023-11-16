@@ -41,12 +41,48 @@ MDS.init(function(msg){
 		//Init the DB		
 		createDB(function(){
 	
-			//Try to insert a message
-			insertMessage("minima", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
-			
 			//Notify of new messages..
 			MDS.cmd("coinnotify action:add address:"+SHOUTOUT_ADDRESS,function(startup){});
 	
+			//Insert some start up Groups
+			insertMessage("minima", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			insertMessage("minima.developer", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			
+			insertMessage("adult", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			
+			insertMessage("art", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			
+			insertMessage("business", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			
+			insertMessage("crypto", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			insertMessage("crypto.bitcoin", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			insertMessage("crypto.ethereum", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			
+			insertMessage("entertainment", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			insertMessage("entertainment.tv", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			insertMessage("entertainment.books", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			insertMessage("entertainment.films", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			insertMessage("entertainment.music", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			
+			insertMessage("food", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			insertMessage("food.recipies", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			insertMessage("food.restaurants", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			
+			insertMessage("games", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			
+			insertMessage("health", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			
+			insertMessage("personal", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			
+			insertMessage("politics", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			
+			insertMessage("sport", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			insertMessage("sport.football", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			insertMessage("sport.cricket", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			insertMessage("sport.rugby", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			
+			insertMessage("technology", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
+			
 			MDS.log("Service Inited")
 		});
 	

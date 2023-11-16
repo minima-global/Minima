@@ -24,6 +24,10 @@ function cleanCategory(incategory){
 	return newcat.toLowerCase();
 }
 
+function striptags(text){
+	return text.replace(/<\/?[^>]+(>|$)/g, "");
+}
+
 function checkCategory(category){
 	
 	//Check is clean
