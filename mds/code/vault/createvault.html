@@ -25,9 +25,18 @@
 
 <center>
 
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table width=100% border=0>
+			<tr>
+				<td><img height=45 src="vaulticon.jpg"></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>Vault</b></td>
+				<td class='topicdate' nowrap>
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpHome();" height=30 src="home.png">&nbsp;&nbsp;
+				</td>
+			</tr>
+		</table>
+	</div>
 	<br>
-
-	<h2>Create Vault</h2>
 	
 	<table class="maintable">
 		<tr>
@@ -42,49 +51,55 @@
 		
 		<tr>
 			<td class="tablename" nowrap>Lock Phrase : </td>
-			<td><textarea id="lock_phrase" rows=6 cols=40></textarea></td>
+			<td><textarea id="lock_phrase" class='vaulttext' rows=6></textarea></td>
 		</tr>
 		
 		<tr>
 			<td class="tablename">Message : </td>
-			<td><textarea id="vault_message" rows=4 cols=40 placeholder="This message is public and optional.. but you can use for your own reference"></textarea></td>
+			<td><textarea id="vault_message" class='vaulttext' rows=4 placeholder="This message is public and optional.. but you can use for your own reference"></textarea></td>
 		</tr>
 		
 		<tr>
-			<td colspan=2 style="text-align:right"><br><button onclick="createVault();" class="solobutton">CREATE VAULT</button></td>
+			<td colspan=2 style="text-align:right"><br><button id='createbutton' onclick="createVault();" class="solobutton">CREATE VAULT</button></td>
 		</tr>
 	
 	</table> 
-	<br><br>
-	<div style="text-align:left;width:450;">
-	We recommend using <b>the same lock phrase</b> for all your vaults.<br>
 	<br>
-	If you don't have a Lock Phrase yet.. you can use this one.<br>
-	<br>
-	Write it down somewhere safe.<br>
-	<br>
-	You will need it to unlock your coins.<br>
-	<br>
-	</div>
-	
 	<table class="maintable">
 		<tr>
 			<td>
-				<textarea rows=6 cols=40 id="gen_lock_phrase" readonly></textarea>
+				We recommend using <b>the same lock phrase</b> for all your vaults.<br>
+				<br>
+				If you don't have a Lock Phrase yet.. you can use this one.<br>
+				<br>
+				Write it down somewhere safe.<br>
+				<br>
+				You will need it to unlock your coins.<br>
+				<br>
 			</td>
 		</tr>
 	</table>
-	
-	
 	<br>
-	<button class="solobutton" onclick="jumpToHome();">Back Home</button>
-	<br><br>
+	<table class="maintable">
+		<tr>
+			<td>
+				<textarea class='vaulttext' rows=6 id="gen_lock_phrase" readonly></textarea>
+			</td>
+		</tr>
+	</table>
+	<br>
 	
 </center>
 
 <script type="text/javascript">
 	
-	function jumpToHome(){
+	function showTitleOnAndroid(){
+		if (window.navigator.userAgent.includes('Minima Browser')) {
+			Android.showTitleBar();
+		}
+	}
+
+	function jumpHome(){
 		location.href = "index.html?uid="+MDS.minidappuid;
 	}
 	
@@ -119,6 +134,8 @@
 		
 		if(confirm("We will now send "+amount+" "+tokenname+" to the vault..")){
 			
+			createbutton.disabled=true;
+			
 			//Convert phrase into a key
 			var func = "keys action:genkey phrase:\""+phrase+"\";keys";
 			
@@ -152,12 +169,12 @@
 					//Is it pending..
 					if(resp.pending){
 						alert("This txn is now pending..");
-						jumpToHome();
+						jumpHome();
 					}else if(!resp.status){
 						alert("Txn Failed..\n\n"+resp.message);
 					}else{
 						alert("Vault created..!\n\nPlease wait for the txn to confirm..");
-						jumpToHome();
+						jumpHome();
 					}
 				});
 			});
