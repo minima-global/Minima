@@ -85,7 +85,7 @@
 			for(var i=0;i<len;i++){
 									
 				//Current
-				var category = cats[i].CATEGORY;
+				var category = DOMPurify.sanitize(cats[i].CATEGORY);
 				
 				list += "<table width=100% border=0>"
 				
@@ -97,7 +97,7 @@
 			}
 			
 			//And set it
-			allcats.innerHTML = DOMPurify.sanitize(list);
+			allcats.innerHTML = list;
 		});
 	}
 	
