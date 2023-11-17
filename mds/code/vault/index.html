@@ -66,9 +66,23 @@
 		location.href = "unlockvault.html?uid="+MDS.minidappuid+"&vaultid="+coinid;
 	}
 	
+	function checkOriginalKeys(pubkey, keys){
+		var len = keys.length;
+		for(var i=0;i<len;i++){
+			var origkey = keys[i].publickey;
+			if(origkey == pubkey){
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	function loadVaultCoins(){
-		MDS.cmd("coins address:"+VAULT_ADDRESS+" relevant:true simplestate:true",function(resp){
+		MDS.cmd("keys;coins address:"+VAULT_ADDRESS+" relevant:true simplestate:true",function(resp){
 			//MDS.log(JSON.stringify(resp));
+			
+			//All your public keys
+			var keys = resp[0].response.keys;
 			
 			//get the table
 			var thetable 		= document.getElementById("vaults");
@@ -84,7 +98,7 @@
 			headerrow.insertCell(2).innerHTML="&nbsp;&nbsp;<b>Message</b>";
 			headerrow.insertCell(3).innerHTML="&nbsp;&nbsp;<b>Collect</b>";
 			
-			var length = resp.response.length;
+			var length = resp[1].response.length;
 			
 			if(length == 0){
 				var tablerow 		= thetable.insertRow(1);
@@ -95,11 +109,12 @@
 				return;
 			}
 			
+			var tabcounter = 1;
 			for(var i=0;i<length;i++){
 			
-				var coin = resp.response[i];
+				var coin = resp[1].response[i];
 				
-				var tablerow 		= thetable.insertRow(i+1);
+				var tablerow 		= thetable.insertRow(tabcounter++);
 				var cell1 	 		= tablerow.insertCell(0);
 				var cell2 	 		= tablerow.insertCell(1);
 				
@@ -118,8 +133,6 @@
 				if(coin.tokenid == "0x00"){
 					cell1.innerHTML		= "<br>"+coin.amount;	
 					cell2.innerHTML		= "<br>Minima";
-					//cell1.innerHTML		= coin.amount;	
-					//cell2.innerHTML		= "Minima";
 				}else{
 					cell1.innerHTML		= "<br>"+coin.tokenamount;
 					cell2.innerHTML		= DOMPurify.sanitize("<br>&nbsp;&nbsp;"+coin.token.name.name+"&nbsp;&nbsp;");
@@ -127,6 +140,22 @@
 				
 				cell3.innerHTML		= "<br>"+msg;
 				cell4.innerHTML		= "<br><button class='solobutton' onclick='jumpToUnlock(\""+coin.coinid+"\");'>UNLOCK</button>"
+			
+				//Is this a local KEY..
+				var pubkey = coin.state[0];
+				if(checkOriginalKeys(pubkey,keys)){
+					tablerow = thetable.insertRow(tabcounter++);
+					var cell1 = tablerow.insertCell(0);
+					cell1.colSpan = 4;
+					cell1.innerHTML = "<span style='color:red;'>LOCAL KEY FOUND (have you seed resynced..?) - unlock this immediately and recreate vault</span>";
+				}
+				
+				//Insert an HR
+				tablerow = thetable.insertRow(tabcounter++);
+				var cell1 = tablerow.insertCell(0);
+				cell1.colSpan = 4;
+				cell1.innerHTML = "<hr>";
+			
 			}
 		});	
 	}
