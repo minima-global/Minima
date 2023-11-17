@@ -472,7 +472,6 @@ function removeBlockedCategory(category,callback){
 	});
 }
 
-
 function checkMsgBlocked(userpubkey, categorytitleid, category, callback){
 	
 	//Create the DB if not exists
@@ -507,4 +506,41 @@ function checkMsgBlocked(userpubkey, categorytitleid, category, callback){
 		
 		callback(blocked);
 	});
+}
+
+function loadAllFilters(callback){
+	//Run this..
+	MDS.sql("SELECT * FROM filter",function(msg){
+		callback(msg.rows);
+	});
+}
+
+function checkMsgBlockedSQL(filters,userpubkey, categorytitleid, category){
+	
+	var len = filters.length;
+	
+	blocked = false;
+	for(var i=0;i<len;i++){
+		var filter = filters[i];
+		
+		//Check BLocked user
+		if(filter.TYPE == "userblocked"){
+			if(filter.USERPUBKEY == userpubkey){
+				blocked = true;
+				break;
+			}
+		}else if(filter.TYPE == "topicblocked"){
+			if(filter.CATEGORYTITLEID == categorytitleid){
+				blocked = true;
+				break;
+			}
+		}else if(filter.TYPE == "categoryblocked"){
+			if(category.startsWith(filter.CATEGORY)){
+				blocked = true;
+				break;
+			}
+		}
+	}
+	
+	return blocked;
 }

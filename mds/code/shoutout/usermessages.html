@@ -118,10 +118,17 @@
 					
 					USER_NAME = DOMPurify.sanitize(decodeStringFromDB(message.USERNAME));
 					
+					var id = sha1(USER_PUBKEY).toUpperCase();
+					
 					var ustr = "<table width=100%><tr>";
 					ustr += "<td>User messages for : <b>"+USER_NAME+"</b></td>";
-					ustr += "<td style='text-align:right'><button class='solobutton' onclick='blockUser();'>&nbsp;BLOCK&nbsp;</button></td>";
-					ustr += "</tr></table>";
+					ustr += "<td rowspan=2 style='text-align:right'><button class='solobutton' onclick='blockUser();'>&nbsp;BLOCK&nbsp;</button></td>";
+					ustr += "</tr>";
+					
+					ustr += "<tr><td><span style='font-size:10;'><b>#ID</b> "+id+"<span></td></tr>";
+					
+					ustr += "</table>";
+					
 					usertitle.innerHTML = ustr;
 				}
 			}
