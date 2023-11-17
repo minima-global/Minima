@@ -14,10 +14,12 @@ body {
   height:50px;
   text-align: left;
   
+  background-color: #aaa;
+	
   max-width:840;
   text-align: left;
   border: 2px solid #aaa;
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
 .maintable{
