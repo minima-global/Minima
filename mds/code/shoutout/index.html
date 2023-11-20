@@ -492,7 +492,22 @@
 						//Get the user details
 						USER_NAME 	 = startup[0].response.name;
 						USER_PUBKEY  = startup[0].response.publickey;
-						USER_ADDRESS = startup[1].response.address;
+						
+						//Now see if we have picked an address..
+						var someaddress = startup[1].response.address;
+						MDS.keypair.get("shoutaddress",function(resp){
+							if(resp.status){
+								//We have already defined it..
+								USER_ADDRESS = resp.value;
+								MDS.log("Address found.. "+USER_ADDRESS);
+							}else{
+								USER_ADDRESS = someaddress;
+								//None specified yet - specify it..
+								MDS.keypair.set("shoutaddress",someaddress,function(resp){
+									MDS.log("NEW address set.. "+someaddress);	
+								});
+							}
+						});
 						
 						//Load all the topics..
 						setTopics();
