@@ -80,38 +80,13 @@ public class peers extends Command {
 			
 			String peerslist = getPeersList(maxpeers);
 			
+			int numberpeers  = peerslist.split(",").length; 
+			
 			P2PManager p2PManager = (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();
-			
-			
-//			//Get the peers list
-//			ArrayList<InetSocketAddress> peers = p2PManager.getPeersCopy();
-//			
-//			//Shuffle it..
-//			Collections.shuffle(peers);
-//			
-//			//Now add to the list..
-//			String peerslist = "";
-//			int counter=0;
-//			for(InetSocketAddress peer : peers) {
-//				
-//				//Check limit
-//				if(counter>maxpeers) {
-//					break;
-//				}
-//				
-//				//Add it..
-//				peerslist += peer.getAddress().getHostAddress() + ":" + peer.getPort()+",";
-//			
-//				counter++;
-//			}
-//			
-//			//Remove the final ,
-//			if(peerslist.endsWith(",")) {
-//				peerslist = peerslist.substring(0, peerslist.length()-1);
-//			}
 			
 			JSONObject resp = new JSONObject();
 			resp.put("peerslist", peerslist);
+			resp.put("size", numberpeers);
 			resp.put("havepeers",p2PManager.haveAnyPeers());
 			resp.put("p2penabled",GeneralParams.P2P_ENABLED);
 			ret.put("response", resp);

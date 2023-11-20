@@ -5,10 +5,15 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+import org.minima.database.MinimaDB;
+import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Greeting;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
+import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
@@ -171,6 +176,68 @@ public class P2PPeersChecker extends MessageProcessor {
                     //Is it correct
                     if(testcheck && greetstr.startsWith(GlobalParams.MINIMA_BASE_VERSION)) {
                     	validversion = true;
+                    }
+                    
+                    //Check they are on the right chain..
+                    if(validversion) {
+                    	
+                    	//Get the extra data..
+                    	JSONObject extra = greet.getExtraData();
+                    	
+                    	//Get the block 50 back..
+                    	String block 	 = extra.getString("50block","");
+                    	String blockhash = extra.getString("50hash","");
+                    	
+                    	//Need both
+                    	if(!block.equals("") && !blockhash.equals("")) {
+                    	
+                    		//What is our tip
+                    		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+                    		
+                    		//check it..
+                    		if(tip != null) {
+                    			
+                    			//Get that node..
+                    			TxPoWTreeNode checknode = tip.getPastNode(new MiniNumber(block));
+                    			if(checknode != null) {
+                    			
+    	                			if(!checknode.getTxBlock().getTxPoW().getTxPoWID().equals(blockhash)) {
+    	                			
+    	                				if(GeneralParams.PEERSCHECKER_lOG) {
+    	                					MinimaLogger.log("PEERS CHECKER incorrect chain! @ "+block+" "+address.toString()+" ");
+    	                				}
+    	                				
+    	                				//Wrong chain.. !
+    	                				validversion = false;
+    	                			}
+    	                			
+                    			}else {
+                    				if(GeneralParams.PEERSCHECKER_lOG) {
+                    					MinimaLogger.log("PEERS CHECKER incorrect chain! ( null checknode ) @ "+block+" "+address.toString()+" ");
+                    				}
+                    				
+                    				//Wrong chain.. !
+                    				validversion = false;
+                    			}
+                    		} else {
+                    			if(GeneralParams.PEERSCHECKER_lOG) {
+                    				MinimaLogger.log("[-] Can't check peer as we have no block data");
+                    			}
+                            }
+                    	}else {
+                    		if(GeneralParams.PEERSCHECKER_lOG) {
+                    			MinimaLogger.log("PEERS CHECKER no block data @ "+address.toString());
+                    		}
+                    		
+                    		//Wrong chain.. !
+            				validversion = false;
+                    	}
+                    	
+                    	if(validversion) {
+//                    		if(GeneralParams.PEERSCHECKER_lOG) {
+//                    			MinimaLogger.log("PEERS CHECKER VALID CHAIN "+address.toString());
+//                    		}
+                    	}
                     }
                 }
                 

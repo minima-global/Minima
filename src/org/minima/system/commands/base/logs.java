@@ -37,6 +37,9 @@ public class logs extends Command {
 				+ "ibd: (optional)\n"
 				+ "    true or false, true turns on detailed logs for IBD processing.\n"
 				+ "\n"
+				+ "peerschecker: (optional)\n"
+				+ "    true or false, true turns on detailed logs for IBD processing.\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "logs scripts:true\n"
@@ -46,7 +49,7 @@ public class logs extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"scripts","mining","maxima","blocks","networking","ibd"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"scripts","mining","maxima","blocks","networking","ibd","peerschecker"}));
 	}
 	
 	@Override
@@ -113,6 +116,16 @@ public class logs extends Command {
 			}
 		}
 		
+		//Are we logging IBD data
+		if(existsParam("peerschecker")) {
+			String mining = getParam("peerschecker", "false");
+			if(mining.equals("true")) {
+				GeneralParams.PEERSCHECKER_lOG = true;
+			}else {
+				GeneralParams.PEERSCHECKER_lOG = false;
+			}
+		}
+		
 		JSONObject resp = new JSONObject();
 		resp.put("scripts", GeneralParams.SCRIPTLOGS);
 		resp.put("mining", GeneralParams.MINING_LOGS);
@@ -120,6 +133,7 @@ public class logs extends Command {
 		resp.put("blocks", GeneralParams.BLOCK_LOGS);
 		resp.put("networking", GeneralParams.NETWORKING_LOGS);
 		resp.put("ibd", GeneralParams.IBDSYNC_LOGS);
+		resp.put("peerschecker", GeneralParams.PEERSCHECKER_lOG);
 		
 		//Add balance..
 		ret.put("response", resp);

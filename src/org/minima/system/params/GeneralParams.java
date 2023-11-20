@@ -261,6 +261,11 @@ public class GeneralParams {
 	public static String SEED_PHRASE = ""; 
 	
 	/**
+	 * Do we log peers checker messages
+	 */
+	public static boolean PEERSCHECKER_lOG = false;
+	
+	/**
 	 * Reset all params to their default settings.. ANDROID keeps them after shutdown
 	 */
 	public static void resetDefaults() {
@@ -319,6 +324,7 @@ public class GeneralParams {
 		RPC_AUTHSTYLE 		= "basic";
 		RPC_PASSWORD 		= "none";
 		SEED_PHRASE 		= "";
+		PEERSCHECKER_lOG 	= false;
 	}
 	
 }
