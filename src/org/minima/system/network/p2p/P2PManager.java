@@ -347,6 +347,7 @@ public class P2PManager extends MessageProcessor {
         } else if (zMessage.isMessageType(P2P_ADD_PEER)) {
             if(state.getKnownPeers().size() < 250) {
                 InetSocketAddress address = (InetSocketAddress) zMessage.getObject("address");
+                state.getKnownPeers().remove(address);
                 state.getKnownPeers().add(address);
             }
         }

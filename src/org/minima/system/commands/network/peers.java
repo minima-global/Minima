@@ -77,9 +77,7 @@ public class peers extends Command {
 			
 			//How many peers to show
 			int maxpeers = getNumberParam("max", MiniNumber.THOUSAND).getAsInt();
-			
 			String peerslist = getPeersList(maxpeers);
-			
 			int numberpeers  = peerslist.split(",").length; 
 			
 			P2PManager p2PManager = (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();
@@ -89,6 +87,22 @@ public class peers extends Command {
 			resp.put("size", numberpeers);
 			resp.put("havepeers",p2PManager.haveAnyPeers());
 			resp.put("p2penabled",GeneralParams.P2P_ENABLED);
+			ret.put("response", resp);
+		
+		}else if(action.equals("forcecheck")) {
+			
+			P2PManager p2PManager = (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();
+			P2PPeersChecker checker = p2PManager.getPeersChecker();
+			checker.PostMessage(P2PPeersChecker.PEERS_FORCEFULLCHECK);
+			
+			int maxpeers 		= getNumberParam("max", MiniNumber.THOUSAND).getAsInt();
+			String peerslist 	= getPeersList(maxpeers);
+			int numberpeers  	= peerslist.split(",").length;
+			
+			JSONObject resp = new JSONObject();
+			resp.put("message", "Peers check started.. will start ASAP");
+			resp.put("logs", GeneralParams.PEERSCHECKER_lOG);
+			resp.put("size", numberpeers);
 			ret.put("response", resp);
 			
 		}else if(action.equals("addpeers")) {

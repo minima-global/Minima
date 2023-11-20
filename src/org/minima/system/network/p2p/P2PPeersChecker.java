@@ -42,6 +42,11 @@ public class P2PPeersChecker extends MessageProcessor {
     long PEERS_LOOP_TIMER = 1000 * 60 * 60 * 6;
 
     /**
+     * Check all your verified peers
+     */
+    public static final String PEERS_FORCEFULLCHECK = "PEERS_FORCEFULLCHECK";
+    
+    /**
      * Max number of Wanted Verified Peers
      */
     public int MAX_VERIFIED_PEERS = 250;
@@ -156,6 +161,11 @@ public class P2PPeersChecker extends MessageProcessor {
             	force = zMessage.getBoolean("force");
             }
             
+            boolean forcelog = false;
+            if(zMessage.exists("forcelog")) {
+            	forcelog = zMessage.getBoolean("forcelog");
+            }
+            
             if (force || P2PFunctions.getAllConnectedConnections().size() > 0) {
                 
             	//Get a Greeting if possible
@@ -203,7 +213,7 @@ public class P2PPeersChecker extends MessageProcessor {
                     			
     	                			if(!checknode.getTxBlock().getTxPoW().getTxPoWID().equals(blockhash)) {
     	                			
-    	                				if(GeneralParams.PEERSCHECKER_lOG) {
+    	                				if(forcelog || GeneralParams.PEERSCHECKER_lOG) {
     	                					MinimaLogger.log("PEERS CHECKER incorrect chain! @ "+block+" "+address.toString()+" ");
     	                				}
     	                				
@@ -212,7 +222,7 @@ public class P2PPeersChecker extends MessageProcessor {
     	                			}
     	                			
                     			}else {
-                    				if(GeneralParams.PEERSCHECKER_lOG) {
+                    				if(forcelog || GeneralParams.PEERSCHECKER_lOG) {
                     					MinimaLogger.log("PEERS CHECKER incorrect chain! ( null checknode ) @ "+block+" "+address.toString()+" ");
                     				}
                     				
@@ -220,12 +230,12 @@ public class P2PPeersChecker extends MessageProcessor {
                     				validversion = false;
                     			}
                     		} else {
-                    			if(GeneralParams.PEERSCHECKER_lOG) {
+                    			if(forcelog || GeneralParams.PEERSCHECKER_lOG) {
                     				MinimaLogger.log("[-] Can't check peer as we have no block data");
                     			}
                             }
                     	}else {
-                    		if(GeneralParams.PEERSCHECKER_lOG) {
+                    		if(forcelog || GeneralParams.PEERSCHECKER_lOG) {
                     			MinimaLogger.log("PEERS CHECKER no block data @ "+address.toString());
                     		}
                     		
@@ -234,11 +244,15 @@ public class P2PPeersChecker extends MessageProcessor {
                     	}
                     	
                     	if(validversion) {
-//                    		if(GeneralParams.PEERSCHECKER_lOG) {
-//                    			MinimaLogger.log("PEERS CHECKER VALID CHAIN "+address.toString());
-//                    		}
+                    		if(forcelog) {
+                    			MinimaLogger.log("FORCECHECK - VALID CHAIN "+address.toString());
+                    		}
                     	}
                     }
+                }else {
+                	if(forcelog) {
+            			MinimaLogger.log("NULL greeting from Peer "+address.toString());
+            		}
                 }
                 
                 //What to do now..
@@ -256,7 +270,8 @@ public class P2PPeersChecker extends MessageProcessor {
                     	}
                     }
 
-                    //Add to our List
+                    //Add to our List (only one allowed)
+                    verifiedPeers.remove(address);
                     verifiedPeers.add(address);
                     Message msg = new Message(P2PManager.P2P_ADD_PEER).addObject("address", address);
                     p2PManager.PostMessage(msg);
@@ -304,6 +319,21 @@ public class P2PPeersChecker extends MessageProcessor {
         	
             //Do it again ..
             PostTimerMessage(new TimerMessage(PEERS_LOOP_TIMER, PEERS_LOOP));
+        
+        } else if (zMessage.getMessageType().equals(PEERS_FORCEFULLCHECK)) {
+        	
+        	//Check we have a net connection
+        	if(P2PFunctions.isNetAvailable()) {
+        		// Check all the verified Peers again
+                for (InetSocketAddress address : verifiedPeers) {
+                    Message msg = new Message(PEERS_CHECKPEERS)
+                    		.addObject("address", address)
+                    		.addBoolean("forcelog", true);
+                    PostMessage(msg);
+                }
+        	}else {
+        		MinimaLogger.log("No Network connection - cannot perform peers check");
+        	}
         }
 
     }
