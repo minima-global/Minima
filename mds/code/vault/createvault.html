@@ -74,9 +74,11 @@
 				<br>
 				If you don't have a Vault Lock Phrase yet.. you can use this one.<br>
 				<br>
-				Write it down somewhere safe.<br>
+				Write it down somewhere safe! (you will not get the same one again)<br>
 				<br>
 				You will need it to unlock your coins.<br>
+				<br>
+				Vault passwords / seeds are case <i>insensitive</i> - always UPPERCASE.
 			</td>
 		</tr>
 	</table>
@@ -122,7 +124,7 @@
 		}
 		
 		//Get the Phrase..
-		var phrase = document.getElementById("lock_phrase").value.trim();
+		var phrase = document.getElementById("lock_phrase").value.trim().toUpperCase();
 		if(phrase == ""){
 			alert("Cannot have a blank phrase!");
 			return;

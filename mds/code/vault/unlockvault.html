@@ -131,7 +131,7 @@
 	function unlockVault(){
 		
 		//Get the Phrase..
-		var phrase = document.getElementById("unlock_phrase").value.trim();
+		var phrase = document.getElementById("unlock_phrase").value.trim().toUpperCase();
 		if(phrase == ""){
 			alert("Cannot have a blank phrase!");
 			return;
