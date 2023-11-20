@@ -49,7 +49,7 @@ public class P2PPeersChecker extends MessageProcessor {
     /**
      * Max number of Wanted Verified Peers
      */
-    public int MAX_VERIFIED_PEERS = 250;
+    public static int MAX_VERIFIED_PEERS = 250;
 
     public Set<InetSocketAddress> getUnverifiedPeers() {
         return unverifiedPeers;
@@ -260,7 +260,7 @@ public class P2PPeersChecker extends MessageProcessor {
                     unverifiedPeers.remove(address);
                     
                     //Are we at capacity
-                    if (verifiedPeers.size() > MAX_VERIFIED_PEERS) {
+                    if (verifiedPeers.size() >= MAX_VERIFIED_PEERS) {
                     	InetSocketAddress removed =  removeRandomItem(verifiedPeers);
                     	
                     	//Remove from our list
