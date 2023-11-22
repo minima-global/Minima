@@ -87,7 +87,11 @@ var MDS = {
 	 * Log some data with a timestamp in a consistent manner to the console
 	 */
 	log : function(output){
-		console.log("Minima @ "+new Date().toLocaleString()+" : "+output);
+		if(output !== undefined && output !== null && (output.constructor == Object ||  output.constructor == Array)){
+			console.log("Minima @ "+new Date().toLocaleString()+" : "+JSON.stringify(output));
+		}else{
+			console.log("Minima @ "+new Date().toLocaleString()+" : "+output);	
+		}
 	},
 	
 	/**

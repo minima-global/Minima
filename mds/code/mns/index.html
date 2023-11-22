@@ -24,14 +24,44 @@
 <body>
 
 <center>
-
+	<br>
+	<h2>Minima Name Service</h2>
 	<br>
 
-	<h2>Hello World!</h2>
-	
+	Name : <input type="text" id="searchname"/> <button onclick="searchName();">SEARCH</button>
+	<br><br>
+	<textarea rows="10" cols="50" id="searchresults"></textarea>
+	<br>
+	<br>
+	Register : 	<input type="text" id="registername"/> <button onclick="resgisterName();">REGISTER</button>
 </center>
 
 <script type="text/javascript">
+	
+	var USER_OWNER = "";
+	
+	function searchName(){
+		var name = document.getElementById("searchname").value;
+		findName(name,function(res){
+			if(res.length>0){
+				var showdata = {};
+				showdata.ID  	 = res[0].ID;
+				showdata.OWNER   = res[0].OWNER;
+				showdata.NAME  	 = res[0].NAME;
+				showdata.DATA  	 = JSON.parse(res[0].DATA);
+				showdata.UPDATED = res[0].UPDATED;
+				
+				searchresults.value = JSON.stringify(showdata,null,2);	
+			}else{
+				searchresults.value = "Not Found..";
+			}
+		});
+	}
+	
+	function registerName(){
+		var name = document.getElementById("searchname").value;
+		
+	}
 	
 	//Main message handler..
 	MDS.init(function(msg){
@@ -39,8 +69,24 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			
-			//Do stuff.. from now..		
+			//Create the DB
+			createDB(function(res){
+				
+				var data = {};
+				data.address = "MxSomething";
+				
+				var datastr = JSON.stringify(data);
+				
+				//hack add
+				updateName("0x00","0x00","paddy",datastr,0,function(res){
+					MDS.log("HACK ADD : "+res);
+				});
+			});		
 			
+			MDS.cmd("keys",function(resp){
+				USER_OWNER = resp.response.keys[0].publickey;
+				MDS.log("OWNER : "+USER_OWNER);
+			});
 		}
 	});
 
