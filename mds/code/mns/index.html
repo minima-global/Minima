@@ -34,6 +34,12 @@
 	<br>
 	<br>
 	Register : 	<input type="text" id="registername"/> <button onclick="registerName();">REGISTER</button>
+	<br><br>
+	
+	<div id="mydomains">
+	
+	</div>
+	
 </center>
 
 <script type="text/javascript">
@@ -119,6 +125,26 @@
 		});
 	}
 	
+	function setMyDomains(){
+		
+		findMyDomains(USER_OWNER,function(resp){
+			var len  = resp.length;
+			var list = "MY DOMAINS<br><br>";
+			for(var i=0;i<len;i++){
+				var record = resp[i];
+				
+				list += record.NAME+" "+record.DATA+"<br>";
+			}
+			
+			mydomains.innerHTML = list;
+		});
+	}
+	
+	function makeDomainRow(){
+		var text = "";
+		//text +
+	}
+	
 	//Main message handler..
 	MDS.init(function(msg){
 		
@@ -127,14 +153,9 @@
 			
 			//Create the DB
 			createDB(function(res){
+				//Notify of new messages..
+				MDS.cmd("coinnotify action:add address:"+MNS_ADDRESS,function(startup){});
 				
-				var data = {};
-				data.address = "MxSomething";
-				var datastr = JSON.stringify(data);
-				//hack add
-				updateName("0x00","0x00","paddy",datastr,0,function(res){
-					MDS.log("HACK ADD : "+res);
-				});
 			});		
 			
 			MDS.cmd("keys;getaddress",function(resp){
@@ -142,7 +163,44 @@
 				MDS.log("OWNER : "+USER_OWNER);
 				USER_ADDRESS = resp[1].response.miniaddress;
 				MDS.log("ADDRESS : "+USER_ADDRESS);
+				
+				setMyDomains();
 			});
+			
+		}else if(msg.event == "NOTIFYCASCADECOIN"){
+			
+			//Is it the one that matters
+			if(msg.data.address ==  MNS_ADDRESS){
+				
+				//Check is Valid amount..
+				if(msg.data.coin.tokenid != "0x00"){
+					MDS.log("Message not sent as Minima.. ! "+msg.data.coin.tokenid);
+					return;
+				}else if(+msg.data.coin.amount < 1){
+					MDS.log("Message below 1 Minima threshold.. ! "+msg.data.coin.amount);
+					return;
+				}
+				
+				//Get the coin..
+				var block 		= msg.data.txblock;
+				var coinstate  	= msg.data.coin.state;
+
+				var owner 		= stripBrackets(coinstate[0]);
+				var transfer 	= stripBrackets(coinstate[1]);
+				var name 		= stripBrackets(coinstate[2]);
+				var datastr		= stripBrackets(coinstate[3]);
+				var sig			= coinstate[4];
+				
+				//check sig..
+				//..
+				
+				//Update DB..
+				MDS.log("CASCADE NOTIFY : "+JSON.stringify(msg.data));
+				updateName(owner, transfer, name, datastr, block, function(resp){
+					MDS.log(resp)
+				});
+			}
+			
 		}
 	});
 

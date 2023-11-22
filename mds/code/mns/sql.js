@@ -44,6 +44,16 @@ function findName(name, callback){
 	});
 }
 
+function findMyDomains(owner, callback){
+	//Find a record
+	var sql = "SELECT * FROM mns WHERE owner='"+owner+"' ORDER BY id ASC";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		callback(msg.rows);
+	});
+}
+
 function updateName(owner, transfer, name, datastr, block, callback){
 	
 	//Do we have an entry allready

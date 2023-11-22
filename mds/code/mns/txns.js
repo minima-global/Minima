@@ -1,4 +1,7 @@
 
+function checkSig(owner, transfer, name, datastr, sig){
+	return true;
+}
 
 function sendNameUpdate(owner, transfer, name, datastr, callback){
 	
