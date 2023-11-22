@@ -30,37 +30,94 @@
 
 	Name : <input type="text" id="searchname"/> <button onclick="searchName();">SEARCH</button>
 	<br><br>
-	<textarea rows="10" cols="50" id="searchresults"></textarea>
+	<textarea rows="10" cols="80" id="searchresults"></textarea>
 	<br>
 	<br>
-	Register : 	<input type="text" id="registername"/> <button onclick="resgisterName();">REGISTER</button>
+	Register : 	<input type="text" id="registername"/> <button onclick="registerName();">REGISTER</button>
 </center>
 
 <script type="text/javascript">
 	
-	var USER_OWNER = "";
+	var USER_OWNER 		= "";
+	var USER_ADDRESS 	= "";
+	
+	function searchain(name,callback){
+		var search = "coins address:"+MNS_ADDRESS+" state:"+name+" order:asc simplestate:true";
+		MDS.cmd(search,function(resp){
+			if(resp.status){
+				var len = resp.response.length;
+				for(var i=0;i<len;i++){
+					var coin = resp.response[i];
+					//Check the correct exact name..
+					if(coin.state[2] == "["+name+"]"){
+						callback(coin);
+						return;
+					}
+				}
+			}
+			
+			//Not found..
+			callback(null);
+		});
+	}
+	
+	function searchDB(name,callback){
+		findName(name,function(res){
+			if(res.length>0){
+				callback(res[0]);	
+			}else{
+				callback(null);	
+			}
+		});
+	}
 	
 	function searchName(){
 		var name = document.getElementById("searchname").value;
-		findName(name,function(res){
-			if(res.length>0){
+		
+		//First search the DB.. these are older
+		searchDB(name,function(res){
+			MDS.log(res);
+			
+			//Did we find it..
+			if(res){
 				var showdata = {};
-				showdata.ID  	 = res[0].ID;
-				showdata.OWNER   = res[0].OWNER;
-				showdata.NAME  	 = res[0].NAME;
-				showdata.DATA  	 = JSON.parse(res[0].DATA);
-				showdata.UPDATED = res[0].UPDATED;
-				
-				searchresults.value = JSON.stringify(showdata,null,2);	
+				showdata.FOUND   = "DATABASE";
+				showdata.ID  	 = res.ID;
+				showdata.OWNER   = res.OWNER;
+				showdata.NAME  	 = res.NAME;
+				showdata.DATA  	 = JSON.parse(res.DATA);
+				showdata.UPDATED = res.UPDATED;
+				searchresults.value = JSON.stringify(showdata,null,2);
 			}else{
-				searchresults.value = "Not Found..";
+				
+				//Now search the chain..
+				searchain(name,function(res){
+					if(res){
+						var showdata = {};
+						showdata.FOUND   = "ONCHAIN";
+						showdata.OWNER   = stripBrackets(res.state[0]);
+						showdata.NAME  	 = stripBrackets(res.state[2]);
+						showdata.DATA  	 = JSON.parse(stripBrackets(res.state[3]));
+						searchresults.value = JSON.stringify(showdata,null,2);
+					}else{
+						
+						//Not found anywhere..
+						searchresults.value = "Not Found..";
+					}
+				});
 			}
 		});
 	}
 	
 	function registerName(){
-		var name = document.getElementById("searchname").value;
+		var name = document.getElementById("registername").value;
+		var data = {};
+		data.address = USER_ADDRESS;
+		var datastr = JSON.stringify(data);
 		
+		sendNameUpdate(USER_OWNER, USER_OWNER, name, datastr, function(resp){
+			MDS.log("REGISTER SENT:"+resp.status);
+		});
 	}
 	
 	//Main message handler..
@@ -74,18 +131,18 @@
 				
 				var data = {};
 				data.address = "MxSomething";
-				
 				var datastr = JSON.stringify(data);
-				
 				//hack add
 				updateName("0x00","0x00","paddy",datastr,0,function(res){
 					MDS.log("HACK ADD : "+res);
 				});
 			});		
 			
-			MDS.cmd("keys",function(resp){
-				USER_OWNER = resp.response.keys[0].publickey;
+			MDS.cmd("keys;getaddress",function(resp){
+				USER_OWNER 	 = resp[0].response.keys[0].publickey;
 				MDS.log("OWNER : "+USER_OWNER);
+				USER_ADDRESS = resp[1].response.miniaddress;
+				MDS.log("ADDRESS : "+USER_ADDRESS);
 			});
 		}
 	});
