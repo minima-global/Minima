@@ -201,9 +201,19 @@ public class Coin implements Streamable {
 	}
 	
 	public boolean checkForStateVariable(String zCheckState) {
+		return checkForStateVariable(zCheckState, false);
+	}
+	
+	public boolean checkForStateVariable(String zCheckState, boolean zWildcard) {
 		for(StateVariable sv : mState) {
-			if(sv.getData().toString().equals(zCheckState)) {
-				return true;
+			if(zWildcard) {
+				if(sv.getData().toString().contains(zCheckState)) {
+					return true;
+				}
+			}else {
+				if(sv.getData().toString().equals(zCheckState)) {
+					return true;
+				}
 			}
 		}
 		return false;

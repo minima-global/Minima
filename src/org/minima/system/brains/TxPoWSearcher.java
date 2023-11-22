@@ -13,6 +13,7 @@ import org.minima.objects.Token;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.MinimaLogger;
 
 public class TxPoWSearcher {
 
@@ -91,10 +92,24 @@ public class TxPoWSearcher {
 	}
 	
 	public static synchronized ArrayList<Coin> searchCoins(	TxPoWTreeNode zStartNode, boolean zRelevant, 
+			boolean zCheckCoinID, MiniData zCoinID,
+			boolean zCheckAmount, MiniNumber zAmount,
+			boolean zCheckAddress, MiniData zAddress,
+			boolean zCheckTokenID, MiniData zTokenID,
+			boolean zSimpleOnly, int zDepth) {
+		
+		return searchCoins(zStartNode, zRelevant, zCheckCoinID, zCoinID, zCheckAmount, 
+				zAmount, zCheckAddress, zAddress, zCheckTokenID, zTokenID, 
+				false, "", false,
+				zSimpleOnly, zDepth);
+	}
+	
+	public static synchronized ArrayList<Coin> searchCoins(	TxPoWTreeNode zStartNode, boolean zRelevant, 
 												boolean zCheckCoinID, MiniData zCoinID,
 												boolean zCheckAmount, MiniNumber zAmount,
 												boolean zCheckAddress, MiniData zAddress,
 												boolean zCheckTokenID, MiniData zTokenID,
+												boolean zCheckState, String zState, boolean zWildCardState,
 												boolean zSimpleOnly, int zDepth) {
 		
 		//The list of Coins
@@ -140,6 +155,10 @@ public class TxPoWSearcher {
 				}
 				
 				if(zCheckAddress && !coin.getAddress().isEqual(zAddress)) {
+					continue;
+				}
+				
+				if(zCheckState && !coin.checkForStateVariable(zState,zWildCardState)) {
 					continue;
 				}
 				

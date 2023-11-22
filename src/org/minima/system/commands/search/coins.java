@@ -17,6 +17,7 @@ import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.send.send;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -83,7 +84,8 @@ public class coins extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"relevant","sendable","coinid","amount",
-				"address","tokenid","checkmempool","order","coinage","simplestate","totalamount","depth"}));
+				"address","tokenid","checkmempool","order","coinage","simplestate",
+				"totalamount","depth","state"}));
 	}
 	
 	@Override
@@ -92,7 +94,11 @@ public class coins extends Command {
 		
 		//Check a parameter specified
 		boolean hardsetrel = false;
-		if(!existsParam("relevant") && !existsParam("coinid") && !existsParam("address") && !existsParam("tokenid")) {
+		if(	!existsParam("relevant") && 
+			!existsParam("coinid") && 
+			!existsParam("address") &&
+			!existsParam("state") &&
+			!existsParam("tokenid")) {
 			hardsetrel = true;
 		}
 		
@@ -131,6 +137,9 @@ public class coins extends Command {
 			tokenid = new MiniData(getParam("tokenid", "0x01"));
 		}
 		
+		boolean sstate		= existsParam("state");
+		String statesearch 	= getParam("state","");
+		
 		//How old do the coins need to be.. used by consolidate
 		MiniNumber coinage = getNumberParam("coinage", MiniNumber.ZERO);
 		
@@ -151,7 +160,9 @@ public class coins extends Command {
 															scoinid, coinid,
 															samount,amount,
 															saddress, address, 
-															stokenid, tokenid, simple, maxdepth);
+															stokenid, tokenid, 
+															sstate, statesearch, true,
+															simple, maxdepth);
 		
 		//Make sure coins old enough..
 		ArrayList<Coin> agecoins = new ArrayList<>();
