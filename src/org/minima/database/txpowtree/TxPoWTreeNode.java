@@ -573,4 +573,64 @@ public class TxPoWTreeNode implements Streamable {
 		node.readDataStream(zIn);
 		return node;
 	}
+	
+	public static void CheckTxBlockForNotifyCoins(TxBlock zBlock) {
+		
+		String blockid 		= zBlock.getTxPoW().getTxPoWID();
+		String blocknumber 	= zBlock.getTxPoW().getBlockNumber().toString();
+		MinimaDB db	 		= MinimaDB.getDB();
+		
+		//Get all the input coins..
+		ArrayList<CoinProof> inputs = zBlock.getInputCoinProofs();
+		for(CoinProof cp : inputs) {
+			Coin cc = cp.getCoin();
+			
+			//Check the Coin Notify Details..
+			String coinaddress = cc.getAddress().to0xString();
+			if(db.checkCoinNotify(coinaddress)) {
+				
+				//Message..
+				JSONObject coinjson = cc.toJSON(true);
+				
+				//Send a message
+				JSONObject data = new JSONObject();
+				data.put("address", coinaddress);
+				data.put("txblockid", blockid);
+				data.put("txblock", blocknumber);
+				data.put("spent", true);
+				data.put("coin", coinjson);
+				
+				//MinimaLogger.log("NOTIFY CASCADE COIN : "+data.toString());
+				
+				//And Post it..
+				Main.getInstance().PostNotifyEvent(Main.MAIN_NOTIFYCASCADECOIN, data);
+			}
+		}
+		
+		//Get all the output coins
+		ArrayList<Coin> outputs = zBlock.getOutputCoins();
+		for(Coin cc : outputs) {
+			
+			//Check the Coin Notify Details..
+			String coinaddress = cc.getAddress().to0xString();
+			if(db.checkCoinNotify(coinaddress)) {
+				
+				//Message..
+				JSONObject coinjson = cc.toJSON(true);
+				
+				//Send a message
+				JSONObject data = new JSONObject();
+				data.put("address", coinaddress);
+				data.put("txblockid", blockid);
+				data.put("txblock", blocknumber);
+				data.put("spent", false);
+				data.put("coin", coinjson);
+				
+				//MinimaLogger.log("NOTIFY CASCADE COIN : "+data.toString());
+				
+				//And Post it..
+				Main.getInstance().PostNotifyEvent(Main.MAIN_NOTIFYCASCADECOIN, data);
+			}
+		}
+	}
 }

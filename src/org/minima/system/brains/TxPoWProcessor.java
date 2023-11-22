@@ -541,6 +541,13 @@ public class TxPoWProcessor extends MessageProcessor {
 					
 					//And add to the cascade
 					cascdb.addToTip(txpnode.getTxPoW());
+					
+					//Send out Notify Messages for coins added
+					try {
+						TxPoWTreeNode.CheckTxBlockForNotifyCoins(txpnode.getTxBlock());
+					}catch(Exception exc) {
+						MinimaLogger.log(exc);
+					}
 				}
 				
 				//And finally..
