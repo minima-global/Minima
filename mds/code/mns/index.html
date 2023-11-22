@@ -125,19 +125,56 @@
 		});
 	}
 	
-	function setMyDomains(){
-		
-		findMyDomains(USER_OWNER,function(resp){
-			var len  = resp.length;
-			var list = "MY DOMAINS<br><br>";
-			for(var i=0;i<len;i++){
-				var record = resp[i];
-				
-				list += record.NAME+" "+record.DATA+"<br>";
+	function searchaindomain(owner,callback){
+		var search = "coins address:"+MNS_ADDRESS+" state:"+owner+" order:asc simplestate:true";
+		MDS.cmd(search,function(resp){
+			var found = [];
+			if(resp.status){
+				var len = resp.response.length;
+				for(var i=0;i<len;i++){
+					var coin = resp.response[i];
+					//Check the correct exact name..
+					if(coin.state[0] == "["+owner+"]"){
+						
+						//Create a DB entry..
+						var record 		= {};
+						record.OWNER 	= owner;
+						record.NAME 	= stripBrackets(coin.state[2]);
+						record.DATA 	= stripBrackets(coin.state[3]);
+						
+						found.push(record);
+					}
+				}
 			}
 			
-			mydomains.innerHTML = list;
+			//Not found..
+			callback(found);
 		});
+	}
+	
+	function setMyDomains(){
+		
+		var list = "MY DOMAINS<br><br>";
+		searchaindomain(USER_OWNER,function(respchain){
+			findMyDomains(USER_OWNER,function(resp){
+				var len  = resp.length;
+				for(var i=0;i<len;i++){
+					var record = resp[i];
+					list += record.NAME+" "+record.DATA+"<br>";
+				}
+				
+				len  = respchain.length;
+				for(var i=0;i<len;i++){
+					var record = respchain[i];
+					list += record.NAME+" "+record.DATA+"<br>";
+				}
+				
+				mydomains.innerHTML = list;
+			});	
+			
+		});
+		
+		
 	}
 	
 	function makeDomainRow(){
@@ -166,6 +203,12 @@
 				
 				setMyDomains();
 			});
+		
+		}else if(msg.event == "NOTIFYCOIN"){
+			//Is it the one that matters
+			if(msg.data.address ==  MNS_ADDRESS){
+				setMyDomains();
+			}
 			
 		}else if(msg.event == "NOTIFYCASCADECOIN"){
 			
@@ -198,9 +241,13 @@
 				MDS.log("CASCADE NOTIFY : "+JSON.stringify(msg.data));
 				updateName(owner, transfer, name, datastr, block, function(resp){
 					MDS.log(resp)
+					
+					//One of Ours ?
+					if(owner == USER_OWNER){
+						setMyDomains();
+					}
 				});
 			}
-			
 		}
 	});
 
