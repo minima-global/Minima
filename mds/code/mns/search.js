@@ -69,13 +69,13 @@ function _checkValidChainCoins(checkowner,checkname,counter,allcoins,callback){
 				}else{
 					MDS.log("Found invalid coin! @ "+name);
 					//And recurse
-					_checkValidChainCoins(checkowner,name,counter+1,allcoins,callback);
+					_checkValidChainCoins(checkowner,checkname,counter+1,allcoins,callback);
 				}			
 			});
 			
 		}else{
 			//And recurse
-			_checkValidChainCoins(checkowner,name,counter+1,allcoins,callback);
+			_checkValidChainCoins(checkowner,checkname,counter+1,allcoins,callback);
 		}
 		
 	}else{
@@ -131,7 +131,7 @@ function searchForMNSRecord(name, callback){
 /**
  * Search the chain for my Potential domains
  */
-function _searchChainForOwnerDomains(owner,callback){
+function _searchChainForOwnerDomains(owner,dbrecords,callback){
 	var search = "coins address:"+MNS_ADDRESS+" state:"+owner+" order:desc simplestate:true";
 	MDS.cmd(search,function(resp){
 		//MDS.log(resp);
@@ -150,7 +150,7 @@ function _searchChainForOwnerDomains(owner,callback){
 				record.UPDATED 	= coin.created;
 				
 				//Make sure have not already added
-				if(!previousnames.includes(record.NAME)){
+				if(!previousnames.includes(record.NAME) && !dbrecords.includes(record.NAME)){
 					//Add to the list
 					allrecords.push(record);
 				
@@ -190,8 +190,16 @@ function _searchForAllOwnerDomains(owner,callback){
 	
 	//Search db..
 	_searchDatabaseForOwnerDomains(owner,function(dbrecords){
-		//Now search Chain
-		_searchChainForOwnerDomains(owner,function(chainrecords){
+		
+		//Create a list of names..
+		var prevnames = [];
+		var len = dbrecords.length;
+		for(var i=0;i<len;i++){
+			prevnames.push(dbrecords[i].NAME);
+		}
+		
+		//Now search Chain - exclude those already found..
+		_searchChainForOwnerDomains(owner,prevnames,function(chainrecords){
 			//Send ALL records found back
 			callback(dbrecords.concat(chainrecords));
 		});
