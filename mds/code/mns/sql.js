@@ -7,14 +7,6 @@ function wipeDB(callback){
 	});
 }
 
-function encodeStringForDB(str){
-	return encodeURIComponent(str).split("'").join("%27");
-}
-
-function decodeStringFromDB(str){
-	return decodeURIComponent(str).split("%27").join("'");
-}
-
 function createDB(callback){
 	
 	//Create the DB if not exists
@@ -40,7 +32,11 @@ function findName(name, callback){
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
-		callback(msg.rows);
+		if(msg.count>0){
+			callback(msg.rows[0]);	
+		}else{
+			callback(null);
+		}
 	});
 }
 
@@ -57,21 +53,20 @@ function findMyDomains(owner, callback){
 function updateName(owner, transfer, name, datastr, block, callback){
 	
 	//Do we have an entry allready
-	findName(name,function(res){
+	findName(name,function(record){
 		
-		if(res.length>0){
-			
-			var record = res[0];
+		if(record){
 			
 			//There is a record.. is this the owner
 			if(owner == record.OWNER){
 				
 				//Update the record..
-					
+				//DOTO
+				callback(true,"Record updated");
 				
 			}else{
 				//Not the correct owner..
-				callback(false,"Incorrect owner!");
+				callback(false,"Incorrect owner for MNS Record!");
 			}
 			
 		}else{
@@ -80,7 +75,7 @@ function updateName(owner, transfer, name, datastr, block, callback){
 			var sql = "INSERT INTO mns(owner, name, data, updated) "
 					 +"VALUES ('"+transfer+"','"+name+"','"+datastr+"',"+block+")";
 			MDS.sql(sql,function(msg){
-				callback(true);
+				callback(true,"New record created");
 			});
 		}
 	});

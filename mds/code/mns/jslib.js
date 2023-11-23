@@ -1,5 +1,13 @@
 var MNS_ADDRESS = "0xFFEEDDFFEEDDFFEEDD"
 
+function encodeStringForDB(str){
+	return encodeURIComponent(str).split("'").join("%27");
+}
+
+function decodeStringFromDB(str){
+	return decodeURIComponent(str).split("%27").join("'");
+}
+
 function stripBrackets(coinstr){
 	
 	if(!coinstr){

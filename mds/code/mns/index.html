@@ -18,6 +18,7 @@
 	<script type="text/javascript" src="jslib.js"></script>
 	<script type="text/javascript" src="sql.js"></script>
 	<script type="text/javascript" src="txns.js"></script>
+	<script type="text/javascript" src="search.js"></script>
 	
 </head>
 
@@ -47,69 +48,23 @@
 	var USER_OWNER 		= "";
 	var USER_ADDRESS 	= "";
 	
-	function searchain(name,callback){
-		var search = "coins address:"+MNS_ADDRESS+" state:"+name+" order:asc simplestate:true";
-		MDS.cmd(search,function(resp){
-			if(resp.status){
-				var len = resp.response.length;
-				for(var i=0;i<len;i++){
-					var coin = resp.response[i];
-					//Check the correct exact name..
-					if(coin.state[2] == "["+name+"]"){
-						callback(coin);
-						return;
-					}
-				}
-			}
-			
-			//Not found..
-			callback(null);
-		});
-	}
-	
-	function searchDB(name,callback){
-		findName(name,function(res){
-			if(res.length>0){
-				callback(res[0]);	
-			}else{
-				callback(null);	
-			}
-		});
-	}
-	
+	//Find a record - either ion DB or on chain
 	function searchName(){
+		
+		//What name..
 		var name = document.getElementById("searchname").value;
 		
-		//First search the DB.. these are older
-		searchDB(name,function(res){
-			
-			//Did we find it..
-			if(res){
-				var showdata = {};
-				showdata.FOUND   = "DATABASE";
-				showdata.ID  	 = res.ID;
-				showdata.OWNER   = res.OWNER;
-				showdata.NAME  	 = res.NAME;
-				showdata.DATA  	 = JSON.parse(res.DATA);
-				showdata.UPDATED = res.UPDATED;
+		//Search for it..
+		searchForMNSRecord(name,function(record){
+			if(record){
+				var showdata 		= {};
+				showdata.OWNER   	= record.OWNER;
+				showdata.NAME  	 	= record.NAME;
+				showdata.DATA  	 	= JSON.parse(record.DATA);
+				showdata.UPDATED  	= record.UPDATED;
 				searchresults.value = JSON.stringify(showdata,null,2);
 			}else{
-				
-				//Now search the chain..
-				searchain(name,function(res){
-					if(res){
-						var showdata = {};
-						showdata.FOUND   = "ONCHAIN";
-						showdata.OWNER   = stripBrackets(res.state[0]);
-						showdata.NAME  	 = stripBrackets(res.state[2]);
-						showdata.DATA  	 = JSON.parse(stripBrackets(res.state[3]));
-						searchresults.value = JSON.stringify(showdata,null,2);
-					}else{
-						
-						//Not found anywhere..
-						searchresults.value = "Not Found..";
-					}
-				});
+				searchresults.value = "Not Found..";
 			}
 		});
 	}
@@ -125,61 +80,24 @@
 		});
 	}
 	
-	function searchaindomain(owner,callback){
-		var search = "coins address:"+MNS_ADDRESS+" state:"+owner+" order:asc simplestate:true";
-		MDS.cmd(search,function(resp){
-			var found = [];
-			if(resp.status){
-				var len = resp.response.length;
-				for(var i=0;i<len;i++){
-					var coin = resp.response[i];
-					//Check the correct exact name..
-					if(coin.state[0] == "["+owner+"]"){
-						
-						//Create a DB entry..
-						var record 		= {};
-						record.OWNER 	= owner;
-						record.NAME 	= stripBrackets(coin.state[2]);
-						record.DATA 	= stripBrackets(coin.state[3]);
-						
-						found.push(record);
-					}
-				}
-			}
-			
-			//Not found..
-			callback(found);
-		});
-	}
-	
 	function setMyDomains(){
+		return;
 		
 		var list = "MY DOMAINS<br><br>";
-		searchaindomain(USER_OWNER,function(respchain){
-			findMyDomains(USER_OWNER,function(resp){
-				var len  = resp.length;
-				for(var i=0;i<len;i++){
-					var record = resp[i];
-					list += record.NAME+" "+record.DATA+"<br>";
-				}
-				
-				len  = respchain.length;
-				for(var i=0;i<len;i++){
-					var record = respchain[i];
-					list += record.NAME+" "+record.DATA+"<br>";
-				}
-				
-				mydomains.innerHTML = list;
-			});	
-			
+		_searchForAllOwnerDomains(USER_OWNER,function(allrecords){
+			var len  = allrecords.length;
+			for(var i=0;i<len;i++){
+				var record = allrecords[i];
+				list += makeDomainRow(record);
+			}
+			mydomains.innerHTML = list;
 		});
-		
-		
 	}
 	
-	function makeDomainRow(){
+	function makeDomainRow(record){
 		var text = "";
-		//text +
+		text += record.NAME+" "+record.DATA+" "+record.UPDATED+"<br>";
+		return text;
 	}
 	
 	//Main message handler..
@@ -189,25 +107,53 @@
 		if(msg.event == "inited"){
 			
 			//Create the DB
-			createDB(function(res){
-				//Notify of new messages..
-				MDS.cmd("coinnotify action:add address:"+MNS_ADDRESS,function(startup){});
+			if(false){
+				wipeDB();	
+			}else{
+				createDB(function(res){
+					//Notify of new messages..
+					MDS.cmd("coinnotify action:add address:"+MNS_ADDRESS,function(startup){});
+				});		
 				
-			});		
+				MDS.cmd("keys;getaddress",function(resp){
+					USER_OWNER 	 = resp[0].response.keys[0].publickey;
+					USER_ADDRESS = resp[1].response.miniaddress;
+					MDS.log("OWNER : "+USER_OWNER);
+					MDS.log("ADDRESS : "+USER_ADDRESS);
+					
+					//searchForOwnerDomains(USER_OWNER,function(allrecords){
+						
+					//});
+					
+					/*MDS.log("Start sign..");
+					createSig(USER_OWNER,USER_OWNER,"myname","mydata",function(sig){
+						MDS.log("End sign..");
+						MDS.log("Start verify..");
+						verifySig(USER_OWNER,USER_OWNER,"myname","mydatas",sig,function(ver){
+							MDS.log("END verify..");
+							MDS.log("VER:"+ver);
+							
+						});
+					});*/
+					
+					setMyDomains();
+				});	
+				
+				
+				
+				
+			}
 			
-			MDS.cmd("keys;getaddress",function(resp){
-				USER_OWNER 	 = resp[0].response.keys[0].publickey;
-				MDS.log("OWNER : "+USER_OWNER);
-				USER_ADDRESS = resp[1].response.miniaddress;
-				MDS.log("ADDRESS : "+USER_ADDRESS);
-				
-				setMyDomains();
-			});
-		
 		}else if(msg.event == "NOTIFYCOIN"){
+			
 			//Is it the one that matters
 			if(msg.data.address ==  MNS_ADDRESS){
-				setMyDomains();
+			
+				//Who sent it..
+				var owner = stripBrackets(msg.data.coin.state[0]);
+				if(owner == USER_OWNER){
+					setMyDomains();
+				}
 			}
 			
 		}else if(msg.event == "NOTIFYCASCADECOIN"){
@@ -239,10 +185,8 @@
 				
 				//Update DB..
 				MDS.log("CASCADE NOTIFY : "+JSON.stringify(msg.data));
-				updateName(owner, transfer, name, datastr, block, function(resp){
-					MDS.log(resp)
-					
-					//One of Ours ?
+				updateName(owner, transfer, name, datastr, block, function(resp,msg){
+					MDS.log(resp+" "+msg);
 					if(owner == USER_OWNER){
 						setMyDomains();
 					}
