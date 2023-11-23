@@ -81,10 +81,9 @@
 	}
 	
 	function setMyDomains(){
-		return;
 		
 		var list = "MY DOMAINS<br><br>";
-		_searchForAllOwnerDomains(USER_OWNER,function(allrecords){
+		searchForOwnerDomains(USER_OWNER,function(allrecords){
 			var len  = allrecords.length;
 			for(var i=0;i<len;i++){
 				var record = allrecords[i];
@@ -96,7 +95,7 @@
 	
 	function makeDomainRow(record){
 		var text = "";
-		text += record.NAME+" "+record.DATA+" "+record.UPDATED+"<br>";
+		text += record.NAME+" "+record.DATA+" "+record.UPDATED+" "+record.FOUND+"<br>";
 		return text;
 	}
 	
@@ -125,23 +124,8 @@
 						
 					//});
 					
-					/*MDS.log("Start sign..");
-					createSig(USER_OWNER,USER_OWNER,"myname","mydata",function(sig){
-						MDS.log("End sign..");
-						MDS.log("Start verify..");
-						verifySig(USER_OWNER,USER_OWNER,"myname","mydatas",sig,function(ver){
-							MDS.log("END verify..");
-							MDS.log("VER:"+ver);
-							
-						});
-					});*/
-					
 					setMyDomains();
 				});	
-				
-				
-				
-				
 			}
 			
 		}else if(msg.event == "NOTIFYCOIN"){
@@ -181,14 +165,19 @@
 				var sig			= coinstate[4];
 				
 				//check sig..
-				//..
-				
-				//Update DB..
-				MDS.log("CASCADE NOTIFY : "+JSON.stringify(msg.data));
-				updateName(owner, transfer, name, datastr, block, function(resp,msg){
-					MDS.log(resp+" "+msg);
-					if(owner == USER_OWNER){
-						setMyDomains();
+				MDS.log("CASCADE NOTIFY : "+name);
+				verifySig(owner, transfer, name, datastr, sig, function(valid){
+					
+					if(valid){
+						//Update DB..
+						updateName(owner, transfer, name, datastr, block, function(resp,msg){
+							MDS.log(resp+" "+msg);
+							if(owner == USER_OWNER){
+								setMyDomains();
+							}
+						});		
+					}else{
+						MDS.log("CASCADE NOTIFY INVALID : "+name);
 					}
 				});
 			}

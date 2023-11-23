@@ -6,6 +6,7 @@ function _searchDatabaseForMNSRecord(name,callback){
 	findName(name,function(res){
 		if(res){
 			var record 		= {};
+			record.FOUND	= "DATABASE";
 			record.OWNER 	= res.OWNER;
 			record.NAME 	= res.NAME;
 			record.DATA 	= res.DATA;
@@ -25,10 +26,11 @@ function _searchChainForMNSRecord(owner,name,order,callback){
 	MDS.cmd(search,function(resp){
 		
 		//Check valid coin entries..
-		_checkValidChainCoins(owner,name,0, resp.response,function(coin){
+		_checkValidChainCoins(owner,name,0, resp.response, function(coin){
 			
 			if(coin){
 				var record 		= {};
+				record.FOUND 	= "ONCHAIN";
 				record.OWNER 	= stripBrackets(coin.state[0]);
 				record.NAME 	= stripBrackets(coin.state[2]);
 				record.DATA 	= stripBrackets(coin.state[3]);
@@ -44,12 +46,10 @@ function _searchChainForMNSRecord(owner,name,order,callback){
 }
 
 function _checkValidChainCoins(checkowner,checkname,counter,allcoins,callback){
-	MDS.log("Checker : "+counter+" "+allcoins.length);
 	var len = allcoins.length;
 	if(counter<len){
 		var coin 	= allcoins[counter];
 		var state 	= coin.state; 
-		MDS.log("Check valid coin : "+counter+" "+coin.created);
 		
 		//Get the details..
 		var owner 	 	= stripBrackets(state[0]);
@@ -59,7 +59,7 @@ function _checkValidChainCoins(checkowner,checkname,counter,allcoins,callback){
 		var signature 	= state[4]; 
 		
 		//Is the name exactly correct
-		if(checkname == name && (checkowner == "" || checkowner==owner)){
+		if((checkname=="" || checkname == name) && (checkowner == "" || checkowner==owner)){
 			
 			//Check it..
 			verifySig(owner, transfer, name, datastr, signature, function(valid){
@@ -132,21 +132,31 @@ function searchForMNSRecord(name, callback){
  * Search the chain for my Potential domains
  */
 function _searchChainForOwnerDomains(owner,callback){
-	var search = "coins address:"+MNS_ADDRESS+" state:"+owner+" order:asc simplestate:true";
+	var search = "coins address:"+MNS_ADDRESS+" state:"+owner+" order:desc simplestate:true";
 	MDS.cmd(search,function(resp){
 		//MDS.log(resp);
-		var allrecords = [];
+		var allrecords 		= [];
+		var previousnames 	= [];
 		var len = resp.response.length;
 		for(var i=0;i<len;i++){
 			var coin = resp.response[i];
 			//Check the correct exact name..
 			if(coin.state[0] == "["+owner+"]"){
 				var record 		= {};
+				record.FOUND 	= "ONCHAIN";
 				record.OWNER 	= owner;
 				record.NAME 	= stripBrackets(coin.state[2]);
 				record.DATA 	= stripBrackets(coin.state[3]);
 				record.UPDATED 	= coin.created;
-				allrecords.push(record);
+				
+				//Make sure have not already added
+				if(!previousnames.includes(record.NAME)){
+					//Add to the list
+					allrecords.push(record);
+				
+					//Store for later
+					previousnames.push(record.NAME);		
+				}
 			}
 		}
 		
@@ -163,6 +173,7 @@ function _searchDatabaseForOwnerDomains(owner,callback){
 		var len  = resp.length;
 		for(var i=0;i<len;i++){
 			var record 		= {};
+			record.FOUND 	= "DATABASE";
 			record.OWNER 	= resp[i].OWNER;
 			record.NAME 	= resp[i].NAME;
 			record.DATA 	= resp[i].DATA;
@@ -191,22 +202,20 @@ function searchForOwnerDomains(owner,callback){
 	
 	//Get ALL the domains..
 	_searchForAllOwnerDomains(owner,function(allrecords){
-		var len = allrecords.length;
-		MDS.log("FOUND RECORDS : "+len);
+		//callback(allrecords);
 		
 		var correctrecords = [];
-		checkValid(0,allrecords,correctrecords,function(){
-			MDS.log("FINISHED ALL CHECKS");
+		checkValidRecords(0,allrecords,correctrecords,function(){
+			callback(correctrecords);
 		});	
 	});
 }
 
-function checkValid(counter,allrecords,correctrecords,callback){
+function checkValidRecords(counter,allrecords,correctrecords,callback){
 	
 	var len = allrecords.length;
 	if(counter<len){
 		var record = allrecords[counter];
-		MDS.log("Check record : "+counter+" "+JSON.stringify(record));
 		
 		//Check it..
 		searchForMNSRecord(record.NAME,function(resp){
@@ -214,14 +223,20 @@ function checkValid(counter,allrecords,correctrecords,callback){
 			if(resp){
 				
 				//Check the same
-				//if()	
+				if(resp.OWNER == record.OWNER){
+					//He's the owner'				
+					correctrecords.push(record);
+				}else{
+					MDS.log("NOT THE OWNER!! @ "+record.NAME);
+				}
+					
 			}else{
 				//No previous record found.. is OK!				
 				correctrecords.push(record);
 			}
 			
 			//And recurse..
-			checkValid(counter+1,allrecords,correctrecords,callback);	
+			checkValidRecords(counter+1,allrecords,correctrecords,callback);	
 		});
 	}else{
 		//Finished checking..

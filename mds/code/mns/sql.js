@@ -71,10 +71,13 @@ function updateName(owner, transfer, name, datastr, block, callback){
 			
 		}else{
 			
+			MDS.log("No record found for.. "+name);
+			
 			//No record found..
 			var sql = "INSERT INTO mns(owner, name, data, updated) "
 					 +"VALUES ('"+transfer+"','"+name+"','"+datastr+"',"+block+")";
 			MDS.sql(sql,function(msg){
+				MDS.log(msg);
 				callback(true,"New record created");
 			});
 		}
