@@ -75,7 +75,7 @@ public class minidappsync extends Command {
 //			rawin.connect();
 			
 			//Tell the MiniDAPP we are starting..
-			sendMessage(id, createSimpleMessage("SYNC_START"));
+			sendMessage(id, createSimpleMessage("SYNC_START",address));
 			
 			//Load a range..
 			/*long endblock 	= -1;
@@ -154,7 +154,7 @@ public class minidappsync extends Command {
 			}
 			
 			//And it's finished..
-			sendMessage(id, createSimpleMessage("SYNC_END"));
+			sendMessage(id, createSimpleMessage("SYNC_END",address));
 			
 			JSONObject resp = new JSONObject();
 			resp.put("time", MiniFormat.ConvertMilliToTime(timediff));
@@ -172,22 +172,22 @@ public class minidappsync extends Command {
 		Main.getInstance().PostNotifyEvent("MDS_RESYNC", zData, zMiniDAPP);
 	}
 	
-	public JSONObject createSimpleMessage(String zMessage) {
+	public JSONObject createSimpleMessage(String zMessage, String zAddress) {
 		JSONObject json = new JSONObject();
 		json.put("type", "simple");
-		json.put("data", zMessage);
+		json.put("address", zAddress);
+		json.put("message", zMessage);
 		return json;
 	}
 	
 	public JSONObject createCoinMessage(TxBlock zBlock, Coin zCoin, boolean zSpent) {
 		JSONObject json = new JSONObject();
 		json.put("type", "coin");
-		
 		json.put("address", zCoin.getAddress().to0xString());
 		json.put("txblockid", zBlock.getTxPoW().getTxPoWID());
 		json.put("txblock", zBlock.getTxPoW().getBlockNumber().toString());
 		json.put("spent", zSpent);
-		json.put("coin", zCoin.toJSON());
+		json.put("coin", zCoin.toJSON(true));
 		
 		return json;
 	}
