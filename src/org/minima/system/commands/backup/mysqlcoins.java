@@ -94,6 +94,8 @@ public class mysqlcoins extends Command {
 				+ "\n"
 				+ "mysqlcoins LOGIN_DETAILS.. action:search where:\"address='0x791E78C60652B0E19B8FE9EB035B122B261490C477FD76E38C0C928187076103' spent:false limit:1\"\n"
 				+ "\n"
+				+ "mysqlcoins LOGIN_DETAILS.. action:search address:Mx87DE..\n"
+				+ "\n"
 				+ "mysqlcoins LOGIN_DETAILS.. action:search query:\"address='0x791E78C60652B0E19B8FE9EB035B122B261490C477FD76E38C0C928187076103' AND state LIKE '%0xFFEEDD%' LIMIT 10\"\n"
 				;
 	}
