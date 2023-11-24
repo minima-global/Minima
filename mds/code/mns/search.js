@@ -7,9 +7,10 @@ function _searchDatabaseForMNSRecord(name,callback){
 		if(res){
 			var record 		= {};
 			record.FOUND	= "DATABASE";
-			record.OWNER 	= res.OWNER;
-			record.NAME 	= res.NAME;
-			record.DATA 	= res.DATA;
+			record.OWNER 	= decodeStringFromDB(res.OWNER);
+			record.TRANSFER	= decodeStringFromDB(res.OWNER);
+			record.NAME 	= decodeStringFromDB(res.NAME);
+			record.DATA 	= decodeStringFromDB(res.DATA);
 			record.UPDATED 	= res.UPDATED;
 			callback(record);	
 		}else{
@@ -32,6 +33,7 @@ function _searchChainForMNSRecord(owner,name,order,callback){
 				var record 		= {};
 				record.FOUND 	= "ONCHAIN";
 				record.OWNER 	= stripBrackets(coin.state[0]);
+				record.TRANSFER	= stripBrackets(coin.state[1]);
 				record.NAME 	= stripBrackets(coin.state[2]);
 				record.DATA 	= stripBrackets(coin.state[3]);
 				record.UPDATED 	= coin.created;
@@ -59,7 +61,8 @@ function _checkValidChainCoins(checkowner,checkname,counter,allcoins,callback){
 		var signature 	= state[4]; 
 		
 		//Is the name exactly correct
-		if((checkname=="" || checkname == name) && (checkowner == "" || checkowner==owner)){
+		if(		(checkname=="" || checkname == name) 
+			 && (checkowner == "" || checkowner==owner)){
 			
 			//Check it..
 			verifySig(owner, transfer, name, datastr, signature, function(valid){
@@ -131,7 +134,7 @@ function searchForMNSRecord(name, callback){
 /**
  * Search the chain for my Potential domains
  */
-function _searchChainForOwnerDomains(owner,dbrecords,callback){
+function _searchChainForOwnerDomains(owner,astransfer,callback){
 	var search = "coins address:"+MNS_ADDRESS+" state:"+owner+" order:desc simplestate:true";
 	MDS.cmd(search,function(resp){
 		//MDS.log(resp);
@@ -140,17 +143,28 @@ function _searchChainForOwnerDomains(owner,dbrecords,callback){
 		var len = resp.response.length;
 		for(var i=0;i<len;i++){
 			var coin = resp.response[i];
+			
 			//Check the correct exact name..
-			if(coin.state[0] == "["+owner+"]"){
+			var foundone = false;
+			if(astransfer){
+				foundone = (coin.state[0] == "["+owner+"]" || coin.state[1] == "["+owner+"]");
+			}else{
+				foundone = coin.state[0] == "["+owner+"]";
+			}
+			
+			//Is it a valid find..
+			if(foundone){
+				
 				var record 		= {};
 				record.FOUND 	= "ONCHAIN";
-				record.OWNER 	= owner;
+				record.OWNER 	= stripBrackets(coin.state[0]);
+				record.TRANSFER	= stripBrackets(coin.state[1]);
 				record.NAME 	= stripBrackets(coin.state[2]);
 				record.DATA 	= stripBrackets(coin.state[3]);
 				record.UPDATED 	= coin.created;
 				
 				//Make sure have not already added
-				if(!previousnames.includes(record.NAME) && !dbrecords.includes(record.NAME)){
+				if(!previousnames.includes(record.NAME)){
 					//Add to the list
 					allrecords.push(record);
 				
@@ -174,9 +188,10 @@ function _searchDatabaseForOwnerDomains(owner,callback){
 		for(var i=0;i<len;i++){
 			var record 		= {};
 			record.FOUND 	= "DATABASE";
-			record.OWNER 	= resp[i].OWNER;
-			record.NAME 	= resp[i].NAME;
-			record.DATA 	= resp[i].DATA;
+			record.OWNER 	= decodeStringFromDB(resp[i].OWNER);
+			record.TRANSFER	= decodeStringFromDB(resp[i].OWNER);
+			record.NAME 	= decodeStringFromDB(resp[i].NAME);
+			record.DATA 	= decodeStringFromDB(resp[i].DATA);
 			record.UPDATED 	= resp[i].UPDATED;
 			allrecords.push(record);
 		}
@@ -191,17 +206,46 @@ function _searchForAllOwnerDomains(owner,callback){
 	//Search db..
 	_searchDatabaseForOwnerDomains(owner,function(dbrecords){
 		
-		//Create a list of names..
-		var prevnames = [];
-		var len = dbrecords.length;
-		for(var i=0;i<len;i++){
-			prevnames.push(dbrecords[i].NAME);
-		}
-		
-		//Now search Chain - exclude those already found..
-		_searchChainForOwnerDomains(owner,prevnames,function(chainrecords){
+		//Now search Chain
+		_searchChainForOwnerDomains(owner,false,function(chainrecords){
+			
+			//Now you have the DB records and the Chain records.. any transfers
+			var transfers = [];
+			var len = chainrecords.length;
+			for(var i=0;i<len;i++){
+				var record = chainrecords[i];
+				if(record.OWNER != record.TRANSFER){
+					transfers.push(record.NAME);
+				}
+			}
+			
+			//Now scrape out the transfers
+			var validrecords = [];
+			var prevnames  	 = [];
+			
+			//Chain records..
+			var len = chainrecords.length;
+			for(var i=0;i<len;i++){
+				var record 	= chainrecords[i];
+				var name 	= record.NAME;
+				if(!prevnames.includes(name) && !transfers.includes(name)){
+					validrecords.push(record);
+					prevnames.push(name);
+				}
+			}
+			
+			var len = dbrecords.length;
+			for(var i=0;i<len;i++){
+				var record 	= dbrecords[i];
+				var name 	= record.NAME;
+				if(!prevnames.includes(name) && !transfers.includes(name)){
+					validrecords.push(record);
+					prevnames.push(name);
+				}
+			}
+			
 			//Send ALL records found back
-			callback(dbrecords.concat(chainrecords));
+			callback(validrecords);
 		});
 	});
 }
@@ -210,10 +254,33 @@ function searchForOwnerDomains(owner,callback){
 	
 	//Get ALL the domains..
 	_searchForAllOwnerDomains(owner,function(allrecords){
-		//callback(allrecords);
-		
 		var correctrecords = [];
 		checkValidRecords(0,allrecords,correctrecords,function(){
+			callback(correctrecords);
+		});	
+	});
+}
+
+function searchForOwnerTransferDomains(owner,callback){
+	
+	//Get ALL the domains..
+	_searchChainForOwnerDomains(owner,true,function(chainrecords){
+		
+		//Now you have the DB records and the Chain records.. any transfers
+		var transfers = [];
+		var prevnames = [];
+		var len = chainrecords.length;
+		for(var i=0;i<len;i++){
+			var record 	= chainrecords[i];
+			var name 	= record.name; 
+			if(record.OWNER != record.TRANSFER && !prevnames.includes(name)){
+				transfers.push(record);
+				prevnames.push(name);
+			}
+		}
+		
+		var correctrecords = [];
+		checkValidRecords(0,transfers,correctrecords,function(){
 			callback(correctrecords);
 		});	
 	});
@@ -250,4 +317,42 @@ function checkValidRecords(counter,allrecords,correctrecords,callback){
 		//Finished checking..
 		callback();
 	}
+}
+
+/**
+ * Search the chain for my Potential domains
+ */
+function searchChainForAllTransfers(name,callback){
+	var search = "coins address:"+MNS_ADDRESS+" state:"+name+" order:asc simplestate:true";
+	MDS.cmd(search,function(resp){
+		//MDS.log(resp);
+		var allrecords 		= [];
+		var len = resp.response.length;
+		for(var i=0;i<len;i++){
+			var coin = resp.response[i];
+			
+			//Is it a valid find..
+			if(coin.state[2] == "["+name+"]" && (coin.state[0] != coin.state[1])){
+				
+				var record 		= {};
+				record.FOUND 	= "ONCHAIN";
+				record.OWNER 	= stripBrackets(coin.state[0]);
+				record.TRANSFER	= stripBrackets(coin.state[1]);
+				record.NAME 	= stripBrackets(coin.state[2]);
+				record.DATA 	= stripBrackets(coin.state[3]);
+				record.UPDATED 	= coin.created;
+				
+				//Add to the list
+				allrecords.push(record);
+			}
+		}
+		
+		var correctrecords = [];
+		checkValidRecords(0,allrecords,correctrecords,function(){
+			callback(correctrecords);
+		});
+		
+		//Send back what was found..
+		//callback(allrecords);
+	});
 }

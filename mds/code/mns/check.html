@@ -1,0 +1,103 @@
+<html>
+
+<head>
+	<title>MNS</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="sql.js"></script>
+	<script type="text/javascript" src="txns.js"></script>
+	<script type="text/javascript" src="search.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+	<br>
+	<h2>Minima Name Service</h2>
+	
+	<div id=domain></div>
+	
+	<br> 
+	<div id=timechart>
+	
+	</div>
+		
+	<br><br>
+	<button onclick="jumpHome();">HOME</button>
+	
+</center>
+
+<script type="text/javascript">
+	
+	var USER_OWNER 		= "";
+	var USER_ADDRESS 	= "";
+	
+	var MNS_NAME 	 = MDS.form.getParams("mns");
+	domain.innerHTML = "Transfer details for <b>"+MNS_NAME+".mns<b>"; 
+	
+	function jumpHome(){
+		location.href="index.html?uid="+MDS.minidappuid;
+	}
+	
+	//Find a record - either ion DB or on chain
+	function setDetails(){
+		
+		searchChainForAllTransfers(MNS_NAME,function(allfound){
+			
+			var len = allfound.length;
+			var list = "TRANSFERS FOUND..<br><br>";
+			if(len>1){
+				list = "<span style='color:red;'>(MORE than 1 transfer - should NOT happen)</span><br><br>";
+			}
+			
+			for(var i=0;i<len;i++){
+				var record = allfound[i];
+				list += JSON.stringify(record)+"<br><br>"
+				
+				/*if(record.TRANSFER == USER_OWNER){
+					list += "TRANSFERED TO YOU (correct!)<br><br>"
+				}else{
+					list += "TRANSFERED TO SOMEONE ELSE (WRONG!)<br><br>"
+				}*/
+			}
+			
+			timechart.innerHTML = list;
+		});
+	}
+	
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			MDS.cmd("keys;getaddress",function(resp){
+				USER_OWNER 	 = resp[0].response.keys[0].publickey;
+				USER_ADDRESS = resp[1].response.miniaddress;
+				MDS.log("OWNER : "+USER_OWNER);
+				MDS.log("ADDRESS : "+USER_ADDRESS);
+				
+				setDetails();
+			});	
+		}
+	});
+
+</script>
+
+</body>
+
+</html>

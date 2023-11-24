@@ -52,17 +52,32 @@ function findMyDomains(owner, callback){
 
 function updateName(owner, transfer, name, datastr, block, callback){
 	
+	//Check format..
+	if(!transfer.startsWith("0x")){
+		callback(false,"Transfer Pubkey not start with 0x "+transfer);
+	}
+	
+	//Ready for DB
+	var rec_transfer 	= encodeStringForDB(transfer);
+	var rec_name 		= encodeStringForDB(name);
+	var rec_datastr		= encodeStringForDB(datastr);
+		
 	//Do we have an entry allready
 	findName(name,function(record){
-		
+				
 		if(record){
 			
 			//There is a record.. is this the owner
 			if(owner == record.OWNER){
 				
 				//Update the record..
-				//DOTO
-				callback(true,"Record updated");
+				var sql = "UPDATE mns SET owner='"+rec_transfer+"', name='"
+								+rec_name+"', data='"+rec_datastr
+								+"', updated="+block+" WHERE id="+record.ID;
+								
+				MDS.sql(sql,function(msg){
+					callback(true,"Record updated");
+				});
 				
 			}else{
 				//Not the correct owner..
@@ -71,13 +86,10 @@ function updateName(owner, transfer, name, datastr, block, callback){
 			
 		}else{
 			
-			MDS.log("No record found for.. "+name);
-			
 			//No record found..
 			var sql = "INSERT INTO mns(owner, name, data, updated) "
-					 +"VALUES ('"+transfer+"','"+name+"','"+datastr+"',"+block+")";
+					 +"VALUES ('"+rec_transfer+"','"+rec_name+"','"+rec_datastr+"',"+block+")";
 			MDS.sql(sql,function(msg){
-				MDS.log(msg);
 				callback(true,"New record created");
 			});
 		}

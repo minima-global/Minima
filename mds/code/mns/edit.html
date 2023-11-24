@@ -1,0 +1,238 @@
+<html>
+
+<head>
+	<title>MNS</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="sql.js"></script>
+	<script type="text/javascript" src="txns.js"></script>
+	<script type="text/javascript" src="search.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+	<br>
+	<h2>Minima Name Service</h2>
+	<br>
+
+	<table>
+	
+	<tr>
+		<td colspan=2>Main Details</td>
+	</tr>
+	
+	<tr>
+		<td>Domain : </td> <td id=mnsdomain></td>
+	</tr>
+	
+	
+	<tr>
+		<td>Last Update : </td> <td id=mnsupdated></td>
+	</tr>
+	
+	<tr>
+		<td>Found : </td> <td id=mnsfound></td>
+	</tr>
+	
+	<tr>
+		<td colspan=2><hr></td>
+	</tr>
+	
+	<tr>
+		<td>Owner : </td> <td id=mnsowner></td>
+	</tr>
+	
+	<tr>
+		<td>Transfer to : </td> <td><input type=text id="mnstransfer"/></td>
+	</tr>
+	
+	<tr>
+		<td colspan=2><hr></td>
+	</tr>
+		
+	<tr>
+		<td>Minima Address : </td> <td><input type=text id="mnsaddress"/></td>
+	</tr>
+	
+	<tr>
+		<td>Maxima Static Address : </td> <td> <input type=text id="maximaaddress"/> </td>
+	</tr>
+	
+	<tr>
+		<td>WWW Site : </td> <td> <input type=text id="wwwaddress"/> </td>
+	</tr>
+	
+	</table>
+	
+	
+	<button onclick="upadateName();">UPDATE</button>
+	
+	<br><br>
+	<button onclick="jumpHome();">HOME</button>
+	
+</center>
+
+<script type="text/javascript">
+	
+	var USER_OWNER 		= "";
+	var USER_ADDRESS 	= "";
+	
+	var MNS_NAME = MDS.form.getParams("mns");
+	
+	function jumpHome(){
+		location.href="index.html?uid="+MDS.minidappuid;
+	}
+	
+	//Find a record - either ion DB or on chain
+	function setDetails(){
+		
+		//Search for it..
+		searchForMNSRecord(MNS_NAME,function(record){
+			if(record){
+				
+				//MDS.log(JSON.stringify(record));
+				
+				document.getElementById("mnsdomain").innerHTML 	= "<b>"+record.NAME+".mns</b>";
+				document.getElementById("mnsowner").innerHTML 	= record.OWNER;
+				document.getElementById("mnsupdated").innerHTML = record.UPDATED;
+				document.getElementById("mnsfound").innerHTML 	= record.FOUND;
+				
+				var data = JSON.parse(record.DATA);
+				
+				//Write out the data
+				if(data.address){
+					document.getElementById("mnsaddress").value = data.address;
+				}
+				
+				if(data.maximaaddress){
+					document.getElementById("maximaaddress").value = data.maximaaddress;
+				}
+				
+				if(data.maximaaddress){
+					document.getElementById("wwwaddress").value = data.wwwaddress;
+				}
+				
+			}else{
+				document.getElementById("mnsname").value = "NOT FOUND!";
+			}
+		});
+	}
+	
+	function upadateName(){
+		
+		//Get data
+		var address 		= document.getElementById("mnsaddress").value.trim();
+		var maximaaddress 	= document.getElementById("maximaaddress").value.trim();
+		var wwwaddress 		= document.getElementById("wwwaddress").value.trim();
+		
+		//Create data json
+		var data 			= {};
+		data.address 		= address;
+		data.maximaaddress 	= maximaaddress;
+		data.wwwaddress 	= wwwaddress;
+		
+		var datastr = JSON.stringify(data);
+		
+		//Are we transferring.. ?
+		var transfer = document.getElementById("mnstransfer").value.trim();		
+		if(transfer==""){
+			transfer = USER_OWNER;
+		}
+		
+		//Now send the Txn..
+		sendNameUpdate(USER_OWNER, transfer, MNS_NAME, datastr, function(resp){
+			MDS.log("UPDATE SENT:"+resp.status);
+		});
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			MDS.cmd("keys;getaddress",function(resp){
+				USER_OWNER 	 = resp[0].response.keys[0].publickey;
+				USER_ADDRESS = resp[1].response.miniaddress;
+				MDS.log("OWNER : "+USER_OWNER);
+				MDS.log("ADDRESS : "+USER_ADDRESS);
+				
+				setDetails();
+			});	
+		}
+	});
+
+	function embedFile(){
+		input = document.createElement('input');
+		input.type = 'file';
+		input.onchange = function(){
+			files 	= Array.from(input.files);
+			file 	= files[0]; 
+			
+			//Is it an image..
+			MDS.log(file.name);
+			var filename = file.name.toLowerCase(); 
+			
+			/*else if(filename.endsWith(".gif")){
+				
+				var reader = new FileReader();
+			    reader.readAsDataURL(file);
+			    reader.onload = function () {
+			      console.log(reader.result);
+			      var link = "<div style='width:100%;text-align:center;'><img src='"+imagedata+"'></div>";
+			      mmessage.value = mmessage.value+" "+link;
+			      
+			      //Move to the end
+			      mmessage.focus();
+			      mmessage.setSelectionRange(mmessage.value.length,mmessage.value.length);
+			    };
+			    reader.onerror = function (error) {
+			      console.log('Error: ', error);
+			    };
+			
+			}else{
+				
+				//Check size..
+				if(file.size >= MAX_MESSAGE_LENGTH){
+					alert("File too big ("+file.size+")! MAX:"+MAX_MESSAGE_LENGTH+" ");
+					return;
+				}
+				
+				var reader = new FileReader();
+			    reader.readAsDataURL(file);
+			    reader.onload = function () {
+			      console.log(reader.result);
+			      var link = "<a download='"+filename+"' href='"+reader.result+"'>"+filename+"</a>";
+			      mmessage.value = mmessage.value+" "+link;
+			      
+			      //Move to the end
+			      mmessage.focus();
+			      mmessage.setSelectionRange(mmessage.value.length,mmessage.value.length);
+			    };
+			    reader.onerror = function (error) {
+			      console.log('Error: ', error);
+			    };
+			}*/
+			
+		};
+		input.click();
+	}
+</script>
+
+</body>
+
+</html>
