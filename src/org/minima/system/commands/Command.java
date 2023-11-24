@@ -15,6 +15,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.backup;
+import org.minima.system.commands.backup.minidappsync;
 import org.minima.system.commands.backup.mysql;
 import org.minima.system.commands.backup.mysqlcoins;
 import org.minima.system.commands.backup.reset;
@@ -136,6 +137,8 @@ public abstract class Command {
 			
 			new ping(), new random(), new mysql(), new mysqlcoins(), new slavenode(), new checkrestore(),
 			//new file(),
+			
+			new minidappsync(),
 			
 			new vault(), new consolidate(), new coinnotify(),
 			new backup(), new restore(), new test(), 
