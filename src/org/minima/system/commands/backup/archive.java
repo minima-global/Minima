@@ -984,9 +984,10 @@ public class archive extends Command {
 			if(startblock == null) {
 				canstart = false;
 			}else {
-				firstStart   = startblock.getTxPoW().getBlockNumber();
+				firstStart   = startblock.getTxPoW().getBlockNumber().decrement();
 				MinimaLogger.log("Start archive @ "+firstStart);
 			}
+			
 			while(canstart) {
 				
 				//Create an IBD for the mysql data
