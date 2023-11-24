@@ -10,6 +10,42 @@ MDS.load("sql.js");
 //Are we logging data
 var logs = false;
 
+function processCoinMessage(coin,block){
+	
+	//Check is Valid amount..
+	if(coin.address != MNS_ADDRESS){
+		MDS.log("Wrong coin address! "+coin.address);
+		return;
+	}else if(coin.tokenid != "0x00"){
+		MDS.log("Message not sent as Minima.. ! "+coin.tokenid);
+		return;
+	}else if(+coin.amount < 0.01){
+		MDS.log("Message below 0.01 Minima threshold.. ! "+coin.amount);
+		return;
+	}
+	
+	//Get the coin..
+	var coinstate  	= coin.state;
+	var owner 		= stripBrackets(coinstate[0]);
+	var transfer 	= stripBrackets(coinstate[1]);
+	var name 		= stripBrackets(coinstate[2]);
+	var datastr		= stripBrackets(coinstate[3]);
+	var sig			= coinstate[4];
+	
+	//check sig..
+	verifySig(owner, transfer, name, datastr, sig, function(valid){
+		if(valid){
+			updateName(owner, transfer, name, datastr, block, function(resp,msg){
+				if(!resp){
+					MDS.log("UPDATE:"+resp+" Name:"+name+" Message:"+msg);	
+				}
+			});		
+		}else{
+			MDS.log("INVALID COIN SIGNATURE : "+name);
+		}
+	});
+}
+
 //Main message handler..
 MDS.init(function(msg){
 	
@@ -60,6 +96,16 @@ MDS.init(function(msg){
 					MDS.log("CASCADE NOTIFY INVALID SIGNATURE : "+name);
 				}
 			});
+		}
+	
+	}else if(msg.event == "MDS_RESYNC"){
+		if(msg.data.type=="simple"){
+			//Message
+			MDS.log(msg.data.data);
+		}else{
+			//Coin event
+			//Process coin..
+			MDS.log("PROCESS Coin");
 		}
 	}
 });		

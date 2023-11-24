@@ -133,7 +133,8 @@
 		var text = "";
 		text += record.NAME+" "+record.UPDATED+" "+record.FOUND;
 		if(edit){
-			text += "&nbsp;&nbsp;<button onclick='jumpDomain(\""+record.NAME+"\")'>EDIT</button> <br><br>";	
+			text += "&nbsp;&nbsp;<button onclick='jumpDomain(\""+record.NAME+"\")'>EDIT</button>";
+			text += "&nbsp;&nbsp;<button onclick='searchName(\""+record.NAME+"\")'>SEARCH</button><br><br>";
 		}else{
 			text += "&nbsp;&nbsp;<button onclick='searchName(\""+record.NAME+"\")'>SEARCH</button>";
 			text += "&nbsp;&nbsp;<button onclick='jumpCheck(\""+record.NAME+"\")'>CHECK</button> <br><br>";
@@ -165,6 +166,10 @@
 				}
 			}
 		}
+		
+		/*}else if(msg.event == "MDS_RESYNC"){
+			MDS.log("MDS_SYNC:"+JSON.stringify(msg.data));
+		}*/
 	});
 
 </script>
