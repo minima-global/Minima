@@ -10,7 +10,8 @@ MDS.load("sql.js");
 //Are we logging data
 var logs = false;
 
-function processCoinMessage(coin,block){
+//Process an incoming coin from cascade or resync
+function processCoin(coin,block){
 	
 	//Check is Valid amount..
 	if(coin.address != MNS_ADDRESS){
@@ -64,48 +65,30 @@ MDS.init(function(msg){
 			
 		//Is it the one that matters
 		if(msg.data.address ==  MNS_ADDRESS){
-			
-			//Check is Valid amount..
-			if(msg.data.coin.tokenid != "0x00"){
-				MDS.log("Message not sent as Minima.. ! "+msg.data.coin.tokenid);
-				return;
-			}else if(+msg.data.coin.amount < 0.01){
-				MDS.log("Message below 0.01 Minima threshold.. ! "+msg.data.coin.amount);
-				return;
-			}
-			
-			//Get the coin..
-			var block 		= msg.data.txblock;
-			var coinstate  	= msg.data.coin.state;
-
-			var owner 		= stripBrackets(coinstate[0]);
-			var transfer 	= stripBrackets(coinstate[1]);
-			var name 		= stripBrackets(coinstate[2]);
-			var datastr		= stripBrackets(coinstate[3]);
-			var sig			= coinstate[4];
-			
-			//check sig..
-			verifySig(owner, transfer, name, datastr, sig, function(valid){
-				if(valid){
-					updateName(owner, transfer, name, datastr, block, function(resp,msg){
-						if(!resp){
-							MDS.log("UPDATE:"+resp+" Name:"+name+" Message:"+msg);	
-						}
-					});		
-				}else{
-					MDS.log("CASCADE NOTIFY INVALID SIGNATURE : "+name);
-				}
-			});
+			processCoin(msg.data.coin,msg.data.txblock);
 		}
-	
+		
 	}else if(msg.event == "MDS_RESYNC"){
-		if(msg.data.type=="simple"){
-			//Message
-			MDS.log(msg.data.data);
-		}else{
-			//Coin event
-			//Process coin..
-			MDS.log("PROCESS Coin");
+		
+		if(msg.data.address ==  MNS_ADDRESS){
+			if(msg.data.type=="simple"){
+				//Message
+				if(msg.data.message == "SYNC_START"){
+					MDS.log("Start the sync process .. wipe db");
+					wipeDB(function(){
+						createDB(function(){
+							MDS.log("DB wiped");
+						});		
+					});	
+					
+				}else if(msg.data.message == "SYNC_END"){
+					MDS.log("End the sync process");
+				}
+				
+			}else{
+				//Coin event
+				processCoin(msg.data.coin,msg.data.txblock)
+			}
 		}
 	}
 });		
