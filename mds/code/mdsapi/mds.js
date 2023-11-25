@@ -10,6 +10,11 @@
 var MDS_MAIN_CALLBACK = null;
 
 /**
+ * API call id array
+ */
+var API_CALLS = [];
+
+/**
  * Main MINIMA Object for all interaction
  */
 var MDS = {
@@ -144,6 +149,45 @@ var MDS = {
 			
 			callback(linkdata);
 		});
+	},
+	
+	/**
+	 * API call to a different minidapp
+	 */
+	api : {
+		
+		call : function(dappname, data, callback){
+		
+			//Construct a unique API request
+			var rand = ""+Math.random()*1000000000;
+			
+			//Construct a callback list object
+			var callitem 		= {};
+			callitem.id 		= rand;
+			callitem.callback 	= callback;
+			
+			//Add to the api calls..
+			API_CALLS.push(callitem);
+			
+			//Create the single line
+			var commsline = dappname+"&request&"+rand+"&"+data;		
+			
+			//Send via POST
+			httpPostAsync("api", commsline);
+		},
+		
+		reply : function(msg, data, callback){
+			
+			//Get the RandID and recipient..
+			var rand 		= msg.data.id;
+			var dappname  	= msg.data.from;
+			
+			//Create the single line
+			var commsline = dappname+"&response&"+rand+"&"+data;		
+			
+			//Send via POST
+			httpPostAsync("api", commsline, callback);
+		} 	
 	},
 	
 	/**	
@@ -488,6 +532,41 @@ var MDS = {
 function MDSPostMessage(json){
    //And dispatch
    if(MDS_MAIN_CALLBACK){
+		
+		//Is this an API response call..
+		if(json.event == "MDSAPI"){
+			//Check if it is a response..
+			if(!json.data.request){
+				
+				//MDS.log("CURRENT LIST : "+JSON.stringify(API_CALLS));
+				
+				//Find the API CALL Object
+				var found = "";
+				var len = API_CALLS.length;
+				for(var i=0;i<len;i++){
+					if(API_CALLS[i].id == json.data.id){
+						//found it..!
+						found = json.data.id;
+						API_CALLS[i].callback(json.data.message);
+					}
+				}	
+				
+				//Remove it..
+				if(found != ""){
+					API_CALLS = API_CALLS.filter(function(apic){
+						return apic.id != found; 
+					});
+					
+					//MDS.log("NEW LIST : "+JSON.stringify(API_CALLS));
+				}else{
+					MDS.log("API CALL NOT FOUND!"+JSON.stringify(json));	
+				}
+				
+				return;	
+			}
+		}
+		
+		//Call the main function
 		MDS_MAIN_CALLBACK(json);	
    }      
 }
