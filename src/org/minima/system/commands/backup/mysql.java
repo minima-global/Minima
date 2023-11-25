@@ -377,6 +377,9 @@ public class mysql extends Command {
 			//Can only do this if all keys created..
 			vault.checkAllKeysCreated();
 			
+			//Tell the MiniDAPPs..
+			Main.getInstance().PostNotifyEvent("MDS_RESYNC_START",new JSONObject());
+			
 			//How many Keys do we need to generate
 			int keys = getNumberParam("keys", new MiniNumber(Wallet.NUMBER_GETADDRESS_KEYS + 16)).getAsInt();
 			

@@ -341,6 +341,9 @@ public class archive extends Command {
 				}
 			}
 			
+			//Tell the MiniDAPPs..
+			Main.getInstance().PostNotifyEvent("MDS_RESYNC_START",new JSONObject());
+			
 			//Are we resetting the wallet too ?
 			MiniData seed 		= null;
 			String phrase = getParam("phrase","");
