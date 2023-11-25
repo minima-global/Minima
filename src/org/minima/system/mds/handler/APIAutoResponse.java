@@ -41,7 +41,7 @@ public class APIAutoResponse implements Runnable {
 	public void run() {
 		
 		//Small Pause..
-		try {Thread.sleep(1000);} catch (InterruptedException e) {}
+		try {Thread.sleep(5000);} catch (InterruptedException e) {}
 		
 		//The API message
 		JSONObject apijson = new JSONObject();
