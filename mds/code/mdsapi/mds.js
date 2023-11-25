@@ -547,7 +547,13 @@ function MDSPostMessage(json){
 					if(API_CALLS[i].id == json.data.id){
 						//found it..!
 						found = json.data.id;
-						API_CALLS[i].callback(json.data.message);
+						
+						//Construct a reply..
+						var reply 	 = {};
+						reply.status = json.data.status; 
+						reply.data 	 = json.data.message;
+						
+						API_CALLS[i].callback(reply);
 					}
 				}	
 				
