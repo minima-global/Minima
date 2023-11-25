@@ -157,17 +157,16 @@ public class MDSManager extends MessageProcessor {
 			return;
 		}
 		
-		//Notify SQL calls not to happen
-		mIsShuttingDown = true;
-		
-		//Send a SHUTDOWN message to all the MiniDAPPs..
+		//Send a SHUTDOWN message to all the MiniDAPP WEB sites..
 		mPollStack.onlyShutDown();
+		
+		//This is for the JS Runnables
 		Main.getInstance().PostNotifyEvent("MDS_SHUTDOWN", new JSONObject());
 		
 		//Wait 2 seconds for it to be processed..
 		try {Thread.sleep(2000);} catch (InterruptedException e) {}
 		
-		//Now post a shutdown message
+		//Now post a shutdown message - added to stack so will wait for POLL messages
 		PostMessage(MDS_SHUTDOWN);
 		
 		//Waiting for shutdown..
@@ -538,6 +537,9 @@ public class MDSManager extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(MDS_SHUTDOWN)) {
 
+			//Notify SQL calls not to happen
+			mIsShuttingDown = true;
+			
 			//Shutdown the Runnables
 			MinimaLogger.log("Shutdown MDS runnables..");
 			for(MDSJS mds : mRunnables) {
