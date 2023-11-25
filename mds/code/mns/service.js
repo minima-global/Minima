@@ -68,27 +68,12 @@ MDS.init(function(msg){
 			processCoin(msg.data.coin,msg.data.txblock);
 		}
 		
-	}else if(msg.event == "MDS_RESYNC"){
+	}else if(msg.event == "MDS_RESYNC_START"){
 		
-		if(msg.data.address ==  MNS_ADDRESS){
-			if(msg.data.type=="simple"){
-				//Message
-				if(msg.data.message == "SYNC_START"){
-					MDS.log("Start the sync process .. wipe db");
-					wipeDB(function(){
-						createDB(function(){
-							MDS.log("DB wiped");
-						});		
-					});	
-					
-				}else if(msg.data.message == "SYNC_END"){
-					MDS.log("End the sync process");
-				}
-				
-			}else{
-				//Coin event
-				processCoin(msg.data.coin,msg.data.txblock)
-			}
-		}
+		//Minima is performing a resync.. 
+		MDS.log("Start the sync process .. wipe db");
+		wipeDB(function(){
+			createDB(function(){});		
+		});		
 	}
 });		
