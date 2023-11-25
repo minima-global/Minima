@@ -608,6 +608,11 @@ public class MDSManager extends MessageProcessor {
 			JSONObject poll = (JSONObject) zMessage.getObject("poll");
 			String to 		= zMessage.getString("to");
 			
+			//Check for shutdown message - sent at the end so all other messages must have been processed
+			if(poll.getString("event").equals("MDS_SHUTDOWN")) {
+				MinimaLogger.log("JS RUNNABLES received all POLL messages.. SHUTDOWN started..");
+			}
+			
 			//Send message to the runnables first..
 			for(MDSJS mds : mRunnables) {
 				try {
