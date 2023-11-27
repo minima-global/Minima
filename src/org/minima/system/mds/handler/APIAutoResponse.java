@@ -9,7 +9,6 @@ public class APIAutoResponse implements Runnable {
 	MDSManager mMDS;
 	
 	//Is it a request or a response
-	boolean mRequest;
 	String mRandID;
 	
 	//From to
@@ -18,18 +17,14 @@ public class APIAutoResponse implements Runnable {
 	String mToMiniDAPPName;
 	String mToMiniDAPPID;
 	
-	String mMessage;
+	long mDelay = 5000;
 	
-	public APIAutoResponse(MDSManager zMDS, String zFromMiniDAPP, String zToMiniDAPP, 
-			String zToMiniDAPPID, String zMessage, String zRandID, boolean zRequest) {
-		
+	public APIAutoResponse(MDSManager zMDS, String zFromMiniDAPP, String zToMiniDAPP, String zToMiniDAPPID, String zRandID) {
 		mMDS				= zMDS;
 		mFromMiniDAPPName	= zFromMiniDAPP;
 		mToMiniDAPPName		= zToMiniDAPP;
 		mToMiniDAPPID		= zToMiniDAPPID;
-		mMessage			= zMessage;
 		mRandID				= zRandID;
-		mRequest			= zRequest;
 	}
 	
 	public void runauto() {
@@ -41,7 +36,7 @@ public class APIAutoResponse implements Runnable {
 	public void run() {
 		
 		//Small Pause..
-		try {Thread.sleep(5000);} catch (InterruptedException e) {}
+		try {Thread.sleep(mDelay);} catch (InterruptedException e) {}
 		
 		//The API message
 		JSONObject apijson = new JSONObject();
@@ -49,8 +44,8 @@ public class APIAutoResponse implements Runnable {
 		apijson.put("to", mToMiniDAPPName);
 		apijson.put("id", mRandID);
 		apijson.put("request", false);
-		apijson.put("message", "API failed to respond..");
 		apijson.put("status", false);
+		apijson.put("message", "API failed to respond..");
 		
 		//Post this message on the POLL Stack just for this one MininDAPP..
 		JSONObject notify = new JSONObject();

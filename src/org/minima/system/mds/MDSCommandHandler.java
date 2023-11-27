@@ -240,7 +240,7 @@ public class MDSCommandHandler {
 				
 				//And start a thread that calls the API in 5 secs if nothing else..
 				APIAutoResponse auto = new APIAutoResponse(mMDS, md.getName(), 
-						thismd.getName(), thismd.getUID(),  msg, randid, true);
+						thismd.getName(), thismd.getUID(),  randid);
 				auto.runauto();
 				
 			}else {

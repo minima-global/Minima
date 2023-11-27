@@ -176,14 +176,10 @@ var MDS = {
 			httpPostAsync("api", commsline);
 		},
 		
-		reply : function(msg, data, callback){
-			
-			//Get the RandID and recipient..
-			var rand 		= msg.data.id;
-			var dappname  	= msg.data.from;
+		reply : function(dappname, id, data, callback){
 			
 			//Create the single line
-			var commsline = dappname+"&response&"+rand+"&"+data;		
+			var commsline = dappname+"&response&"+id+"&"+data;		
 			
 			//Send via POST
 			httpPostAsync("api", commsline, callback);
@@ -535,10 +531,9 @@ function MDSPostMessage(json){
 		
 		//Is this an API response call..
 		if(json.event == "MDSAPI"){
+			
 			//Check if it is a response..
 			if(!json.data.request){
-				
-				//MDS.log("CURRENT LIST : "+JSON.stringify(API_CALLS));
 				
 				//Find the API CALL Object
 				var found = "";
@@ -562,12 +557,11 @@ function MDSPostMessage(json){
 					API_CALLS = API_CALLS.filter(function(apic){
 						return apic.id != found; 
 					});
-					
-					//MDS.log("NEW LIST : "+JSON.stringify(API_CALLS));
 				}else{
-					MDS.log("API CALL NOT FOUND!"+JSON.stringify(json));	
+					//MDS.log("API CALL NOT FOUND!"+JSON.stringify(json));	
 				}
 				
+				//Response messages not forwarded - only via API call
 				return;	
 			}
 		}

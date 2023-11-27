@@ -39,7 +39,7 @@
 			
 			//Do stuff.. from now..		
 			MDS.api.call("mds api","hello",function(resp){
-				MDS.log("API RETURNED: "+resp);
+				MDS.log("API RETURNED: "+JSON.stringify(resp));
 			});
 		
 		}else if(msg.event == "MDSAPI"){
@@ -48,12 +48,12 @@
 			MDS.log(JSON.stringify(msg));
 			
 			//Get the request
-			var req = msg.data.message;
-			MDS.log("RECEIVED API REQ:"+req);
+			//var req = msg.data.message;
+			//MDS.log("RECEIVED API REQ:"+req);
 			
 			//Reply..
-			MDS.log("NOT RERPLYING");
-			//MDS.api.reply(msg,req+req);
+			//MDS.log("NOT RERPLYING");
+			//MDS.api.reply(msg.data.from,msg.data.id,req+req);
 				
 		}
 	});

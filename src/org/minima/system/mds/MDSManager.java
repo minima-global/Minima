@@ -21,6 +21,8 @@ import org.minima.system.mds.handler.MDSCompleteHandler;
 import org.minima.system.mds.pending.PendingCommand;
 import org.minima.system.mds.polling.PollStack;
 import org.minima.system.mds.runnable.MDSJS;
+import org.minima.system.mds.runnable.NullCallable;
+import org.minima.system.mds.runnable.api.APICallback;
 import org.minima.system.mds.runnable.shutter.SandboxContextFactory;
 import org.minima.system.mds.sql.MiniDAPPDB;
 import org.minima.system.network.rpc.HTTPSServer;
@@ -39,6 +41,7 @@ import org.minima.utils.messages.TimerMessage;
 import org.mozilla.javascript.ClassShutter;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
+import org.mozilla.javascript.NativeJSON;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
@@ -120,6 +123,12 @@ public class MDSManager extends MessageProcessor {
 	 */
 	boolean mHasStarted 	= false;
 	boolean mIsShuttingDown = false;
+	
+	/**
+	 * List of all the API call objects
+	 */
+	ArrayList<APICallback> mAPICalls = new ArrayList<>();
+	
 	/**
 	 * Main Constructor
 	 */
@@ -443,6 +452,27 @@ public class MDSManager extends MessageProcessor {
 		return res;
 	}
 	
+	public void addAPICall(APICallback zAPICallback) {
+		mAPICalls.add(zAPICallback);
+	}
+	
+	public APICallback getAPICallback(String zRandID) {
+		APICallback foundapicall = null;
+		for(APICallback api : mAPICalls) {
+			if(api.getRandID().equals(zRandID)) {
+				foundapicall = api;
+				break;
+			}
+		}
+		
+		//Did we find it..
+		if(foundapicall != null) {
+			mAPICalls.remove(foundapicall);
+		}
+		
+		return foundapicall;
+	}
+	
 	public void shutdownSQL(String zMiniDAPPID){
 		//The final DB
 		MiniDAPPDB db = mSqlDB.get(zMiniDAPPID);
@@ -524,7 +554,7 @@ public class MDSManager extends MessageProcessor {
 				MinimaLogger.log("MDS RHINOJS INIT hasGlobal Allready!.. may need a restart");
 			}
 			
-			//Intsall the default MiniHUB..
+			//Install the default MiniHUB..
 			doDefaultMiniHUB();
 			
 			//Scan for MiniDApps
@@ -613,24 +643,60 @@ public class MDSManager extends MessageProcessor {
 				MinimaLogger.log("JS RUNNABLES received all POLL messages.. SHUTDOWN started..");
 			}
 			
-			//Send message to the runnables first..
-			for(MDSJS mds : mRunnables) {
-				try {
+			boolean sendtoall = true;
+			if(poll.getString("event").equals("MDSAPI")) {
 				
-					if(to.equals("*")) {
-						//Send to the runnable
-						mds.callMainCallback(poll);
-					}else {
+				//Get the data
+				JSONObject dataobj = (JSONObject) poll.get("data");
+				
+				//Is it  a response..
+				if(!(boolean)dataobj.get("request")) {
+					
+					//RESPONSE messages are not forwarded
+					sendtoall = false;
+					
+					//Send to the API Call..
+					APICallback api = getAPICallback(dataobj.getString("id"));
+					if(api != null) {
 						
-						//Check the MiniDAPPID
-						if(mds.getMiniDAPPID().equals(to)) {
+						//Construct a reply..
+						JSONObject reply = new JSONObject();
+						reply.put("status", dataobj.get("status"));
+						reply.put("data", dataobj.get("message"));
+						
+						//Call it..
+						Object[] args = { NativeJSON.parse(api.getContext(), 
+									api.getScope(),reply.toString(), new NullCallable()) };
+						
+						//Call the main MDS Function in JS
+						api.getFunction().call(api.getContext(), api.getScope(), api.getScope(), args);
+						
+					}else {
+						//MinimaLogger.log("RUNNABLE NOT FOUND API CALL : "+dataobj.toString());
+					}
+				}
+			}
+			
+			//Send message to the runnables first..
+			if(sendtoall) {
+				for(MDSJS mds : mRunnables) {
+					try {
+						
+						if(to.equals("*")) {
 							//Send to the runnable
 							mds.callMainCallback(poll);
+						}else {
+							
+							//Check the MiniDAPPID
+							if(mds.getMiniDAPPID().equals(to)) {
+								//Send to the runnable
+								mds.callMainCallback(poll);
+							}
 						}
+						
+					}catch(Exception exc) {
+						MinimaLogger.log(exc, false);
 					}
-					
-				}catch(Exception exc) {
-					MinimaLogger.log(exc, false);
 				}
 			}
 			

@@ -33,11 +33,6 @@ public class APIService {
 	Context mContext;
 	Scriptable 	mScope;
 	
-	/**
-	 * List of all the API call objects
-	 */
-	static ArrayList<APICallback> mAPICalls = new ArrayList<>();
-	
 	public APIService(MDSManager zMDS, String zMiniDAPPID, String zMiniDAPPName, Context zContext, Scriptable zScope) {
 		mMDS			= zMDS;
 		mMiniDAPPID		= zMiniDAPPID;
@@ -62,28 +57,18 @@ public class APIService {
 		MiniDAPP md = mMDS.getMiniDAPPFromName(zDappName);
 		
 		//Create a new Call Object
-		mAPICalls.add(new APICallback(rand, zCallback));
+		mMDS.addAPICall(new APICallback(mContext, mScope, rand, zCallback));
 		
 		//Create a Command and run it..
 		APICommand comms = new APICommand(mMDS, mMiniDAPPName, 
 				zDappName, md.getUID(), zData, rand, true);
 		String result = comms.runCommand();
 		
-		//And start a thread that calls the API in 5 secs if nothing else..
-		//APIAutoResponse auto = new APIAutoResponse(mMDS, md.getName(), 
-		//		thismd.getName(), thismd.getUID(),  msg, randid, true);
-		//auto.runauto();
+		//Create a Timed auto response..
+		APIAutoResponse auto = new APIAutoResponse(mMDS, zDappName, mMiniDAPPName, mMiniDAPPID,  rand);
+		auto.runauto();
 		
-		//Send Info Back
-//		if(zCallback == null) {
-//			return;
-//		}
-//		
-//		//The arguments
-//		Object[] args = { NativeJSON.parse(mContext, mScope, result, new NullCallable()) };
-//		
-//		//Call the main MDS Function in JS
-//		zCallback.call(mContext, mScope, mScope, args);
+		//Don't return anything to the callback - that is done later..
 	}
 	
 	/**
@@ -99,8 +84,7 @@ public class APIService {
 		MiniDAPP md = mMDS.getMiniDAPPFromName(zDappName);
 			
 		//Construct command
-		APICommand comms = new APICommand(mMDS, mMiniDAPPName, 
-				zDappName, md.getUID(), zData, zRandID, false);
+		APICommand comms = new APICommand(mMDS, mMiniDAPPName, zDappName, md.getUID(), zData, zRandID, false);
 		String result = comms.runCommand();
 		
 		//Send Info Back
