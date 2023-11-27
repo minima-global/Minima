@@ -6,7 +6,8 @@ function _searchDatabaseForMNSRecord(name,callback){
 	findName(name,function(res){
 		if(res){
 			var record 		= {};
-			record.FOUND	= "DATABASE";
+			record.FOUND	= true;
+			record.LOCATION	= "DATABASE";
 			record.OWNER 	= decodeStringFromDB(res.OWNER);
 			record.TRANSFER	= decodeStringFromDB(res.OWNER);
 			record.NAME 	= decodeStringFromDB(res.NAME);
@@ -31,7 +32,8 @@ function _searchChainForMNSRecord(owner,name,order,callback){
 			
 			if(coin){
 				var record 		= {};
-				record.FOUND 	= "ONCHAIN";
+				record.FOUND 	= true;
+				record.LOCATION	= "ONCHAIN";
 				record.OWNER 	= stripBrackets(coin.state[0]);
 				record.TRANSFER	= stripBrackets(coin.state[1]);
 				record.NAME 	= stripBrackets(coin.state[2]);
@@ -111,12 +113,25 @@ function _searchForFirstMNSRecord(name, callback){
  */
 function searchForMNSRecord(name, callback){
 	
+	//No blanks..
+	if(name.trim() == ""){
+		var blank 	= {};
+		blank.FOUND = false;
+		blank.NAME  = name;
+		callback(blank);
+		return;
+	}
+	
 	//get the very first reference to this domain
 	_searchForFirstMNSRecord(name, function(record){
 		
 		//Did we find anything..
 		if(!record){
-			callback(null);
+			var blank 	= {};
+			blank.FOUND = false;
+			blank.NAME  = name;
+			callback(blank);
+			
 		}else{
 		
 			//Ok - we have the first.. has he updated.. 	
@@ -156,7 +171,8 @@ function _searchChainForOwnerDomains(owner,astransfer,callback){
 			if(foundone){
 				
 				var record 		= {};
-				record.FOUND 	= "ONCHAIN";
+				record.FOUND 	= true;
+				record.LOCATION	= "ONCHAIN";
 				record.OWNER 	= stripBrackets(coin.state[0]);
 				record.TRANSFER	= stripBrackets(coin.state[1]);
 				record.NAME 	= stripBrackets(coin.state[2]);
@@ -187,7 +203,8 @@ function _searchDatabaseForOwnerDomains(owner,callback){
 		var len  = resp.length;
 		for(var i=0;i<len;i++){
 			var record 		= {};
-			record.FOUND 	= "DATABASE";
+			record.FOUND 	= true;
+			record.LOCATION	= "DATABASE";
 			record.OWNER 	= decodeStringFromDB(resp[i].OWNER);
 			record.TRANSFER	= decodeStringFromDB(resp[i].OWNER);
 			record.NAME 	= decodeStringFromDB(resp[i].NAME);
@@ -295,7 +312,7 @@ function checkValidRecords(counter,allrecords,correctrecords,callback){
 		//Check it..
 		searchForMNSRecord(record.NAME,function(resp){
 			
-			if(resp){
+			if(resp.FOUND){
 				
 				//Check the same
 				if(resp.OWNER == record.OWNER){
@@ -335,7 +352,8 @@ function searchChainForAllTransfers(name,callback){
 			if(coin.state[2] == "["+name+"]" && (coin.state[0] != coin.state[1])){
 				
 				var record 		= {};
-				record.FOUND 	= "ONCHAIN";
+				record.FOUND 	= true;
+				record.LOCATION	= "ONCHAIN";
 				record.OWNER 	= stripBrackets(coin.state[0]);
 				record.TRANSFER	= stripBrackets(coin.state[1]);
 				record.NAME 	= stripBrackets(coin.state[2]);

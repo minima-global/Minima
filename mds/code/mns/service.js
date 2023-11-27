@@ -6,6 +6,7 @@
 //Load js libs
 MDS.load("jslib.js");
 MDS.load("sql.js");
+MDS.load("search.js");
 
 //Are we logging data
 var logs = false;
@@ -75,5 +76,15 @@ MDS.init(function(msg){
 		wipeDB(function(){
 			createDB(function(){});		
 		});		
+	
+	}else if(msg.event == "MDSAPI"){
+		
+		//API call to get an MNS record..
+		var req = msg.data.message.trim();
+		
+		//Do a search
+		searchForMNSRecord(req,function(record){
+			MDS.api.reply(msg.data.from,msg.data.id,JSON.stringify(record));
+		});	
 	}
 });		

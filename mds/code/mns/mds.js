@@ -10,6 +10,11 @@
 var MDS_MAIN_CALLBACK = null;
 
 /**
+ * API call id array
+ */
+var API_CALLS = [];
+
+/**
  * Main MINIMA Object for all interaction
  */
 var MDS = {
@@ -87,11 +92,7 @@ var MDS = {
 	 * Log some data with a timestamp in a consistent manner to the console
 	 */
 	log : function(output){
-		//if(output !== undefined && output !== null && (output.constructor == Object ||  output.constructor == Array)){
-		//	console.log("Minima @ "+new Date().toLocaleString()+" : "+JSON.stringify(output));
-		//}else{
-			console.log("Minima @ "+new Date().toLocaleString()+" : "+output);	
-		//}
+		console.log("Minima @ "+new Date().toLocaleString()+" : "+output);
 	},
 	
 	/**
@@ -148,6 +149,41 @@ var MDS = {
 			
 			callback(linkdata);
 		});
+	},
+	
+	/**
+	 * API call to a different minidapp
+	 */
+	api : {
+		
+		call : function(dappname, data, callback){
+		
+			//Construct a unique API request
+			var rand = ""+Math.random()*1000000000;
+			
+			//Construct a callback list object
+			var callitem 		= {};
+			callitem.id 		= rand;
+			callitem.callback 	= callback;
+			
+			//Add to the api calls..
+			API_CALLS.push(callitem);
+			
+			//Create the single line
+			var commsline = dappname+"&request&"+rand+"&"+data;		
+			
+			//Send via POST
+			httpPostAsync("api", commsline);
+		},
+		
+		reply : function(dappname, id, data, callback){
+			
+			//Create the single line
+			var commsline = dappname+"&response&"+id+"&"+data;		
+			
+			//Send via POST
+			httpPostAsync("api", commsline, callback);
+		} 	
 	},
 	
 	/**	
@@ -492,6 +528,45 @@ var MDS = {
 function MDSPostMessage(json){
    //And dispatch
    if(MDS_MAIN_CALLBACK){
+		
+		//Is this an API response call..
+		if(json.event == "MDSAPI"){
+			
+			//Check if it is a response..
+			if(!json.data.request){
+				
+				//Find the API CALL Object
+				var found = "";
+				var len = API_CALLS.length;
+				for(var i=0;i<len;i++){
+					if(API_CALLS[i].id == json.data.id){
+						//found it..!
+						found = json.data.id;
+						
+						//Construct a reply..
+						var reply 	 = {};
+						reply.status = json.data.status; 
+						reply.data 	 = json.data.message;
+						
+						API_CALLS[i].callback(reply);
+					}
+				}	
+				
+				//Remove it..
+				if(found != ""){
+					API_CALLS = API_CALLS.filter(function(apic){
+						return apic.id != found; 
+					});
+				}else{
+					//MDS.log("API CALL NOT FOUND!"+JSON.stringify(json));	
+				}
+				
+				//Response messages not forwarded - only via API call
+				return;	
+			}
+		}
+		
+		//Call the main function
 		MDS_MAIN_CALLBACK(json);	
    }      
 }

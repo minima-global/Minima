@@ -1,7 +1,7 @@
 <html>
 
 <head>
-	<title>BASIC</title>
+	<title>MDS API TESTER</title>
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
@@ -22,41 +22,42 @@
 <body>
 
 <center>
+<br>
 
-	<br>
-
-	<h2>Hello World!</h2>
+	<h2>Search MNS</h2>
+	
+	Domain : <input type="text" id="domain"> <button onclick="searchdomain();">SEARCH</button>
+	<br><br>
+	
+	<textarea rows="12" cols="80" id="domainresults"></textarea>
 	
 </center>
 
 <script type="text/javascript">
 	
-	//Main message handler..
-	MDS.init(function(msg){
-		
-		//Do initialisation
-		if(msg.event == "inited"){
-			
-			//Do stuff.. from now..		
-			MDS.api.call("mds api","hello",function(resp){
-				MDS.log("API RETURNED: "+JSON.stringify(resp));
-			});
-		
-		}else if(msg.event == "MDSAPI"){
-			
-			//get the request
-			MDS.log(JSON.stringify(msg));
-			
-			//Get the request
-			//var req = msg.data.message;
-			//MDS.log("RECEIVED API REQ:"+req);
-			
-			//Reply..
-			//MDS.log("NOT RERPLYING");
-			//MDS.api.reply(msg.data.from,msg.data.id,req+req);
-				
+	function searchdomain(){
+		var name = document.getElementById("domain").value.trim();
+		if(name == ""){
+			return;
 		}
-	});
+		
+		//Do stuff.. from now..		
+		MDS.api.call("mns",name,function(resp){
+			
+			if(resp.status){
+				MDS.log("API RETURNED: "+resp.data);
+				var data = JSON.parse(resp.data);
+				
+				//set the result text area
+				domainresults.value = JSON.stringify(data,null,2);
+			}else{
+				MDS.log("API FAILED RETURNED: "+resp.data);	
+			}
+		});	
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){});
 
 </script>
 

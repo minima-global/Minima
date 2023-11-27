@@ -102,14 +102,14 @@
 		
 		//Search for it..
 		searchForMNSRecord(MNS_NAME,function(record){
-			if(record){
+			if(record.FOUND){
 				
 				//MDS.log(JSON.stringify(record));
 				
 				document.getElementById("mnsdomain").innerHTML 	= "<b>"+record.NAME+".mns</b>";
 				document.getElementById("mnsowner").innerHTML 	= record.OWNER;
 				document.getElementById("mnsupdated").innerHTML = record.UPDATED;
-				document.getElementById("mnsfound").innerHTML 	= record.FOUND;
+				document.getElementById("mnsfound").innerHTML 	= record.LOCATION;
 				
 				var data = JSON.parse(record.DATA);
 				

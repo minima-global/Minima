@@ -7,14 +7,14 @@ MDS.init(function(msg){
 	if(msg.event == "inited"){
 		
 		//Do stuff.. from now..		
-		MDS.api.call("mds api","servicehello",function(resp){
-			MDS.log("API RETURNED: "+JSON.stringify(resp));
-		});
+		//MDS.api.call("mds api","servicehello",function(resp){
+		//	MDS.log("API RETURNED: "+JSON.stringify(resp));
+		//});
 	
 	}else if(msg.event == "MDSAPI"){
 		
 		//get the request
-		MDS.log("API REQUEST RECEIVED:"+JSON.stringify(msg));
+		/*MDS.log("API REQUEST RECEIVED:"+JSON.stringify(msg));
 		
 		//Get the request
 		var req = msg.data.message;
@@ -24,5 +24,6 @@ MDS.init(function(msg){
 		
 		//Reply..
 		MDS.api.reply(msg.data.from,msg.data.id,result);
+		*/
 	}
 });

@@ -213,8 +213,6 @@ public class MDSCommandHandler {
 		
 		}else if(command.equals("api")) {
 			
-			MinimaLogger.log("API CALL "+data);
-			
 			//Get the Name of the MiniDAPP..
 			MiniDAPP thismd = mMDS.getMiniDAPP(minidappid);
 			
@@ -228,7 +226,7 @@ public class MDSCommandHandler {
 			String randid	= data.substring(dataindex2+1, dataindex3);
 			String msg 		= data.substring(dataindex3+1);
 			
-			MinimaLogger.log("mini:"+mininame+" type:"+type+" randid:"+randid+" msg:"+msg);
+			//MinimaLogger.log("mini:"+mininame+" type:"+type+" randid:"+randid+" msg:"+msg);
 			
 			//Get the Name of the MiniDAPP..
 			MiniDAPP md = mMDS.getMiniDAPPFromName(mininame);
