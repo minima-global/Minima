@@ -13,7 +13,6 @@ function sendNameUpdate(owner, transfer, name, datastr, callback){
 		
 		//Now construct a txn
 		var txn = "send amount:0.01 address:"+MNS_ADDRESS+" state:"+JSON.stringify(state);
-		MDS.log(txn);
 		
 		//Now post..
 		MDS.cmd(txn,function(resp){

@@ -25,32 +25,43 @@
 <body>
 
 <center>
+	
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table width=100% border=0>
+			<tr>
+				<td><img height=45 src="mns.png"></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>MNS</b></td>
+				<td class='topicdate' nowrap>
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpHome();" height=30 src="home.png">&nbsp;&nbsp;
+				</td>
+			</tr>
+		</table>
+	</div>
 	<br>
-	<h2>Minima Name Service</h2>
-	<br>
-
-	<div id="ownerid">
+	
+	<div id="ownerid" class="mainview" style="word-wrap: break-word;">
 	
 	</div>
 	<br>
 	
-	Name : <input type="text" id="searchname"/> <button onclick="searchName();">SEARCH</button>
+	<div id="mydomains" class="mainview">
+	
+	</div>
+	
+	<br>
+	<div id="transferdomains" class="mainview" style="display:none;">
+	
+	</div>
+	<br>
+	
+	<div class="mainview">
+	<b>Register</b><br><br>
+	<input type="text" id="searchname"/> 
+		&nbsp;&nbsp;<button class="solobutton" onclick="searchName();">SEARCH</button>
+		&nbsp;&nbsp;<button class="solobutton" id="registerbutton" onclick="registerName();">REGISTER</button>
 	<br><br>
-	<textarea rows="12" cols="80" id="searchresults"></textarea>
-	<br>
-	<br>
-	Register : 	<input type="text" id="registername"/> <button onclick="registerName();">REGISTER</button>
-	<br><br>
-	
-	<div id="mydomains">
-	
+	<textarea rows="12" cols="80" id="searchresults" style="width:100%;"></textarea>
 	</div>
-	
-	<br>
-	<div id="transferdomains">
-	
-	</div>
-	
 </center>
 
 <script type="text/javascript">
@@ -58,7 +69,17 @@
 	var USER_OWNER 		= "";
 	var USER_ADDRESS 	= "";
 	
-	//Find a record - either ion DB or on chain
+	function showTitleOnAndroid(){
+		if (window.navigator.userAgent.includes('Minima Browser')) {
+			Android.showTitleBar();
+    	}
+	}
+	
+	function jumpHome(){
+		location.href="index.html?uid="+MDS.minidappuid;
+	}
+	
+	//Find a record - either in DB or on chain
 	function searchName(setname){
 		
 		//What name..
@@ -67,7 +88,11 @@
 			name = setname
 			document.getElementById("searchname").value = setname
 		}else{
-			name = document.getElementById("searchname").value;	
+			name = document.getElementById("searchname").value.trim();	
+		}
+		
+		if(name == ""){
+			return;
 		}
 		
 		//Search for it..
@@ -89,35 +114,73 @@
 	}
 	
 	function registerName(){
-		var name = document.getElementById("registername").value;
-		var data = {};
-		data.address = USER_ADDRESS;
-		var datastr = JSON.stringify(data);
+		var name = document.getElementById("searchname").value;
+		if(name == ""){
+			return;
+		}
 		
-		sendNameUpdate(USER_OWNER, USER_OWNER, name, datastr, function(resp){
-			MDS.log("REGISTER SENT:"+resp.status);
+		//First check 
+		searchForMNSRecord(name,function(record){
+			
+			if(record.FOUND){
+				alert("This domain is already registered..");
+				return;
+			}
+			
+			registerbutton.disabled=true;
+			
+			var data = {};
+			data.address = USER_ADDRESS;
+			var datastr = JSON.stringify(data);
+			
+			sendNameUpdate(USER_OWNER, USER_OWNER, name, datastr, function(resp){
+				if(resp.pending){
+					alert("This transaction is now pending..");
+				}else if(resp.status){
+					alert("MNS Registration request sent..\n\nPlease wait for it to confirm.");
+				}else{
+					MDS.log(JSON.stringify(resp));
+					alert("Something went wrong.. pls check console logs.");
+				}
+				
+				registerbutton.disabled=false;
+			});
 		});
 	}
 	
 	function setMyDomains(){
 		
-		ownerid.innerHTML = USER_OWNER;
+		//Set the Owner ID
+		ownerid.innerHTML = "<b>Owner ID</b> : <span style='font-size:12;'>"+USER_OWNER+"</span>";
 		
-		var list = "MY DOMAINS<br><br>";
+		//Now find My Domains
 		searchForOwnerDomains(USER_OWNER,function(allrecords){
+			var list =  "<b>My Domains</b><br><br><table border=0 width=100%>";
+			//list += "<tr><th>Domain</th><th>Last Updated</th><th>Location</th><th>Actions</th></tr>";
 			var len  = allrecords.length;
 			for(var i=0;i<len;i++){
 				list += makeDomainRow(allrecords[i],true);
 			}
+			list += "</table>"
 			mydomains.innerHTML = list;
 		});
 		
-		var transferlist = "MY TRANSFERS (not valid until in Database)<br><br>";
+		//Now any transfers
 		searchForOwnerTransferDomains(USER_OWNER,function(allrecords){
+			var transferlist =  "<b>My Transfers</b><br><br><table border=0 width=100%>";
+			//transferlist += "<tr><th>Domain</th><th>Last Updated</th><th>Location</th><th>Actions</th></tr>";
 			var len  = allrecords.length;
+			if(len == 0){
+				transferdomains.style.display="none";
+				return;
+			}else{
+				transferdomains.style.display="block";
+			}
+			
 			for(var i=0;i<len;i++){
 				transferlist += makeDomainRow(allrecords[i],false);
 			}
+			transferlist += "</table>"
 			transferdomains.innerHTML = transferlist;
 		});
 	}
@@ -131,15 +194,24 @@
 	}
 	
 	function makeDomainRow(record, edit){
-		var text = "";
-		text += record.NAME+" "+record.UPDATED+" "+record.LOCATION;
+		var text = "<tr>";
+		
+		text += "<td>"+record.NAME+"</td>";
+		text += "<td>"+record.UPDATED+"</td>";
+		text += "<td>"+record.LOCATION+"</td>";
+		
+		text += "<td style='text-align:right;'>";
 		if(edit){
-			text += "&nbsp;&nbsp;<button onclick='jumpDomain(\""+record.NAME+"\")'>EDIT</button>";
-			text += "&nbsp;&nbsp;<button onclick='searchName(\""+record.NAME+"\")'>SEARCH</button><br><br>";
+			text += "&nbsp;&nbsp;<button class='solobutton' onclick='jumpDomain(\""+record.NAME+"\")'>EDIT</button>";
+			text += "&nbsp;&nbsp;<button class='solobutton' onclick='searchName(\""+record.NAME+"\")'>SEARCH</button>";
 		}else{
-			text += "&nbsp;&nbsp;<button onclick='searchName(\""+record.NAME+"\")'>SEARCH</button>";
-			text += "&nbsp;&nbsp;<button onclick='jumpCheck(\""+record.NAME+"\")'>CHECK</button> <br><br>";
+			text += "&nbsp;&nbsp;<button class='solobutton' onclick='searchName(\""+record.NAME+"\")'>SEARCH</button>";
+			text += "&nbsp;&nbsp;<button class='solobutton' onclick='jumpCheck(\""+record.NAME+"\")'>CHECK</button>";
 		}
+		text += "</td>";
+		text += "</tr>";
+		text += "<tr><td colspan=4><hr></td></tr>";
+		
 		return text;
 	}
 	
@@ -167,10 +239,6 @@
 				}
 			}
 		}
-		
-		/*}else if(msg.event == "MDS_RESYNC"){
-			MDS.log("MDS_SYNC:"+JSON.stringify(msg.data));
-		}*/
 	});
 
 </script>

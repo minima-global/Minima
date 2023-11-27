@@ -25,11 +25,21 @@
 <body>
 
 <center>
-	<br>
-	<h2>Minima Name Service</h2>
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table width=100% border=0>
+			<tr>
+				<td><img height=45 src="mns.png"></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>MNS</b></td>
+				<td class='topicdate' nowrap>
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpHome();" height=30 src="home.png">&nbsp;&nbsp;
+				</td>
+			</tr>
+		</table>
+	</div>
 	<br>
 
-	<table>
+	<div class="mainview">
+	<table width=100%>
 	
 	<tr>
 		<td colspan=2>Main Details</td>
@@ -53,7 +63,7 @@
 	</tr>
 	
 	<tr>
-		<td>Owner : </td> <td id=mnsowner></td>
+		<td>Owner : </td> <td><input type=text id="mnsowner" readonly /></td>
 	</tr>
 	
 	<tr>
@@ -77,12 +87,11 @@
 	</tr>
 	
 	</table>
+	<br>
+	<button id="updatebutton" class="solobutton" onclick="upadateName();">UPDATE</button>
 	
+	</div>
 	
-	<button onclick="upadateName();">UPDATE</button>
-	
-	<br><br>
-	<button onclick="jumpHome();">HOME</button>
 	
 </center>
 
@@ -92,6 +101,12 @@
 	var USER_ADDRESS 	= "";
 	
 	var MNS_NAME = MDS.form.getParams("mns");
+	
+	function showTitleOnAndroid(){
+		if (window.navigator.userAgent.includes('Minima Browser')) {
+			Android.showTitleBar();
+    	}
+	}
 	
 	function jumpHome(){
 		location.href="index.html?uid="+MDS.minidappuid;
@@ -107,7 +122,7 @@
 				//MDS.log(JSON.stringify(record));
 				
 				document.getElementById("mnsdomain").innerHTML 	= "<b>"+record.NAME+".mns</b>";
-				document.getElementById("mnsowner").innerHTML 	= record.OWNER;
+				document.getElementById("mnsowner").value 		= record.OWNER;
 				document.getElementById("mnsupdated").innerHTML = record.UPDATED;
 				document.getElementById("mnsfound").innerHTML 	= record.LOCATION;
 				
@@ -153,9 +168,20 @@
 			transfer = USER_OWNER;
 		}
 		
+		updatebutton.disabled=true;
+		
 		//Now send the Txn..
 		sendNameUpdate(USER_OWNER, transfer, MNS_NAME, datastr, function(resp){
-			MDS.log("UPDATE SENT:"+resp.status);
+			if(resp.pending){
+				alert("This transaction is now pending..");
+			}else if(resp.status){
+				alert("MNS Update request sent..\n\nPlease wait for it to confirm.");
+			}else{
+				MDS.log(JSON.stringify(resp));
+				alert("Something went wrong.. pls check console logs.");
+			}
+			
+			updatebutton.disabled=false;
 		});
 	}
 	
