@@ -32,12 +32,13 @@ function processCoin(coin,block){
 	var transfer 	= stripBrackets(coinstate[1]);
 	var name 		= stripBrackets(coinstate[2]);
 	var datastr		= stripBrackets(coinstate[3]);
-	var sig			= coinstate[4];
+	var datahex		= coinstate[4];
+	var sig			= coinstate[5];
 	
 	//check sig..
-	verifySig(owner, transfer, name, datastr, sig, function(valid){
+	verifySig(owner, transfer, name, datastr, datahex, sig, function(valid){
 		if(valid){
-			updateName(owner, transfer, name, datastr, block, function(resp,msg){
+			updateName(owner, transfer, name, datastr, datahex, block, function(resp,msg){
 				if(!resp){
 					MDS.log("UPDATE:"+resp+" Name:"+name+" Message:"+msg);	
 				}

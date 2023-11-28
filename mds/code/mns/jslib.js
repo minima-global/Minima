@@ -30,10 +30,10 @@ function addBrackets(word){
 	return "["+word+"]"
 }
 
-function createSig(owner, transfer, name, datastr, callback){
+function createSig(owner, transfer, name, datastr, datahex, callback){
 	
 	//URL encode
-	var enc = encodeStringForDB(owner+":"+transfer+":"+name+":"+datastr);
+	var enc = encodeStringForDB(owner+":"+transfer+":"+name+":"+datastr+":"+datahex);
 	
 	//Now convert to HEX
 	MDS.cmd("convert from:string to:hex data:"+enc,function(conv){
@@ -46,16 +46,19 @@ function createSig(owner, transfer, name, datastr, callback){
 	});
 }
 
-function verifySig(owner, transfer, name, datastr, signature, callback){
+function verifySig(owner, transfer, name, datastr, datahex, signature, callback){
 	
 	//Check valid input
 	if(!owner.startsWith("0x")){
 		MDS.log("Invalid owner format not start with 0x.. owner:"+owner);
 		callback(false);
+	}else if(!datahex.startsWith("0x")){
+		MDS.log("Invalid datahex format not start with 0x.. datahex:"+datahex);
+		callback(false);
 	}
 	
 	//URL encode
-	var enc = encodeStringForDB(owner+":"+transfer+":"+name+":"+datastr);
+	var enc = encodeStringForDB(owner+":"+transfer+":"+name+":"+datastr+":"+datahex);
 	
 	//Now convert to HEX
 	MDS.cmd("convert from:string to:hex data:"+enc,function(conv){

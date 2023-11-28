@@ -20,6 +20,8 @@
 	<script type="text/javascript" src="txns.js"></script>
 	<script type="text/javascript" src="search.js"></script>
 	
+	<script type="text/javascript" src="jszip.min.js"></script>
+	
 </head>
 
 <body>
@@ -86,10 +88,22 @@
 		<td>WWW Site : </td> <td> <input type=text id="wwwaddress"/> </td>
 	</tr>
 	
+	<tr>
+		<td colspan=2><hr></td>
+	</tr>
+		
+	<tr>
+		<td>HEX data : </td> <td><input type=text id="mnshex"/> &nbsp;&nbsp;<button class="solobutton" onclick="embedFile();">&nbsp;EMBED FILE&nbsp;</button></td>
+	</tr>
+	
+	<tr>
+		<td>HEX data size : </td> <td><input type=text id="mnshexsize" readonly /></td>
+	</tr>
+	
 	</table>
 	<br>
 	<button id="updatebutton" class="solobutton" onclick="upadateName();">UPDATE</button>
-	
+	<br>
 	</div>
 	
 	
@@ -119,8 +133,6 @@
 		searchForMNSRecord(MNS_NAME,function(record){
 			if(record.FOUND){
 				
-				//MDS.log(JSON.stringify(record));
-				
 				document.getElementById("mnsdomain").innerHTML 	= "<b>"+record.NAME+".mns</b>";
 				document.getElementById("mnsowner").value 		= record.OWNER;
 				document.getElementById("mnsupdated").innerHTML = record.UPDATED;
@@ -140,6 +152,9 @@
 				if(data.maximaaddress){
 					document.getElementById("wwwaddress").value = data.wwwaddress;
 				}
+				
+				document.getElementById("mnshex").value 		= record.DATAHEX;
+				document.getElementById("mnshexsize").value 	= (record.DATAHEX.length-2)/2;
 				
 			}else{
 				document.getElementById("mnsname").value = "NOT FOUND!";
@@ -162,6 +177,8 @@
 		
 		var datastr = JSON.stringify(data);
 		
+		var datahex 		= document.getElementById("mnshex").value.trim();
+		
 		//Are we transferring.. ?
 		var transfer = document.getElementById("mnstransfer").value.trim();		
 		if(transfer==""){
@@ -171,7 +188,7 @@
 		updatebutton.disabled=true;
 		
 		//Now send the Txn..
-		sendNameUpdate(USER_OWNER, transfer, MNS_NAME, datastr, function(resp){
+		sendNameUpdate(USER_OWNER, transfer, MNS_NAME, datastr, datahex, function(resp){
 			if(resp.pending){
 				alert("This transaction is now pending..");
 			}else if(resp.status){
@@ -210,50 +227,29 @@
 			file 	= files[0]; 
 			
 			//Is it an image..
-			MDS.log(file.name);
+			MDS.log(file.name+" "+file.size);
 			var filename = file.name.toLowerCase(); 
-			
-			/*else if(filename.endsWith(".gif")){
+						
+			//Check size..
+			if(file.size >= 65536){
+				alert("File too big ("+file.size+")! MAX:65536");
+				return;
+			}
 				
-				var reader = new FileReader();
-			    reader.readAsDataURL(file);
-			    reader.onload = function () {
-			      console.log(reader.result);
-			      var link = "<div style='width:100%;text-align:center;'><img src='"+imagedata+"'></div>";
-			      mmessage.value = mmessage.value+" "+link;
-			      
-			      //Move to the end
-			      mmessage.focus();
-			      mmessage.setSelectionRange(mmessage.value.length,mmessage.value.length);
-			    };
-			    reader.onerror = function (error) {
-			      console.log('Error: ', error);
-			    };
-			
-			}else{
-				
-				//Check size..
-				if(file.size >= MAX_MESSAGE_LENGTH){
-					alert("File too big ("+file.size+")! MAX:"+MAX_MESSAGE_LENGTH+" ");
-					return;
-				}
-				
-				var reader = new FileReader();
-			    reader.readAsDataURL(file);
-			    reader.onload = function () {
-			      console.log(reader.result);
-			      var link = "<a download='"+filename+"' href='"+reader.result+"'>"+filename+"</a>";
-			      mmessage.value = mmessage.value+" "+link;
-			      
-			      //Move to the end
-			      mmessage.focus();
-			      mmessage.setSelectionRange(mmessage.value.length,mmessage.value.length);
-			    };
-			    reader.onerror = function (error) {
-			      console.log('Error: ', error);
-			    };
-			}*/
-			
+			var reader = new FileReader();
+		    reader.readAsDataURL(file);
+		    reader.onload = function () {
+		      var res  = reader.result.indexOf(",");
+		      var data = reader.result.substring(res+1);
+		      var hex  = "0x"+MDS.util.base64ToHex(data);
+		      mnshex.value = hex;
+		      
+		      var size = hex.length;
+		      mnshexsize.value = (size-2)/2+" bytes"; 
+		    };
+		    reader.onerror = function (error) {
+		      console.log('Error: ', error);
+		    };
 		};
 		input.click();
 	}

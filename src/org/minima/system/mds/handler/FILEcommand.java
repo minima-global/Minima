@@ -228,9 +228,9 @@ public class FILEcommand {
 				}
 				
 				//Check not directory
-				if(actualfile.isDirectory()) {
-					throw new IllegalArgumentException("Cannot copy Directory");
-				}
+				//if(actualfile.isDirectory()) {
+				//	throw new IllegalArgumentException("Cannot copy Directory");
+				//}
 				
 				File parent = newfile.getParentFile();
 				if(!parent.exists()) {
@@ -238,7 +238,7 @@ public class FILEcommand {
 				}
 				
 				//Now copy the data
-				MiniFile.copyFile(actualfile, newfile);
+				MiniFile.copyFileOrFolder(actualfile, newfile);
 				
 				JSONObject fdata = new JSONObject();
 				fdata.put("origfile", mFile);
@@ -324,9 +324,9 @@ public class FILEcommand {
 				}
 				
 				//Check not directory
-				if(actualfile.isDirectory()) {
-					throw new IllegalArgumentException("Cannot move Directory");
-				}
+				//if(actualfile.isDirectory()) {
+				//	throw new IllegalArgumentException("Cannot move Directory");
+				//}
 				
 				File parent = newfile.getParentFile();
 				if(!parent.exists()) {
@@ -334,7 +334,7 @@ public class FILEcommand {
 				}
 				
 				//Now copy the data
-				MiniFile.copyFile(actualfile, newfile);
+				MiniFile.copyFileOrFolder(actualfile, newfile);
 				
 				JSONObject fdata = new JSONObject();
 				fdata.put("origfile", mFile);

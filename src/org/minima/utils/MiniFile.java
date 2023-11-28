@@ -289,6 +289,41 @@ public class MiniFile {
 //		writeDataToFile(zCopy, orig);
 	}
 	
+	public static void copyFileOrFolder(File zOrig, File zCopy) throws IOException {
+		//Check file exists
+		if(!zOrig.exists()){
+			MinimaLogger.log("Trying to copy file that does not exist "+zOrig.getAbsolutePath());
+			return;
+		}
+		
+		if(zOrig.isDirectory()) {
+			
+			//Make the new dir
+			zCopy.mkdirs();
+			
+			//Now scan through and recurse..
+			File[] children = zOrig.listFiles();
+			if(children == null) {
+				children = new File[0];
+			}
+			
+			//Loop through the children
+			int len = children.length; 
+			for(int i=0;i<len;i++) {
+				
+				//The new copy..
+				File newfile = new File(zCopy,children[i].getName());
+				
+				//And copy 
+				copyFileOrFolder(children[i], newfile);
+			}
+			
+		}else {
+			//Just copy the file..
+			copyFile(zOrig,zCopy);
+		}
+	}
+	
 	public static void deleteFileOrFolder(String mParentCheck, File zFile) {
 		//Check for real
 		if(zFile == null || !zFile.exists()) {

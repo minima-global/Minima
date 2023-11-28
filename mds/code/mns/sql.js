@@ -14,7 +14,8 @@ function createDB(callback){
 				+"  `id` bigint auto_increment, "
 				+"  `owner` varchar(1024) NOT NULL, "
 				+"  `name` varchar(1024) NOT NULL, "
-				+"  `data` varchar(8096) NOT NULL, "
+				+"  `data` clob(64k) NOT NULL, "
+				+"  `datahex` clob(64k) NOT NULL, "
 				+"  `updated` bigint NOT NULL "
 				+" )";
 				
@@ -50,11 +51,13 @@ function findMyDomains(owner, callback){
 	});
 }
 
-function updateName(owner, transfer, name, datastr, block, callback){
+function updateName(owner, transfer, name, datastr, datahex, block, callback){
 	
 	//Check format..
 	if(!transfer.startsWith("0x")){
 		callback(false,"Transfer Pubkey not start with 0x "+transfer);
+	}else if(!datahex.startsWith("0x")){
+		callback(false,"Datahex not start with 0x "+datahex);
 	}
 	
 	//Ready for DB
@@ -73,7 +76,7 @@ function updateName(owner, transfer, name, datastr, block, callback){
 				//Update the record..
 				var sql = "UPDATE mns SET owner='"+rec_transfer+"', name='"
 								+rec_name+"', data='"+rec_datastr
-								+"', updated="+block+" WHERE id="+record.ID;
+								+"', datahex='"+datahex+"', updated="+block+" WHERE id="+record.ID;
 								
 				MDS.sql(sql,function(msg){
 					callback(true,"Record updated");
@@ -87,8 +90,8 @@ function updateName(owner, transfer, name, datastr, block, callback){
 		}else{
 			
 			//No record found..
-			var sql = "INSERT INTO mns(owner, name, data, updated) "
-					 +"VALUES ('"+rec_transfer+"','"+rec_name+"','"+rec_datastr+"',"+block+")";
+			var sql = "INSERT INTO mns(owner, name, data, datahex, updated) "
+					 +"VALUES ('"+rec_transfer+"','"+rec_name+"','"+rec_datastr+"','"+datahex+"',"+block+")";
 			MDS.sql(sql,function(msg){
 				callback(true,"New record created");
 			});

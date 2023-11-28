@@ -12,6 +12,7 @@ function _searchDatabaseForMNSRecord(name,callback){
 			record.TRANSFER	= decodeStringFromDB(res.OWNER);
 			record.NAME 	= decodeStringFromDB(res.NAME);
 			record.DATA 	= decodeStringFromDB(res.DATA);
+			record.DATAHEX 	= res.DATAHEX;
 			record.UPDATED 	= res.UPDATED;
 			callback(record);	
 		}else{
@@ -38,6 +39,7 @@ function _searchChainForMNSRecord(owner,name,order,callback){
 				record.TRANSFER	= stripBrackets(coin.state[1]);
 				record.NAME 	= stripBrackets(coin.state[2]);
 				record.DATA 	= stripBrackets(coin.state[3]);
+				record.DATAHEX 	= coin.state[4];
 				record.UPDATED 	= coin.created;
 				
 				callback(record);
@@ -60,14 +62,15 @@ function _checkValidChainCoins(checkowner,checkname,counter,allcoins,callback){
 		var transfer 	= stripBrackets(state[1]);
 		var name 	 	= stripBrackets(state[2]);
 		var datastr	 	= stripBrackets(state[3]);
-		var signature 	= state[4]; 
+		var datahex	 	= state[4];
+		var signature 	= state[5]; 
 		
 		//Is the name exactly correct
 		if(		(checkname=="" || checkname == name) 
 			 && (checkowner == "" || checkowner==owner)){
 			
 			//Check it..
-			verifySig(owner, transfer, name, datastr, signature, function(valid){
+			verifySig(owner, transfer, name, datastr, datahex, signature, function(valid){
 				
 				if(valid){
 					callback(coin);
@@ -177,6 +180,7 @@ function _searchChainForOwnerDomains(owner,astransfer,callback){
 				record.TRANSFER	= stripBrackets(coin.state[1]);
 				record.NAME 	= stripBrackets(coin.state[2]);
 				record.DATA 	= stripBrackets(coin.state[3]);
+				record.DATAHEX 	= coin.state[4];
 				record.UPDATED 	= coin.created;
 				
 				//Make sure have not already added
@@ -209,6 +213,7 @@ function _searchDatabaseForOwnerDomains(owner,callback){
 			record.TRANSFER	= decodeStringFromDB(resp[i].OWNER);
 			record.NAME 	= decodeStringFromDB(resp[i].NAME);
 			record.DATA 	= decodeStringFromDB(resp[i].DATA);
+			record.DATAHEX 	= resp[i].DATAHEX;
 			record.UPDATED 	= resp[i].UPDATED;
 			allrecords.push(record);
 		}
@@ -358,6 +363,7 @@ function searchChainForAllTransfers(name,callback){
 				record.TRANSFER	= stripBrackets(coin.state[1]);
 				record.NAME 	= stripBrackets(coin.state[2]);
 				record.DATA 	= stripBrackets(coin.state[3]);
+				record.DATAHEX 	= coin.state[4];
 				record.UPDATED 	= coin.created;
 				
 				//Add to the list
@@ -369,8 +375,5 @@ function searchChainForAllTransfers(name,callback){
 		checkValidRecords(0,allrecords,correctrecords,function(){
 			callback(correctrecords);
 		});
-		
-		//Send back what was found..
-		//callback(allrecords);
 	});
 }

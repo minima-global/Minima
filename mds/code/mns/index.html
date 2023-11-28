@@ -102,11 +102,13 @@
 			showdata.NAME  	 	= record.NAME;
 			
 			if(showdata.FOUND){
-				showdata.LOCATION  	= record.LOCATION;
-				showdata.OWNER   	= record.OWNER;
-				showdata.TRANSFER  	= record.TRANSFER;
-				showdata.DATA  	 	= JSON.parse(record.DATA);
-				showdata.UPDATED  	= record.UPDATED;	
+				showdata.LOCATION  	 = record.LOCATION;
+				showdata.OWNER   	 = record.OWNER;
+				showdata.UPDATED  	 = record.UPDATED;
+				showdata.TRANSFER  	 = record.TRANSFER;
+				showdata.DATA  	 	 = JSON.parse(record.DATA);
+				showdata.DATAHEXSIZE = (record.DATAHEX.length-2)/2;
+				showdata.DATAHEX  	 = record.DATAHEX;
 			}
 			
 			searchresults.value = JSON.stringify(showdata,null,2);
@@ -133,7 +135,7 @@
 			data.address = USER_ADDRESS;
 			var datastr = JSON.stringify(data);
 			
-			sendNameUpdate(USER_OWNER, USER_OWNER, name, datastr, function(resp){
+			sendNameUpdate(USER_OWNER, USER_OWNER, name, datastr, "", function(resp){
 				if(resp.pending){
 					alert("This transaction is now pending..");
 				}else if(resp.status){
@@ -217,9 +219,14 @@
 	
 	//Main message handler..
 	MDS.init(function(msg){
+
+		//wipeDB();
+		//return;
 		
 		//Do initialisation
 		if(msg.event == "inited"){
+			
+			//createDB();
 			
 			MDS.cmd("keys;getaddress",function(resp){
 				USER_OWNER 	 = resp[0].response.keys[0].publickey;

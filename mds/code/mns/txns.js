@@ -1,7 +1,14 @@
 
-function sendNameUpdate(owner, transfer, name, datastr, callback){
+function sendNameUpdate(owner, transfer, name, datastr, datahex, callback){
+	
+	//Blank not allowed
+	var _datahex = datahex.trim();
+	if(datahex == ""){
+		_datahex = "0x00";
+	}
+	
 	//Sign the message
-	createSig(owner, transfer, name, datastr, function(sig){
+	createSig(owner, transfer, name, datastr, _datahex, function(sig){
 		
 		//What are the state variables..
 		var state = {};
@@ -9,7 +16,8 @@ function sendNameUpdate(owner, transfer, name, datastr, callback){
 		state[1]  = addBrackets(transfer);
 		state[2]  = addBrackets(name);
 		state[3]  = addBrackets(datastr);
-		state[4]  = sig;
+		state[4]  = _datahex;
+		state[5]  = sig;
 		
 		//Now construct a txn
 		var txn = "send amount:0.01 address:"+MNS_ADDRESS+" state:"+JSON.stringify(state);
