@@ -185,6 +185,10 @@ public class MDSCommandHandler {
 				fc = new FILEcommand(mMDS, minidappid, 
 						FILEcommand.FILECOMMAND_DELETEFROMWEB, filedata, "");
 			
+			}else if(action.equals("listweb")) {
+				fc = new FILEcommand(mMDS, minidappid, 
+						FILEcommand.FILECOMMAND_LISTWEB, filedata, "");
+				
 			}else {
 				throw new MDSCommandException("Invalid function : "+action);
 			}
