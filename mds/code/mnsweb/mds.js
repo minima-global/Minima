@@ -420,6 +420,18 @@ var MDS = {
 		},
 		
 		/**
+		 * List file in a folder .. start at /
+		 */
+		listweb : function(folder, callback){
+			
+			//Create the single line
+			var commsline = "listweb&"+folder;		
+			
+			//Send via POST
+			httpPostAsync("file", commsline, callback);
+		},
+		
+		/**
 		 * Copy a file to your web folder
 		 */
 		copytoweb : function(file, webfile, callback){

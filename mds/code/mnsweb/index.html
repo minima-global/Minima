@@ -23,20 +23,31 @@
 <body>
 
 <center>
-<br>
 
-	Domain : <input type="text" id="domaininput"> <button onclick="go();">GO</button>
-	<br><br>
-	<iframe style="width:400;height:400;" id="webframe" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table width=100% border=0>
+			<tr>
+				<td><img height=45 src="browser.png"></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>MNS Web</b></td>
+				<td class='topicdate' nowrap>
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpHome();" height=30 src="home.png">&nbsp;&nbsp;
+				</td>
+			</tr>
+		</table>
+	</div>
+	<br>
+		
+	<div class="mainview">
+		<b>MNS Domain :</b> <input type="text" id="domaininput">&nbsp;&nbsp;<button class="solobutton" onclick="go();">&nbsp;&nbsp;OPEN&nbsp;&nbsp;</button>
+	</div>
 	
 </center>
 
 <script type="text/javascript">
 	
-	var BASE_INTERNAL 	= "/currentsite";
-	var BASE_WEB 		= "/mnssite";
-	var REL_WEB 		= "./mnssite";
-	
+	function jumpHome(){
+		location.href="index.html?uid="+MDS.minidappuid;
+	}
 	
 	//listen for post messages..
 	window.onmessage = function(event){
@@ -53,84 +64,18 @@
 	
 	function go(domainreq){
 		
-		var domain = "";
-		if(domainreq){
-			domain = domainreq;
-		}else{
-			domain = document.getElementById("domaininput").value;
+		var domain = document.getElementById("domaininput").value;
+		if(domain == ""){
+			return;
 		}
 		
 		if(domain.startsWith("mns://")){
 			domain = domain.substring(6);
 		}
 
-		domaininput.value="mns://"+domain;
+		window.open("mnsweb.html?uid="+MDS.minidappuid+"&mnspage="+domain);
 		
-		loadPage("loading.html");
-		
-		//Get the site data..
-		MDS.api.call("mns",domain,function(resp){
-			if(resp.status){
-				var fulldata = JSON.parse(resp.data);
-				if(fulldata.FOUND){
-					if(fulldata.DATAHEX == "0x00"){
-						loadPage("notfound.html");
-					}else{
-						extractZIP(fulldata.DATAHEX, function(zipresp){
-							MDS.log("Extract Finished..");
-							
-							//Copy files to web..
-							MDS.file.deletefromweb(BASE_WEB,function(delweb){
-								MDS.file.copytoweb(BASE_INTERNAL, BASE_WEB, function(copyweb){
-									loadPage(REL_WEB+"/index.html");
-								});
-							});
-						});	
-					}
-				}else{
-					loadPage("notfound.html");	
-				}
-			}else{
-				loadPage("notfound.html");	
-			}
-		});
-	}
-	
-	function extractZIP(zipdata, callback){
-		
-		MDS.file.delete(BASE_INTERNAL,function(respdel){
-			
-			//Convert to base64..
-			var b64 = MDS.util.hexToBase64(zipdata);
-			
-			//Now save to a folder..
-			var zip = new JSZip();
-			zip.loadAsync(b64, {base64: true}).then(function(zip){
-				
-				const numberOfCallbacks = Object.keys(zip.files).length - 1;
-				var counter=0;
-				MDS.log("START.. "+numberOfCallbacks);
-				zip.forEach(function(relpath, file){
-					zip.file(relpath).async("base64").then(function(data){
-						var conv 		= MDS.util.base64ToHex(data);
-						var fullfile 	= BASE_INTERNAL+"/"+relpath;
-						console.log(counter+" FILE : "+fullfile);
-						
-						MDS.file.savebinary(fullfile,conv,function(saveresp){
-							counter++;
-							if(counter>numberOfCallbacks){
-								MDS.log("END.. ");
-								callback();
-							}	
-						});
-					});
-				});
-			});	
-			
-			
-		});
-		
-		
+		return;
 	}
 	
 	//Main message handler..
