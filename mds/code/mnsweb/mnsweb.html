@@ -70,8 +70,13 @@
 			}else{
 				loadPage("loading.html");
 				
+				//Create an API call
+				var api = {};
+				api.action 	= "GET";
+				api.data 	= domain;
+				
 				MDS.log("Load and Extract webfiles for "+domain);
-				MDS.api.call("mns",domain,function(resp){
+				MDS.api.call("mns",JSON.stringify(api),function(resp){
 					if(resp.status){
 						var fulldata = JSON.parse(resp.data);
 						if(fulldata.FOUND){
