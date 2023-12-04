@@ -4,6 +4,7 @@
 */
 
 //Load js libs
+MDS.load("xregexp-all.js");
 MDS.load("jslib.js");
 MDS.load("sql.js");
 MDS.load("search.js");
@@ -31,6 +32,13 @@ function processCoin(coin,block){
 	var owner 		= stripBrackets(coinstate[0]);
 	var transfer 	= stripBrackets(coinstate[1]);
 	var name 		= stripBrackets(coinstate[2]);
+	
+	//Check the name..
+	if(!checkDomain(name)){
+		MDS.log("Invalid Domain Name : "+name);
+		return;
+	}
+	
 	var datastr		= stripBrackets(coinstate[3]);
 	var datahex		= coinstate[4];
 	var sig			= coinstate[5];
@@ -59,7 +67,6 @@ MDS.init(function(msg){
 		createDB(function(){
 			//Notify of new messages..
 			MDS.cmd("coinnotify action:add address:"+MNS_ADDRESS,function(startup){});
-			
 			MDS.log("Inited");
 		});
 		
@@ -80,12 +87,22 @@ MDS.init(function(msg){
 	
 	}else if(msg.event == "MDSAPI"){
 		
-		//API call to get an MNS record..
-		var req = msg.data.message.trim();
+		//API request are in JSON format
+		var apicall = JSON.parse(msg.data.message.trim());
 		
-		//Do a search
-		searchForMNSRecord(req,function(record){
-			MDS.api.reply(msg.data.from,msg.data.id,JSON.stringify(record));
-		});	
+		//Current valid actions - GET
+		if(apicall.action == "GET"){
+				
+			//DOMAIN is specified as the data
+			var domain = apicall.data;
+			
+			//Do a search
+			searchForMNSRecord(domain,function(record){
+				MDS.api.reply(msg.data.from,msg.data.id,JSON.stringify(record));
+			});	
+			
+		}else{
+			MDS.log("INVALID API : "+JSON.stringify(msg));
+		}
 	}
 });		

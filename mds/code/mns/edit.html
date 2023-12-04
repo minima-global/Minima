@@ -93,11 +93,19 @@
 	</tr>
 		
 	<tr>
-		<td>HEX data : </td> <td><input type=text id="mnshex"/> &nbsp;&nbsp;<button class="solobutton" onclick="embedFile();">&nbsp;EMBED FILE&nbsp;</button></td>
+		<td>HEX Data : </td> <td><input type=text id="mnshex"/> &nbsp;&nbsp;<button class="solobutton" onclick="embedFile();">&nbsp;EMBED FILE&nbsp;</button></td>
 	</tr>
 	
 	<tr>
-		<td>HEX data size : </td> <td><input type=text id="mnshexsize" readonly /></td>
+		<td>HEX Type : </td> <td><input type=text id="mnshextype"/></td>
+	</tr>
+	
+	<tr>
+		<td>HEX Meta : </td> <td><input type=text id="mnshexmeta"/></td>
+	</tr>
+
+	<tr>
+		<td>HEX Data Size : </td> <td><input type=text id="mnshexsize" readonly /></td>
 	</tr>
 	
 	</table>
@@ -133,7 +141,7 @@
 		searchForMNSRecord(MNS_NAME,function(record){
 			if(record.FOUND){
 				
-				document.getElementById("mnsdomain").innerHTML 	= "<b>"+record.NAME+".mns</b>";
+				document.getElementById("mnsdomain").innerHTML 	= "<b>"+record.NAME+"</b>";
 				document.getElementById("mnsowner").value 		= record.OWNER;
 				document.getElementById("mnsupdated").innerHTML = record.UPDATED;
 				document.getElementById("mnsfound").innerHTML 	= record.LOCATION;
@@ -153,6 +161,14 @@
 					document.getElementById("wwwaddress").value = data.wwwaddress;
 				}
 				
+				if(data.hextype){
+					document.getElementById("mnshextype").value = data.hextype;
+				}
+				
+				if(data.hexmeta){
+					document.getElementById("mnshexmeta").value = data.hexmeta;
+				}
+				
 				document.getElementById("mnshex").value 		= record.DATAHEX;
 				document.getElementById("mnshexsize").value 	= (record.DATAHEX.length-2)/2;
 				
@@ -169,11 +185,18 @@
 		var maximaaddress 	= document.getElementById("maximaaddress").value.trim();
 		var wwwaddress 		= document.getElementById("wwwaddress").value.trim();
 		
+		//Get the datat type..
+		var datatype 		= document.getElementById("mnshextype").value.trim();
+		var datameta 		= document.getElementById("mnshexmeta").value.trim();
+		
 		//Create data json
 		var data 			= {};
 		data.address 		= address;
 		data.maximaaddress 	= maximaaddress;
 		data.wwwaddress 	= wwwaddress;
+		
+		data.hextype 		= datatype;
+		data.hexmeta 		= datameta;
 		
 		var datastr = JSON.stringify(data);
 		
@@ -239,9 +262,13 @@
 			var reader = new FileReader();
 		    reader.readAsDataURL(file);
 		    reader.onload = function () {
-		      var res  = reader.result.indexOf(",");
-		      var data = reader.result.substring(res+1);
-		      var hex  = "0x"+MDS.util.base64ToHex(data);
+		      var datatype 		= reader.result.indexOf(";");
+		      var restype  		= reader.result.substring(0,datatype);
+		      mnshextype.value 	= restype;
+		      
+		      var res  		= reader.result.indexOf(",");
+		      var data 		= reader.result.substring(res+1);
+		      var hex  		= "0x"+MDS.util.base64ToHex(data);
 		      mnshex.value = hex;
 		      
 		      var size = hex.length;

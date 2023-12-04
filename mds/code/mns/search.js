@@ -25,7 +25,7 @@ function _searchDatabaseForMNSRecord(name,callback){
  * Search the Chain for the first reference to this Domain
  */
 function _searchChainForMNSRecord(owner,name,order,callback){
-	var search = "coins address:"+MNS_ADDRESS+" state:"+name+" order:"+order+" simplestate:true";
+	var search = "coins address:"+MNS_ADDRESS+" state:\""+name+"\" order:"+order+" simplestate:true";
 	MDS.cmd(search,function(resp){
 		
 		//Check valid coin entries..
