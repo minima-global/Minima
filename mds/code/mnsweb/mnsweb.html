@@ -9,19 +9,37 @@
 	<script type="text/javascript" src="mds.js"></script>
 	
 	<!-- Load the CSS Style sheet -->
-	<link rel="stylesheet" href="stylewebpage.css">
+	<!--  <link rel="stylesheet" href="stylewebpage.css"> -->
 	
 	<!-- And the ICON for the page -->
-	<!--   <link rel="icon" type="image/x-icon" href="favicon.ico"> -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	
 	<!-- Load the local JS lib -->
-	<script type="text/javascript" src="jslib.js"></script>
+	<!--  <script type="text/javascript" src="jslib.js"></script> -->
 	<script type="text/javascript" src="jszip.min.js"></script>
+
+	<style type="text/css">
+	
+		body {
+			margin: 0 auto;
+			padding:0;
+			width : 100%;
+			height : 100%;
+		}
+		
+		.mainiframe{
+			margin: 0 auto;
+			padding:0;
+			width : 100%;
+			height : 100%;
+			borde:0;
+		}
+		
+	</style>
 	
 </head>
 
 <body>
-
 
 <iframe class="mainiframe" id="webframe" frameborder="0"  sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>	
 
@@ -134,17 +152,16 @@
 				
 				const numberOfCallbacks = Object.keys(zip.files).length - 1;
 				var counter=0;
-				//MDS.log("START.. "+numberOfCallbacks);
+				MDS.log("START.. "+numberOfCallbacks);
 				zip.forEach(function(relpath, file){
 					zip.file(relpath).async("base64").then(function(data){
 						var conv 		= MDS.util.base64ToHex(data);
 						var fullfile 	= BASE_INTERNAL+"/"+relpath;
-						//console.log(counter+" FILE : "+fullfile);
-						
 						MDS.file.savebinary(fullfile,conv,function(saveresp){
+							console.log(counter+" FILE : "+fullfile);
 							counter++;
 							if(counter>numberOfCallbacks){
-								//MDS.log("END.. ");
+								MDS.log("END.. ");
 								callback();
 							}	
 						});
