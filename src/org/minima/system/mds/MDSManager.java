@@ -959,7 +959,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("pending", "default/pending-1.1.1.mds.zip", allminis, true);
 			
 			//Security MiniDAPP - backups / restore
-			checkInstalled("security", "default/security-0.29.2.mds.zip", allminis, true);
+			checkInstalled("security", "default/security-0.30.0.mds.zip", allminis, true);
 			
 			//Dappstore gets write permissions
 			checkInstalled("dapp store", "default/dapp_store-1.0.8.mds.zip", allminis, true);
@@ -972,15 +972,17 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("future cash", "default/futurecash-2.4.0.mds.zip", allminis, false);
 			checkInstalled("health", "default/health-1.1.5.mds.zip", allminis, false);
 			checkInstalled("logs", "default/logs-1.0.2.mds.zip", allminis, false);
-			checkInstalled("maxcontacts", "default/maxcontacts-1.8.7.mds.zip", allminis, false);
-			checkInstalled("maxsolo", "default/maxsolo-2.4.6.mds.zip", allminis, false);
+			checkInstalled("maxcontacts", "default/maxcontacts-1.9.1.mds.zip", allminis, false);
+			checkInstalled("maxsolo", "default/maxsolo-2.5.0.mds.zip", allminis, false);
 			checkInstalled("miniswap", "default/miniswap-1.0.4.mds.zip", allminis, false);
 			checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
 			checkInstalled("script ide", "default/scriptide-2.0.2.mds.zip", allminis, false);
+			checkInstalled("shout out", "default/shoutout-0.9.1.mds.zip", allminis, false);
 			checkInstalled("sql bench", "default/sqlbench-0.5.mds.zip", allminis, false);
 			checkInstalled("terminal", "default/terminal-2.3.1.mds.zip", allminis, false);
+			checkInstalled("vault", "default/vault-0.9.0.mds.zip", allminis, false);
 			checkInstalled("vestr", "default/vestr-1.7.2.mds.zip", allminis, false);
-			checkInstalled("wallet", "default/wallet-2.37.4.mds.zip", allminis, false);
+			checkInstalled("wallet", "default/wallet-2.38.1.mds.zip", allminis, false);
 		}
 	}
 	
