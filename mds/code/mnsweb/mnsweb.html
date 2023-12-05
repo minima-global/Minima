@@ -12,7 +12,7 @@
 	<link rel="stylesheet" href="stylewebpage.css">
 	
 	<!-- And the ICON for the page -->
-	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	<!--   <link rel="icon" type="image/x-icon" href="favicon.ico"> -->
 	
 	<!-- Load the local JS lib -->
 	<script type="text/javascript" src="jslib.js"></script>
@@ -27,9 +27,11 @@
 
 <script type="text/javascript">
 	
+	var BASE_PAGE 		= "";
 	var BASE_INTERNAL 	= "/currentsite";
+	
 	var BASE_WEB 		= "/mnssite";
-	var REL_WEB 		= "./mnssite";
+	var REL_WEB 		= "mnssite";
 	
 	//Is there apage defined..
 	var BASE_URL = MDS.form.getParams("mnspage");
@@ -42,8 +44,23 @@
 		}
 	};
 	
-	function loadPage(page){
-		webframe.src=page;
+	var LOAD_CALLBACK = null;
+	webframe.addEventListener("load", function() {
+	  	if(LOAD_CALLBACK){
+	  		LOAD_CALLBACK();
+	  	}
+	});
+	
+	function loadPage(page, callback){
+		
+		if(callback){
+			LOAD_CALLBACK = callback;
+		}else{
+			LOAD_CALLBACK = null;
+		}
+		
+		//Set the page
+		webframe.src=BASE_PAGE+page;
 	}
 	
 	function go(domainreq){
@@ -61,43 +78,44 @@
 		
 		//Which folder to extract to..
 		var webfolder 		= BASE_WEB+"/"+domain;
-		var relwebfolder 	= "."+BASE_WEB+"/"+domain+"/index.html";
+		var relwebfolder 	= REL_WEB+"/"+domain+"/index.html";
 		
 		//Does site data exists allready..
 		MDS.file.listweb(webfolder,function(listweb){
 			if(listweb.response.exists){
 				loadPage(relwebfolder);
 			}else{
-				loadPage("loading.html");
-				
-				//Create an API call
-				var api = {};
-				api.action 	= "GET";
-				api.data 	= domain;
-				
-				MDS.log("Load and Extract webfiles for "+domain);
-				MDS.api.call("mns",JSON.stringify(api),function(resp){
-					if(resp.status){
-						var fulldata = JSON.parse(resp.data);
-						if(fulldata.FOUND){
-							if(fulldata.DATAHEX == "0x00"){
-								loadPage("notfound.html");
-							}else{
-								//Extract the files..
-								extractZIP(fulldata.DATAHEX, function(zipresp){
-									MDS.file.deletefromweb(webfolder,function(delweb){
-										MDS.file.copytoweb(BASE_INTERNAL, webfolder, function(copyweb){
-											loadPage(relwebfolder);
+				loadPage("loading.html",function(){
+					
+					//Create an API call
+					var api = {};
+					api.action 	= "GET";
+					api.data 	= domain;
+					
+					MDS.log("Load and Extract webfiles for "+domain);
+					MDS.api.call("mns",JSON.stringify(api),function(resp){
+						if(resp.status){
+							var fulldata = JSON.parse(resp.data);
+							if(fulldata.FOUND){
+								if(fulldata.DATAHEX == "0x00"){
+									loadPage("notfound.html");
+								}else{
+									//Extract the files..
+									extractZIP(fulldata.DATAHEX, function(zipresp){
+										MDS.file.deletefromweb(webfolder,function(delweb){
+											MDS.file.copytoweb(BASE_INTERNAL, webfolder, function(copyweb){
+												loadPage(relwebfolder);
+											});
 										});
 									});
-								});
+								}
+							}else{
+								loadPage("notfound.html");	
 							}
 						}else{
 							loadPage("notfound.html");	
 						}
-					}else{
-						loadPage("notfound.html");	
-					}
+					});
 				});
 			}
 		});
@@ -139,6 +157,11 @@
 	//Main message handler..
 	MDS.init(function(msg){
 		if(msg.event == "inited"){
+			
+			//Get the main Page
+			var mainstartpage = ""+window.location;
+			var index = mainstartpage.indexOf("mnsweb.html");
+			BASE_PAGE = mainstartpage.substring(0,index);
 			
 			//Delete all the old sites on refresh..
 			MDS.file.deletefromweb(BASE_WEB,function(delweb){

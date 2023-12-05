@@ -41,8 +41,13 @@
 			return;
 		}
 		
+		//Create the API call..
+		var apicall = {};
+		apicall.action 	= "GET";
+		apicall.data 	= name;
+		
 		//Do stuff.. from now..		
-		MDS.api.call("mns",name,function(resp){
+		MDS.api.call("mns",JSON.stringify(apicall),function(resp){
 			
 			if(resp.status){
 				MDS.log("API RETURNED: "+resp.data);
