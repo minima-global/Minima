@@ -1,5 +1,4 @@
-var MNS_ADDRESS 			= "0xFFEEDDFFEEDDFFEEDDFFEEDD"
-const VALID_DOMAIN_REGEX 	= new XRegExp("^[\\p{L}\\p{N}._]*$");
+var MNS_ADDRESS = "0xFFEEDDFFEEDDFFEEDD"
 
 function encodeStringForDB(str){
 	return encodeURIComponent(str).split("'").join("%27");
@@ -31,56 +30,6 @@ function addBrackets(word){
 	return "["+word+"]"
 }
 
-function cleanDomain(domain){
-	
-	//Remove spaces
-	var newcat = domain.split(" ").join("");
-	
-	//Remove double dots
-	while(newcat.indexOf("..") != -1){
-		newcat = newcat.split("..").join(".");
-	}
-	
-	if(newcat.startsWith(".")){
-		newcat = newcat.substring(1);
-	}
-	
-	if(newcat.endsWith(".")){
-		newcat = newcat.substring(0,newcat.length-1);
-	}
-	
-	newcat = newcat.replace(/<\/?[^>]+(>|$)/g, "");
-	
-	return newcat.toLowerCase();
-}
-
-function checkDomain(domain){
-	
-	if(!domain){
-		return false;
-	}
-	
-	var dd = domain.trim();
-	if(dd==""){
-		return false;
-	}
-	
-	//Check is clean
-	var valid = true;
-	if(cleanDomain(dd) != dd){
-		valid = false;
-	}else{
-		valid = VALID_DOMAIN_REGEX.test(dd);
-	}
-	
-	//Log it..
-	//if(!valid){
-	//	MDS.log("Invalid check domain : "+dd);
-	//}
-	
-	return valid;
-}
-
 function createSig(owner, transfer, name, datastr, datahex, callback){
 	
 	//URL encode
@@ -92,11 +41,13 @@ function createSig(owner, transfer, name, datastr, datahex, callback){
 		
 		//Now sign that data..
 		MDS.cmd("sign publickey:"+owner+" data:"+hexdata, function(sig){
-			if(!sig.status){
+			if(sig.pending){
+				//MDS.log("Pending creating signature.."+JSON.stringify(sig));
+			}else if(!sig.status){
 				MDS.log("Error creating signature.."+JSON.stringify(sig));
 			}
 			
-			callback(sig.response);
+			callback(sig);
 		});
 	});
 }

@@ -15,7 +15,6 @@
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	
 	<!-- Load the local JS lib -->
-	<script type="text/javascript" src="xregexp-all.js"></script>
 	<script type="text/javascript" src="jslib.js"></script>
 	<script type="text/javascript" src="sql.js"></script>
 	<script type="text/javascript" src="txns.js"></script>
@@ -214,7 +213,10 @@
 		//Now send the Txn..
 		sendNameUpdate(USER_OWNER, transfer, MNS_NAME, datastr, datahex, function(resp){
 			if(resp.pending){
-				alert("This transaction is now pending..");
+				alert("This request is now pending.."
+						+"\n\nThis will require you to accept 2 Pending Actions.."
+						+"\n\nThe 1st will sign the message and the 2nd will send the txn."
+						+"\n\nThis happens because this MiniDAPP is in READ mode.");
 			}else if(resp.status){
 				alert("MNS Update request sent..\n\nPlease wait for it to confirm.");
 			}else{
