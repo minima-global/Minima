@@ -980,7 +980,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("shout out", "default/shoutout-0.9.1.mds.zip", allminis, false);
 			checkInstalled("sql bench", "default/sqlbench-0.5.mds.zip", allminis, false);
 			checkInstalled("terminal", "default/terminal-2.3.1.mds.zip", allminis, false);
-			checkInstalled("vault", "default/vault-0.9.0.mds.zip", allminis, false);
+			checkInstalled("vault", "default/vault-0.9.2.mds.zip", allminis, false);
 			checkInstalled("vestr", "default/vestr-1.7.2.mds.zip", allminis, false);
 			checkInstalled("wallet", "default/wallet-2.38.1.mds.zip", allminis, false);
 		}
