@@ -159,6 +159,7 @@ public class mds extends Command {
 				CMDcommand cmd 	= new CMDcommand("0x00", pending.getCommand());
 				String result 	= cmd.runCommand();
 				
+				JSONObject jsonres = new JSONObject();
 				boolean status = false;
 				if(result.startsWith("{")) {
 					JSONObject response = (JSONObject) new JSONParser().parse(result);
@@ -166,6 +167,8 @@ public class mds extends Command {
 					
 					ret.put("response", response);
 				
+					jsonres = response;
+					
 				}else if(result.startsWith("[")) {
 					ret.put("response", (JSONArray) new JSONParser().parse(result));
 				
@@ -177,7 +180,7 @@ public class mds extends Command {
 				Main.getInstance().getMDSManager().removePending(uid);
 				
 				//Post a message to the MiniDAPP
-				sendPendingResult(minidappid, uid, true, status);
+				sendPendingResult(minidappid, uid, true, status, jsonres);
 				
 			}else {
 				throw new CommandException("Pending UID not found : "+uid);
@@ -205,7 +208,7 @@ public class mds extends Command {
 			ret.put("response", "Pending action removed : "+uid);
 			
 			//Post a message to the MiniDAPP
-			sendPendingResult(minidappid, uid, false, false);
+			sendPendingResult(minidappid, uid, false, false, new JSONObject());
 			
 		}else if(action.equals("install")) {
 		
@@ -485,7 +488,7 @@ public class mds extends Command {
 		return ret;
 	}
 
-	public void sendPendingResult(String zMiniDAPPID, String zPendinUID, boolean zAccept, boolean zStatus) {
+	public void sendPendingResult(String zMiniDAPPID, String zPendinUID, boolean zAccept, boolean zStatus, JSONObject zResult) {
 		
 		//Is it a valid MiniDAPP
 		if(!zMiniDAPPID.equals("")) {
@@ -494,6 +497,7 @@ public class mds extends Command {
 			res.put("uid", zPendinUID);
 			res.put("accept", zAccept);
 			res.put("status", zStatus);
+			res.put("result", zResult);
 			
 			Main.getInstance().PostNotifyEvent("MDS_PENDING", res, zMiniDAPPID);
 		}
