@@ -178,15 +178,6 @@ public class TxPoWSearcher {
 						//Make a copy..
 						Coin copycoin = coin.deepCopy();
 						
-						//Did we remove the state..
-						if(!coin.storeState()) {
-							//Get it..
-							ArrayList<StateVariable> removedstate = tip.getTxBlock().removedState(coin.getCoinID().to0xString());
-							if(removedstate != null) {
-								copycoin.setState(removedstate);
-							}
-						}
-						
 						//OK - fresh unspent coin
 						coinentry.add(copycoin);
 						
