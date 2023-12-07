@@ -30,7 +30,7 @@ public class Magic implements Streamable {
 	 */
 	private static final MiniNumber MINMAX_TXPOW_SIZE 			= new MiniNumber(64*1024);
 	private static final MiniNumber MINMAX_KISSVM_OPERATIONS 	= new MiniNumber(1024);
-	private static final MiniNumber MINMAX_TXPOW_TXNS			= new MiniNumber(256);
+	private static final MiniNumber MINMAX_TXPOW_TXNS			= new MiniNumber(50);
 	
 	/**
 	 * Minimum acceptable PoW per TxPoW - Also a HARD limit

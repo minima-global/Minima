@@ -130,7 +130,8 @@ public abstract class Command {
 			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(), new sendview(),
 			
 			new archive(), new logs(), new history(), new convert(),new maths(),
-			new magic(), new checkpending(), new checkmode(), new restoresync(),
+			new checkpending(), new checkmode(), new restoresync(),
+			//new magic(), 
 			new multisig(), new checkaddress(),
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
 			
