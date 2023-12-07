@@ -114,6 +114,9 @@ public class send extends Command {
 				+ "mine: (optional)\n"
 				+ "    true or false - should you mine the transaction immediately.\n"
 				+ "\n"
+				+ "storestate: (optional)\n"
+				+ "    true or false - defaults to true. Should the output coins store the state (will still appear in NOTIFYCOIN messages).\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "send address:0xFF.. amount:10\n"
@@ -132,7 +135,7 @@ public class send extends Command {
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"action","uid",
 				"address","amount","multi","tokenid","state","burn","coinage",
-				"split","debug","dryrun","mine","password"}));
+				"split","debug","dryrun","mine","password","storestate"}));
 	}
 	
 	@Override
@@ -198,6 +201,9 @@ public class send extends Command {
 		if(dryrun) {
 			debug = true;
 		}
+		
+		//Are the outputs storing the state
+		boolean storestate = getBooleanParam("storestate", true);
 		
 		//Is there a burn..
 		MiniNumber burn  = getNumberParam("burn",MiniNumber.ZERO);
@@ -476,7 +482,7 @@ public class send extends Command {
 			//Create all the outputs for this user at this split level
 			for(int i=0;i<isplit;i++) {
 				//Create the output
-				Coin recipient = new Coin(Coin.COINID_OUTPUT, address, splitamount, Token.TOKENID_MINIMA, true);
+				Coin recipient = new Coin(Coin.COINID_OUTPUT, address, splitamount, Token.TOKENID_MINIMA, storestate);
 				
 				//Add to the User total
 				currenttotal = currenttotal.add(splitamount);
@@ -500,7 +506,7 @@ public class send extends Command {
 			if(currentdiff.isMore(MiniNumber.ZERO)) {
 				
 				//Send them the remainder..
-				Coin remaincoin = new Coin(Coin.COINID_OUTPUT, address, currentdiff, Token.TOKENID_MINIMA, true);
+				Coin remaincoin = new Coin(Coin.COINID_OUTPUT, address, currentdiff, Token.TOKENID_MINIMA, storestate);
 				if(!tokenid.equals("0x00")) {
 					remaincoin.resetTokenID(new MiniData(tokenid));
 					remaincoin.setToken(token);

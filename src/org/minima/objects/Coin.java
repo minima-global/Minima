@@ -273,12 +273,20 @@ public class Coin implements Streamable {
 		return obj;
 	}
 	
-	public String getStateAsJSON() {
+	public JSONObject getStateAsJSON() {
 		JSONObject state = new JSONObject();
 		for(StateVariable sv : mState) {
 			state.put(""+sv.getPort(), sv.getData().toString());
 		}
-		return state.toString();
+		return state;
+	}
+	
+	public static JSONObject convertStateListToJSON(ArrayList<StateVariable> zStateList) {
+		JSONObject state = new JSONObject();
+		for(StateVariable sv : zStateList) {
+			state.put(""+sv.getPort(), sv.getData().toString());
+		}
+		return state;
 	}
 	
 	/**
