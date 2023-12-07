@@ -225,6 +225,17 @@ public class TxPoWTreeNode implements Streamable {
 					
 					//Message..
 					JSONObject coinjson = newcoin.toJSON(true);
+					
+					//Did we remove the state..
+					if(!newcoin.storeState()) {
+						//Get it..
+						ArrayList<StateVariable> removedstate = mTxBlock.removedState(newcoin.getCoinID().to0xString());
+						if(removedstate != null) {
+							//Add it to the JSON
+							coinjson.put("state", Coin.convertStateListToJSON(removedstate));
+						}
+					}
+					
 					MinimaLogger.log("NEW Unspent Coin : "+coinjson);
 					
 					//Send a message
