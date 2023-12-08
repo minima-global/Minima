@@ -206,27 +206,35 @@ public class P2PPeersChecker extends MessageProcessor {
                     		//check it..
                     		if(tip != null) {
                     			
-                    			//Get that node..
-                    			TxPoWTreeNode checknode = tip.getPastNode(new MiniNumber(block));
-                    			if(checknode != null) {
-                    			
-    	                			if(!checknode.getTxBlock().getTxPoW().getTxPoWID().equals(blockhash)) {
-    	                			
-    	                				if(forcelog || GeneralParams.PEERSCHECKER_lOG) {
-    	                					MinimaLogger.log("PEERS CHECKER incorrect chain! @ "+block+" "+address.toString()+" ");
-    	                				}
-    	                				
-    	                				//Wrong chain.. !
-    	                				validversion = false;
-    	                			}
-    	                			
-                    			}else {
+                    			//Are we below..
+                    			if(tip.getTxPoW().getBlockNumber().isLess(new MiniNumber(block))) {
                     				if(forcelog || GeneralParams.PEERSCHECKER_lOG) {
-                    					MinimaLogger.log("PEERS CHECKER incorrect chain! ( null checknode ) @ "+block+" "+address.toString()+" ");
-                    				}
-                    				
-                    				//Wrong chain.. !
-                    				validversion = false;
+                        				MinimaLogger.log("[-] Can't check peer as tip below check block tip:"+tip.getTxPoW().getBlockNumber().toString()+" check:"+block);
+                        			}	
+                    			}else {
+                    			
+	                    			//Get that node..
+	                    			TxPoWTreeNode checknode = tip.getPastNode(new MiniNumber(block));
+	                    			if(checknode != null) {
+	                    			
+	    	                			if(!checknode.getTxBlock().getTxPoW().getTxPoWID().equals(blockhash)) {
+	    	                			
+	    	                				if(forcelog || GeneralParams.PEERSCHECKER_lOG) {
+	    	                					MinimaLogger.log("PEERS CHECKER incorrect chain! @ "+block+" "+address.toString()+" ");
+	    	                				}
+	    	                				
+	    	                				//Wrong chain.. !
+	    	                				validversion = false;
+	    	                			}
+	    	                			
+	                    			}else {
+	                    				if(forcelog || GeneralParams.PEERSCHECKER_lOG) {
+	                    					MinimaLogger.log("PEERS CHECKER incorrect chain! ( null checknode ) @ "+block+" "+address.toString()+" ");
+	                    				}
+	                    				
+	                    				//Wrong chain.. !
+	                    				validversion = false;
+	                    			}
                     			}
                     		} else {
                     			if(forcelog || GeneralParams.PEERSCHECKER_lOG) {
