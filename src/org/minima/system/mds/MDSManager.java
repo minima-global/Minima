@@ -972,7 +972,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("future cash", "default/futurecash-2.4.0.mds.zip", allminis, false);
 			checkInstalled("health", "default/health-1.1.5.mds.zip", allminis, false);
 			checkInstalled("logs", "default/logs-1.0.2.mds.zip", allminis, false);
-			checkInstalled("maxcontacts", "default/maxcontacts-1.9.1.mds.zip", allminis, false);
+			checkInstalled("maxcontacts", "default/maxcontacts-1.10.5.mds.zip", allminis, false);
 			checkInstalled("maxsolo", "default/maxsolo-2.5.0.mds.zip", allminis, false);
 			checkInstalled("miniswap", "default/miniswap-1.0.4.mds.zip", allminis, false);
 			checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
