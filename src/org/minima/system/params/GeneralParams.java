@@ -166,9 +166,14 @@ public class GeneralParams {
 	public static boolean NO_SYNC_IBD = false;
 	
 	/**
-	 * Don't download sync IBD
+	 * Maximumum output Coins allowed in txn for relay policy
 	 */
 	public static int MAX_RELAY_OUTPUTCOINS = 15;
+	
+	/**
+	 * Maximumum state size store for ALL coins for relay policy
+	 */
+	public static long MAX_RELAY_STORESTATESIZE = 10000;
 	
 	/**
 	 * Max Split coins
