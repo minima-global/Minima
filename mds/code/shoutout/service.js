@@ -17,20 +17,14 @@ var SHOUTOUT_ADDRESS = "0x73686F75746F7574"
 //Are we logging data
 var logs = false;
 
-function stripBrackets(coinstr){
-	
-	var str = coinstr.trim();
-	if(str.startsWith("[")){
-		str = str.substring(1);
+function addStartupGroup(filters,category){
+	var userpubkey  = "0x00";
+	var title 		= "Start Here!";
+	var cattitid 	= getCategoryTitleID(category,title);
+	if(!checkMsgBlockedSQL(filters,userpubkey,cattitid,category)){
+		insertMessage(category, title, "Shout Out", userpubkey, "Mx999", "Blah Blah Blah!", 199, 0, function(res){});	
 	}
-	
-	if(str.endsWith("]")){
-		str = str.substring(0,str.length-1);
-	}
-	
-	return str;
 }
-
 
 //Main message handler..
 MDS.init(function(msg){
@@ -41,13 +35,40 @@ MDS.init(function(msg){
 		//Init the DB		
 		createDB(function(){
 	
-			//Try to insert a message
-			insertMessage("minima", "Start Here!", "Shout Out", "0x00", "Mx999", "Blah Blah Blah!", 199, 0, function(res){});
-			
 			//Notify of new messages..
 			MDS.cmd("coinnotify action:add address:"+SHOUTOUT_ADDRESS,function(startup){});
 	
-			MDS.log("Service Inited")
+			loadAllFilters(function(filters){
+				
+				//Insert some start up Groups
+				addStartupGroup(filters,"minima");
+				addStartupGroup(filters,"minima.developer");
+				addStartupGroup(filters,"adult");
+				addStartupGroup(filters,"art");
+				addStartupGroup(filters,"business");
+				addStartupGroup(filters,"crypto");
+				addStartupGroup(filters,"crypto.bitcoin");
+				addStartupGroup(filters,"crypto.ethereum");
+				addStartupGroup(filters,"entertainment");
+				addStartupGroup(filters,"entertainment.tv");
+				addStartupGroup(filters,"entertainment.books");
+				addStartupGroup(filters,"entertainment.films");
+				addStartupGroup(filters,"entertainment.music");
+				addStartupGroup(filters,"food");
+				addStartupGroup(filters,"food.recipies");
+				addStartupGroup(filters,"food.restaurants");
+				addStartupGroup(filters,"games");
+				addStartupGroup(filters,"health");
+				addStartupGroup(filters,"personal");
+				addStartupGroup(filters,"politics");
+				addStartupGroup(filters,"sport");
+				addStartupGroup(filters,"sport.football");
+				addStartupGroup(filters,"sport.cricket");
+				addStartupGroup(filters,"sport.rugby");
+				addStartupGroup(filters,"technology");
+				
+				MDS.log("Service Inited")	
+			});
 		});
 	
 	}else if(msg.event == "NOTIFYCOIN"){
@@ -78,13 +99,27 @@ MDS.init(function(msg){
 			var msg_randid 	 = stripBrackets(msg.data.coin.state[4]);
 			var msg_pubkey 	 = stripBrackets(msg.data.coin.state[5]);
 			var msg_sign 	 = stripBrackets(msg.data.coin.state[6]);
+			
+			//Check non null..
+			if(	msg_title 		=="" ||
+				msg_category 	=="" ||
+				msg_message 	=="" ||
+				msg_user 		=="" ||
+				msg_randid 		=="" ||
+				msg_pubkey	 	=="" ||
+				msg_sign 		==""){
+				MDS.log("Cannot have blank details in message..");
+				return;
+			}
+			
+			//get the address..
 			var msg_address  = stripBrackets(msg.data.coin.state[7]);
 			
 			//Get the categorytitleid
 			var cattitid = getCategoryTitleID(msg_category,msg_title);
 			
 			//Check if message is blocked..
-			checkMsgBlocked(msg_pubkey,cattitid,function(blocked){
+			checkMsgBlocked(msg_pubkey,cattitid,msg_category,function(blocked){
 				
 				//Is it blocked..
 				if(!blocked){

@@ -312,6 +312,7 @@ public class maxcontacts extends Command {
 			JSONArray resarray = new JSONArray();
 			while(strtok.hasMoreTokens()) {
 				String contact = strtok.nextToken();
+				contact = contact.replaceAll(" ", "");
 				String command = "maxcontacts action:add contact:"+contact;
 				
 				JSONArray res 		= Command.runMultiCommand(command);

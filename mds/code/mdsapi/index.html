@@ -1,0 +1,71 @@
+<html>
+
+<head>
+	<title>MDS API TESTER</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="jslib.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+<br>
+
+	<h2>Search MNS</h2>
+	
+	Domain : <input type="text" id="domain"> <button onclick="searchdomain();">SEARCH</button>
+	<br><br>
+	
+	<textarea rows="12" cols="80" id="domainresults"></textarea>
+	
+</center>
+
+<script type="text/javascript">
+	
+	function searchdomain(){
+		var name = document.getElementById("domain").value.trim();
+		if(name == ""){
+			return;
+		}
+		
+		//Create the API call..
+		var apicall = {};
+		apicall.action 	= "GET";
+		apicall.data 	= name;
+		
+		//Do stuff.. from now..		
+		MDS.api.call("mns",JSON.stringify(apicall),function(resp){
+			
+			if(resp.status){
+				MDS.log("API RETURNED: "+resp.data);
+				var data = JSON.parse(resp.data);
+				
+				//set the result text area
+				domainresults.value = JSON.stringify(data,null,2);
+			}else{
+				MDS.log("API FAILED RETURNED: "+resp.data);	
+			}
+		});	
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){});
+
+</script>
+
+</body>
+
+</html>

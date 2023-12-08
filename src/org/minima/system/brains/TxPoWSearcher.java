@@ -13,6 +13,7 @@ import org.minima.objects.Token;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.MinimaLogger;
 
 public class TxPoWSearcher {
 
@@ -91,10 +92,24 @@ public class TxPoWSearcher {
 	}
 	
 	public static synchronized ArrayList<Coin> searchCoins(	TxPoWTreeNode zStartNode, boolean zRelevant, 
+			boolean zCheckCoinID, MiniData zCoinID,
+			boolean zCheckAmount, MiniNumber zAmount,
+			boolean zCheckAddress, MiniData zAddress,
+			boolean zCheckTokenID, MiniData zTokenID,
+			boolean zSimpleOnly, int zDepth) {
+		
+		return searchCoins(zStartNode, zRelevant, zCheckCoinID, zCoinID, zCheckAmount, 
+				zAmount, zCheckAddress, zAddress, zCheckTokenID, zTokenID, 
+				false, "", false,
+				zSimpleOnly, zDepth);
+	}
+	
+	public static synchronized ArrayList<Coin> searchCoins(	TxPoWTreeNode zStartNode, boolean zRelevant, 
 												boolean zCheckCoinID, MiniData zCoinID,
 												boolean zCheckAmount, MiniNumber zAmount,
 												boolean zCheckAddress, MiniData zAddress,
 												boolean zCheckTokenID, MiniData zTokenID,
+												boolean zCheckState, String zState, boolean zWildCardState,
 												boolean zSimpleOnly, int zDepth) {
 		
 		//The list of Coins
@@ -143,6 +158,10 @@ public class TxPoWSearcher {
 					continue;
 				}
 				
+				if(zCheckState && !coin.checkForStateVariable(zState,zWildCardState)) {
+					continue;
+				}
+				
 				//Get the CoinID
 				String coinid = coin.getCoinID().to0xString();
 				
@@ -156,8 +175,11 @@ public class TxPoWSearcher {
 					//Check if this has been spent in a previous block..
 					if(!spentcoins.contains(coinid)) {
 						
+						//Make a copy..
+						Coin copycoin = coin.deepCopy();
+						
 						//OK - fresh unspent coin
-						coinentry.add(coin.deepCopy());
+						coinentry.add(copycoin);
 						
 						//And no more from now..
 						spentcoins.add(coinid);

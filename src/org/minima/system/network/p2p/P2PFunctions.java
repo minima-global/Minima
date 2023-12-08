@@ -110,7 +110,7 @@ public class P2PFunctions {
     
     public static boolean isNetAvailable() {
         try {
-            final URL url = new URL("http://www.google.com");
+            final URL url = new URL("https://www.google.com");
             final URLConnection conn = url.openConnection();
             conn.connect();
             conn.getInputStream().close();
@@ -273,4 +273,9 @@ public class P2PFunctions {
         return hostnames;
     }
 
+    public static void main(String[] zArgs) {
+    	
+    	System.out.println("NET:"+isNetAvailable());
+    	
+    }
 }

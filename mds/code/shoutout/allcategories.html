@@ -37,8 +37,8 @@
 				<td><img height=45 src="shoutout.png"></td>
 				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>Shout Out</b></td>
 				<td class='topicdate' nowrap>
-					<img style="cursor:pointer;" onclick="jumpSettings();" height=30 src="settings.png">&nbsp;&nbsp;
-					<img style="cursor:pointer;" onclick="jumpHome();" height=30 src="home.png">&nbsp;&nbsp;
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpSettings();" height=30 src="settings.png">&nbsp;&nbsp;
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpHome();" height=30 src="home.png">&nbsp;&nbsp;
 				</td>
 			</tr>
 		</table>
@@ -60,6 +60,10 @@
 		location.href="index.html?uid="+MDS.minidappuid;
 	}
 
+	function jumpViewAllCategory(){
+		location.href="allcategories.html?uid="+MDS.minidappuid;
+	}
+	
 	function showTitleOnAndroid(){
 		if (window.navigator.userAgent.includes('Minima Browser')) {
 			Android.showTitleBar();
@@ -83,13 +87,26 @@
 				//Current
 				var category = DOMPurify.sanitize(cats[i].CATEGORY);
 				
+				list += "<table width=100% border=0>"
+				
 				//Add to the List..
-				list += "<a class='topictitle' href='index.html?uid="+MDS.minidappuid+"&category="+category+"'>"+category+"</a><br>";
+				list += "<tr><td><a class='topictitle' href='index.html?uid="+MDS.minidappuid+"&category="+category+"'>"+category+"</a></td>";
+				list += "<td style='text-align:right;'><button onclick='blockCategory(\""+category+"\");' class='solobutton'>BLOCK</button></td></tr>";
+				list += "<tr><td colspan=2><hr></td></tr>"
+				list += "</table>"
 			}
 			
 			//And set it
 			allcats.innerHTML = list;
 		});
+	}
+	
+	function blockCategory(category){
+		if(confirm("This will delete "+category+" and ALL sub-categories and all future messages.\n\nYou can undo this in Settings.")){
+			addBlockCategory(category,function(){
+				jumpViewAllCategory();
+			});
+		}
 	}
 	
 	//Main message handler..

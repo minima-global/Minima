@@ -41,6 +41,8 @@ function sendTxnMessage(category, title, message, user, pubkey, address, randid,
 		state[2] = "["+message+"]";
 		state[3] = "["+user+"]";
 		state[4] = randid+"";
+		
+		//Maxima pubkey so does not get tracked..
 		state[5] = pubkey+"";
 		state[6] = signature+"";
 		state[7] = "["+address+"]";

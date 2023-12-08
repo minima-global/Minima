@@ -36,8 +36,8 @@
 				<td><img height=45 src="shoutout.png"></td>
 				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>Shout Out</b></td>
 				<td class='topicdate' nowrap>
-					<img style="cursor:pointer;" onclick="jumpSettings();" height=30 src="settings.png">&nbsp;&nbsp;
-					<img style="cursor:pointer;" onclick="jumpHome();" height=30 src="home.png">&nbsp;&nbsp;
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpSettings();" height=30 src="settings.png">&nbsp;&nbsp;
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpHome();" height=30 src="home.png">&nbsp;&nbsp;
 				</td>
 			</tr>
 		</table>
@@ -50,8 +50,8 @@
 	<br>
 	<button onclick="history.back();" class="solobutton">&nbsp;&nbsp;Back&nbsp;&nbsp;</button>
 	&nbsp;&nbsp;&nbsp;
-	<button onclick="nextBatch();" class="solobutton">&nbsp;&nbsp;NEXT&nbsp;&nbsp;</button>
-		
+	<button onclick="nextBatch();" class="solobutton">&nbsp;&nbsp;Next&nbsp;&nbsp;</button>
+	<br><br>	
 </center>
 
 <script type="text/javascript">

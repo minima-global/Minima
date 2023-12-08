@@ -33,6 +33,7 @@ public class FILEcommand {
 	public static final String FILECOMMAND_DOWNLOAD 		= "DOWNLOAD";
 	public static final String FILECOMMAND_COPYTOWEB 		= "COPYTOWEB";
 	public static final String FILECOMMAND_DELETEFROMWEB 	= "DELETEFROMWEB";
+	public static final String FILECOMMAND_LISTWEB 			= "LISTWEB";
 	
 	/**
 	 * Main MDS Manager
@@ -101,27 +102,32 @@ public class FILEcommand {
 			
 			if(mFileCommand.equals(FILECOMMAND_LIST)) {
 				
-				//List the files..
-				File[] files = actualfile.listFiles();
-				if(files == null) {
-					files = new File[0];
-				}
-				
-				//Sort the list
-				Arrays.sort(files);
-				
+				boolean exists = actualfile.exists();
 				JSONArray listfiles = new JSONArray();
-				for(File ff : files) {
-					JSONObject fdata = new JSONObject();
-					fdata.put("name", ff.getName());
-					fdata.put("location", getCanonicalPath(rootfiles,ff));
-					fdata.put("size", ff.length());
-					fdata.put("modified", ff.lastModified());
-					fdata.put("isdir", ff.isDirectory());
-					fdata.put("isfile", ff.isFile());
-					listfiles.add(fdata);
+				
+				//List the files..
+				if(actualfile.isDirectory() && exists) {
+					File[] files = actualfile.listFiles();
+					if(files == null) {
+						files = new File[0];
+					}
+					
+					//Sort the list
+					Arrays.sort(files);
+					for(File ff : files) {
+						JSONObject fdata = new JSONObject();
+						fdata.put("name", ff.getName());
+						fdata.put("location", getCanonicalPath(rootfiles,ff));
+						fdata.put("size", ff.length());
+						fdata.put("modified", ff.lastModified());
+						fdata.put("isdir", ff.isDirectory());
+						fdata.put("isfile", ff.isFile());
+						listfiles.add(fdata);
+					}
 				}
 			
+				resp.put("exists", exists);
+				resp.put("isdir", actualfile.isDirectory());
 				resp.put("list", listfiles);
 			
 			}else if(mFileCommand.equals(FILECOMMAND_SAVE)) {
@@ -228,9 +234,9 @@ public class FILEcommand {
 				}
 				
 				//Check not directory
-				if(actualfile.isDirectory()) {
-					throw new IllegalArgumentException("Cannot copy Directory");
-				}
+				//if(actualfile.isDirectory()) {
+				//	throw new IllegalArgumentException("Cannot copy Directory");
+				//}
 				
 				File parent = newfile.getParentFile();
 				if(!parent.exists()) {
@@ -238,7 +244,7 @@ public class FILEcommand {
 				}
 				
 				//Now copy the data
-				MiniFile.copyFile(actualfile, newfile);
+				MiniFile.copyFileOrFolder(actualfile, newfile);
 				
 				JSONObject fdata = new JSONObject();
 				fdata.put("origfile", mFile);
@@ -324,9 +330,9 @@ public class FILEcommand {
 				}
 				
 				//Check not directory
-				if(actualfile.isDirectory()) {
-					throw new IllegalArgumentException("Cannot move Directory");
-				}
+				//if(actualfile.isDirectory()) {
+				//	throw new IllegalArgumentException("Cannot move Directory");
+				//}
 				
 				File parent = newfile.getParentFile();
 				if(!parent.exists()) {
@@ -334,7 +340,7 @@ public class FILEcommand {
 				}
 				
 				//Now copy the data
-				MiniFile.copyFile(actualfile, newfile);
+				MiniFile.copyFileOrFolder(actualfile, newfile);
 				
 				JSONObject fdata = new JSONObject();
 				fdata.put("origfile", mFile);
@@ -360,6 +366,44 @@ public class FILEcommand {
 				MiniFile.deleteFileOrFolder(webfiles.getAbsolutePath(), webfile);
 				
 				resp.put("deletefromweb", fdata);
+			
+			}else if(mFileCommand.equals(FILECOMMAND_LISTWEB)) {
+				
+				//Get the web Folder
+				File webfiles = mMDS.getMiniDAPPWebFolder(mMiniDAPPID);
+				
+				//The new file..
+				File webfile = new File(webfiles,mFile);
+				
+				//Does it exist
+				boolean exists = webfile.exists();
+				
+				JSONArray listfiles = new JSONArray();
+				
+				if(webfile.isDirectory() && exists) {
+					//List the files..
+					File[] files = webfile.listFiles();
+					if(files == null) {
+						files = new File[0];
+					}
+					
+					//Sort the list
+					Arrays.sort(files);
+					for(File ff : files) {
+						JSONObject fdata = new JSONObject();
+						fdata.put("name", ff.getName());
+						fdata.put("location", getCanonicalPath(webfiles,ff));
+						fdata.put("size", ff.length());
+						fdata.put("modified", ff.lastModified());
+						fdata.put("isdir", ff.isDirectory());
+						fdata.put("isfile", ff.isFile());
+						listfiles.add(fdata);
+					}
+				}
+			
+				resp.put("exists", exists);
+				resp.put("isdir", webfile.isDirectory());
+				resp.put("list", listfiles);
 			}
 			
 			JSONObject stattrue = new JSONObject();

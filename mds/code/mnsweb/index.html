@@ -1,0 +1,101 @@
+<html>
+
+<head>
+	<title>MNS WEB</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+</head>
+
+<body>
+
+<center>
+
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table width=100% border=0>
+			<tr>
+				<td><img height=45 src="browser.png"></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>MNS Web</b></td>
+			</tr>
+		</table>
+	</div>
+	<br>
+		
+	<div class="mainview">
+		<b>MNS Domain :</b> <input type="text" id="domaininput">&nbsp;&nbsp;<button class="solobutton" onclick="go();">&nbsp;&nbsp;OPEN&nbsp;&nbsp;</button>
+	</div>
+	<br>
+	
+	<div class="helpview">
+		MNS websites are zip files that you embed into your HEX data MNS record<br>
+		<br>
+		Simply create a website and zip it.. then add it to your MNS record<br>
+		<br>
+		You <b>MUST</b> zip from within the base folder - that contains the index.html start page<br>
+		<br>
+		Since MNS record are sent in transactions the maximum size for a site zip is ~50k<br>
+		<br>
+		The max size will vary so to be safe make your site is as small as possible.<br>
+		<br>
+		Use SVG instead of images, and jpegs if you have to use an actual image.. but TEXT works fine!<br>
+		<br>
+		..<br>
+		<br>
+		You can link to other MNS sites by using a small piece of Java Script code<br>
+		<br>
+		<textarea readonly id="jumpscript" spellcheck="false" style="resize: none;width:100%;height:100;"></textarea><br>
+		<br>
+		Domains <b>MUST</b> start with <b>mns://</b>..<br>
+		<br>
+		..<br>
+		<br>
+		For those that think you can't squeeze a lot into 50k.. ELITE on the BBC Micro
+		had 8 galaxies, 10s of thousands of stars, 100s of ships and an entire game / trading / battle engine in 32k..<br>
+		<br>
+		Enjoy.
+		
+	</div>
+	
+</center>
+
+<script type="text/javascript">
+	
+	jumpscript.value="<script type=\"text/javascript\">\n"+
+	"    function jumpToMNSDomain(domain){\n"+
+	"        window.top.postMessage(domain, '*')\n"+	
+	"    }\n"+
+	"<\/script>";
+	
+	function go(domainreq){
+		
+		var domain = document.getElementById("domaininput").value;
+		if(domain == ""){
+			return;
+		}
+		
+		if(domain.startsWith("mns://")){
+			domain = domain.substring(6);
+		}
+
+		window.open("mnsweb.html?uid="+MDS.minidappuid+"&mnspage="+domain);
+		
+		return;
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){});
+
+</script>
+
+</body>
+
+</html>

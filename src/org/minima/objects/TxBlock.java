@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 import org.minima.database.mmr.MMR;
 import org.minima.database.mmr.MMREntry;
@@ -14,6 +15,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONObject;
 
 public class TxBlock implements Streamable {
 
@@ -36,6 +38,12 @@ public class TxBlock implements Streamable {
 	 * A list of all the newly created coins
 	 */
 	ArrayList<Coin> mNewCoins = new ArrayList<>();
+	
+	/**
+	 * When notifying about coins.. always send the state - even if you don't storte it
+	 * Keep a record here - this is not stored / saved for later
+	 */
+	Hashtable<String, ArrayList<StateVariable>> mRemovedStates = new Hashtable<>();
 	
 	private TxBlock() {}
 	
@@ -159,6 +167,9 @@ public class TxBlock implements Streamable {
 				//Set the correct state variables
 				if(correctcoin.storeState()) {
 					correctcoin.setState(txnstate);
+				}else {
+					//Keep a copy for notify events..
+					mRemovedStates.put(coinid.to0xString(), txnstate);
 				}
 				
 				//Is this a create token output..
@@ -205,6 +216,14 @@ public class TxBlock implements Streamable {
 	
 	public ArrayList<Coin> getOutputCoins(){
 		return mNewCoins;
+	}
+	
+	public ArrayList<StateVariable> removedState(String zCoinID) {
+		if(mRemovedStates.containsKey(zCoinID)) {
+			return mRemovedStates.get(zCoinID);
+		}
+		
+		return null;
 	}
 	
 	@Override

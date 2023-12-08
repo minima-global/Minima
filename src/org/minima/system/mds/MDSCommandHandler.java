@@ -3,6 +3,8 @@ package org.minima.system.mds;
 import java.io.UnsupportedEncodingException;
 
 import org.minima.database.minidapps.MiniDAPP;
+import org.minima.system.mds.handler.APIAutoResponse;
+import org.minima.system.mds.handler.APICommand;
 import org.minima.system.mds.handler.CMDcommand;
 import org.minima.system.mds.handler.COMMSCommand;
 import org.minima.system.mds.handler.FILEcommand;
@@ -183,6 +185,10 @@ public class MDSCommandHandler {
 				fc = new FILEcommand(mMDS, minidappid, 
 						FILEcommand.FILECOMMAND_DELETEFROMWEB, filedata, "");
 			
+			}else if(action.equals("listweb")) {
+				fc = new FILEcommand(mMDS, minidappid, 
+						FILEcommand.FILECOMMAND_LISTWEB, filedata, "");
+				
 			}else {
 				throw new MDSCommandException("Invalid function : "+action);
 			}
@@ -209,6 +215,42 @@ public class MDSCommandHandler {
 				result = comms.runCommand();
 			}
 		
+		}else if(command.equals("api")) {
+			
+			//Get the Name of the MiniDAPP..
+			MiniDAPP thismd = mMDS.getMiniDAPP(minidappid);
+			
+			//Is it public or private
+			int dataindex 	= data.indexOf("&");
+			int dataindex2 	= data.indexOf("&",dataindex+1);
+			int dataindex3 	= data.indexOf("&",dataindex2+1);
+			
+			String mininame	= data.substring(0, dataindex);
+			String type		= data.substring(dataindex+1, dataindex2);
+			String randid	= data.substring(dataindex2+1, dataindex3);
+			String msg 		= data.substring(dataindex3+1);
+			
+			//MinimaLogger.log("mini:"+mininame+" type:"+type+" randid:"+randid+" msg:"+msg);
+			
+			//Get the Name of the MiniDAPP..
+			MiniDAPP md = mMDS.getMiniDAPPFromName(mininame);
+			
+			if(type.equals("request")){
+				APICommand comms = new APICommand(mMDS, thismd.getName(), 
+						md.getName(), md.getUID(),  msg, randid, true);
+				result = comms.runCommand();
+				
+				//And start a thread that calls the API in 5 secs if nothing else..
+				APIAutoResponse auto = new APIAutoResponse(mMDS, md.getName(), 
+						thismd.getName(), thismd.getUID(),  randid);
+				auto.runauto();
+				
+			}else {
+				APICommand comms = new APICommand(mMDS, thismd.getName(), 
+						md.getName(), md.getUID(), msg, randid, false);
+				result = comms.runCommand();
+			}
+			
 		}else if(command.equals("dapplink")) {
 			
 			//Get the MiniDapp in question..

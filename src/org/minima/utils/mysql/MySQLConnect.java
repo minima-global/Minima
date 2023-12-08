@@ -448,7 +448,7 @@ public class MySQLConnect {
 				SQL_INSERT_COIN.setInt(6,0);
 			}
 			
-			SQL_INSERT_COIN.setString(7,zCoin.getStateAsJSON());
+			SQL_INSERT_COIN.setString(7,zCoin.getStateAsJSON().toString());
 			SQL_INSERT_COIN.setLong(8,zCoin.getMMREntryNumber().getBigDecimal().longValue());
 			
 			if(zCoin.getSpent()) {

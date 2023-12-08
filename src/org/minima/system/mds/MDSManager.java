@@ -21,6 +21,8 @@ import org.minima.system.mds.handler.MDSCompleteHandler;
 import org.minima.system.mds.pending.PendingCommand;
 import org.minima.system.mds.polling.PollStack;
 import org.minima.system.mds.runnable.MDSJS;
+import org.minima.system.mds.runnable.NullCallable;
+import org.minima.system.mds.runnable.api.APICallback;
 import org.minima.system.mds.runnable.shutter.SandboxContextFactory;
 import org.minima.system.mds.sql.MiniDAPPDB;
 import org.minima.system.network.rpc.HTTPSServer;
@@ -39,6 +41,7 @@ import org.minima.utils.messages.TimerMessage;
 import org.mozilla.javascript.ClassShutter;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
+import org.mozilla.javascript.NativeJSON;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
@@ -120,6 +123,12 @@ public class MDSManager extends MessageProcessor {
 	 */
 	boolean mHasStarted 	= false;
 	boolean mIsShuttingDown = false;
+	
+	/**
+	 * List of all the API call objects
+	 */
+	ArrayList<APICallback> mAPICalls = new ArrayList<>();
+	
 	/**
 	 * Main Constructor
 	 */
@@ -157,17 +166,16 @@ public class MDSManager extends MessageProcessor {
 			return;
 		}
 		
-		//Notify SQL calls not to happen
-		mIsShuttingDown = true;
-		
-		//Send a SHUTDOWN message to all the MiniDAPPs..
+		//Send a SHUTDOWN message to all the MiniDAPP WEB sites..
 		mPollStack.onlyShutDown();
+		
+		//This is for the JS Runnables
 		Main.getInstance().PostNotifyEvent("MDS_SHUTDOWN", new JSONObject());
 		
 		//Wait 2 seconds for it to be processed..
 		try {Thread.sleep(2000);} catch (InterruptedException e) {}
 		
-		//Now post a shutdown message
+		//Now post a shutdown message - added to stack so will wait for POLL messages
 		PostMessage(MDS_SHUTDOWN);
 		
 		//Waiting for shutdown..
@@ -444,6 +452,27 @@ public class MDSManager extends MessageProcessor {
 		return res;
 	}
 	
+	public void addAPICall(APICallback zAPICallback) {
+		mAPICalls.add(zAPICallback);
+	}
+	
+	public APICallback getAPICallback(String zRandID) {
+		APICallback foundapicall = null;
+		for(APICallback api : mAPICalls) {
+			if(api.getRandID().equals(zRandID)) {
+				foundapicall = api;
+				break;
+			}
+		}
+		
+		//Did we find it..
+		if(foundapicall != null) {
+			mAPICalls.remove(foundapicall);
+		}
+		
+		return foundapicall;
+	}
+	
 	public void shutdownSQL(String zMiniDAPPID){
 		//The final DB
 		MiniDAPPDB db = mSqlDB.get(zMiniDAPPID);
@@ -525,7 +554,7 @@ public class MDSManager extends MessageProcessor {
 				MinimaLogger.log("MDS RHINOJS INIT hasGlobal Allready!.. may need a restart");
 			}
 			
-			//Intsall the default MiniHUB..
+			//Install the default MiniHUB..
 			doDefaultMiniHUB();
 			
 			//Scan for MiniDApps
@@ -538,6 +567,9 @@ public class MDSManager extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(MDS_SHUTDOWN)) {
 
+			//Notify SQL calls not to happen
+			mIsShuttingDown = true;
+			
 			//Shutdown the Runnables
 			MinimaLogger.log("Shutdown MDS runnables..");
 			for(MDSJS mds : mRunnables) {
@@ -606,24 +638,65 @@ public class MDSManager extends MessageProcessor {
 			JSONObject poll = (JSONObject) zMessage.getObject("poll");
 			String to 		= zMessage.getString("to");
 			
-			//Send message to the runnables first..
-			for(MDSJS mds : mRunnables) {
-				try {
+			//Check for shutdown message - sent at the end so all other messages must have been processed
+			if(poll.getString("event").equals("MDS_SHUTDOWN")) {
+				MinimaLogger.log("JS RUNNABLES received all POLL messages.. SHUTDOWN started..");
+			}
+			
+			boolean sendtoall = true;
+			if(poll.getString("event").equals("MDSAPI")) {
 				
-					if(to.equals("*")) {
-						//Send to the runnable
-						mds.callMainCallback(poll);
-					}else {
+				//Get the data
+				JSONObject dataobj = (JSONObject) poll.get("data");
+				
+				//Is it  a response..
+				if(!(boolean)dataobj.get("request")) {
+					
+					//RESPONSE messages are not forwarded
+					sendtoall = false;
+					
+					//Send to the API Call..
+					APICallback api = getAPICallback(dataobj.getString("id"));
+					if(api != null) {
 						
-						//Check the MiniDAPPID
-						if(mds.getMiniDAPPID().equals(to)) {
+						//Construct a reply..
+						JSONObject reply = new JSONObject();
+						reply.put("status", dataobj.get("status"));
+						reply.put("data", dataobj.get("message"));
+						
+						//Call it..
+						Object[] args = { NativeJSON.parse(api.getContext(), 
+									api.getScope(),reply.toString(), new NullCallable()) };
+						
+						//Call the main MDS Function in JS
+						api.getFunction().call(api.getContext(), api.getScope(), api.getScope(), args);
+						
+					}else {
+						//MinimaLogger.log("RUNNABLE NOT FOUND API CALL : "+dataobj.toString());
+					}
+				}
+			}
+			
+			//Send message to the runnables first..
+			if(sendtoall) {
+				for(MDSJS mds : mRunnables) {
+					try {
+						
+						if(to.equals("*")) {
 							//Send to the runnable
 							mds.callMainCallback(poll);
+						}else {
+							
+							//Check the MiniDAPPID
+							if(mds.getMiniDAPPID().equals(to)) {
+								//Send to the runnable
+								mds.callMainCallback(poll);
+							}
 						}
+						
+					}catch(Exception exc) {
+						MinimaLogger.log(exc, false);
 					}
-					
-				}catch(Exception exc) {
-					MinimaLogger.log(exc, false);
 				}
 			}
 			
@@ -883,10 +956,10 @@ public class MDSManager extends MessageProcessor {
 		if(GeneralParams.DEFAULT_MINIDAPPS) {
 		
 			//Pending gets write permissions
-			checkInstalled("pending", "default/pending-1.1.1.mds.zip", allminis, true);
+			checkInstalled("pending", "default/pending-1.2.0.mds.zip", allminis, true);
 			
 			//Security MiniDAPP - backups / restore
-			checkInstalled("security", "default/security-0.28.0.mds.zip", allminis, true);
+			checkInstalled("security", "default/security-1.0.0.mds.zip", allminis, true);
 			
 			//Dappstore gets write permissions
 			checkInstalled("dapp store", "default/dapp_store-1.0.8.mds.zip", allminis, true);
@@ -899,15 +972,17 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("future cash", "default/futurecash-2.4.0.mds.zip", allminis, false);
 			checkInstalled("health", "default/health-1.1.5.mds.zip", allminis, false);
 			checkInstalled("logs", "default/logs-1.0.2.mds.zip", allminis, false);
-			checkInstalled("maxcontacts", "default/maxcontacts-1.8.7.mds.zip", allminis, false);
-			checkInstalled("maxsolo", "default/maxsolo-2.4.6.mds.zip", allminis, false);
+			checkInstalled("maxcontacts", "default/maxcontacts-1.10.5.mds.zip", allminis, false);
+			checkInstalled("maxsolo", "default/maxsolo-2.5.0.mds.zip", allminis, false);
 			checkInstalled("miniswap", "default/miniswap-1.0.4.mds.zip", allminis, false);
 			checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
 			checkInstalled("script ide", "default/scriptide-2.0.2.mds.zip", allminis, false);
+			//checkInstalled("shout out", "default/shoutout-1.0.0.mds.zip", allminis, false);
 			checkInstalled("sql bench", "default/sqlbench-0.5.mds.zip", allminis, false);
 			checkInstalled("terminal", "default/terminal-2.3.1.mds.zip", allminis, false);
+			//checkInstalled("vault", "default/vault-0.9.2.mds.zip", allminis, false);
 			checkInstalled("vestr", "default/vestr-1.7.2.mds.zip", allminis, false);
-			checkInstalled("wallet", "default/wallet-2.34.13.mds.zip", allminis, false);
+			checkInstalled("wallet", "default/wallet-2.38.1.mds.zip", allminis, false);
 		}
 	}
 	

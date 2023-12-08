@@ -26,9 +26,18 @@
 
 <center>
 
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table width=100% border=0>
+			<tr>
+				<td><img height=45 src="vault.png"></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>Vault</b></td>
+				<td style="align:center;" nowrap>
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpHome();" height=45 src="home.png">&nbsp;&nbsp;
+				</td>
+			</tr>
+		</table>
+	</div>
 	<br>
-
-	<h2>Unlock Vault</h2>
 	
 	<table class="maintable">
 		<tr>
@@ -49,7 +58,7 @@
 		
 		<tr>
 			<td class="tablename">Address : </td>
-			<td>
+			<td nowrap>
 			
 				<input type="radio" id="mywallet" name="withdrawradio" value="mywallet" checked>
 			  	<label class="coinamount" for="mywallet">My Wallet</label><br>
@@ -65,12 +74,12 @@
 		
 		<tr>
 			<td class="tablename" nowrap>Lock Phrase : </td>
-			<td><textarea id="unlock_phrase" rows=6 cols=40></textarea></td>
+			<td><textarea id="unlock_phrase" class='vaulttext' rows=6></textarea></td>
 		</tr>
 		
 		<tr>
 			<td class="tablename">Message : </td>
-			<td><textarea readonly id="vault_message" rows=4 cols=40></textarea></td>
+			<td><textarea readonly id="vault_message" class='vaulttext' rows=4></textarea></td>
 		</tr>
 		
 		<tr>
@@ -79,27 +88,28 @@
 		</tr>
 		
 		<tr>
-			<td colspan=2 style="text-align:right"><br><button onclick="unlockVault();" class="solobutton">WITHDRAW</button></td>
+			<td colspan=2 style="text-align:right"><br><button id='unlockbutton' onclick="unlockVault();" class="solobutton">WITHDRAW</button></td>
 		</tr>
 	
 	</table> 
 	<br><br>
-	<div style="text-align:left;width:450;">
-	Your Key Uses <b>MUST</b> be unique for every unlock.<br>
+	<table class="maintable">
+		<tr>
+			<td>
+			
+		Your 'Key Uses' <b>MUST</b> be unique for every unlock.<br>
+		<br>
+		Vault remembers and increments this value for you..<br>
+		<Br>
+		BUT - If you have just restored and reinstalled this MiniDAPP..<br>
+		<Br>
+		Then you must set this number to a value higher than any number you have used before.<br>
+		<br>
+		( max 250000 )
+			</td>
+		</tr>
+	</table>
 	<br>
-	Vault remembers and increments this value for you..<br>
-	<Br>
-	BUT - If you have just restored and reinstalled this MiniDAPP..<br>
-	<Br>
-	Then you must set this number to a value higher than any number you have used before.<br>
-	<br>
-	( max 250,000 ) 
-	</div>
-	
-	<br>
-	<button class="solobutton" onclick="jumpToHome();">Back Home</button>
-	<br><br>
-	
 	
 </center>
 
@@ -108,14 +118,20 @@
 	var TOKEN_NAME 	 = "";
 	var VAULT_AMOUNT = new Decimal(0);
 	
-	function jumpToHome(){
+	function showTitleOnAndroid(){
+		if (window.navigator.userAgent.includes('Minima Browser')) {
+			Android.showTitleBar();
+		}
+	}
+	
+	function jumpHome(){
 		location.href = "index.html?uid="+MDS.minidappuid;
 	}
 	
 	function unlockVault(){
 		
 		//Get the Phrase..
-		var phrase = document.getElementById("unlock_phrase").value.trim();
+		var phrase = document.getElementById("unlock_phrase").value.trim().toUpperCase();
 		if(phrase == ""){
 			alert("Cannot have a blank phrase!");
 			return;
@@ -174,6 +190,8 @@
 		//Now confirm they want to do this
 		if(confirm(message)){
 			
+			unlockbutton.disabled=true;
+			
 			//What is the coin..
 			var coinid = MDS.form.getParams("vaultid");
 			
@@ -200,6 +218,7 @@
 				//Check it is correct
 				if(reqkey != pubkey){
 					alert("Incorrect phrase!.. Keys do not match..");
+					unlockbutton.disabled=false;
 					return;
 				}
 				
@@ -255,10 +274,11 @@
 								alert("Funds sent..\n\nPlease wait for the txn to confirm..");	
 							}
 						
-							jumpToHome();
+							jumpHome();
 							
 						}else{
 							MDS.log(JSON.stringify(resp));
+							unlockbutton.disabled=false;
 							alert("Something went wrong.. check console logs"); 
 						}
 					});

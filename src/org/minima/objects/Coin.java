@@ -201,9 +201,19 @@ public class Coin implements Streamable {
 	}
 	
 	public boolean checkForStateVariable(String zCheckState) {
+		return checkForStateVariable(zCheckState, false);
+	}
+	
+	public boolean checkForStateVariable(String zCheckState, boolean zWildcard) {
 		for(StateVariable sv : mState) {
-			if(sv.getData().toString().equals(zCheckState)) {
-				return true;
+			if(zWildcard) {
+				if(sv.getData().toString().contains(zCheckState)) {
+					return true;
+				}
+			}else {
+				if(sv.getData().toString().equals(zCheckState)) {
+					return true;
+				}
 			}
 		}
 		return false;
@@ -263,12 +273,20 @@ public class Coin implements Streamable {
 		return obj;
 	}
 	
-	public String getStateAsJSON() {
+	public JSONObject getStateAsJSON() {
 		JSONObject state = new JSONObject();
 		for(StateVariable sv : mState) {
 			state.put(""+sv.getPort(), sv.getData().toString());
 		}
-		return state.toString();
+		return state;
+	}
+	
+	public static JSONObject convertStateListToJSON(ArrayList<StateVariable> zStateList) {
+		JSONObject state = new JSONObject();
+		for(StateVariable sv : zStateList) {
+			state.put(""+sv.getPort(), sv.getData().toString());
+		}
+		return state;
 	}
 	
 	/**

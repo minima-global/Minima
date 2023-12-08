@@ -1,0 +1,292 @@
+<html>
+
+<head>
+	<title>MNS</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="sql.js"></script>
+	<script type="text/javascript" src="txns.js"></script>
+	<script type="text/javascript" src="search.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+	
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table width=100% border=0>
+			<tr>
+				<td><img height=45 src="mns.png"></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>MNS</b></td>
+				<td class='topicdate' nowrap>
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpHome();" height=30 src="home.png">&nbsp;&nbsp;
+				</td>
+			</tr>
+		</table>
+	</div>
+	<br>
+	
+	<div id="ownerid" class="mainview" style="word-wrap: break-word;">
+	
+	</div>
+	<br>
+	
+	<div id="mydomains" class="mainview">
+	
+	</div>
+	
+	<br>
+	<div id="transferdomains" class="mainview" style="display:none;">
+	
+	</div>
+	<br>
+	
+	<div class="mainview">
+	<b>Register</b><br><br>
+	<input type="text" id="searchname"/> 
+		&nbsp;&nbsp;<button class="solobutton" onclick="searchName();">SEARCH</button>
+		&nbsp;&nbsp;<button class="solobutton" id="registerbutton" onclick="registerName();">REGISTER</button>
+	<br><br>
+	<textarea rows="12" cols="80" id="searchresults" style="width:100%;"></textarea>
+	</div>
+</center>
+
+<script type="text/javascript">
+	
+	var USER_OWNER 		= "";
+	var USER_ADDRESS 	= "";
+	
+	function showTitleOnAndroid(){
+		if (window.navigator.userAgent.includes('Minima Browser')) {
+			Android.showTitleBar();
+    	}
+	}
+	
+	function jumpHome(){
+		location.href="index.html?uid="+MDS.minidappuid;
+	}
+	
+	//Find a record - either in DB or on chain
+	function searchName(setname){
+		
+		//What name..
+		var name;
+		if(setname){
+			name = setname
+			document.getElementById("searchname").value = setname
+		}else{
+			name = document.getElementById("searchname").value.trim();	
+		}
+		
+		if(name == ""){
+			return;
+		}
+		
+		//Search for it..
+		searchForMNSRecord(name,function(record){
+			var showdata 		= {};
+			showdata.FOUND   	= record.FOUND;
+			showdata.NAME  	 	= record.NAME;
+			
+			if(showdata.FOUND){
+				showdata.LOCATION  	 = record.LOCATION;
+				showdata.OWNER   	 = record.OWNER;
+				showdata.UPDATED  	 = record.UPDATED;
+				showdata.TRANSFER  	 = record.TRANSFER;
+				showdata.DATA  	 	 = JSON.parse(record.DATA);
+				showdata.DATAHEXSIZE = (record.DATAHEX.length-2)/2;
+				showdata.DATAHEX  	 = record.DATAHEX;
+			}
+			
+			searchresults.value = JSON.stringify(showdata,null,2);
+		});
+	}
+	
+	function registerName(){
+		var name = document.getElementById("searchname").value;
+		if(name == ""){
+			return;
+		}
+		
+		//First check 
+		searchForMNSRecord(name,function(record){
+			
+			if(record.FOUND){
+				alert("This domain is already registered..");
+				return;
+			}
+			
+			registerbutton.disabled=true;
+			
+			var data = {};
+			data.address = USER_ADDRESS;
+			var datastr = JSON.stringify(data);
+			
+			sendNameUpdate(USER_OWNER, USER_OWNER, name, datastr, "", function(resp){
+				if(resp.pending){
+					alert("This request is now pending.."
+							+"\n\nThis will require you to accept 2 Pending Actions.."
+							+"\n\nThe 1st will sign the message and the 2nd will send the txn."
+							+"\n\nThis happens because this MiniDAPP is in READ mode.");
+				}else if(resp.status){
+					alert("MNS Registration request sent..\n\nPlease wait for it to confirm.");
+				}else{
+					MDS.log(JSON.stringify(resp));
+					alert("Something went wrong.. pls check console logs.");
+				}
+				
+				registerbutton.disabled=false;
+			});
+		});
+	}
+	
+	function setMyDomains(){
+		
+		//Set the Owner ID
+		ownerid.innerHTML = "<b>Owner ID</b> : <span style='font-size:12;'>"+USER_OWNER+"</span>";
+		
+		//Now find My Domains
+		searchForOwnerDomains(USER_OWNER,function(allrecords){
+			var list =  "<b>My Domains</b><br><br><table border=0 width=100%>";
+			//list += "<tr><th>Domain</th><th>Last Updated</th><th>Location</th><th>Actions</th></tr>";
+			var len  = allrecords.length;
+			for(var i=0;i<len;i++){
+				list += makeDomainRow(allrecords[i],true);
+			}
+			list += "</table>"
+			mydomains.innerHTML = list;
+		});
+		
+		//Now any transfers
+		searchForOwnerTransferDomains(USER_OWNER,function(allrecords){
+			var transferlist =  "<b>My Transfers</b><br><br><table border=0 width=100%>";
+			//transferlist += "<tr><th>Domain</th><th>Last Updated</th><th>Location</th><th>Actions</th></tr>";
+			var len  = allrecords.length;
+			if(len == 0){
+				transferdomains.style.display="none";
+				return;
+			}else{
+				transferdomains.style.display="block";
+			}
+			
+			for(var i=0;i<len;i++){
+				transferlist += makeDomainRow(allrecords[i],false);
+			}
+			transferlist += "</table>"
+			transferdomains.innerHTML = transferlist;
+		});
+	}
+	
+	function jumpDomain(domain){
+		location.href="edit.html?uid="+MDS.minidappuid+"&mns="+domain;
+	}
+	
+	function jumpCheck(domain){
+		location.href="check.html?uid="+MDS.minidappuid+"&mns="+domain;
+	}
+	
+	function makeDomainRow(record, edit){
+		var text = "<tr>";
+		
+		text += "<td>"+record.NAME+"</td>";
+		text += "<td>"+record.UPDATED+"</td>";
+		text += "<td>"+record.LOCATION+"</td>";
+		
+		text += "<td style='text-align:right;'>";
+		if(edit){
+			text += "&nbsp;&nbsp;<button class='solobutton' onclick='jumpDomain(\""+record.NAME+"\")'>EDIT</button>";
+			text += "&nbsp;&nbsp;<button class='solobutton' onclick='searchName(\""+record.NAME+"\")'>SEARCH</button>";
+		}else{
+			text += "&nbsp;&nbsp;<button class='solobutton' onclick='searchName(\""+record.NAME+"\")'>SEARCH</button>";
+			text += "&nbsp;&nbsp;<button class='solobutton' onclick='jumpCheck(\""+record.NAME+"\")'>CHECK</button>";
+		}
+		text += "</td>";
+		text += "</tr>";
+		text += "<tr><td colspan=4><hr></td></tr>";
+		
+		return text;
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+
+		//wipeDB();
+		//return;
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//createDB();
+			
+			MDS.cmd("keys;getaddress",function(resp){
+				USER_OWNER 	 = resp[0].response.keys[0].publickey;
+				USER_ADDRESS = resp[1].response.miniaddress;
+				setMyDomains();
+			});	
+	
+		}else if(msg.event == "NOTIFYCOIN" || msg.event == "NOTIFYCASCADECOIN"){
+			
+			//Is it the one that matters
+			if(msg.data.address ==  MNS_ADDRESS){
+				//Who sent it..
+				var owner 	 = stripBrackets(msg.data.coin.state[0]);
+				var transfer = stripBrackets(msg.data.coin.state[1]);
+				if(owner == USER_OWNER || transfer == USER_OWNER){
+					setMyDomains();
+				}
+			}
+			
+		}else if(msg.event == "XXMDS_PENDING"){
+			
+			//What is the pending request UID
+			var pendinguid = msg.data.uid;
+			var status	   = msg.data.status;
+			
+			//Get the current pending..
+			MDS.keypair.get("pending",function(pendres){
+				
+				//Get the details..
+				var pendingact 	= JSON.parse(pendres.value);
+				var internaluid = pendingact.pendinguid; 
+				
+				//IS it this one..
+				if(internaluid == pendinguid){
+					if(status){
+						//Do the send..
+						var sig 		= msg.data.result.response;
+						var owner 		= pendingact.owner;
+						var transfer 	= pendingact.transfer;
+						var name 		= pendingact.name;
+						var datastr		= pendingact.datastr;
+						var datahex		= pendingact.datahex;
+						
+						sendNameUpdateAfterPending(owner, transfer, name, datastr, datahex, sig, function(resp){							
+							//MDS.log(JSON.stringify(resp));
+						});
+					}
+				}
+				
+				//And put in a blank
+				setBlankPending();
+			});
+		}
+	});
+
+</script>
+
+</body>
+
+</html>

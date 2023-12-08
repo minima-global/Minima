@@ -3,6 +3,10 @@ const VALID_CATEGORY_REGEX = new XRegExp("^[\\p{L}\\p{N}._]*$");
 
 function cleanCategory(incategory){
 	
+	if(!incategory){
+		return "";
+	}
+	
 	//Remove spaces
 	var newcat = incategory.split(" ").join("");
 	
@@ -24,7 +28,15 @@ function cleanCategory(incategory){
 	return newcat.toLowerCase();
 }
 
+function striptags(text){
+	return text.replace(/<\/?[^>]+(>|$)/g, "");
+}
+
 function checkCategory(category){
+	
+	if(!category){
+		return false;
+	}
 	
 	//Check is clean
 	var valid = true;
@@ -43,6 +55,10 @@ function checkCategory(category){
 }
 
 function stripBrackets(coinstr){
+	
+	if(!coinstr){
+		return "";
+	}
 	
 	var str = coinstr.trim();
 	if(str.startsWith("[")){

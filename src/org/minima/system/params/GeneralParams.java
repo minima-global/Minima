@@ -166,9 +166,14 @@ public class GeneralParams {
 	public static boolean NO_SYNC_IBD = false;
 	
 	/**
-	 * Don't download sync IBD
+	 * Maximumum output Coins allowed in txn for relay policy
 	 */
 	public static int MAX_RELAY_OUTPUTCOINS = 15;
+	
+	/**
+	 * Maximumum state size store for ALL coins for relay policy
+	 */
+	public static long MAX_RELAY_STORESTATESIZE = 10000;
 	
 	/**
 	 * Max Split coins
@@ -261,6 +266,11 @@ public class GeneralParams {
 	public static String SEED_PHRASE = ""; 
 	
 	/**
+	 * Do we log peers checker messages
+	 */
+	public static boolean PEERSCHECKER_lOG = false;
+	
+	/**
 	 * Reset all params to their default settings.. ANDROID keeps them after shutdown
 	 */
 	public static void resetDefaults() {
@@ -319,6 +329,7 @@ public class GeneralParams {
 		RPC_AUTHSTYLE 		= "basic";
 		RPC_PASSWORD 		= "none";
 		SEED_PHRASE 		= "";
+		PEERSCHECKER_lOG 	= false;
 	}
 	
 }

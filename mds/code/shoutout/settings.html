@@ -36,8 +36,8 @@
 				<td><img height=45 src="shoutout.png"></td>
 				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>Shout Out</b></td>
 				<td class='topicdate' nowrap>
-					<img style="cursor:pointer;" onclick="jumpSettings();" height=30 src="settings.png">&nbsp;&nbsp;
-					<img style="cursor:pointer;" onclick="jumpHome();" height=30 src="home.png">&nbsp;&nbsp;
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpSettings();" height=30 src="settings.png">&nbsp;&nbsp;
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpHome();" height=30 src="home.png">&nbsp;&nbsp;
 				</td>
 			</tr>
 		</table>
@@ -59,6 +59,12 @@
 	var USER_NAME 	= "";
 	var USER_PUBKEY = "";
 	
+	function showTitleOnAndroid(){
+		if (window.navigator.userAgent.includes('Minima Browser')) {
+			Android.showTitleBar();
+		}
+	}
+	
 	function jumpSettings(){
 		location.href="settings.html?uid="+MDS.minidappuid;
 	}
@@ -68,7 +74,7 @@
 	}
 	
 	function setDetails(){
-		usertitle.innerHTML = "User : <b>"+USER_NAME+"</b>";
+		usertitle.innerHTML = DOMPurify.sanitize("User : <b>"+USER_NAME+"</b>");
 	}
 	
 	function fillBlockedUsers(){
@@ -111,10 +117,11 @@
 			}
 			for(var i=0;i<len;i++){
 				var topic 	= topics[i];
+				var category= DOMPurify.sanitize(decodeStringFromDB(topic.CATEGORY));
 				var name 	= DOMPurify.sanitize(decodeStringFromDB(topic.CATEGORYTITLENAME));
 				var id 		= DOMPurify.sanitize(decodeStringFromDB(topic.CATEGORYTITLEID));
 				var unblock = "<button class='solobutton' onclick='unblockTopic(\""+id+"\");'>UNBLOCK</button>"; 
-				text += "<tr><td>"+name+"</td><td style='text-align:right;'>"+unblock+"</td></tr>"
+				text += "<tr><td>"+name+" @ "+category+"</td><td style='text-align:right;'>"+unblock+"</td></tr>"
 				text += "<tr><td colspan=2><hr></td></tr>"
 			}
 			
@@ -125,6 +132,34 @@
 	
 	function unblockTopic(catid){
 		removeBlockedTopic(catid,function(){
+			jumpSettings();
+		});
+	}
+	
+	function fillBlockedCategory(){
+		
+		selectBlockedCategories(function(categories){
+			catsblocked.innerHTML = "";
+			var len = categories.length;
+			var text = "<b>Blocked Categories</b> : <br><br><table width=100%>";
+			if(len==0){
+				text += "<tr><td colspan=2>None..</td></tr>"
+			}
+			for(var i=0;i<len;i++){
+				var category = categories[i];
+				var name 	 = DOMPurify.sanitize(decodeStringFromDB(category.CATEGORY));
+				var unblock  = "<button class='solobutton' onclick='unblockCategory(\""+name+"\");'>UNBLOCK</button>"; 
+				text += "<tr><td>"+name+"</td><td style='text-align:right;'>"+unblock+"</td></tr>"
+				text += "<tr><td colspan=2><hr></td></tr>"
+			}
+			
+			text +="<table>"
+			catsblocked.innerHTML = text;
+		});
+	}
+	
+	function unblockCategory(category){
+		removeBlockedCategory(category,function(){
 			jumpSettings();
 		});
 	}
@@ -144,6 +179,7 @@
 				setDetails();
 				fillBlockedUsers();
 				fillBlockedTopic();
+				fillBlockedCategory();
 			});
 		}
 	});

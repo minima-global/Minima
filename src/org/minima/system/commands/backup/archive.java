@@ -1,9 +1,11 @@
 package org.minima.system.commands.backup;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -11,6 +13,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.zip.GZIPOutputStream;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
@@ -62,7 +65,7 @@ public class archive extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","host","phrase","anyphrase","keys","keyuses","file","address","statecheck"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","host","phrase","anyphrase","keys","keyuses","file","address","statecheck","logs","maxexport"}));
 	}
 	
 	@Override
@@ -338,6 +341,9 @@ public class archive extends Command {
 				}
 			}
 			
+			//Tell the MiniDAPPs..
+			Main.getInstance().PostNotifyEvent("MDS_RESYNC_START",new JSONObject());
+			
 			//Are we resetting the wallet too ?
 			MiniData seed 		= null;
 			String phrase = getParam("phrase","");
@@ -579,7 +585,7 @@ public class archive extends Command {
 			}
 			
 			//Write out in GZIP format
-			MinimaLogger.log("Exporting ArchiveDB to GZIPPED SQL..");
+			MinimaLogger.log("Exporting ArchiveDB to H2 GZIPPED SQL..");
 			MinimaDB.getDB().getArchive().backupToFile(gzoutput,true);
 			
 			long gziplen = gzoutput.length();
@@ -589,6 +595,156 @@ public class archive extends Command {
 			resp.put("rows", MinimaDB.getDB().getArchive().getSize());
 			resp.put("file", gzoutput.getAbsolutePath());
 			resp.put("size", MiniFormat.formatSize(gziplen));
+			ret.put("response", resp);
+		
+		}else if(action.equals("exportraw")) {
+			
+			//Are there any records..
+			if(arch.getSize()==0) {
+				throw new CommandException("No blocks in ArchiveDB");
+			}
+			
+			boolean logs = getBooleanParam("logs", false);
+			
+			//The GZIPPED file 
+			String file = getParam("file","archivebackup-"+System.currentTimeMillis()+".raw.dat");
+			
+			//Create the file
+			File rawoutput = MiniFile.createBaseFile(file);
+			if(rawoutput.exists()) {
+				rawoutput.delete();
+			}
+			
+			//Create output streams..
+			FileOutputStream fix 		= new FileOutputStream(rawoutput);
+			BufferedOutputStream bos 	= new BufferedOutputStream(fix, 65536);
+			GZIPOutputStream gout 		= new GZIPOutputStream(bos, 65536);
+			DataOutputStream dos 		= new DataOutputStream(gout);
+			
+			//Load first and last blocks..
+			int mysqllastblock 	= arch.loadLastBlock().getTxPoW().getBlockNumber().getAsInt();
+			int mysqlfirstblock = arch.loadFirstBlock().getTxPoW().getBlockNumber().getAsInt();
+			
+			MinimaLogger.log("Exporting ArchiveDB to RAW block format..");
+			
+			//If it starts from 1 don't use a cascade
+			boolean allowcascade = true;
+			if(mysqllastblock == 1) {
+				allowcascade = false;
+				MinimaLogger.log("Archive starts from 1 no need to use a cascade..");
+			}
+			
+			//Load the cascade if it is there
+			Cascade casc = arch.loadCascade();
+			if(casc!=null && allowcascade) {
+				MinimaLogger.log("Cascade found in Archive DB..");
+				
+				//Write cacade out..
+				MiniByte.TRUE.writeDataStream(dos);
+				casc.writeDataStream(dos);
+				
+				//Reset the start point to the tip of the cascade
+				mysqllastblock = casc.getTip().getTxPoW().getBlockNumber().getAsInt()+1;
+				MinimaLogger.log("Save blocks from cascade tip onwards.. "+(mysqllastblock-1));
+				
+			}else {
+				MiniByte.FALSE.writeDataStream(dos);
+				MinimaLogger.log("No cascade added");
+			}
+			
+			//How many entries..
+			int total = mysqlfirstblock - mysqllastblock +1;
+			MinimaLogger.log("Add records from  : "+mysqllastblock);
+			MinimaLogger.log("Total records to add : "+total);
+			
+			//Max specified..
+			if(existsParam("maxexport")) {
+				int max = getNumberParam("maxexport").getAsInt();
+				MinimaLogger.log("Max export specified.. : "+max);
+				if(total>max) {
+					total = max;
+				}
+			}
+			
+			MiniNumber tot = new MiniNumber(total);
+			tot.writeDataStream(dos);
+			
+			int outcounter = 0;
+			
+			//Load a range..
+			long firstblock = -1;
+			long endblock 	= -1;
+			TxBlock lastblock = null;
+			
+			long startload 	= mysqllastblock-1;
+			int counter = 0;
+			while(true) {
+				
+				//Small log message
+				if(counter % 20 == 0) {
+					if(logs) {
+						MinimaLogger.log("Loading from Archive @ "+startload);
+					}
+				}
+				
+				ArrayList<TxBlock> blocks = arch.loadBlockRange(new MiniNumber(startload),new MiniNumber(startload).add(MiniNumber.HUNDRED),false);
+				if(blocks.size()==0) {
+					//All blocks checked
+					break;
+				}
+				
+				//Cycle and add to our DB..
+				for(TxBlock block : blocks) {
+					
+					//Send to data export file..
+					block.writeDataStream(dos);
+					if(lastblock == null) {
+						firstblock = block.getTxPoW().getBlockNumber().getAsLong();
+					}
+					lastblock = block;
+					endblock  = block.getTxPoW().getBlockNumber().getAsLong();
+					
+					//Increase counter
+					outcounter++;
+					if(outcounter>=total) {
+						break;
+					}
+				}
+				
+				if(outcounter>=total) {
+					MinimaLogger.log("Finished loading blocks..");
+					break;
+				}
+				
+				startload = endblock;
+				
+				//Clean up..
+				counter++;
+				if(counter % 20 == 0) {
+					System.gc();
+				}
+			}			
+			
+			//Flush data
+			dos.flush();
+			
+			try {
+				dos.close();
+				gout.close();
+				bos.close();
+				fix.close();
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
+			
+			JSONObject resp = new JSONObject();
+			resp.put("start", firstblock);
+			resp.put("end", endblock);
+			resp.put("total", outcounter);
+			resp.put("file", rawoutput.getName());
+			resp.put("path", rawoutput.getAbsolutePath());
+			resp.put("size", MiniFormat.formatSize(rawoutput.length()));
+			
 			ret.put("response", resp);
 		
 		}else if(action.equals("importold")) {
@@ -984,9 +1140,10 @@ public class archive extends Command {
 			if(startblock == null) {
 				canstart = false;
 			}else {
-				firstStart   = startblock.getTxPoW().getBlockNumber();
+				firstStart   = startblock.getTxPoW().getBlockNumber().decrement();
 				MinimaLogger.log("Start archive @ "+firstStart);
 			}
+			
 			while(canstart) {
 				
 				//Create an IBD for the mysql data

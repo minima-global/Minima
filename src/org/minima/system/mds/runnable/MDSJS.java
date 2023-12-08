@@ -7,6 +7,7 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.mds.MDSManager;
 import org.minima.system.mds.handler.CMDcommand;
 import org.minima.system.mds.handler.NOTIFYcommand;
+import org.minima.system.mds.runnable.api.APIService;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
@@ -60,6 +61,11 @@ public class MDSJS {
 	public KEYPAIRService keypair;
 	
 	/**
+	 * The API Service
+	 */
+	public APIService api;
+	
+	/**
 	 * Main Constructor
 	 * 
 	 * @param zMDS
@@ -78,6 +84,7 @@ public class MDSJS {
 		comms			= new COMMSService(mMDS, zMiniDAPPID, zMiniName, zContext, zScope);
 		file			= new FILEService(mMDS, zMiniDAPPID, zMiniName, zContext, zScope);
 		keypair			= new KEYPAIRService(mMDS, zMiniDAPPID, zMiniName, zContext, zScope);
+		api				= new APIService(mMDS, zMiniDAPPID, zMiniName, zContext, zScope);
 	}
 	
 	public String getMiniDAPPID() {

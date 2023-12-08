@@ -169,12 +169,12 @@ function selectRootCategories(callback){
 	});
 }
 
-function selectTopics(maxnum, maxdate, category, callback){
+function selectTopics(maxnum, offset, category, callback){
 	//Create the DB if not exists
 	var sql = "SELECT DISTINCT categorytitleid "
 			+"FROM shoutout "
 			+"WHERE category='"+category+"' "
-			+"ORDER BY created DESC LIMIT "+maxnum;
+			+"ORDER BY created DESC LIMIT "+maxnum+" OFFSET "+offset;
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
@@ -198,33 +198,6 @@ function selectUserMessages(userpubkey, limit, offset, callback){
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
-		callback(msg.rows);
-	});
-}
-
-function selectTopics(maxnum, maxdate, category, callback){
-	//Create the DB if not exists
-	var sql = "SELECT DISTINCT categorytitleid "
-			+"FROM shoutout "
-			+"WHERE category='"+category+"' "
-			+"ORDER BY created DESC LIMIT "+maxnum;
-				
-	//Run this..
-	MDS.sql(sql,function(msg){
-		callback(msg.rows);
-	});
-}
-
-function selectTopicsX(maxnum, maxdate, category, callback){
-	//Create the DB if not exists
-	var sql = "SELECT DISTINCT categorytitleid "
-			+"FROM shoutout "
-			+"WHERE category='"+category+"' "
-			+" ORDER BY created DESC LIMIT "+maxnum;
-	
-	//Run this..
-	MDS.sql(sql,function(msg){
-		MDS.log(JSON.stringify(msg));
 		callback(msg.rows);
 	});
 }
@@ -402,7 +375,7 @@ function isTopicBlocked(categorytitleid, callback){
 	});
 }
 
-function addBlockTopic(title, categorytitleid, callback){
+function addBlockTopic(category, title, categorytitleid, callback){
 	
 	//And now delete all messages by that user..
 	var deluser = "DELETE FROM shoutout WHERE categorytitleid='"+categorytitleid+"'";
@@ -410,8 +383,8 @@ function addBlockTopic(title, categorytitleid, callback){
 		isTopicBlocked(categorytitleid, function(allreadyblocked){
 			if(!allreadyblocked){
 				//Add user to blocked list
-				var blockins = "INSERT INTO filter(type,categorytitleid,categorytitlename) "
-									+"VALUES ('topicblocked','"+categorytitleid+"','"+title+"')";
+				var blockins = "INSERT INTO filter(type,category,categorytitleid,categorytitlename) "
+									+"VALUES ('topicblocked','"+category+"','"+categorytitleid+"','"+title+"')";
 				MDS.sql(blockins,function(res){
 					callback();	
 				});		
@@ -425,7 +398,7 @@ function addBlockTopic(title, categorytitleid, callback){
 
 function selectBlockedTopics(callback){
 	//Create the DB if not exists
-	var sql = "SELECT type,categorytitleid,categorytitlename FROM filter WHERE type='topicblocked' ORDER BY LOWER(categorytitlename) ASC";
+	var sql = "SELECT type,category,categorytitleid,categorytitlename FROM filter WHERE type='topicblocked' ORDER BY LOWER(categorytitlename) ASC";
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
@@ -489,7 +462,7 @@ function selectBlockedCategories(callback){
 	});
 }
 
-function removeBlockedTopic(category,callback){
+function removeBlockedCategory(category,callback){
 	//Create the DB if not exists
 	var sql = "DELETE FROM filter WHERE type='categoryblocked' AND category='"+category+"'";
 				
@@ -499,8 +472,7 @@ function removeBlockedTopic(category,callback){
 	});
 }
 
-
-function checkMsgBlocked(userpubkey, categorytitleid, callback){
+function checkMsgBlocked(userpubkey, categorytitleid, category, callback){
 	
 	//Create the DB if not exists
 	var sql = "SELECT * FROM filter";
@@ -524,9 +496,51 @@ function checkMsgBlocked(userpubkey, categorytitleid, callback){
 					blocked = true;
 					break;
 				}
+			}else if(filter.TYPE == "categoryblocked"){
+				if(category.startsWith(filter.CATEGORY)){
+					blocked = true;
+					break;
+				}
 			}
 		}
 		
 		callback(blocked);
 	});
+}
+
+function loadAllFilters(callback){
+	//Run this..
+	MDS.sql("SELECT * FROM filter",function(msg){
+		callback(msg.rows);
+	});
+}
+
+function checkMsgBlockedSQL(filters,userpubkey, categorytitleid, category){
+	
+	var len = filters.length;
+	
+	blocked = false;
+	for(var i=0;i<len;i++){
+		var filter = filters[i];
+		
+		//Check BLocked user
+		if(filter.TYPE == "userblocked"){
+			if(filter.USERPUBKEY == userpubkey){
+				blocked = true;
+				break;
+			}
+		}else if(filter.TYPE == "topicblocked"){
+			if(filter.CATEGORYTITLEID == categorytitleid){
+				blocked = true;
+				break;
+			}
+		}else if(filter.TYPE == "categoryblocked"){
+			if(category.startsWith(filter.CATEGORY)){
+				blocked = true;
+				break;
+			}
+		}
+	}
+	
+	return blocked;
 }
