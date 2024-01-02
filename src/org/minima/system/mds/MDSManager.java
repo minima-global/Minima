@@ -220,6 +220,12 @@ public class MDSManager extends MessageProcessor {
 	public File getMiniDAPPCopyDappFolder(String zUID) {
 		return new File(getMiniDAPPFileFolder(zUID), "minidapp");
 	}
+
+	public String getMiniDAPPShareFileName(MiniDAPP zMiniDAPP) {
+		String filename	= zMiniDAPP.getName().toLowerCase().replaceAll(" ", "");
+		String fullname = filename+"-"+zMiniDAPP.getVersion()+".mds.zip";
+		return fullname;
+	}
 	
 	public File getMiniDAPPShareFile(String zUID) {
 		MiniDAPP md 		= MinimaDB.getDB().getMDSDB().getMiniDAPP(zUID);
@@ -228,8 +234,7 @@ public class MDSManager extends MessageProcessor {
 	
 	public File getMiniDAPPShareFile(MiniDAPP zMiniDAPP) {
 		File copyfolder 	= getMiniDAPPCopyDappFolder(zMiniDAPP.getUID());
-		String filename	 	= zMiniDAPP.getName().toLowerCase().replaceAll(" ", "");
-		String fullname 	= filename+"-"+zMiniDAPP.getVersion()+".mds.zip";
+		String fullname 	= getMiniDAPPShareFileName(zMiniDAPP);
 		File minisharefile 	= new File(copyfolder,fullname);
 		return minisharefile;
 	}

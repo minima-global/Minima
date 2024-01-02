@@ -267,11 +267,6 @@ public class MiniFile {
 			return;
 		}
 		
-		//Check folder destination
-		if(!zCopy.getParentFile().exists()) {
-			zCopy.getParentFile().mkdirs();
-		}
-		
 		InputStream is 	= null;
 	    OutputStream os = null;
 	    try {

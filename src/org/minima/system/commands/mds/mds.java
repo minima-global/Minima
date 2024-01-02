@@ -49,6 +49,7 @@ public class mds extends Command {
 				+ "    install : Install a new MiniDapp and optionally set its permission. Must specify 'file'.\n"
 				+ "    update : Update and replace an existing MiniDapp. Must specify MiniDapp 'uid' and 'file' of new MiniDapp.\n"
 				+ "    uninstall : Uninstall a MiniDapp. Must specify MiniDapp 'uid'.\n"
+				+ "    download : Download the MiniDapp to your BASE folder.\n"
 				+ "    pending : List all pending commands waiting to be accepted or denied.\n"
 				+ "    accept : Accept a pending command. Must specify 'uid' of the pending command.\n"
 				+ "    deny : Deny a pending command. Must specify 'uid' of the pending command.\n"
@@ -76,6 +77,8 @@ public class mds extends Command {
 				+ "mds action:update uid:0xABA3.. file:wallet_2.0.mds.zip \n"
 				+ "\n"
 				+ "mds action:uninstall uid:0xABA3..\n"
+				+ "\n"
+				+ "mds action:download uid:0xABA3..\n"
 				+ "\n"
 				+ "mds action:pending\n"
 				+ "\n"
@@ -278,15 +281,12 @@ public class mds extends Command {
 			installed.addObject("minidapp", md);
 			Main.getInstance().getMDSManager().PostMessage(installed);
 		
-		}else if(action.equals("share")) {
+		}else if(action.equals("download")) {
 			
 			String uid = getParam("uid");
 			if(!uid.startsWith("0x")) {
 				throw new CommandException("Invalid UID for MiniDAPP");
 			}
-			
-			String file 			= getParam("file");
-			File minidappdownload 	= MiniFile.createBaseFile(file);
 			
 			//Get the Minidapp..
 			File minisharefile 	= Main.getInstance().getMDSManager().getMiniDAPPShareFile(uid);
@@ -294,9 +294,18 @@ public class mds extends Command {
 				throw new CommandException("Original MiniDAPP file does not exist");
 			}
 			
+			//Where to place it..
+			File copyto = MiniFile.createBaseFile(minisharefile.getName());
+			
 			//Now download..
+			MiniFile.copyFile(minisharefile, copyto);
 			
-			
+			//All done..
+			JSONObject mds = new JSONObject();
+			mds.put("uid", uid);
+			mds.put("original", minisharefile.getAbsolutePath());
+			mds.put("copy", copyto.getAbsolutePath());
+			ret.put("response", mds);
 			
 		}else if(action.equals("uninstall")) {
 
