@@ -8,6 +8,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.JsonDB;
 import org.minima.utils.MiniUtil;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 
 public class UserDB extends JsonDB{
@@ -249,4 +250,31 @@ public class UserDB extends JsonDB{
 		setString("minihub_default", zMiniDAPPID);
 	}
 	
+	/**
+	 * If you delete a MIniDAPP do NOT reinstall it..
+	 */
+	public JSONArray getUninstalledMiniDAPP() {
+		return getJSONArray("minidapps_uninstalled");
+	}
+	
+	public void removeUninstalledMiniDAPP(String zName) {
+		JSONArray alluninst = getUninstalledMiniDAPP();
+		String name = zName.toLowerCase().replaceAll(" ", "");
+		alluninst.remove(name);
+		setJSONArray("minidapps_uninstalled", alluninst);
+	}
+	
+	public void addUninstalledMiniDAPP(String zName) {
+		JSONArray alluninst = getUninstalledMiniDAPP();
+		String name = zName.toLowerCase().replaceAll(" ", "");
+		alluninst.remove(name);
+		alluninst.add(name);
+		setJSONArray("minidapps_uninstalled", alluninst);
+	}
+	
+	public boolean checkUninstalledMiniDAPP(String zName) {
+		JSONArray alluninst = getUninstalledMiniDAPP();
+		String name = zName.toLowerCase().replaceAll(" ", "");
+		return alluninst.contains(name);
+	}
 }

@@ -265,11 +265,21 @@ public class mds extends Command {
 			//Now add to the DB
 			db.insertMiniDAPP(md);
 			
+			//Remove from the deleted list
+			MinimaDB.getDB().getUserDB().removeUninstalledMiniDAPP(md.getName());
+			MinimaDB.getDB().saveUserDB();
+			
 			//Now copy the minidapp itself..so you have a copy..
 			File copyfolder = Main.getInstance().getMDSManager().getMiniDAPPCopyDappFolder(md.getUID());
 			MiniFile.deleteFileOrFolder(copyfolder.getAbsolutePath(), copyfolder);
+			copyfolder.mkdirs();
 			File minisharefile 	= Main.getInstance().getMDSManager().getMiniDAPPShareFile(md);
-			MiniFile.copyFile(minidapp, minisharefile);
+			
+			try {
+				MiniFile.copyFile(minidapp, minisharefile);
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
 			
 			//All done..
 			JSONObject mds = new JSONObject();
@@ -319,6 +329,15 @@ public class mds extends Command {
 			if(uid.equals(minihub)) {
 				throw new CommandException("Cannot delete the MiniHUB");
 			}
+			
+			//Add to uninstalled..
+			MiniDAPP md = Main.getInstance().getMDSManager().getMiniDAPP(uid);
+			if(md == null) {
+				throw new CommandException("MiniDAPP not found");
+			}
+			
+			MinimaDB.getDB().getUserDB().addUninstalledMiniDAPP(md.getName());
+			MinimaDB.getDB().saveUserDB();
 			
 			//Delete from the DB
 			db.deleteMiniDAPP(uid);

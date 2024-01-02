@@ -1033,7 +1033,13 @@ public class MDSManager extends MessageProcessor {
 		
 		//The main MDS DB
 		MDSDB mdb = MinimaDB.getDB().getMDSDB();
-				
+		
+		//Check if Uninstalled - so do not re-install
+		if(MinimaDB.getDB().getUserDB().checkUninstalledMiniDAPP(zName)) {
+			MinimaLogger.log("MiniDAPP "+zName+" uninstalled - not re-installing..");
+			return true;
+		}
+		
 		try {
 			
 			//Is it already installed
@@ -1150,8 +1156,13 @@ public class MDSManager extends MessageProcessor {
 			//Now copy the minidapp itself..so you have a copy..
 			File copyfolder = Main.getInstance().getMDSManager().getMiniDAPPCopyDappFolder(md.getUID());
 			MiniFile.deleteFileOrFolder(copyfolder.getAbsolutePath(), copyfolder);
+			copyfolder.mkdirs();
 			File minisharefile 	= getMiniDAPPShareFile(md);
-			MiniFile.writeDataToFile(minisharefile, alldata);
+			try {
+				MiniFile.writeDataToFile(minisharefile, alldata);
+			}catch(Exception Exc) {
+				MinimaLogger.log(Exc);
+			}
 			
 			if(zIsMiniHUB) {
 				//Create the webpage
