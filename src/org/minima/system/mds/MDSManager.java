@@ -1036,7 +1036,7 @@ public class MDSManager extends MessageProcessor {
 		
 		//Check if Uninstalled - so do not re-install
 		if(MinimaDB.getDB().getUserDB().checkUninstalledMiniDAPP(zName)) {
-			MinimaLogger.log("MiniDAPP "+zName+" uninstalled - not re-installing..");
+			MinimaLogger.log("Default MiniDAPP "+zName+" uninstalled - not re-installing..");
 			return true;
 		}
 		
