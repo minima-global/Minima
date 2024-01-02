@@ -217,6 +217,23 @@ public class MDSManager extends MessageProcessor {
 		return new File(getMiniDAPPDataFolder(zUID), "keypair");
 	}
 	
+	public File getMiniDAPPCopyDappFolder(String zUID) {
+		return new File(getMiniDAPPFileFolder(zUID), "minidapp");
+	}
+	
+	public File getMiniDAPPShareFile(String zUID) {
+		MiniDAPP md 		= MinimaDB.getDB().getMDSDB().getMiniDAPP(zUID);
+		return getMiniDAPPShareFile(md);
+	}
+	
+	public File getMiniDAPPShareFile(MiniDAPP zMiniDAPP) {
+		File copyfolder 	= getMiniDAPPCopyDappFolder(zMiniDAPP.getUID());
+		String filename	 	= zMiniDAPP.getName().toLowerCase().replaceAll(" ", "");
+		String fullname 	= filename+"-"+zMiniDAPP.getVersion()+".mds.zip";
+		File minisharefile 	= new File(copyfolder,fullname);
+		return minisharefile;
+	}
+	
 	public String getMiniHUBPasword() {
 		return mMiniHUBPassword;
 	}
@@ -1125,6 +1142,12 @@ public class MDSManager extends MessageProcessor {
 			MDSDB db = MinimaDB.getDB().getMDSDB();
 			db.insertMiniDAPP(md);
 		
+			//Now copy the minidapp itself..so you have a copy..
+			File copyfolder = Main.getInstance().getMDSManager().getMiniDAPPCopyDappFolder(md.getUID());
+			MiniFile.deleteFileOrFolder(copyfolder.getAbsolutePath(), copyfolder);
+			File minisharefile 	= getMiniDAPPShareFile(md);
+			MiniFile.writeDataToFile(minisharefile, alldata);
+			
 			if(zIsMiniHUB) {
 				//Create the webpage
 				DEFAULT_MINIHUB = rand;

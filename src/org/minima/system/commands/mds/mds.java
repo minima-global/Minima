@@ -262,6 +262,13 @@ public class mds extends Command {
 			//Now add to the DB
 			db.insertMiniDAPP(md);
 			
+			//Now copy the minidapp itself..so you have a copy..
+			File copyfolder = Main.getInstance().getMDSManager().getMiniDAPPCopyDappFolder(md.getUID());
+			MiniFile.deleteFileOrFolder(copyfolder.getAbsolutePath(), copyfolder);
+			File minisharefile 	= Main.getInstance().getMDSManager().getMiniDAPPShareFile(md);
+			MiniFile.copyFile(minidapp, minisharefile);
+			
+			//All done..
 			JSONObject mds = new JSONObject();
 			mds.put("installed", md.toJSON());
 			ret.put("response", mds);
@@ -270,6 +277,26 @@ public class mds extends Command {
 			Message installed = new Message(MDSManager.MDS_MINIDAPPS_INSTALLED);
 			installed.addObject("minidapp", md);
 			Main.getInstance().getMDSManager().PostMessage(installed);
+		
+		}else if(action.equals("share")) {
+			
+			String uid = getParam("uid");
+			if(!uid.startsWith("0x")) {
+				throw new CommandException("Invalid UID for MiniDAPP");
+			}
+			
+			String file 			= getParam("file");
+			File minidappdownload 	= MiniFile.createBaseFile(file);
+			
+			//Get the Minidapp..
+			File minisharefile 	= Main.getInstance().getMDSManager().getMiniDAPPShareFile(uid);
+			if(!minisharefile.exists()) {
+				throw new CommandException("Original MiniDAPP file does not exist");
+			}
+			
+			//Now download..
+			
+			
 			
 		}else if(action.equals("uninstall")) {
 
