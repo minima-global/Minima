@@ -501,6 +501,11 @@ public class NIOMessage implements Runnable {
 					//Check the Signatures
 					MinimaLogger.log("Invalid signatures on txpow from "+mClientUID+" "+txpow.getTxPoWID());
 					disconnectpeer = true;
+				
+				}else if(!RelayPolicy.checkMaxStateStoreSize(txpow,tip.getTxPoW().getMagic().getMaxTxPoWSize().getAsLong())) {
+					//Check state store size..
+					MinimaLogger.log("TxPoW state store too large..");
+					disconnectpeer = true;
 				}
 				
 				//Do we disconnect yet.. 
@@ -530,7 +535,7 @@ public class NIOMessage implements Runnable {
 				}
 				
 				//Check RELAY POLICY
-				if(!RelayPolicy.checkAllPolicies(txpow)) {
+				if(!RelayPolicy.checkAllPolicies(txpow,tip.getTxPoW().getMagic().getMaxTxPoWSize().getAsLong())) {
 					fullyvalid = false;
 				}
 				
