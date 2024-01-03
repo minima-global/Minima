@@ -535,7 +535,7 @@ public class NIOMessage implements Runnable {
 				}
 				
 				//Check RELAY POLICY
-				if(!RelayPolicy.checkAllPolicies(txpow,tip.getTxPoW().getMagic().getMaxTxPoWSize().getAsLong())) {
+				if(!RelayPolicy.checkAllPolicies(txpow,GeneralParams.MAX_RELAY_STORESTATESIZE)) {
 					fullyvalid = false;
 				}
 				
