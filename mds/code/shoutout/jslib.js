@@ -1,5 +1,9 @@
 
-const VALID_CATEGORY_REGEX = new XRegExp("^[\\p{L}\\p{N}._]*$");
+//Main Shoutout Address
+var SHOUTOUT_ADDRESS = "0x73686F75746F7574206D696E696D61"
+
+//Valid topic RegExp
+const VALID_CATEGORY_REGEX = new XRegExp("^[\\p{L}\\p{N}.]*$");
 
 function cleanCategory(incategory){
 	

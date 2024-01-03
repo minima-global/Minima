@@ -1,14 +1,4 @@
 
-@font-face {
-	font-family: Manrope;
-	src: url('./Manrope-Regular.ttf');
-}
-
-body {
-	font-family: Manrope; 
-    margin: 8;   /* Remove body margins */
-}
-
 .titlebar{
   width:100%;
   height:50px;
@@ -193,4 +183,28 @@ body {
 	width:100%;
 	resize: vertical; 
 	font-size: 14px;	
+}
+
+.temporary-pulse {
+  -webkit-animation-iteration-count: 3!important;
+  animation-iteration-count: 3!important;
+}
+
+select {
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	padding-right: 25px; /* Adjust the padding to make room for the custom arrow */
+	background: url('caret-down.svg') no-repeat right center; /* Add your custom arrow icon */
+	background-color: #FFFFFF;
+}
+
+select::after {
+	content: '\25BC'; /* Unicode character for a down arrow */
+	font-size: 14px;
+	color: #08090B;
+	position: absolute;
+	top: 50%;
+	right: 8px;
+	transform: translateY(-50%);
 }

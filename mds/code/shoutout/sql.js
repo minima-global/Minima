@@ -29,7 +29,7 @@ function createDB(callback){
 				+"  `username` varchar(128) NOT NULL, "
 				+"  `useraddress` varchar(128), "
 				+"  `userpubkey` varchar(1024) NOT NULL, "
-				+"  `message` varchar(8192) NOT NULL, "
+				+"  `message` varchar(4096) NOT NULL, "
 				+"  `messageid` varchar(128) NOT NULL, "
 				+"  `read` int NOT NULL, "
 				+"  `created` bigint NOT NULL "
