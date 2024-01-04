@@ -23,6 +23,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWSearcher;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
@@ -155,43 +156,48 @@ public class TxPoWTreeNode implements Streamable {
 				if(checkRelevant(spentcoin, wallet)) {
 					mRelevantMMRCoins.add(entrynumber);
 					
-					//Message..
-					JSONObject coinjson = spentcoin.toJSON(true);
-					MinimaLogger.log("NEW Spent Coin : "+coinjson);
-					
-					//Send a message
-					JSONObject data = new JSONObject();
-					data.put("relevant", true);
-					data.put("txblockid", mTxBlock.getTxPoW().getTxPoWID());
-					data.put("txblock", block.toString());
-					data.put("spent", true);
-					data.put("coin", coinjson);
-					
-					//And Post it..
-					Main.getInstance().PostNotifyEvent(Main.MAIN_NEWCOIN, data);
+					if(!GeneralParams.IS_MEGAMMR) {
+						
+						//Message..
+						JSONObject coinjson = spentcoin.toJSON(true);
+						MinimaLogger.log("NEW Spent Coin : "+coinjson);
+						
+						//Send a message
+						JSONObject data = new JSONObject();
+						data.put("relevant", true);
+						data.put("txblockid", mTxBlock.getTxPoW().getTxPoWID());
+						data.put("txblock", block.toString());
+						data.put("spent", true);
+						data.put("coin", coinjson);
+						
+						//And Post it..
+						Main.getInstance().PostNotifyEvent(Main.MAIN_NEWCOIN, data);
+					}					
 				
 					//There has been a balance change
 					balancechange = true;
 				}
 				
 				//Check the Coin Notify Details..
-				String coinaddress = spentcoin.getAddress().to0xString();
-				if(MinimaDB.getDB().checkCoinNotify(coinaddress)) {
-					
-					//Message..
-					JSONObject coinjson = spentcoin.toJSON(true);
-					//MinimaLogger.log("NOTIFY Spent Coin : "+coinjson);
-					
-					//Send a message
-					JSONObject data = new JSONObject();
-					data.put("address", coinaddress);
-					data.put("txblockid", mTxBlock.getTxPoW().getTxPoWID());
-					data.put("txblock", block.toString());
-					data.put("spent", true);
-					data.put("coin", coinjson);
-					
-					//And Post it..
-					Main.getInstance().PostNotifyEvent(Main.MAIN_NOTIFYCOIN, data);
+				if(!GeneralParams.IS_MEGAMMR) {
+					String coinaddress = spentcoin.getAddress().to0xString();
+					if(MinimaDB.getDB().checkCoinNotify(coinaddress)) {
+						
+						//Message..
+						JSONObject coinjson = spentcoin.toJSON(true);
+						//MinimaLogger.log("NOTIFY Spent Coin : "+coinjson);
+						
+						//Send a message
+						JSONObject data = new JSONObject();
+						data.put("address", coinaddress);
+						data.put("txblockid", mTxBlock.getTxPoW().getTxPoWID());
+						data.put("txblock", block.toString());
+						data.put("spent", true);
+						data.put("coin", coinjson);
+						
+						//And Post it..
+						Main.getInstance().PostNotifyEvent(Main.MAIN_NOTIFYCOIN, data);
+					}
 				}
 			}
 		}
@@ -223,64 +229,68 @@ public class TxPoWTreeNode implements Streamable {
 				if(checkRelevant(output, wallet)) {
 					mRelevantMMRCoins.add(entrynumber);
 					
-					//Message..
-					JSONObject coinjson = newcoin.toJSON(true);
-					
-					//Did we remove the state..
-					if(!newcoin.storeState()) {
-						//Get it..
-						ArrayList<StateVariable> removedstate = mTxBlock.removedState(newcoin.getCoinID().to0xString());
-						if(removedstate != null) {
-							//Add it to the JSON
-							coinjson.put("state", Coin.convertStateListToJSON(removedstate));
+					if(!GeneralParams.IS_MEGAMMR) {
+						//Message..
+						JSONObject coinjson = newcoin.toJSON(true);
+						
+						//Did we remove the state..
+						if(!newcoin.storeState()) {
+							//Get it..
+							ArrayList<StateVariable> removedstate = mTxBlock.removedState(newcoin.getCoinID().to0xString());
+							if(removedstate != null) {
+								//Add it to the JSON
+								coinjson.put("state", Coin.convertStateListToJSON(removedstate));
+							}
 						}
+						
+						MinimaLogger.log("NEW Unspent Coin : "+coinjson);
+						
+						//Send a message
+						JSONObject data = new JSONObject();
+						data.put("relevant", true);
+						data.put("txblockid", mTxBlock.getTxPoW().getTxPoWID());
+						data.put("txblock", block.toString());
+						data.put("spent", false);
+						data.put("coin", coinjson);
+						
+						//And Post it..
+						Main.getInstance().PostNotifyEvent(Main.MAIN_NEWCOIN, data);
 					}
-					
-					MinimaLogger.log("NEW Unspent Coin : "+coinjson);
-					
-					//Send a message
-					JSONObject data = new JSONObject();
-					data.put("relevant", true);
-					data.put("txblockid", mTxBlock.getTxPoW().getTxPoWID());
-					data.put("txblock", block.toString());
-					data.put("spent", false);
-					data.put("coin", coinjson);
-					
-					//And Post it..
-					Main.getInstance().PostNotifyEvent(Main.MAIN_NEWCOIN, data);
 					
 					balancechange = true;
 				}
 				
 				//Check the Coin Notify Details..
-				String coinaddress = newcoin.getAddress().to0xString();
-				if(MinimaDB.getDB().checkCoinNotify(coinaddress)) {
-					
-					//Message..
-					JSONObject coinjson = newcoin.toJSON(true);
-					
-					//Did we remove the state..
-					if(!newcoin.storeState()) {
-						//Get it..
-						ArrayList<StateVariable> removedstate = mTxBlock.removedState(newcoin.getCoinID().to0xString());
-						if(removedstate != null) {
-							//Add it to the JSON
-							coinjson.put("state", Coin.convertStateListToJSON(removedstate));
+				if(!GeneralParams.IS_MEGAMMR) {
+					String coinaddress = newcoin.getAddress().to0xString();
+					if(MinimaDB.getDB().checkCoinNotify(coinaddress)) {
+						
+						//Message..
+						JSONObject coinjson = newcoin.toJSON(true);
+						
+						//Did we remove the state..
+						if(!newcoin.storeState()) {
+							//Get it..
+							ArrayList<StateVariable> removedstate = mTxBlock.removedState(newcoin.getCoinID().to0xString());
+							if(removedstate != null) {
+								//Add it to the JSON
+								coinjson.put("state", Coin.convertStateListToJSON(removedstate));
+							}
 						}
+						
+						//MinimaLogger.log("NOTIFY Unspent Coin : "+coinjson);
+						
+						//Send a message
+						JSONObject data = new JSONObject();
+						data.put("address", coinaddress);
+						data.put("txblockid", mTxBlock.getTxPoW().getTxPoWID());
+						data.put("txblock", block.toString());
+						data.put("spent", false);
+						data.put("coin", coinjson);
+						
+						//And Post it..
+						Main.getInstance().PostNotifyEvent(Main.MAIN_NOTIFYCOIN, data);
 					}
-					
-					//MinimaLogger.log("NOTIFY Unspent Coin : "+coinjson);
-					
-					//Send a message
-					JSONObject data = new JSONObject();
-					data.put("address", coinaddress);
-					data.put("txblockid", mTxBlock.getTxPoW().getTxPoWID());
-					data.put("txblock", block.toString());
-					data.put("spent", false);
-					data.put("coin", coinjson);
-					
-					//And Post it..
-					Main.getInstance().PostNotifyEvent(Main.MAIN_NOTIFYCOIN, data);
 				}
 			}
 		}
@@ -294,7 +304,7 @@ public class TxPoWTreeNode implements Streamable {
 		}
 		
 		//Has the balance changed
-		if(balancechange) {
+		if(!GeneralParams.IS_MEGAMMR && balancechange) {
 			Main.getInstance().PostMessage(Main.MAIN_BALANCE);
 		}
 	}
@@ -303,6 +313,11 @@ public class TxPoWTreeNode implements Streamable {
 	 * Check if this coin is relevant to this wallet and therefore should be kept
 	 */
 	private boolean checkRelevant(Coin zCoin, Wallet zWallet) {
+		
+		//Are we running in MEGA MMR MODE..
+		if(GeneralParams.IS_MEGAMMR) {
+			return true;
+		}
 		
 		//Is the coin relevant to us..
 		if(zWallet.isAddressRelevant(zCoin.getAddress().to0xString())) {
@@ -322,31 +337,6 @@ public class TxPoWTreeNode implements Streamable {
 				}
 			}
 		}
-		
-//		//Cycle through ALL the wallet entries..
-//		for(KeyRow wk : zAllRelevant) {
-//			
-//			//Is the address one of ours..
-//			if(wk.trackAddress() && zCoin.getAddress().to0xString().equals(wk.getAddress())) {
-//				return true;
-//			}
-//			
-//			//Are any of the state variables relevant to us..
-//			ArrayList<StateVariable> state = zCoin.getState();
-//			for(StateVariable sv : state) {
-//				
-//				if(sv.getType().isEqual(StateVariable.STATETYPE_HEX)) {
-//					String svstr = sv.toString();
-//					
-//					//Custom scripts have no public key..
-//					if(!wk.getPublicKey().equals("") && svstr.equals(wk.getPublicKey())) {
-//						return true;
-//					}else if(wk.trackAddress() && svstr.equals(wk.getAddress())){
-//						return true;
-//					}
-//				}
-//			}
-//		}
 		
 		return false;
 	}

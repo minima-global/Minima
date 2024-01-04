@@ -320,7 +320,7 @@ public class Main extends MessageProcessor {
 				
 		//Recalc Tree if too large
 		try {
-			if(MinimaDB.getDB().getTxPoWTree().getHeaviestBranchLength() > 1200) {
+			if(!GeneralParams.IS_MEGAMMR && MinimaDB.getDB().getTxPoWTree().getHeaviestBranchLength() > 1200) {
 				MinimaLogger.log("Large tree.. recalculating..");
 				mTxPoWProcessor.onStartUpRecalc();
 				
@@ -841,7 +841,9 @@ public class Main extends MessageProcessor {
 			MinimaDB.getDB().getTxPoWDB().cleanDBRAM();
 			
 			//Now save the state - in case system crashed..
-			MinimaDB.getDB().saveState();
+			if(!GeneralParams.IS_MEGAMMR) {
+				MinimaDB.getDB().saveState();
+			}
 			
 			//Clear the Maxima Poll Stack
 			getMaxima().checkPollMessages();

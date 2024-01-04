@@ -138,7 +138,8 @@ public class MMR implements Streamable {
 		
 		ret.put("block", mBlockTime);
 		ret.put("entrynumber", mEntryNumber);
-
+		ret.put("size", mSetEntries.size());
+		
 		JSONArray jentry = new JSONArray();
 		Enumeration<MMREntry> entries = mSetEntries.elements();
 		while(entries.hasMoreElements()) {

@@ -2,6 +2,7 @@ package org.minima.system.commands.base;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMR;
+import org.minima.database.txpowtree.TxPowTree;
 import org.minima.system.commands.Command;
 import org.minima.utils.json.JSONObject;
 
@@ -32,9 +33,26 @@ public class printmmr extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
-		MMR mmr = MinimaDB.getDB().getTxPoWTree().getTip().getMMR();
+		TxPowTree tree = MinimaDB.getDB().getTxPoWTree();
 		
-		ret.put("response", mmr.toJSON());
+		MMR tipmmr = tree.getTip().getMMR();
+		
+		MMR cascademmr = tree.getRoot().getMMR();
+	
+		MMR.printmmrtree(cascademmr);
+		
+		//How many entries..
+		int cascsize = cascademmr.getAllEntries().size();
+		
+		JSONObject res = new JSONObject();
+		res.put("tip", tipmmr.toJSON());
+		
+//		JSONObject casc = new JSONObject();
+//		casc.put("size", cascsize);
+		
+		res.put("cascade", cascademmr.toJSON());
+		
+		ret.put("response", res);
 		return ret;
 	}
 

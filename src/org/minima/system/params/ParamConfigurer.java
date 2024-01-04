@@ -292,6 +292,11 @@ public class ParamConfigurer {
             	GeneralParams.IS_JNLP = true;
             }
         }),
+        megammr("megammr", "Store the entire MMR", (args, configurer) -> {
+            if ("true".equals(args)) {
+            	GeneralParams.IS_MEGAMMR = true;
+            }
+        }),
         showparams("showparams", "Show startup params on launch", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.SHOW_PARAMS = true;
