@@ -119,10 +119,10 @@ public class txnaddamount extends Command {
 															useaddress,fromaddress, 
 															true, tokenid, !useaddress);
 		
-		MinimaLogger.log("Coins found : "+coins.size());
-		for(Coin cc : coins) {
-			MinimaLogger.log("Coin : "+cc.toJSON());
-		}
+//		MinimaLogger.log("Coins found : "+coins.size());
+//		for(Coin cc : coins) {
+//			MinimaLogger.log("Coin : "+cc.toJSON());
+//		}
 		
 		//Get just this number..
 		ArrayList<Coin> finalcoins = send.selectCoins(coins, tokenamount);
