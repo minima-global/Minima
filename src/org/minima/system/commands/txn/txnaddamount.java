@@ -18,6 +18,7 @@ import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.send.send;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -39,7 +40,7 @@ public class txnaddamount extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id","amount","address","onlychange","tokenid"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","amount","address","onlychange","tokenid","fromaddress"}));
 	}
 	
 	@Override
@@ -103,12 +104,25 @@ public class txnaddamount extends Command {
 			trans.addOutput(maincoin);
 		}
 		
+		//Use only one address
+		boolean 	useaddress 	= false;
+		MiniData 	fromaddress = new MiniData("0x00");
+		if(existsParam("fromaddress")) {
+			useaddress 	= true;
+			fromaddress = new MiniData(getAddressParam("fromaddress"));
+		}
+		
 		//Get all valid coins
 		ArrayList<Coin> coins = TxPoWSearcher.searchCoins(	tip, true, 
 															false, new MiniData("0x00"),
 															false,MiniNumber.ZERO,
-															false,new MiniData("0x00"), 
-															true, tokenid, true);
+															useaddress,fromaddress, 
+															true, tokenid, !useaddress);
+		
+		MinimaLogger.log("Coins found : "+coins.size());
+		for(Coin cc : coins) {
+			MinimaLogger.log("Coin : "+cc.toJSON());
+		}
 		
 		//Get just this number..
 		ArrayList<Coin> finalcoins = send.selectCoins(coins, tokenamount);
@@ -127,6 +141,9 @@ public class txnaddamount extends Command {
 			//Get a new address
 			ScriptRow newwalletaddress = MinimaDB.getDB().getWallet().getDefaultAddress();
 			MiniData chgaddress = new MiniData(newwalletaddress.getAddress());
+			if(useaddress) {
+				chgaddress = fromaddress;
+			}
 			
 			//Get the scaled token ammount..
 			MiniNumber changeamount = change;
