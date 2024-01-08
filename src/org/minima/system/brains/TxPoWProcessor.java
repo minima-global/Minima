@@ -518,8 +518,28 @@ public class TxPoWProcessor extends MessageProcessor {
 				//get the new root..
 				TxPoWTreeNode newroot = tip.getPastNode(tip.getTxPoW().getBlockNumber().sub(GlobalParams.MINIMA_CASCADE_START_DEPTH).increment()); 
 				
-				//Now copy all the MMR Coins.. 
+				//Now copy all the MMR Coins..
+				int cascsizestart=0, casczerostart=0;
+				long timestart = System.currentTimeMillis();
+				if(GeneralParams.IS_MEGAMMR) {
+					cascsizestart = newroot.getMMR().getAllEntries().size();
+					casczerostart = newroot.getMMR().getRowZeroEntries();
+					//MinimaLogger.log("MEGA_MMR : Root update start - total:"+cascsize+" zerorow:"+casczero);
+				}
+				
+				//Copy up relevant coins
 				newroot.copyParentRelevantCoins();
+				
+				if(GeneralParams.IS_MEGAMMR) {
+					int cascsize 	= newroot.getMMR().getAllEntries().size();
+					int casczero 	= newroot.getMMR().getRowZeroEntries();
+					long timediff 	= System.currentTimeMillis() - timestart;
+					
+					MinimaLogger.log("MEGA_MMR : Root update time:"+timediff
+							+"ms - total:"
+							+cascsizestart+"->"+cascsize
+							+" zerorow:"+casczerostart+"->"+casczero);
+				}
 				
 				//NOW - Shrink it..
 				ArrayList<TxPoWTreeNode> cascade = txptree.setLength(GlobalParams.MINIMA_CASCADE_START_DEPTH.getAsInt());

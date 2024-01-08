@@ -148,7 +148,7 @@ public class TxPoWTreeNode implements Streamable {
 			//Update the MMR
 			mMMR.updateEntry(entrynumber, input.getMMRProof(), mmrdata);
 			
-			//Add to the total List of coins fro this block
+			//Add to the total List of coins for this block
 			mCoins.add(spentcoin);
 			
 			//Is this Relevant to us..
@@ -349,17 +349,20 @@ public class TxPoWTreeNode implements Streamable {
 		//Cycle through both lists..
 		for(Coin coin : mCoins) {
 			
-			//Cycle the relevant
-			for(MMREntryNumber relentry : mRelevantMMRCoins) {
-				
-				if(coin.getMMREntryNumber().isEqual(relentry)) {
-					mComputedRelevantCoins.add(coin);
-					break;
+			//MEGA MMR stores all coins
+			if(GeneralParams.IS_MEGAMMR) {
+				mComputedRelevantCoins.add(coin);
+			}else {
+				//Cycle the relevant
+				for(MMREntryNumber relentry : mRelevantMMRCoins) {
+					if(coin.getMMREntryNumber().isEqual(relentry)) {
+						mComputedRelevantCoins.add(coin);
+						break;
+					}
 				}
 			}
 		}
 	}
-	
 	
 	public TxBlock getTxBlock() {
 		return mTxBlock;
@@ -460,11 +463,21 @@ public class TxPoWTreeNode implements Streamable {
 	 */
 	public void copyParentRelevantCoins() {
 		
+		//Some logs
+		if(GeneralParams.IS_MEGAMMR) {
+			MinimaLogger.log("MMR Parent Copy.. Find relevant coins @ "+getBlockNumber());
+		}
+		
 		//Now copy all the MMR Coins.. 
 		ArrayList<Coin> unspentcoins = TxPoWSearcher.getAllRelevantUnspentCoins(getParent());
 		
 		//We may be adding..
 		mMMR.setFinalized(false);
+		
+		//Some logs
+		if(GeneralParams.IS_MEGAMMR) {
+			MinimaLogger.log("MMR Parent Copy.. cycle through coins : "+unspentcoins.size());
+		}
 		
 		//copy all of these to the new root..
 		for(Coin coin : unspentcoins) {
@@ -491,8 +504,18 @@ public class TxPoWTreeNode implements Streamable {
 		//MMR remains unchanged.. Refinalize..
 		mMMR.setFinalized(true);
 		
+		//Some logs
+		if(GeneralParams.IS_MEGAMMR) {
+			MinimaLogger.log("MMR Parent Copy.. calculate relevant ");
+		}
+		
 		//Recalculate the relevant coins
 		calculateRelevantCoins();
+		
+		//Some logs
+		if(GeneralParams.IS_MEGAMMR) {
+			MinimaLogger.log("MMR Parent Copy.. finished");
+		}
 	}
 	
 	

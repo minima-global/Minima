@@ -3,6 +3,7 @@
  */
 package org.minima.utils.messages;
 
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 
 /**
@@ -83,9 +84,14 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
 			try {Thread.sleep(250);} catch (InterruptedException e) {}
 			timewaited +=250;
 			if(timewaited>15000) {
-				MinimaLogger.log("Failed to shutdown in 10 secs for "+mName);
-				mMainThread.interrupt();
-				return;
+				if(!GeneralParams.IS_MEGAMMR) {
+					MinimaLogger.log("Failed to shutdown in 15 secs for "+mName);
+					mMainThread.interrupt();
+					return;
+				}else {
+					timewaited = 0;
+					MinimaLogger.log("MEGA_MMR : Shutdown failed in 15 secs for "+mName);
+				}
 			}
 		}
     }

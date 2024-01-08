@@ -601,7 +601,15 @@ public class MinimaDB {
 			
 			//Custom
 			mCascade.saveDB(new File(basedb,"cascade.db"));
-			mTxPoWTree.saveDB(new File(basedb,"chaintree.db"));
+			
+			File txtreefile = new File(basedb,"chaintree.db");
+			mTxPoWTree.saveDB(txtreefile);
+			
+			//Are we running in MEGA MMR..
+			if(GeneralParams.IS_MEGAMMR) {
+				long size = txtreefile.length();
+				MinimaLogger.log("MEGA_MMR : TxPoWTree saved size : "+MiniFormat.formatSize(size));
+			}
 			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);

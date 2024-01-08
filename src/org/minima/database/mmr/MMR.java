@@ -46,6 +46,11 @@ public class MMR implements Streamable {
 	protected Hashtable<String, MMREntry> mSetEntries;
 	
 	/**
+	 * The number of Entries on Row 0
+	 */
+	protected int mRowZeroEntries = 0;
+	
+	/**
 	 * The maximum row used in this Set
 	 */
 	int mMaxRow = 0;
@@ -212,6 +217,10 @@ public class MMR implements Streamable {
 		return mSetEntries.size();
 	}
 	
+	public int getRowZeroEntries() {
+		return mRowZeroEntries;
+	}
+	
 	public Hashtable<String, MMREntry> getAllEntries(){
 		return mSetEntries;
 	}
@@ -222,7 +231,20 @@ public class MMR implements Streamable {
 	
 	private void addHashTableEntry(MMREntry zEntry) {
 		String name = getHashTableEntry(zEntry.getRow(), zEntry.getEntryNumber());
+		
+		//Already added ? 
+		boolean already  = false;
+		if(mSetEntries.containsKey(name)) {
+			already = true;
+		}
+		
+		//Now add it (overwrite)
 		mSetEntries.put(name, zEntry);
+		
+		//Is this Row 0
+		if(!already && zEntry.getRow() == 0) {
+			mRowZeroEntries++;
+		}
 	}
 	
 	private void removeHashTableEntry(MMREntry zEntry) {

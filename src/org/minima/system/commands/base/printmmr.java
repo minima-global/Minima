@@ -43,14 +43,16 @@ public class printmmr extends Command {
 		
 		//How many entries..
 		int cascsize = cascademmr.getAllEntries().size();
+		int casczero = cascademmr.getRowZeroEntries();
 		
 		JSONObject res = new JSONObject();
 		res.put("tip", tipmmr.toJSON());
 		
-//		JSONObject casc = new JSONObject();
-//		casc.put("size", cascsize);
+		JSONObject casc = new JSONObject();
+		casc.put("size", cascsize);
+		casc.put("rowzero", casczero);
 		
-		res.put("cascade", cascademmr.toJSON());
+		res.put("cascade", casc);
 		
 		ret.put("response", res);
 		return ret;
