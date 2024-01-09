@@ -25,6 +25,8 @@ import org.minima.utils.mysql.MySQLConnect;
 
 public class MegaMMR {
 
+	public static Hashtable<String,Coin> mAllCoins;
+	
 	public static void main(String[] zArgs) throws SQLException {
 		
 		//get the params..
@@ -40,6 +42,8 @@ public class MegaMMR {
 		//Load all the data..
 		MiniNumber startblock = MiniNumber.ZERO;
 		
+		mAllCoins = new Hashtable<>();
+		
 		//The MMR
 		MMR megammr = new MMR();
 		megammr.setBlockTime(MiniNumber.ZERO);
@@ -48,8 +52,8 @@ public class MegaMMR {
 		int counter=0;
 		while(!finished) {
 			
-			if(counter>600) {
-				break;
+			if(counter>500) {
+			//	break;
 			}
 			counter++;
 			
@@ -84,6 +88,8 @@ public class MegaMMR {
 		MMR.printinfo(megammr);
 		
 		megammr.finalizeSet();
+		
+		MinimaLogger.log("All unspent coins.. "+mAllCoins.size());
 		
 		//Shut down
 		mysql.shutdown();
@@ -126,6 +132,10 @@ public class MegaMMR {
 			
 			//Add to the total List of coins for this block
 			//mCoins.add(spentcoin);
+			
+			//Remove from all coins..
+			String coinid = input.getCoin().getCoinID().to0xString();
+			mAllCoins.remove(coinid);
 		}
 		
 		//And ADD all the newly created coins
@@ -148,7 +158,8 @@ public class MegaMMR {
 			zMMR.addEntry(mmrdata);	
 			
 			//Add to the total List of coins for this block
-			//mCoins.add(newcoin);
+			String coinid = output.getCoinID().to0xString();
+			mAllCoins.put(coinid, output);
 		}
 	}
 }
