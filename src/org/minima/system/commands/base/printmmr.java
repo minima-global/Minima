@@ -39,7 +39,7 @@ public class printmmr extends Command {
 		
 		MMR cascademmr = tree.getRoot().getMMR();
 	
-		MMR.printmmrtree(cascademmr);
+		//MMR.printmmrtree(cascademmr);
 		
 		//How many entries..
 		int cascsize = cascademmr.getAllEntries().size();

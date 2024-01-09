@@ -791,6 +791,7 @@ public class MMR implements Streamable {
 	public static void printinfo(MMR zTree) {
 		System.out.println("");
 		System.out.println("MMR TREE DATA");
+		System.out.println("Block Time      : "+zTree.getBlockTime());
 		System.out.println("Total tree size : "+zTree.getTotalEntries());
 		System.out.println("Current entry   : "+zTree.getEntryNumber());
 		//The Peaks..

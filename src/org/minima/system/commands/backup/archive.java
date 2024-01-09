@@ -833,6 +833,9 @@ public class archive extends Command {
 				throw new Exception("Restore file doesn't exist : "+restorefile.getAbsolutePath());
 			}
 			
+			//Wait longer for the parent copy
+			TxPoWProcessor.MEGAMMR_RESYNC = true;
+			
 			//Is it an H2 gzip or a raw dat
 			boolean h2import = true; 
 			if(file.endsWith(".dat")) {
@@ -944,6 +947,10 @@ public class archive extends Command {
 				resp.put("archiveresync", result);
 				ret.put("response", resp);
 			}
+			
+			TxPoWProcessor.MEGAMMR_RESYNC = false;
+			
+			Main.getInstance().getTxPoWProcessor().onStartUpRecalc();
 			
 		}else if(action.equals("importraw")) {
 			

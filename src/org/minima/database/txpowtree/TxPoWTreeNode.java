@@ -351,7 +351,9 @@ public class TxPoWTreeNode implements Streamable {
 			
 			//MEGA MMR stores all coins
 			if(GeneralParams.IS_MEGAMMR) {
-				mComputedRelevantCoins.add(coin);
+				if(!coin.getSpent()) {
+					mComputedRelevantCoins.add(coin);
+				}
 			}else {
 				//Cycle the relevant
 				for(MMREntryNumber relentry : mRelevantMMRCoins) {
@@ -475,9 +477,9 @@ public class TxPoWTreeNode implements Streamable {
 		mMMR.setFinalized(false);
 		
 		//Some logs
-		if(GeneralParams.IS_MEGAMMR) {
-			MinimaLogger.log("MMR Parent Copy.. cycle through coins : "+unspentcoins.size());
-		}
+//		if(GeneralParams.IS_MEGAMMR) {
+//			MinimaLogger.log("MMR Parent Copy.. cycle through coins : "+unspentcoins.size());
+//		}
 		
 		//copy all of these to the new root..
 		for(Coin coin : unspentcoins) {
@@ -505,16 +507,17 @@ public class TxPoWTreeNode implements Streamable {
 		mMMR.setFinalized(true);
 		
 		//Some logs
-		if(GeneralParams.IS_MEGAMMR) {
-			MinimaLogger.log("MMR Parent Copy.. calculate relevant ");
-		}
+//		if(GeneralParams.IS_MEGAMMR) {
+//			MinimaLogger.log("MMR Parent Copy.. calculate relevant ");
+//		}
 		
 		//Recalculate the relevant coins
 		calculateRelevantCoins();
 		
 		//Some logs
 		if(GeneralParams.IS_MEGAMMR) {
-			MinimaLogger.log("MMR Parent Copy.. finished");
+//			MinimaLogger.log("MMR Parent Copy.. finished");
+			System.gc();
 		}
 	}
 	

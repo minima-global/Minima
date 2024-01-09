@@ -45,6 +45,8 @@ public class TxPoWProcessor extends MessageProcessor {
 	private long mFirstIBD 				= System.currentTimeMillis();
 	private long MAX_FIRST_IBD_TIME 	= 1000 * 60 * 5; 
 	
+	public static boolean MEGAMMR_RESYNC = false;
+	
 	public TxPoWProcessor() {
 		super("TXPOWPROCESSOR");
 	}
@@ -510,6 +512,13 @@ public class TxPoWProcessor extends MessageProcessor {
 			
 			//How big..
 			int maxlen = GlobalParams.MINIMA_CASCADE_START_DEPTH.add(GlobalParams.MINIMA_CASCADE_FREQUENCY).getAsInt();
+			
+			//During MEGAMMR resync wait longer
+			if(MEGAMMR_RESYNC) {
+				maxlen = 2048;
+			}
+			
+			//Are we too long
 			if(txptree.getHeaviestBranchLength() >= maxlen) {
 				
 				//Current Tip
@@ -524,7 +533,6 @@ public class TxPoWProcessor extends MessageProcessor {
 				if(GeneralParams.IS_MEGAMMR) {
 					cascsizestart = newroot.getMMR().getAllEntries().size();
 					casczerostart = newroot.getMMR().getRowZeroEntries();
-					//MinimaLogger.log("MEGA_MMR : Root update start - total:"+cascsize+" zerorow:"+casczero);
 				}
 				
 				//Copy up relevant coins
@@ -538,7 +546,8 @@ public class TxPoWProcessor extends MessageProcessor {
 					MinimaLogger.log("MEGA_MMR : Root update time:"+timediff
 							+"ms - total:"
 							+cascsizestart+"->"+cascsize
-							+" zerorow:"+casczerostart+"->"+casczero);
+							+" zerorow:"+casczerostart+"->"+casczero
+							+" @ "+newroot.getBlockNumber());
 				}
 				
 				//NOW - Shrink it..
