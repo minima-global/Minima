@@ -355,6 +355,11 @@ public class ParamConfigurer {
                 GeneralParams.NO_SYNC_IBD = true;
             }
         }),
+        megammr("megammr", "Are we running in MEGA MMR mode", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.IS_MEGAMMR = true;
+            }
+        }),
 //        slavenode("slavenode", "Connect to this node only and only accept TxBlock messages.", (args, configurer) -> {
 //        	GeneralParams.CONNECT_LIST 			= args;
 //        	GeneralParams.P2P_ENABLED 			= false;
