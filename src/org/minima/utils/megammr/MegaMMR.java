@@ -52,7 +52,7 @@ public class MegaMMR {
 		int counter=0;
 		while(!finished) {
 			
-			if(counter>500) {
+			if(counter>200) {
 			//	break;
 			}
 			counter++;

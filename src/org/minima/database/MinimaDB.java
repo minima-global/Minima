@@ -11,6 +11,7 @@ import org.minima.database.archive.TxBlockDB;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.maxima.MaximaDB;
 import org.minima.database.minidapps.MDSDB;
+import org.minima.database.mmr.MegaMMR;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPowTree;
 import org.minima.database.userprefs.UserDB;
@@ -50,6 +51,11 @@ public class MinimaDB {
 	TxBlockDB		mTxBlockDB;
 	
 	/**
+	 * The MEGA MMR
+	 */
+	MegaMMR mMegaMMR;
+	
+	/**
 	 * For P2P Information
 	 */
 	P2PDB			mP2PDB;
@@ -82,12 +88,13 @@ public class MinimaDB {
 		mMaximaDB	= new MaximaDB();
 		mMDSDB   	= new MDSDB();
 		mTxBlockDB	= new TxBlockDB();
-		
 		mP2PDB		= new P2PDB();
 		
 		mRWLock 	= new ReentrantReadWriteLock();
 		
 		mCoinNotify	= new HashSet<>();
+		
+		mMegaMMR	= new MegaMMR();
 	}
 	
 	/**
@@ -124,6 +131,10 @@ public class MinimaDB {
 	
 	public TxPowTree getTxPoWTree() {
 		return mTxPoWTree;
+	}
+	
+	public MegaMMR getMegaMMR() {
+		return mMegaMMR;
 	}
 	
 	public Cascade getCascade() {

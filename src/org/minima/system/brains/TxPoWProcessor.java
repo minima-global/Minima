@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
 import org.minima.database.cascade.Cascade;
+import org.minima.database.mmr.MegaMMR;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.txpowtree.TxPowTree;
@@ -497,6 +498,9 @@ public class TxPoWProcessor extends MessageProcessor {
 		Cascade	cascdb		= MinimaDB.getDB().getCascade();
 		ArchiveManager arch = MinimaDB.getDB().getArchive();
 		
+		//Get the Mega MMR
+		MegaMMR megammr = MinimaDB.getDB().getMegaMMR();
+		
 		//Need to LOCK DB
 		MinimaDB.getDB().writeLock(true);
 		
@@ -548,6 +552,19 @@ public class TxPoWProcessor extends MessageProcessor {
 					}catch(Exception exc) {
 						MinimaLogger.log(exc);
 					}
+					
+					
+					//Are we ruinning in MEGA MMR
+					if(GeneralParams.IS_MEGAMMR) {
+						//Add this to the MEGA MMR
+						megammr.addBlock(txpnode.getTxBlock());
+					}
+				}
+				
+				//Are we running in MEGA MMR
+				if(GeneralParams.IS_MEGAMMR) {
+					//Add this to the MEGA MMR
+					megammr.getMMR().pruneTree();
 				}
 				
 				//And finally..

@@ -83,6 +83,7 @@ import org.minima.system.commands.scripts.scripts;
 import org.minima.system.commands.search.coins;
 import org.minima.system.commands.search.history;
 import org.minima.system.commands.search.keys;
+import org.minima.system.commands.search.megammr;
 import org.minima.system.commands.search.tokens;
 import org.minima.system.commands.search.txpow;
 import org.minima.system.commands.send.multisig;
@@ -137,6 +138,7 @@ public abstract class Command {
 			
 			new ping(), new random(), new mysql(), new mysqlcoins(), new slavenode(), new checkrestore(),
 			//new file(),
+			new megammr(),
 			
 			new vault(), new consolidate(), new coinnotify(),
 			new backup(), new restore(), new test(), 
