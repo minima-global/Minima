@@ -561,6 +561,11 @@ public class MMR implements Streamable {
 		//Get the Peaks..
 		ArrayList<MMREntry> peaks = getPeaks();
 		
+		//Are there any peaks yet..
+		if(peaks.size() == 0) {
+			return null;
+		}
+		
 		//Now take all those values and put THEM in an MMR..
 		while(peaks.size() > 1) {
 		
@@ -768,6 +773,7 @@ public class MMR implements Streamable {
 	public static void printinfo(MMR zTree) {
 		System.out.println("");
 		System.out.println("MMR TREE DATA");
+		System.out.println("Block Time      : "+zTree.getBlockTime());
 		System.out.println("Total tree size : "+zTree.getTotalEntries());
 		System.out.println("Current entry   : "+zTree.getEntryNumber());
 		//The Peaks..
@@ -785,9 +791,11 @@ public class MMR implements Streamable {
 		int toprow = zTree.mMaxRow;
 		for(int i=toprow;i>=0;i--) {
 		
+			int major = 8;
+			
 			//The start gap
-			int startgap 	= (int) (Math.pow(2, i) -1) * 2;
-			int gap 		= (int) (Math.pow(2, i+1)) * 2;
+			int startgap 	= (int) (Math.pow(2, i) -1) * major;
+			int gap 		= (int) (Math.pow(2, i+1))  * major;
 			
 			//Get the row..
 			ArrayList<MMREntry> row = new ArrayList<>(); 
@@ -801,7 +809,7 @@ public class MMR implements Streamable {
 			
 			//The final char buffer for the row
 			char[] str = new char[256];
-			for(int c=0;c<128;c++) {
+			for(int c=0;c<256;c++) {
 				str[c] = ' ';
 			}
 			
@@ -811,8 +819,13 @@ public class MMR implements Streamable {
 				//Add the entry to the correct spot..
 				int xpos 	 = entry.getEntryNumber().getBigDecimal().intValue();
 				int finalpos = startgap+(xpos*gap);
+				
 				int value    = entry.getMMRData().getValue().getAsInt();
 				String valstr = ""+value;
+				
+//				MiniNumber val = entry.getMMRData().getValue();
+//				String valstr = ""+val.getAsBigDecimal().toEngineeringString();
+				
 				char[] cc = valstr.toCharArray();
 				
 				System.arraycopy(cc, 0, str, finalpos, cc.length);

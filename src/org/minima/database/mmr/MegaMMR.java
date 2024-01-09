@@ -1,12 +1,16 @@
 package org.minima.database.mmr;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
 import org.minima.objects.TxBlock;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.utils.MiniFile;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 
 public class MegaMMR {
@@ -95,5 +99,60 @@ public class MegaMMR {
 			String coinid = output.getCoinID().to0xString();
 			mAllUnspentCoins.put(coinid, output);
 		}
+		
+		//Finish up..
+		mMMR.finalizeSet();
+		mMMR.setFinalized(false);
 	}
+	
+	public void clear() {
+		mMMR = new MMR();
+	}
+	
+	public void loadMMR(File zFile) {
+		MinimaLogger.log("Loading MegaMMR size : "+MiniFormat.formatSize(zFile.length()));
+		
+		MiniFile.loadObjectSlow(zFile, mMMR);
+		mMMR.setFinalized(false);
+	}
+	
+	public void saveMMR(File zFile) {
+		MinimaLogger.log("Saving MegaMMR..");
+		MiniFile.saveObjectDirect(zFile, mMMR);
+		MinimaLogger.log("MegaMMR size "+MiniFormat.formatSize(zFile.length()));
+	}
+	
+	
+	
+	public static void main(String[] zArgs) {
+		
+		MMR mmr = new MMR();
+		
+//		MiniNumber input
+		
+		mmr.addEntry(getCoinData(MiniNumber.BILLION.add(MiniNumber.ONE)));
+		mmr.addEntry(getCoinData(MiniNumber.ONE));
+		mmr.addEntry(getCoinData(MiniNumber.ONE));
+		mmr.addEntry(getCoinData(MiniNumber.ONE));
+		mmr.addEntry(getCoinData(MiniNumber.ONE));
+		mmr.addEntry(getCoinData(MiniNumber.ONE));
+		mmr.addEntry(getCoinData(MiniNumber.ONE));
+		mmr.addEntry(getCoinData(MiniNumber.ONE));
+		
+		MMR.printmmrtree(mmr);
+	}
+	
+	public static MMRData getCoinData() {
+		return getCoinData(MiniNumber.ZERO);
+	}
+	
+	public static MMRData getCoinData(MiniNumber zNumber) {
+		
+		//Create the coin
+		Coin test = new Coin(MiniData.ZERO_TXPOWID,zNumber, MiniData.ZERO_TXPOWID);
+		
+		//Create the MMRData
+		return MMRData.CreateMMRDataLeafNode(test, zNumber); 
+	}
+	
 }

@@ -369,6 +369,12 @@ public class MinimaDB {
 					throw new Exception("Your Cascade is BROKEN.. please 'reset' your node.");
 				}
 			}
+		
+			//Are we running in MEGA MMR mode..
+			if(GeneralParams.IS_MEGAMMR) {
+				//Load the Mega MMR..
+				mMegaMMR.loadMMR(new File(basedb,"megammr.mmr"));
+			}
 			
 			//Clean Mem after that
 			System.gc();
@@ -492,6 +498,13 @@ public class MinimaDB {
 		
 		MinimaLogger.log("Saving SQL..");
 		saveSQL(zCompact);
+		
+		//Are we running in MEGA MMR mode..
+		if(GeneralParams.IS_MEGAMMR) {
+			//Load the Mega MMR..
+			mMegaMMR.saveMMR(new File(getBaseDBFolder(),"megammr.mmr"));
+		}
+		
 		
 		MinimaLogger.log("All saved..");
 	}

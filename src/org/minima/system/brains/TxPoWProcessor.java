@@ -563,8 +563,12 @@ public class TxPoWProcessor extends MessageProcessor {
 				
 				//Are we running in MEGA MMR
 				if(GeneralParams.IS_MEGAMMR) {
+					
+					//megammr.getMMR().finalizeSet();
+					//megammr.getMMR().setFinalized(false);
+					
 					//Add this to the MEGA MMR
-					megammr.getMMR().pruneTree();
+					//megammr.getMMR().pruneTree();
 				}
 				
 				//And finally..

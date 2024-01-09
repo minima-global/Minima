@@ -34,6 +34,10 @@ public class printmmr extends Command {
 		
 		MMR mmr = MinimaDB.getDB().getTxPoWTree().getTip().getMMR();
 		
+		MMR mmrcasc = MinimaDB.getDB().getTxPoWTree().getRoot().getMMR();
+		MMR.printinfo(mmrcasc);
+		MMR.printmmrtree(mmrcasc);
+		
 		ret.put("response", mmr.toJSON());
 		return ret;
 	}
