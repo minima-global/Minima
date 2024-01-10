@@ -563,12 +563,11 @@ public class TxPoWProcessor extends MessageProcessor {
 				
 				//Are we running in MEGA MMR
 				if(GeneralParams.IS_MEGAMMR) {
-					
-					//megammr.getMMR().finalizeSet();
-					//megammr.getMMR().setFinalized(false);
-					
-					//Add this to the MEGA MMR
-					//megammr.getMMR().pruneTree();
+					long timestart = System.currentTimeMillis();
+					//Prune the tree
+					megammr.getMMR().pruneTree();
+					long timediff = System.currentTimeMillis() - timestart;
+					MinimaLogger.log("MEGAMMR : prune time "+timediff+"ms");
 				}
 				
 				//And finally..

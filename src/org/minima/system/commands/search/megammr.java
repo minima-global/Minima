@@ -37,11 +37,9 @@ public class megammr extends Command {
 
 		MegaMMR megammr = MinimaDB.getDB().getMegaMMR();
 		
-		MMR.printinfo(megammr.getMMR());
-		
-		MMR.printmmrtree(megammr.getMMR());
-		
 		JSONObject resp = new JSONObject();
+		resp.put("mmr", megammr.getMMR().toJSON(false));
+		resp.put("coins", megammr.getAllCoins().size());
 		
 		//Put the details in the response..
 		ret.put("response", resp);

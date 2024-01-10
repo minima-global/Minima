@@ -134,18 +134,25 @@ public class MMR implements Streamable {
 	}
 	
 	public JSONObject toJSON() {
+		return toJSON(true);
+	}
+	
+	public JSONObject toJSON(boolean zEntries) {
 		JSONObject ret = new JSONObject();
 		
 		ret.put("block", mBlockTime);
 		ret.put("entrynumber", mEntryNumber);
+		ret.put("size", mSetEntries.size());
 
-		JSONArray jentry = new JSONArray();
-		Enumeration<MMREntry> entries = mSetEntries.elements();
-		while(entries.hasMoreElements()) {
-			MMREntry entry = entries.nextElement();
-			jentry.add(entry.toJSON());
+		if(zEntries) {
+			JSONArray jentry = new JSONArray();
+			Enumeration<MMREntry> entries = mSetEntries.elements();
+			while(entries.hasMoreElements()) {
+				MMREntry entry = entries.nextElement();
+				jentry.add(entry.toJSON());
+			}
+			ret.put("entries", jentry);
 		}
-		ret.put("entries", jentry);
 		
 		ret.put("maxrow", mMaxRow);
 		JSONArray maxentry = new JSONArray();
@@ -781,8 +788,9 @@ public class MMR implements Streamable {
 		for(MMREntry peak : peaks) {
 			System.out.println("PEAK : "+peak);
 		}
-		MMRData root = zTree.getRoot();
 		System.out.println("Peaks : "+zTree.getPeaks().size());
+		
+		MMRData root = zTree.getRoot();
 		System.out.println("Root  : "+root);
 	}
 	
@@ -791,7 +799,7 @@ public class MMR implements Streamable {
 		int toprow = zTree.mMaxRow;
 		for(int i=toprow;i>=0;i--) {
 		
-			int major = 8;
+			int major = 5;
 			
 			//The start gap
 			int startgap 	= (int) (Math.pow(2, i) -1) * major;
@@ -808,8 +816,8 @@ public class MMR implements Streamable {
 			}
 			
 			//The final char buffer for the row
-			char[] str = new char[256];
-			for(int c=0;c<256;c++) {
+			char[] str = new char[512];
+			for(int c=0;c<512;c++) {
 				str[c] = ' ';
 			}
 			
@@ -836,8 +844,11 @@ public class MMR implements Streamable {
 		
 		//Print the peak value..
 		System.out.println("Total Entries       : "+zTree.mSetEntries.size());
-		System.out.println("Tree Peak Sum Value : "+zTree.getRoot().getValue());
-		
+		if(zTree.getRoot() == null) {
+			System.out.println("Tree Peak Sum Value : null");
+		}else {
+			System.out.println("Tree Peak Sum Value : "+zTree.getRoot().getValue());
+		}
 	}
 	
 }

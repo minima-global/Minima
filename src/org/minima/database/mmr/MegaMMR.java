@@ -1,7 +1,11 @@
 package org.minima.database.mmr;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Hashtable;
 
 import org.minima.objects.Coin;
@@ -12,13 +16,14 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.Streamable;
 
-public class MegaMMR {
+public class MegaMMR implements Streamable {
 
 	//The MMR
 	MMR mMMR;
 	
-	//All the Coins
+	//All the UNSPENT Coins
 	Hashtable<String,Coin> mAllUnspentCoins;
 	
 	public MegaMMR() {
@@ -34,6 +39,10 @@ public class MegaMMR {
 		return mMMR;
 	}
 	
+	public Hashtable<String, Coin> getAllCoins(){
+		return mAllUnspentCoins;
+	}
+	
 	/**
 	 * Convert the TxBlock 
 	 */
@@ -43,7 +52,7 @@ public class MegaMMR {
 		MiniNumber block = zBlock.getTxPoW().getBlockNumber();
 		mMMR.setBlockTime(block);
 		
-		MinimaLogger.log("MEGAMMR : Addblock "+block);
+		//MinimaLogger.log("MEGAMMR : Addblock "+block);
 		
 		//Add all the peaks..
 		ArrayList<MMREntry> peaks = zBlock.getPreviousPeaks();
@@ -98,6 +107,8 @@ public class MegaMMR {
 			//Add to the total List of coins for this block
 			String coinid = output.getCoinID().to0xString();
 			mAllUnspentCoins.put(coinid, output);
+			
+			//MinimaLogger.log("MEGAMMR : Add Coin "+output.toJSON());
 		}
 		
 		//Finish up..
@@ -105,30 +116,66 @@ public class MegaMMR {
 		mMMR.setFinalized(false);
 	}
 	
+	/**
+	 * Wipe the data
+	 */
 	public void clear() {
-		mMMR = new MMR();
+		mMMR 				= new MMR();
+		mAllUnspentCoins 	= new Hashtable<>();
 	}
 	
 	public void loadMMR(File zFile) {
 		MinimaLogger.log("Loading MegaMMR size : "+MiniFormat.formatSize(zFile.length()));
-		
-		MiniFile.loadObjectSlow(zFile, mMMR);
-		mMMR.setFinalized(false);
+		MiniFile.loadObjectSlow(zFile, this);
 	}
 	
 	public void saveMMR(File zFile) {
 		MinimaLogger.log("Saving MegaMMR..");
-		MiniFile.saveObjectDirect(zFile, mMMR);
+		MiniFile.saveObjectDirect(zFile, this);
 		MinimaLogger.log("MegaMMR size "+MiniFormat.formatSize(zFile.length()));
 	}
 	
+	@Override
+	public void writeDataStream(DataOutputStream zOut) throws IOException {
+		//First write out the VERSION
+		MiniNumber.WriteToStream(zOut, 1);
+		
+		//Now the MMR
+		mMMR.writeDataStream(zOut);
+		
+		//And now all the coins..
+		int size = mAllUnspentCoins.size();
+		MiniNumber.WriteToStream(zOut, size);
+		
+		Enumeration<Coin> coins = mAllUnspentCoins.elements();
+		while(coins.hasMoreElements()) {
+			Coin cc = coins.nextElement();
+			cc.writeDataStream(zOut);
+		}
+	}
+
+	@Override
+	public void readDataStream(DataInputStream zIn) throws IOException {
+		int version = MiniNumber.ReadFromStream(zIn).getAsInt();
+		
+		//Read in the MMR..
+		mMMR = new MMR();
+		mMMR.readDataStream(zIn);
+		mMMR.setFinalized(false);
+		
+		//And now all the coins
+		mAllUnspentCoins = new Hashtable<>();
+		int size = MiniNumber.ReadFromStream(zIn).getAsInt();
+		for(int i=0;i<size;i++) {
+			Coin cc = Coin.ReadFromStream(zIn);
+			mAllUnspentCoins.put(cc.getCoinID().to0xString(), cc);
+		}
+	}
 	
 	
 	public static void main(String[] zArgs) {
 		
 		MMR mmr = new MMR();
-		
-//		MiniNumber input
 		
 		mmr.addEntry(getCoinData(MiniNumber.BILLION.add(MiniNumber.ONE)));
 		mmr.addEntry(getCoinData(MiniNumber.ONE));
@@ -154,5 +201,4 @@ public class MegaMMR {
 		//Create the MMRData
 		return MMRData.CreateMMRDataLeafNode(test, zNumber); 
 	}
-	
 }

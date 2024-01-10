@@ -344,6 +344,11 @@ public class archive extends Command {
 			//Tell the MiniDAPPs..
 			Main.getInstance().PostNotifyEvent("MDS_RESYNC_START",new JSONObject());
 			
+			//Are we MEGA MMR
+			if(GeneralParams.IS_MEGAMMR) {
+				MinimaDB.getDB().getMegaMMR().clear();
+			}
+			
 			//Are we resetting the wallet too ?
 			MiniData seed 		= null;
 			String phrase = getParam("phrase","");
@@ -413,14 +418,10 @@ public class archive extends Command {
 				
 				//Clean system counter
 				counter++;
-//				if(counter % 5 == 0) {
-//					long mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-//					if(mem > 250 * 1024 * 1024) {
-//						Main.getInstance().resetMemFull();
-//						MinimaLogger.log("Clean up memory..");
-//					}else {
-//						//MinimaLogger.log("RAM memory usage still low.. wait for cleanup");
-//					}
+				
+				//HACK
+//				if(counter > 0) {
+//					break;
 //				}
 				
 				//HARD RESET - H2 database doesn't like it if I don't do this
