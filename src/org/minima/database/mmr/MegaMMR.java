@@ -81,8 +81,7 @@ public class MegaMMR implements Streamable {
 			mMMR.updateEntry(entrynumber, input.getMMRProof(), mmrdata);
 			
 			//Remove from all coins..
-			String coinid = input.getCoin().getCoinID().to0xString();
-			mAllUnspentCoins.remove(coinid);
+			mAllUnspentCoins.remove(input.getCoin().getCoinID().to0xString());
 		}
 		
 		//And ADD all the newly created coins
@@ -105,10 +104,7 @@ public class MegaMMR implements Streamable {
 			mMMR.addEntry(mmrdata);	
 			
 			//Add to the total List of coins for this block
-			String coinid = output.getCoinID().to0xString();
-			mAllUnspentCoins.put(coinid, output);
-			
-			//MinimaLogger.log("MEGAMMR : Add Coin "+output.toJSON());
+			mAllUnspentCoins.put(output.getCoinID().to0xString(), newcoin);
 		}
 		
 		//Finish up..
