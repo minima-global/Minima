@@ -17,6 +17,7 @@ import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.send.send;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -162,7 +163,7 @@ public class coins extends Command {
 															saddress, address, 
 															stokenid, tokenid, 
 															sstate, statesearch, true,
-															simple, maxdepth);
+															simple, maxdepth,GeneralParams.IS_MEGAMMR);
 		
 		//Make sure coins old enough..
 		ArrayList<Coin> agecoins = new ArrayList<>();

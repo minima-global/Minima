@@ -13,6 +13,7 @@ import org.minima.objects.Token;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 
 public class TxPoWSearcher {
@@ -101,7 +102,7 @@ public class TxPoWSearcher {
 		return searchCoins(zStartNode, zRelevant, zCheckCoinID, zCoinID, zCheckAmount, 
 				zAmount, zCheckAddress, zAddress, zCheckTokenID, zTokenID, 
 				false, "", false,
-				zSimpleOnly, zDepth);
+				zSimpleOnly, zDepth,false);
 	}
 	
 	public static synchronized ArrayList<Coin> searchCoins(	TxPoWTreeNode zStartNode, boolean zRelevant, 
@@ -110,7 +111,7 @@ public class TxPoWSearcher {
 												boolean zCheckAddress, MiniData zAddress,
 												boolean zCheckTokenID, MiniData zTokenID,
 												boolean zCheckState, String zState, boolean zWildCardState,
-												boolean zSimpleOnly, int zDepth) {
+												boolean zSimpleOnly, int zDepth,boolean zMEGAMMR) {
 		
 		//The list of Coins
 		ArrayList<Coin> coinentry = new ArrayList<>();
@@ -123,19 +124,38 @@ public class TxPoWSearcher {
 		
 		//Now cycle through and get all your coins..
 		int depth = 0;
-		while(tip != null) {
+		
+		//Are we MEGAMMR
+		boolean MEGACHECK = false; 
+		
+		//Cycle through
+		while(tip!=null || MEGACHECK) {
 			
 			//Are we deep enough
 			if(depth++>zDepth) {
 				break;
 			}
 			
-			//Get the Relevant coins..
 			ArrayList<Coin> coins = null;
-			if(zRelevant) {
-				coins = tip.getRelevantCoins();
+			if(!MEGACHECK) {
+				//Get the Relevant coins..
+				if(zRelevant) {
+					coins = tip.getRelevantCoins();
+				}else {
+					coins = tip.getAllCoins();
+				}
 			}else {
-				coins = tip.getAllCoins();
+				
+				//Get the MEGAMMR COINS..
+				coins = new ArrayList<Coin>(MinimaDB.getDB().getMegaMMR().getAllCoins().values());
+			
+				try {
+					throw new Exception("Checker..");
+				}catch(Exception exc) {
+					MinimaLogger.log(exc);
+				}
+				
+				MinimaLogger.log("CHECK MEGAMMR coins "+coins.size());
 			}
 			
 			//Get the details..
@@ -187,8 +207,18 @@ public class TxPoWSearcher {
 				}
 			}
 			
-			//And move back up the tree
-			tip = tip.getParent();
+			if(!MEGACHECK) {
+				//And move back up the tree
+				tip = tip.getParent();
+				
+				//Are we at the end..
+				if(tip == null && zMEGAMMR) {
+					MEGACHECK = true;
+				}
+			}else {
+				//we just did a MEGAMMR check.. that's it..
+				break;
+			}
 		}
 		
 		//Are we only showing simple Coins..
