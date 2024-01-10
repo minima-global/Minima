@@ -217,13 +217,21 @@ public class runscript extends Command {
 		
 		JSONObject scriptnormal = new JSONObject();
 		scriptnormal.put("script", script);
-		scriptnormal.put("address", new Address(script).getAddressData().to0xString());
+		
+		MiniData addr = new Address(script).getAddressData();
+		scriptnormal.put("address", addr.to0xString());
+		scriptnormal.put("mxaddress", Address.makeMinimaAddress(addr));
+		
 		resp.put("script", scriptnormal);
 		
 		JSONObject scriptclean 	= new JSONObject();
 		String cleanscript 		= Contract.cleanScript(script);
 		scriptclean.put("script", cleanscript);
-		scriptclean.put("address", new Address(cleanscript).getAddressData().to0xString());
+		
+		addr = new Address(cleanscript).getAddressData();
+		scriptclean.put("address", addr.to0xString());
+		scriptclean.put("mxaddress", Address.makeMinimaAddress(addr));
+		
 		resp.put("clean", scriptclean);
 		
 		resp.put("trace", contract.getCompleteTraceLog());
