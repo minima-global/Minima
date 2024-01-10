@@ -145,7 +145,7 @@ public class coins extends Command {
 		MiniNumber coinage = getNumberParam("coinage", MiniNumber.ZERO);
 		
 		//Max Depth
-		int maxdepth = getNumberParam("depth", MiniNumber.MILLION).getAsInt();
+		int maxdepth = getNumberParam("depth", MiniNumber.BILLION).getAsInt();
 		
 		//Get the tree tip..
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
