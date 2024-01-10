@@ -10,7 +10,9 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import org.minima.database.MinimaDB;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
@@ -283,22 +285,42 @@ public class MMR implements Streamable {
 		//Cycle down through the MMR sets..
 		MMR current = this;
 		
-		//Now Loop..
+		//Get the entry name
 		String entryname = getHashTableEntry(zRow, zEntry);
-		while(current != null) {
+		
+		//Now Loop
+		boolean MEGACHECK = false;
+		while(current != null || MEGACHECK) {
+			
 			//Check within the designated range
 			if(current.getBlockTime().isLess(zMaxBack)) {
 				break;
 			}
 			
 			//Check if already added..
-			MMREntry entry   = current.mSetEntries.get(entryname);
+			MMREntry entry = current.mSetEntries.get(entryname);
+			
+			//Did we find it..
 			if(entry!=null) {
 				return entry;
 			}
 			
-			//Check the parent Set
-			current = current.getParent();	
+			//Are we megachecking..
+			if(!MEGACHECK) {
+				//Check the parent Set
+				current = current.getParent();
+				
+				//Are we at the end..
+				if(current == null && GeneralParams.IS_MEGAMMR) {
+					
+					//This is a MEGA MMR Check
+					MEGACHECK = true;
+					current   = MinimaDB.getDB().getMegaMMR().getMMR();
+				}
+			}else {
+				//we just did a MEGAMMR check.. that's it..
+				break;
+			}
 		}
 		
 		//If you can't find it - return empty entry..

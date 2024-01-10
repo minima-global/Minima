@@ -47,12 +47,18 @@ public class TxPoWSearcher {
 	}
 	
 	public static Coin searchCoin(	MiniData zCoinID ){
+		return searchCoin(zCoinID, GeneralParams.IS_MEGAMMR);
+	}
+	
+	public static Coin searchCoin(	MiniData zCoinID , boolean zMegaMMR){
 		
 		ArrayList<Coin> coins = searchCoins(MinimaDB.getDB().getTxPoWTree().getTip(), false, 
 											true, zCoinID, 
 											false, MiniNumber.ZERO,
 											false, MiniData.ZERO_TXPOWID,
-											false, MiniData.ZERO_TXPOWID,false);
+											false, MiniData.ZERO_TXPOWID,
+											false, "", false,
+											false, Integer.MAX_VALUE, zMegaMMR);
 		
 		//Did we find it
 		if(coins.size()>0) {
