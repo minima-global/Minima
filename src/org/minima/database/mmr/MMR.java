@@ -163,7 +163,11 @@ public class MMR implements Streamable {
 		}
 		ret.put("maxentries", maxentry);
 		
-		ret.put("root", getRoot().toJSON());
+		if(getRoot() == null) {
+			ret.put("root", null);
+		}else {
+			ret.put("root", getRoot().toJSON());
+		}
 		
 		return ret;
 	}
