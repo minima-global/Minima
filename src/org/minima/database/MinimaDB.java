@@ -372,7 +372,6 @@ public class MinimaDB {
 		
 			//Are we running in MEGA MMR mode..
 			if(GeneralParams.IS_MEGAMMR) {
-				//Load the Mega MMR..
 				mMegaMMR.loadMMR(new File(basedb,"megammr.mmr"));
 			}
 			
@@ -499,13 +498,6 @@ public class MinimaDB {
 		MinimaLogger.log("Saving SQL..");
 		saveSQL(zCompact);
 		
-		//Are we running in MEGA MMR mode..
-		if(GeneralParams.IS_MEGAMMR) {
-			//Load the Mega MMR..
-			mMegaMMR.saveMMR(new File(getBaseDBFolder(),"megammr.mmr"));
-		}
-		
-		
 		MinimaLogger.log("All saved..");
 	}
 	
@@ -618,14 +610,18 @@ public class MinimaDB {
 			
 			//MinimaLogger.log("SAVESTATE USERDB:"+mUserDB.getAllData().toString());
 			mUserDB.saveDB(new File(basedb,"userprefs.db"));
-			
-			
-			//MinimaLogger.log("SAVE P2P DB.. "+mP2PDB.getPeersList().size());
 			mP2PDB.saveDB(new File(basedb,"p2p.db"));
 			
-			//Custom
+			//Cascade
 			mCascade.saveDB(new File(basedb,"cascade.db"));
+			
+			//TxPoWTree
 			mTxPoWTree.saveDB(new File(basedb,"chaintree.db"));
+			
+			//And are we MEGA MMR..
+			if(GeneralParams.IS_MEGAMMR) {
+				mMegaMMR.saveMMR(new File(basedb,"megammr.mmr"));
+			}
 			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
