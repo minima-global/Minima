@@ -154,14 +154,7 @@ public class TxPoWSearcher {
 				
 				//Get the MEGAMMR COINS..
 				coins = new ArrayList<Coin>(MinimaDB.getDB().getMegaMMR().getAllCoins().values());
-			
-				try {
-					throw new Exception("Checker..");
-				}catch(Exception exc) {
-					MinimaLogger.log(exc);
-				}
-				
-				MinimaLogger.log("CHECK MEGAMMR coins "+coins.size());
+				//MinimaLogger.log("CHECK MEGAMMR coins "+coins.size());
 			}
 			
 			//Get the details..
