@@ -371,10 +371,8 @@ public class MMR implements Streamable {
 			//Calculate the parent
 			if(entry.isLeft()) {
 				parentdata = MMRData.CreateMMRDataParentNode(entry.getMMRData(), sibling.getMMRData());
-//				parentdata = getParentMMRData(entry, sibling);
 			}else {
 				parentdata = MMRData.CreateMMRDataParentNode(sibling.getMMRData(), entry.getMMRData());
-//				parentdata = getParentMMRData(sibling, entry);
 			}
 			
 			//Make the entry the parent..
