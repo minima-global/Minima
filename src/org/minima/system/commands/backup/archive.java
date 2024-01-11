@@ -616,6 +616,12 @@ public class archive extends Command {
 				rawoutput.delete();
 			}
 			
+			//Make sure the parents exist
+			File parent = rawoutput.getAbsoluteFile().getParentFile();
+			if(!parent.exists()) {
+				parent.mkdirs();
+			}
+			
 			//Create output streams..
 			FileOutputStream fix 		= new FileOutputStream(rawoutput);
 			BufferedOutputStream bos 	= new BufferedOutputStream(fix, 65536);
