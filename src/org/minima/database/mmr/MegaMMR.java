@@ -122,11 +122,13 @@ public class MegaMMR implements Streamable {
 	
 	public void loadMMR(File zFile) {
 		MinimaLogger.log("Loading MegaMMR size : "+MiniFormat.formatSize(zFile.length()));
-		MiniFile.loadObjectSlow(zFile, this);
+		//MiniFile.loadObjectSlow(zFile, this);
+		MiniFile.loadObject(zFile, this);
 	}
 	
 	public void saveMMR(File zFile) {
-		MiniFile.saveObjectDirect(zFile, this);
+		//MiniFile.saveObjectDirect(zFile, this);
+		MiniFile.saveObject(zFile, this);
 		MinimaLogger.log("Saving MegaMMR size : "+MiniFormat.formatSize(zFile.length()));
 	}
 	
