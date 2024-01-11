@@ -14,6 +14,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.TreeKey;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.BIP39;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
@@ -40,6 +41,7 @@ public class megammr extends Command {
 		//MMR.printmmrtree(megammr.getMMR());
 		
 		JSONObject resp = new JSONObject();
+		resp.put("enabled", GeneralParams.IS_MEGAMMR);
 		resp.put("mmr", megammr.getMMR().toJSON(false));
 		resp.put("coins", megammr.getAllCoins().size());
 		
