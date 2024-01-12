@@ -360,6 +360,11 @@ public class MinimaDB {
 			if(!Cascade.checkCascadeCorrect(mCascade)) {
 				throw new Exception("Your Cascade is BROKEN.. please 'reset' your node.");
 			}
+		
+			//Are we running in MEGA MMR mode..
+			if(GeneralParams.IS_MEGAMMR) {
+				mMegaMMR.loadMMR(new File(basedb,"megammr.mmr"));
+			}
 
 			//And check it ends where the tree ends..
 			if(mCascade.getTip() != null && mTxPoWTree.getRoot()!=null) {
@@ -368,11 +373,13 @@ public class MinimaDB {
 				if(!treeroot.isEqual(cascstart.increment())) {
 					throw new Exception("Your Cascade is BROKEN.. please 'reset' your node.");
 				}
-			}
-		
-			//Are we running in MEGA MMR mode..
-			if(GeneralParams.IS_MEGAMMR) {
-				mMegaMMR.loadMMR(new File(basedb,"megammr.mmr"));
+				
+				//Check the MEGA MMR starts on the correct block
+				if(GeneralParams.IS_MEGAMMR) {
+					if(!mMegaMMR.getMMR().getBlockTime().isEqual(treeroot.decrement())) {
+						throw new Exception("Your MEGAMMR is BROKEN (does not start where tree ends).. please 'reset' your node.");
+					}
+				}
 			}
 			
 			//Clean Mem after that
