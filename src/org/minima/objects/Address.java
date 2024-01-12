@@ -227,29 +227,27 @@ public class Address implements Streamable{
 	
 	public static void main(String[] zArgs) throws Exception {
 		
-		MiniData test 	= new MiniData("0x53AF91ED101E93824CED856E76BF4B23508100D6CE9EFFEB207BF1A949DFDC9D");
-		String mx 		= makeMinimaAddress(test);
-		
-		System.out.println("lj   : MxG082JYU8UQ40UWE14PRC5DPRBUWP3A20G1YMEJRVUM83RU6KKJNUSJYKJJ4PP");
-		System.out.println("mx   : "+mx);
-		
-		MiniData conv 	= Address.convertMinimaAddress(mx);
-		System.out.println("conv : "+conv.to0xString());
-		
-//		MiniData tt = MiniData.getRandomData(320);
-////		MiniData tt = new MiniData("0x001");
+//		MiniData test 	= new MiniData("0x53AF91ED101E93824CED856E76BF4B23508100D6CE9EFFEB207BF1A949DFDC9D");
+//		String mx 		= makeMinimaAddress(test);
 //		
-//		Address addr = new Address(tt);
-//		System.out.println("Address   : "+addr.toString());
+//		System.out.println("lj   : MxG082JYU8UQ40UWE14PRC5DPRBUWP3A20G1YMEJRVUM83RU6KKJNUSJYKJJ4PP");
+//		System.out.println("mx   : "+mx);
 //		
-//		String madd 	= Address.makeMinimaAddress(tt);
-//		System.out.println("MxAddress : "+madd);
-//		
-//		MiniData conv 	= Address.convertMinimaAddress(madd);
-//		System.out.println("Converted : "+conv.to0xString());
+//		MiniData conv 	= Address.convertMinimaAddress(mx);
+//		System.out.println("conv : "+conv.to0xString());
 		
-//		conv 	= Address.convertMinimaAddress("Mx1010CAGPCN14YDBKQ9AARA7S1EH76M39W712URVZPV4K57K8P042VK91HFVY789F0E7NFVNZRPEYPJ4WUQYFKMJUEK7ETZZG4SFE0BMT8BTM12ZTG");
-//		System.out.println("Hard Converted : "+conv.to0xString());
+		MiniData password 	= MiniData.getRandomData(16);
+		String b32			= BaseConverter.encode32(password.getBytes());
+		
+		String mm			= b32.substring(2,6)+"-"
+							 +b32.substring(7,11)+"-"
+							 +b32.substring(12,16)+"-"
+							 +b32.substring(17,21)+"-"
+							 +b32.substring(22,26);
+		
+		System.out.println("Data     : "+password.to0xString());
+		System.out.println("Complete : "+b32);
+		System.out.println("Password : "+mm);
 		
 	}
 	
