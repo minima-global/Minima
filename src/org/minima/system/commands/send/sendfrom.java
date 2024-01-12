@@ -96,7 +96,7 @@ public class sendfrom extends Command {
 		JSONObject result 	= runCommand("txncreate id:"+randomid);
 		
 		//Add the mounts..
-		String command 		= "txnaddamount id:"+randomid+" address:"+toaddress+" amount:"+amount+" tokenid:"+tokenid;
+		String command 		= "txnaddamount id:"+randomid+" fromaddress: "+fromaddress+" address:"+toaddress+" amount:"+amount+" tokenid:"+tokenid;
 		result = runCommand(command);
 		if(!(boolean)result.get("status")) {
 			
