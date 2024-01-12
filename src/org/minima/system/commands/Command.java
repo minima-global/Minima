@@ -88,6 +88,7 @@ import org.minima.system.commands.search.tokens;
 import org.minima.system.commands.search.txpow;
 import org.minima.system.commands.send.multisig;
 import org.minima.system.commands.send.send;
+import org.minima.system.commands.send.sendfrom;
 import org.minima.system.commands.send.sendnosign;
 import org.minima.system.commands.send.sendpoll;
 import org.minima.system.commands.send.sendpost;
@@ -130,6 +131,7 @@ public abstract class Command {
 			new mds(), new sendpoll(), new healthcheck(), new mempool(), new block(), new reset(),
 			
 			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(), new sendview(),
+			new sendfrom(),
 			
 			new archive(), new logs(), new history(), new convert(),new maths(),
 			new checkpending(), new checkmode(), new restoresync(),
