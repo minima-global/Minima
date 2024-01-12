@@ -7,6 +7,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.utils.BaseConverter;
 import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONObject;
 
@@ -69,6 +70,18 @@ public class random extends Command {
 		resp.put("random", rand.to0xString());
 		resp.put("hashed", randhash.to0xString());
 		resp.put("type", hashtype);
+		
+		if(size.getAsInt() >= 16) {
+			String b32			= BaseConverter.encode32(rand.getBytes());
+			
+			String mm			= b32.substring(2,6)+"-"
+								 +b32.substring(7,11)+"-"
+								 +b32.substring(12,16)+"-"
+								 +b32.substring(17,21)+"-"
+								 +b32.substring(22,26);
+			
+			resp.put("keycode", mm);
+		}
 		
 		ret.put("response", resp);
 		
