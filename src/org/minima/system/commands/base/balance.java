@@ -9,10 +9,12 @@ import org.minima.database.txpowtree.TxPowTree;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.Token;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -93,7 +95,20 @@ public class balance extends Command {
 		Wallet walletdb = MinimaDB.getDB().getWallet();
 		
 		//Get the coins..
-		ArrayList<Coin> coins = TxPoWSearcher.getAllRelevantUnspentCoins(txptree.getTip());
+		ArrayList<Coin> coins = null;
+		if(address.equals("")) {
+			coins = TxPoWSearcher.getAllRelevantUnspentCoins(txptree.getTip());
+		}else {
+			
+			//Special search
+			coins = TxPoWSearcher.searchCoins(	txptree.getTip(), false, 
+					false, MiniData.ZERO_TXPOWID,
+					false, MiniNumber.ZERO,
+					true, new MiniData(address), 
+					false, MiniData.ZERO_TXPOWID, 
+					false, "", true,
+					false, Integer.MAX_VALUE,GeneralParams.IS_MEGAMMR);
+		}
 			
 		//What is the top block
 		MiniNumber topblock = txptree.getTip().getBlockNumber();
