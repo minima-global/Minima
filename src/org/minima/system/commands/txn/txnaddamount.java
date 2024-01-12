@@ -18,6 +18,7 @@ import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.send.send;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -98,11 +99,6 @@ public class txnaddamount extends Command {
 		
 		//Add the amount
 		boolean addonlychange = getBooleanParam("onlychange", false);
-		if(!addonlychange) {
-			String addr = getAddressParam("address");
-			Coin maincoin = new Coin(new MiniData(addr), tokenamount, tokenid);
-			trans.addOutput(maincoin);
-		}
 		
 		//Use only one address
 		boolean 	useaddress 	= false;
@@ -113,29 +109,58 @@ public class txnaddamount extends Command {
 		}
 		
 		//Get all valid coins
-		ArrayList<Coin> coins = TxPoWSearcher.searchCoins(	tip, true, 
-															false, new MiniData("0x00"),
-															false,MiniNumber.ZERO,
-															useaddress,fromaddress, 
-															true, tokenid, !useaddress);
-		
-//		MinimaLogger.log("Coins found : "+coins.size());
-//		for(Coin cc : coins) {
-//			MinimaLogger.log("Coin : "+cc.toJSON());
-//		}
+		ArrayList<Coin> coins = null;
+		if(!useaddress) {
+			
+			//Normal Search
+			coins = TxPoWSearcher.searchCoins(	tip, true, 
+												false, MiniData.ZERO_TXPOWID,
+												false,MiniNumber.ZERO,
+												false,MiniData.ZERO_TXPOWID, 
+												true, tokenid, true);
+
+		}else {
+			
+			//Special search
+			coins = TxPoWSearcher.searchCoins(	tip, false, 
+												false, MiniData.ZERO_TXPOWID,
+												false, MiniNumber.ZERO,
+												true, fromaddress, 
+												false, MiniData.ZERO_TXPOWID, 
+												false, "", true,
+												false, Integer.MAX_VALUE,GeneralParams.IS_MEGAMMR);
+			
+		}
 		
 		//Get just this number..
 		ArrayList<Coin> finalcoins = send.selectCoins(coins, tokenamount);
 		
-		//Now add all these coins..
+		//How much added..
 		MiniNumber totaladded = MiniNumber.ZERO;
 		for(Coin cc : finalcoins) {
-			trans.addInput(cc);
 			totaladded = totaladded.add(cc.getAmount());
 		}
 		
 		//Is there change..
 		MiniNumber change = totaladded.sub(tokenamount);
+		
+		//Do we have the cash
+		if(change.isLess(MiniNumber.ZERO)) {
+			throw new CommandException("Not enough funds! Current balance : "+totaladded);
+		}		
+		
+		//OK - Now add all these coins..
+		for(Coin cc : finalcoins) {
+			trans.addInput(cc);
+		}
+		
+		//And add the output
+		if(!addonlychange) {
+			String addr = getAddressParam("address");
+			Coin maincoin = new Coin(new MiniData(addr), tokenamount, tokenid);
+			trans.addOutput(maincoin);
+		}
+		
 		if(!change.isEqual(MiniNumber.ZERO)) {
 			
 			//Get a new address
