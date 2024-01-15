@@ -1,0 +1,122 @@
+<html>
+
+<head>
+	<title>Mega Wallet</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="jslib.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+
+	<script type="text/javascript">
+		printHeader();
+	</script>
+
+	<table>
+	<tr>
+		<td>To : </td>
+		<td><input type=text id="to"></td>
+	</tr>
+	
+	<tr>
+		<td>Amount : </td>
+		<td><input type=text id="amount"></td>
+	</tr>
+	
+	<tr>
+		<td>&nbsp;</td>
+	</tr>
+	
+	<tr>
+		<td>Secret Code : </td>
+		<td><input type=text id="secret"></td>
+	</tr>
+	
+	</table>
+	<br>
+	
+	<button onclick="sendfunds();">Send Funds</button>
+		
+</center>
+
+<script type="text/javascript">
+	
+	function sendfunds(){
+		
+		var address = MDS.form.getParams("address");
+		
+		//Get the vars
+		var sendto 		= to.value;
+		var sendamount 	= amount.value;
+		var sendsecret	= secret.value;
+		
+		//Generats a key
+		MDS.cmd("keys action:genkey phrase:\""+sendsecret+"\"",function(resp){
+			
+			//Get the address
+			var addr = resp.response.miniaddress;
+			
+			//CHeck correct
+			if(address != addr){
+				alert("Incorrect seed for this address!\n\nPlease try again..");
+				return;
+			}
+			
+			var script 		= resp.response.script;
+			var privatekey 	= resp.response.privatekey;
+			var keyuses 	= randomInteger(0,200000);
+			
+			//Now do the send..
+			var cmd = 	 "sendfrom fromaddress:"+address
+						+" address:"+sendto
+						+" amount:"+sendamount
+						+" script:\""+script+"\""
+						+" privatekey:"+privatekey
+						+" keyuses:"+keyuses;
+			
+			//And do it..
+			MDS.cmd(cmd,function(resp){
+				MDS.log(JSON.stringify(resp));
+				
+				if(!resp.status){
+					alert(resp.error);
+					return;
+				}
+				
+				//All good..
+				alert("Funds sent!");
+			});			
+		});
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//Do stuff.. from now..		
+			
+		}
+	});
+
+</script>
+
+</body>
+
+</html>
