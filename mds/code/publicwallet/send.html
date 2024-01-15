@@ -89,9 +89,7 @@
 						+" privatekey:"+privatekey
 						+" keyuses:"+keyuses;
 			
-			//And do it..
 			MDS.cmd(cmd,function(resp){
-				MDS.log(JSON.stringify(resp));
 				
 				if(!resp.status){
 					alert(resp.error);
@@ -100,7 +98,8 @@
 				
 				//All good..
 				alert("Funds sent!");
-			});			
+			});
+			
 		});
 	}
 	

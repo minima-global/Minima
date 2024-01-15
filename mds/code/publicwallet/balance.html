@@ -27,9 +27,9 @@
 		printHeader();
 	</script>
 	
-	<div id="showbalance">
+	<pre id="showbalance" style='text-align:left;max-width:350;'>
 	
-	</div>
+	</pre>
 	
 </center>
 
@@ -46,9 +46,7 @@
 			
 			//Do stuff.. from now..		
 			MDS.cmd("balance address:"+addr,function(resp){
-				
 				showbalance.innerHTML = JSON.stringify(resp.response,null,2);
-				
 			});
 		}
 	});
