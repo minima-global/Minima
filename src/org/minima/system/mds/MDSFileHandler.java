@@ -435,9 +435,7 @@ public class MDSFileHandler implements Runnable {
 				dos.writeBytes("\r\n");
 				dos.flush();
 				
-			}else if(	fileRequested.startsWith("publicmds") ) {
-				
-				MinimaLogger.log("request public page.. "+fileRequested);
+			}else if( fileRequested.startsWith("publicmds") ) {
 				
 				//Is it the minihub..
 				if(fileRequested.equals("publicmds")) {
