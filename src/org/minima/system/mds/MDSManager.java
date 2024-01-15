@@ -130,6 +130,12 @@ public class MDSManager extends MessageProcessor {
 	ArrayList<APICallback> mAPICalls = new ArrayList<>();
 	
 	/**
+	 * Public MDS uses this MiniDAPP Handle..
+	 */
+	MiniDAPP mPublicMiniDAPP;
+	String mPublicMiniUID = "0xFFFFFF";
+	
+	/**
 	 * Main Constructor
 	 */
 	public MDSManager() {
@@ -148,6 +154,15 @@ public class MDSManager extends MessageProcessor {
 			MinimaLogger.log("MDS enabled");
 		}
 		
+		//Create the Public MiniDAPP
+		JSONObject conf = new JSONObject();
+		conf.put("name", "PublicMDS");
+		conf.put("description", "Public MiniDAPPs used by the public");
+		conf.put("version", "1.0");
+		conf.put("permission", "read");
+		mPublicMiniDAPP = new MiniDAPP(mPublicMiniUID, conf);
+		
+		//And Initialise the MDS properly
 		PostMessage(MDS_INIT);
 	}
 	
@@ -268,10 +283,24 @@ public class MDSManager extends MessageProcessor {
 	}
 	
 	public MiniDAPP getMiniDAPP(String zMiniDAPPID) {
+		
+		//Is it the Public
+		if(zMiniDAPPID == mPublicMiniUID) {
+			return mPublicMiniDAPP;
+		}
+		
+		//Check the DB
 		return MinimaDB.getDB().getMDSDB().getMiniDAPP(zMiniDAPPID);
 	}
 	
 	public MiniDAPP getMiniDAPPFromName(String zName) {
+		
+		//Check the Public..
+		if(zName.equalsIgnoreCase(mPublicMiniDAPP.getName())) {
+			return mPublicMiniDAPP;
+		}
+		
+		//Serach the DB
 		ArrayList<MiniDAPP> allmini = MinimaDB.getDB().getMDSDB().getAllMiniDAPPs();
 		for(MiniDAPP mini : allmini) {
 			if(mini.getName().equalsIgnoreCase(zName)) {
@@ -286,6 +315,12 @@ public class MDSManager extends MessageProcessor {
 	 * Return the MINIDAPPID for a given SESSIONID
 	 */
 	public String convertSessionID(String zSessionID) {
+		
+		//Is it the Public..
+		if(zSessionID.equals(mPublicMiniUID)) {
+			return mPublicMiniUID;
+		}
+		
 		return mSessionID.get(zSessionID);
 	}
 	
@@ -294,6 +329,12 @@ public class MDSManager extends MessageProcessor {
 	 */
 	public String convertMiniDAPPID(String zMiniDAPPID) {
 		
+		//Is it the Public..
+		if(zMiniDAPPID.equals(mPublicMiniUID)) {
+			return mPublicMiniUID;
+		}
+		
+		//Search the rest
 		Enumeration<String> keys = mSessionID.keys();
 		while(keys.hasMoreElements()) {
 			String sessionid 	= keys.nextElement();
