@@ -38,6 +38,11 @@ public class MMR implements Streamable {
 	MMR mParent = null;
 	
 	/**
+	 * Are we going to use the MEGA MMR - only need it for the Tree (not everything else)
+	 */
+	boolean mUseMegaMMR = false;
+	
+	/**
 	 * What is the current entry number..
 	 */
 	MMREntryNumber mEntryNumber = MMREntryNumber.ZERO;
@@ -80,27 +85,28 @@ public class MMR implements Streamable {
 		mMaxEntries = new MMREntry[MAXROWS];
 		mMaxRow     = 0;
 		
-		//Parent MMRSet
-		mParent = zParent;
-	
 		//Not Finalized..
 		mFinalized = false;
 		
 		//Now add the peaks..
-		if(mParent != null) {
-			if(!mParent.isFinalized()) {
+		if(zParent != null) {
+			
+			//Parent MMRSet
+			setParent(zParent);
+			
+			if(!zParent.isFinalized()) {
 				//Finalise the parent..
-				mParent.finalizeSet();
+				zParent.finalizeSet();
 			}
 			
 			//Set the Time.. 1 more than parent
-			setBlockTime(mParent.getBlockTime().add(MiniNumber.ONE));
+			setBlockTime(zParent.getBlockTime().add(MiniNumber.ONE));
 			
 			//Calculate total entries..
 			BigInteger tot = BigInteger.ZERO;
 			BigInteger two = new BigInteger("2");
 			
-			ArrayList<MMREntry> peaks = mParent.getPeaks();
+			ArrayList<MMREntry> peaks = zParent.getPeaks();
 			for(MMREntry peak : peaks) {
 				setEntry(peak.getRow(), peak.getEntryNumber(), peak.getMMRData());
 				
@@ -112,7 +118,7 @@ public class MMR implements Streamable {
 			mEntryNumber = new MMREntryNumber(tot);
 			
 			//Check!
-			if(!mEntryNumber.isEqual(mParent.mEntryNumber)) {
+			if(!mEntryNumber.isEqual(zParent.mEntryNumber)) {
 				MinimaLogger.log("SERIOUS ERROR - Entry Number Mismatch! "+mEntryNumber+"/"+mParent.mEntryNumber);
 			}
 		}
@@ -210,10 +216,16 @@ public class MMR implements Streamable {
 	
 	public void clearParent() {
 		mParent = null;
+		
+		//As it had a parent - we will be using the mega mmr
+		mUseMegaMMR = GeneralParams.IS_MEGAMMR;
 	}
 	
 	public void setParent(MMR zMMR) {
 		mParent = zMMR;
+		
+		//As it has a parent - we will be using the mega mmr
+		mUseMegaMMR = GeneralParams.IS_MEGAMMR;
 	}
 	
 	public MMR getParent() {
@@ -311,7 +323,7 @@ public class MMR implements Streamable {
 				current = current.getParent();
 				
 				//Are we at the end..
-				if(current == null && GeneralParams.IS_MEGAMMR) {
+				if(current == null && mUseMegaMMR) {
 					
 					//This is a MEGA MMR Check
 					MEGACHECK = true;
