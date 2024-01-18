@@ -27,6 +27,12 @@
 
 <br>
 	<table border=1>
+	
+	<tr>
+		<td>Token : </td>
+		<td><select id=tokens></select> </td>
+	</tr>
+	
 	<tr>
 		<td>To : </td>
 		<td><input type=text id="to"></td>
@@ -67,6 +73,11 @@
 		var sendamount 	= amount.value;
 		var sendsecret	= secret.value;
 		
+		//Get the token
+		var selector 	= document.getElementById("tokens");
+		var tokenname  	= selector.options[selector.selectedIndex].text;
+		var tokenid  	= selector.options[selector.selectedIndex].value;
+		
 		//Generats a key
 		MDS.cmd("keys action:genkey phrase:\""+sendsecret+"\"",function(resp){
 			
@@ -87,9 +98,12 @@
 			var cmd = 	 "sendfrom fromaddress:"+address
 						+" address:"+sendto
 						+" amount:"+sendamount
+						+" tokenid:"+tokenid
 						+" script:\""+script+"\""
 						+" privatekey:"+privatekey
 						+" keyuses:"+keyuses;
+			
+			MDS.log(cmd);
 			
 			MDS.cmd(cmd,function(resp){
 				
@@ -97,6 +111,8 @@
 					alert(resp.error);
 					return;
 				}
+				
+				MDS.log(JSON.stringify(resp));
 				
 				//All good..
 				alert("Funds sent!");
@@ -111,8 +127,38 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			
-			//Do stuff.. from now..		
+			//Get the address
+			var addr = MDS.form.getParams("address");
 			
+			//Do stuff.. from now..		
+			MDS.cmd("balance address:"+addr,function(balance){
+				
+				var len 	 = balance.response.length;
+				var selector = document.getElementById("tokens");
+				
+				for(var i=0;i<len;i++){
+					
+					//Get the token
+					var token = balance.response[i];
+					
+					//Create the Option
+					var option 		= document.createElement("option");
+				    option.value 	= token.tokenid;
+				    
+					if(token.tokenid == "0x00"){
+						//It's Minima
+					    //option.text  = "Minima ( "+token.confirmed+" )";
+					    option.text  = "Minima";
+					    selector.appendChild(option);
+					}else{
+						//option.text  = token.token.name+" ( "+token.confirmed+" )";
+						option.text  = token.token.name;
+					    selector.appendChild(option);
+					}
+				}
+				
+				
+			});
 		}
 	});
 
