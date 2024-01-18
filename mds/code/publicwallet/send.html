@@ -21,13 +21,12 @@
 
 <body>
 
-<center>
+<script type="text/javascript">
+	header();
+</script>	
 
-	<script type="text/javascript">
-		printHeader();
-	</script>
-
-	<table>
+<br>
+	<table border=1>
 	<tr>
 		<td>To : </td>
 		<td><input type=text id="to"></td>
@@ -52,7 +51,10 @@
 	
 	<button onclick="sendfunds();">Send Funds</button>
 		
-</center>
+<script type="text/javascript">
+	footer();
+</script>	
+
 
 <script type="text/javascript">
 	
@@ -89,9 +91,7 @@
 						+" privatekey:"+privatekey
 						+" keyuses:"+keyuses;
 			
-			//And do it..
 			MDS.cmd(cmd,function(resp){
-				MDS.log(JSON.stringify(resp));
 				
 				if(!resp.status){
 					alert(resp.error);
@@ -100,7 +100,8 @@
 				
 				//All good..
 				alert("Funds sent!");
-			});			
+			});
+			
 		});
 	}
 	
