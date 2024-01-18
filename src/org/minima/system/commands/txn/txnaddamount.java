@@ -146,7 +146,11 @@ public class txnaddamount extends Command {
 		
 		//Do we have the cash
 		if(change.isLess(MiniNumber.ZERO)) {
-			throw new CommandException("Not enough funds! Current balance : "+totaladded);
+			MiniNumber total = totaladded;
+			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
+				total = token.getScaledTokenAmount(total);
+			}
+			throw new CommandException("Not enough funds! Current balance : "+total);
 		}		
 		
 		//OK - Now add all these coins..
