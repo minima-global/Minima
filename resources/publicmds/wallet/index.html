@@ -21,6 +21,7 @@
 
 <body>
 
+<br>
 <center>
 
 	<h1>Minima Wallet</h1>
@@ -28,20 +29,25 @@
 	<br>
 	Log in with your secret code :<br>
 	<br>
-		Secret : <input id="seedphrase" type="text"><br>
-		<br>
-		<button onclick="logon();">LOGIN</button>
+		Secret : <input id="seedphrase" type="password"><br>
+		<input type="checkbox" id="rememberme">
+		<label for="rememberme">Remember me..</label>
+		
+	<br>
+	<br>
+		<button class=btn onclick="logon();">LOGIN</button>
+	<br>
 	<br>
 	
-<!--  	<br>
-	If you do not have a <b>secret</b> yet.. you can get one here..
-	<button>REVEAL SECRET</button>
-	
-	<div>
+	If you do not have a <b>secret</b> yet.. you can get one here<br>
+	Make sure you copy it somewhere <b>safe</b><br>
+	You <b>cannot</b> retrieve it LATER..<br>
+	<br>
+	<button class=btn onclick="reveal();">CREATE SECRET</button>
+	<br><br>
+	<div id=newsecret>
 			
 	</div>
--->
-	
 	
 </center>
 
@@ -51,6 +57,15 @@
 		
 		//Get the secret
 		var secret = seedphrase.value.trim();
+		
+		//Is remember me checked..
+		if(rememberme.checked){
+			setCookie("rememberme","true",7);
+			setCookie("secretsauce",secret,7);
+		}else{
+			setCookie("rememberme","false",365);
+			setCookie("secretsauce","",365);
+		}
 		
 		//Generats a key
 		MDS.cmd("keys action:genkey phrase:\""+secret+"\"",function(resp){
@@ -63,14 +78,27 @@
 		});
 	}
 	
+	function reveal(){
+		MDS.cmd("random",function(random){
+			newsecret.innerHTML = "<b>"+random.response.keycode+"</b>";
+		});
+	}
+	
 	//Main message handler..
 	MDS.init(function(msg){
 		
 		//Do initialisation
 		if(msg.event == "inited"){
 			
-			//Do stuff.. from now..		
-			
+			//Is remember me enabled..
+			var rem = getCookie("rememberme");
+			if(rem == "true"){
+				rememberme.checked 	= true;
+				seedphrase.value 	= getCookie("secretsauce");
+			}else{
+				rememberme.checked 	= false;
+				seedphrase.value	= "";
+			}	
 		}
 	});
 

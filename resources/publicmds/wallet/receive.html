@@ -22,26 +22,27 @@
 
 <body>
 
-<center>
-
 	<script type="text/javascript">
-		printHeader();
+		header();
 		
 		//Get the address value..
 		var addr = MDS.form.getParams("address");
 		
-		document.write("Your receive address is : <br><br><b>"+addr+"</b>");
+		document.write("<br>Your receive address is : <br><br><b>"+addr+"</b>");
 		
 	</script>
 	
 	<br><br>
+	
 	<div id="qrcode"></div>
 	
 	<script type="text/javascript">
-	new QRCode(document.getElementById("qrcode"), addr);
+		new QRCode(document.getElementById("qrcode"), addr);
 	</script>
 	
-</center>
+<script type="text/javascript">
+	footer();
+</script>
 
 <script type="text/javascript">
 	
