@@ -683,10 +683,12 @@ public class MDSFileHandler implements Runnable {
 		zDos.writeBytes("\r\n");
 		zDos.write(file, 0, finallength);
 		zDos.flush();
-		
 	}
 	
 	public void writeHTMLResouceFile(DataOutputStream zDos, String zResource) throws IOException {
+		
+		//Now get the content type
+		String contenttype 	= MiniFile.getContentType(zResource);
 		
 		//Get the Resource file
 		InputStream is 	= getClass().getClassLoader().getResourceAsStream(zResource);
@@ -699,7 +701,14 @@ public class MDSFileHandler implements Runnable {
 		int finallength = file.length;
         
 		zDos.writeBytes("HTTP/1.0 200 OK\r\n");
-		zDos.writeBytes("Content-Type: text/html\r\n");
+		
+		if(contenttype.startsWith("text/")) {
+			zDos.writeBytes("Content-Type: "+contenttype+"; charset=UTF-8\r\n");
+		}else {
+			zDos.writeBytes("Content-Type: "+contenttype+"\r\n");
+		}
+		//zDos.writeBytes("Content-Type: text/html\r\n");
+		
 		zDos.writeBytes("Content-Length: " + finallength + "\r\n");
 		zDos.writeBytes("Access-Control-Allow-Origin: *\r\n");
 		zDos.writeBytes("\r\n");
