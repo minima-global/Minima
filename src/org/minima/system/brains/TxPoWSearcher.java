@@ -151,10 +151,11 @@ public class TxPoWSearcher {
 					coins = tip.getAllCoins();
 				}
 			}else {
+				//Need to LOCK DB
+				MinimaDB.getDB().readLock(true);
 				
 				//Get the MEGAMMR COINS..
 				coins = new ArrayList<Coin>(MinimaDB.getDB().getMegaMMR().getAllCoins().values());
-				//MinimaLogger.log("CHECK MEGAMMR coins "+coins.size());
 			}
 			
 			//Get the details..
@@ -215,6 +216,9 @@ public class TxPoWSearcher {
 					MEGACHECK = true;
 				}
 			}else {
+				//Need to LOCK DB
+				MinimaDB.getDB().readLock(false);
+				
 				//we just did a MEGAMMR check.. that's it..
 				break;
 			}
@@ -616,6 +620,9 @@ public class TxPoWSearcher {
 			if(!MEGACHECK) {
 				coins = tip.getAllCoins();
 			}else {
+				//Need to LOCK DB
+				MinimaDB.getDB().readLock(true);
+				
 				//Get the MEGAMMR COINS..
 				coins = new ArrayList<Coin>(MinimaDB.getDB().getMegaMMR().getAllCoins().values());
 			}
@@ -638,6 +645,10 @@ public class TxPoWSearcher {
 					MEGACHECK = true;
 				}
 			}else {
+				
+				//Need to LOCK DB
+				MinimaDB.getDB().readLock(false);
+				
 				//we just did a MEGAMMR check.. that's it..
 				break;
 			}
