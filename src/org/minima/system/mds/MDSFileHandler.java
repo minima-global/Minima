@@ -558,7 +558,7 @@ public class MDSFileHandler implements Runnable {
 			long timenow 	= System.currentTimeMillis();
 			long lasterror 	= timenow - mLastInvalidIDException;
 			if(lasterror > 120 * 1000) {
-				MinimaLogger.log("MDS Invalid SessionID Exception : You need to logout of the MDS and log back in..");
+				MinimaLogger.log("MDS Invalid SessionID Exception : You need to close your MiniDAPPS, logout of the MDS and then log back in..");
 				mLastInvalidIDException = timenow;
 			}
 			
