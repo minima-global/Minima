@@ -146,7 +146,11 @@ public class txnaddamount extends Command {
 		
 		//Do we have the cash
 		if(change.isLess(MiniNumber.ZERO)) {
-			throw new CommandException("Not enough funds! Current balance : "+totaladded);
+			MiniNumber total = totaladded;
+			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
+				total = token.getScaledTokenAmount(total);
+			}
+			throw new CommandException("Not enough funds! Current balance : "+total);
 		}		
 		
 		//OK - Now add all these coins..
@@ -158,6 +162,12 @@ public class txnaddamount extends Command {
 		if(!addonlychange) {
 			String addr = getAddressParam("address");
 			Coin maincoin = new Coin(new MiniData(addr), tokenamount, tokenid);
+			
+			//Do we need to add the Token..
+			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
+				maincoin.setToken(token);
+			}
+			
 			trans.addOutput(maincoin);
 		}
 		
@@ -170,17 +180,9 @@ public class txnaddamount extends Command {
 				chgaddress = fromaddress;
 			}
 			
-			//Get the scaled token ammount..
-			MiniNumber changeamount = change;
-			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
-				//Use the token object we previously found
-				changeamount = token.getScaledMinimaAmount(change);
-			}
-			
 			//Change coin does not keep the state
-			Coin changecoin = new Coin(Coin.COINID_OUTPUT, chgaddress, changeamount, Token.TOKENID_MINIMA, false);
+			Coin changecoin = new Coin(Coin.COINID_OUTPUT, chgaddress, change, tokenid, false);
 			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
-				changecoin.resetTokenID(tokenid);
 				changecoin.setToken(token);
 			}
 			

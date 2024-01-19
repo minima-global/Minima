@@ -435,6 +435,22 @@ public class MDSFileHandler implements Runnable {
 				dos.writeBytes("\r\n");
 				dos.flush();
 				
+			}else if( fileRequested.startsWith("publicmds") ) {
+				
+				//Is it the minihub..
+				if(fileRequested.equals("publicmds")) {
+					fileRequested = "publicmds/index.html";
+				}
+				
+				//Remove the params..
+				int index = fileRequested.indexOf("?");
+				if(index!=-1) {
+					fileRequested = fileRequested.substring(0,index);
+				}
+				
+				//Write this page..
+				writeHTMLResouceFile(dos, fileRequested);
+				
 			}else {
 			
 				//Remove the params..

@@ -110,6 +110,8 @@
 						+" privatekey:"+privatekey
 						+" keyuses:"+keyuses;
 			
+			MDS.log(cmd);
+			
 			MDS.cmd(cmd,function(resp){
 				
 				if(!resp.status){

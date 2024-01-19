@@ -151,10 +151,11 @@ public class TxPoWSearcher {
 					coins = tip.getAllCoins();
 				}
 			}else {
+				//Need to LOCK DB
+				MinimaDB.getDB().readLock(true);
 				
 				//Get the MEGAMMR COINS..
 				coins = new ArrayList<Coin>(MinimaDB.getDB().getMegaMMR().getAllCoins().values());
-				//MinimaLogger.log("CHECK MEGAMMR coins "+coins.size());
 			}
 			
 			//Get the details..
@@ -215,6 +216,9 @@ public class TxPoWSearcher {
 					MEGACHECK = true;
 				}
 			}else {
+				//Need to LOCK DB
+				MinimaDB.getDB().readLock(false);
+				
 				//we just did a MEGAMMR check.. that's it..
 				break;
 			}
@@ -604,11 +608,24 @@ public class TxPoWSearcher {
 		//Start node position
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 		
-		//Now cycle through and get all your coins..
-		while(tip != null) {
+		//Are we MEGAMMR
+		boolean MEGACHECK = false; 
+		
+		//Cycle through
+		while(tip!=null || MEGACHECK) {
+		
 
 			//Get ALL the coins..
-			ArrayList<Coin> coins = tip.getAllCoins();
+			ArrayList<Coin> coins = null;
+			if(!MEGACHECK) {
+				coins = tip.getAllCoins();
+			}else {
+				//Need to LOCK DB
+				MinimaDB.getDB().readLock(true);
+				
+				//Get the MEGAMMR COINS..
+				coins = new ArrayList<Coin>(MinimaDB.getDB().getMegaMMR().getAllCoins().values());
+			}
 			
 			//Get the details..
 			for(Coin coin : coins) {
@@ -619,8 +636,22 @@ public class TxPoWSearcher {
 				}
 			}
 			
-			//And move back up the tree
-			tip = tip.getParent();
+			if(!MEGACHECK) {
+				//And move back up the tree
+				tip = tip.getParent();
+				
+				//Are we at the end..
+				if(tip == null && GeneralParams.IS_MEGAMMR) {
+					MEGACHECK = true;
+				}
+			}else {
+				
+				//Need to LOCK DB
+				MinimaDB.getDB().readLock(false);
+				
+				//we just did a MEGAMMR check.. that's it..
+				break;
+			}
 		}
 		
 		return null;
