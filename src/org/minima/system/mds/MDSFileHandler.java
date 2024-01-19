@@ -53,6 +53,11 @@ public class MDSFileHandler implements Runnable {
 	MDSCommandHandler mCommands;
 	
 	/**
+	 * Only show Invalid ID message once  every minute..
+	 */
+	static long mLastInvalidIDException = 0;
+	
+	/**
 	 * Main Constructor
 	 * @param zSocket
 	 */
@@ -174,7 +179,7 @@ public class MDSFileHandler implements Runnable {
 				//Convert the sessionid
 				String minidappid = mMDS.convertSessionID(uid);
 				if(minidappid == null) {
-					throw new MDSCommandException("Invalid session id for MiniDAPP "+uid);
+					throw new MDSInvalidIDException("Invalid session id for MiniDAPP "+uid);
 				}
 				
 				//get the POST data
@@ -297,7 +302,7 @@ public class MDSFileHandler implements Runnable {
 				//Check it..
 				String minidappid = mMDS.convertSessionID(minidappsessionid);
 				if(minidappid == null) {
-					throw new IllegalArgumentException("Invalid session id for uploadfile "+minidappsessionid);
+					throw new MDSInvalidIDException("Invalid session id for uploadfile "+minidappsessionid);
 				}
 				
 				//Get the jumppage
@@ -380,7 +385,7 @@ public class MDSFileHandler implements Runnable {
 				//Check it..
 				String minidappid = mMDS.convertSessionID(minidappsessionid);
 				if(minidappid == null) {
-					throw new IllegalArgumentException("Invalid session id for uploadfile "+minidappsessionid);
+					throw new MDSInvalidIDException("Invalid session id for uploadfile "+minidappsessionid);
 				}
 				
 				//Now.. save the file..
@@ -533,6 +538,29 @@ public class MDSFileHandler implements Runnable {
 		}catch(SSLException exc) {
 		}catch(MDSCommandException exc) {
 			MinimaLogger.log("MDSCommandException : "+exc.toString());
+			
+			// send HTTP Headers
+			try {
+				dos.writeBytes("HTTP/1.1 500 Internal Server Error\r\n");
+				dos.writeBytes("Server: HTTP MDS Server from Minima 1.3\r\n");
+				dos.writeBytes("Date: " + new Date()+"\r\n");
+				dos.writeBytes("Content-type: text/plain\r\n");
+				dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
+				dos.writeBytes("\r\n"); // blank line between headers and content, very important !
+				dos.flush(); // flush character output stream buffer
+			}catch (Exception e) {
+				// TODO: handle exception
+			}
+			
+		}catch(MDSInvalidIDException exc) {
+			
+			//Only show every so often..
+			long timenow 	= System.currentTimeMillis();
+			long lasterror 	= timenow - mLastInvalidIDException;
+			if(lasterror > 120 * 1000) {
+				MinimaLogger.log("MDS Invalid SessionID Exception : You need to logout of the MDS and log back in..");
+				mLastInvalidIDException = timenow;
+			}
 			
 			// send HTTP Headers
 			try {
