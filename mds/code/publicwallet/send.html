@@ -26,7 +26,7 @@
 </script>	
 
 <br>
-	<table border=1>
+	<table>
 	
 	<tr>
 		<td>Token : </td>
@@ -52,10 +52,16 @@
 		<td><input type=text id="secret"></td>
 	</tr>
 	
+	<!--   <tr>
+		<td>Key Uses : </td>
+		<td><input type=text id="keyuses"></td>
+	</tr>
+	-->
+	
 	</table>
 	<br>
 	
-	<button onclick="sendfunds();">Send Funds</button>
+	<button class=btn onclick="sendfunds();">Send Funds</button>
 		
 <script type="text/javascript">
 	footer();
@@ -72,6 +78,7 @@
 		var sendto 		= to.value;
 		var sendamount 	= amount.value;
 		var sendsecret	= secret.value;
+		//var keyuses		= keyuses.value;
 		
 		//Get the token
 		var selector 	= document.getElementById("tokens");
