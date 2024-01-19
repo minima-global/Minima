@@ -442,8 +442,6 @@ public class MDSFileHandler implements Runnable {
 				
 			}else if( fileRequested.startsWith("publicmds") ) {
 				
-				MinimaLogger.log("Public File request : "+fileRequested);
-				
 				//Is it the minihub..
 				if(fileRequested.equals("publicmds")) {
 					fileRequested = "publicmds/index.html";
@@ -454,8 +452,6 @@ public class MDSFileHandler implements Runnable {
 				if(index!=-1) {
 					fileRequested = fileRequested.substring(0,index);
 				}
-				
-				MinimaLogger.log("Public Resource request : "+fileRequested+"\n");
 				
 				//Write this page..
 				writeHTMLResouceFile(dos, fileRequested);
