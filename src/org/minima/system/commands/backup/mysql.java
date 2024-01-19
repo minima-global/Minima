@@ -381,7 +381,7 @@ public class mysql extends Command {
 			Main.getInstance().PostNotifyEvent("MDS_RESYNC_START",new JSONObject());
 			
 			//How many Keys do we need to generate
-			int keys = getNumberParam("keys", new MiniNumber(Wallet.NUMBER_GETADDRESS_KEYS + 16)).getAsInt();
+			int keys = getNumberParam("keys", new MiniNumber(Wallet.NUMBER_GETADDRESS_KEYS)).getAsInt();
 			
 			//Set the key uses to this..
 			int keyuses = getNumberParam("keyuses", new MiniNumber(1000)).getAsInt();
