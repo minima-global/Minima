@@ -813,6 +813,10 @@ public class archive extends Command {
 				command = command+" keyuses:"+getParam("keyuses");
 			}
 			
+			if(existsParam("anyphrase")) {
+				command = command+" anyphrase:"+getParam("anyphrase");
+			}
+			
 			JSONArray res 		= Command.runMultiCommand(command);
 			JSONObject result 	= (JSONObject) res.get(0);
 			
@@ -898,6 +902,10 @@ public class archive extends Command {
 					command = command+" keyuses:"+getParam("keyuses");
 				}
 				
+				if(existsParam("anyphrase")) {
+					command = command+" anyphrase:"+getParam("anyphrase");
+				}
+				
 				JSONArray res 		= Command.runMultiCommand(command);
 				JSONObject result 	= (JSONObject) res.get(0);
 				
@@ -936,6 +944,10 @@ public class archive extends Command {
 				
 				if(existsParam("keyuses")) {
 					command = command+" keyuses:"+getParam("keyuses");
+				}
+				
+				if(existsParam("anyphrase")) {
+					command = command+" anyphrase:"+getParam("anyphrase");
 				}
 				
 				JSONArray res 		= Command.runMultiCommand(command);
