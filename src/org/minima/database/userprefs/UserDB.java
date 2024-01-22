@@ -277,4 +277,15 @@ public class UserDB extends JsonDB{
 		String name = zName.toLowerCase().replaceAll(" ", "");
 		return alluninst.contains(name);
 	}
+	
+	/**
+	 * Are we running the public site
+	 */
+	public void setPublicMDS(boolean zEnable) {
+		setBoolean("mds_publicsite", zEnable);
+	}
+	
+	public boolean  getPublicMDS() {
+		return getBoolean("mds_publicsite", false);
+	}
 }

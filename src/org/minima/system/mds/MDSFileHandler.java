@@ -20,11 +20,13 @@ import java.util.StringTokenizer;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 
+import org.minima.database.MinimaDB;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.mds.multipart.MultipartData;
 import org.minima.system.mds.multipart.MultipartParser;
 import org.minima.system.mds.polling.PollStack;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 
@@ -254,7 +256,7 @@ public class MDSFileHandler implements Runnable {
 					throw new IllegalArgumentException("Incorrect MDS Password");
 				}
 				
-				//Get the feault MiniHUB..
+				//Get the default MiniHUB..
 				String minihubuid = Main.getInstance().getMDSManager().getDefaultMiniHUB();
 				
 				//Load that MiniDFAPP..
@@ -442,6 +444,16 @@ public class MDSFileHandler implements Runnable {
 				
 			}else if( fileRequested.startsWith("publicmds") ) {
 				
+				//Is the public site enabled..
+				if(!MinimaDB.getDB().getUserDB().getPublicMDS()) {
+					MinimaLogger.log("Access forbidden : Public MDS site disabled..!");
+					
+		    		dos.writeBytes("HTTP/1.0 404 OK\r\n");
+					dos.writeBytes("\r\n");
+					dos.flush();
+					return;
+				}
+				
 				//Is it the minihub..
 				if(fileRequested.equals("publicmds")) {
 					fileRequested = "publicmds/index.html";
@@ -453,8 +465,29 @@ public class MDSFileHandler implements Runnable {
 					fileRequested = fileRequested.substring(0,index);
 				}
 				
-				//Write this page..
-				writeHTMLResouceFile(dos, fileRequested);
+				if(fileRequested.equals("publicmds/index.html")) {
+					
+					//Set the session ID
+					String success = loadResouceFile("publicmds/index.html");
+					
+					//Get the public sessionID
+					String seshid = mMDS.getPublicMiniDAPPSessionID();
+					
+					//Replace the doRedirect()
+					success = success.replace("var publicsessionid=\"0x00\";", 
+											   "var publicsessionid=\""+seshid+"\";");
+					
+					//Do we enable the Wallet..
+					if(GeneralParams.IS_MEGAMMR) {
+						success = success.replace("var showwallet=false","var showwallet=true");
+					}
+					
+					//And write that out..
+					writeHTMLPage(dos, success);
+				}else {
+					//Write this page..
+					writeHTMLResouceFile(dos, fileRequested);
+				}
 				
 			}else {
 			

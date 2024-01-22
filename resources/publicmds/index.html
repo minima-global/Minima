@@ -2,7 +2,8 @@
 
 <head>
 	<title>Public MDS</title>
-	
+	<link rel="shortcut icon" type="image/png" href="./favicon.png">
+	<link rel="stylesheet" href="style.css">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
 </head>
@@ -15,11 +16,28 @@
 	<br>
 	Welcome to the Public Minima MDS interface..<br>
 	<br>
-	Here you have acces to 2 MiniDAPPs..<br>
-	<br>
-	<a target="_blank" href="./wallet/index.html?uid=0xFFFFFF">WALLET</a><br>
-	<br>
-	<a target="_blank" href="./block/index.html?uid=0xFFFFFF">BLOCK</a><br>
+	
+	<script type="text/javascript">
+	
+		//These are replaced server side..
+		var publicsessionid="0x00";
+		var showwallet=false;
+		
+		//Open a MiniDAPP with correct sessionID
+		function opendapp(page){
+			window.open("./"+page+"/index.html?uid="+publicsessionid);	
+		}
+		
+		//Always get Block
+		document.write('<button class=btn onclick="opendapp(\'block\');">BLOCK</button><br><br>');
+		
+		//Do we show the Wallet
+		if(showwallet){
+			document.write('<button class=btn onclick="opendapp(\'wallet\');">WALLET</button><br><br>');	
+		}else{
+			document.write('MEGA MMR required for Wallet functions..');
+		}
+	</script>
 	
 </center>
 

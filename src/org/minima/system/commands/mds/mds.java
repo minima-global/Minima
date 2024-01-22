@@ -91,7 +91,7 @@ public class mds extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","file","uid","trust"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","file","uid","trust","enable"}));
 	}
 	
 	@Override
@@ -126,7 +126,10 @@ public class mds extends Command {
 			mds.put("enabled", GeneralParams.MDS_ENABLED);
 			mds.put("connect", "https://"+GeneralParams.MINIMA_HOST+":"+GeneralParams.MDSFILE_PORT);
 			mds.put("password", Main.getInstance().getMDSManager().getMiniHUBPasword());
+			mds.put("publicmds", MinimaDB.getDB().getUserDB().getPublicMDS());
+			
 			mds.put("minidapps", arr);
+			
 			ret.put("response", mds);
 		
 		}else if(action.equals("pending")) {
@@ -536,6 +539,16 @@ public class mds extends Command {
 			//There has been a change
 			Main.getInstance().getMDSManager().PostMessage(MDSManager.MDS_MINIDAPPS_RESETALL);
 		
+		}else if(action.equals("publicmds")) {
+			
+			boolean enable = getBooleanParam("enable");
+			
+			MinimaDB.getDB().getUserDB().setPublicMDS(enable);
+			
+			JSONObject mds = new JSONObject();
+			mds.put("publicmds", enable);
+			ret.put("response", mds);
+			
 		}else {
 			throw new CommandException("Unknown action : "+action);
 		}

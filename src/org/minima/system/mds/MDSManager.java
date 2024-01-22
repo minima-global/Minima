@@ -133,7 +133,8 @@ public class MDSManager extends MessageProcessor {
 	 * Public MDS uses this MiniDAPP Handle..
 	 */
 	MiniDAPP mPublicMiniDAPP;
-	String mPublicMiniUID = "0xFFFFFF";
+	String mPublicMiniSessionID = "0x00";
+	String mPublicMiniUID 		= "0xFFFFFF";
 	
 	/**
 	 * Main Constructor
@@ -312,12 +313,19 @@ public class MDSManager extends MessageProcessor {
 	}
 	
 	/**
+	 * Get the public MiniDAPP SessionID
+	 */
+	public String getPublicMiniDAPPSessionID() {
+		return mPublicMiniSessionID;
+	}
+	
+	/**
 	 * Return the MINIDAPPID for a given SESSIONID
 	 */
 	public String convertSessionID(String zSessionID) {
 		
 		//Is it the Public..
-		if(zSessionID.equals(mPublicMiniUID)) {
+		if(zSessionID.equals(mPublicMiniSessionID)) {
 			return mPublicMiniUID;
 		}
 		
@@ -331,7 +339,7 @@ public class MDSManager extends MessageProcessor {
 		
 		//Is it the Public..
 		if(zMiniDAPPID.equals(mPublicMiniUID)) {
-			return mPublicMiniUID;
+			return mPublicMiniSessionID;
 		}
 		
 		//Search the rest
@@ -616,6 +624,9 @@ public class MDSManager extends MessageProcessor {
 			}else {
 				MinimaLogger.log("MDS RHINOJS INIT hasGlobal Allready!.. may need a restart");
 			}
+			
+			//Create the Public SessionID
+			mPublicMiniSessionID = MiniData.getRandomData(128).to0xString();
 			
 			//Install the default MiniHUB..
 			doDefaultMiniHUB();
