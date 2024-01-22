@@ -253,9 +253,12 @@ public class MDSCommandHandler {
 			
 		}else if(command.equals("dapplink")) {
 			
+			//Not allowed on Public MiniDAPP
+			boolean publicmini = (minidappid == mMDS.getPublicMiniDAPPID());
+			
 			//Get the MiniDapp in question..
 			MiniDAPP reqmini = mMDS.getMiniDAPPFromName(data.trim());
-			if(reqmini == null) {
+			if(reqmini == null || publicmini) {
 				//No MiniDAPP found..
 				JSONObject error = new JSONObject();
 				error.put("status", false);

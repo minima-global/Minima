@@ -319,6 +319,10 @@ public class MDSManager extends MessageProcessor {
 		return mPublicMiniSessionID;
 	}
 	
+	public String getPublicMiniDAPPID() {
+		return mPublicMiniUID;
+	}
+	
 	/**
 	 * Return the MINIDAPPID for a given SESSIONID
 	 */
