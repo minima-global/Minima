@@ -86,7 +86,7 @@ public class coins extends Command {
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"relevant","sendable","coinid","amount",
 				"address","tokenid","checkmempool","order","coinage","simplestate",
-				"totalamount","depth","state"}));
+				"totalamount","depth","state","megammr"}));
 	}
 	
 	@Override
@@ -156,6 +156,9 @@ public class coins extends Command {
 			return ret;
 		}
 		
+		//Do we check the MegaMMR
+		boolean checkmegammr = getBooleanParam("megammr", GeneralParams.IS_MEGAMMR);
+		
 		//Run the query
 		ArrayList<Coin> coins = TxPoWSearcher.searchCoins(	tip, relevant, 
 															scoinid, coinid,
@@ -163,7 +166,7 @@ public class coins extends Command {
 															saddress, address, 
 															stokenid, tokenid, 
 															sstate, statesearch, true,
-															simple, maxdepth,GeneralParams.IS_MEGAMMR);
+															simple, maxdepth,checkmegammr);
 		
 		//Make sure coins old enough..
 		ArrayList<Coin> agecoins = new ArrayList<>();
