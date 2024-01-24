@@ -17,13 +17,8 @@ function verifyData(publickey,data,signature, callback){
 			}	
 		}else{
 			callback(false);
-		}
-				
+		}		
 	});
-}
-
-function hashString(str){
-	return 	"0x"+sha1(str).toUpperCase();
 }
 
 function sendOrderBook(publickey, objson, callback){
@@ -161,17 +156,22 @@ function getUniqueRecords(validrecords){
 			var ob 	= {};
 			ob[0] 	= publickey;
 			
-			//Now convert the data to a JSON
-			var orderstr = decodeStringFromDB(record.data);
+			try {
+				//Now convert the data to a JSON
+			    var orderstr = decodeStringFromDB(record.data);
 			
-			//Convert to a JSON
-			ob[1] = JSON.parse(orderstr);
-			
-			//Add it to our list
-			orderbook.push(ob);
-			
-			//We now have an orderbook from this user
-			prevowner.push(publickey);
+				//Convert to a JSON
+				ob[1] = JSON.parse(orderstr);
+				
+				//Add it to our list
+				orderbook.push(ob);
+				
+				//We now have an orderbook from this user
+				prevowner.push(publickey);
+			    
+			} catch (e) {
+		        MDs.log("Invalid JSON for orderbook from "+publickey);
+		    }
 		} 
 	}
 	

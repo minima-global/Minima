@@ -24,3 +24,7 @@ function stripBrackets(coinstr){
 	
 	return str;
 }
+
+function hashString(str){
+	return 	"0x"+sha1(str).toUpperCase();
+}
