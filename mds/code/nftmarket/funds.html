@@ -1,0 +1,72 @@
+<html>
+
+<head>
+	<title>NFT Market</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="orderbook.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+
+	Your available funds for MAKER
+
+	
+	<br>
+
+	<pre id="market" style="text-align:left;">
+	
+	
+	</pre>
+	
+</center>
+
+<script type="text/javascript">
+	
+	function updatebook(){
+		
+		var orderbook = [{"action":"BUY","tokenid":"0xEEDDCC","amount":"10","price":"0.001"},
+						 {"action":"SELL","tokenid":"0xEEDDCC","amount":"10","price":"0.002"}];
+		
+		sendOrderBook("0xFFEECCAA", orderbook,function(resp){
+			MDS.log(JSON.stringify(resp,null,2));	
+		});
+	}
+	
+	function loadOrderBook(){
+		var orderbook = getPublicOrderBook(function(orderbook){
+			market.innerHTML = JSON.stringify(orderbook,null,2);
+		});
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//Startup..		
+			loadOrderBook();
+		}
+	});
+
+</script>
+
+</body>
+
+</html>
