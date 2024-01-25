@@ -882,7 +882,7 @@ public class MDSManager extends MessageProcessor {
 				//Load it into the service runner..
 				Context ctx = Context.enter();
 				ctx.setOptimizationLevel(-1);
-				ctx.setLanguageVersion(Context.VERSION_1_8);
+				ctx.setLanguageVersion(Context.VERSION_ES6);
 				
 				//Stop JAVA classes from being run..
 				try {
