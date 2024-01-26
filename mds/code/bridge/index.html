@@ -1,7 +1,7 @@
 <html>
 
 <head>
-	<title>BASIC</title>
+	<title>Bridge</title>
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
@@ -15,7 +15,9 @@
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	
 	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="scripts.js"></script>
 	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="auth.js"></script>
 	
 </head>
 
@@ -25,11 +27,13 @@
 
 	<br>
 
-	<h2>Hello World!</h2>
+	<h2>Bridge</h2>
 	
 </center>
 
 <script type="text/javascript">
+	
+	var USER_DETAILS = {};
 	
 	//Main message handler..
 	MDS.init(function(msg){
@@ -37,8 +41,10 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			
-			//Do stuff.. from now..		
-			
+			getUserDetails(function(userdets){
+				USER_DETAILS=userdets;
+				MDS.log(JSON.stringify(USER_DETAILS));
+			});
 		}
 	});
 
