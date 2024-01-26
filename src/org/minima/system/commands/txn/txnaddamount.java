@@ -126,7 +126,7 @@ public class txnaddamount extends Command {
 												false, MiniData.ZERO_TXPOWID,
 												false, MiniNumber.ZERO,
 												true, fromaddress, 
-												false, MiniData.ZERO_TXPOWID, 
+												true, tokenid, 
 												false, "", true,
 												false, Integer.MAX_VALUE,GeneralParams.IS_MEGAMMR);
 			
