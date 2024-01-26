@@ -1,47 +1,84 @@
 <html>
+  <head>
+    <title>Public MDS</title>
+    <link rel="shortcut icon" type="image/png" href="./favicon.png" />
+    <link rel="stylesheet" href="style.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
 
-<head>
-	<title>Public MDS</title>
-	<link rel="shortcut icon" type="image/png" href="./favicon.png">
-	<link rel="stylesheet" href="style.css">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	
-</head>
+  <body>
+    <br />
+    <div>
+      <div id="grid">
+        <header></header>
 
-<body>
-<br>
-<center>
+        <main>
+          <div></div>
+          <div id="content">
+            <div id="hdr">
+              <h1>Minima Public MDS</h1>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="icon icon-tabler icon-tabler-globe"
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                fill="none"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M7 9a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
+                <path d="M5.75 15a8.015 8.015 0 1 0 9.25 -13" />
+                <path d="M11 17v4" />
+                <path d="M7 21h8" />
+              </svg>
+            </div>
+            <p>
+            <br>Block allows you to look at the Minima blockchain<br>
+            <br>
+            Wallet is a non-custodial Minima Wallet
+            </p>
 
-	<h1>Minima Public MDS</h1>
-	<br>
-	Welcome to the Public Minima MDS interface..<br>
-	<br>
-	
-	<script type="text/javascript">
-	
-		//These are replaced server side..
-		var publicsessionid="0x00";
-		var showwallet=false;
-		
-		//Open a MiniDAPP with correct sessionID
-		function opendapp(page){
-			window.open("./"+page+"/index.html?uid="+publicsessionid);	
-		}
-		
-		//Always get Block
-		document.write('<button class=btn onclick="opendapp(\'block\');">BLOCK</button><br><br>');
-		
-		//Do we show the Wallet
-		if(showwallet){
-			document.write('<button class=btn onclick="opendapp(\'wallet\');">WALLET</button><br><br>');	
-		}else{
-			document.write('MEGA MMR required for Wallet functions..');
-		}
-	</script>
-	
-</center>
+            <div id="stuff"></div>
+            <div id="otherstuff"></div>
+          </div>
+          <div></div>
+        </main>
+      </div>
 
+      <script type="text/javascript">
+        //These are replaced server side..
+        var publicsessionid="0x00";
+        var showwallet=false;
 
-</body>
+        //Open a MiniDAPP with correct sessionID
+        function opendapp(page) {
+          window.open("./" + page + "/index.html?uid=" + publicsessionid);
+        }
 
+        const blockArea = document.getElementById("stuff");
+        const walletArea = document.getElementById("otherstuff");
+
+        blockArea.innerHTML =
+          "<button class='button-56 block' onclick=\"opendapp('block');\">Block</button><br><br>";
+
+        //Do we show the Wallet
+        if (showwallet) {
+          walletArea.innerHTML =
+            "<button class='button-56 wallet' onclick=\"opendapp('wallet');\">Wallet</button><br><br>";
+        } else {
+          walletArea.innerHTML = `
+						<div id="no-wallet-feature">
+							*missing feature* <br/>Running a
+							<code>-megammr</code> node required for the wallet feature.
+						</div>
+					
+					`;
+        }
+      </script>
+    </div>
+  </body>
 </html>

@@ -4,54 +4,166 @@
 }
 
 body {
-	font-family: Manrope;
-	font-size:14px;	
+	margin: 0;
+	padding: 0;
+	font-family: Manrope, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+	'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+	sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;  
+	line-height: 1.5;
+
+
+	color-scheme: light dark;
+	color: rgba(255, 255, 255, 0.87);
+	background-color: #242424;
+
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	-webkit-text-size-adjust: 100%;	
 }
 
-.maintable{
-	width:100%;
-	height:100%;
-	max-width:800;
+#grid {
+	display: grid;
+	grid-template-areas: 'header' 'main';
+	grid-template-rows: 56px 1fr;
+	grid-template-columns: 1fr;
+}
+#grid header {
+	grid-area: header;
+}
+#grid main {
+	grid-area: main;
+	display: grid;
+	grid-template-columns: 1fr minmax(0, 560px) 1fr;
 }
 
-.topwindow{
-	text-align:center;
-	vertical-align:middle;
-	border: 2px solid #0000ff;
-	border-radius: 10px;
+#grid main #content{
+	padding: 0 16px;
+	text-align: center;
 }
 
-.centerwindow{
-	text-align:center;
-	height:100%;
-	vertical-align:top;
-	border: 2px solid #0000ff;
-	border-radius: 10px;
+#grid main #content h1 {
+	padding: 0;
+	margin: 0;
 }
 
-.bottomwindow{
-	text-align:center;
-	border: 2px solid #0000ff;
-	border-radius: 10px;
+#grid main #content p { 
+	font-family: 600;
+	margin-top:0;
 }
 
-.buttonlinks{
-	text-align:center;
-	width:25%;
+#hdr {
+	display: flex; 
+	align-items: center;
+	flex-direction: column-reverse;
 }
 
-/* Style buttons */
-.btn {
-  width:120;
-  background-color: DodgerBlue; /* Blue background */
-  border: none; /* Remove borders */
-  color: white; /* White text */
-  padding: 12px 16px; /* Some padding */
-  font-size: 16px; /* Set a font size */
-  cursor: pointer; /* Mouse pointer on hover */
+button {
+	background-color: #242424;
+	border: none;
+	border-radius: 8px;
+	padding: 16px 16px;
+	width: 100%;
+	margin: 0 auto;
+	max-width: 240px;
+	font-size: 16px;
+	font-weight: 600;
 }
 
-/* Darker background on mouse-over */
-.btn:hover {
-  background-color: RoyalBlue;
+/* CSS */
+.button-56 {
+  align-items: center;
+  background-color: #747bff;
+  border: 2px solid #111;
+  border-radius: 8px;
+  box-sizing: border-box;
+  color: #111;
+  cursor: pointer;
+  display: flex;
+  font-family: Inter,sans-serif;
+  font-size: 16px;
+  height: 48px;
+  justify-content: center;
+  line-height: 24px;
+  
+  padding: 0 25px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.button-56:after {
+  background-color: #111;
+  border-radius: 8px;
+  content: "";
+  display: block;
+  height: 48px;
+  left: 0;
+  width: 100%;
+  position: absolute;
+  top: -2px;
+  transform: translate(8px, 8px);
+  transition: transform .2s ease-out;
+  z-index: -1;
+}
+
+.button-56:hover:after {
+  transform: translate(0, 0);
+}
+
+.button-56:active {
+  background-color: #ffdeda;
+  outline: 0;
+}
+
+.button-56:hover {
+  outline: 0;
+}
+.block {
+  margin-top: 32px;
+}
+.wallet {
+  background-color: #ffa010;
+}
+
+@media (min-width: 768px) {
+  .button-56 {
+    padding: 0 40px;
+  }
+}
+
+#no-wallet-feature {
+	background-color: rgb(194 65 12);
+	margin: 0 auto;
+	color: white;
+	padding: 8px;
+	border-radius: 8px;
+	max-width: 200px;
+}
+
+code {
+	font-size: 16px;
+}
+
+@media (prefers-color-scheme: light) {
+  body {
+    color: #213547;
+    background-color: #f7f7f7;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    color: rgb(148 163 184);
+  }
+
+  input:focus {
+    color: #213547;
+  }
 }
