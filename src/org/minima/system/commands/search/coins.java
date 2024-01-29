@@ -157,7 +157,10 @@ public class coins extends Command {
 		}
 		
 		//Do we check the MegaMMR
-		boolean checkmegammr = getBooleanParam("megammr", GeneralParams.IS_MEGAMMR);
+		boolean checkmegammr = getBooleanParam("megammr", false);
+		if(checkmegammr) {
+			checkmegammr = GeneralParams.IS_MEGAMMR;
+		}
 		
 		//Run the query
 		ArrayList<Coin> coins = TxPoWSearcher.searchCoins(	tip, relevant, 

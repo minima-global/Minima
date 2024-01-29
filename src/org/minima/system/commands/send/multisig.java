@@ -324,7 +324,7 @@ public class multisig extends Command {
 			}
 			
 			//Find the coin
-			Coin cc = TxPoWSearcher.searchCoin(new MiniData(coinid));
+			Coin cc = TxPoWSearcher.searchCoin(new MiniData(coinid),false);
 			if(cc == null) {
 				throw new CommandException("CoinID not found : "+coinid);
 			}

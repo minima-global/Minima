@@ -56,7 +56,7 @@ public class cointrack extends Command {
 		}
 		
 		//Get the coin..
-		Coin coin = TxPoWSearcher.searchCoin(coindata);
+		Coin coin = TxPoWSearcher.searchCoin(coindata, false);
 		
 		//Are we enabling or disabling..
 		if(track) {
