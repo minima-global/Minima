@@ -135,7 +135,8 @@ public class send extends Command {
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"action","uid",
 				"address","amount","multi","tokenid","state","burn","coinage",
-				"split","debug","dryrun","mine","password","storestate"}));
+				"split","debug","dryrun","mine","password","storestate",
+				"fromaddress","signkey"}));
 	}
 	
 	@Override
@@ -243,9 +244,30 @@ public class send extends Command {
 		if(coinage.isLess(GlobalParams.MINIMA_CONFIRM_DEPTH)) {
 			throw new CommandException("Coinage MUST be >= "+GlobalParams.MINIMA_CONFIRM_DEPTH);
 		}
-				
+		
+		//Is it from a specific address
+		String usepubkey 		= getAddressParam("signkey","");
+		boolean usefromaddress 	= false;
+		String fromaddress 		= getAddressParam("fromaddress","");
+		if(!fromaddress.equals("")) {
+			usefromaddress 	= true;
+		}
+		
 		//Lets build a transaction..
-		ArrayList<Coin> foundcoins	= TxPoWSearcher.getRelevantUnspentCoins(tip,tokenid,true);
+		ArrayList<Coin> foundcoins = null;
+		if(usefromaddress) {
+			
+			//Only search a specific address
+			foundcoins	= TxPoWSearcher.searchCoins(tip, true, 
+										false, MiniData.ZERO_TXPOWID, 
+										false, MiniNumber.ZERO,
+										true, new MiniData(fromaddress),
+										true, new MiniData(tokenid),
+										false);
+			
+		}else {
+			foundcoins	= TxPoWSearcher.getRelevantUnspentCoins(tip,tokenid,true);
+		}
 		ArrayList<Coin> relcoins 	= new ArrayList<>();
 		
 		//Now make sure they are old enough
@@ -435,6 +457,12 @@ public class send extends Command {
 			}
 		}
 		
+		//Are we spcifying the sign key
+		if(usepubkey != "") {
+			reqsigs.clear();
+			reqsigs.add(usepubkey);
+		}
+		
 		//Now make the sendamount correct
 		if(!tokenid.equals("0x00")) {
 			
@@ -537,7 +565,13 @@ public class send extends Command {
 				}
 			}
 			
+			//Create the change address..
 			MiniData chgaddress = new MiniData(newwalletaddress.getAddress());
+			
+			//Are we using a specific address..
+			if(usefromaddress) {
+				chgaddress = new MiniData(fromaddress);
+			}
 			
 			//Get the scaled token ammount..
 			MiniNumber changeamount = change;
