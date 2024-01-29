@@ -66,7 +66,7 @@ public class mysqlcoins extends Command {
 				+ "readonly:\n"
 				+ "    true or false, Connect in readonly mode.\n"
 				+ "logs:\n"
-				+ "    Show detailed logs - default true.\n"
+				+ "    Show detailed logs - default false.\n"
 				+ "\n"
 				+ "where:\n"
 				+ "    The search criteria. String data MUST be in single quotes. You can use multiple parameters.\n"
