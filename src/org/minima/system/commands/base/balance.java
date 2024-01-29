@@ -55,7 +55,7 @@ public class balance extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"address","tokenid","confirmations","tokendetails"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"address","tokenid","confirmations","tokendetails","megammr"}));
 	}
 	
 	@Override
@@ -94,6 +94,12 @@ public class balance extends Command {
 		//Get the wallet.. to find the sendable coins..
 		Wallet walletdb = MinimaDB.getDB().getWallet();
 		
+		//Do we check the MegaMMR
+		boolean checkmegammr = getBooleanParam("megammr", false);
+		if(checkmegammr) {
+			checkmegammr = GeneralParams.IS_MEGAMMR;
+		}
+		
 		//Get the coins..
 		ArrayList<Coin> coins = null;
 		if(address.equals("")) {
@@ -107,7 +113,7 @@ public class balance extends Command {
 					true, new MiniData(address), 
 					false, MiniData.ZERO_TXPOWID, 
 					false, "", true,
-					false, Integer.MAX_VALUE,GeneralParams.IS_MEGAMMR);
+					false, Integer.MAX_VALUE,checkmegammr);
 		}
 			
 		//What is the top block

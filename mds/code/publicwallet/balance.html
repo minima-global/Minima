@@ -46,7 +46,7 @@
 			var addr = MDS.form.getParams("address");
 			
 			//Do stuff.. from now..		
-			MDS.cmd("balance address:"+addr,function(resp){
+			MDS.cmd("balance megammr:true address:"+addr,function(resp){
 				showbalance.innerHTML = JSON.stringify(resp.response,null,2);
 			});
 		}
