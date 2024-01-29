@@ -250,6 +250,9 @@ public class send extends Command {
 		boolean usefromaddress 	= false;
 		String fromaddress 		= getAddressParam("fromaddress","");
 		if(!fromaddress.equals("")) {
+			if(debug) {
+				MinimaLogger.log("Search only coins with address : "+fromaddress);
+			}
 			usefromaddress 	= true;
 		}
 		
@@ -630,7 +633,11 @@ public class send extends Command {
 		
 		//Now that we have constructed the transaction - lets sign it..
 		if(debug) {
-			MinimaLogger.log("Total signatures required : "+reqsigs.size());
+			if(usepubkey != "") {
+				MinimaLogger.log("(SIGNKEYS) Total signatures required : "+reqsigs.size());
+			}else {
+				MinimaLogger.log("Total signatures required : "+reqsigs.size());
+			}
 		}
 		
 		//Are we password unlocking..
