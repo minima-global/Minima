@@ -23,7 +23,7 @@ import org.minima.utils.json.JSONObject;
 public class balance extends Command {
 
 	public balance() {
-		super("balance","(address:) (tokenid:) (confirmations:) - Show your total balance of Minima and tokens");
+		super("balance","(address:) (tokenid:) (confirmations:) (megammr:) - Show your total balance of Minima and tokens");
 	}
 	
 	@Override
@@ -43,6 +43,9 @@ public class balance extends Command {
 				+ "\n"
 				+ "confirmations: (optional)\n"
 				+ "    Set the number of block confirmations required before a coin is considered confirmed in your balance. Default is 3.\n"
+				+ "\n"
+				+ "megammr: (optional)\n"
+				+ "    Search the MegaMMR for coins too.\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
