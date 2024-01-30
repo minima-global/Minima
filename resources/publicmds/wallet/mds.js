@@ -59,13 +59,6 @@ var MDS = {
       port = MDS.DEBUG_PORT;
     }
 
-    // env overrides
-    if (window.DEBUG) {
-      host = window.DEBUG_HOST;
-      port = Math.floor(window.DEBUG_PORT);
-      MDS.minidappuid = window.DEBUG_UID;
-    }
-
     if (MDS.minidappuid == null) {
       MDS.minidappuid = MDS.DEBUG_MINIDAPPID;
     }
