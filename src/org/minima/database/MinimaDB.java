@@ -364,6 +364,9 @@ public class MinimaDB {
 			//Are we running in MEGA MMR mode..
 			if(GeneralParams.IS_MEGAMMR) {
 				mMegaMMR.loadMMR(new File(basedb,"megammr.mmr"));
+			}else {
+				//Delete if exists..
+				MiniFile.deleteFileOrFolder(basedb.getAbsolutePath() , new File(basedb,"megammr.mmr"));
 			}
 
 			//And check it ends where the tree ends..
@@ -375,7 +378,7 @@ public class MinimaDB {
 				}
 				
 				//Check the MEGA MMR starts on the correct block
-				if(GeneralParams.IS_MEGAMMR) {
+				if(GeneralParams.IS_MEGAMMR && !mMegaMMR.isEmpty()) {
 					if(!mMegaMMR.getMMR().getBlockTime().isEqual(treeroot.decrement())) {
 						throw new Exception("Your MEGAMMR is BROKEN (does not start where tree ends).. please 'reset' your node.");
 					}

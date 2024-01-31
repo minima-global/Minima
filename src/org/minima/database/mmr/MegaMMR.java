@@ -43,6 +43,10 @@ public class MegaMMR implements Streamable {
 		return mAllUnspentCoins;
 	}
 	
+	public boolean isEmpty() {
+		return mMMR.getAllEntries().size() == 0;
+	}
+	
 	/**
 	 * Convert the TxBlock 
 	 */
