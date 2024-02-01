@@ -26,8 +26,8 @@ var MDS = {
   logging: false,
 
   //When debuggin you can hard set the Host and port
-  DEBUG_HOST: null,
-  DEBUG_PORT: -1,
+  DEBUG_HOST: null, // null
+  DEBUG_PORT: -1, // -1
 
   //An allowed TEST Minidapp ID for SQL - can be overridden
   DEBUG_MINIDAPPID: '0x00',
