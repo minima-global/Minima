@@ -2,6 +2,7 @@ package org.minima.system.commands.search;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowdb.sql.TxPoWSqlDB;
@@ -77,10 +78,21 @@ public class txpow extends Command {
 			
 			ArrayList<TxPoW> txps = MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant(max);
 			
+			//Only add them once..
 			JSONArray txns = new JSONArray();
+			HashSet<String> allreadyadded = new HashSet<>();
 			for(TxPoW txp : txps) {
-				txns.add(txp.toJSON());
+				String txpowid = txp.getTxPoWID();
+				if(!allreadyadded.contains(txpowid)) {
+					allreadyadded.add(txpowid);
+					txns.add(txp.toJSON());
+				}
 			}
+			
+//			JSONArray txns = new JSONArray();
+//			for(TxPoW txp : txps) {
+//				txns.add(txp.toJSON());
+//			}
 			
 			ret.put("response", txns);
 			
@@ -124,9 +136,15 @@ public class txpow extends Command {
 			
 			ArrayList<TxPoW> txps = TxPoWSearcher.searchTxPoWviaAddress(new MiniData(address));
 			
+			//Only add them once..
 			JSONArray txns = new JSONArray();
+			HashSet<String> allreadyadded = new HashSet<>();
 			for(TxPoW txp : txps) {
-				txns.add(txp.toJSON());
+				String txpowid = txp.getTxPoWID();
+				if(!allreadyadded.contains(txpowid)) {
+					allreadyadded.add(txpowid);
+					txns.add(txp.toJSON());
+				}
 			}
 			
 			ret.put("response", txns);
