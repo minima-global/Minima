@@ -622,7 +622,7 @@ public class send extends Command {
 			int port = Integer.parseInt(portstr);
 			
 			//Get the state var..
-			String var = (String) state.get(key);
+			String var = state.get(key)+"";
 
 			//Create a state variable..
 			StateVariable sv = new StateVariable(port, var);
