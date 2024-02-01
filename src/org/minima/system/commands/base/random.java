@@ -14,7 +14,7 @@ import org.minima.utils.json.JSONObject;
 public class random extends Command {
 
 	public random() {
-		super("random","(size:) - Generate a random hash value, defaults to 32 bytes");
+		super("random","(size:) (type:) - Generate a random hash value, defaults to 32 bytes");
 	}
 	
 	@Override
@@ -25,6 +25,9 @@ public class random extends Command {
 				+ "\n"
 				+ "size: (optional)\n"
 				+ "    Integer number of bytes for the hash value.\n"
+				+ "\n"
+				+ "type: (optional)\n"
+				+ "    sha3 (default) or sha2.\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
