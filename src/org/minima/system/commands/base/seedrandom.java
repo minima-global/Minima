@@ -64,7 +64,7 @@ public class seedrandom extends Command {
 		
 		JSONObject resp = new JSONObject();
 		resp.put("modifier", modifier);
-		resp.put("hashed", hash.to0xString());
+		resp.put("seedrandom", hash.to0xString());
 			
 		ret.put("response", resp);
 		
