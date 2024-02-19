@@ -49,6 +49,8 @@ public class checkmode extends Command {
 			resp.put("writemode", md.getPermission().equalsIgnoreCase("write"));
 		}
 		
+		resp.put("dblocked",!MinimaDB.getDB().getWallet().isBaseSeedAvailable());
+		
 		ret.put("response", resp);
 		
 		return ret;
