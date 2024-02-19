@@ -51,6 +51,7 @@ import org.minima.system.commands.base.printmmr;
 import org.minima.system.commands.base.printtree;
 import org.minima.system.commands.base.quit;
 import org.minima.system.commands.base.random;
+import org.minima.system.commands.base.seedrandom;
 import org.minima.system.commands.base.slavenode;
 import org.minima.system.commands.base.status;
 import org.minima.system.commands.base.test;
@@ -139,7 +140,7 @@ public abstract class Command {
 			new multisig(), new checkaddress(),
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
 			
-			new ping(), new random(), new mysql(), new mysqlcoins(), new slavenode(), new checkrestore(),
+			new ping(), new random(), new seedrandom(), new mysql(), new mysqlcoins(), new slavenode(), new checkrestore(),
 			//new file(),
 			new megammr(),
 			
@@ -775,7 +776,8 @@ public abstract class Command {
 	private static final String[] ALL_WRITE_COMMANDS = 
 		{"send","sendpoll","sendsign","multisig","tokencreate","consolidate",
 		 "cointrack","sign","txnsign","mds","backup","removescript",
-		 "restore","restoresync","vault","archive","mysql","mysqlcoins","rpc","magic","quit"};
+		 "restore","restoresync","vault","archive","mysql","mysqlcoins",
+		 "rpc","magic","quit","seedrandom"};
 	
 	private static final ArrayList<String> ALL_WRITE_COMMANDS_ARRAY = new ArrayList<String>(Arrays.asList(ALL_WRITE_COMMANDS));
 	
