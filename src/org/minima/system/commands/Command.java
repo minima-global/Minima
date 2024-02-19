@@ -705,7 +705,7 @@ public abstract class Command {
 	}
 	
 	/**
-	 * Very Fast splitter that doesn;t work for JSON inputs.. just normal name value pairs..
+	 * Very Fast splitter that doesn't work for JSON inputs.. just normal name value pairs..
 	 * 
 	 * If something weird happens return null .. and other method used..
 	 */
