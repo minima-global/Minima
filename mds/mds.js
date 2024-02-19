@@ -200,6 +200,18 @@ var MDS = {
 		},
 		
 		/**
+		 * Make a GET request WITH a Basic Auth token header
+		 */
+		GETAUTH : function(url, basicauth, callback){
+			
+			//Create the single line
+			var commsline = url+"&"+basicauth;
+			
+			//Send via POST
+			httpPostAsync("netauth", commsline, callback);	
+		},
+		
+		/**
 		 * Make a POST request
 		 */
 		POST : function(url, data, callback){

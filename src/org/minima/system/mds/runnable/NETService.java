@@ -53,6 +53,31 @@ public class NETService {
 	}
 	
 	/**
+	 * Make a GET request WITH a Basic Auth token
+	 */
+	public void GETAUTH(String zURL, String zAuthToken) {
+		GETAUTH(zURL,zAuthToken,null);
+	}
+	
+	public void GETAUTH(String zURL, String zAuthToken, Function zCallback) {
+		
+		//Create a Command and run it..
+		NETcommand net 	= new NETcommand(mMiniDAPPID, zURL, "", zAuthToken);
+		String result 	= net.runCommand();
+		
+		//Send Info Back
+		if(zCallback == null) {
+			return;
+		}
+		
+		//The arguments
+		Object[] args = { NativeJSON.parse(mContext, mScope, result, new NullCallable()) };
+		
+		//Call the main MDS Function in JS
+		zCallback.call(mContext, mScope, mScope, args);
+	}
+	
+	/**
 	 * Make a POST request
 	 */
 	public void POST(String zURL, String zData) {

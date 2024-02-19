@@ -268,4 +268,57 @@ public class RPCClient {
 		
 		throw new IOException("POST request not HTTP_OK resp:"+responseCode+" @ "+zHost+" params "+zParams);
 	}
+	
+	/**
+	 * Send GET request with an AUTH token
+	 */
+	public static String sendGETAuth(String zHost, String zAuthToken) throws IOException {
+		
+		//Create the URL
+		URL obj = new URL(zHost);
+		
+		//MinimaLogger.log("GETAUTH : "+zHost+" "+zAuthToken);
+		
+		//Open her up
+		HttpURLConnection con = null;
+		if(zHost.startsWith("https")) {
+			con = (HttpsURLConnection) obj.openConnection();
+		}else {
+			con = (HttpURLConnection) obj.openConnection();
+		}
+		
+		//Set the Connection details
+		con.setConnectTimeout(10000);
+		con.setRequestMethod("GET");
+		con.setInstanceFollowRedirects(true);
+		con.setRequestProperty("User-Agent", USER_AGENT);
+		con.setRequestProperty("Connection", "close");
+		con.setRequestProperty ("Authorization", "Basic "+zAuthToken);
+		
+		int responseCode = con.getResponseCode();
+		StringBuffer response = new StringBuffer();
+		
+		if (responseCode == HttpURLConnection.HTTP_OK) { // success
+			InputStream is = con.getInputStream();
+			
+			BufferedReader in = new BufferedReader(new InputStreamReader(is));
+			String inputLine;
+			
+			while ((inputLine = in.readLine()) != null) {
+				response.append(inputLine);
+			}
+			
+			in.close();
+			is.close();
+			
+		} else {
+			System.out.println("GET request not HTTP_OK resp:"+responseCode+" @ "+zHost);
+		}
+		
+		String res = response.toString();
+				
+		//MinimaLogger.log("GETAUTH RESULT : "+res);
+		
+		return res; 
+	}
 }
