@@ -88,7 +88,7 @@ public class TxPoWSqlDB extends SqlDB {
 			SQL_DELETE_TXPOW	= mSQLConnection.prepareStatement("DELETE FROM txpow WHERE timemilli < ? AND isrelevant=0");
 			SQL_EXISTS			= mSQLConnection.prepareStatement("SELECT txpowid FROM txpow WHERE txpowid=?");
 		
-			SQL_SELECT_RELEVANT = mSQLConnection.prepareStatement("SELECT * FROM txpow WHERE isrelevant=1 ORDER BY timemilli DESC LIMIT ?");
+			SQL_SELECT_RELEVANT = mSQLConnection.prepareStatement("SELECT * FROM txpow WHERE isrelevant=1 ORDER BY timemilli DESC LIMIT ? OFFSET ?");
 	}
 	
 	public void wipeDB() throws SQLException {
@@ -232,7 +232,11 @@ public class TxPoWSqlDB extends SqlDB {
 		return txpows;
 	}
 	
-	public synchronized ArrayList<TxPoW> getAllRelevant(int zLimit) {
+	public ArrayList<TxPoW> getAllRelevant(int zLimit) {
+		return getAllRelevant(zLimit, 0);
+	}
+	
+	public synchronized ArrayList<TxPoW> getAllRelevant(int zLimit, int zOffset) {
 		ArrayList<TxPoW> txpows = new ArrayList<>();
 
 		try {
@@ -245,6 +249,7 @@ public class TxPoWSqlDB extends SqlDB {
 			
 			//Set the Limit..
 			SQL_SELECT_RELEVANT.setInt(1, zLimit);
+			SQL_SELECT_RELEVANT.setInt(2, zOffset);
 			
 			//Run the query
 			ResultSet rs = SQL_SELECT_RELEVANT.executeQuery();

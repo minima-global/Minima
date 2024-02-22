@@ -20,37 +20,43 @@ import org.minima.utils.json.JSONObject;
 public class history extends Command {
 
 	public history() {
-		super("history","(max:) - Search for all relevant TxPoW");
+		super("history","(max:) (offset:) - Search for all relevant TxPoW");
 	}
 	
 	@Override
 	public String getFullHelp() {
 		return "\nhistory\n"
 				+ "\n"
-				+ "Return all TxPoW relevant to you.\n"
+				+ "Return all TxPoW relevant to you. Default to 100 max (can be slow)\n"
 				+ "\n"
 				+ "max: (optional)\n"
 				+ "    Maximum number of TxPoW to retrieve.\n"
+				+ "\n"
+				+ "offset: (optional)\n"
+				+ "    Start the list from this point.\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "history\n"
 				+ "\n"
-				+ "history max:20\n";
+				+ "history max:20\n"
+				+ "\n"
+				+ "history max:20 offset:45\n";
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"max"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"max","offset"}));
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception{
 		JSONObject ret = getJSONReply();
 		
-		int max = getNumberParam("max",TxPoWSqlDB.MAX_RELEVANT_TXPOW).getAsInt();
+		int max 	= getNumberParam("max",TxPoWSqlDB.MAX_RELEVANT_TXPOW).getAsInt();
+		int offset 	= getNumberParam("offset",MiniNumber.ZERO).getAsInt();
 		
-		ArrayList<TxPoW> txps = MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant(max);
+		ArrayList<TxPoW> txps = MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant(max,offset);
 		
 		JSONArray txns 			= new JSONArray();
 		JSONArray txndetails 	= new JSONArray();
