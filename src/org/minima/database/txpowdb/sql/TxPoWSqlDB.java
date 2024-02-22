@@ -38,7 +38,8 @@ public class TxPoWSqlDB extends SqlDB {
 	PreparedStatement SQL_DELETE_TXPOW 		= null;
 	PreparedStatement SQL_EXISTS 			= null;
 	
-	PreparedStatement SQL_SELECT_RELEVANT 	= null;
+	PreparedStatement SQL_SELECT_RELEVANT 		= null;
+	PreparedStatement SQL_SELECT_RELEVANTSIZE 	= null;
 	
 	public TxPoWSqlDB() {
 		super();
@@ -88,7 +89,8 @@ public class TxPoWSqlDB extends SqlDB {
 			SQL_DELETE_TXPOW	= mSQLConnection.prepareStatement("DELETE FROM txpow WHERE timemilli < ? AND isrelevant=0");
 			SQL_EXISTS			= mSQLConnection.prepareStatement("SELECT txpowid FROM txpow WHERE txpowid=?");
 		
-			SQL_SELECT_RELEVANT = mSQLConnection.prepareStatement("SELECT * FROM txpow WHERE isrelevant=1 ORDER BY timemilli DESC LIMIT ? OFFSET ?");
+			SQL_SELECT_RELEVANT 	= mSQLConnection.prepareStatement("SELECT * FROM txpow WHERE isrelevant=1 ORDER BY timemilli DESC LIMIT ? OFFSET ?");
+			SQL_SELECT_RELEVANTSIZE = mSQLConnection.prepareStatement("SELECT Count(*) AS tot FROM txpow WHERE isrelevant=1");
 	}
 	
 	public void wipeDB() throws SQLException {
@@ -230,6 +232,28 @@ public class TxPoWSqlDB extends SqlDB {
 		}
 		
 		return txpows;
+	}
+	
+	public synchronized int getRelevantSize() {
+		try {
+			//Make sure..
+			checkOpen();
+			
+			//Run the query
+			ResultSet rs = SQL_SELECT_RELEVANTSIZE.executeQuery();
+			
+			//Could be multiple results
+			if(rs.next()) {
+				//Get the total numer of rows
+				return rs.getInt("tot");
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		//Error has occurred
+		return -1;
 	}
 	
 	public ArrayList<TxPoW> getAllRelevant(int zLimit) {
