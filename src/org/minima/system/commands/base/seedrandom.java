@@ -53,14 +53,17 @@ public class seedrandom extends Command {
 		//Get the modifier..
 		String modifier = getParam("modifier");
 		
-		//Get the minidata version..
+		//Get the minidata version.. 
 		MiniData moddata = MiniData.getMiniDataVersion(new MiniString(modifier));
 		
+		//Make it different from the default - so can't reproduce normal private keys
+		MiniData hashmod = Crypto.getInstance().hashObjects(moddata, new MiniData("0xDEADDEAD"));
+				
 		//Now get the base seed..
 		SeedRow sr = MinimaDB.getDB().getWallet().getBaseSeed();
 		
 		//Hash them together..
-		MiniData hash = Crypto.getInstance().hashObjects(moddata, new MiniData(sr.getSeed()));
+		MiniData hash = Crypto.getInstance().hashObjects(hashmod, new MiniData(sr.getSeed()));
 		
 		JSONObject resp = new JSONObject();
 		resp.put("modifier", modifier);
