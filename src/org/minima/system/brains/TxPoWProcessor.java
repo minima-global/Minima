@@ -663,163 +663,175 @@ public class TxPoWProcessor extends MessageProcessor {
 				return;
 			}
 			
-			//we are syncing..
-			Main.getInstance().setSyncIBD(true);
-			
-			//How big is it..
-			if(GeneralParams.IBDSYNC_LOGS) {
-				MinimaLogger.log("Processing main IBD length : "+ibd.getTxBlocks().size());
-			}
-			long timestart = System.currentTimeMillis();
-			
-			//Does it have a cascade
-			if(ibd.hasCascade()) {
+			//Put in a BIG try catch to make sure you disable setSyncIBD
+			try {
 				
-				//Do we.. ?
-				if(MinimaDB.getDB().getCascade().getTip() == null) {
+				//we are syncing..
+				Main.getInstance().setSyncIBD(true);
+				
+				//How big is it..
+				if(GeneralParams.IBDSYNC_LOGS) {
+					MinimaLogger.log("Processing main IBD length : "+ibd.getTxBlocks().size());
+				}
+				long timestart = System.currentTimeMillis();
+				
+				//Does it have a cascade
+				if(ibd.hasCascade()) {
 					
-					//Check is valid for out chain..
-					boolean ignore = false;
-					TxPoWTreeNode root = MinimaDB.getDB().getTxPoWTree().getRoot();
-					if(root != null) {
+					//Do we.. ?
+					if(MinimaDB.getDB().getCascade().getTip() == null) {
 						
-						MiniNumber rootblock = root.getBlockNumber();
-						MiniNumber casctip 	 = ibd.getCascade().getTip().getTxPoW().getBlockNumber();
-						
-						if(!casctip.isEqual(rootblock.decrement())) {
+						//Check is valid for out chain..
+						boolean ignore = false;
+						TxPoWTreeNode root = MinimaDB.getDB().getTxPoWTree().getRoot();
+						if(root != null) {
 							
-							ignore = true;
-							MinimaLogger.log("[!] IGNORE IBD - My Tree Root : "+rootblock+" IBD TIP : "+casctip);
-						
-						}else{
+							MiniNumber rootblock = root.getBlockNumber();
+							MiniNumber casctip 	 = ibd.getCascade().getTip().getTxPoW().getBlockNumber();
 							
-							MiniData rootparent = root.getTxPoW().getParentID();
-							MiniData casctipid	= ibd.getCascade().getTip().getTxPoW().getTxPoWIDData();
-							
-							if(!rootparent.isEqual(casctipid)) {
+							if(!casctip.isEqual(rootblock.decrement())) {
+								
 								ignore = true;
-								MinimaLogger.log("[!] IGNORE IBD - Invalid Hash for parents");
+								MinimaLogger.log("[!] IGNORE IBD - My Tree Root : "+rootblock+" IBD TIP : "+casctip);
+							
+							}else{
+								
+								MiniData rootparent = root.getTxPoW().getParentID();
+								MiniData casctipid	= ibd.getCascade().getTip().getTxPoW().getTxPoWIDData();
+								
+								if(!rootparent.isEqual(casctipid)) {
+									ignore = true;
+									MinimaLogger.log("[!] IGNORE IBD - Invalid Hash for parents");
+								}
 							}
 						}
-					}
-					
-					if(!ignore){
 						
-						//Process.. Need to LOCK DB
-						MinimaDB.getDB().writeLock(true);
-						
-						//Set this cascade
-						try {
+						if(!ignore){
 							
-							//Set this for us
-							MinimaDB.getDB().setIBDCascade(ibd.getCascade());
+							//Process.. Need to LOCK DB
+							MinimaDB.getDB().writeLock(true);
 							
-							//Do we need to store the cascade in the ArchiveDB
-							MinimaDB.getDB().getArchive().checkCascadeRequired(ibd.getCascade());
+							//Set this cascade
+							try {
+								
+								//Set this for us
+								MinimaDB.getDB().setIBDCascade(ibd.getCascade());
+								
+								//Do we need to store the cascade in the ArchiveDB
+								MinimaDB.getDB().getArchive().checkCascadeRequired(ibd.getCascade());
+								
+							}catch(Exception exc) {
+								MinimaLogger.log(exc);
+							}
 							
-						}catch(Exception exc) {
-							MinimaLogger.log(exc);
+							//Unlock..
+							MinimaDB.getDB().writeLock(false);
 						}
 						
-						//Unlock..
-						MinimaDB.getDB().writeLock(false);
-					}
-					
-				}else {
-					//Received a cascade when we already have one.. ignore..
-					//MinimaLogger.log("WARNING Received cascade when already have one from "+uid);
-				}
-			}
-			
-			//Now process the SyncBlocks
-			TxPowTree txptree 		= MinimaDB.getDB().getTxPoWTree();
-			MiniNumber timenow 		= new MiniNumber(System.currentTimeMillis());
-			
-			//First run accept the IBD - still follow heaviest chain
-			long diff = System.currentTimeMillis() - mFirstIBD;
-			if((diff > MAX_FIRST_IBD_TIME) && !GeneralParams.TXBLOCK_NODE) {
-				
-				//If our chain is up to date (within 3 hrs) we don't accept TxBlock at all.. only full blocks
-				if(txptree.getTip() != null && ibd.getTxBlocks().size()>0) {
-					MiniNumber notxblocktimediff = new MiniNumber(1000 * 60 * 180);
-					if(GeneralParams.TEST_PARAMS) {
-						notxblocktimediff = new MiniNumber(1000 * 60 * 5);
-					}
-					if(txptree.getTip().getTxPoW().getTimeMilli().sub(timenow).abs().isLess(notxblocktimediff)) {
-						MinimaLogger.log("Your chain tip is up to date - no TxBlocks accepted - only FULL TxPoW");
-						
-						//we are not syncing..
-						Main.getInstance().setSyncIBD(false);
-						
-						//Ask to sync the TxBlocks
-						askToSyncTxBlocks(uid);
-						
-						return;
+					}else {
+						//Received a cascade when we already have one.. ignore..
+						//MinimaLogger.log("WARNING Received cascade when already have one from "+uid);
 					}
 				}
-			}
-			
-			//How many blocks have we added
-			int additions = 0;
-			
-			//Cycle and add..
-			ArrayList<TxBlock> blocks = ibd.getTxBlocks();
-			for(TxBlock block : blocks) {
 				
-				try {
-						
-					//Process it..
-					processSyncBlock(block);	
-					additions++;
+				//Now process the SyncBlocks
+				TxPowTree txptree 		= MinimaDB.getDB().getTxPoWTree();
+				MiniNumber timenow 		= new MiniNumber(System.currentTimeMillis());
 				
-					//Request any missing..
-					requestMissingTxns(uid,block);
+				//First run accept the IBD - still follow heaviest chain
+				long diff = System.currentTimeMillis() - mFirstIBD;
+				if((diff > MAX_FIRST_IBD_TIME) && !GeneralParams.TXBLOCK_NODE) {
 					
-					//If we've added a lot of blocks..
-					if(additions > 256) {
-						
-						//recalculate the Tree..
-						recalculateTree();
-						
-						//Clean memory
-						System.gc();
-						
-						//Reset these
-						additions = 0;
-						
-						if(GeneralParams.IBDSYNC_LOGS) {
-							MinimaLogger.log("[!] Processed IBD block @ "+block.getTxPoW().getBlockNumber().toString());
+					//If our chain is up to date (within 3 hrs) we don't accept TxBlock at all.. only full blocks
+					if(txptree.getTip() != null && ibd.getTxBlocks().size()>0) {
+						MiniNumber notxblocktimediff = new MiniNumber(1000 * 60 * 180);
+						if(GeneralParams.TEST_PARAMS) {
+							notxblocktimediff = new MiniNumber(1000 * 60 * 5);
+						}
+						if(txptree.getTip().getTxPoW().getTimeMilli().sub(timenow).abs().isLess(notxblocktimediff)) {
+							MinimaLogger.log("Your chain tip is up to date - no TxBlocks accepted - only FULL TxPoW");
+							
+							//we are not syncing..
+							Main.getInstance().setSyncIBD(false);
+							
+							//Ask to sync the TxBlocks
+							askToSyncTxBlocks(uid);
+							
+							return;
 						}
 					}
-					
-				}catch(Exception exc) {
-					MinimaLogger.log(exc.toString());
-					
-					//Something funny going on.. disconnect and remove from list
-					Main.getInstance().getNIOManager().disconnect(uid,true);
-					
-					break;
 				}
+				
+				//How many blocks have we added
+				int additions = 0;
+				
+				//Cycle and add..
+				ArrayList<TxBlock> blocks = ibd.getTxBlocks();
+				for(TxBlock block : blocks) {
+					
+					try {
+							
+						//Process it..
+						processSyncBlock(block);	
+						additions++;
+					
+						//Request any missing..
+						requestMissingTxns(uid,block);
+						
+						//If we've added a lot of blocks..
+						if(additions > 256) {
+							
+							//recalculate the Tree..
+							recalculateTree();
+							
+							//Clean memory
+							System.gc();
+							
+							//Reset these
+							additions = 0;
+							
+							if(GeneralParams.IBDSYNC_LOGS) {
+								MinimaLogger.log("[!] Processed IBD block @ "+block.getTxPoW().getBlockNumber().toString());
+							}
+						}
+						
+					}catch(Exception exc) {
+						MinimaLogger.log(exc.toString());
+						
+						//Something funny going on.. disconnect and remove from list
+						Main.getInstance().getNIOManager().disconnect(uid,true);
+						
+						break;
+					}
+				}
+				
+				//And now recalculate tree
+				recalculateTree();
+				
+				//How big is it..
+				long timediff = System.currentTimeMillis() - timestart;
+				if(GeneralParams.IBDSYNC_LOGS) {
+					MinimaLogger.log("Processing main IBD finished "+timediff+"ms");
+				}
+				
+				//we are not syncing..
+				Main.getInstance().setSyncIBD(false);
+				
+				//Wipe old Archive Blocks..
+				MinimaDB.getDB().getArchive().checkForCleanDB();
+				
+				//Ask to sync the TxBlocks
+				askToSyncTxBlocks(uid);
+				
+			}catch(Exception exc) {
+				MinimaLogger.log("[!] TXPOWPROCESSOR_PROCESS_IBD ERROR "+exc);
+				MinimaLogger.log(exc);
+			
+			}finally {
+				//we are NOT syncing anymore..
+				Main.getInstance().setSyncIBD(false);
 			}
 			
-			//And now recalculate tree
-			recalculateTree();
-			
-			//How big is it..
-			long timediff = System.currentTimeMillis() - timestart;
-			if(GeneralParams.IBDSYNC_LOGS) {
-				MinimaLogger.log("Processing main IBD finished "+timediff+"ms");
-			}
-			
-			//we are not syncing..
-			Main.getInstance().setSyncIBD(false);
-			
-			//Wipe old Archive Blocks..
-			MinimaDB.getDB().getArchive().checkForCleanDB();
-			
-			//Ask to sync the TxBlocks
-			askToSyncTxBlocks(uid);
-		
 		}else if(zMessage.isMessageType(TXPOWPROCESSOR_PROCESS_SYNCIBD)) {
 			
 			//Get the client - in case is invalid..
