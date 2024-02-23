@@ -33,7 +33,7 @@ import org.minima.utils.ssl.SSLManager;
 public class decryptbackup extends Command {
 
 	public decryptbackup() {
-		super("decryptbackup","[file:] [password:] (output:)- Decrypt an encrypted backup.");
+		super("decryptbackup","[file:] (password:) (output:)- Decrypt an encrypted backup.");
 	}
 	
 	@Override
@@ -45,7 +45,7 @@ public class decryptbackup extends Command {
 				+ "file:\n"
 				+ "    Specify the filename or local path of the backup to restore\n"
 				+ "\n"
-				+ "password:\n"
+				+ "password: (optional)\n"
 				+ "    Enter the password of the backup \n"
 				+ "\n"
 				+ "output: (optional)\n"
