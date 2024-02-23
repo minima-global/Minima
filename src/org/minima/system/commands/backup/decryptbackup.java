@@ -83,7 +83,7 @@ public class decryptbackup extends Command {
 			outfile = "decrypted-"+restorefile.getName();
 		}
 		File outputfile = MiniFile.createBaseFile(outfile);
-		MinimaLogger.log("Output : "+outputfile.getAbsolutePath());
+		//MinimaLogger.log("Output : "+outputfile.getAbsolutePath());
 		if(outputfile.exists()) {
 			outputfile.delete();
 		}
