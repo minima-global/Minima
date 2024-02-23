@@ -15,6 +15,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.backup;
+import org.minima.system.commands.backup.decryptbackup;
 import org.minima.system.commands.backup.mysql;
 import org.minima.system.commands.backup.mysqlcoins;
 import org.minima.system.commands.backup.reset;
@@ -136,7 +137,9 @@ public abstract class Command {
 			
 			new archive(), new logs(), new history(), new convert(),new maths(),
 			new checkpending(), new checkmode(), new restoresync(),
-			//new magic(), 
+			
+			new decryptbackup(),
+			
 			new multisig(), new checkaddress(),
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
 			
