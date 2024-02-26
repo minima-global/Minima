@@ -33,11 +33,17 @@
 
 	<h2>Test ETH Wallet</h2>
 	
+	
 	<table>
 	<tr>
 		<td>ETH BALANCE :</td>
 		<td><div id="ethbalance"></div></td>
 	</tr>
+	<tr>
+		<td>ETH ADDRESS :</td>
+		<td><div id="myethaddress"></div></td>
+	</tr>
+	
 	<tr><td>&nbsp;</td></tr>
 	<tr>
 		<td>ADDRESS :</td>
@@ -76,6 +82,9 @@
 	var privateKey 	= "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 	
 	function setBalance(){
+		
+		myethaddress.innerHTML = getETHERUMAddress();
+		
 		getETHEREUMBalance(function(balance){
 			ethbalance.innerHTML = balance;
 			getWMinimaBalance(MAIN_WALLET.address,function(wminbalance){

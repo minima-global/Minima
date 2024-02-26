@@ -35,8 +35,8 @@ function initialiseETH(privatekey, callback){
 /**
  * Return your main public key
  */
-function getETHERUMPublicKey(){
-	return MAIN_WALLET.address;
+function getETHERUMAddress(){
+	return "0x"+MAIN_WALLET.address.slice(2).toUpperCase();
 }
 
 /**
