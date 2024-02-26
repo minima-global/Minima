@@ -80,6 +80,8 @@ public class MDSFileHandler implements Runnable {
 		BufferedReader bufferedReader	= null;
 		DataOutputStream dos			= null;
 		
+		boolean showstylelogs = false;
+		
 		try {
 			
 			// Start handling application content
@@ -94,6 +96,7 @@ public class MDSFileHandler implements Runnable {
  			
  			//Is it still NULL
  			if(input == null) {
+ 				MinimaLogger.log("NULL input at MDSFilehandler.. ");
  				return;
  			}
  			
@@ -117,6 +120,12 @@ public class MDSFileHandler implements Runnable {
 			//And finally URL decode..
 			fileRequested = URLDecoder.decode(fileRequested,"UTF-8").trim();
 		
+			//HACK - check for style.css
+			if(fileRequested.contains("style.css")) {
+				showstylelogs = true;
+				MinimaLogger.log("HACK style.css : "+fileRequested);
+			}
+			
 			//Get all the headers
 			Hashtable<String, String> allheaders=new Hashtable<>();
 			
@@ -505,6 +514,10 @@ public class MDSFileHandler implements Runnable {
 					dos.writeBytes("\r\n");
 					dos.flush();
 		    		
+					if(showstylelogs) {
+						MinimaLogger.log("FILE NOT FOUND! "+webfile.getAbsolutePath());
+					}
+					
 		    	}else {
 		    		
 		    		//MinimaLogger.log("File Requested : "+fileRequested,false);
@@ -555,6 +568,10 @@ public class MDSFileHandler implements Runnable {
 			        
 					//Flush the stream
 					dos.flush();
+					
+					if(showstylelogs) {
+						MinimaLogger.log("FILE FOUND! "+webfile.getAbsolutePath());
+					}
 		    	}
 			}
 		
