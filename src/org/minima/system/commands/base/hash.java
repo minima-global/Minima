@@ -109,9 +109,9 @@ public class hash extends Command {
 			resp.put("size", datafile.length());
 		}else {
 			resp.put("input", datastr);
+			resp.put("data", data.to0xString());
 		}
 		
-		resp.put("data", data.to0xString());
 		resp.put("type", hashtype);
 		resp.put("hash", new MiniData(hash).to0xString());
 		
