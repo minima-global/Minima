@@ -355,6 +355,11 @@ public class ParamConfigurer {
                 GeneralParams.NO_SYNC_IBD = true;
             }
         }),
+        syncibdlogs("syncibdlogs", "Show detailed SYNC_IBD logs", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.IBDSYNC_LOGS = true;
+            }
+        }),
         megammr("megammr", "Are we running in MEGA MMR mode", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.IS_MEGAMMR = true;

@@ -1078,7 +1078,9 @@ public class NIOMessage implements Runnable {
 					
 					//And post this on..
 					if(GeneralParams.IBDSYNC_LOGS) {
-						MinimaLogger.log("[+] Received Sync IBD. size:"+MiniFormat.formatSize(data.length)+" blocks:"+syncibd.getTxBlocks().size()+" top:"+top);
+						long timemilli 		= syncibd.getTxBlocks().get(0).getTxPoW().getTimeMilli().getAsLong();
+						String synctoptime 	= new Date(timemilli).toString();
+						MinimaLogger.log("[+] Received Sync IBD. size:"+MiniFormat.formatSize(data.length)+" blocks:"+syncibd.getTxBlocks().size()+" top:"+top+" @ "+synctoptime);
 					}
 					
 					//Send to the Processor
