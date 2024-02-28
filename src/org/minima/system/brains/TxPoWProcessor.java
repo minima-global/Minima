@@ -556,6 +556,7 @@ public class TxPoWProcessor extends MessageProcessor {
 					
 					//Are we ruinning in MEGA MMR
 					if(GeneralParams.IS_MEGAMMR) {
+						//MinimaLogger.log("MEGAMMR : Add block "+txpnode.getTxBlock().getTxPoW().getBlockNumber());
 						//Add this to the MEGA MMR
 						megammr.addBlock(txpnode.getTxBlock());
 					}
@@ -563,8 +564,13 @@ public class TxPoWProcessor extends MessageProcessor {
 				
 				//Are we running in MEGA MMR
 				if(GeneralParams.IS_MEGAMMR) {
+					
+					//MinimaLogger.log("MEGAMMR : Prune tree start");
+					
 					//Prune the tree
 					megammr.getMMR().pruneTree();
+					
+					//MinimaLogger.log("MEGAMMR : Prune tree end");
 				}
 				
 				//And finally..
