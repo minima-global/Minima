@@ -248,10 +248,19 @@ public class coins extends Command {
 			finalcoins = send.selectCoins(finalcoins, tokenamount);
 		}
 		
+		//Current block needed for age
+		MiniNumber cblock = tip.getTxPoW().getBlockNumber();
+		
 		//Put it all in an array
 		JSONArray coinarr = new JSONArray();
 		for(Coin cc : finalcoins) {
-			coinarr.add(cc.toJSON(simplestate));
+			
+			//Add coin age
+			JSONObject jsoncoin = cc.toJSON(simplestate);
+			jsoncoin.put("age", cblock.sub(cc.getBlockCreated()).toString());
+			
+			//Add to the total list
+			coinarr.add(jsoncoin);
 		}
 		
 		ret.put("response", coinarr);
