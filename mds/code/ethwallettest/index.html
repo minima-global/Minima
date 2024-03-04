@@ -36,15 +36,15 @@
 	
 	<table>
 	<tr>
-		<td>ETH BALANCE :</td>
-		<td><div id="ethbalance"></div></td>
-	</tr>
-	<tr>
 		<td>ETH ADDRESS :</td>
 		<td><div id="myethaddress"></div></td>
 	</tr>
 	
 	<tr><td>&nbsp;</td></tr>
+	<tr>
+		<td>ETH BALANCE :</td>
+		<td><div id="ethbalance"></div></td>
+	</tr>
 	<tr>
 		<td>ADDRESS :</td>
 		<td><input type=text id="ethaddress"></td>
@@ -54,15 +54,11 @@
 		<td><input type=text id="ethamount"></td>
 	</tr>
 	<tr><td><button onclick="sendeth();">SEND ETH</button></td></tr>
-	</table>
-	<br>
-	<br>
-	<table>
+	<tr><td>&nbsp;</td></tr>
 	<tr>
 		<td>WMINIMA BALANCE :</td>
 		<td><div id="wminimabalance"></div></td>
 	</tr>
-	<tr><td>&nbsp;</td></tr>
 	<tr>
 		<td>ADDRESS :</td>
 		<td><input type=text id="wminimaaddress"></td>
@@ -71,7 +67,21 @@
 		<td>AMOUNT :</td>
 		<td><input type=text id="wminimaamount"></td>
 	</tr>
-	<tr><td><button onclick="sendERC20();">SEND WMINIMA</button></td></tr>
+	<tr><td><button onclick="sendwMinima();">SEND WMINIMA</button></td></tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr>
+		<td>USDT BALANCE :</td>
+		<td><div id="usdtbalance"></div></td>
+	</tr>
+	<tr>
+		<td>ADDRESS :</td>
+		<td><input type=text id="usdtaddress"></td>
+	</tr>
+	<tr>
+		<td>AMOUNT :</td>
+		<td><input type=text id="usdtamount"></td>
+	</tr>
+	<tr><td><button onclick="sendUSDT();">SEND USDT</button></td></tr>
 	</table>
 	
 </center>
@@ -87,8 +97,14 @@
 		
 		getETHEREUMBalance(function(balance){
 			ethbalance.innerHTML = balance;
-			getWMinimaBalance(MAIN_WALLET.address,function(wminbalance){
+			
+			getERC20Balance(wMinimaContractAddress,function(wminbalance){
 				wminimabalance.innerHTML = wminbalance;
+				
+				getERC20Balance(USDTContractAddress,function(wminbalance){
+					usdtbalance.innerHTML = wminbalance;
+					
+				});
 			});
 		});
 	}
@@ -105,13 +121,25 @@
 		}
 	}
 	
-	function sendERC20(){
+	function sendwMinima(){
 		var amount 	= wminimaamount.value;
 		var address = wminimaaddress.value;
 		
 		//Send it..
 		if(confirm("Send "+amount+" wMinima to "+address+" ?")){
-			sendWMinima(address, amount, function(ethresp){
+			sendERC20(wMinimaContractAddress,18,address, amount, function(ethresp){
+				alert(JSON.stringify(ethresp));
+			});
+		}
+	}
+	
+	function sendUSDT(){
+		var amount 	= usdtamount.value;
+		var address = usdtaddress.value;
+		
+		//Send it..
+		if(confirm("Send "+amount+" USDT to "+address+" ?")){
+			sendERC20(USDTContractAddress,18,address, amount, function(ethresp){
 				alert(JSON.stringify(ethresp));
 			});
 		}
