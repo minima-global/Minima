@@ -72,8 +72,6 @@ public class MDSCommandHandler {
 		
 		}else if(command.equals("netauth")) {
 			
-			MinimaLogger.log("NETAUTH "+data);
-			
 			//Get the URL and the headers..
 			int dataindex 		= data.indexOf("&");
 			String url 			= data.substring(0, dataindex);
