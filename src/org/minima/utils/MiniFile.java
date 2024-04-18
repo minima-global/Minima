@@ -459,6 +459,8 @@ public class MiniFile {
 			return "application/zip";
 		}else if(ending.equals("pdf")) {
 			return "application/pdf";
+		}else if(ending.equals("wasm")) {
+			return "application/wasm";
 			
 		}else if(ending.equals("mp3")) {
 			return "audio/mp3";
