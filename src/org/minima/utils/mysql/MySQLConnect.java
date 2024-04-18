@@ -621,7 +621,7 @@ public class MySQLConnect {
 			e1.printStackTrace();
 		}
 		
-		MySQLConnect mysql = new MySQLConnect("localhost:3306", "coinsdb", "myuser", "myuser");
+		MySQLConnect mysql = new MySQLConnect("localhost:3306", "mydatabase", "myuser", "myuser");
 		mysql.init();
 				
 //		//Add some TxPoW..

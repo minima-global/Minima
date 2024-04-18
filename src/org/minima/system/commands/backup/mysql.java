@@ -85,6 +85,8 @@ public class mysql extends Command {
 				+ "    wipe :  Be careful. Wipe the MySQL db.\n"
 				+ "    h2export : export the MySQL db to an archive gzip file which can be used to resync a node.\n"
 				+ "    h2import : import an archive gzip file to the MySQL db.\n"
+				+ "    rawexport : export the MySQL db to raw.dat file which can be used to resync a node (faster than H2).\n"
+				+ "    rawimport : import a raw.dat to the MySQL db.\n"
 				+ "\n"
 				+ "phrase: (optional)\n"
 				+ "     Use with action:resync. The 24 word seed phrase of the node to re-sync.\n"
