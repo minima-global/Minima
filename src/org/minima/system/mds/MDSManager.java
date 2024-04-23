@@ -1028,7 +1028,7 @@ public class MDSManager extends MessageProcessor {
 		ArrayList<MiniDAPP> allminis = mdb.getAllMiniDAPPs();
 				
 		//Check for HUB
-		checkInstalled("minihub", "minihub/minihub-0.13.2.mds.zip", allminis, true, true);
+		checkInstalled("minihub", "minihub/minihub-0.15.5.mds.zip", allminis, true, true);
 		
 		//Do we Install the Default MiniDAPPs
 		if(GeneralParams.DEFAULT_MINIDAPPS) {
@@ -1037,30 +1037,33 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("pending", "default/pending-1.2.0.mds.zip", allminis, true);
 			
 			//Security MiniDAPP - backups / restore
-			checkInstalled("security", "default/security-1.3.0.mds.zip", allminis, true);
+			checkInstalled("security", "default/security-1.7.3.mds.zip", allminis, true);
 			
 			//Dappstore gets write permissions
 			checkInstalled("dapp store", "default/dapp_store-1.0.8.mds.zip", allminis, true);
 			
 			//The rest are normal
 			checkInstalled("block", "default/block-2.3.1.mds.zip", allminis, false);
-			checkInstalled("chatter", "default/chatter-1.7.8.mds.zip", allminis, false);
-			checkInstalled("docs", "default/docs-1.4.0.mds.zip", allminis, false);
-			checkInstalled("filez", "default/filez-1.9.3.mds.zip", allminis, false);
-			checkInstalled("future cash", "default/futurecash-2.4.0.mds.zip", allminis, false);
+			checkInstalled("chatter", "default/chatter-1.7.9.mds.zip", allminis, false);
+			checkInstalled("docs", "default/docs-1.4.2.mds.zip", allminis, false);
+			checkInstalled("ethwallet", "default/ethwallet-1.4.5.mds.zip", allminis, false);
+			checkInstalled("filez", "default/filez-1.9.4.mds.zip", allminis, false);
+			checkInstalled("future cash", "default/futurecash-2.4.1.mds.zip", allminis, false);
 			checkInstalled("health", "default/health-1.1.5.mds.zip", allminis, false);
 			checkInstalled("logs", "default/logs-1.0.2.mds.zip", allminis, false);
 			checkInstalled("maxcontacts", "default/maxcontacts-1.11.0.mds.zip", allminis, false);
-			checkInstalled("maxsolo", "default/maxsolo-2.5.0.mds.zip", allminis, false);
-			checkInstalled("miniswap", "default/miniswap-1.0.4.mds.zip", allminis, false);
+			checkInstalled("maximize", "default/maximize-1.3.0.mds.zip", allminis, false);
+			checkInstalled("maxsolo", "default/maxsolo-2.6.0.mds.zip", allminis, false);
+			checkInstalled("miniswap", "default/miniswap-1.0.5.mds.zip", allminis, false);
 			checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
-			checkInstalled("script ide", "default/scriptide-2.1.0.mds.zip", allminis, false);
+			checkInstalled("script ide", "default/scriptide-2.1.1.mds.zip", allminis, false);
 			checkInstalled("shout out", "default/shoutout-1.4.0.mds.zip", allminis, false);
-			checkInstalled("sql bench", "default/sqlbench-0.5.mds.zip", allminis, false);
-			checkInstalled("terminal", "default/terminal-2.3.1.mds.zip", allminis, false);
-			checkInstalled("vault", "default/vault-1.0.2.mds.zip", allminis, false);
+			checkInstalled("sql bench", "default/sqlbench-0.5.1.mds.zip", allminis, false);
+			checkInstalled("terminal", "default/terminal-2.3.2.mds.zip", allminis, false);
+			checkInstalled("thesafe", "default/thesafe-1.4.1.mds.zip", allminis, false);
+			//checkInstalled("vault", "default/vault-1.0.2.mds.zip", allminis, false);
 			checkInstalled("vestr", "default/vestr-1.8.0.mds.zip", allminis, false);
-			checkInstalled("wallet", "default/wallet-2.38.1.mds.zip", allminis, false);
+			checkInstalled("wallet", "default/wallet-2.44.0.mds.zip", allminis, false);
 		}
 	}
 	
