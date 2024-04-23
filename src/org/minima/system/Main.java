@@ -584,6 +584,13 @@ public class Main extends MessageProcessor {
 		if(zResetCascadeTree) {
 			//Reset these 
 			MinimaDB.getDB().resetCascadeAndTxPoWTree();
+			
+			//Delete the cascade..
+			MinimaLogger.log("Deleting cascade..");
+			File cdb = MinimaDB.getDB().getCascadeFile();
+			if(cdb.exists()) {
+				cdb.delete();
+			}
 		}
 	}
 	

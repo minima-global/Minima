@@ -171,6 +171,18 @@ public class MinimaDB {
 		return mMDSDB;
 	}
 	
+	public File getCascadeFile() {
+		return getDBFile("cascade.db");
+	}
+	
+	public File getDBFile(String zFilename) {
+		//Get the base Database folder
+		File basedb = getBaseDBFolder();
+		
+		//The File
+		return new File(basedb,zFilename);
+	}
+	
 	private long getDBFileSie(String zFilename) {
 		//Get the base Database folder
 		File basedb = getBaseDBFolder();
