@@ -276,6 +276,12 @@ public class GeneralParams {
 	public static boolean IS_MEGAMMR = false;
 	
 	/**
+	 * Notify on ALL TxPoW whether relevant or not
+	 */
+	public static boolean NOTIFY_ALL_TXPOW = false;
+	
+	
+	/**
 	 * Reset all params to their default settings.. ANDROID keeps them after shutdown
 	 */
 	public static void resetDefaults() {
@@ -336,6 +342,7 @@ public class GeneralParams {
 		SEED_PHRASE 		= "";
 		PEERSCHECKER_lOG 	= false;
 		IS_MEGAMMR 			= false;
+		NOTIFY_ALL_TXPOW 	= false;
 	}
 	
 }

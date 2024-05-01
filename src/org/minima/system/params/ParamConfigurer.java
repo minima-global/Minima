@@ -365,6 +365,11 @@ public class ParamConfigurer {
                 GeneralParams.IS_MEGAMMR = true;
             }
         }),
+        notifyalltxpow("notifyalltxpow", "Send notification messages for ALL TxPoW (not just relevant)", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.NOTIFY_ALL_TXPOW = true;
+            }
+        }),
         slavenode("slavenode", "Connect to this node only and only accept TxBlock messages.", (args, configurer) -> {
         	GeneralParams.CONNECT_LIST 			= args;
         	GeneralParams.P2P_ENABLED 			= false;

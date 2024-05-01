@@ -23,6 +23,8 @@ public class NotifyManager extends MessageProcessor {
 	 */
 	ArrayList<String> mHooks;
 	
+	public boolean WEBHOOKS_ERROR_LOGS = false;
+	
 	public NotifyManager() {
 		super("NOTIFYMANAGER");
 		
@@ -132,7 +134,9 @@ public class NotifyManager extends MessageProcessor {
 					}
 					
 				}catch(Exception exc) {
-					MinimaLogger.log("ERROR webhook : "+hook+" "+exc, false);
+					if(WEBHOOKS_ERROR_LOGS) {
+						MinimaLogger.log("ERROR webhook : "+hook+" "+exc, false);
+					}
 				}
 			}
 		}

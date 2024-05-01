@@ -71,6 +71,15 @@ public class TxPoWProcessor extends MessageProcessor {
 			
 			//And Post it..
 			Main.getInstance().PostNotifyEvent("NEWTXPOW", data);
+		
+		}else if(GeneralParams.NOTIFY_ALL_TXPOW) {
+			
+			JSONObject data = new JSONObject();
+			data.put("relevant", false);
+			data.put("txpow", zTxPoW.toJSON());
+			
+			//And Post it..
+			Main.getInstance().PostNotifyEvent("NEWTXPOW", data);
 		}
 		
 		//Do NOT process if you are a txblock node
