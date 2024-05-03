@@ -181,7 +181,7 @@ public class MDSFileHandler implements Runnable {
 					//Only allow the security MiniDAPP..
 					MiniDAPP mdcheck = mMDS.getMiniDAPP(minidappid);
 					String namev = mdcheck.getName();
-					if(!namev.equalsIgnoreCase("security")) {
+					if(!namev.equalsIgnoreCase("security") && !namev.equalsIgnoreCase("poll")) {
 						MinimaLogger.log("Attempt to access MDS during resync from "+namev+" ..blocked", false);
 						throw new MDSInvalidIDException("Attempt to access MDS during resync.. blocked");
 					}
