@@ -21,6 +21,7 @@ import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.minidapps.MiniDAPP;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.mds.multipart.MultipartData;
@@ -173,6 +174,17 @@ public class MDSFileHandler implements Runnable {
 				String minidappid = mMDS.convertSessionID(uid);
 				if(minidappid == null) {
 					throw new MDSInvalidIDException("Invalid session id for MiniDAPP "+uid);
+				}
+				
+				//Are we resyncing..
+				if(Main.getInstance().isShuttongDownOrRestoring()) {
+					//Only allow the security MiniDAPP..
+					MiniDAPP mdcheck = mMDS.getMiniDAPP(minidappid);
+					String namev = mdcheck.getName();
+					if(!namev.equalsIgnoreCase("security")) {
+						MinimaLogger.log("Attempt to access MDS during resync from "+namev+" ..blocked", false);
+						throw new MDSInvalidIDException("Attempt to access MDS during resync.. blocked");
+					}
 				}
 				
 				//get the POST data
