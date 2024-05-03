@@ -616,12 +616,14 @@ public class IBD implements Streamable {
 		//Now create 2 new IBD.. up to and including the intersection block
 		BigInteger myweight;
 		BigInteger theirweight;
+		IBD mynew	 = null;
+		IBD theirnew = null;
 		if(found) {
-			IBD mynew 		= createShortenedIBD(current, foundblockID);
-			myweight 		= mynew.getTotalWeight();
+			mynew 		= createShortenedIBD(current, foundblockID);
+			myweight 	= mynew.getTotalWeight();
 			
-			IBD theirnew 	= createShortenedIBD(zIBD, foundblockID);
-			theirweight		= theirnew.getTotalWeight();
+			theirnew 	= createShortenedIBD(zIBD, foundblockID);
+			theirweight	= theirnew.getTotalWeight();
 			
 		}else {
 			//Current total weights..
@@ -632,8 +634,16 @@ public class IBD implements Streamable {
 		boolean heavier = myweight.compareTo(theirweight) >= 0;
 		
 		if(!heavier) {
-			MinimaLogger.log("YOUR  WEIGHT : "+myweight);
-			MinimaLogger.log("THEIR WEIGHT : "+theirweight);
+			
+			//Which block was the crossover..
+			if(found) {
+				MinimaLogger.log("[!] Crossover found on heavier chain : "+foundblockID);
+			}else {
+				MinimaLogger.log("[!] NO crossover found on heavier chain..");
+			}
+			
+			MinimaLogger.log("YOUR  WEIGHT from Crossover : "+myweight);
+			MinimaLogger.log("THEIR WEIGHT from Crossover : "+theirweight);
 		}
 		
 		//Now see if we are Heavier..

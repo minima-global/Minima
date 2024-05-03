@@ -34,7 +34,7 @@ public class TxPoWChecker {
 	/**
 	 * What Network are we currently checking for
 	 */
-	public static MiniData CURRENT_NETWORK = TxHeader.TEST_NET;
+	public static MiniData CURRENT_NETWORK = TxHeader.MAIN_NET;
 	
 	/**
 	 * Max Time in future for Block time.. 24hrs..
