@@ -88,6 +88,7 @@ public class rpc extends Command {
 		
 		JSONObject rpcdets = new JSONObject();
 		rpcdets.put("enabled", GeneralParams.RPC_ENABLED);
+		rpcdets.put("port", GeneralParams.RPC_PORT);
 		rpcdets.put("ssl", GeneralParams.RPC_SSL);
 		
 		//Get the Public Key..
