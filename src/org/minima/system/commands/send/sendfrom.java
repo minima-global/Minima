@@ -69,7 +69,7 @@ public class sendfrom extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"fromaddress","address",
-				"amount","tokenid","script","privatekey","keyuses"}));
+				"amount","tokenid","script","privatekey","keyuses","mine"}));
 	}
 	
 	@Override
@@ -91,6 +91,9 @@ public class sendfrom extends Command {
 		
 		//ID of the custom transaction
 		String randomid 	= MiniData.getRandomData(32).to0xString();
+		
+		//Are we mining
+		boolean mine 		= getBooleanParam("mine", false);
 		
 		//Now construct the transaction..
 		JSONObject result 	= runCommand("txncreate id:"+randomid);
@@ -117,7 +120,7 @@ public class sendfrom extends Command {
 		runCommand("txnsign id:"+randomid+" publickey:custom privatekey:"+privatekey+" keyuses:"+keyuses);
 		
 		//And POST!
-		result = runCommand("txnpost id:"+randomid);
+		result = runCommand("txnpost id:"+randomid+" mine:"+mine);
 		
 		//And delete..
 		runCommand("txndelete id:"+randomid);
