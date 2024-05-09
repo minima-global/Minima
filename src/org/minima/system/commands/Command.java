@@ -90,12 +90,15 @@ import org.minima.system.commands.search.tokens;
 import org.minima.system.commands.search.txpow;
 import org.minima.system.commands.send.multisig;
 import org.minima.system.commands.send.send;
-import org.minima.system.commands.send.sendfrom;
 import org.minima.system.commands.send.sendnosign;
 import org.minima.system.commands.send.sendpoll;
 import org.minima.system.commands.send.sendpost;
 import org.minima.system.commands.send.sendsign;
 import org.minima.system.commands.send.sendview;
+import org.minima.system.commands.send.wallet.createfrom;
+import org.minima.system.commands.send.wallet.postfrom;
+import org.minima.system.commands.send.wallet.sendfrom;
+import org.minima.system.commands.send.wallet.signfrom;
 import org.minima.system.commands.signatures.sign;
 import org.minima.system.commands.signatures.verify;
 import org.minima.system.commands.txn.txnaddamount;
@@ -133,7 +136,7 @@ public abstract class Command {
 			new mds(), new sendpoll(), new healthcheck(), new mempool(), new block(), new reset(),
 			
 			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(), new sendview(),
-			new sendfrom(),
+			new sendfrom(), new createfrom(), new signfrom(), new postfrom(),
 			
 			new archive(), new logs(), new history(), new convert(),new maths(),
 			new checkpending(), new checkmode(), new restoresync(),

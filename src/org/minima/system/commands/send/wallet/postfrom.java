@@ -1,4 +1,4 @@
-package org.minima.system.commands.send;
+package org.minima.system.commands.send.wallet;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,6 +11,7 @@ import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
+import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
@@ -41,7 +42,7 @@ import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
-public class sendfrom extends Command {
+public class postfrom extends Command {
 
 	public class AddressAmount {
 		
@@ -62,66 +63,41 @@ public class sendfrom extends Command {
 		}
 	}
 	
-	public sendfrom() {
-		super("sendfrom","[fromaddress:] (address:Mx..|0x..) (amount:) (multi:[address:amount,..]) (tokenid:) (state:{}) (password:) (burn:) (split:) (coinage:) (mine:) (debug:) (dryrun:) - Send Minima or Tokens to an address");
+	public postfrom() {
+		super("postfrom","[data:] (mine:) - Post a signfrom txn ");
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"fromaddress","address",
-				"amount","tokenid","script","privatekey","keyuses","mine"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"data","mine"}));
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 	
-		//From which address
-		String fromaddress 	= getAddressParam("fromaddress");
-		String toaddress 	= getAddressParam("address");
-		MiniNumber amount 	= getNumberParam("amount");
-		String tokenid 		= getAddressParam("tokenid", "0x00");
+		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
 		
-		//Thew script of the address
-		String script 		= getParam("script");
+		//Get the HEX data
+		MiniData dv = getDataParam("data");
 		
-		//The private key we need to sign with
-		String privatekey	= getAddressParam("privatekey");
-		MiniNumber keyuses  = getNumberParam("keyuses");
+		//Convert to a TxnRow
+		TxnRow tx 	= TxnRow.convertMiniDataVersion(dv);
+		if(existsParam("id")) {
+			tx.setID(getParam("id"));
+		}
 		
-		//ID of the custom transaction
-		String randomid 	= MiniData.getRandomData(32).to0xString();
+		String randomid = tx.getID();
+		
+		//Add to the DB
+		db.addCompleteTransaction(tx);
 		
 		//Are we mining
 		boolean mine 		= getBooleanParam("mine", false);
 		
-		//Now construct the transaction..
-		JSONObject result 	= runCommand("txncreate id:"+randomid);
-		
-		//Add the mounts..
-		String command 		= "txnaddamount id:"+randomid+" fromaddress: "+fromaddress+" address:"+toaddress+" amount:"+amount+" tokenid:"+tokenid;
-		result = runCommand(command);
-		if(!(boolean)result.get("status")) {
-			
-			//Delete transaction
-			runCommand("txndelete id:"+randomid);
-			
-			//Not enough funds!
-			throw new CommandException(result.getString("error"));
-		}
-		
-		//Add the scripts..
-		runCommand("txnscript id:"+randomid+" scripts:{\""+script+"\":\"\"}");
-		
-		//Sort the MMR
-		runCommand("txnmmr id:"+randomid);
-		
-		//Now SIGN
-		runCommand("txnsign id:"+randomid+" publickey:custom privatekey:"+privatekey+" keyuses:"+keyuses);
-		
 		//And POST!
-		result = runCommand("txnpost id:"+randomid+" mine:"+mine);
-		
+		JSONObject result = runCommand("txnpost id:"+randomid+" mine:"+mine);
+			
 		//And delete..
 		runCommand("txndelete id:"+randomid);
 		
@@ -139,6 +115,6 @@ public class sendfrom extends Command {
 
 	@Override
 	public Command getFunction() {
-		return new sendfrom();
+		return new postfrom();
 	}	
 }
