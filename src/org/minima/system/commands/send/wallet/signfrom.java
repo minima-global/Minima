@@ -34,7 +34,7 @@ public class signfrom extends Command {
 	}
 	
 	public signfrom() {
-		super("signfrom","[data:] (mine:) - Sign a creatfrom txn");
+		super("signfrom","[data:] [privatekey:] [keyuses:] - Sign a creatfrom txn");
 	}
 	
 	@Override
