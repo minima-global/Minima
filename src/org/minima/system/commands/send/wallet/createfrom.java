@@ -38,7 +38,7 @@ public class createfrom extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"fromaddress","address",
-				"amount","tokenid","script","privatekey","keyuses","mine"}));
+				"amount","tokenid","script"}));
 	}
 	
 	@Override
