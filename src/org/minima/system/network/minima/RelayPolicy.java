@@ -3,9 +3,7 @@ package org.minima.system.network.minima;
 import java.util.ArrayList;
 
 import org.minima.objects.Coin;
-import org.minima.objects.StateVariable;
 import org.minima.objects.TxPoW;
-import org.minima.system.commands.CommandException;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 

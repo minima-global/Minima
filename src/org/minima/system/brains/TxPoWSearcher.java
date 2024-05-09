@@ -14,7 +14,6 @@ import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.params.GeneralParams;
-import org.minima.utils.MinimaLogger;
 
 public class TxPoWSearcher {
 

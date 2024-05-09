@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import org.minima.database.cascade.Cascade;
 import org.minima.objects.Coin;
 import org.minima.objects.TxBlock;
-import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;

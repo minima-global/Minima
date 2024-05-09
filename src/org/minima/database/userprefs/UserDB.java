@@ -8,7 +8,6 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.JsonDB;
 import org.minima.utils.MiniUtil;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 
 public class UserDB extends JsonDB{

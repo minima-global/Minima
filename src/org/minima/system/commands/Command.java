@@ -41,7 +41,6 @@ import org.minima.system.commands.base.hashtest;
 import org.minima.system.commands.base.healthcheck;
 import org.minima.system.commands.base.incentivecash;
 import org.minima.system.commands.base.logs;
-import org.minima.system.commands.base.magic;
 import org.minima.system.commands.base.maths;
 import org.minima.system.commands.base.mempool;
 import org.minima.system.commands.base.missingcmd;

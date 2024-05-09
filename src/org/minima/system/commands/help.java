@@ -25,7 +25,6 @@ import org.minima.system.commands.base.convert;
 import org.minima.system.commands.base.getaddress;
 import org.minima.system.commands.base.hash;
 import org.minima.system.commands.base.hashtest;
-import org.minima.system.commands.base.incentivecash;
 import org.minima.system.commands.base.logs;
 import org.minima.system.commands.base.maths;
 import org.minima.system.commands.base.mmrcreate;

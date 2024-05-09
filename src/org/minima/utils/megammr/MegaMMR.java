@@ -2,25 +2,17 @@ package org.minima.utils.megammr;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Hashtable;
 
-import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMR;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMREntry;
 import org.minima.database.mmr.MMREntryNumber;
-import org.minima.database.txpowtree.TxPoWTreeNode;
-import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
-import org.minima.objects.StateVariable;
 import org.minima.objects.TxBlock;
 import org.minima.objects.base.MiniNumber;
-import org.minima.system.Main;
-import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.json.JSONObject;
 import org.minima.utils.mysql.MySQLConnect;
 
 public class MegaMMR {

@@ -1,39 +1,19 @@
 package org.minima.system.commands.backup;
 
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.zip.GZIPOutputStream;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
-import org.minima.database.archive.RawArchiveInput;
-import org.minima.database.cascade.Cascade;
-import org.minima.database.txpowtree.TxPoWTreeNode;
-import org.minima.database.userprefs.UserDB;
-import org.minima.database.wallet.Wallet;
-import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
-import org.minima.objects.IBD;
 import org.minima.objects.TxBlock;
-import org.minima.objects.TxPoW;
-import org.minima.objects.base.MiniByte;
-import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.params.GeneralParams;
-import org.minima.utils.BIP39;
-import org.minima.utils.MiniFile;
-import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.mysql.MySQLConnect;
 
