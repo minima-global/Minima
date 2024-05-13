@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.minima.objects.CoinProof;
 import org.minima.objects.IBD;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -14,11 +15,11 @@ public class MegaMMRIBD implements Streamable {
 
 	IBD mInitialIBD;
 	
-	ArrayList<MiniData> mAllCoinProofs;
+	ArrayList<CoinProof> mAllCoinProofs;
 	
 	public MegaMMRIBD() {}
 	
-	public MegaMMRIBD(IBD zIBD, ArrayList<MiniData> zAllCoinProofs) {
+	public MegaMMRIBD(IBD zIBD, ArrayList<CoinProof> zAllCoinProofs) {
 		mInitialIBD 	= zIBD;
 		mAllCoinProofs 	= zAllCoinProofs;
 	}
@@ -27,7 +28,7 @@ public class MegaMMRIBD implements Streamable {
 		return mInitialIBD;
 	}
 	
-	public ArrayList<MiniData> getAllCoinProofs(){
+	public ArrayList<CoinProof> getAllCoinProofs(){
 		return mAllCoinProofs;
 	}
 	
@@ -43,7 +44,7 @@ public class MegaMMRIBD implements Streamable {
 		//And now all the proofs..
 		int len = mAllCoinProofs.size();
 		MiniNumber.WriteToStream(zOut, len);
-		for(MiniData cp : mAllCoinProofs) {
+		for(CoinProof cp : mAllCoinProofs) {
 			cp.writeDataStream(zOut);
 		}
 	}
@@ -59,7 +60,7 @@ public class MegaMMRIBD implements Streamable {
 		mAllCoinProofs = new ArrayList<>();
 		int len = MiniNumber.ReadFromStream(zIn).getAsInt();
 		for(int i=0;i<len;i++) {
-			mAllCoinProofs.add(MiniData.ReadFromStream(zIn));
+			mAllCoinProofs.add(CoinProof.ReadFromStream(zIn));
 		}
 	}
 	

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONObject;
 
 public class MegaMMRSyncData implements Streamable {
 
@@ -28,7 +29,7 @@ public class MegaMMRSyncData implements Streamable {
 	public ArrayList<MiniData> getAllPublicKeys(){
 		return mAllPublicKeys;
 	}
-
+	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		

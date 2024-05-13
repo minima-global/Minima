@@ -21,6 +21,7 @@ import org.minima.database.wallet.SeedRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
+import org.minima.objects.CoinProof;
 import org.minima.objects.IBD;
 import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
@@ -119,26 +120,69 @@ public class megasync extends Command {
 			port = connectdata.getInteger("port");
 			
 			//Create the public data..
-			//..
-			
-			MegaMMRSyncData syncdata = new MegaMMRSyncData(new ArrayList<>(), new ArrayList<>());
+			MegaMMRSyncData syncdata = getMyDetails();
 			
 			//Send this data to them..
-			 MegaMMRIBD mibd = sendMegaMMRSyncReq(host, port, syncdata);
+			MegaMMRIBD mibd = sendMegaMMRSyncReq(host, port, syncdata);
 			
-			 if(mibd == null) {
-				 throw new CommandException("Error connecting to host");
-			 }
+			if(mibd == null) {
+				throw new CommandException("Error connecting to host");
+			}
 			 
-			 //Output som data..
-			 MinimaLogger.log("Sync Received valid:"+mibd.getIBD().checkValidData());
-
+			//Output som data..
+			MinimaLogger.log("Sync Received valid:"+mibd.getIBD().checkValidData()+" "+mibd.getAllCoinProofs().size());
 		}
 			
 		return ret;
 	}
 	
-	public static synchronized ArrayList<Coin> searchMegaCoins(
+	public static MegaMMRSyncData getMyDetails() {
+		
+		//Get all your public keys and addresses
+		Wallet wal = MinimaDB.getDB().getWallet();
+		
+		ArrayList<ScriptRow> scrows = wal.getAllAddresses();
+		
+		ArrayList<MiniData> allAddresses 	= new ArrayList<>();
+		ArrayList<MiniData> allPublicKeys	= new ArrayList<>();
+		
+		for(ScriptRow row : scrows) {
+			if(!row.getPublicKey().equals("0x00")) {
+				allAddresses.add(new MiniData(row.getAddress()));
+				allPublicKeys.add(new MiniData(row.getPublicKey()));
+			}
+		}
+		
+		MegaMMRSyncData syncdata = new MegaMMRSyncData(allAddresses, allPublicKeys);
+		
+		return syncdata;
+	}
+	
+	public static ArrayList<CoinProof> getAllCoinProofs(MegaMMRSyncData zSynData){
+		
+		ArrayList<CoinProof> proofs = new ArrayList<>();
+		
+		//First get all the coins..
+		ArrayList<Coin> allcoins = searchMegaCoins(zSynData.getAllAddresses(), zSynData.getAllPublicKeys());
+		
+		for(Coin cc : allcoins) {
+			
+			//Now get all the coin proofs for these coins..
+			JSONObject coinproofresp = Command.runSingleCommand("coinexport coinid:"+cc.getCoinID().to0xString());
+			
+			//Get the proof data..
+			JSONObject resp = (JSONObject) coinproofresp.get("response");
+			MiniData cpdata = new MiniData(resp.getString("data"));
+			
+			//Convert to a coin proof..
+			CoinProof newcoinproof 	= CoinProof.convertMiniDataVersion(cpdata);
+			proofs.add(newcoinproof);
+		}
+		
+		return proofs;
+	}
+	
+	public static ArrayList<Coin> searchMegaCoins(
 			ArrayList<MiniData> zAddresses,
 			ArrayList<MiniData> zPublicKeys) {
 

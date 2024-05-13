@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
+import org.minima.objects.CoinProof;
 import org.minima.objects.Greeting;
 import org.minima.objects.IBD;
 import org.minima.objects.Pulse;
@@ -28,6 +29,7 @@ import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.backup.mmrsync.MegaMMRIBD;
 import org.minima.system.commands.backup.mmrsync.MegaMMRSyncData;
+import org.minima.system.commands.backup.mmrsync.megasync;
 import org.minima.system.network.maxima.MaximaCTRLMessage;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaxTxPoW;
@@ -1280,14 +1282,20 @@ public class NIOMessage implements Runnable {
 				msyncdata.readDataStream(dis);
 				
 				//Now use that sync data to get all the coinproofs
-				//..
+				MinimaLogger.log("REC MEGA SYNC addresses:"
+									+msyncdata.getAllAddresses().size()
+									+" pubkeys:"+msyncdata.getAllPublicKeys().size());
+				
+				//Get all the coinproofs..
+				ArrayList<CoinProof> proofs = megasync.getAllCoinProofs(msyncdata);
+				MinimaLogger.log("Proofs found:"+proofs.size());
 				
 				//Create a fresh IBD
 				IBD ibd = new IBD();
 				ibd.createCompleteIBD();
 				
 				//Create the IBD complete sync package
-				MegaMMRIBD mibd = new MegaMMRIBD(ibd, new ArrayList<>());
+				MegaMMRIBD mibd = new MegaMMRIBD(ibd, proofs);
 				
 				//And send it back
 				NIOManager.sendNetworkMessage(mClientUID, MSG_MEGAMMRSYNC_RESP, mibd);
