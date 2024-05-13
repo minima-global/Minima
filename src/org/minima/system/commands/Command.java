@@ -16,6 +16,7 @@ import org.minima.system.Main;
 import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.backup;
 import org.minima.system.commands.backup.decryptbackup;
+import org.minima.system.commands.backup.megasync;
 import org.minima.system.commands.backup.mysql;
 import org.minima.system.commands.backup.mysqlcoins;
 import org.minima.system.commands.backup.reset;
@@ -140,7 +141,7 @@ public abstract class Command {
 			new archive(), new logs(), new history(), new convert(),new maths(),
 			new checkpending(), new checkmode(), new restoresync(),
 			
-			new decryptbackup(),
+			new decryptbackup(), new megasync(),
 			
 			new multisig(), new checkaddress(),
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
@@ -390,6 +391,12 @@ public abstract class Command {
 	 */
 	public static JSONArray runMultiCommand(String zCommand) {
 		return runMultiCommand("0x00", zCommand);
+	}
+	
+	public static JSONObject runSingleCommand(String zCommand) {
+		JSONArray res 		= Command.runMultiCommand(zCommand);
+		JSONObject result 	= (JSONObject) res.get(0);
+		return result;
 	}
 	
 	public static JSONArray runMultiCommand(String zMiniDAPPID, String zCommand) {
