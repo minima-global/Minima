@@ -1,7 +1,14 @@
-package org.minima.system.commands.backup;
+package org.minima.system.commands.backup.mmrsync;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +21,8 @@ import org.minima.database.wallet.SeedRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
+import org.minima.objects.IBD;
+import org.minima.objects.base.MiniByte;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
@@ -21,6 +30,9 @@ import org.minima.objects.keys.TreeKey;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.network.connect;
+import org.minima.system.network.minima.NIOManager;
+import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.BIP39;
 import org.minima.utils.Crypto;
@@ -29,6 +41,7 @@ import org.minima.utils.MinimaLogger;
 import org.minima.utils.encrypt.PasswordCrypto;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
+import org.minima.utils.messages.Message;
 import org.minima.utils.ssl.SSLManager;
 
 public class megasync extends Command {
@@ -39,14 +52,14 @@ public class megasync extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","address","data"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","address","data","host"}));
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 		
-		String action = getParam("action", "seed");
+		String action = getParam("action");
 
 		if(action.equals("mydetails")) {
 			
@@ -87,6 +100,39 @@ public class megasync extends Command {
 				
 				MinimaLogger.log(coinproofresp.toJSONString());
 			}
+		
+		}else if(action.equals("resync")) {
+			
+			String fullhost = getParam("host");
+			
+			Message connectdata = connect.createConnectMessage(fullhost);
+			
+			String host = null;
+			int port 	= 0;
+			
+			//Check a valid host
+			if(connectdata == null) {
+				throw new CommandException("Invalid HOST format for resync : "+fullhost);
+			}
+				
+			host = connectdata.getString("host");
+			port = connectdata.getInteger("port");
+			
+			//Create the public data..
+			//..
+			
+			MegaMMRSyncData syncdata = new MegaMMRSyncData(new ArrayList<>(), new ArrayList<>());
+			
+			//Send this data to them..
+			 MegaMMRIBD mibd = sendMegaMMRSyncReq(host, port, syncdata);
+			
+			 if(mibd == null) {
+				 throw new CommandException("Error connecting to host");
+			 }
+			 
+			 //Output som data..
+			 MinimaLogger.log("Sync Received valid:"+mibd.getIBD().checkValidData());
+
 		}
 			
 		return ret;
@@ -202,6 +248,77 @@ public class megasync extends Command {
 		return finalcoins;
 	}
 	
+	/**
+	 * Send your public data and receive MEGA MMR Sync IBD + CoinProofs
+	 */
+	public static MegaMMRIBD sendMegaMMRSyncReq(String zHost, int zPort, MegaMMRSyncData zSyncData) {
+		
+		MegaMMRIBD megaibd= null;
+		
+		try {
+			
+			//Create the Network Message
+			MiniData msg = NIOManager.createNIOMessage(NIOMessage.MSG_MEGAMMRSYNC_REQ, zSyncData);
+			
+			//Open the socket..
+			Socket sock = new Socket();
+
+			//3 seconds to connect
+			sock.connect(new InetSocketAddress(zHost, zPort), 10000);
+			
+			//10 seconds to read
+			sock.setSoTimeout(10000);
+			
+			//Create the streams..
+			OutputStream out 		= sock.getOutputStream();
+			DataOutputStream dos 	= new DataOutputStream(out);
+			
+			InputStream in			= sock.getInputStream();
+			DataInputStream dis 	= new DataInputStream(in);
+			
+			//Write the data
+			msg.writeDataStream(dos);
+			dos.flush();
+			
+			//Tell the NIO
+			Main.getInstance().getNIOManager().getTrafficListener().addWriteBytes("sendMegaMMRSyncReq",msg.getLength());
+			
+			//Load the message
+			MiniData resp = MiniData.ReadFromStream(dis);
+			
+			//Tell the NIO
+			Main.getInstance().getNIOManager().getTrafficListener().addReadBytes("sendMegaMMRSyncReq",resp.getLength());
+			
+			//Close the streams..
+			dis.close();
+			in.close();
+			dos.close();
+			out.close();
+			
+			//Convert
+			ByteArrayInputStream bais 	= new ByteArrayInputStream(resp.getBytes());
+			DataInputStream bdis 		= new DataInputStream(bais);
+
+			//What Type..
+			MiniByte type = MiniByte.ReadFromStream(bdis);
+			
+			//Load the MegaMMR IBD
+			megaibd = new MegaMMRIBD();
+			megaibd.readDataStream(bdis);
+			
+			bdis.close();
+			bais.close();
+			
+		}catch(Exception exc){
+			MinimaLogger.log("MegaMMR Sync connection : "+exc+" @ "+zHost+":"+zPort);
+			
+			//Null the IBD
+			megaibd= null;
+		}
+	
+		
+		return megaibd;
+	}
 	
 	@Override
 	public Command getFunction() {

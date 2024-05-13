@@ -26,6 +26,8 @@ import org.minima.system.Main;
 import org.minima.system.brains.TxPoWChecker;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.brains.TxPoWSearcher;
+import org.minima.system.commands.backup.mmrsync.MegaMMRIBD;
+import org.minima.system.commands.backup.mmrsync.MegaMMRSyncData;
 import org.minima.system.network.maxima.MaximaCTRLMessage;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaxTxPoW;
@@ -84,6 +86,9 @@ public class NIOMessage implements Runnable {
 	public static final MiniByte MSG_TXBLOCKREQ 		= new MiniByte(19);
 	public static final MiniByte MSG_TXBLOCK 			= new MiniByte(20);
 	public static final MiniByte MSG_TXBLOCKMINE 		= new MiniByte(21);
+	
+	public static final MiniByte MSG_MEGAMMRSYNC_REQ 	= new MiniByte(22);
+	public static final MiniByte MSG_MEGAMMRSYNC_RESP 	= new MiniByte(23);
 	
 	/**
 	 * Helper function that converts to String 
@@ -1263,6 +1268,29 @@ public class NIOMessage implements Runnable {
 				
 				//Mine it..
 				Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txp);
+				
+			}else if(type.isEqual(MSG_MEGAMMRSYNC_REQ)) {
+				
+				if(!GeneralParams.IS_MEGAMMR) {
+					Main.getInstance().getNIOManager().disconnect(mClientUID);
+					return;
+				}
+				
+				MegaMMRSyncData msyncdata = new MegaMMRSyncData();
+				msyncdata.readDataStream(dis);
+				
+				//Now use that sync data to get all the coinproofs
+				//..
+				
+				//Create a fresh IBD
+				IBD ibd = new IBD();
+				ibd.createCompleteIBD();
+				
+				//Create the IBD complete sync package
+				MegaMMRIBD mibd = new MegaMMRIBD(ibd, new ArrayList<>());
+				
+				//And send it back
+				NIOManager.sendNetworkMessage(mClientUID, MSG_MEGAMMRSYNC_RESP, mibd);
 				
 			}else {
 				
