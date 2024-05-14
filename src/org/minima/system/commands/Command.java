@@ -22,7 +22,7 @@ import org.minima.system.commands.backup.reset;
 import org.minima.system.commands.backup.restore;
 import org.minima.system.commands.backup.restoresync;
 import org.minima.system.commands.backup.vault;
-import org.minima.system.commands.backup.mmrsync.megasync;
+import org.minima.system.commands.backup.mmrsync.megammrsync;
 import org.minima.system.commands.base.automine;
 import org.minima.system.commands.base.balance;
 import org.minima.system.commands.base.block;
@@ -141,7 +141,7 @@ public abstract class Command {
 			new archive(), new logs(), new history(), new convert(),new maths(),
 			new checkpending(), new checkmode(), new restoresync(),
 			
-			new decryptbackup(), new megasync(),
+			new decryptbackup(), new megammrsync(),
 			
 			new multisig(), new checkaddress(),
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),

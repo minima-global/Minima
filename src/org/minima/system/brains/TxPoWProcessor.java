@@ -46,6 +46,11 @@ public class TxPoWProcessor extends MessageProcessor {
 	private long mFirstIBD 				= System.currentTimeMillis();
 	private long MAX_FIRST_IBD_TIME 	= 1000 * 60 * 5; 
 	
+	/**
+	 * When processing IBD for MegaMMR check if finished..
+	 */
+	private boolean mIBDSyncFinished = false;
+	
 	public TxPoWProcessor() {
 		super("TXPOWPROCESSOR");
 	}
@@ -120,14 +125,30 @@ public class TxPoWProcessor extends MessageProcessor {
 	 * Main Entry point for IBD messages
 	 */
 	public void postProcessIBD(IBD zIBD, String zClientUID) {
+		postProcessIBD(zIBD, zClientUID, false);
+	}
+	
+	public void postProcessIBD(IBD zIBD, String zClientUID, boolean zOverrideRestore) {
 		
 		//Are we shutting down
-		if(Main.getInstance().isShuttongDownOrRestoring()) {
+		if(Main.getInstance().isShuttongDownOrRestoring() && !zOverrideRestore) {
 			return;
 		}
 		
+		//If we are doing this as a MegaMMR restore.. reset..
+		if(zOverrideRestore) {
+			mIBDSyncFinished = false;
+		}
+		
 		//Post a message on the single threaded stack
-		PostMessage(new Message(TXPOWPROCESSOR_PROCESS_IBD).addObject("ibd", zIBD).addString("uid", zClientUID));
+		PostMessage(new Message(TXPOWPROCESSOR_PROCESS_IBD)
+				.addObject("ibd", zIBD)
+				.addString("uid", zClientUID)
+				.addBoolean("notifyfinish", zOverrideRestore));
+	}
+	
+	public boolean isIBDProcessFinished() {
+		return mIBDSyncFinished;
 	}
 	
 	/**
@@ -673,6 +694,9 @@ public class TxPoWProcessor extends MessageProcessor {
 			//Get the IBD
 			IBD ibd = (IBD) zMessage.getObject("ibd");
 			
+			//Are we notifying on Finish
+			boolean notifyfinish = zMessage.getBoolean("notifyfinish");
+			
 			//Does it seem Valid..
 			if(!ibd.checkValidData()) {
 				return;
@@ -838,6 +862,11 @@ public class TxPoWProcessor extends MessageProcessor {
 				//Ask to sync the TxBlocks
 				askToSyncTxBlocks(uid);
 				
+				//Notify
+				if(notifyfinish) {
+					mIBDSyncFinished = true;
+				}
+				
 			}catch(Exception exc) {
 				MinimaLogger.log("[!] TXPOWPROCESSOR_PROCESS_IBD ERROR "+exc);
 				MinimaLogger.log(exc);
@@ -958,6 +987,11 @@ public class TxPoWProcessor extends MessageProcessor {
 	 * Send a SYNC TxBlock message
 	 */
 	public void askToSyncTxBlocks(String zClientID) {
+		
+		//Check not an internal
+		if(zClientID.equals("0x00")) {
+			return;
+		}
 		
 		//Only ask if not in no sync ibd mode
 		if(!GeneralParams.NO_SYNC_IBD) {

@@ -29,7 +29,7 @@ import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.backup.mmrsync.MegaMMRIBD;
 import org.minima.system.commands.backup.mmrsync.MegaMMRSyncData;
-import org.minima.system.commands.backup.mmrsync.megasync;
+import org.minima.system.commands.backup.mmrsync.megammrsync;
 import org.minima.system.network.maxima.MaximaCTRLMessage;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaxTxPoW;
@@ -1287,7 +1287,7 @@ public class NIOMessage implements Runnable {
 									+" pubkeys:"+msyncdata.getAllPublicKeys().size());
 				
 				//Get all the coinproofs..
-				ArrayList<CoinProof> proofs = megasync.getAllCoinProofs(msyncdata);
+				ArrayList<CoinProof> proofs = megammrsync.getAllCoinProofs(msyncdata);
 				MinimaLogger.log("Proofs found:"+proofs.size());
 				
 				//Create a fresh IBD
