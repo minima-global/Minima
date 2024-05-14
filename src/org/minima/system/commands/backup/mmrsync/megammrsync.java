@@ -227,6 +227,9 @@ public class megammrsync extends Command {
 				//Now reopen the required SQL Dbs..
 				Main.getInstance().restoreReadyForSync();
 				
+				//reset ALL the default data
+				Main.getInstance().archiveResetReady(false);
+				
 			}else {
 				//reset ALL the default data
 				Main.getInstance().archiveResetReady(false);
