@@ -39,7 +39,7 @@ import org.minima.utils.messages.Message;
 public class megammrsync extends Command {
 
 	public megammrsync() {
-		super("megammrsync","[action:] [host:] (phrase:) (keys:) (keyuses:) - Restore from a MegaMMR node");
+		super("megammrsync","[action:] [host:] (phrase:) (keys:) (keyuses:) (file:) (password:) - Restore from a MegaMMR node");
 	}
 	
 	@Override
@@ -51,6 +51,8 @@ public class megammrsync extends Command {
 				+ "If you are on the wrong chain - all you need to provide is the 'host' to connect to.\n"
 				+ "\n"
 				+ "If you are on a fresh node, with different seed phrase, provide 'host' and 'phrase' to resync with that Wallet.\n"
+				+ "\n"
+				+ "You can load an old backup and resync to the chain tip aswell.\n"
 				+ "\n"
 				+ "The host you connect to MUST be running with -megammr.\n"
 				+ "\n"
@@ -76,11 +78,19 @@ public class megammrsync extends Command {
 				+ "    Every time you re-sync with seed phrase this needs to be higher as Minima Signatures are stateful.\n"
 				+ "    Defaults to 1000 - the max is 262144 for normal keys.\n"
 				+ "\n"
+				+ "file:\n"
+				+ "    Specify the filename or local path of the backup to restore\n"
+				+ "\n"
+				+ "password: (optional)\n"
+				+ "    Enter the password of the backup \n"
+				+ "\n"+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "megammrsync action:mydetails\n"
 				+ "\n"
 				+ "megammrsync action:resync host:98.65.45.34:9001\n"
+				+ "\n"
+				+ "megammrsync action:resync host:98.65.45.34:9001 file:myoldbakup.bak password:backup_password\n"
 				+ "\n"
 				+ "megammrsync action:resync host:98.65.45.34:9001 phrase:\"YOUR 24 WORD SEED PHRASE\" keyuses:2000\n"
 				;
@@ -88,7 +98,7 @@ public class megammrsync extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","host","phrase","anyphrase","keys","keyuses"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","host","phrase","anyphrase","keys","keyuses","file","password"}));
 	}
 	
 	@Override
@@ -156,7 +166,8 @@ public class megammrsync extends Command {
 			int keyuses = getNumberParam("keyuses", new MiniNumber(1000)).getAsInt();
 			
 			//Is there a Seed phrase..
-			String phrase = getParam("phrase","");
+			String file 	= getParam("file","");
+			String phrase 	= getParam("phrase","");
 			if(!phrase.equals("")) {
 			
 				//Are we allowing ANY phrase..
@@ -195,6 +206,26 @@ public class megammrsync extends Command {
 				
 				//Now Update the USES - since they may have been used before - we don;t know.. 
 				wallet.updateAllKeyUses(keyuses);
+				
+			}else if(!file.equals("")) {
+			
+				//First restore data from a file..
+				String command 	= "restore shutdown:false file:"+file;
+				
+				//Password ?
+				if(existsParam("password")) {
+					command = command+" password:"+getParam("password");
+				}
+				
+				JSONObject result 	= Command.runSingleCommand(command);
+				
+				//Check worked..
+				if(!(boolean)result.get("status")) {
+					throw new CommandException("Error restoring.. "+result.toJSONString());
+				}
+				
+				//Now reopen the required SQL Dbs..
+				Main.getInstance().restoreReadyForSync();
 				
 			}else {
 				//reset ALL the default data
