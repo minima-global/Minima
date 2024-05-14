@@ -78,7 +78,7 @@ public class megammrsync extends Command {
 				+ "    Every time you re-sync with seed phrase this needs to be higher as Minima Signatures are stateful.\n"
 				+ "    Defaults to 1000 - the max is 262144 for normal keys.\n"
 				+ "\n"
-				+ "file:\n"
+				+ "file: (optional)\n"
 				+ "    Specify the filename or local path of the backup to restore\n"
 				+ "\n"
 				+ "password: (optional)\n"
