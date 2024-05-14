@@ -48,7 +48,7 @@ public class megammrsync extends Command {
 				+ "\n"
 				+ "Perform a chain or seed re-sync from a MegaMMR node. Fast.\n"
 				+ "\n"
-				+ "If you are on the wrong chain - all you need provide is the 'host'.\n"
+				+ "If you are on the wrong chain - all you need to provide is the 'host' to connect to.\n"
 				+ "\n"
 				+ "If you are on a fresh node, with different seed phrase, provide 'host' and 'phrase' to resync with that Wallet.\n"
 				+ "\n"
