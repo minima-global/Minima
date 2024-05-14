@@ -1282,13 +1282,13 @@ public class NIOMessage implements Runnable {
 				msyncdata.readDataStream(dis);
 				
 				//Now use that sync data to get all the coinproofs
-				MinimaLogger.log("REC MEGA SYNC addresses:"
+				MinimaLogger.log("Received MegaMMR SYNC request.. addresses:"
 									+msyncdata.getAllAddresses().size()
 									+" pubkeys:"+msyncdata.getAllPublicKeys().size());
 				
 				//Get all the coinproofs..
 				ArrayList<CoinProof> proofs = megammrsync.getAllCoinProofs(msyncdata);
-				MinimaLogger.log("Proofs found:"+proofs.size());
+				MinimaLogger.log("Coin Proofs found:"+proofs.size());
 				
 				//Create a fresh IBD
 				IBD ibd = new IBD();
