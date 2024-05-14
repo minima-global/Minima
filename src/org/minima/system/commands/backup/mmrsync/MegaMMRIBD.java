@@ -7,7 +7,6 @@ import java.util.ArrayList;
 
 import org.minima.objects.CoinProof;
 import org.minima.objects.IBD;
-import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Streamable;
 
