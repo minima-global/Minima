@@ -1,0 +1,50 @@
+
+:root {
+  --chatlistwidth: 300;
+}
+
+body {
+	margin: 20;   /* Remove body margins */
+	background-image: url("../blue.png");
+  	background-repeat: repeat-x;
+  	background-color:aaa;
+  	background-size: 150px;
+}
+
+.layout_chatlistheader{
+	height:50;
+	width:var(--chatlistwidth);
+}
+
+.layout_chatlistheader{
+	width:var(--chatlistwidth);
+}
+
+.layout_chatwindowheader{
+	height:50;
+}
+
+.layout_chatwindowinput{
+	height:50;
+}
+
+.layout_chatwindowinput{
+	height:50;
+}
+
+.div_verticalscrollerdiv{
+	overflow-y:auto;
+	overflow-x: hidden;
+	
+	vertical-align:top;
+	height:100%;
+	widht:100%;
+}
+
+.span_ellipsis{
+	display: inline-block;
+	width:var(--chatlistwidth);
+    white-space: nowrap;
+    overflow: hidden !important;
+    text-overflow: ellipsis;
+}

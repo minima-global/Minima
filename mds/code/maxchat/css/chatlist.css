@@ -1,0 +1,21 @@
+.view_chatlistitem{
+	background-color:#999;
+	width:100%;
+	cursor:pointer;
+}
+
+.view_chatlistitem:hover{
+	background-color:#bbb;
+}
+
+.view_chatlistitemselected{
+	background-color:#a66;
+	width:100%;
+	cursor:pointer;
+}
+
+.view_chatlistitemselected:hover{
+	background-color:#e66;
+}
+
+

@@ -1,15 +1,19 @@
 <html>
 
 <head>
-	<title>BASIC</title>
+	<title>MAXCHAT</title>
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
 	<!-- Load the main MDS JS lib -->
 	<script type="text/javascript" src="mds.js"></script>
 	
+	<script type="text/javascript" src="jquery-3.7.1.min.js"></script>
+	
 	<!-- Load the CSS Style sheet -->
-	<link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="./css/style.css">
+	<link rel="stylesheet" href="./css/scrollbar.css">
+	<link rel="stylesheet" href="./css/chatlist.css">
 	
 	<!-- And the ICON for the page -->
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -21,13 +25,24 @@
 
 <body>
 
-<center>
+<div style="width:100%;height:100%;background-color: #eee;" id="main_content">
 
-	<br>
+</div>
 
-	<h2>Hello World!</h2>
-	
-</center>
+<script type="text/javascript">
+
+	console.log("Screen width : "+window.innerWidth);
+
+	//Load the right JS
+	$('#main_content').load('frame_full.html',function(loaded){
+		MDS.log("FRAM_full loadded");
+		
+		createChatList();
+		
+	});
+
+</script>
+
 
 <script type="text/javascript">
 	
