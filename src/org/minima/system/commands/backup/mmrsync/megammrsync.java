@@ -533,10 +533,10 @@ public class megammrsync extends Command {
 			Socket sock = new Socket();
 
 			//3 seconds to connect
-			sock.connect(new InetSocketAddress(zHost, zPort), 10000);
+			sock.connect(new InetSocketAddress(zHost, zPort), 180000);
 			
-			//10 seconds to read
-			sock.setSoTimeout(10000);
+			//3 minutes to get a reply..
+			sock.setSoTimeout(180000);
 			
 			//Create the streams..
 			OutputStream out 		= sock.getOutputStream();

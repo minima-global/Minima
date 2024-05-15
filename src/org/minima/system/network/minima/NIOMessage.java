@@ -1316,6 +1316,9 @@ public class NIOMessage implements Runnable {
 				//Create the IBD complete sync package
 				MegaMMRIBD mibd = megammrsync.getCurrentMegaMMRIBD(msyncdata);
 				
+//				MinimaLogger.log("LONG DELAY NOW..");
+//				Thread.sleep(20000);
+				
 				//And send it back
 				NIOManager.sendNetworkMessage(mClientUID, MSG_MEGAMMRSYNC_RESP, mibd);
 				
