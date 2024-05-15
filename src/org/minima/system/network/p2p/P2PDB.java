@@ -3,6 +3,7 @@ package org.minima.system.network.p2p;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.minima.system.network.p2p.messages.InetSocketAddressIO;
 import org.minima.system.network.p2p.params.P2PParams;
@@ -35,7 +36,7 @@ public class P2PDB extends JsonDB {
     public void setPeersList(List<InetSocketAddress> peers) {
         getAllData().put("peers", InetSocketAddressIO.addressesListToJSON(peers));
     }
-
+    
     /**
      * Sets the version number for the database using the P2PParams value
      */

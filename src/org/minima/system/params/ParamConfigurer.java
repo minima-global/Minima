@@ -408,7 +408,9 @@ public class ParamConfigurer {
             	TestParams.setTestParams();
             }
         }),
-        
+        rescuenode("rescuenode", "If you connect to a heavier chain use this MegaMMR node to resync", (arg, configurer) -> {
+        	GeneralParams.RESCUE_MEGAMMR_NODE 	= arg.trim();	
+        }),
         help("help", "Print this help", (args, configurer) -> {
             System.out.println("Minima Help");
             stream(values())

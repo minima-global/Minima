@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import org.minima.objects.CoinProof;
 import org.minima.objects.IBD;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.base.MiniString;
 import org.minima.utils.Streamable;
 
 public class MegaMMRIBD implements Streamable {
@@ -15,6 +16,8 @@ public class MegaMMRIBD implements Streamable {
 	IBD mInitialIBD;
 	
 	ArrayList<CoinProof> mAllCoinProofs;
+	
+	String mPeersList = "";
 	
 	public MegaMMRIBD() {}
 	
@@ -31,11 +34,19 @@ public class MegaMMRIBD implements Streamable {
 		return mAllCoinProofs;
 	}
 	
+	public void setPeersList(String zPeersList){
+		mPeersList = zPeersList;
+	}
+	
+	public String getPeersList(){
+		return mPeersList;
+	}
+	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		
 		//Version number
-		MiniNumber.WriteToStream(zOut, 1);
+		MiniNumber.WriteToStream(zOut, 2);
 		
 		//Write out the IBD
 		mInitialIBD.writeDataStream(zOut);
@@ -46,6 +57,9 @@ public class MegaMMRIBD implements Streamable {
 		for(CoinProof cp : mAllCoinProofs) {
 			cp.writeDataStream(zOut);
 		}
+		
+		//And now the Peers
+		MiniString.WriteToStream(zOut, mPeersList);
 	}
 
 	@Override
@@ -61,6 +75,7 @@ public class MegaMMRIBD implements Streamable {
 		for(int i=0;i<len;i++) {
 			mAllCoinProofs.add(CoinProof.ReadFromStream(zIn));
 		}
+		
+		mPeersList = MiniString.ReadFromStream(zIn).toString();
 	}
-	
 }

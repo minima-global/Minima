@@ -3,6 +3,8 @@ package org.minima.system.commands.backup.mmrsync;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -10,6 +12,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.StringTokenizer;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
@@ -27,8 +30,10 @@ import org.minima.system.commands.CommandException;
 import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.vault;
 import org.minima.system.commands.network.connect;
+import org.minima.system.commands.network.peers;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
+import org.minima.system.network.p2p.P2PDB;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.BIP39;
 import org.minima.utils.MinimaLogger;
@@ -277,6 +282,9 @@ public class megammrsync extends Command {
 				JSONObject coinproofresp = Command.runSingleCommand("coinimport track:true data:"+cpdata.to0xString());
 			}
 			
+			//And now add some peers..
+			MinimaLogger.log("Peers List : "+mibd.getPeersList());
+			
 			JSONObject resp = new JSONObject();
 			resp.put("message", "MegaMMR sync fininshed.. please restart");
 			resp.put("coins", csize);
@@ -291,6 +299,9 @@ public class megammrsync extends Command {
 			//Now shutdown and save everything
 			MinimaDB.getDB().saveAllDB();
 			
+			//Now update the P2PDB..
+			updateP2PDB(mibd.getPeersList());
+			
 			//And NOW shut down..
 			Main.getInstance().stopMessageProcessor();
 			
@@ -300,6 +311,37 @@ public class megammrsync extends Command {
 			
 		return ret;
 	}
+	
+	/**
+	 * Do this LAST after the DB has been saved..
+	 */
+	public void updateP2PDB(String zPeersList) {
+    	
+    	ArrayList<InetSocketAddress> peerslist = new ArrayList<>();
+    	
+    	StringTokenizer strtok = new StringTokenizer(zPeersList,",");
+    	while(strtok.hasMoreTokens()) {
+    		String peer = strtok.nextToken();
+    		
+    		try {
+    			Message hp = connect.createConnectMessage(peer);
+        		InetSocketAddress addr = new InetSocketAddress(hp.getString("host"), hp.getInteger("port"));
+        		peerslist.add(addr);		
+    		}catch(Exception exc) {
+    			MinimaLogger.log("Invalid peer in MegaMMR peersList : "+peer);
+    		}
+    	}
+    	
+    	//Get the Base Folder
+    	File basefolder = MinimaDB.getDB().getBaseDBFolder();
+    	File p2pfile 	= new File(basefolder,"p2p.db");
+    	
+    	//Load the P2PDB
+    	P2PDB p2p = new P2PDB();
+    	p2p.loadDB(p2pfile);
+    	p2p.setPeersList(peerslist);
+    	p2p.saveDB(p2pfile);
+    }
 	
 	public static MegaMMRSyncData getMyDetails() {
 		
@@ -321,6 +363,24 @@ public class megammrsync extends Command {
 		MegaMMRSyncData syncdata = new MegaMMRSyncData(allAddresses, allPublicKeys);
 		
 		return syncdata;
+	}
+	
+	public static MegaMMRIBD getCurrentMegaMMRIBD(MegaMMRSyncData zSyncData) throws IOException {
+		
+		//Get all the coin proofs..
+		ArrayList<CoinProof> proofs = megammrsync.getAllCoinProofs(zSyncData);
+		
+		//Create a fresh IBD
+		IBD ibd = new IBD();
+		ibd.createCompleteIBD();
+		
+		//Create the IBD complete sync package
+		MegaMMRIBD mibd = new MegaMMRIBD(ibd, proofs);
+		
+		//And now add some peers
+		mibd.setPeersList(peers.getPeersList(20));
+		
+		return mibd;
 	}
 	
 	public static ArrayList<CoinProof> getAllCoinProofs(MegaMMRSyncData zSynData){

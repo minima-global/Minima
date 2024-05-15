@@ -27,6 +27,7 @@ import org.minima.system.Main;
 import org.minima.system.brains.TxPoWChecker;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.brains.TxPoWSearcher;
+import org.minima.system.commands.Command;
 import org.minima.system.commands.backup.mmrsync.MegaMMRIBD;
 import org.minima.system.commands.backup.mmrsync.MegaMMRSyncData;
 import org.minima.system.commands.backup.mmrsync.megammrsync;
@@ -156,6 +157,8 @@ public class NIOMessage implements Runnable {
 	public static long LAST_TXBLOCKMINE_MSG = 0;
 	
 	public String mFullAdrress = "";
+	
+	public int HEAVIER_CHAIN_FOUND = 0;
 	
 	public NIOMessage(String zClientUID, MiniData zData) {
 		mClientUID 	= zClientUID;
@@ -415,6 +418,29 @@ public class NIOMessage implements Runnable {
 						
 						//Disconnect
 						Main.getInstance().getNIOManager().disconnect(mClientUID,true);
+						
+						//Do we have a rescue NODE
+						if(!GeneralParams.RESCUE_MEGAMMR_NODE.equals("")) {
+							
+							//For now first time..
+							HEAVIER_CHAIN_FOUND++;
+							if(HEAVIER_CHAIN_FOUND > 0) {
+								
+								MinimaLogger.log("Connected to Heavier chain multiple times! - Run MegaMMR Sync from Rescuse Node "+GeneralParams.RESCUE_MEGAMMR_NODE);
+								
+								//Run a rescue command..
+								String command = "megammrsync action:resync host:"+GeneralParams.RESCUE_MEGAMMR_NODE;
+								
+								//And run it..
+								JSONObject res = Command.runSingleCommand(command);
+								
+								//Output the result
+								MinimaLogger.log(res.toString());
+								
+								//Hard stop..
+								Runtime.getRuntime().exit(0);
+							}
+						}
 						
 						return;
 						
@@ -1286,16 +1312,8 @@ public class NIOMessage implements Runnable {
 									+msyncdata.getAllAddresses().size()
 									+" pubkeys:"+msyncdata.getAllPublicKeys().size());
 				
-				//Get all the coinproofs..
-				ArrayList<CoinProof> proofs = megammrsync.getAllCoinProofs(msyncdata);
-				MinimaLogger.log("Coin Proofs found:"+proofs.size());
-				
-				//Create a fresh IBD
-				IBD ibd = new IBD();
-				ibd.createCompleteIBD();
-				
 				//Create the IBD complete sync package
-				MegaMMRIBD mibd = new MegaMMRIBD(ibd, proofs);
+				MegaMMRIBD mibd = megammrsync.getCurrentMegaMMRIBD(msyncdata);
 				
 				//And send it back
 				NIOManager.sendNetworkMessage(mClientUID, MSG_MEGAMMRSYNC_RESP, mibd);

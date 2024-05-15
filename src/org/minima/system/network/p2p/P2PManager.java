@@ -586,7 +586,7 @@ public class P2PManager extends MessageProcessor {
         P2PDB p2pdb = MinimaDB.getDB().getP2PDB();
         p2pdb.setVersion();
         
-        //Updater thew peers list
+        //Update the peers list
         updateP2PPeersList();
 //        if (state.getKnownPeers().size() > 0){
 //            p2pdb.setPeersList(new ArrayList<>(state.getKnownPeers()));
@@ -594,6 +594,8 @@ public class P2PManager extends MessageProcessor {
 
         //Stop the peers checker
         mPeersChecker.stopMessageProcessor();
+        
+        MinimaLogger.log("P2PDB shutdown..");
         
         //And finish with..
         stopMessageProcessor();

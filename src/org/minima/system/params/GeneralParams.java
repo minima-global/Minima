@@ -280,6 +280,10 @@ public class GeneralParams {
 	 */
 	public static boolean NOTIFY_ALL_TXPOW = false;
 	
+	/**
+	 * Do we MegaMMR sync on Heavier Chain
+	 */
+	public static String RESCUE_MEGAMMR_NODE 	= "";
 	
 	/**
 	 * Reset all params to their default settings.. ANDROID keeps them after shutdown
@@ -343,6 +347,7 @@ public class GeneralParams {
 		PEERSCHECKER_lOG 	= false;
 		IS_MEGAMMR 			= false;
 		NOTIFY_ALL_TXPOW 	= false;
+		RESCUE_MEGAMMR_NODE	= "";
 	}
 	
 }

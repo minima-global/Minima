@@ -226,7 +226,7 @@ public class peers extends Command {
 		return ret;
 	}
 
-	public String getPeersList(int zMaxPeers) {
+	public static String getPeersList(int zMaxPeers) {
 		P2PManager p2PManager = (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();
 		
 		//Get the peers list
