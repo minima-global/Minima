@@ -1362,12 +1362,16 @@ public class archive extends Command {
 	 * A special PING message to  check a valid connection..
 	 */
 	public static IBD sendArchiveReq(String zHost, int zPort, MiniNumber zStartBlock) {
-		
+		return sendArchiveReq(zHost, zPort, zStartBlock, 3);
+	}
+	
+	public static IBD sendArchiveReq(String zHost, int zPort, MiniNumber zStartBlock, int zAttempts) {
+			
 		IBD ibd= null;
 		
 		int attempts = 0;
 		
-		while(attempts<3) {
+		while(attempts<zAttempts) {
 			try {
 				
 				//Create the Network Message
@@ -1432,7 +1436,7 @@ public class archive extends Command {
 				//Increase attempts
 				attempts++;			
 				
-				if(attempts<3) {
+				if(attempts<zAttempts) {
 					MinimaLogger.log(attempts+" Attempts > Wait 10 seconds and re-attempt..");
 					
 					//Wait 10 seconds

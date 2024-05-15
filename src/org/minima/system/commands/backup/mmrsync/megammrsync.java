@@ -159,7 +159,7 @@ public class megammrsync extends Command {
 			port = connectdata.getInteger("port");
 			
 			//Let's test the connection - before proceeding
-			IBD ibdtest = archive.sendArchiveReq(host, port, MiniNumber.MINUSONE);
+			IBD ibdtest = archive.sendArchiveReq(host, port, MiniNumber.MINUSONE, 1);
 			if(ibdtest == null) {
 				throw new CommandException("Could not connect to Archive host! @ "+host+":"+port);
 			}

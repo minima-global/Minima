@@ -1,4 +1,4 @@
-package org.minima.system.commands.search;
+package org.minima.system.commands.backup.mmrsync;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,17 +24,26 @@ public class megammr extends Command {
 	public JSONObject runCommand() throws Exception{
 		JSONObject ret = getJSONReply();
 
+		String action = getParam("action","info");
+		
 		MegaMMR megammr = MinimaDB.getDB().getMegaMMR();
 		
-		//MMR.printmmrtree(megammr.getMMR());
+		if(action.equals("info")) {
 		
-		JSONObject resp = new JSONObject();
-		resp.put("enabled", GeneralParams.IS_MEGAMMR);
-		resp.put("mmr", megammr.getMMR().toJSON(false));
-		resp.put("coins", megammr.getAllCoins().size());
+			JSONObject resp = new JSONObject();
+			resp.put("enabled", GeneralParams.IS_MEGAMMR);
+			resp.put("mmr", megammr.getMMR().toJSON(false));
+			resp.put("coins", megammr.getAllCoins().size());
+			
+			//Put the details in the response..
+			ret.put("response", resp);
 		
-		//Put the details in the response..
-		ret.put("response", resp);
+		}else if(action.equals("backup")) {
+			
+			//Export the MegaMMR and an IBD..
+			
+			
+		}
 		
 		return ret;
 	}

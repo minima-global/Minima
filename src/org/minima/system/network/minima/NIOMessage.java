@@ -1300,6 +1300,7 @@ public class NIOMessage implements Runnable {
 			}else if(type.isEqual(MSG_MEGAMMRSYNC_REQ)) {
 				
 				if(!GeneralParams.IS_MEGAMMR) {
+					MinimaLogger.log("[!] Attempt to MegaMMR Sync when -megammr not enabled");
 					Main.getInstance().getNIOManager().disconnect(mClientUID);
 					return;
 				}

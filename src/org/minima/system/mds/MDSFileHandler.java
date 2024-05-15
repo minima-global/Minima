@@ -178,10 +178,14 @@ public class MDSFileHandler implements Runnable {
 				
 				//Are we resyncing..
 				if(Main.getInstance().isShuttongDownOrRestoring()) {
+					
 					//Only allow the security MiniDAPP..
-					MiniDAPP mdcheck = mMDS.getMiniDAPP(minidappid);
-					String namev = mdcheck.getName();
-					if(!namev.equalsIgnoreCase("security") && !namev.equalsIgnoreCase("poll")) {
+					MiniDAPP mdcheck 	= mMDS.getMiniDAPP(minidappid);
+					String namev 		= mdcheck.getName();
+					
+					//MinimaLogger.log("MDS DURING SHUTDOWN : command:"+command+" name:"+namev);
+					
+					if(namev.equalsIgnoreCase("minihub") || !command.equals("poll")) {
 						MinimaLogger.log("Attempt to access MDS during resync from "+namev+" ..blocked", false);
 						throw new MDSInvalidIDException("Attempt to access MDS during resync.. blocked");
 					}
