@@ -209,7 +209,7 @@ public class GeneralParams {
 	/**
 	 * Enable Full logs for script errors
 	 */
-	public static boolean SCRIPTLOGS = false;
+	public static boolean SCRIPTLOGS = true;
 	
 	/**
 	 * Enable full logs for mining..
@@ -329,7 +329,7 @@ public class GeneralParams {
 		USER_PULSE_FREQ   = 1000 * 60 * 10;
 		DEBUGFLAG = false;
 		DEBUGVAR 	= "";
-		SCRIPTLOGS = false;
+		SCRIPTLOGS = true;
 		MINING_LOGS = false;
 		MAXIMA_LOGS = false;
 		NETWORKING_LOGS = false;
