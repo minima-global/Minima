@@ -17,6 +17,8 @@ public class MegaMMRBackup implements Streamable {
 	//The Current Valid IDB that goes with that MMR.. Cascade + tree
 	IBD mIBD;
 	
+	public MegaMMRBackup() {}
+	
 	public MegaMMRBackup(MegaMMR zMMR, IBD zIDB) {
 		mMegaMMR = zMMR;
 		mIBD 	 = zIDB;
