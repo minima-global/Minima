@@ -17,6 +17,7 @@ jobs:
 
       - name: Add upstream remote
         run: git remote add upstream https://github.com/minima-global/Minima.git
+        run: git remote add upstream https://github.com/minima-global/MiniDAPP.git
         # Replace <company_repo_url> with the URL of the company repository
 
       - name: Fetch changes from upstream
