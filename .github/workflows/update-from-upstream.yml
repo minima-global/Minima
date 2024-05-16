@@ -1,0 +1,31 @@
+name: Update from Upstream
+
+on:
+  push:
+    branches: 
+      - master # Change this to match your branch name
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # Fetch full history
+
+      - name: Add upstream remote
+        run: git remote add upstream https://github.com/minima-global/Minima.git
+        # Replace <company_repo_url> with the URL of the company repository
+
+      - name: Fetch changes from upstream
+        run: git fetch upstream
+
+      - name: Merge changes into local branch
+        run: git merge upstream/main
+        # You might want to handle merge conflicts here
+
+      - name: Push changes to forked repository
+        run: git push origin master
+        # Change 'main' to match your branch name
