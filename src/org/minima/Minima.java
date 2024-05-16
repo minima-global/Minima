@@ -225,6 +225,8 @@ public class Minima {
 	        }
 	    }
 	    
+	    MinimaLogger.log("Minima input stopped.. "+mIsRunning+" "+main.isRunning());
+	    
 	    //Cross the streams..
 	    try {
 	        mBufferedStream.close();

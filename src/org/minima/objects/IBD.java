@@ -43,6 +43,15 @@ public class IBD implements Streamable {
 		mTxBlocks 	= new ArrayList<>();
 	}
 	
+	public MiniNumber getTreeRoot() {
+		return mTxBlocks.get(0).getTxPoW().getBlockNumber();
+	}
+	
+	public MiniNumber getTreeTip() {
+		int len = mTxBlocks.size();
+		return mTxBlocks.get(len-1).getTxPoW().getBlockNumber();
+	}
+	
 	/**
 	 * Return whether or not this user gave us a valid greeting
 	 */
