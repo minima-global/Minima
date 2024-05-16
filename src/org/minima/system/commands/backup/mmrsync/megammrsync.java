@@ -16,6 +16,7 @@ import java.util.StringTokenizer;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
+import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
@@ -345,21 +346,28 @@ public class megammrsync extends Command {
 	
 	public static MegaMMRSyncData getMyDetails() {
 		
-		//Get all your public keys and addresses
-		Wallet wal = MinimaDB.getDB().getWallet();
-		
-		ArrayList<ScriptRow> scrows = wal.getAllAddresses();
-		
-		ArrayList<MiniData> allAddresses 	= new ArrayList<>();
+		//All the tracked data
+		ArrayList<MiniData> allAddresses	= new ArrayList<>();
 		ArrayList<MiniData> allPublicKeys	= new ArrayList<>();
 		
+		//Get Your wallet..
+		Wallet wal = MinimaDB.getDB().getWallet();
+		
+		//First all the addresses you are interested in..
+		ArrayList<ScriptRow> scrows	= wal.getAllAddresses();
 		for(ScriptRow row : scrows) {
-			if(!row.getPublicKey().equals("0x00")) {
+			if(row.isTrack()) {
 				allAddresses.add(new MiniData(row.getAddress()));
-				allPublicKeys.add(new MiniData(row.getPublicKey()));
 			}
 		}
 		
+		//Now get all your Keys..
+		ArrayList<KeyRow> keys = wal.getAllKeys();
+		for(KeyRow kr : keys) {
+			allPublicKeys.add(new MiniData(kr.getPublicKey()));
+		}
+		
+		//Now create sync package
 		MegaMMRSyncData syncdata = new MegaMMRSyncData(allAddresses, allPublicKeys);
 		
 		return syncdata;
