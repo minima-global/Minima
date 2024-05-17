@@ -163,6 +163,8 @@ public class megammrsync extends Command {
 			IBD ibdtest = archive.sendArchiveReq(host, port, MiniNumber.MINUSONE, 1);
 			if(ibdtest == null) {
 				throw new CommandException("Could not connect to Archive host! @ "+host+":"+port);
+			}else {
+				MinimaLogger.log("Check Connection passed!");
 			}
 			
 			//How many Keys do we need to generate
