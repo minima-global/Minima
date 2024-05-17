@@ -45,7 +45,11 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
 	/**
 	 * Constructor
 	 */
-    public MessageProcessor(String zName){
+	public MessageProcessor(String zName){
+		this(zName,false);
+	}
+	
+	public MessageProcessor(String zName, boolean zDaemon){
     	super();
     	
     	mName 				= zName;

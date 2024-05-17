@@ -24,6 +24,7 @@ import org.minima.system.mds.runnable.MDSJS;
 import org.minima.system.mds.runnable.NullCallable;
 import org.minima.system.mds.runnable.api.APICallback;
 import org.minima.system.mds.runnable.shutter.SandboxContextFactory;
+import org.minima.system.mds.service.ServiceJSRunner;
 import org.minima.system.mds.sql.MiniDAPPDB;
 import org.minima.system.network.rpc.HTTPSServer;
 import org.minima.system.params.GeneralParams;
@@ -106,7 +107,8 @@ public class MDSManager extends MessageProcessor {
 	/**
 	 * All the current Contexts
 	 */
-	ArrayList<MDSJS> mRunnables = new ArrayList();
+//	ArrayList<MDSJS> mRunnables = new ArrayList();
+	ArrayList<ServiceJSRunner> mRunnables = new ArrayList();
 	
 	/**
 	 * All the Pending Commands
@@ -650,12 +652,8 @@ public class MDSManager extends MessageProcessor {
 			
 			//Shutdown the Runnables
 			MinimaLogger.log("Shutdown MDS runnables..");
-			for(MDSJS mds : mRunnables) {
-				try {
-					mds.shutdown();
-				}catch(Exception exc) {
-					MinimaLogger.log(exc);
-				}
+			for(ServiceJSRunner mds : mRunnables) {
+				mds.stopJS();
 			}
 			
 			//Shut down the servers
@@ -757,18 +755,18 @@ public class MDSManager extends MessageProcessor {
 			
 			//Send message to the runnables first..
 			if(sendtoall) {
-				for(MDSJS mds : mRunnables) {
+				for(ServiceJSRunner mds : mRunnables) {
 					try {
 						
 						if(to.equals("*")) {
 							//Send to the runnable
-							mds.callMainCallback(poll);
+							mds.sendPollMessage(poll);
 						}else {
 							
 							//Check the MiniDAPPID
-							if(mds.getMiniDAPPID().equals(to)) {
+							if(mds.getMiniDapp().getUID().equals(to)) {
 								//Send to the runnable
-								mds.callMainCallback(poll);
+								mds.sendPollMessage(poll);
 							}
 						}
 						
@@ -800,8 +798,8 @@ public class MDSManager extends MessageProcessor {
 		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_RESETALL)) {
 			
 			//Shut down all the Context Objkects..
-			for(MDSJS mds : mRunnables) {
-				mds.shutdown();
+			for(ServiceJSRunner mds : mRunnables) {
+				mds.stopJS();
 			}
 			
 			//Now clear
@@ -813,7 +811,7 @@ public class MDSManager extends MessageProcessor {
 			for(MiniDAPP dapp : dapps) {
 				
 				//Set it up
-				setupMiniDAPP(dapp);
+				setupDAPP(dapp);
 			}
 		
 			mHasStarted = true;
@@ -827,7 +825,7 @@ public class MDSManager extends MessageProcessor {
 			MiniDAPP dapp = (MiniDAPP) zMessage.getObject("minidapp");
 				
 			//Install it..
-			setupMiniDAPP(dapp);
+			setupDAPP(dapp);
 		
 			//Something has changed
 			PostMiniDAPPChange();
@@ -838,10 +836,10 @@ public class MDSManager extends MessageProcessor {
 			String uid = zMessage.getString("uid");
 			
 			//First remove the Runnable
-			ArrayList<MDSJS> runnables = new ArrayList();
-			for(MDSJS mds : mRunnables) {
-				if(mds.getMiniDAPPID().equals(uid)) {
-					mds.shutdown();
+			ArrayList<ServiceJSRunner> runnables = new ArrayList();
+			for(ServiceJSRunner mds : mRunnables) {
+				if(mds.getMiniDapp().getUID().equals(uid)) {
+					mds.stopJS();
 				}else {
 					runnables.add(mds);
 				}
@@ -868,11 +866,31 @@ public class MDSManager extends MessageProcessor {
 	/**
 	 * Initialise a MiniDAPP
 	 */
-	private void setupMiniDAPP(MiniDAPP zDAPP) {
+	private void setupDAPP(MiniDAPP zDAPP) {
+		
+		//Is there a service
+		File service = new File(getMiniDAPPWebFolder(zDAPP.getUID()),"service.js");
+		if(service.exists()) {
+			
+			//Start a new runner
+			ServiceJSRunner serv = new ServiceJSRunner(zDAPP, this);
+			mRunnables.add(serv);
+		}
+		
+		//Now add a unique random SessionID
+		String sessionid = MiniData.getRandomData(128).to0xString();
+		mSessionID.put(sessionid, zDAPP.getUID());
+	}
+	
+	/*private void setupMiniDAPP(MiniDAPP zDAPP) {
+		
+		//MinimaLogger.log("Setup MiniDAPP "+zDAPP.getName());
 		
 		//Is there a service.js class
 		File service = new File(getMiniDAPPWebFolder(zDAPP.getUID()),"service.js");
 		if(service.exists()) {
+			
+			MinimaLogger.log("Setup Service.js "+zDAPP.getName());
 			
 			try {
 				//Load the file..
@@ -931,7 +949,7 @@ public class MDSManager extends MessageProcessor {
 		//Now add a unique random SessionID
 		String sessionid = MiniData.getRandomData(128).to0xString();
 		mSessionID.put(sessionid, zDAPP.getUID());
-	}
+	}*/
 	
 	/**
 	 * Install a MiniDAPP file

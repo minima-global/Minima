@@ -1,6 +1,7 @@
 package org.minima.system.mds.handler;
 
-import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandRunner;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -24,18 +25,22 @@ public class CMDcommand {
 		String result = statfalse.toJSONString();
 		
 		try {
+			
+			System.out.println("CMD : "+mMiniDAPPID+" "+mCompleteCommand);
+			
 			//Now run this function..
-			JSONArray res = Command.runMultiCommand(mMiniDAPPID,mCompleteCommand);
+			CommandRunner runner = new CommandRunner();
+			JSONArray commandres = runner.runMiniDappCommand(mMiniDAPPID,mCompleteCommand);
 			
 			//Get the result.. is it a multi command or single.. 
-			if(res.size() == 1) {
-				result = res.get(0).toString();
+			if(commandres.size() == 1) {
+				result = commandres.get(0).toString();
 			}else {
-				result = res.toString();
+				result = commandres.toString();
 			}
 			
-		}catch(Exception exc) {
-			//MinimaLogger.log("ERROR CMDHANDLER : "+mCompleteCommand+" "+exc);
+		}catch(Throwable exc) {
+			MinimaLogger.log("ERROR CMDHANDLER : "+mCompleteCommand+" "+exc);
 			
 			//Add the error
 			statfalse.put("error", exc.toString());

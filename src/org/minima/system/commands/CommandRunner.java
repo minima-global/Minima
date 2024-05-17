@@ -125,281 +125,28 @@ import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.json.parser.ParseException;
 
-public abstract class Command {
-
-	public static final Command[] ALL_COMMANDS = 
-		{   new quit(), new status(), new coins(), new txpow(), new connect(), new disconnect(), new network(),
-			new message(), new trace(), new help(), new printtree(), new automine(), new printmmr(), new rpc(),
-			new send(), new balance(), new tokencreate(), new tokenvalidate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
-			new incentivecash(), new webhooks(), new peers(), new p2pstate(),
-
-			new mds(), new sendpoll(), new healthcheck(), new mempool(), new block(), new reset(),
-			
-			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(), new sendview(),
-			new sendfrom(), new createfrom(), new signfrom(), new postfrom(),
-			
-			new archive(), new logs(), new history(), new convert(),new maths(),
-			new checkpending(), new checkmode(), new restoresync(),
-			
-			new decryptbackup(), new megammrsync(),
-			
-			new multisig(), new checkaddress(),
-			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
-			
-			new ping(), new random(), new seedrandom(), new mysql(), new mysqlcoins(), new slavenode(), new checkrestore(),
-			//new file(),
-			new megammr(),
-			
-			new vault(), new consolidate(), new coinnotify(),
-			new backup(), new restore(), new test(), 
-			new runscript(), new tutorial(),new keys(),
-			new scripts(), new newscript(), new removescript(),
-			new burn(),
-			
-			new txnbasics(),new txncreate(), new txninput(),new txnlist(), new txnclear(),
-			new txnoutput(),new txnstate(),new txnsign(),new txnpost(),new txndelete(),
-			new txnexport(),new txnimport(),new txncheck(), new txnscript(), new txnauto(),
-			new txnaddamount(),new txnlock(), new txnmmr(),
-			
-			new coinimport(), new coinexport(),new cointrack(), new coincheck(),
-			
-			new hash(), new hashtest(), new sign(), new verify(),
-			
-			new maxima(), new maxcontacts(),
-			
-			new mmrcreate(), new mmrproof()};
+public class CommandRunner {
 	
-	String mName;
-	String mHelp;
-	
-	JSONObject mParams = new JSONObject();
-	
-	String mCompleteCommand = new String("");
-	
-	String mMiniDAPPID = "";
-	
-	public Command(String zName, String zHelp) {
-		mName = zName;
-		mHelp = zHelp;
-	}
-	
-	public void setMiniDAPPID(String zMiniDAPPID) {
-		mMiniDAPPID = zMiniDAPPID;
-	}
-	
-	public String getMiniDAPPID() {
-		return mMiniDAPPID;
-	}
-	
-	public void setCompleteCommand(String zCommand) {
-		mCompleteCommand = zCommand;
-	}
-	
-	public ArrayList<String> getValidParams(){
-		return new ArrayList<>();
-	}
-	
-	public String getCompleteCommand() {
-		return mCompleteCommand;
-	}
-	
-	public String getHelp() {
-		return mHelp;
-	}
-	
-	public String getFullHelp() {
-		return mHelp;
-	}
-	
-	public JSONObject getJSONReply() {
-		JSONObject json = new JSONObject();
-		json.put("command", getName());
+	public CommandRunner() {
 		
-		//Are they empty..
-		if(!getParams().isEmpty()) {
-			json.put("params", getParams());
-		}
-		
-		json.put("status", true);
-		json.put("pending", false);
-		
-		return json;
 	}
-	
-	public String getName() {
-		return mName;
-	}
-	
-	public JSONObject getParams() {
-		return mParams;
-	}
-	
-	public boolean existsParam(String zParamName) {
-		return mParams.containsKey(zParamName);
-	}
-	
-	public String getParam(String zParamName) throws CommandException {
-		if(!existsParam(zParamName)) {
-			throw new CommandException("param not specified : "+zParamName);
-		}
-		
-		//Check for blank
-		String pp = (String)mParams.get(zParamName);
-		pp = pp.trim();
-		if(pp.equals("")) {
-			throw new CommandException("BLANK param not allowed : "+zParamName);
-		}
-		
-		return pp;
-	}
-	
-	public String getParam(String zParamName, String zDefault) throws CommandException {
-		if(existsParam(zParamName)) {
-			//Check for blank
-			String pp = (String)mParams.get(zParamName);
-			pp = pp.trim();
-			if(pp.equals("")) {
-				throw new CommandException("BLANK param not allowed : "+zParamName);
-			}
-			
-			return pp;
-		}
-		
-		return zDefault;
-	}
-	
-	public boolean getBooleanParam(String zParamName) throws CommandException {
-		String bool = getParam(zParamName);
-		if(bool.equals("true")){
-			return  true;
-		}
-		return false;
-	}
-	
-	public boolean getBooleanParam(String zParamName, boolean zDefault) throws CommandException {
-		if(existsParam(zParamName)) {
-			if(getParam(zParamName).equals("true")){
-				return  true;
-			}else {
-				return false;
-			}
-		}
-		
-		return zDefault;
-	}
-	
-	public MiniNumber getNumberParam(String zParamName) throws CommandException {
-		String num = getParam(zParamName);
-		return new MiniNumber(num);
-	}
-	
-	public MiniNumber getNumberParam(String zParamName, MiniNumber zDefault) throws CommandException {
-		if(existsParam(zParamName)) {
-			return getNumberParam(zParamName);
-		}
-		return zDefault;
-	}
-	
-	public MiniData getDataParam(String zParamName) throws CommandException {
-		String hex = getParam(zParamName);
-		return new MiniData(hex);
-	}
-	
-	public JSONObject getJSONObjectParam(String zParamName) throws CommandException{
-		if(!existsParam(zParamName)) {
-			throw new CommandException("param not specified : "+zParamName);
-		}
-		
-		return (JSONObject) mParams.get(zParamName);
-	}
-	
-	public JSONArray getJSONArrayParam(String zParamName) throws CommandException {
-		if(!existsParam(zParamName)) {
-			throw new CommandException("param not specified : "+zParamName);
-		}
-		
-		return (JSONArray) mParams.get(zParamName);
-	}
-	
-	public String getAddressParam(String zParamName, String zDefault) throws CommandException {
-		if(existsParam(zParamName)) {
-			return getAddressParam(zParamName);
-		}
-		
-		return zDefault;
-	}
-	
-	public String getAddressParam(String zParamName) throws CommandException {
-		if(!existsParam(zParamName)) {
-			throw new CommandException("param not specified : "+zParamName);
-		}
-
-		String address = getParam(zParamName);
-		if(address.toLowerCase().startsWith("mx")) {
-			//Convert back to normal hex..
-			try {
-				address = Address.convertMinimaAddress(address).to0xString();
-			}catch(IllegalArgumentException exc) {
-				throw new CommandException(exc.toString());
-			}
-		}
-		
-		//If it's an 0x address check converts to MiniData correctly
-		if(address.startsWith("0x")) {
-			try {
-				MiniData data 	= new MiniData(address);
-				address 		= data.to0xString();
-			}catch(Exception exc) {
-				throw new CommandException(exc.toString());
-			}
-		}
-		
-		return address;
-	}
-	
-	public boolean isParamJSONObject(String zParamName) {
-		if(existsParam(zParamName)) {
-			Object obj = mParams.get(zParamName);
-			if(obj instanceof JSONObject) {
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
-	public boolean isParamJSONArray(String zParamName) {
-		if(existsParam(zParamName)) {
-			Object obj = mParams.get(zParamName);
-			if(obj instanceof JSONArray) {
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
-	
-	public abstract JSONObject runCommand() throws Exception;
-	
-	public abstract Command getFunction();
 	
 	/**
 	 * Run a with possible multiple functions
 	 * 
 	 * @param zCommand
 	 */
-	public static JSONArray runMultiCommand(String zCommand) {
+	public JSONArray runMultiCommand(String zCommand) {
 		return runMiniDappCommand("0x00", zCommand);
 	}
 	
-	public static JSONObject runSingleCommand(String zCommand) {
-		JSONArray res 		= Command.runMultiCommand(zCommand);
+	public JSONObject runSingleCommand(String zCommand) {
+		JSONArray res 		= runMultiCommand(zCommand);
 		JSONObject result 	= (JSONObject) res.get(0);
 		return result;
 	}
 	
-	public static JSONArray runMiniDappCommand(String zMiniDAPPID, String zCommand) {
+	public JSONArray runMiniDappCommand(String zMiniDAPPID, String zCommand) {
 		System.out.println("runMultiCommand : "+zCommand);
 		
 		JSONArray finalresult = new JSONArray();
@@ -517,12 +264,12 @@ public abstract class Command {
 	}
 	
 	public static Command getCommandOnly(String zCommandName) {
-		int commandlen = ALL_COMMANDS.length;
+		int commandlen = Command.ALL_COMMANDS.length;
 		
 		Command comms = null;
 		for(int i=0;i<commandlen;i++) {
-			if(ALL_COMMANDS[i].getName().equals(zCommandName)) {
-				comms = ALL_COMMANDS[i].getFunction();
+			if(Command.ALL_COMMANDS[i].getName().equals(zCommandName)) {
+				comms = Command.ALL_COMMANDS[i].getFunction();
 				break;
 			}
 		}
@@ -531,7 +278,7 @@ public abstract class Command {
 	}
 	
 	public static Command getCommand(String zCommand) {
-		int commandlen = ALL_COMMANDS.length;
+		int commandlen = Command.ALL_COMMANDS.length;
 		
 		//Get the first word..
 		String[] split = splitStringJSON(false,zCommand);
@@ -541,8 +288,8 @@ public abstract class Command {
 		
 		Command comms = null;
 		for(int i=0;i<commandlen;i++) {
-			if(ALL_COMMANDS[i].getName().equals(command)) {
-				comms = ALL_COMMANDS[i].getFunction();
+			if(Command.ALL_COMMANDS[i].getName().equals(command)) {
+				comms = Command.ALL_COMMANDS[i].getFunction();
 				break;
 			}
 		}
