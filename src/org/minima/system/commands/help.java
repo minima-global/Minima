@@ -113,7 +113,7 @@ public class help extends Command {
 		if(!command.equals("")) {
 		
 			//Get the command..
-			Command cmd = Command.getCommandOnly(command);
+			Command cmd = CommandRunner.getRunner().getCommandOnly(command);
 			if(cmd == null) {
 				throw new CommandException("Command not found : "+command);
 			}
