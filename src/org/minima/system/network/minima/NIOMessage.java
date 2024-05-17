@@ -28,6 +28,7 @@ import org.minima.system.brains.TxPoWChecker;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandRunner;
 import org.minima.system.commands.backup.mmrsync.MegaMMRIBD;
 import org.minima.system.commands.backup.mmrsync.MegaMMRSyncData;
 import org.minima.system.commands.backup.mmrsync.megammrsync;
@@ -432,7 +433,7 @@ public class NIOMessage implements Runnable {
 								String command = "megammrsync action:resync host:"+GeneralParams.RESCUE_MEGAMMR_NODE;
 								
 								//And run it..
-								JSONObject res = Command.runSingleCommand(command);
+								JSONObject res = CommandRunner.getRunner().runSingleCommand(command);
 								
 								//Output the result
 								MinimaLogger.log(res.toString());

@@ -12,6 +12,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.CommandRunner;
 import org.minima.system.commands.send.send;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
@@ -210,7 +211,7 @@ public class consolidate extends Command {
 			}
 		}
 		
-		JSONArray result 		= Command.runMultiCommand(command);
+		JSONArray result 		= CommandRunner.getRunner().runMultiCommand(command);
 		JSONObject sendresult 	= (JSONObject) result.get(0); 
 		if((boolean) sendresult.get("status")) {
 			ret.put("response", sendresult.get("response"));

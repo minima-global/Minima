@@ -28,6 +28,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.CommandRunner;
 import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.vault;
 import org.minima.system.commands.network.connect;
@@ -225,7 +226,7 @@ public class megammrsync extends Command {
 					command = command+" password:"+getParam("password");
 				}
 				
-				JSONObject result 	= Command.runSingleCommand(command);
+				JSONObject result 	= CommandRunner.getRunner().runSingleCommand(command);
 				
 				//Check worked..
 				if(!(boolean)result.get("status")) {
@@ -282,7 +283,7 @@ public class megammrsync extends Command {
 				MiniData cpdata = MiniData.getMiniDataVersion(cp);
 				
 				//Coin Import..
-				JSONObject coinproofresp = Command.runSingleCommand("coinimport track:true data:"+cpdata.to0xString());
+				JSONObject coinproofresp = CommandRunner.getRunner().runSingleCommand("coinimport track:true data:"+cpdata.to0xString());
 			}
 			
 			//And now add some peers..
@@ -403,7 +404,7 @@ public class megammrsync extends Command {
 		for(Coin cc : allcoins) {
 			
 			//Now get all the coin proofs for these coins..
-			JSONObject coinproofresp = Command.runSingleCommand("coinexport coinid:"+cc.getCoinID().to0xString());
+			JSONObject coinproofresp = CommandRunner.getRunner().runSingleCommand("coinexport coinid:"+cc.getCoinID().to0xString());
 			
 			//Get the proof data..
 			JSONObject resp = (JSONObject) coinproofresp.get("response");

@@ -875,6 +875,8 @@ public class MDSManager extends MessageProcessor {
 		if(service.exists()) {
 			
 			try {
+				MinimaLogger.log("Start Service "+zDAPP.getName());
+				
 				//Load the file..
 				byte[] serv = MiniFile.readCompleteFile(service);
 				String code = new String(serv,MiniString.MINIMA_CHARSET);
@@ -883,6 +885,7 @@ public class MDSManager extends MessageProcessor {
 				Context ctx = Context.enter();
 				ctx.setOptimizationLevel(-1);
 				ctx.setLanguageVersion(Context.VERSION_ES6);
+				ctx.setMaximumInterpreterStackDepth(1024);
 				
 				//Stop JAVA classes from being run..
 				try {

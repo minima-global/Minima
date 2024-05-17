@@ -6,6 +6,7 @@ import java.util.Arrays;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.CommandRunner;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -78,7 +79,7 @@ public class reset extends Command {
 			
 			//Refactor the command
 			String command 		= "archive action:import file:"+archivefile;
-			JSONArray res 		= Command.runMultiCommand(command);
+			JSONArray res 		= CommandRunner.getRunner().runMultiCommand(command);
 			JSONObject result 	= (JSONObject) res.get(0);
 			ret.put("response", result);
 			
@@ -99,7 +100,7 @@ public class reset extends Command {
 				command = command+" keyuses:"+getParam("keyuses");
 			}
 			
-			JSONArray res 		= Command.runMultiCommand(command);
+			JSONArray res 		= CommandRunner.getRunner().runMultiCommand(command);
 			JSONObject result 	= (JSONObject) res.get(0);
 			ret.put("response", result);
 			
@@ -117,7 +118,7 @@ public class reset extends Command {
 				command = command+" password:"+getParam("password");
 			}
 			
-			JSONArray res 		= Command.runMultiCommand(command);
+			JSONArray res 		= CommandRunner.getRunner().runMultiCommand(command);
 			JSONObject result 	= (JSONObject) res.get(0);
 			
 			//Check worked..
@@ -133,7 +134,7 @@ public class reset extends Command {
 			
 			//And NOW do a chain resync..
 			command  = "archive action:import file:"+archivefile;
-			res 	 = Command.runMultiCommand(command);
+			res 	 = CommandRunner.getRunner().runMultiCommand(command);
 			result 	 = (JSONObject) res.get(0);
 			allres.put("chainsync", result);
 			

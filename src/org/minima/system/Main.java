@@ -15,6 +15,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWProcessor;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandRunner;
 import org.minima.system.genesis.GenesisMMR;
 import org.minima.system.genesis.GenesisTxPoW;
 import org.minima.system.mds.MDSManager;
@@ -870,7 +871,7 @@ public class Main extends MessageProcessor {
 								+" action:update";
 				
 				//Run a mysql Backup of the archive data..
-				JSONArray res 	= Command.runMultiCommand(backupcommand);
+				JSONArray res 	= CommandRunner.getRunner().runMultiCommand(backupcommand);
 				JSONObject json = (JSONObject) res.get(0); 
 				boolean status  = (boolean) json.get("status");
 				
@@ -957,7 +958,7 @@ public class Main extends MessageProcessor {
 			if(MinimaDB.getDB().getUserDB().isAutoBackup()) {
 			
 				//Create a backup command..
-				JSONArray res = Command.runMultiCommand("backup");
+				JSONArray res = CommandRunner.getRunner().runMultiCommand("backup");
 				
 				//Output
 				MinimaLogger.log("AUTOBACKUP : "+res.toString());

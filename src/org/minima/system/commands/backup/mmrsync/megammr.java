@@ -20,6 +20,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.CommandRunner;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
@@ -213,7 +214,7 @@ public class megammr extends Command {
 				MiniData cpdata = MiniData.getMiniDataVersion(cp);
 				
 				//Coin Import..
-				JSONObject coinproofresp = Command.runSingleCommand("coinimport track:true data:"+cpdata.to0xString());
+				JSONObject coinproofresp = CommandRunner.getRunner().runSingleCommand("coinimport track:true data:"+cpdata.to0xString());
 			}
 			
 			JSONObject resp = new JSONObject();

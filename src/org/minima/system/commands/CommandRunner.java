@@ -1,141 +1,24 @@
 package org.minima.system.commands;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.minidapps.MiniDAPP;
-import org.minima.objects.Address;
-import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
-import org.minima.system.commands.backup.archive;
-import org.minima.system.commands.backup.backup;
-import org.minima.system.commands.backup.decryptbackup;
-import org.minima.system.commands.backup.mysql;
-import org.minima.system.commands.backup.mysqlcoins;
-import org.minima.system.commands.backup.reset;
-import org.minima.system.commands.backup.restore;
-import org.minima.system.commands.backup.restoresync;
-import org.minima.system.commands.backup.vault;
-import org.minima.system.commands.backup.mmrsync.megammr;
-import org.minima.system.commands.backup.mmrsync.megammrsync;
-import org.minima.system.commands.base.automine;
-import org.minima.system.commands.base.balance;
-import org.minima.system.commands.base.block;
-import org.minima.system.commands.base.burn;
-import org.minima.system.commands.base.checkaddress;
-import org.minima.system.commands.base.coincheck;
-import org.minima.system.commands.base.coinexport;
-import org.minima.system.commands.base.coinimport;
-import org.minima.system.commands.base.coinnotify;
-import org.minima.system.commands.base.cointrack;
-import org.minima.system.commands.base.consolidate;
-import org.minima.system.commands.base.convert;
-import org.minima.system.commands.base.debugflag;
-import org.minima.system.commands.base.getaddress;
-import org.minima.system.commands.base.hash;
-import org.minima.system.commands.base.hashtest;
-import org.minima.system.commands.base.healthcheck;
-import org.minima.system.commands.base.incentivecash;
-import org.minima.system.commands.base.logs;
-import org.minima.system.commands.base.maths;
-import org.minima.system.commands.base.mempool;
-import org.minima.system.commands.base.missingcmd;
-import org.minima.system.commands.base.mmrcreate;
-import org.minima.system.commands.base.mmrproof;
-import org.minima.system.commands.base.newaddress;
-import org.minima.system.commands.base.printmmr;
-import org.minima.system.commands.base.printtree;
-import org.minima.system.commands.base.quit;
-import org.minima.system.commands.base.random;
-import org.minima.system.commands.base.seedrandom;
-import org.minima.system.commands.base.slavenode;
-import org.minima.system.commands.base.status;
-import org.minima.system.commands.base.test;
-import org.minima.system.commands.base.tokencreate;
-import org.minima.system.commands.base.tokenvalidate;
-import org.minima.system.commands.base.trace;
-import org.minima.system.commands.maxima.maxcontacts;
-import org.minima.system.commands.maxima.maxcreate;
-import org.minima.system.commands.maxima.maxextra;
-import org.minima.system.commands.maxima.maxima;
-import org.minima.system.commands.maxima.maxsign;
-import org.minima.system.commands.maxima.maxverify;
-import org.minima.system.commands.mds.checkmode;
-import org.minima.system.commands.mds.checkpending;
-import org.minima.system.commands.mds.checkrestore;
-import org.minima.system.commands.mds.mds;
-import org.minima.system.commands.network.connect;
-import org.minima.system.commands.network.disconnect;
-import org.minima.system.commands.network.message;
-import org.minima.system.commands.network.network;
-import org.minima.system.commands.network.p2pstate;
-import org.minima.system.commands.network.peers;
-import org.minima.system.commands.network.ping;
-import org.minima.system.commands.network.rpc;
-import org.minima.system.commands.network.webhooks;
-import org.minima.system.commands.scripts.newscript;
-import org.minima.system.commands.scripts.removescript;
-import org.minima.system.commands.scripts.runscript;
-import org.minima.system.commands.scripts.scripts;
-import org.minima.system.commands.search.coins;
-import org.minima.system.commands.search.history;
-import org.minima.system.commands.search.keys;
-import org.minima.system.commands.search.tokens;
-import org.minima.system.commands.search.txpow;
-import org.minima.system.commands.send.multisig;
-import org.minima.system.commands.send.send;
-import org.minima.system.commands.send.sendnosign;
-import org.minima.system.commands.send.sendpoll;
-import org.minima.system.commands.send.sendpost;
-import org.minima.system.commands.send.sendsign;
-import org.minima.system.commands.send.sendview;
-import org.minima.system.commands.send.wallet.createfrom;
-import org.minima.system.commands.send.wallet.postfrom;
-import org.minima.system.commands.send.wallet.sendfrom;
-import org.minima.system.commands.send.wallet.signfrom;
-import org.minima.system.commands.signatures.sign;
-import org.minima.system.commands.signatures.verify;
-import org.minima.system.commands.txn.txnaddamount;
-import org.minima.system.commands.txn.txnauto;
-import org.minima.system.commands.txn.txnbasics;
-import org.minima.system.commands.txn.txncheck;
-import org.minima.system.commands.txn.txnclear;
-import org.minima.system.commands.txn.txncreate;
-import org.minima.system.commands.txn.txndelete;
-import org.minima.system.commands.txn.txnexport;
-import org.minima.system.commands.txn.txnimport;
-import org.minima.system.commands.txn.txninput;
-import org.minima.system.commands.txn.txnlist;
-import org.minima.system.commands.txn.txnlock;
-import org.minima.system.commands.txn.txnmmr;
-import org.minima.system.commands.txn.txnoutput;
-import org.minima.system.commands.txn.txnpost;
-import org.minima.system.commands.txn.txnscript;
-import org.minima.system.commands.txn.txnsign;
-import org.minima.system.commands.txn.txnstate;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
-import org.minima.utils.json.parser.JSONParser;
-import org.minima.utils.json.parser.ParseException;
 
 public class CommandRunner {
 	
-	public CommandRunner() {
-		
+	private CommandRunner() {}
+	
+	public static CommandRunner getRunner() {
+		return new CommandRunner();
 	}
-		
-	/**
-	 * Run a with possible multiple functions
-	 * 
-	 * @param zCommand
-	 */
+	
 	public JSONArray runMultiCommand(String zCommand) {
 		return runMultiCommand("0x00", zCommand);
 	}
@@ -147,7 +30,8 @@ public class CommandRunner {
 	}
 	
 	public JSONArray runMultiCommand(String zMiniDAPPID, String zCommand) {
-		JSONArray res = new JSONArray();
+		
+		JSONArray finalresult = new JSONArray();
 		
 		//First break it up..
 		StringTokenizer strtok = new StringTokenizer(zCommand, ";");
@@ -155,7 +39,7 @@ public class CommandRunner {
 			String command = strtok.nextToken().trim();
 			
 			//Get this command..
-			CommandRunner cmd = CommandRunner.getCommand(command);
+			Command cmd = Command.getCommand(command);
 			
 			//Set who called it
 			cmd.setMiniDAPPID(zMiniDAPPID);
@@ -182,7 +66,7 @@ public class CommandRunner {
 					result.put("error", "Invalid parameter : "+key);
 					
 					//Add to the List..
-					res.add(result);
+					finalresult.add(result);
 					
 					//And that's all folks..
 					validp=false;
@@ -202,7 +86,7 @@ public class CommandRunner {
 				String comname = cmd.getName();
 				
 				//Check this MiniDAPP can make this call..
-				boolean allowed = isCommandAllowed(comname);
+				boolean allowed = Command.isCommandAllowed(comname);
 				
 				if(!allowed) {
 					
@@ -224,7 +108,7 @@ public class CommandRunner {
 						result.put("error", "This command needs to be confirmed and is now pending..");
 						
 						//Add to the List..
-						res.add(result);
+						finalresult.add(result);
 						
 						//And that's all folks..
 						break;
@@ -250,7 +134,7 @@ public class CommandRunner {
 			}
 			
 			//Add it..
-			res.add(result);
+			finalresult.add(result);
 			
 			//Stop at a false..
 			if((boolean)result.get("status") == false) {
@@ -258,16 +142,16 @@ public class CommandRunner {
 			}
 		}
 		
-		return res;
+		return finalresult;
 	}
 	
-	public CommandRunner getCommandOnly(String zCommandName) {
-		int commandlen = ALL_COMMANDS.length;
+	/*public static Command getCommandOnly(String zCommandName) {
+		int commandlen = Command.ALL_COMMANDS.length;
 		
-		CommandRunner comms = null;
+		Command comms = null;
 		for(int i=0;i<commandlen;i++) {
-			if(ALL_COMMANDS[i].getName().equals(zCommandName)) {
-				comms = ALL_COMMANDS[i].getFunction();
+			if(Command.ALL_COMMANDS[i].getName().equals(zCommandName)) {
+				comms = Command.ALL_COMMANDS[i].getFunction();
 				break;
 			}
 		}
@@ -275,8 +159,8 @@ public class CommandRunner {
 		return comms;
 	}
 	
-	public CommandRunner getCommand(String zCommand) {
-		int commandlen = ALL_COMMANDS.length;
+	public static Command getCommand(String zCommand) {
+		int commandlen = Command.ALL_COMMANDS.length;
 		
 		//Get the first word..
 		String[] split = splitStringJSON(false,zCommand);
@@ -284,10 +168,10 @@ public class CommandRunner {
 		//The first is the command..
 		String command = split[0].toLowerCase();
 		
-		CommandRunner comms = null;
+		Command comms = null;
 		for(int i=0;i<commandlen;i++) {
-			if(ALL_COMMANDS[i].getName().equals(command)) {
-				comms = ALL_COMMANDS[i].getFunction();
+			if(Command.ALL_COMMANDS[i].getName().equals(command)) {
+				comms = Command.ALL_COMMANDS[i].getFunction();
 				break;
 			}
 		}
@@ -371,7 +255,7 @@ public class CommandRunner {
 		return comms;
 	}
 	
-	private String[] splitStringJSON(boolean zForceNormal, String zInput) {
+	private static String[] splitStringJSON(boolean zForceNormal, String zInput) {
 		
 		//Are there any JSON in this.. if not use super fast method..
 		if(!zForceNormal) {
@@ -469,7 +353,7 @@ public class CommandRunner {
 	 * 
 	 * If something weird happens return null .. and other method used..
 	 */
-	public String[] splitterQuotedPattern(String zInput) {
+	/*public static String[] splitterQuotedPattern(String zInput) {
 		ArrayList<String> token = new ArrayList<>();
 		
 		//Split the : name value pairs aswell..
@@ -532,15 +416,15 @@ public class CommandRunner {
 	/**
 	 * Which Commands are WRITE commands..
 	 */
-	private final String[] ALL_WRITE_COMMANDS = 
+	/*private static final String[] ALL_WRITE_COMMANDS = 
 		{"send","sendpoll","sendsign","multisig","tokencreate","consolidate",
 		 "cointrack","sign","txnsign","mds","backup","removescript",
 		 "restore","restoresync","vault","archive","mysql","mysqlcoins",
 		 "rpc","magic","quit","seedrandom","megammrsync"};
 	
-	private final ArrayList<String> ALL_WRITE_COMMANDS_ARRAY = new ArrayList<String>(Arrays.asList(ALL_WRITE_COMMANDS));
+	private static final ArrayList<String> ALL_WRITE_COMMANDS_ARRAY = new ArrayList<String>(Arrays.asList(ALL_WRITE_COMMANDS));
 	
-	public boolean isCommandAllowed(String zCommand) {
+	public static boolean isCommandAllowed(String zCommand) {
 		
 		//Is it a simple READ command
 		if(ALL_WRITE_COMMANDS_ARRAY.contains(zCommand.trim())) {
@@ -548,6 +432,6 @@ public class CommandRunner {
 		}
 		
 		return true;
-	}
+	}*/
 	
 }

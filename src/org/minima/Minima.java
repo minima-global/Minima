@@ -9,6 +9,7 @@ import java.util.Iterator;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandRunner;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.system.params.ParamConfigurer;
@@ -65,7 +66,7 @@ public class Minima {
 		String input = zInput.trim();
     	
     	//Run it..
-    	JSONArray res = Command.runMultiCommand(input);
+    	JSONArray res = CommandRunner.getRunner().runMultiCommand(input);
     	
     	//Get the result.. 
     	String result = null;
@@ -197,7 +198,7 @@ public class Minima {
 	            	input = input.trim();
 	            	
 	            	//Run it..
-	            	JSONArray res = Command.runMultiCommand(input);
+	            	JSONArray res = CommandRunner.getRunner().runMultiCommand(input);
 	            	
 	            	//Print it out
 	            	if(!input.equals("quit")) {

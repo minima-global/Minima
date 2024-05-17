@@ -34,6 +34,7 @@ import org.minima.system.Main;
 import org.minima.system.brains.TxPoWProcessor;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.CommandRunner;
 import org.minima.system.commands.network.connect;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
@@ -831,7 +832,7 @@ public class archive extends Command {
 				command = command+" anyphrase:"+getParam("anyphrase");
 			}
 			
-			JSONArray res 		= Command.runMultiCommand(command);
+			JSONArray res 		= CommandRunner.getRunner().runMultiCommand(command);
 			JSONObject result 	= (JSONObject) res.get(0);
 			
 			//Shutdwon TEMP DB
@@ -920,7 +921,7 @@ public class archive extends Command {
 					command = command+" anyphrase:"+getParam("anyphrase");
 				}
 				
-				JSONArray res 		= Command.runMultiCommand(command);
+				JSONArray res 		= CommandRunner.getRunner().runMultiCommand(command);
 				JSONObject result 	= (JSONObject) res.get(0);
 				
 				//Shutdown TEMP DB
@@ -964,7 +965,7 @@ public class archive extends Command {
 					command = command+" anyphrase:"+getParam("anyphrase");
 				}
 				
-				JSONArray res 		= Command.runMultiCommand(command);
+				JSONArray res 		= CommandRunner.getRunner().runMultiCommand(command);
 				JSONObject result 	= (JSONObject) res.get(0);
 				
 				//Shutdown TEMP DB

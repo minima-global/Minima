@@ -11,6 +11,7 @@ import java.util.StringTokenizer;
 
 import org.minima.objects.base.MiniString;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandRunner;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -154,7 +155,7 @@ public class CMDHandler implements Runnable {
 //				MinimaLogger.log("RPC : "+fileRequested);
 				
 				//Now run this function..
-				JSONArray res = Command.runMultiCommand(fileRequested);
+				JSONArray res = CommandRunner.getRunner().runMultiCommand(fileRequested);
 		    	
 				//Get the result.. is it a multi command or single.. 
 				if(res.size() == 1) {

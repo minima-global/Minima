@@ -9,6 +9,7 @@ import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandRunner;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -78,7 +79,7 @@ public class postfrom extends Command {
 	}
 	
 	public JSONObject runCommand(String zCommand) {
-		JSONArray res 		= Command.runMultiCommand(zCommand);
+		JSONArray res 		= CommandRunner.getRunner().runMultiCommand(zCommand);
 		JSONObject result 	= (JSONObject) res.get(0);
 		return result;
 	}

@@ -389,17 +389,17 @@ public abstract class Command {
 	 * 
 	 * @param zCommand
 	 */
-	public static JSONArray runMultiCommand(String zCommand) {
+	/*public static JSONArray runMultiCommand(String zCommand) {
 		return runMultiCommand("0x00", zCommand);
-	}
+	}*/
 	
-	public static JSONObject runSingleCommand(String zCommand) {
+	/*public static JSONObject runSingleCommand(String zCommand) {
 		JSONArray res 		= Command.runMultiCommand(zCommand);
 		JSONObject result 	= (JSONObject) res.get(0);
 		return result;
-	}
+	}*/
 	
-	public static JSONArray runMultiCommand(String zMiniDAPPID, String zCommand) {
+	/*public static JSONArray runMultiCommand(String zMiniDAPPID, String zCommand) {
 		JSONArray res = new JSONArray();
 		
 		//First break it up..
@@ -512,7 +512,7 @@ public abstract class Command {
 		}
 		
 		return res;
-	}
+	}*/
 	
 	public static Command getCommandOnly(String zCommandName) {
 		int commandlen = ALL_COMMANDS.length;
