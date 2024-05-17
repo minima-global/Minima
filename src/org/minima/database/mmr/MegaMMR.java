@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Random;
 
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
@@ -173,18 +174,48 @@ public class MegaMMR implements Streamable {
 	
 	public static void main(String[] zArgs) {
 		
+//		MMR mmr = new MMR();
+//		
+//		mmr.addEntry(getCoinData(MiniNumber.BILLION.add(MiniNumber.ONE)));
+//		mmr.addEntry(getCoinData(MiniNumber.ONE));
+//		mmr.addEntry(getCoinData(MiniNumber.ONE));
+//		mmr.addEntry(getCoinData(MiniNumber.ONE));
+//		mmr.addEntry(getCoinData(MiniNumber.ONE));
+//		mmr.addEntry(getCoinData(MiniNumber.TWENTY));
+//		mmr.addEntry(getCoinData(MiniNumber.ONE));
+//		mmr.addEntry(getCoinData(MiniNumber.ONE));
+//		
+//		MMR.printmmrtree(mmr);
+		
+		System.out.println("** MMR Tree Prune POC **");
+		
 		MMR mmr = new MMR();
 		
-		mmr.addEntry(getCoinData(MiniNumber.BILLION.add(MiniNumber.ONE)));
-		mmr.addEntry(getCoinData(MiniNumber.ONE));
-		mmr.addEntry(getCoinData(MiniNumber.ONE));
-		mmr.addEntry(getCoinData(MiniNumber.ONE));
-		mmr.addEntry(getCoinData(MiniNumber.ONE));
-		mmr.addEntry(getCoinData(MiniNumber.ONE));
-		mmr.addEntry(getCoinData(MiniNumber.ONE));
-		mmr.addEntry(getCoinData(MiniNumber.ONE));
+		//First bit of data
+		MMRData zero 	= new MMRData(new MiniData("0x00"), new MiniNumber(0));
+		MMRData one 	= new MMRData(new MiniData("0x01"), new MiniNumber(1));
 		
+		//Add 16 entries..
+		for(int loop=0;loop<16;loop++) {
+			mmr.addEntry(one);
+		}
 		MMR.printmmrtree(mmr);
+		
+		//Set random values to Zero..
+		for(int zz=0;zz<24;zz++) {
+			int rand 				= new Random().nextInt(16);
+			MMREntryNumber entry 	= new MMREntryNumber(rand);
+			MMREntry ent = mmr.getEntry(0, entry);
+			if(ent.isEmpty() || ent.getMMRData().getValue().isEqual(MiniNumber.ZERO)) {
+				continue;
+			}
+			
+			System.out.println("\nSet entry "+rand+" to 0");
+			MMRProof proof 	= mmr.getProofToPeak(entry);
+			mmr.updateEntry(entry, proof, zero);
+			mmr.pruneTree();
+			MMR.printmmrtree(mmr);
+		}
 	}
 	
 	public static MMRData getCoinData() {
