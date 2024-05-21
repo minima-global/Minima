@@ -347,9 +347,6 @@ public class megammr extends Command {
 	}
 	
 	public static void main(String[] zArgs) throws Exception {
-		
 		checkMegaMMR(new File("./bin/newmega.mmr"));
-		
-				
 	}
 }
