@@ -392,7 +392,9 @@ public class MinimaDB {
 				//Check the MEGA MMR starts on the correct block
 				if(GeneralParams.IS_MEGAMMR && !mMegaMMR.isEmpty()) {
 					if(!mMegaMMR.getMMR().getBlockTime().isEqual(treeroot.decrement())) {
-						throw new Exception("Your MEGAMMR is BROKEN (does not start where tree ends).. please 'reset' your node.");
+						throw new Exception("Your MEGAMMR is BROKEN "
+								+ "(does not start "+mMegaMMR.getMMR().getBlockTime()+" where "
+										+ "tree ends "+treeroot+").. please 'reset' your node.");
 					}
 				}
 			}
