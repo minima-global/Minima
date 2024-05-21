@@ -260,42 +260,11 @@ public class megammr extends Command {
 				throw new CommandException("Restore file doesn't exist : "+restorefile.getAbsolutePath());
 			}
 			
-			//Load it in..
-			MegaMMRBackup mmrback = new MegaMMRBackup();
-			
-			try {
-				MinimaLogger.log("Loading MegaMMR.. size:"+MiniFormat.formatSize(restorefile.length()));
-				MiniFile.loadObjectSlow(restorefile, mmrback);
-			}catch(Exception exc) {
-				throw new CommandException(exc.toString());
-			}
-			
-			//Add the cascade and tree..
-			//..
-			
-			//Now check integrity
-			Hashtable<String,Coin> allcoins = mmrback.getMegaMMR().getAllCoins();
-			Collection<Coin> coincollection = allcoins.values();
-			Iterator<Coin> coiniterator = coincollection.iterator();
-			
-			int maxcheck = 0;
-			while(maxcheck < 10 &&  coiniterator.hasNext()) {
-				Coin coin = coiniterator.next();
-				
-				//Create the MMRData Leaf Node..
-				MMRData mmrdata = MMRData.CreateMMRDataLeafNode(coin, coin.getAmount());
-				
-				//Get the proof..
-				MMRProof mmrproof = megammr.getMMR().getProof(coin.getMMREntryNumber());
-				
-				//Now check the proof..
-				boolean valid = megammr.getMMR().checkProofTimeValid(coin.getMMREntryNumber(), mmrdata, mmrproof);
-				
-				MinimaLogger.log("Checking coin : "+coin.getCoinID()+" "+valid);
-				
-				maxcheck++;
-			}
-			
+			checkMegaMMR(restorefile);
+					
+			JSONObject resp = new JSONObject();
+			resp.put("message", "MegaMMR integrity check complete");
+			ret.put("response", resp);
 		}
 		
 		return ret;
@@ -306,20 +275,27 @@ public class megammr extends Command {
 		return new megammr();
 	}
 
-	public static void main(String[] zArgs) throws Exception {
-		
+	public static void checkMegaMMR(File zMegaMMR) throws CommandException{
 		//Load it in..
 		MegaMMRBackup mmrback = new MegaMMRBackup();
 		
-		MinimaLogger.log("Load MegaMMR..");
-		MiniFile.loadObjectSlow(new File("./bin/newmega.mmr"), mmrback);
+		MinimaLogger.log("Load MegaMMR.. "+MiniFormat.formatSize(zMegaMMR.length()));
+		MiniFile.loadObjectSlow(zMegaMMR, mmrback);
 		
 		//Get the mmr
 		MegaMMR mega 	= mmrback.getMegaMMR();
 		MMR mmr 		= mmrback.getMegaMMR().getMMR();
 		
+		//Check the IBD
+		IBD ibd = mmrback.getIBD();
+		MinimaLogger.log("Check IBD..");
+		boolean validibd = ibd.checkValidData();
+		if(!validibd) {
+			throw new CommandException("Invalid IBD");
+		}
+		
 		//Load the IBD into the MMR..
-		MinimaLogger.log("Add TxTree to Mega MMR..");
+		MinimaLogger.log("Add TxPoWTree blocks to Mega MMR..");
 		ArrayList<TxBlock> blocks = mmrback.getIBD().getTxBlocks();
 		for(TxBlock block : blocks) {
 			//Add to the MegaMMR..
@@ -327,7 +303,6 @@ public class megammr extends Command {
 		}
 		
 		MinimaLogger.log("Now check all coin proofs..");
-		
 		
 		//Add the cascade and tree..
 		mmr.finalizeSet();
@@ -353,7 +328,7 @@ public class megammr extends Command {
 			boolean valid = mmr.checkProofTimeValid(coin.getMMREntryNumber(), mmrdata, mmrproof);
 			
 			if(!valid) {
-				throw new Exception("INVALID! @ "+coin.toJSON().toString());
+				throw new CommandException("INVALID Coin proof! @ "+coin.toJSON().toString());
 			}
 			
 			maxcheck++;
@@ -363,7 +338,12 @@ public class megammr extends Command {
 		}
 		
 		MinimaLogger.log("All coins checked "+maxcheck+" / "+size);
+	}
+	
+	public static void main(String[] zArgs) throws Exception {
 		
+		checkMegaMMR(new File("./bin/newmega.mmr"));
 		
+				
 	}
 }
