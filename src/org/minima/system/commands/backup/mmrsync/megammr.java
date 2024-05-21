@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 
@@ -17,7 +16,6 @@ import org.minima.database.mmr.MMR;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MegaMMR;
-import org.minima.database.txpowtree.TxPowTree;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
 import org.minima.objects.IBD;
