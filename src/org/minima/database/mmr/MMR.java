@@ -9,8 +9,10 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Random;
 
 import org.minima.database.MinimaDB;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
@@ -468,7 +470,7 @@ public class MMR implements Streamable {
 		
 		//Get the Peaks..
 		ArrayList<MMREntry> peaks = getPeaks();
-		
+			
 		//Now take all those values and put THEM in an MMR..
 		MMRData currentpeak    	= zPeak;
 		MMREntry keeper 		= null;
@@ -478,6 +480,7 @@ public class MMR implements Streamable {
 			
 			//Add all the peaks to it..
 			for(MMREntry peak : peaks) {
+						
 				//Add this..
 				MMREntry current = newmmr.addEntry(peak.getMMRData());
 				
@@ -514,7 +517,7 @@ public class MMR implements Streamable {
 	 * 
 	 * Can point to ROOT or to a PEAK
 	 */
-	private boolean checkProof(MMRData zMMRData, MMRProof zProof) {
+	public boolean checkProof(MMRData zMMRData, MMRProof zProof) {
 		//Calculate the final data unit
 		MMRData root = zProof.calculateProof(zMMRData);
 		
@@ -739,10 +742,16 @@ public class MMR implements Streamable {
 	 * Recursive Remove subtrees below a ZERO SUM Value
 	 */
 	public void pruneTree() {
-		//Get the Peaks..
+		//Get the Peaks.. Prune the children but KEEP the Peaks..
 		ArrayList<MMREntry> peaks = getPeaks();
 		for(MMREntry peak : peaks) {
-			prune(peak);
+			
+			//Which row are the children on..
+			int childrow = peak.getChildRow();
+				
+			//PRUNE The children..
+			prune(getEntry(childrow, peak.getLeftChildEntry()));
+			prune(getEntry(childrow, peak.getRightChildEntry()));
 		}
 	}
 	
@@ -774,7 +783,6 @@ public class MMR implements Streamable {
 			removeHashTableEntry(leftchild);
 			removeHashTableEntry(rightchild);
 		}
-		
 	}
 	
 	/**
@@ -782,35 +790,43 @@ public class MMR implements Streamable {
 	 */
 	public static void main(String[] zArgs) {
 	
-//		System.out.println("** MMR Tree Prune POC **");
-//		
-//		MMR mmr = new MMR();
-//		
-//		//First bit of data
-//		MMRData zero 	= new MMRData(new MiniData("0x00"), new MiniNumber(0));
-//		MMRData one 	= new MMRData(new MiniData("0x01"), new MiniNumber(1));
-//		
-//		//Add 16 entries..
-//		for(int loop=0;loop<16;loop++) {
-//			mmr.addEntry(one);
-//		}
-//		printmmrtree(mmr);
-//		
-//		//Set random values to Zero..
-//		for(int zz=0;zz<24;zz++) {
-//			int rand 				= new Random().nextInt(16);
-//			MMREntryNumber entry 	= new MMREntryNumber(rand);
-//			MMREntry ent = mmr.getEntry(0, entry);
-//			if(ent.isEmpty() || ent.getMMRData().getValue().isEqual(MiniNumber.ZERO)) {
-//				continue;
-//			}
-//			
-//			System.out.println("\nSet entry "+rand+" to 0");
-//			MMRProof proof 	= mmr.getProofToPeak(entry);
-//			mmr.updateEntry(entry, proof, zero);
-//			mmr.pruneTree();
-//			printmmrtree(mmr);
-//		}
+		System.out.println("** MMR Tree Prune POC **");
+		
+		MMR mmr = new MMR();
+		
+		//First bit of data
+		MMRData zero 	= new MMRData(new MiniData("0x00"), new MiniNumber(0));
+		MMRData one 	= new MMRData(new MiniData("0x01"), new MiniNumber(1));
+		
+		int totcoins = 30;
+		
+		for(int loop=0;loop<totcoins;loop++) {
+			mmr.addEntry(one);
+		}
+		printmmrtree(mmr);
+		
+		//Set random values to Zero..
+		for(int zz=0;zz<10;zz++) {
+			int rand 				= new Random().nextInt(totcoins);
+			MMREntryNumber entry 	= new MMREntryNumber(rand);
+			MMREntry ent = mmr.getEntry(0, entry);
+			if(ent.isEmpty() || ent.getMMRData().getValue().isEqual(MiniNumber.ZERO)) {
+				continue;
+			}
+			
+			System.out.println("\nSet entry "+rand+" to 0");
+			
+			MMRProof checkproof = mmr.getProof(entry);
+			
+			
+			MMRProof proof 	= mmr.getProofToPeak(entry);
+			mmr.updateEntry(entry, proof, zero);
+			mmr.pruneTree();
+			printmmrtree(mmr);
+		}
+		
+		System.out.println("");
+		
 	}
 	
 	public static void printinfo(MMR zTree) {
