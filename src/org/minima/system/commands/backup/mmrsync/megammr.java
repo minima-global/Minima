@@ -247,7 +247,7 @@ public class megammr extends Command {
 			//Tell listener..
 			Main.getInstance().NotifyMainListenerOfShutDown();
 		
-		}else if(action.equals("check")) {
+		}else if(action.equals("integrity")) {
 			
 			String file = getParam("file","");
 			if(file.equals("")) {
@@ -319,10 +319,16 @@ public class megammr extends Command {
 			Coin coin = coiniterator.next();
 			
 			//Create the MMRData Leaf Node..
-			MMRData mmrdata = MMRData.CreateMMRDataLeafNode(coin, coin.getAmount());
+			MMRData mmrdata 	= MMRData.CreateMMRDataLeafNode(coin, coin.getAmount());
+			MMRProof mmrproof 	= null;
+			try {
+				
+				//Get the proof..
+				mmrproof = mmr.getProof(coin.getMMREntryNumber());
 			
-			//Get the proof..
-			MMRProof mmrproof = mmr.getProof(coin.getMMREntryNumber());
+			}catch(Exception exc) {
+				throw new CommandException("Error chcking coin @ "+coin.toJSON()+" "+exc);
+			}
 			
 			//Now check the proof..
 			boolean valid = mmr.checkProofTimeValid(coin.getMMREntryNumber(), mmrdata, mmrproof);
