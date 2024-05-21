@@ -6,12 +6,22 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.mmr.MMR;
+import org.minima.database.mmr.MMRData;
+import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MegaMMR;
+import org.minima.database.txpowtree.TxPowTree;
+import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
 import org.minima.objects.IBD;
+import org.minima.objects.TxBlock;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
@@ -236,6 +246,56 @@ public class megammr extends Command {
 			
 			//Tell listener..
 			Main.getInstance().NotifyMainListenerOfShutDown();
+		
+		}else if(action.equals("check")) {
+			
+			String file = getParam("file","");
+			if(file.equals("")) {
+				throw new CommandException("MUST specify a file to restore from");
+			}
+			
+			//Does it exist..
+			File restorefile = MiniFile.createBaseFile(file);
+			if(!restorefile.exists()) {
+				throw new CommandException("Restore file doesn't exist : "+restorefile.getAbsolutePath());
+			}
+			
+			//Load it in..
+			MegaMMRBackup mmrback = new MegaMMRBackup();
+			
+			try {
+				MinimaLogger.log("Loading MegaMMR.. size:"+MiniFormat.formatSize(restorefile.length()));
+				MiniFile.loadObjectSlow(restorefile, mmrback);
+			}catch(Exception exc) {
+				throw new CommandException(exc.toString());
+			}
+			
+			//Add the cascade and tree..
+			//..
+			
+			//Now check integrity
+			Hashtable<String,Coin> allcoins = mmrback.getMegaMMR().getAllCoins();
+			Collection<Coin> coincollection = allcoins.values();
+			Iterator<Coin> coiniterator = coincollection.iterator();
+			
+			int maxcheck = 0;
+			while(maxcheck < 10 &&  coiniterator.hasNext()) {
+				Coin coin = coiniterator.next();
+				
+				//Create the MMRData Leaf Node..
+				MMRData mmrdata = MMRData.CreateMMRDataLeafNode(coin, coin.getAmount());
+				
+				//Get the proof..
+				MMRProof mmrproof = megammr.getMMR().getProof(coin.getMMREntryNumber());
+				
+				//Now check the proof..
+				boolean valid = megammr.getMMR().checkProofTimeValid(coin.getMMREntryNumber(), mmrdata, mmrproof);
+				
+				MinimaLogger.log("Checking coin : "+coin.getCoinID()+" "+valid);
+				
+				maxcheck++;
+			}
+			
 		}
 		
 		return ret;
@@ -246,4 +306,64 @@ public class megammr extends Command {
 		return new megammr();
 	}
 
+	public static void main(String[] zArgs) throws Exception {
+		
+		//Load it in..
+		MegaMMRBackup mmrback = new MegaMMRBackup();
+		
+		MinimaLogger.log("Load MegaMMR..");
+		MiniFile.loadObjectSlow(new File("./bin/newmega.mmr"), mmrback);
+		
+		//Get the mmr
+		MegaMMR mega 	= mmrback.getMegaMMR();
+		MMR mmr 		= mmrback.getMegaMMR().getMMR();
+		
+		//Load the IBD into the MMR..
+		MinimaLogger.log("Add TxTree to Mega MMR..");
+		ArrayList<TxBlock> blocks = mmrback.getIBD().getTxBlocks();
+		for(TxBlock block : blocks) {
+			//Add to the MegaMMR..
+			mega.addBlock(block);
+		}
+		
+		MinimaLogger.log("Now check all coin proofs..");
+		
+		
+		//Add the cascade and tree..
+		mmr.finalizeSet();
+		
+		//Now check integrity
+		Hashtable<String,Coin> allcoins = mmrback.getMegaMMR().getAllCoins();
+		int size = allcoins.size();
+		
+		Collection<Coin> coincollection = allcoins.values();
+		Iterator<Coin> coiniterator = coincollection.iterator();
+		
+		int maxcheck = 0;
+		while(coiniterator.hasNext()) {
+			Coin coin = coiniterator.next();
+			
+			//Create the MMRData Leaf Node..
+			MMRData mmrdata = MMRData.CreateMMRDataLeafNode(coin, coin.getAmount());
+			
+			//Get the proof..
+			MMRProof mmrproof = mmr.getProof(coin.getMMREntryNumber());
+			
+			//Now check the proof..
+			boolean valid = mmr.checkProofTimeValid(coin.getMMREntryNumber(), mmrdata, mmrproof);
+			
+			if(!valid) {
+				throw new Exception("INVALID! @ "+coin.toJSON().toString());
+			}
+			
+			maxcheck++;
+			if(maxcheck % 5000 == 0) {
+				MinimaLogger.log("Checking coins @ "+maxcheck+" / "+size);
+			}
+		}
+		
+		MinimaLogger.log("All coins checked "+maxcheck+" / "+size);
+		
+		
+	}
 }
