@@ -254,8 +254,6 @@ public class MMR implements Streamable {
 	private void removeHashTableEntry(MMREntry zEntry) {
 		String name = getHashTableEntry(zEntry.getRow(), zEntry.getEntryNumber());
 		mSetEntries.remove(name);
-		
-		MinimaLogger.log("REMOVE row:"+zEntry.getRow()+" entry:"+zEntry.getEntryNumber());
 	}
 	
 	/**
