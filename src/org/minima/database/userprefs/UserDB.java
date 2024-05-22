@@ -100,6 +100,14 @@ public class UserDB extends JsonDB{
 		return getString("maximaname", "noname");
 	}
 	
+	public void setMaximaIcon(String zIcon) {
+		setString("maximaicon", zIcon);
+	}
+	
+	public String getMaximaIcon() {
+		return getString("maximaicon", "");
+	}
+	
 	/**
 	 * Install MDS DAPPs the first time
 	 */
