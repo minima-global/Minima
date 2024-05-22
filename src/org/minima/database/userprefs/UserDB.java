@@ -105,7 +105,7 @@ public class UserDB extends JsonDB{
 	}
 	
 	public String getMaximaIcon() {
-		return getString("maximaicon", "");
+		return getString("maximaicon", "0x00");
 	}
 	
 	/**
