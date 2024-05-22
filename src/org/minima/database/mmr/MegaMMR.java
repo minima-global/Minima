@@ -57,8 +57,6 @@ public class MegaMMR implements Streamable {
 		MiniNumber block = zBlock.getTxPoW().getBlockNumber();
 		mMMR.setBlockTime(block);
 		
-		//MinimaLogger.log("MEGAMMR : Addblock "+block);
-		
 		//Add all the peaks..
 		ArrayList<MMREntry> peaks = zBlock.getPreviousPeaks();
 		for(MMREntry peak : peaks) {
@@ -112,9 +110,12 @@ public class MegaMMR implements Streamable {
 			mAllUnspentCoins.put(output.getCoinID().to0xString(), newcoin);
 		}
 		
-		//Finish up..
-		mMMR.finalizeSet();
-		mMMR.setFinalized(false);
+		//Check values are correct..
+		MiniData mroot = mMMR.getRoot().getData();
+		MiniData broot = zBlock.getTxPoW().getMMRRoot();
+		if(!mroot.isEqual(broot)) {
+			MinimaLogger.log("[!] MEGAMMR ROOT AND TXBLOCK ROOT DONT MATCH @ "+zBlock.getTxPoW().getBlockNumber());
+		}
 	}
 	
 	/**

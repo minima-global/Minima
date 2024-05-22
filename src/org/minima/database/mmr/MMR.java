@@ -254,6 +254,8 @@ public class MMR implements Streamable {
 	private void removeHashTableEntry(MMREntry zEntry) {
 		String name = getHashTableEntry(zEntry.getRow(), zEntry.getEntryNumber());
 		mSetEntries.remove(name);
+		
+		MinimaLogger.log("REMOVE row:"+zEntry.getRow()+" entry:"+zEntry.getEntryNumber());
 	}
 	
 	/**
@@ -742,24 +744,23 @@ public class MMR implements Streamable {
 	 * Recursive Remove subtrees below a ZERO SUM Value
 	 */
 	public void pruneTree() {
-		//Get the Peaks.. Prune the children but KEEP the Peaks..
+		//Get the Peaks..
 		ArrayList<MMREntry> peaks = getPeaks();
 		for(MMREntry peak : peaks) {
-			
-			//Which row are the children on..
-			int childrow = peak.getChildRow();
-				
-			//PRUNE The children..
-			prune(getEntry(childrow, peak.getLeftChildEntry()));
-			prune(getEntry(childrow, peak.getRightChildEntry()));
+			prune(peak);
 		}
 	}
 	
+	/**
+	 * You can remove the children if your value is ZERO.
+	 * 
+	 * You may still be needed as a sibling to a valid node.
+	 * 
+	 */
 	private void prune(MMREntry zStartNode) {
 		
-		//Is this a valid MMRENtry
+		//Already pruned..
 		if(zStartNode.isEmpty()) {
-			//Already pruned..
 			return;
 		}
 		
@@ -798,7 +799,8 @@ public class MMR implements Streamable {
 		MMRData zero 	= new MMRData(new MiniData("0x00"), new MiniNumber(0));
 		MMRData one 	= new MMRData(new MiniData("0x01"), new MiniNumber(1));
 		
-		int totcoins = 30;
+		int totcoins    = 20;
+		int rem 		= 5;
 		
 		for(int loop=0;loop<totcoins;loop++) {
 			mmr.addEntry(one);
@@ -806,7 +808,7 @@ public class MMR implements Streamable {
 		printmmrtree(mmr);
 		
 		//Set random values to Zero..
-		for(int zz=0;zz<10;zz++) {
+		for(int zz=0;zz<rem;zz++) {
 			int rand 				= new Random().nextInt(totcoins);
 			MMREntryNumber entry 	= new MMREntryNumber(rand);
 			MMREntry ent = mmr.getEntry(0, entry);
@@ -817,7 +819,6 @@ public class MMR implements Streamable {
 			System.out.println("\nSet entry "+rand+" to 0");
 			
 			MMRProof checkproof = mmr.getProof(entry);
-			
 			
 			MMRProof proof 	= mmr.getProofToPeak(entry);
 			mmr.updateEntry(entry, proof, zero);
@@ -868,7 +869,7 @@ public class MMR implements Streamable {
 			}
 			
 			//The final char buffer for the row
-			char[] str = new char[512];
+			char[] str = new char[2048];
 			for(int c=0;c<512;c++) {
 				str[c] = ' ';
 			}

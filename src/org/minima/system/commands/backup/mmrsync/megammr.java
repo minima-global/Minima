@@ -4,6 +4,7 @@ import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -258,9 +259,10 @@ public class megammr extends Command {
 				throw new CommandException("Restore file doesn't exist : "+restorefile.getAbsolutePath());
 			}
 			
-			checkMegaMMR(restorefile);
+			BigInteger weight = checkMegaMMR(restorefile);
 					
 			JSONObject resp = new JSONObject();
+			resp.put("weight", weight.toString());
 			resp.put("message", "MegaMMR integrity check complete");
 			ret.put("response", resp);
 		}
@@ -273,7 +275,7 @@ public class megammr extends Command {
 		return new megammr();
 	}
 
-	public static void checkMegaMMR(File zMegaMMR) throws CommandException{
+	public static BigInteger checkMegaMMR(File zMegaMMR) throws CommandException{
 		//Load it in..
 		MegaMMRBackup mmrback = new MegaMMRBackup();
 		
@@ -293,17 +295,16 @@ public class megammr extends Command {
 		}
 		
 		//Load the IBD into the MMR..
-		MinimaLogger.log("Add TxPoWTree blocks to Mega MMR..");
 		ArrayList<TxBlock> blocks = mmrback.getIBD().getTxBlocks();
 		for(TxBlock block : blocks) {
 			//Add to the MegaMMR..
 			mega.addBlock(block);
 		}
 		
-		MinimaLogger.log("Now check all coin proofs..");
-		
-		//Add the cascade and tree..
+		//You can finalize as no more being added
 		mmr.finalizeSet();
+		
+		MinimaLogger.log("Now check all coin proofs..");
 		
 		//Now check integrity
 		Hashtable<String,Coin> allcoins = mmrback.getMegaMMR().getAllCoins();
@@ -342,9 +343,11 @@ public class megammr extends Command {
 		}
 		
 		MinimaLogger.log("All coins checked "+maxcheck+" / "+size);
+		
+		return ibd.getTotalWeight();
 	}
 	
 	public static void main(String[] zArgs) throws Exception {
-		checkMegaMMR(new File("./bin/newmega.mmr"));
+		checkMegaMMR(new File("./bin/megammr2.mmr"));
 	}
 }
