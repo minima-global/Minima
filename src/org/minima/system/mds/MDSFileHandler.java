@@ -177,7 +177,16 @@ public class MDSFileHandler implements Runnable {
 				}
 				
 				//Are we resyncing..
-				if(Main.getInstance().isShuttongDownOrRestoring()) {
+				if(Main.getInstance().isShuttongDownOrRestoring() && !command.equals("poll")) {
+					throw new MDSInvalidIDException("Attempt to access MDS during resync.. blocked");
+				}
+
+				/*if(Main.getInstance().isShuttongDownOrRestoring()) {
+					
+					//Check DB Open..
+					if(!MinimaDB.getDB().getMDSDB().isOpen()) {
+						throw new MDSInvalidIDException("Attempt to access MDS after shutdown");
+					}
 					
 					//Only allow the security MiniDAPP..
 					MiniDAPP mdcheck 	= mMDS.getMiniDAPP(minidappid);
@@ -189,7 +198,7 @@ public class MDSFileHandler implements Runnable {
 						MinimaLogger.log("Attempt to access MDS during resync from "+namev+" ..blocked", false);
 						throw new MDSInvalidIDException("Attempt to access MDS during resync.. blocked");
 					}
-				}
+				}*/
 				
 				//get the POST data
 				int contentlength = Integer.parseInt(allheaders.get("Content-Length"));
