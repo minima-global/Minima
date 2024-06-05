@@ -253,6 +253,19 @@ public class maxcontacts extends Command {
 			
 			details.put("removed", id);
 		
+		}else if(func.equals("clear")) {
+			
+			//Remove all contacts
+			ArrayList<MaximaContact> contacts = maxdb.getAllContacts();
+			for(MaximaContact contact : contacts) {
+				//And send a message to sort this out
+				Message remove = new Message(MaximaContactManager.MAXCONTACTS_DELETECONTACT);
+				remove.addInteger("id", contact.getUID());
+				max.getContactsManager().PostMessage(remove);
+			}
+			
+			details.put("found", contacts.size());
+			
 		}else if(func.equals("search")) {
 			
 			MaximaContact chosen = null;
