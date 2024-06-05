@@ -332,7 +332,7 @@ public class mds extends Command {
 			//All done..
 			JSONObject mds = new JSONObject();
 			mds.put("uid", uid);
-			//mds.put("original", minisharefile.getAbsolutePath());
+			mds.put("original", minisharefile.getAbsolutePath());
 			mds.put("copy", copyto.getAbsolutePath());
 			ret.put("response", mds);
 			
