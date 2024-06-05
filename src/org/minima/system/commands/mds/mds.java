@@ -80,6 +80,8 @@ public class mds extends Command {
 				+ "\n"
 				+ "mds action:download uid:0xABA3..\n"
 				+ "\n"
+				+ "mds action:download uid:0xABA3.. folder:Downloads\n"
+				+ "\n"
 				+ "mds action:pending\n"
 				+ "\n"
 				+ "mds action:accept uid:0xCDF6..\n"
@@ -91,7 +93,7 @@ public class mds extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","file","uid","trust","enable"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","file","folder","uid","trust","enable"}));
 	}
 	
 	@Override
@@ -304,11 +306,25 @@ public class mds extends Command {
 			//Get the Minidapp..
 			File minisharefile 	= Main.getInstance().getMDSManager().getMiniDAPPShareFile(uid);
 			if(!minisharefile.exists()) {
-				throw new CommandException("Original MiniDAPP file does not exist");
+				throw new CommandException("Original MiniDAPP file does not exist "+minisharefile.getAbsolutePath());
 			}
 			
-			//Where to place it..
-			File copyto = MiniFile.createBaseFile(minisharefile.getName());
+			File copyto 	= null;
+			String folder	= getParam("folder", "");
+			if(folder.equals("")) {
+				
+				//Where to place it..
+				copyto = MiniFile.createBaseFile(minisharefile.getName());
+				
+			}else{
+				
+				//No back allowed
+				folder.replace("..", "");
+				
+				//User folder is base folder
+				File userFolder = new File(System.getProperty("user.home"),folder);
+				copyto 			= new File(userFolder,minisharefile.getName());
+			}
 			
 			//Now download..
 			MiniFile.copyFile(minisharefile, copyto);
@@ -316,7 +332,7 @@ public class mds extends Command {
 			//All done..
 			JSONObject mds = new JSONObject();
 			mds.put("uid", uid);
-			mds.put("original", minisharefile.getAbsolutePath());
+			//mds.put("original", minisharefile.getAbsolutePath());
 			mds.put("copy", copyto.getAbsolutePath());
 			ret.put("response", mds);
 			
@@ -441,6 +457,18 @@ public class mds extends Command {
 			
 			//Now add to the DB
 			db.insertMiniDAPP(newmd);
+			
+			//Now copy the minidapp itself..so you have a copy..
+			File copyfolder = Main.getInstance().getMDSManager().getMiniDAPPCopyDappFolder(newmd.getUID());
+			MiniFile.deleteFileOrFolder(copyfolder.getAbsolutePath(), copyfolder);
+			copyfolder.mkdirs();
+			File minisharefile 	= Main.getInstance().getMDSManager().getMiniDAPPShareFile(newmd);
+			
+			try {
+				MiniFile.copyFile(minifile, minisharefile);
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
 			
 			//There has been a change
 			Message installed = new Message(MDSManager.MDS_MINIDAPPS_INSTALLED);

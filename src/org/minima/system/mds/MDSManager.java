@@ -464,11 +464,12 @@ public class MDSManager extends MessageProcessor {
 	public JSONObject runSQL(String zUID, String zSQL) {
 		
 		//Are we shutting down..
-		if(isShuttingDown()) {
+		if(Main.getInstance() != null && Main.getInstance().isShuttongDownOrRestoring()) {
+		//if(isShuttingDown()) {
 			JSONObject err = new JSONObject();
 			err.put("sql", zSQL);
 			err.put("status", false);
-			err.put("err", "MDS Shutting down..");
+			err.put("err", "Shutting down / Restoring..");
 			return err;
 		}
 		
@@ -1310,6 +1311,17 @@ public class MDSManager extends MessageProcessor {
 			
 			//Now add to the DB
 			db.insertMiniDAPP(newmd);
+			
+			//Now copy the minidapp itself..so you have a copy..
+			File copyfolder = Main.getInstance().getMDSManager().getMiniDAPPCopyDappFolder(newmd.getUID());
+			MiniFile.deleteFileOrFolder(copyfolder.getAbsolutePath(), copyfolder);
+			copyfolder.mkdirs();
+			File minisharefile 	= getMiniDAPPShareFile(newmd);
+			try {
+				MiniFile.writeDataToFile(minisharefile, alldata);
+			}catch(Exception Exc) {
+				MinimaLogger.log(Exc);
+			}
 			
 		}catch(Exception exc) {
 			
