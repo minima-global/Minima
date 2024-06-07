@@ -13,7 +13,7 @@ function createChatList(){
 	var thetable = document.getElementById("table_chatlist");
 	thetable.innerHTML="";
 	
-	for(var i=0;i<20;i++){
+	for(var i=0;i<10;i++){
 		var tablerow 	= thetable.insertRow(i);
 		var cell1 	 	= tablerow.insertCell(0);
 		

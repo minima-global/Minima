@@ -58,7 +58,7 @@ function loadAllRooms(callback){
 }
 
 function existsMaxChatID(maxchatid, callback){
-	MDS.sql("SELECT * FROM chats WHERE maxchatid='"+maxchatid+"'", function(sqlmsg){
+	MDS.sql("SELECT ID FROM chats WHERE maxchatid='"+maxchatid+"'", function(sqlmsg){
 		callback(sqlmsg.rows.length>0);
 	});
 }

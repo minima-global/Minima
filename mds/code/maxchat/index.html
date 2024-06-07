@@ -8,8 +8,14 @@
 	<!-- Load the main MDS JS lib -->
 	<script type="text/javascript" src="mds.js"></script>
 	
+	<!-- JQuery -->
 	<script type="text/javascript" src="jquery-3.7.1.min.js"></script>
 	
+	<!--  JQuery UI -->
+	<link  href="jquery-ui/jquery-ui.css" rel="stylesheet">
+	<script src="jquery-ui/external/jquery/jquery.js"></script>
+	<script src="jquery-ui/jquery-ui.js"></script>
+
 	<!-- Load the CSS Style sheet -->
 	<link rel="stylesheet" href="./css/style.css">
 	<link rel="stylesheet" href="./css/scrollbar.css">
@@ -25,6 +31,7 @@
 
 <body>
 
+
 <div style="width:100%;height:100%;background-color: #eee;" id="main_content">
 
 </div>
@@ -33,12 +40,11 @@
 
 	console.log("Screen width : "+window.innerWidth);
 
+	
 	//Load the right JS
 	$('#main_content').load('frame_full.html',function(loaded){
 		MDS.log("FRAM_full loadded");
-		
 		createChatList();
-		
 	});
 
 </script>
