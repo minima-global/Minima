@@ -512,75 +512,85 @@ public class MDSFileHandler implements Runnable {
 				if(index!=-1) {
 					fileRequested = fileRequested.substring(0,index);
 				}
-			
+				
 				//Now get the content type
 				String contenttype 	= MiniFile.getContentType(fileRequested);
 				
 				//Now get the file..
 				File webfile = new File(mRoot, fileRequested);
 				
-				//Check is valid child of parent..
-				boolean ischild = MiniFile.isChild(mRoot, webfile);
+				//Are we asking for mds.js..
+				if(webfile.getName().equalsIgnoreCase("mds.js")) {
+					//MinimaLogger.log("MDSJS OVERRIDE : "+fileRequested);
+					
+					//Always send the latest version..
+					writeHTMLResouceFile(dos, "mdsjs/mds.js");
 				
-				if(!webfile.exists() || !ischild || webfile.isDirectory()) {
-		    		
-		    		MinimaLogger.log("HTTP : unknown file requested "+fileRequested+" "+webfile.getAbsolutePath());
-		    		
-		    		dos.writeBytes("HTTP/1.0 404 OK\r\n");
-					dos.writeBytes("\r\n");
-					dos.flush();
-		    		
-		    	}else {
-		    		
-		    		//MinimaLogger.log("File Requested : "+fileRequested,false);
-		    		
-		    		boolean downloader 	= false;
-		    		String filename 	= webfile.getName();
-		    		if(filename.contains(MINIMA_DOWNLOAD_AS_FILE)){
-		    			//Remove the ending..
-		    			filename 	= filename.replace(MINIMA_DOWNLOAD_AS_FILE, "");
-		    			downloader 	= true;
-		    		}
-		    		
-		    		//Get the data length
-		    		long filelen = webfile.length();
-		    		
-					//Calculate the size of the response
-					dos.writeBytes("HTTP/1.0 200 OK\r\n");
-					if(contenttype.startsWith("text/")) {
-						dos.writeBytes("Content-Type: "+contenttype+"; charset=UTF-8\r\n");
-					}else {
-						dos.writeBytes("Content-Type: "+contenttype+"\r\n");
-					}
+				}else {
 					
-					dos.writeBytes("Content-Length: " + filelen+ "\r\n");
-					dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
+					//Check is valid child of parent..
+					boolean ischild = MiniFile.isChild(mRoot, webfile);
 					
-					//Only cache Images ?
-					if(contenttype.startsWith("image") || contenttype.endsWith("css")) {
-						dos.writeBytes("Cache-Control: max-age=604800: *\r\n");
-					}
-							
-					//Are we downloading this file..
-					if(downloader) {
-						dos.writeBytes("Content-Disposition: attachment; filename=\""+filename+"\"\r\n");
-					}
-					
-					//End Headers..
-					dos.writeBytes("\r\n");
-					
-					//Now write the data out.. stream..
-					FileInputStream fis = new FileInputStream(webfile);
-					byte[] buffer 		= new byte[32768];
-			        int length;
-			        while ((length = fis.read(buffer)) > 0) {
-			        	dos.write(buffer, 0, length);
-			        }
-				    fis.close();
-			        
-					//Flush the stream
-					dos.flush();
-		    	}
+					if(!webfile.exists() || !ischild || webfile.isDirectory()) {
+			    		
+			    		MinimaLogger.log("HTTP : unknown file requested "+fileRequested+" "+webfile.getAbsolutePath());
+			    		
+			    		dos.writeBytes("HTTP/1.0 404 OK\r\n");
+						dos.writeBytes("\r\n");
+						dos.flush();
+			    		
+			    	}else {
+			    		
+			    		//MinimaLogger.log("File Requested : "+fileRequested,false);
+			    		
+			    		boolean downloader 	= false;
+			    		String filename 	= webfile.getName();
+			    		if(filename.contains(MINIMA_DOWNLOAD_AS_FILE)){
+			    			//Remove the ending..
+			    			filename 	= filename.replace(MINIMA_DOWNLOAD_AS_FILE, "");
+			    			downloader 	= true;
+			    		}
+			    		
+			    		//Get the data length
+			    		long filelen = webfile.length();
+			    		
+						//Calculate the size of the response
+						dos.writeBytes("HTTP/1.0 200 OK\r\n");
+						if(contenttype.startsWith("text/")) {
+							dos.writeBytes("Content-Type: "+contenttype+"; charset=UTF-8\r\n");
+						}else {
+							dos.writeBytes("Content-Type: "+contenttype+"\r\n");
+						}
+						
+						dos.writeBytes("Content-Length: " + filelen+ "\r\n");
+						dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
+						
+						//Only cache Images ?
+						if(contenttype.startsWith("image") || contenttype.endsWith("css")) {
+							dos.writeBytes("Cache-Control: max-age=604800: *\r\n");
+						}
+								
+						//Are we downloading this file..
+						if(downloader) {
+							dos.writeBytes("Content-Disposition: attachment; filename=\""+filename+"\"\r\n");
+						}
+						
+						//End Headers..
+						dos.writeBytes("\r\n");
+						
+						//Now write the data out.. stream..
+						FileInputStream fis = new FileInputStream(webfile);
+						byte[] buffer 		= new byte[32768];
+				        int length;
+				        while ((length = fis.read(buffer)) > 0) {
+				        	dos.write(buffer, 0, length);
+				        }
+					    fis.close();
+				        
+						//Flush the stream
+						dos.flush();
+			    	}	
+				}				
 			}
 		
 		}catch(SSLHandshakeException exc) {

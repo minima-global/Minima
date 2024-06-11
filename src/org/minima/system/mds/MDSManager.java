@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.net.Socket;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -26,6 +27,8 @@ import org.minima.system.mds.runnable.api.APICallback;
 import org.minima.system.mds.runnable.shutter.SandboxContextFactory;
 import org.minima.system.mds.sql.MiniDAPPDB;
 import org.minima.system.network.rpc.HTTPSServer;
+import org.minima.system.network.rpc.HTTPServer;
+import org.minima.system.network.rpc.Server;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.BaseConverter;
 import org.minima.utils.JsonDB;
@@ -69,8 +72,8 @@ public class MDSManager extends MessageProcessor {
 	public static final String MDS_SHUTDOWN_MSG			= "MDS_SHUTDOWN";
 	
 	//The Main File and Command server
-	HTTPSServer mMDSFileServer;
-	HTTPSServer mMDSCommand;
+	Server mMDSFileServer;
+	//HTTPSServer mMDSCommand;
 	
 	File mMDSRootFile; 
 	
@@ -565,23 +568,36 @@ public class MDSManager extends MessageProcessor {
 		
 		if(zMessage.getMessageType().equals(MDS_INIT)) {
 			
-			//Create an SSL server
-			mMDSFileServer = new HTTPSServer(GeneralParams.MDSFILE_PORT) {
+			//SELF Signed Cert or use your own..
+			if(GeneralParams.MDS_NOSSL) {
 				
-				@Override
-				public Runnable getSocketHandler(SSLSocket zSocket) {
-					return new MDSFileHandler( getWebFolder() , zSocket, MDSManager.this,mPollStack);
-				}
-			};
+				mMDSFileServer = new HTTPServer(GeneralParams.MDSFILE_PORT) {
+					@Override
+					public Runnable getSocketHandler(Socket zSocket) {
+						return new MDSFileHandler( getWebFolder() , zSocket, MDSManager.this,mPollStack);
+					}
+				};
+				
+			}else {
+				//Create an SSL server
+				mMDSFileServer = new HTTPSServer(GeneralParams.MDSFILE_PORT) {
+					
+					@Override
+					public Runnable getSocketHandler(SSLSocket zSocket) {
+						return new MDSFileHandler( getWebFolder() , zSocket, MDSManager.this,mPollStack);
+					}
+				};
+			}
 			
-			//The Complete Server
-			mMDSCommand = new HTTPSServer(GeneralParams.MDSCOMMAND_PORT) {
-				
-				@Override
-				public Runnable getSocketHandler(SSLSocket zSocket) {
-					return new MDSCompleteHandler(zSocket, MDSManager.this, mPollStack);
-				}
-			};
+			
+//			//The Complete Server
+//			mMDSCommand = new HTTPSServer(GeneralParams.MDSCOMMAND_PORT) {
+//				
+//				@Override
+//				public Runnable getSocketHandler(SSLSocket zSocket) {
+//					return new MDSCompleteHandler(zSocket, MDSManager.this, mPollStack);
+//				}
+//			};
 			
 			//The MDS Password
 			if(GeneralParams.MDS_PASSWORD.equals("")) {
@@ -658,7 +674,7 @@ public class MDSManager extends MessageProcessor {
 			MinimaLogger.log("Shutdown MDS File and Command servers..");
 			if(GeneralParams.MDS_ENABLED) {
 				mMDSFileServer.shutdown();
-				mMDSCommand.shutdown();
+				//mMDSCommand.shutdown();
 			}
 			
 			//Save all the DBs

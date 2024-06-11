@@ -286,6 +286,11 @@ public class GeneralParams {
 	public static String RESCUE_MEGAMMR_NODE 	= "";
 	
 	/**
+	 * Do we MegaMMR sync on Heavier Chain
+	 */
+	public static boolean MDS_NOSSL = false;
+	
+	/**
 	 * Reset all params to their default settings.. ANDROID keeps them after shutdown
 	 */
 	public static void resetDefaults() {
@@ -348,6 +353,7 @@ public class GeneralParams {
 		IS_MEGAMMR 			= false;
 		NOTIFY_ALL_TXPOW 	= false;
 		RESCUE_MEGAMMR_NODE	= "";
+		MDS_NOSSL 			= false;
 	}
 	
 }
