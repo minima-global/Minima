@@ -73,7 +73,6 @@ public class MDSManager extends MessageProcessor {
 	
 	//The Main File and Command server
 	Server mMDSFileServer;
-	//HTTPSServer mMDSCommand;
 	
 	File mMDSRootFile; 
 	
@@ -589,16 +588,6 @@ public class MDSManager extends MessageProcessor {
 				};
 			}
 			
-			
-//			//The Complete Server
-//			mMDSCommand = new HTTPSServer(GeneralParams.MDSCOMMAND_PORT) {
-//				
-//				@Override
-//				public Runnable getSocketHandler(SSLSocket zSocket) {
-//					return new MDSCompleteHandler(zSocket, MDSManager.this, mPollStack);
-//				}
-//			};
-			
 			//The MDS Password
 			if(GeneralParams.MDS_PASSWORD.equals("")) {
 				//Create a NEW Main Password..
@@ -674,7 +663,6 @@ public class MDSManager extends MessageProcessor {
 			MinimaLogger.log("Shutdown MDS File and Command servers..");
 			if(GeneralParams.MDS_ENABLED) {
 				mMDSFileServer.shutdown();
-				//mMDSCommand.shutdown();
 			}
 			
 			//Save all the DBs
