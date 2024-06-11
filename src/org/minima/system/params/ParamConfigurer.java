@@ -408,7 +408,7 @@ public class ParamConfigurer {
             	TestParams.setTestParams();
             }
         }),
-        nomdsssl("nomdsssl", "Disable the self signed SSL cert for MDS. Use STunnel or your own SSL proxy instead.", (args, configurer) -> {
+        nosslmds("nosslmds", "Disable the self signed SSL cert for MDS. Use STunnel or your own SSL proxy instead.", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.MDS_NOSSL = true;
             }
