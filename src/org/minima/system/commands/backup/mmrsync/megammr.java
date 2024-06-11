@@ -163,6 +163,10 @@ public class megammr extends Command {
 		
 		}else if(action.equals("import")) {
 			
+			if(!GeneralParams.IS_MEGAMMR) {
+				throw new CommandException("MegaMMR not enabled");
+			}
+			
 			String file = getParam("file","");
 			if(file.equals("")) {
 				throw new CommandException("MUST specify a file to restore from");
@@ -192,10 +196,8 @@ public class megammr extends Command {
 			//Now we have the file.. lets set it..
 			Main.getInstance().archiveResetReady(false);
 			
-			//Are we MEGA MMR
-			if(GeneralParams.IS_MEGAMMR) {
-				MinimaDB.getDB().getMegaMMR().clear();
-			}
+			//Get ready..
+			MinimaDB.getDB().getMegaMMR().clear();
 			
 			//Now process the IBD.. Override the restore setting
 			MinimaLogger.log("Process new IBD");
