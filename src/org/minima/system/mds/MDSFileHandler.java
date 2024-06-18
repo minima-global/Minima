@@ -499,6 +499,12 @@ public class MDSFileHandler implements Runnable {
 					
 					//And write that out..
 					writeHTMLPage(dos, success);
+				
+				}else if(fileRequested.endsWith("/mds.js")) {
+					
+					//Always send the latest version..
+					writeHTMLResouceFile(dos, "mdsjs/mds.js");
+				
 				}else {
 					//Write this page..
 					writeHTMLResouceFile(dos, fileRequested);
