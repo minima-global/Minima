@@ -225,7 +225,7 @@ public class megammr extends Command {
 			}
 			
 			JSONObject resp = new JSONObject();
-			resp.put("message", "MegaMMR import fininshed.. please restart");
+			resp.put("message", "MegaMMR import finished.. please restart");
 			ret.put("response", resp);
 			
 			//Don't do the usual shutdown hook
