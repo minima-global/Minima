@@ -131,7 +131,9 @@ public class mysql extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database","user","password","keys","keyuses","phrase","address","enable","file","statecheck","logs","maxexport","readonly"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database",
+				"user","password","keys","keyuses","phrase","address","txpowid",
+				"enable","file","statecheck","logs","maxexport","readonly"}));
 	}
 	
 	@Override
@@ -610,6 +612,7 @@ public class mysql extends Command {
 				for(TxBlock block : mysqlblocks) {
 					
 					TxPoW txp 			= block.getTxPoW();
+					String txpid 		= block.getTxPoW().getTxPoWID();
 					long blocknumber 	= txp.getBlockNumber().getAsLong();
 					
 					//Date string
@@ -631,6 +634,7 @@ public class mysql extends Command {
 								
 								JSONObject created = new JSONObject();
 								created.put("block", blocknumber);
+								created.put("blockid", txpid);
 								created.put("date", date);
 								created.put("coin", cc.toJSON());
 								outarr.add(created);
@@ -654,6 +658,7 @@ public class mysql extends Command {
 								
 								JSONObject spent = new JSONObject();
 								spent.put("block", blocknumber);
+								spent.put("blockid", txpid);
 								spent.put("date", date);
 								spent.put("coin", incoin.getCoin().toJSON());
 								inarr.add(spent);
@@ -1060,6 +1065,22 @@ public class mysql extends Command {
 			
 			JSONObject resp = new JSONObject();
 			resp.put("time", MiniFormat.ConvertMilliToTime(timediff));
+			
+			ret.put("response", resp);
+			
+		}else if(action.equals("findtxpow")) {
+			
+			String txpowid = getParam("txpowid");
+			
+			JSONObject resp = new JSONObject();
+			
+			TxPoW txp = mysql.getTxPoW(txpowid);
+			if(txp == null) {
+				resp.put("found", false);
+			}else {
+				resp.put("found", true);
+				resp.put("txpow", txp.toJSON());
+			}
 			
 			ret.put("response", resp);
 			

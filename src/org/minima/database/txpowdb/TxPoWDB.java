@@ -11,7 +11,10 @@ import org.minima.database.txpowdb.ram.RamData;
 import org.minima.database.txpowdb.sql.TxPoWSqlDB;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
+import org.minima.system.Main;
 import org.minima.system.brains.TxPoWSearcher;
+import org.minima.utils.MinimaLogger;
+import org.minima.utils.messages.Message;
 
 /**
  * The Main TxPoW store for the whole app
@@ -56,6 +59,13 @@ public class TxPoWDB {
 	public boolean addTxPoW(TxPoW zTxPoW) {
 		//Get the ID
 		String txpid = zTxPoW.getTxPoWID();
+		
+		//Post a message to MAIN to store in MySQL..
+		try {
+			Main.getInstance().PostMessage(new Message(Main.MAIN_AUTOBACKUP_TXPOW).addObject("txpow", zTxPoW));
+		}catch(Exception exc) {
+			MinimaLogger.log("STORESQl TxPoW : "+exc.toString());
+		}
 		
 		//Do we have it already..
 		if(!mRamDB.exists(txpid)) {

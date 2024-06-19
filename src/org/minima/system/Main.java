@@ -36,6 +36,7 @@ import org.minima.utils.messages.MessageListener;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
 import org.minima.utils.messages.TimerProcessor;
+import org.minima.utils.mysql.MySQLConnect;
 import org.minima.utils.ssl.SSLManager;
 
 public class Main extends MessageProcessor {
@@ -97,6 +98,8 @@ public class Main extends MessageProcessor {
 	
 	public static final String MAIN_AUTOBACKUP_MYSQL 	= "MAIN_AUTOBACKUP_MYSQL";
 	long MAIN_AUTOBACKUP_MYSQL_TIMER					= 1000 * 60 * 60 * 2;
+	
+	public static final String MAIN_AUTOBACKUP_TXPOW 	= "MAIN_AUTOBACKUP_TXPOW";
 	
 	/**
 	 * Auto backup every 24 hrs..
@@ -882,7 +885,35 @@ public class Main extends MessageProcessor {
 					MinimaLogger.log("MYSQL AUTOBACKUP OK "+response.toString());
 				}
 			}
+		
+		}else if(zMessage.getMessageType().equals(MAIN_AUTOBACKUP_TXPOW)) {
 			
+			UserDB udb = MinimaDB.getDB().getUserDB();
+			
+			//Are we enabled..
+			if(udb.getAutoBackupMySQL()) {
+				
+				//Get the TxPoW
+				TxPoW txp = (TxPoW) zMessage.getObject("txpow");
+				
+				MySQLConnect mysql = new MySQLConnect(
+						udb.getAutoMySQLHost(), 
+						udb.getAutoMySQLDB(), 
+						udb.getAutoMySQLUser(), 
+						udb.getAutoMySQLPassword());
+				mysql.init();
+				
+				//Now save..
+				boolean status = mysql.saveTxPoW(txp);
+				
+				//Output
+				if(!status) {
+					MinimaLogger.log("[ERROR] MYSQL TXPOW AUTOBACKUP");
+				}else {
+					//MinimaLogger.log("MYSQL TXPOW AUTOBACKUP SUCCESS! "+txp.getTxPoWID());
+				}
+			}
+		
 		}else if(zMessage.getMessageType().equals(MAIN_CLEANDB_SQL)) {
 			
 			//Do it again..
