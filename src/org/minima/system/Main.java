@@ -101,6 +101,8 @@ public class Main extends MessageProcessor {
 	
 	public static final String MAIN_AUTOBACKUP_TXPOW 	= "MAIN_AUTOBACKUP_TXPOW";
 	
+	public static final String MAIN_DO_RESCUE 			= "MAIN_DO_RESCUE";
+	
 	/**
 	 * Auto backup every 24 hrs..
 	 */
@@ -925,6 +927,28 @@ public class Main extends MessageProcessor {
 			//Same with the ArchiveDB - if not running an archive node
 			MinimaDB.getDB().getArchive().checkForCleanDB();
 			
+		}else if(zMessage.getMessageType().equals(MAIN_DO_RESCUE)) {
+			
+			if(!GeneralParams.RESCUE_MEGAMMR_NODE.equals("")) {
+				
+				//Make sure all keys created..
+				mInitKeysCreated = true;
+				
+				MinimaLogger.log("Run MegaMMR Sync from Rescuse Node "+GeneralParams.RESCUE_MEGAMMR_NODE);
+				
+				//Run a rescue command..
+				String command = "megammrsync action:resync host:"+GeneralParams.RESCUE_MEGAMMR_NODE;
+				
+				//And run it..
+				JSONObject res = CommandRunner.getRunner().runSingleCommand(command);
+				
+				//Output the result
+				MinimaLogger.log(res.toString());
+				
+				//At this point.. STOP..
+				Runtime.getRuntime().halt(0);
+			}
+		
 		}else if(zMessage.getMessageType().equals(MAIN_PULSE)) {
 			
 			//And then wait again..

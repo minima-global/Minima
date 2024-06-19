@@ -19,11 +19,14 @@ import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
+import org.minima.system.commands.CommandRunner;
 import org.minima.system.network.p2p.P2PDB;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONObject;
+import org.minima.utils.messages.TimerMessage;
 
 public class MinimaDB {
 
@@ -406,18 +409,30 @@ public class MinimaDB {
 			getArchive().checkCascadeRequired(getCascade());
 			
 		}catch(Exception exc) {
-			MinimaLogger.log("SERIOUS ERROR loadAllDB ");
+			MinimaLogger.log("SERIOUS ERROR loadAllDB : ");
 			MinimaLogger.log(exc);
 			
-			//Are we on mobile or JNLP
-			if(GeneralParams.IS_MOBILE || GeneralParams.IS_JNLP) {
-			
-				//Set this param
-				Main.getInstance().setStartUpError(true, exc.toString());
+			//Do we have a rescue NODE
+			String err = exc.toString();
+			if(!GeneralParams.RESCUE_MEGAMMR_NODE.equals("")) {
+				
+				MinimaLogger.log("RESCUE NODE FOUND.. attempting rescue @ "+GeneralParams.RESCUE_MEGAMMR_NODE);
+				
+				//Post a message that does a RESCUE..
+				Main.getInstance().PostTimerMessage(new TimerMessage(1000, Main.MAIN_DO_RESCUE));
 				
 			}else {
-				//At this point.. STOP..
-				Runtime.getRuntime().halt(0);
+				
+				//Are we on mobile or JNLP
+				if(GeneralParams.IS_MOBILE || GeneralParams.IS_JNLP) {
+				
+					//Set this param
+					Main.getInstance().setStartUpError(true, err);
+					
+				}else {
+					//At this point.. STOP..
+					Runtime.getRuntime().halt(0);
+				}
 			}
 		}
 		
