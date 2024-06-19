@@ -425,19 +425,10 @@ public class NIOMessage implements Runnable {
 							HEAVIER_CHAIN_FOUND++;
 							if(HEAVIER_CHAIN_FOUND > 0) {
 								
-								MinimaLogger.log("Connected to Heavier chain multiple times! - Run MegaMMR Sync from Rescuse Node "+GeneralParams.RESCUE_MEGAMMR_NODE);
+								MinimaLogger.log("RESCUE NODE FOUND.. attempting rescue @ "+GeneralParams.RESCUE_MEGAMMR_NODE);
 								
-								//Run a rescue command..
-								String command = "megammrsync action:resync host:"+GeneralParams.RESCUE_MEGAMMR_NODE;
-								
-								//And run it..
-								JSONObject res = CommandRunner.getRunner().runSingleCommand(command);
-								
-								//Output the result
-								MinimaLogger.log(res.toString());
-								
-								//Hard stop..
-								Runtime.getRuntime().exit(0);
+								//Post a message that does a RESCUE..
+								Main.getInstance().PostTimerMessage(new TimerMessage(1000, Main.MAIN_DO_RESCUE));
 							}
 						}
 						

@@ -931,10 +931,10 @@ public class Main extends MessageProcessor {
 			
 			if(!GeneralParams.RESCUE_MEGAMMR_NODE.equals("")) {
 				
+				MinimaLogger.log("Running MegaMMR Sync from Rescuse Node "+GeneralParams.RESCUE_MEGAMMR_NODE);
+				
 				//Make sure all keys created..
 				mInitKeysCreated = true;
-				
-				MinimaLogger.log("Run MegaMMR Sync from Rescuse Node "+GeneralParams.RESCUE_MEGAMMR_NODE);
 				
 				//Run a rescue command..
 				String command = "megammrsync action:resync host:"+GeneralParams.RESCUE_MEGAMMR_NODE;
