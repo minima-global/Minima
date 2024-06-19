@@ -79,7 +79,8 @@ public class mysql extends Command {
 				+ "    integrity : Check the block order and block parents are correct in the MySQL db.\n"
 				+ "    update : Update the MySQL db with the latest syncblocks from the node's archive db.\n"
 				+ "    addresscheck : Check the history of all the spent and unspent coins from an address.\n"
-				+ "    autobackup : Automatically save archive data to MySQL DB. Use with enable.\n"
+				+ "    autobackup : Automatically save archive data to MySQL DB. Use with enable. Also stores all TxPoW the node sees.\n"
+				+ "    findtxpow : Search for an individual TxPoW (only works if autobackup is enabled).\n"
 				+ "    resync : Perform a chain or seed re-sync from the specified MySQL db.\n"
 				+ "             Will shutdown the node so you must restart it once complete.\n"
 				+ "    wipe :  Be careful. Wipe the MySQL db.\n"
@@ -116,17 +117,19 @@ public class mysql extends Command {
 				+ "\n"
 				+ "mysql host:dockermysql database:archivedb user:archiveuser password:archivepassword action:info\n"
 				+ "\n"
-				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:integrity\n"
+				+ "mysql ..LOGIN_DETAILS.. action:integrity\n"
 				+ "\n"
-				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:update\n"
+				+ "mysql ..LOGIN_DETAILS.. action:update\n"
 				+ "\n"
-				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:addresscheck address:MxG08.. \n"
+				+ "mysql ..LOGIN_DETAILS.. action:addresscheck address:MxG08.. \n"
 				+ "\n"
-				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:resync\n"
+				+ "mysql ..LOGIN_DETAILS.. action:resync\n"
 				+ "\n"
-				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:resync phrase:\"24 WORDS HERE\" keys:90 keyuses:2000\n"
+				+ "mysql ..LOGIN_DETAILS.. action:findtxpow txpowid:0x00FFEEDD..\n"
 				+ "\n"
-				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:h2export file:archivexport-DDMMYY.gzip\n";
+				+ "mysql ..LOGIN_DETAILS.. action:resync phrase:\"24 WORDS HERE\" keys:90 keyuses:2000\n"
+				+ "\n"
+				+ "mysql ..LOGIN_DETAILS.. action:h2export file:archivexport-DDMMYY.gzip\n";
 	}
 	
 	@Override
