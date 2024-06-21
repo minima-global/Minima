@@ -499,11 +499,11 @@ public class MMR implements Streamable {
 				totalproof.addProofChunk(proof.getProofChunk(i));
 			}
 			
-			//Recalculate
-			currentpeak = totalproof.calculateProof(currentpeak);
+			//Recalculate - Start Peak + FULL Proof
+			currentpeak = totalproof.calculateProof(zPeak);
 			
 			//What to follow..
-			keeper      = null;
+			keeper = null;
 			
 			//Now get the peaks.. repeat..
 			peaks = newmmr.getPeaks();
