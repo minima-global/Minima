@@ -188,13 +188,13 @@ public class TxPowTree implements Streamable {
 	}
 	
 	/**
-	 * Get the Top 256 blocks.. 
+	 * Get the Top 512 blocks.. 
 	 */
 	private void calculatePulseList() {
 		ArrayList<MiniData> blocklist = new ArrayList<>();
 		TxPoWTreeNode current = getTip();
 		int counter = 0;
-		while(current!=null && counter<256) {
+		while(current!=null && counter<512) {
 			blocklist.add(current.getTxPoW().getTxPoWIDData());
 			current = current.getParent();
 			counter++;
