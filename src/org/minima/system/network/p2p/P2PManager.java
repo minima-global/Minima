@@ -193,11 +193,12 @@ public class P2PManager extends MessageProcessor {
                 //MinimaLogger.log("[+] Connecting to saved node: " + connectionAddress);
             
             } else {
-//                state.setDoingDiscoveryConnection(true);
 //                P2PFunctions.log_info("[+] Doing discovery connection with default node");
 //                //MinimaLogger.log("[+] Doing discovery connection with default node");
 //                
-//                doDiscoveryPing();
+
+//              state.setDoingDiscoveryConnection(true);
+                doDiscoveryPing();
             }
         }
         if (connectionAddress != null) {
@@ -218,7 +219,7 @@ public class P2PManager extends MessageProcessor {
     		//Only show the message every few minutes..
     		long timenow = System.currentTimeMillis();
     		if(timenow - mLastNotifyNoPeers > NOTIFY_NOPEERS_TIMER) {
-    			MinimaLogger.log("There are NO DEFAULT PEERS - please use command 'peers' to add a valid peer..");
+    			MinimaLogger.log("No default Peers found - please use command 'peers' to add a valid peer..");
     			mLastNotifyNoPeers = timenow;
     		}
     		
@@ -450,18 +451,20 @@ public class P2PManager extends MessageProcessor {
                 }
 
             } else {
-//                if (state.getAllLinks().size() == 0 && state.isStartupComplete()){
-//                    P2PFunctions.log_node_runner("[!] Node is not connected to the network. Attempting to join the network again now. Please check your not has an internet connection.");
-//                }
-//                if (state.getKnownPeers().size() == 0 && !state.isStartupComplete()){
-//                    P2PDB p2pdb = MinimaDB.getDB().getP2PDB();
-//                    List<InetSocketAddress> peers = p2pdb.getPeersList();
-//                    for(InetSocketAddress peer: peers){
-//                        mPeersChecker.PostMessage(new Message(P2PPeersChecker.PEERS_ADDPEERS).addObject("address", peer));
-//                    }
-//                }
+                if (state.getAllLinks().size() == 0 && state.isStartupComplete()){
+                    P2PFunctions.log_node_runner("[!] Node is not connected to the network. Attempting to join the network again now. Please check your not has an internet connection.");
+                }
+                if (state.getKnownPeers().size() == 0 && !state.isStartupComplete()){
+                    P2PDB p2pdb = MinimaDB.getDB().getP2PDB();
+                    List<InetSocketAddress> peers = p2pdb.getPeersList();
+                    for(InetSocketAddress peer: peers){
+                        mPeersChecker.PostMessage(new Message(P2PPeersChecker.PEERS_ADDPEERS).addObject("address", peer));
+                    }
+                }
+                
+                //Don;t set discovery on as there are no default peers..
 //                state.setDoingDiscoveryConnection(true);
-//                doDiscoveryPing();
+                doDiscoveryPing();
             }
         }
 
