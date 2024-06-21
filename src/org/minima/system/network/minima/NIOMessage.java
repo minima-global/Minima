@@ -829,7 +829,7 @@ public class NIOMessage implements Runnable {
 				//Check within limits..
 				if(pulsemsg.size()>1000) {
 					//Too many..!
-					MinimaLogger.log("Too mnay messages in PULSE "+pulsemsg.size()+" max:1000");
+					MinimaLogger.log("Too many messages in PULSE "+pulsemsg.size()+" max:1000");
 					return;
 				}
 				
