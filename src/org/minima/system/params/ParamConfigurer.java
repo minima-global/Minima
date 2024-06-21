@@ -413,6 +413,11 @@ public class ParamConfigurer {
                 GeneralParams.MDS_NOSSL = true;
             }
         }),
+        mysqlalltxpow("mysqlalltxpow", "Store all TxPoW in MySQL when autobackup enabled.", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.MYSQL_STORE_ALLTXPOW = true;
+            }
+        }),
         rescuenode("rescuenode", "If you connect to a heavier chain use this MegaMMR node to resync", (arg, configurer) -> {
         	GeneralParams.RESCUE_MEGAMMR_NODE 	= arg.trim();	
         }),

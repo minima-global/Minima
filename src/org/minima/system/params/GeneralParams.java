@@ -286,9 +286,14 @@ public class GeneralParams {
 	public static String RESCUE_MEGAMMR_NODE 	= "";
 	
 	/**
-	 * Do we MegaMMR sync on Heavier Chain
+	 * Do we use use HTTP instead of self signed HTTPS for MDS
 	 */
 	public static boolean MDS_NOSSL = false;
+	
+	/**
+	 * Do we store all txpow with MySQL Autobackup
+	 */
+	public static boolean MYSQL_STORE_ALLTXPOW = false;
 	
 	/**
 	 * Reset all params to their default settings.. ANDROID keeps them after shutdown
@@ -353,7 +358,8 @@ public class GeneralParams {
 		IS_MEGAMMR 			= false;
 		NOTIFY_ALL_TXPOW 	= false;
 		RESCUE_MEGAMMR_NODE	= "";
-		MDS_NOSSL 			= false;
+		MDS_NOSSL 			 = false;
+		MYSQL_STORE_ALLTXPOW = false;
 	}
 	
 }

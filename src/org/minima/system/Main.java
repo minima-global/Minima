@@ -890,29 +890,31 @@ public class Main extends MessageProcessor {
 		
 		}else if(zMessage.getMessageType().equals(MAIN_AUTOBACKUP_TXPOW)) {
 			
-			UserDB udb = MinimaDB.getDB().getUserDB();
+			//Are we storing all the TxPoW
+			if(GeneralParams.MYSQL_STORE_ALLTXPOW) {
 			
-			//Are we enabled..
-			if(udb.getAutoBackupMySQL()) {
+				UserDB udb = MinimaDB.getDB().getUserDB();
 				
-				//Get the TxPoW
-				TxPoW txp = (TxPoW) zMessage.getObject("txpow");
-				
-				MySQLConnect mysql = new MySQLConnect(
-						udb.getAutoMySQLHost(), 
-						udb.getAutoMySQLDB(), 
-						udb.getAutoMySQLUser(), 
-						udb.getAutoMySQLPassword());
-				mysql.init();
-				
-				//Now save..
-				boolean status = mysql.saveTxPoW(txp);
-				
-				//Output
-				if(!status) {
-					MinimaLogger.log("[ERROR] MYSQL TXPOW AUTOBACKUP");
-				}else {
-					//MinimaLogger.log("MYSQL TXPOW AUTOBACKUP SUCCESS! "+txp.getTxPoWID());
+				//Are we enabled..
+				if(udb.getAutoBackupMySQL()) {
+					
+					//Get the TxPoW
+					TxPoW txp = (TxPoW) zMessage.getObject("txpow");
+					
+					MySQLConnect mysql = new MySQLConnect(
+							udb.getAutoMySQLHost(), 
+							udb.getAutoMySQLDB(), 
+							udb.getAutoMySQLUser(), 
+							udb.getAutoMySQLPassword());
+					mysql.init();
+					
+					//Now save..
+					boolean status = mysql.saveTxPoW(txp);
+					
+					//Output
+					if(!status) {
+						MinimaLogger.log("[ERROR] MYSQL TXPOW AUTOBACKUP");
+					}
 				}
 			}
 		
