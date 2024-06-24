@@ -1043,8 +1043,8 @@ public class MDSManager extends MessageProcessor {
 			
 			//The rest are normal
 			checkInstalled("block", "default/block-2.3.1.mds.zip", allminis, false);
-			checkInstalled("chatter", "default/chatter-1.8.1.mds.zip", allminis, false);
-			checkInstalled("docs", "default/docs-1.4.2.mds.zip", allminis, false);
+			checkInstalled("chatter", "default/chatter-1.10.0.mds.zip", allminis, false);
+			checkInstalled("docs", "default/docs-1.5.0.mds.zip", allminis, false);
 			//checkInstalled("ethwallet", "default/ethwallet-1.4.5.mds.zip", allminis, false);
 			checkInstalled("filez", "default/filez-1.9.4.mds.zip", allminis, false);
 			checkInstalled("future cash", "default/futurecash-2.4.1.mds.zip", allminis, false);
@@ -1060,7 +1060,6 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("sql bench", "default/sqlbench-0.5.1.mds.zip", allminis, false);
 			checkInstalled("terminal", "default/terminal-2.3.2.mds.zip", allminis, false);
 			checkInstalled("the safe", "default/thesafe-1.6.3.mds.zip", allminis, false);
-			//checkInstalled("vault", "default/vault-1.0.2.mds.zip", allminis, false);
 			checkInstalled("vestr", "default/vestr-1.8.0.mds.zip", allminis, false);
 			checkInstalled("wallet", "default/wallet-2.44.0.mds.zip", allminis, false);
 		}
