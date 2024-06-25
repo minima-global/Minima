@@ -260,6 +260,10 @@ public class UserDB extends JsonDB{
 	/**
 	 * If you delete a MIniDAPP do NOT reinstall it..
 	 */
+	public void clearUninstalledMiniDAPP() {
+		setJSONArray("minidapps_uninstalled", new JSONArray());
+	}
+	
 	public JSONArray getUninstalledMiniDAPP() {
 		return getJSONArray("minidapps_uninstalled");
 	}

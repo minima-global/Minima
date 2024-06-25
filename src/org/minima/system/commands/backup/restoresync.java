@@ -143,6 +143,8 @@ public class restoresync extends Command {
 			//Load these values 
 			File udb = new File(basedb,"userprefs.db");
 			MinimaDB.getDB().getUserDB().loadDB(udb);
+			MinimaDB.getDB().getUserDB().clearUninstalledMiniDAPP();
+			
 			udb = new File(basedb,"p2p.db");
 			MinimaDB.getDB().getP2PDB().loadDB(udb);
 			
