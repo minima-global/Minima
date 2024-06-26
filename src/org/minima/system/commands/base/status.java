@@ -95,6 +95,15 @@ public class status extends Command {
 		
 		//How many Devices..
 		if(complete) {
+			
+			//Are we normal Mine mode.. UNplugged on Phone ?
+			boolean normalmode = Main.getInstance().isNormalMineMode();
+			if(normalmode) {
+				details.put("powmode", "normal");
+			}else {
+				details.put("powmode", "low");
+			}
+			
 			BigDecimal blkweightdec 	= new BigDecimal(txptree.getTip().getTxPoW().getBlockDifficulty().getDataValue());
 			BigDecimal blockWeight 		= Crypto.MAX_VALDEC.divide(blkweightdec, MathContext.DECIMAL32);
 	
