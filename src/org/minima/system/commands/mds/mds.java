@@ -311,6 +311,7 @@ public class mds extends Command {
 			
 			File copyto 	= null;
 			String folder	= getParam("folder", "");
+			
 			if(folder.equals("")) {
 				
 				//Where to place it..
@@ -324,6 +325,14 @@ public class mds extends Command {
 				//User folder is base folder
 				File userFolder = new File(System.getProperty("user.home"),folder);
 				copyto 			= new File(userFolder,minisharefile.getName());
+			}
+			
+			//Log it.. 
+			//MinimaLogger.log("MDS Share Dapp : "+minisharefile.getAbsolutePath()+" to "+copyto.getAbsolutePath());
+			
+			//Check Parents Exist
+			if(!copyto.getParentFile().exists()) {
+				copyto.getParentFile().mkdirs();
 			}
 			
 			//Now download..
