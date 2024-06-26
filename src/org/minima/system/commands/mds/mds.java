@@ -80,6 +80,8 @@ public class mds extends Command {
 				+ "\n"
 				+ "mds action:download uid:0xABA3..\n"
 				+ "\n"
+				+ "mds action:download uid:0xABA3.. locationonly:true\n"
+				+ "\n"
 				+ "mds action:download uid:0xABA3.. folder:Downloads\n"
 				+ "\n"
 				+ "mds action:pending\n"
@@ -93,7 +95,8 @@ public class mds extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","file","folder","uid","trust","enable"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","file","folder",
+				"uid","trust","enable","locationonly"}));
 	}
 	
 	@Override
@@ -307,6 +310,16 @@ public class mds extends Command {
 			File minisharefile 	= Main.getInstance().getMDSManager().getMiniDAPPShareFile(uid);
 			if(!minisharefile.exists()) {
 				throw new CommandException("Original MiniDAPP file does not exist "+minisharefile.getAbsolutePath());
+			}
+			
+			//Do we just want the location
+			boolean locationonly = getBooleanParam("locationonly", false);
+			if(locationonly) {
+				JSONObject mds = new JSONObject();
+				mds.put("uid", uid);
+				mds.put("original", minisharefile.getAbsolutePath());
+				ret.put("response", mds);
+				return ret;
 			}
 			
 			File copyto 	= null;
