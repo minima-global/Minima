@@ -33,7 +33,7 @@ public class sendfrom extends Command {
 	}
 	
 	public sendfrom() {
-		super("sendfrom","[fromaddress:] (address:Mx..|0x..) (amount:) (tokenid:) (mine:) - Send Minima or Tokens from a certain address");
+		super("sendfrom","[fromaddress:] [address:] [amount:] (tokenid:) [script:] [privatekey:] [keyuses:] (mine:) - Send Minima or Tokens from a certain address");
 	}
 	
 	@Override

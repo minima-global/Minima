@@ -33,7 +33,7 @@ public class createfrom extends Command {
 	}
 	
 	public createfrom() {
-		super("createfrom","[fromaddress:] (address:Mx..|0x..) (amount:) (tokenid:) - Create unsigned txn from a certain address");
+		super("createfrom","[fromaddress:] [address:] [amount:] (tokenid:) [script:] - Create unsigned txn from a certain address");
 	}
 	
 	@Override
