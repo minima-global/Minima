@@ -21,7 +21,9 @@ import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
 import org.minima.objects.IBD;
 import org.minima.objects.TxBlock;
+import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
@@ -250,22 +252,33 @@ public class megammr extends Command {
 		
 		}else if(action.equals("integrity")) {
 			
-			String file = getParam("file","");
-			if(file.equals("")) {
-				throw new CommandException("MUST specify a file to restore from");
-			}
+			String file = getParam("file");
 			
 			//Does it exist..
 			File restorefile = MiniFile.createBaseFile(file);
 			if(!restorefile.exists()) {
-				throw new CommandException("Restore file doesn't exist : "+restorefile.getAbsolutePath());
+				throw new CommandException("MegaMMR file doesn't exist : "+restorefile.getAbsolutePath());
 			}
 			
-			BigInteger weight = checkMegaMMR(restorefile);
-					
+			//Load it in..
+			MegaMMRBackup mmrback = new MegaMMRBackup();
+			
+			MinimaLogger.log("Load MegaMMR.. "+MiniFormat.formatSize(restorefile.length()));
+			MiniFile.loadObjectSlow(restorefile, mmrback);
+			
+			BigInteger weight = checkMegaMMR(mmrback);
+			
+			IBD ibd 			= mmrback.getIBD();
+			TxPoW cascade 		= ibd.getCascade().getTip().getTxPoW();
+			MiniNumber casctip 	= cascade.getBlockNumber();
+			int casclen 		= ibd.getTxBlocks().size();
+			MiniNumber chaintip	= casctip.add(new MiniNumber(casclen));
+			
 			JSONObject resp = new JSONObject();
+			resp.put("cascadetip", casctip);
+			resp.put("cascadedate", new Date(cascade.getTimeMilli().getAsLong()));
+			resp.put("chaintip", chaintip);
 			resp.put("weight", weight.toString());
-			resp.put("message", "MegaMMR integrity check complete");
 			ret.put("response", resp);
 		}
 		
@@ -283,6 +296,11 @@ public class megammr extends Command {
 		
 		MinimaLogger.log("Load MegaMMR.. "+MiniFormat.formatSize(zMegaMMR.length()));
 		MiniFile.loadObjectSlow(zMegaMMR, mmrback);
+	
+		return checkMegaMMR(mmrback);
+	}
+	
+	public static BigInteger checkMegaMMR(MegaMMRBackup mmrback) throws CommandException{
 		
 		//Get the mmr
 		MegaMMR mega 	= mmrback.getMegaMMR();
@@ -350,6 +368,6 @@ public class megammr extends Command {
 	}
 	
 	public static void main(String[] zArgs) throws Exception {
-		checkMegaMMR(new File("./bin/megammr2.mmr"));
+		checkMegaMMR(new File("./bin/megammrJune27.mmr"));
 	}
 }
