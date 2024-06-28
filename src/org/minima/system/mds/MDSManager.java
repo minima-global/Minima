@@ -1027,7 +1027,7 @@ public class MDSManager extends MessageProcessor {
 		ArrayList<MiniDAPP> allminis = mdb.getAllMiniDAPPs();
 				
 		//Check for HUB
-		checkInstalled("minihub", "minihub/minihub-0.18.1.mds.zip", allminis, true, true);
+		checkInstalled("minihub", "minihub/minihub-0.18.2.mds.zip", allminis, true, true);
 		
 		//Do we Install the Default MiniDAPPs
 		if(GeneralParams.DEFAULT_MINIDAPPS) {
@@ -1053,7 +1053,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("maxcontacts", "default/maxcontacts-1.13.1.mds.zip", allminis, false);
 			checkInstalled("maximize", "default/maximize-1.3.0.mds.zip", allminis, false);
 			checkInstalled("maxsolo", "default/maxsolo-2.7.2.mds.zip", allminis, false);
-			checkInstalled("miniswap", "default/miniswap-1.0.5.mds.zip", allminis, false);
+			checkInstalled("miniswap", "default/miniswap-2.6.0.mds.zip", allminis, false);
 			checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
 			checkInstalled("script ide", "default/scriptide-2.1.1.mds.zip", allminis, false);
 			checkInstalled("shout out", "default/shoutout-1.4.0.mds.zip", allminis, false);
