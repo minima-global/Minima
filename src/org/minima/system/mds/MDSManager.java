@@ -869,6 +869,10 @@ public class MDSManager extends MessageProcessor {
 	 */
 	private void setupMiniDAPP(MiniDAPP zDAPP) {
 		
+		//Add a unique random SessionID
+		String sessionid = MiniData.getRandomData(128).to0xString();
+		mSessionID.put(sessionid, zDAPP.getUID());
+		
 		//Is there a service.js class
 		File service = new File(getMiniDAPPWebFolder(zDAPP.getUID()),"service.js");
 		if(service.exists()) {
@@ -926,10 +930,6 @@ public class MDSManager extends MessageProcessor {
 				MinimaLogger.log("ERROR starting service "+zDAPP.getName()+" "+exc);
 			}
 		}
-		
-		//Now add a unique random SessionID
-		String sessionid = MiniData.getRandomData(128).to0xString();
-		mSessionID.put(sessionid, zDAPP.getUID());
 	}
 	
 	/**
