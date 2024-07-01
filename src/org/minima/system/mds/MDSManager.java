@@ -1296,9 +1296,14 @@ public class MDSManager extends MessageProcessor {
 			//Now create the JSON..
 			JSONObject jsonconf = (JSONObject) new JSONParser().parse(data.toString());
 			
+			//Is it already in write mode..
+			String permission = md.getPermission();
+			
 			//Copy the trust
 			if(zWrite) {
 				jsonconf.put("permission", "write");
+			}else {
+				jsonconf.put("permission", permission.toLowerCase());
 			}
 			
 			//Which version..
