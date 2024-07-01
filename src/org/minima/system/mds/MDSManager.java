@@ -1027,7 +1027,7 @@ public class MDSManager extends MessageProcessor {
 		ArrayList<MiniDAPP> allminis = mdb.getAllMiniDAPPs();
 				
 		//Check for HUB
-		checkInstalled("minihub", "minihub/minihub-0.18.2.mds.zip", allminis, true, true);
+		checkInstalled("minihub", "minihub/minihub-0.18.3.mds.zip", allminis, true, true);
 		
 		//Do we Install the Default MiniDAPPs
 		if(GeneralParams.DEFAULT_MINIDAPPS) {
@@ -1043,7 +1043,7 @@ public class MDSManager extends MessageProcessor {
 			
 			//The rest are normal
 			checkInstalled("block", "default/block-2.3.1.mds.zip", allminis, false);
-			checkInstalled("chatter", "default/chatter-1.10.2.mds.zip", allminis, false);
+			checkInstalled("chatter", "default/chatter-1.10.3.mds.zip", allminis, false);
 			checkInstalled("docs", "default/docs-1.5.0.mds.zip", allminis, false);
 			checkInstalled("ethwallet", "default/ethwallet-1.6.5.mds.zip", allminis, false);
 			checkInstalled("filez", "default/filez-1.9.4.mds.zip", allminis, false);
