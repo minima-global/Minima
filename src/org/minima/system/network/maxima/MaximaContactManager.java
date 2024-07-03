@@ -44,7 +44,7 @@ public class MaximaContactManager extends MessageProcessor {
 	}
 	
 	/**
-	 * Are Users alklowed to add you as a contact without your say so..
+	 * Are Users allowed to add you as a contact without your say so..
 	 */
 	public boolean isAllowedAll() {
 		return mEnableOutsideContactRequest;
@@ -110,6 +110,7 @@ public class MaximaContactManager extends MessageProcessor {
 			
 			//Extra Data
 			ret.put("name", MinimaDB.getDB().getUserDB().getMaximaName());
+			ret.put("icon", MinimaDB.getDB().getUserDB().getMaximaIcon());
 			
 			String minimaaddress = MinimaDB.getDB().getWallet().getDefaultAddress().getAddress();
 			String mxaddress 	 = Address.makeMinimaAddress(new MiniData(minimaaddress)); 
@@ -161,10 +162,11 @@ public class MaximaContactManager extends MessageProcessor {
 			String address 		= (String) contactjson.get("address");
 			
 			//Few checks on name
-			String name 		= (String) contactjson.get("name");
-			name = name.replace("\"", "");
-			name = name.replace("'", "");
-			name = name.replace(";", "");
+			String name = (String) contactjson.getString("name","");
+			name = name.replace("\"", "").replace("'", "").replace(";", "");
+			
+			String icon = (String) contactjson.getString("icon","");
+			icon = icon.replace("\"", "").replace("'", "").replace(";", "");
 			
 			//Create a Contact - if not there already
 			MaximaContact checkcontact = maxdb.loadContactFromPublicKey(publickey);
@@ -208,7 +210,9 @@ public class MaximaContactManager extends MessageProcessor {
 				MinimaLogger.log("ADDED NEW MAXIMA CONTACT : "+name);
 				
 				//New Contact
-				mxcontact.setname(name);
+				mxcontact.setName(name);
+				mxcontact.setIcon(icon);
+				
 				mxcontact.setMinimaAddress(mxaddress);
 				mxcontact.setBlockDetails(topblock, checkblock, checkhash);
 				mxcontact.setMLS(mls);
@@ -221,7 +225,9 @@ public class MaximaContactManager extends MessageProcessor {
 				mxcontact.setMyAddress(checkcontact.getMyAddress());
 				
 				//Overwrite with the new details
-				mxcontact.setname(name);
+				mxcontact.setName(name);
+				mxcontact.setIcon(icon);
+				
 				mxcontact.setMinimaAddress(mxaddress);
 				mxcontact.setBlockDetails(topblock, checkblock, checkhash);
 				mxcontact.setMLS(mls);

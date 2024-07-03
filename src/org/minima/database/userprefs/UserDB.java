@@ -100,6 +100,14 @@ public class UserDB extends JsonDB{
 		return getString("maximaname", "noname");
 	}
 	
+	public void setMaximaIcon(String zIcon) {
+		setString("maximaicon", zIcon);
+	}
+	
+	public String getMaximaIcon() {
+		return getString("maximaicon", "0x00");
+	}
+	
 	/**
 	 * Install MDS DAPPs the first time
 	 */
@@ -249,4 +257,46 @@ public class UserDB extends JsonDB{
 		setString("minihub_default", zMiniDAPPID);
 	}
 	
+	/**
+	 * If you delete a MIniDAPP do NOT reinstall it..
+	 */
+	public void clearUninstalledMiniDAPP() {
+		setJSONArray("minidapps_uninstalled", new JSONArray());
+	}
+	
+	public JSONArray getUninstalledMiniDAPP() {
+		return getJSONArray("minidapps_uninstalled");
+	}
+	
+	public void removeUninstalledMiniDAPP(String zName) {
+		JSONArray alluninst = getUninstalledMiniDAPP();
+		String name = zName.toLowerCase().replaceAll(" ", "");
+		alluninst.remove(name);
+		setJSONArray("minidapps_uninstalled", alluninst);
+	}
+	
+	public void addUninstalledMiniDAPP(String zName) {
+		JSONArray alluninst = getUninstalledMiniDAPP();
+		String name = zName.toLowerCase().replaceAll(" ", "");
+		alluninst.remove(name);
+		alluninst.add(name);
+		setJSONArray("minidapps_uninstalled", alluninst);
+	}
+	
+	public boolean checkUninstalledMiniDAPP(String zName) {
+		JSONArray alluninst = getUninstalledMiniDAPP();
+		String name = zName.toLowerCase().replaceAll(" ", "");
+		return alluninst.contains(name);
+	}
+	
+	/**
+	 * Are we running the public site
+	 */
+	public void setPublicMDS(boolean zEnable) {
+		setBoolean("mds_publicsite", zEnable);
+	}
+	
+	public boolean  getPublicMDS() {
+		return getBoolean("mds_publicsite", false);
+	}
 }

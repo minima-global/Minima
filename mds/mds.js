@@ -1,6 +1,8 @@
 /**
 * MDS JS lib for MiniDAPPs..
 * 
+* VERSION : 2.0.0
+*
 * @spartacusrex
 */
 
@@ -74,8 +76,15 @@ var MDS = {
 			MDS.log("No MiniDAPP UID specified.. using test value");
 		}
 		
-		MDS.filehost = "https://"+host+":"+port+"/";
-		MDS.mainhost = "https://"+host+":"+port+"/mdscommand_/";
+		//Are we HTTP or HTTPS
+		if(window.location.protocol.startsWith("https")){
+			MDS.filehost = "https://"+host+":"+port+"/";
+			MDS.mainhost = "https://"+host+":"+port+"/mdscommand_/";
+		}else{
+			MDS.filehost = "http://"+host+":"+port+"/";
+			MDS.mainhost = "http://"+host+":"+port+"/mdscommand_/";
+		}
+		
 		MDS.log("MDS HOST  : "+MDS.filehost);
 		
 		//Store this for poll messages
@@ -197,6 +206,18 @@ var MDS = {
 		GET : function(url, callback){
 			//Send via POST
 			httpPostAsync("net", url, callback);	
+		},
+		
+		/**
+		 * Make a GET request WITH a Basic Auth token header
+		 */
+		GETAUTH : function(url, basicauth, callback){
+			
+			//Create the single line
+			var commsline = url+"&"+basicauth;
+			
+			//Send via POST
+			httpPostAsync("netauth", commsline, callback);	
 		},
 		
 		/**

@@ -1,191 +1,395 @@
 <html>
+  <head>
+    <title>Shout Out</title>
 
-<head>
-	<title>Shout Out</title>
-	
-	<meta charset="utf-8" />
-	
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	
-	<!-- Load the main MDS JS lib -->
-	<script type="text/javascript" src="mds.js"></script>
-	
-	<!-- Load the CSS Style sheet -->
-	<link rel="stylesheet" href="style.css">
-	
-	<!-- And the ICON for the page -->
-	<link rel="icon" type="image/x-icon" href="favicon.ico">
-	
-	<!-- Load the local JS lib -->
-	<script type="text/javascript" src="xregexp-all.js"></script>
-	<script type="text/javascript" src="purify.min.js"></script>
-	<script type="text/javascript" src="puresha1.js"></script>
-	<script type="text/javascript" src="jslib.js"></script>
-	<script type="text/javascript" src="txn.js"></script>
-	<script type="text/javascript" src="sql.js"></script>
-	
-</head>
+    <meta charset="utf-8" />
 
-<body>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<center>
-	
-	<div class="titlebar" onclick="showTitleOnAndroid();">
-		<table width=100% border=0>
-			<tr>
-				<td><img height=45 src="shoutout.png"></td>
-				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>Shout Out</b></td>
-				<td class='topicdate' nowrap>
-					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpSettings();" height=30 src="settings.png">&nbsp;&nbsp;
-					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpHome();" height=30 src="home.png">&nbsp;&nbsp;
-				</td>
-			</tr>
-		</table>
-	</div>
-	<br>
-	
-	<div class="mainview">
-		
-		<table width=100% border=0>
-			
-			<tr>
-				<td colspan=2 nowrap>Category : </td>
-			</tr>
-			
-			<tr>
-				<td class="table_right">
-					<input type="text" id="currentcategory" class="maincategory">
-				</td>
-				<td nowrap>
-					&nbsp;
-					<button class="solobutton" onclick="jumpCategory()">&nbsp;GO&nbsp;</button>&nbsp;
-					<button class="solobutton" onclick="jumpUpCategory()">&nbsp;UP&nbsp;</button>&nbsp;
-					<button class="solobutton" onclick="jumpViewAllCategory()">VIEW ALL</button>
-				</td>
-			</tr>
-			
-			<tr>
-				<td colspan=2 nowrap>Sub Category : </td>
-			</tr>
-			
-			<tr>
-				<td>
-					<select id="subcategories" class="subcategory" onchange="subChange()"></select>
-				</td>
-				<td nowrap>
-					&nbsp;
-					<button class="solobutton" onclick="jumpRecent()">&nbsp;All Recent Messages&nbsp;</button>
-				</td>
-			</tr>
-		</table>
-	
-	</div>
-	<br>
-	
-	<div class="mainview" id="topicstable" style="display:none;">
-	
-		<table width=100% border=0>
-				
-			<tr>
-				<td>
-				<div class="mainview">
-					<table border=0 style="width:100%">
-						<tr>
-							<td style="width:100%"><input placeholder="Topic Title" type="text" id="newtopictitle" class="newtopicstyle"></td>
-							<td nowrap>&nbsp;&nbsp;
-								<button onclick="blockCategory();" class="solobutton">BLOCK</button>&nbsp;&nbsp;
-								<button id="newtopicbutton" class="solobutton" onclick="newtopic();">NEW TOPIC</button>
-								</td>
-						</tr>
-						<tr>
-							<td colspan=2><textarea id="newtopictext" class="topicinput" rows=5></textarea></td>
-						</tr>
-					</table>
-				</div>
-				</td>
-			</tr>
-			
-			<tr>
-				<td class="table_right">
-					<table id="alltopics_table" width=100%>
-						<tr><td><br>Loading..</td></tr>
-					</table>
-				</td>
-			</tr>
-			
-		</table>
-		
-	</div>
-		
-	<div id=nextback>
-	<br>
-		<button onclick="history.back();" class="solobutton">&nbsp;&nbsp;Back&nbsp;&nbsp;</button>
-		&nbsp;&nbsp;&nbsp;
-		<button onclick="nextBatch();" class="solobutton">&nbsp;&nbsp;Next&nbsp;&nbsp;</button>
-	<br><br>
-	</div>
-	
-	<div id="emptycat" class="mainview">
-		
-		<h2>Welcome to Shout Out!</h2>
-		<br>
-		
-		<div style='text-align:left'>
-			Shout Out is a censorship-resistant blockchain based forum.<br>
-			<br>
-			Create your own Category or choose a sub-category to start.<br>
-			<br>
-			Categories MUST be of the form <b>word</b>.<b>word</b>.<b>word</b>.. (numbers letters lowercase no-spaces)<br>
-			<br>
-			Messages are <b>NOT</b> free. They are sent over Layer 1 and currently cost 0.01 Minima.<br>
-			<br>
-			All Minima users can see these messages but they can also block Users / topics or entire categories..<br>
-			<br>
-			
-			<h3>Categories</h3>
-			
-			A set of default categories is created the first time you run Shout Out. 
-			You can use these and create sub-categories to discuss any topic.<br>
-			<br> 
-			See all categories by clicking the <a href='#' onclick='jumpViewAllCategory();'>VIEW ALL</a> button at the top.<br>
-			<br>
-			You can block any User, topic or category to give you the ability to filter what it is you see.<br>
-			<br>
-			You can create any category you want, but be sure to use the <i>expected</i> location for your new forum.
-			This way people will be able to find what you are trying to discuss.<br>
-			<br>
-			For instance - if you wish to talk about <b>Yourself</b> use the <i>personal</i> category and create a sub-category.<br>
-			<br>
-			If you wish to talk about the latest in Quantum Computer Research use the <i>technology</i> category and create a sub-category.<br>
-			<br>
-			There is no point trying to talk about Crypto signature schemes in the Food section..<br>
-			<br>
-			To create a sub-category simply type the path in the Category window at the top.. and press <b>GO</b> - then create your topic of discussion.<br>
-			<br>
-			Checkout the main <a href='#' onclick='jumpMinima();'>Minima</a> category<br>
-			<br>
-			
-			<h3>Interface</h3>
-			
-			Messages are signed and sent using your Maxima user details.<br>
-			<br>
-			Split some Minima coins - if you want to fire off multiple messages with no delay..<br>
-			<br>
-			Running in WRITE mode allows you to send messages without using Pending transactions.<br>
-			<br>
-			Messages are added from the moment you install this dapp, but you can pre-populate the database by doing a chain-sync.. as this will add every message ever sent as it scans the chain.
-			  
-		</div>
-	
-	</div>
-	
-	<!--   кириллицакириллица -->
-	
-</center>
+    <!-- Load the main MDS JS lib -->
+    <script type="text/javascript" src="mds.js"></script>
 
-<script type="text/javascript">
-	
-	/*checkCategory(".hello");
+    <!-- Load the CSS Style sheet -->
+    <link rel="stylesheet" href="style.css" />
+
+    <!-- And the ICON for the page -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+
+    <!-- Load tailwindcss -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            keyframes: {
+              fadeIn: {
+                "0%": { opacity: 0 },
+                "100%": { opacity: 1 },
+              },
+            },
+            animation: {
+              fadeIn: "fadeIn 0.5s",
+              fadeIn1: "fadeIn 1s",
+              fadeIn2: "fadeIn 2s",
+              fadeIn3: "fadeIn 3s",
+              fadeIn5: "fadeIn 5s",
+              fadeIn7: "fadeIn 7s",
+            },
+          },
+        },
+      };
+    </script>
+    <!-- Adding custom styling -->
+    <style type="text/tailwindcss">
+      @layer base {
+        @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Roboto+Mono:wght@400&display=swap");
+
+        :root {
+          --background-color: #ffffff;
+        }
+
+        body {
+          margin: 0;
+          color: #08090b;
+          height: 100%;
+          min-height: -webkit-fill-available;
+          font-weight: 500;
+          letter-spacing: 0.3px;
+          font-family: "Manrope", sans-serif;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+          background-color: var(--background-color);
+          background-size: cover;
+          background-repeat: no-repeat;
+          overflow: hidden;
+          overflow-y: overlay;
+          -webkit-tap-highlight-color: transparent;
+        }
+      }
+      @layer utilities {
+        .content-auto {
+          content-visibility: auto;
+        }
+      }
+    </style>
+
+    <!-- Load the local JS lib -->
+    <script type="text/javascript" src="xregexp-all.js"></script>
+    <script type="text/javascript" src="purify.min.js"></script>
+    <script type="text/javascript" src="puresha1.js"></script>
+    <script type="text/javascript" src="jslib.js"></script>
+    <script type="text/javascript" src="txn.js"></script>
+    <script type="text/javascript" src="sql.js"></script>
+  </head>
+
+  <body>
+    <div class="mx-4 md:mx-0 pb-4">
+      <div class="pt-4" onclick="showTitleOnAndroid();">
+        <table class="w-full max-w-[800px] h-[50px] mx-auto bg-white">
+          <tr>
+            <td class="flex w-full justify-between">
+              <div class="flex items-center gap-2">
+                <img src="shoutout.png" class="w-[44px] h-[44px]" />
+                <h1 class="font-semibold">ShoutOut</h1>
+              </div>
+              <div class="flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  onclick="event.stopPropagation(); jumpSettings();"
+                  class="w-[24px] h-[24px] hover:cursor-pointer"
+                  viewBox="0 0 24 24"
+                  stroke-width="2"
+                  stroke="currentColor"
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                  <path
+                    d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"
+                  />
+                  <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+                </svg>
+                <svg
+                  onclick="event.stopPropagation(); jumpHome();"
+                  class="w-[24px] h-[24px] hover:cursor-pointer"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  stroke-width="2"
+                  stroke="currentColor"
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                  <path d="M5 12l-2 0l9 -9l9 9l-2 0" />
+                  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+                  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+                </svg>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <br />
+
+      <div class="w-full max-w-[800px] mx-auto p-4 bg-slate-200 rounded-lg">
+        <table width="100%" border="0">
+          <tr>
+            <td colspan="2" class="font-semibold">Category</td>
+          </tr>
+
+          <tr>
+            <td class="table_right">
+              <input
+                placeholder="Search category"
+                type="text"
+                id="currentcategory"
+                class="w-full px-4 py-2 rounded outline-slate-200 focus:mr-1 focus:rounded-r-lg"
+              />
+            </td>
+            <td nowrap>
+              <button
+                class="h-[40px] rounded ml-1 text-sm bg-black text-white px-2 font-bold py-1 hover:bg-opacity-80 outline-slate-200"
+                onclick="jumpCategory()"
+              >
+                Go
+              </button>
+              <button
+                class="h-[40px] rounded text-sm bg-black text-white px-2 font-bold py-1 hover:bg-opacity-80 outline-slate-200"
+                onclick="jumpUpCategory()"
+              >
+                Up
+              </button>
+              <button
+                class="h-[40px] rounded text-sm bg-black text-white px-2 font-bold py-1 hover:bg-opacity-80 outline-slate-200"
+                onclick="jumpViewAllCategory()"
+              >
+                View All
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td class="h-[10px]"></td>
+          </tr>
+          <tr>
+            <td colspan="2" class="font-semibold">Sub-category</td>
+          </tr>
+
+          <tr>
+            <td>
+              <select
+                id="subcategories"
+                onchange="subChange()"
+                class="h-[40px] w-full px-4 py-2 rounded outline-slate-200 focus:mr-1 focus:rounded-r-lg"
+              ></select>
+            </td>
+            <td nowrap>
+              <button
+                class="h-[40px] ml-1 rounded text-sm bg-black text-white px-2 font-bold py-1 hover:bg-opacity-80 outline-slate-200"
+                onclick="jumpRecent()"
+              >
+                All Recent Messages
+              </button>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <br />
+
+      <div
+        class="w-full max-w-[800px] mx-auto p-4 bg-slate-200 rounded-lg rounded-b-none"
+        id="topicstable"
+        style="display: none"
+      >
+        <table class="w-full border-none">
+          <tr>
+            <td>
+              <div class="bg-slate-200">
+                <table border="0" class="w-full">
+                  <tr>
+                    <td class="w-full">
+                      <input
+                        placeholder="Topic title"
+                        type="text"
+                        id="newtopictitle"
+                        class="w-full p-4 py-2 rounded outline-slate-200"
+                      />
+                    </td>
+                    <td nowrap>
+                      <!--  <button
+                        onclick="blockCategory();"
+                        class="h-[40px] rounded ml-1 text-sm bg-slate-700 text-white px-2 font-bold py-1 hover:bg-opacity-80 outline-slate-200"
+                      >
+                        Block
+                      </button>-->
+                      <button
+                        id="newtopicbutton"
+                        class="h-[40px] rounded text-sm bg-black text-white px-2 font-bold py-1 hover:bg-opacity-80 outline-slate-200 disabled:bg-opacity-50"
+                        onclick="newtopic();"
+                      >
+                        New Topic
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="h-[5px]"></td>
+                  </tr>
+                  <tr>
+                    <td colspan="2">
+                      <textarea
+                        id="newtopictext"
+                        placeholder="Description"
+                        class="p-4 py-2 w-full outline-slate-200"
+                        rows="5"
+                      ></textarea>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="h-[5px]"></td>
+                  </tr>
+                  <tr>
+                  	<td class="w-full">You can <b>block</b> this category and all sub-categories..</td>
+                  	<td style="text-align:right;">
+                  	  <button
+                        onclick="blockCategory();"
+                        class="h-[40px] rounded ml-1 text-sm bg-slate-700 text-white px-2 font-bold py-1 hover:bg-opacity-80 outline-slate-200">
+                        Block
+                      </button>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="table_right">
+              <table id="alltopics_table" width="100%">
+                <tr>
+                  <td class="flex justify-center mt-8">
+                    <br /><svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="animate-spin inline"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      stroke-width="2"
+                      stroke="#475569"
+                      fill="none"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                      <path d="M10 20.777a8.942 8.942 0 0 1 -2.48 -.969" />
+                      <path d="M14 3.223a9.003 9.003 0 0 1 0 17.554" />
+                      <path d="M4.579 17.093a8.961 8.961 0 0 1 -1.227 -2.592" />
+                      <path
+                        d="M3.124 10.5c.16 -.95 .468 -1.85 .9 -2.675l.169 -.305"
+                      />
+                      <path d="M6.907 4.579a8.954 8.954 0 0 1 3.093 -1.356" />
+                    </svg>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div
+        id="nextback"
+        class="mx-auto max-w-[800px] w-full flex items-center justify-center mx-auto bg-slate-200 py-4 rounded rounded-t-none"
+      >
+        <button
+          id="backbutton"
+          onclick="history.back();"
+          class="h-[40px] px-6 rounded ml-1 text-sm bg-slate-600 text-white px-2 font-bold py-1 hover:bg-opacity-80 outline-slate-200 disabled:bg-opacity-50"
+        >
+          Back
+        </button>
+
+        <button
+          id="nextbutton"
+          onclick="nextBatch();"
+          class="h-[40px] px-4 rounded ml-1 text-sm bg-black text-white px-6 font-bold py-1 hover:bg-opacity-80 outline-slate-200 disabled:bg-opacity-50"
+        >
+          Next
+        </button>
+      </div>
+
+      <div
+        id="emptycat"
+        class="w-full max-w-[800px] mx-auto p-4 bg-slate-200 rounded-lg"
+      >
+        <div style="text-align: left">
+          <h2 class="font-bold mb-4">Welcome to Shout Out!</h2>
+          Shout Out is a censorship-resistant blockchain based forum.<br />
+          <br />
+          Create your own Category or choose a sub-category to start.<br />
+          <br />
+          Categories MUST be of the form <b>word</b>.<b>word</b>.<b>word</b>..
+          (numbers letters lowercase no-spaces)<br />
+          <br />
+          Messages are <b>NOT</b> free. They are sent over Layer 1 and currently
+          cost 0.01 Minima.<br />
+          <br />
+          All Minima users can see these messages but they can also block Users
+          / topics or entire categories..<br />
+          <br />
+
+          <b>Categories</b>
+          <br><br>
+
+          A set of default categories is created the first time you run Shout
+          Out. You can use these and create sub-categories to discuss any
+          topic.<br />
+          <br />
+          See all categories by clicking the
+          <a href="#" onclick="jumpViewAllCategory();">View All</a> button at
+          the top.<br />
+          <br />
+          You can block any User, topic or category to give you the ability to
+          filter what it is you see.<br />
+          <br />
+          You can create any category you want, but be sure to use the
+          <i>expected</i> location for your new forum. This way people will be
+          able to find what you are trying to discuss.<br />
+          <br />
+          For instance - if you wish to talk about <b>Yourself</b> use the
+          <i>personal</i> category and create a sub-category.<br />
+          <br />
+          If you wish to talk about the latest in Quantum Computer Research use
+          the <i>technology</i> category and create a sub-category.<br />
+          <br />
+          There is no point trying to talk about Crypto signature schemes in the
+          Food section..<br />
+          <br />
+          To create a sub-category simply type the path in the Category window
+          at the top.. and press <b>GO</b> - then create your topic of
+          discussion.<br />
+          <br />
+          Checkout the main
+          <a href="#" onclick="jumpMinima();">Minima</a> category<br />
+          <br />
+
+          <b>Interface</b>
+		  <br><br>
+          Messages are signed and sent using your Maxima user details.<br />
+          <br />
+          Split some Minima coins - if you want to fire off multiple messages
+          with no delay..<br />
+          <br />
+          Running in WRITE mode allows you to send messages without using
+          Pending transactions.<br />
+        </div>
+      </div>
+
+      <!--   кириллицакириллица -->
+    </div>
+
+    <script type="text/javascript">
+      /*checkCategory(".hello");
 	checkCategory("hello");
 	checkCategory("hello..popo");
 	checkCategory("hello.df dfd.df");
@@ -195,355 +399,434 @@
 	checkCategory("1234");
 	checkCategory("1234.sdsd,");
 	*/
-	
-	//User details
-	var USER_NAME 			= "";
-	var USER_PUBKEY 		= "";
-	var USER_ADDRESS 		= "Mx999";
-	var CURRENT_CATEGORY 	= "";
-	
-	//Get the messages offset
-	var MSG_LIMIT = 20;
-	var MSG_OFFSET = MDS.form.getParams("offset");
-	if(!MSG_OFFSET){
-		MSG_OFFSET = 0;
-	}
-	
-	function showTitleOnAndroid(){
-		if (window.navigator.userAgent.includes('Minima Browser')) {
-			Android.showTitleBar();
-    	}
-	}
-	
-	function nextBatch(){
-		var offset = +MSG_OFFSET+MSG_LIMIT;
-		location.href="index.html?uid="+MDS.minidappuid+"&category="+CURRENT_CATEGORY+"&offset="+offset;
-	}
-	
-	function jumpRecent(){
-		location.href="recent.html?uid="+MDS.minidappuid;
-	}
-	
-	function jumpSettings(){
-		location.href="settings.html?uid="+MDS.minidappuid;
-	}
-	
-	function jumpHome(){
-		location.href="index.html?uid="+MDS.minidappuid;
-	}
-	
-	function jumpMinima(){
-		location.href="index.html?uid="+MDS.minidappuid+"&category=minima";
-	}
-	
-	function blockCategory(){
-		if(confirm("This will delete this Category and ALL sub-categories and all future messages.\n\nYou can undo this in Settings.")){
-			addBlockCategory(CURRENT_CATEGORY,function(){
-				jumpUpCategory();
-			});
-		}
-	}
-	
-	function jumpCategory(){
-		var cat = currentcategory.value;
-		
-		//Clean up..
-		var cleancat = cleanCategory(cat);
-		
-		//Check is a valid Category name..
-		if(!checkCategory(cleancat)){
-			alert("Invalid category!\n\nMUST be word.word.word etc..\n\nNO spaces or punctuation..\n\n"+cleancat);
-			return;
-		}
-		
-		location.href="index.html?uid="+MDS.minidappuid+"&category="+cleancat;
-	}
-	
-	function jumpUpCategory(){
-		var pos = CURRENT_CATEGORY.lastIndexOf(".");
-		if(pos == -1){
-			//Jump to start page
-			location.href="index.html?uid="+MDS.minidappuid;
-			return;
-		}
-		var newcat = CURRENT_CATEGORY.substring(0,pos);
-		location.href="index.html?uid="+MDS.minidappuid+"&category="+newcat;
-	}
-	
-	function jumpSubCategory(){
-		var subcat 	= subcategories.value;
-		var fullcat = CURRENT_CATEGORY+"."+subcat; 
-		location.href="index.html?uid="+MDS.minidappuid+"&category="+fullcat;
-	}
-	
-	function jumpViewAllCategory(){
-		location.href="allcategories.html?uid="+MDS.minidappuid;
-	}
-	
-	function subChange(){
-		var sub = subcategories.value;
-		location.href="index.html?uid="+MDS.minidappuid+"&category="+sub;
-	}
-	
-	function newtopic(){
-		var topictitle = newtopictitle.value.trim();
-		
-		//Strip all tags from title..
-		topictitle = topictitle.replace(/<\/?[^>]+(>|$)/g, "");
-		
-		var topictext  = newtopictext.value.trim();
-				
-		if(topictitle == "" || topictext==""){
-			alert("Cannot have blank title or message..");
-			return;
-		}
-		
-		//Disable button
-		newtopicbutton.disabled=true;
-		
-		//Create a random id for this message
-		var randid = Math.floor(Math.random() * 1000000000);
-		
-		//Send txn!
-		sendTxnMessage(CURRENT_CATEGORY, topictitle, topictext, USER_NAME, USER_PUBKEY, USER_ADDRESS, randid, function(sendresp){
-			
-			newtopicbutton.disabled=false;
-			
-			if(sendresp.pending){
-				//Clear the edit window
-				newtopictitle.value = "";
-				newtopictext.value  = "";
-				
-				alert("TXN is now pending!..");
-				return;
-			}else if(!sendresp.status){
-				alert("Error sending txn..\n\n"+sendresp.error);
-				return;
-			}else{
-				//Clear the edit window
-				newtopictitle.value = "";
-				newtopictext.value  = "";
-				
-				//All good add to your DB..
-				insertMessage(CURRENT_CATEGORY, topictitle, USER_NAME, USER_PUBKEY, USER_ADDRESS, topictext, randid, 1, function(){
-					
-					//Clear the edit window
-					newtopictitle.value = "";
-					newtopictext.value  = "";
-					
-					//Add to the notify stack
-					var cattitleid = getCategoryTitleID(CURRENT_CATEGORY,topictitle);
-					newNotifyTopic(cattitleid, function(){
-						//Jump to it..
-						setTopics();	
-					});
-				});	
-			}
-		});
-	}
-	
-	function chooseCategories(){
-		//Main Title Category
-		currentcategory.value = DOMPurify.sanitize(CURRENT_CATEGORY);
-		
-		if(CURRENT_CATEGORY == ""){
-			selectRootCategories(function(cats){
-				setCategories(cats);
-			});	
-		}else{
-			selectChildCategories(CURRENT_CATEGORY,function(cats){
-				setCategories(cats);
-			});
-		}
-	}
-	
-	function setCategories(cats){
-		
-		var len = cats.length;
-		
-		//Set the subcategories..
-		var lowercat 	= CURRENT_CATEGORY.toLowerCase();
-		var catlen 		= lowercat.length; 
-		
-		//Add Base option
-		var option = document.createElement("option");
-		option.text   = "Select a sub-category :";
-		option.value  = "";	
-		subcategories.add(option);
-		
-		//Cycle through
-		for(var i=0;i<len;i++){
-			var subcat = cats[i].CATEGORY.toLowerCase();
-			
-			if(subcat.startsWith(lowercat)){
-				var justcat = cats[i].CATEGORY.substring(catlen+1);
-				if(catlen==0){
-					justcat = cats[i].CATEGORY.substring(catlen);
-				}
-				
-				if(!justcat.includes(".")){
-					option = document.createElement("option");
-					if(justcat != ""){
-						option.text   = justcat;
-						option.value  = cats[i].CATEGORY;
-						subcategories.add(option);
-					}
-				}
-			}
-		}
-	}
-	
-	function setTopics(){
-		var cat = MDS.form.getParams("category");
-		if(!cat){
-			return;
-		}		
-		
-		//Clear the table
-		alltopics_table.innerHTML = "";
-		
-		//Get all the topics..
-		selectTopics(MSG_LIMIT, MSG_OFFSET, cat,function(topics){
-			
-			var len  = topics.length;
-			var list = "";
-			for(var i=0;i<len;i++){
-				
-				//Create a new CELL
-				var tablerow 	= alltopics_table.insertRow(i);
-				var cell 	 	= tablerow.insertCell(0);
-				var catid 		= topics[i].CATEGORYTITLEID;
-				
-				createTopicView(i==len-1,catid,cell);
-			}
-		});
-	}
-	
-	function createTopicView(islast, catid, cell){
-		
-		selectTopMessage(catid, function(rows){
-			var msg 	 = rows[0];
-			
-			var dec_title 	= decodeStringFromDB(msg.TITLE);
-			var dec_user 	= decodeStringFromDB(msg.USERNAME);
-			var dec_msg 	= decodeStringFromDB(msg.MESSAGE);
-			
-			var topicstr = "<br><table class='topiclist' border=0>";
-			topicstr    += "<tr><td><a class='topictitle' href='topic.html?uid="+MDS.minidappuid+"&topicid="+catid+"'>"+dec_title+"</a></td></tr>";
-			if(msg.MESSAGE.trim() == ""){
-				topicstr += "<tr><td>No comments yet..</td></tr>";
-			}else{
-				var text="";
-				if(msg.READ == "0"){
-					text = "[NEW] ";
-				}
-				text += dec_user+" : "+dec_msg;
-				
-				var date = new Date(+msg.CREATED);
-				topicstr += "<tr><td width=100% class='ellipsistext'>"+text+"</td></tr>";
-				topicstr += "<tr><td class='topicdate' nowrap>"+date.toLocaleString()+"</td></tr>";
-			}
-			topicstr += "</table>";
-			
-			//Make safe
-			cell.innerHTML = DOMPurify.sanitize(topicstr);
-		}); 
-	}
-	
-	//Main message handler..
-	MDS.init(function(msg){
-		
-		//Do initialisation
-		if(msg.event == "inited"){
-			
-			if(false){
-				wipeDB();
-				MDS.log("DB Wiped")
-			}else{
-					
-				//Which category
-				CURRENT_CATEGORY = MDS.form.getParams("category");
-				if(!CURRENT_CATEGORY){
-					CURRENT_CATEGORY = "";
-				}	
-				
-				CURRENT_CATEGORY = cleanCategory(CURRENT_CATEGORY);
-				
-				MDS.log("CATEGORY : "+CURRENT_CATEGORY);
-				
-				//Load all the categories
-				chooseCategories();	
-			
-				if(CURRENT_CATEGORY == ""){
-					topicstable.style.display 	= "none";
-					nextback.style.display 		= "none";
-					emptycat.style.display 		= "block";
-	
-				}else{
-					topicstable.style.display   = "block";
-					nextback.style.display 		= "block";
-					emptycat.style.display 		= "none";
-					
-					//Disable button
-					newtopicbutton.disabled=true;
-					
-					//Notify of new messages..
-					MDS.cmd("maxima;getaddress",function(startup){
-						//Get the user details
-						USER_NAME 	 = startup[0].response.name;
-						USER_PUBKEY  = startup[0].response.publickey;
-						
-						//Now see if we have picked an address..
-						var someaddress = startup[1].response.address;
-						MDS.keypair.get("shoutaddress",function(resp){
-							if(resp.status){
-								//We have already defined it..
-								USER_ADDRESS = resp.value;
-								MDS.log("Address found.. "+USER_ADDRESS);
-							}else{
-								USER_ADDRESS = someaddress;
-								//None specified yet - specify it..
-								MDS.keypair.set("shoutaddress",someaddress,function(resp){
-									MDS.log("NEW address set.. "+someaddress);	
-								});
-							}
-						});
-						
-						//Load all the topics..
-						setTopics();
-						
-						newtopicbutton.disabled=false;
-					});	
-				}
-			}
-			
-		}else if(msg.event == "NOTIFYCOIN"){
-			
-			//Is it the one that matters
-			if(msg.data.address ==  SHOUTOUT_ADDRESS){
-				
-				var msg_category = stripBrackets(msg.data.coin.state[0]);
-				
-				//It's a message..
-				if(msg_category == CURRENT_CATEGORY){
-					
-					//Are we writing a topic..
-					var topictitle = newtopictitle.value.trim();
-					var topictext  = newtopictext.value.trim();
-							
-					if(topictitle != "" || topictext!=""){
-						//Writing a message..
-					}else{
-						//Update page
-						setTopics();	
-					}
-				}
-			}
-		}
-	});
 
-</script>
+      //User details
+      var USER_NAME = "";
+      var USER_PUBKEY = "";
+      var USER_ADDRESS = "Mx999";
+      var CURRENT_CATEGORY = "";
 
-</body>
+      //Get the messages offset
+      var MSG_LIMIT = 25;
+      var MSG_OFFSET = MDS.form.getParams("offset");
+      if (!MSG_OFFSET) {
+        MSG_OFFSET = 0;
+      }
 
+      function showTitleOnAndroid() {
+        if (window.navigator.userAgent.includes("Minima Browser")) {
+          Android.showTitleBar();
+        }
+      }
+
+      function nextBatch() {
+        var offset = +MSG_OFFSET + MSG_LIMIT;
+        location.href =
+          "index.html?uid=" +
+          MDS.minidappuid +
+          "&category=" +
+          CURRENT_CATEGORY +
+          "&offset=" +
+          offset;
+      }
+
+      function jumpRecent() {
+        location.href = "recent.html?uid=" + MDS.minidappuid;
+      }
+
+      function jumpSettings() {
+        location.href = "settings.html?uid=" + MDS.minidappuid;
+      }
+
+      function jumpHome() {
+        location.href = "index.html?uid=" + MDS.minidappuid;
+      }
+
+      function jumpMinima() {
+        location.href =
+          "index.html?uid=" + MDS.minidappuid + "&category=minima";
+      }
+
+      function blockCategory() {
+        if (
+          confirm(
+            "This will delete this Category and ALL sub-categories and future messages."
+            +"\n\nYou can undo this in Settings."
+            +" Then new messages will appear but the old deleted messages will not."
+          )
+        ) {
+          addBlockCategory(CURRENT_CATEGORY, function () {
+            jumpUpCategory();
+          });
+        }
+      }
+
+      function jumpCategory() {
+        var cat = currentcategory.value;
+
+        //Clean up..
+        var cleancat = cleanCategory(cat);
+
+        //Check is a valid Category name..
+        if (!checkCategory(cleancat)) {
+          alert(
+            "Invalid category!\n\nMUST be word.word.word etc..\n\nNO spaces or punctuation..\n\n" +
+              cleancat
+          );
+          return;
+        }
+
+        location.href =
+          "index.html?uid=" + MDS.minidappuid + "&category=" + cleancat;
+      }
+
+      function jumpUpCategory() {
+        var pos = CURRENT_CATEGORY.lastIndexOf(".");
+        if (pos == -1) {
+          //Jump to start page
+          location.href = "index.html?uid=" + MDS.minidappuid;
+          return;
+        }
+        var newcat = CURRENT_CATEGORY.substring(0, pos);
+        location.href =
+          "index.html?uid=" + MDS.minidappuid + "&category=" + newcat;
+      }
+
+      function jumpSubCategory() {
+        var subcat = subcategories.value;
+        var fullcat = CURRENT_CATEGORY + "." + subcat;
+        location.href =
+          "index.html?uid=" + MDS.minidappuid + "&category=" + fullcat;
+      }
+
+      function jumpViewAllCategory() {
+        location.href = "allcategories.html?uid=" + MDS.minidappuid;
+      }
+
+      function subChange() {
+        var sub = subcategories.value;
+        location.href =
+          "index.html?uid=" + MDS.minidappuid + "&category=" + sub;
+      }
+
+      function newtopic() {
+        var topictitle = newtopictitle.value.trim();
+
+        //Strip all tags from title..
+        topictitle = topictitle.replace(/<\/?[^>]+(>|$)/g, "");
+
+        var topictext = newtopictext.value.trim();
+
+        if (topictitle == "" || topictext == "") {
+          alert("Cannot have blank title or message..");
+          return;
+        }
+
+        //Disable button
+        newtopicbutton.disabled = true;
+
+        //Create a random id for this message
+        var randid = Math.floor(Math.random() * 1000000000);
+
+        //Send txn!
+        sendTxnMessage(
+          CURRENT_CATEGORY,
+          topictitle,
+          topictext,
+          USER_NAME,
+          USER_PUBKEY,
+          USER_ADDRESS,
+          randid,
+          function (sendresp) {
+            newtopicbutton.disabled = false;
+
+            if (sendresp.pending) {
+              //Clear the edit window
+              newtopictitle.value = "";
+              newtopictext.value = "";
+
+              alert("TXN is now pending!..");
+              return;
+            } else if (!sendresp.status) {
+              alert("Error sending txn..\n\n" + sendresp.error);
+              return;
+            } else {
+              //Clear the edit window
+              newtopictitle.value = "";
+              newtopictext.value = "";
+
+              //All good add to your DB..
+              insertMessage(
+                CURRENT_CATEGORY,
+                topictitle,
+                USER_NAME,
+                USER_PUBKEY,
+                USER_ADDRESS,
+                topictext,
+                randid,
+                1,
+                function () {
+                  //Clear the edit window
+                  newtopictitle.value = "";
+                  newtopictext.value = "";
+
+                  //Add to the notify stack
+                  var cattitleid = getCategoryTitleID(
+                    CURRENT_CATEGORY,
+                    topictitle
+                  );
+                  newNotifyTopic(cattitleid, function () {
+                    //Jump to it..
+                    setTopics();
+                  });
+                }
+              );
+            }
+          }
+        );
+      }
+
+      function chooseCategories() {
+        //Main Title Category
+        currentcategory.value = DOMPurify.sanitize(CURRENT_CATEGORY);
+
+        if (CURRENT_CATEGORY == "") {
+          selectRootCategories(function (cats) {
+            setCategories(cats);
+          });
+        } else {
+          selectChildCategories(CURRENT_CATEGORY, function (cats) {
+            setCategories(cats);
+          });
+        }
+      }
+
+      function setCategories(cats) {
+        var len = cats.length;
+
+        //Set the subcategories..
+        var lowercat = CURRENT_CATEGORY.toLowerCase();
+        var catlen = lowercat.length;
+
+        //Add Base option
+        var option = document.createElement("option");
+        option.text = "Select a sub-category";
+        option.value = "";
+        subcategories.add(option);
+
+        //Cycle through
+        for (var i = 0; i < len; i++) {
+          var subcat = cats[i].CATEGORY.toLowerCase();
+
+          if (subcat.startsWith(lowercat)) {
+            var justcat = cats[i].CATEGORY.substring(catlen + 1);
+            if (catlen == 0) {
+              justcat = cats[i].CATEGORY.substring(catlen);
+            }
+
+            if (!justcat.includes(".")) {
+              option = document.createElement("option");
+              if (justcat != "") {
+                option.text = justcat;
+                option.value = cats[i].CATEGORY;
+                subcategories.add(option);
+              }
+            }
+          }
+        }
+      }
+
+      function setTopics() {
+        var cat = MDS.form.getParams("category");
+        if (!cat) {
+          return;
+        }
+
+        //Clear the table
+        alltopics_table.innerHTML = "";
+
+        //Get all the topics..
+        selectTopics(MSG_LIMIT, MSG_OFFSET, cat, function (topics) {
+          var len = topics.length;
+          
+          //Enough to show the next back butons ?
+          if(MSG_OFFSET == 0){
+        	  //No Back button
+        	  backbutton.style.display = "none";
+        	  
+        	  //Do we show the next button
+        	  if(len >= MSG_LIMIT){
+            	  nextback.style.display = "flex";
+              }else{
+            	  nextback.style.display = "none";
+              }  
+          }else{
+        	  nextback.style.display = "flex";
+        	  //Back button
+        	  backbutton.style.display = "block";
+        	
+        	//Do we show the next button
+      	  	if(len >= MSG_LIMIT){
+          	    nextbutton.style.display = "block";
+            }else{
+            	nextbutton.style.display = "none";
+            }  
+          }
+        	
+          var list = "";
+          for (var i = 0; i < len; i++) {
+            //Create a new CELL
+            var tablerow = alltopics_table.insertRow(i);
+            var cell = tablerow.insertCell(0);
+            var catid = topics[i].CATEGORYTITLEID;
+
+            createTopicView(i == len - 1, catid, cell);
+          }
+        });
+      }
+
+      function createTopicView(islast, catid, cell) {
+        selectTopMessage(catid, function (rows) {
+          var msg = rows[0];
+
+          var dec_title = decodeStringFromDB(msg.TITLE);
+          var dec_user = decodeStringFromDB(msg.USERNAME);
+          var dec_msg = decodeStringFromDB(msg.MESSAGE);
+
+          var topicstr = "<br><table class='w-full bg-white rounded' border=0>";
+          topicstr +=
+            "<tr><td class='px-4 py-2 bg-slate-300'><a class='text-blue-500 hover:text-blue-400 hover:cursor-pointer font-bold' href='topic.html?uid=" +
+            MDS.minidappuid +
+            "&topicid=" +
+            catid +
+            "'>" +
+            dec_title +
+            "</a></td></tr>";
+          if (msg.MESSAGE.trim() == "") {
+            topicstr += "<tr><td>No comments yet..</td></tr>";
+          } else {
+            var text = "";
+            if (msg.READ == "0") {
+              text =
+                "<div class='animate-pulse temporary-pulse'><p class='rounded-full bg-blue-500 text-white w-max px-2 mt-4 py-[4px] text-[12px] font-bold'>New</p></div>";
+            }
+            text +=
+              "<h6 class='text-black font-bold truncate mt-4'>" +
+              dec_user +
+              "</h6>" +
+              "<p class='block px-4 py-0 pb-2 pl-0  whitespace-nowrap truncate'>" +
+              dec_msg +
+              "</p>";
+
+            var date = new Date(+msg.CREATED);
+            topicstr +=
+              `<tr><td class='px-4 grid grid-cols-1 ${
+                msg.READ == "0"
+                  ? "grid-rows-[1fr_auto_auto_1fr]"
+                  : "grid-rows-[1fr_auto_auto_1fr]"
+              }  truncate'>` +
+              text +
+              "</td></tr>";
+            topicstr +=
+              "<tr><td class='text-[12px] text-right px-4 overflow-hidden'>" +
+              date.toLocaleString() +
+              "</td></tr>";
+          }
+          topicstr += "</table>";
+
+          //Make safe
+          cell.innerHTML = DOMPurify.sanitize(topicstr);
+        });
+      }
+
+      //Main message handler..
+      MDS.init(function (msg) {
+        //Do initialisation
+        if (msg.event == "inited") {
+          if (false) {
+            wipeDB();
+            MDS.log("DB Wiped");
+          } else {
+            //Which category
+            CURRENT_CATEGORY = MDS.form.getParams("category");
+            if (!CURRENT_CATEGORY) {
+              CURRENT_CATEGORY = "";
+            }
+
+            CURRENT_CATEGORY = cleanCategory(CURRENT_CATEGORY);
+
+            MDS.log("CATEGORY : " + CURRENT_CATEGORY);
+
+            //Load all the categories
+            chooseCategories();
+
+            nextback.style.display = "none";
+            if (CURRENT_CATEGORY == "") {
+              topicstable.style.display = "none";
+              //nextback.style.display = "none";
+              emptycat.style.display = "flex";
+            } else {
+              topicstable.style.display = "block";
+              //nextback.style.display = "flex";
+              emptycat.style.display = "none";
+
+              //Disable button
+              newtopicbutton.disabled = true;
+
+              //Notify of new messages..
+              MDS.cmd("maxima;getaddress", function (startup) {
+                //Get the user details
+                USER_NAME = startup[0].response.name;
+                USER_PUBKEY = startup[0].response.publickey;
+
+                //Now see if we have picked an address..
+                var someaddress = startup[1].response.address;
+                MDS.keypair.get("shoutaddress", function (resp) {
+                  if (resp.status) {
+                    //We have already defined it..
+                    USER_ADDRESS = resp.value;
+                    MDS.log("Address found.. " + USER_ADDRESS);
+                  } else {
+                    USER_ADDRESS = someaddress;
+                    //None specified yet - specify it..
+                    MDS.keypair.set(
+                      "shoutaddress",
+                      someaddress,
+                      function (resp) {
+                        MDS.log("NEW address set.. " + someaddress);
+                      }
+                    );
+                  }
+                });
+
+                //Load all the topics..
+                setTopics();
+
+                newtopicbutton.disabled = false;
+              });
+            }
+          }
+        } else if (msg.event == "NOTIFYCOIN") {
+          //Is it the one that matters
+          if (msg.data.address == SHOUTOUT_ADDRESS) {
+            var msg_category = stripBrackets(msg.data.coin.state[0]);
+
+            //It's a message..
+            if (msg_category == CURRENT_CATEGORY) {
+              //Are we writing a topic..
+              var topictitle = newtopictitle.value.trim();
+              var topictext = newtopictext.value.trim();
+
+              if (topictitle != "" || topictext != "") {
+                //Writing a message..
+              } else {
+                //Update page
+                setTopics();
+              }
+            }
+          }
+        }
+      });
+    </script>
+  </body>
 </html>

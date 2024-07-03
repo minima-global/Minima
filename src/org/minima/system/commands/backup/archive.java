@@ -34,6 +34,7 @@ import org.minima.system.Main;
 import org.minima.system.brains.TxPoWProcessor;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.CommandRunner;
 import org.minima.system.commands.network.connect;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
@@ -80,29 +81,32 @@ public class archive extends Command {
 				+ "\n"
 				+ "A seed re-sync will wipe the wallet, re-generate your private keys and restore your coins.\n"
 				+ "\n"
-				+ "Only use a seed re-sync if you have lost your node and do not have a backup.\n"
+				+ "Only do a seed re-sync if you have lost your node and do not have a backup.\n"
 				+ "\n"
 				+ "You can also perform checks on your archive db or archive file and check an address.\n"
 				+ "\n"
 				+ "action:\n"
-				+ "    resync : do a chain or seed re-sync. For chain re-sync do not provide phrase. Use with 'host'.\n"
 				+ "    integrity : Check the integrity of your archive db. No host required.\n"
-				+ "    export : Export your archive db to a gzip file. \n"
-				+ "    import : do a chain or seed re-sync using an archive gzip file. Use with 'file'.\n"
-				+ "    inspect : inspect an archive export gzip file. If 'last:1' then the file can re-sync any node from genesis.\n"
+				+ "    inspect : inspect an archive export .gzip file. If 'last:1', the file can re-sync any node from genesis.\n"
+				+ "    export : Export your archive db to a .gzip file. \n"
+				+ "    exportraw : Export your archive db to a raw .dat file (recommended).\n"
+				+ "    resync : Use with 'host' to do a chain or seed re-sync from an archive node. \n"
+				+ "    import : Use with 'file' to do a chain or seed re-sync using a .dat or .gzip archive file. \n"
 				+ "    addresscheck : check your archive db for spent and unspent coins at a specific address.\n"
 				+ "\n"
 				+ "host: (optional) \n"
-				+ "    ip:port of the archive node to sync from or check the integrity of.\n"
-				+ "    Only use with 'action:resync'.\n"
+				+ "    ip:port of the archive node to sync from. Use with action:resync.\n"
 				+ "\n"
 				+ "file: (optional) \n"
-				+ "    name or path of the archive export gzip file to export/import/inspect\n"
+				+ "    name or path of the archive export gzip file to export/import/inspect.\n"
 				+ "\n"
 				+ "phrase: (optional)\n"
-				+ "    Your 24 word seed phrase in double quotes, to perform a seed re-sync. Use with action:resync or import.\n"
-				+ "    This will wipe the wallet of this node. You do NOT have to do this if you still have access to your wallet.\n"
-				+ "    In this case, just do a re-sync without 'phrase' to get on the correct chain.\n"
+				+ "    To seed re-sync, enter your seed phrase in double quotes. Use with action:import or resync.\n"
+				+ "    This will replace the current seed phrase of this node. You do NOT have to do this if you still have access to your wallet.\n"
+				+ "    In this case, use action:import or resync without 'phrase' to get on the correct chain.\n"
+				+ "\n"
+				+ "anyphrase: (optional)\n"
+				+ "    true or false. If you set a custom seed phrase on startup, you can set this to true. Default is false.\n"
 				+ "\n"
 				+ "keys: (optional) \n"
 				+ "    Number of keys to create if you need to do a seed re-sync. Default is 64.\n"
@@ -113,24 +117,35 @@ public class archive extends Command {
 				+ "    Defaults to 1000 - the max is 262144 for normal keys.\n"
 				+ "\n"
 				+ "address: (optional) \n"
-				+ "    The wallet address to check. Use with 'action:addresscheck'.\n"
+				+ "    The wallet or script address to search for in the archive. Use with action:addresscheck.\n"
+				+ "    If using a script address, also provide an address or public key in the 'statecheck' parameter.\n"
+				+ "    Use with action:addresscheck.\n"
+				+ "\n"
+				+ "statecheck: (optional) \n"
+				+ "    Data to search for in a coin's state variables.\n"
+				+ "    Combine with a script address in the 'address' parameter to search for coins locked in a contract.\n"
+				+ "\n"
+				+ "logs: (optional) \n"
+				+ "    true or false. Show detailed logs, default false.\n"
+				+ "\n"
+				+ "maxexport: (optional) \n"
+				+ "    How many blocks to export to a raw .dat file. Useful for testing purposes.\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
-				+ "archive action:resync host:89.98.89.98:9001\n"
-				+ "\n"
-				+ "archive action:resync host:89.98.89.98:9001 phrase:\"YOUR 24 WORD SEED PHRASE\" keyuses:2000\n"
-				+ "\n"
 				+ "archive action:integrity\n"
-				+ "\n"
-				+ "archive action:export file:archiveexport-ddmmyy.gzip\n"
-				+ "\n"
-				+ "archive action:import file:archiveexport-ddmmyy.gzip\n"
 				+ "\n"
 				+ "archive action:inspect file:archiveexport-ddmmyy.gzip\n"
 				+ "\n"
-				+ "archive action:addresscheck address:Mx..\n"
-				+ "\n";
+				+ "archive action:exportraw file:archiveexport-ddmmyy.raw.dat\n"
+				+ "\n"
+				+ "archive action:resync host:89.98.89.98:9001\n"
+				+ "\n"
+				+ "archive action:import file:archiveexport-ddmmyy.raw.dat\n"
+				+ "\n"
+				+ "archive action:import file:archiveexport-ddmmyy.raw.dat phrase:\"YOUR 24 WORD SEED PHRASE\" keyuses:2000\n"
+				+ "\n"			
+				+ "archive action:addresscheck address:0xFED.. statecheck:0xABC..\n";
 	}
 	
 	@Override
@@ -344,6 +359,11 @@ public class archive extends Command {
 			//Tell the MiniDAPPs..
 			Main.getInstance().PostNotifyEvent("MDS_RESYNC_START",new JSONObject());
 			
+			//Are we MEGA MMR
+			if(GeneralParams.IS_MEGAMMR) {
+				MinimaDB.getDB().getMegaMMR().clear();
+			}
+			
 			//Are we resetting the wallet too ?
 			MiniData seed 		= null;
 			String phrase = getParam("phrase","");
@@ -413,14 +433,10 @@ public class archive extends Command {
 				
 				//Clean system counter
 				counter++;
-//				if(counter % 5 == 0) {
-//					long mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-//					if(mem > 250 * 1024 * 1024) {
-//						Main.getInstance().resetMemFull();
-//						MinimaLogger.log("Clean up memory..");
-//					}else {
-//						//MinimaLogger.log("RAM memory usage still low.. wait for cleanup");
-//					}
+				
+				//HACK
+//				if(counter > 0) {
+//					break;
 //				}
 				
 				//HARD RESET - H2 database doesn't like it if I don't do this
@@ -615,6 +631,12 @@ public class archive extends Command {
 				rawoutput.delete();
 			}
 			
+			//Make sure the parents exist
+			File parent = rawoutput.getAbsoluteFile().getParentFile();
+			if(!parent.exists()) {
+				parent.mkdirs();
+			}
+			
 			//Create output streams..
 			FileOutputStream fix 		= new FileOutputStream(rawoutput);
 			BufferedOutputStream bos 	= new BufferedOutputStream(fix, 65536);
@@ -806,7 +828,11 @@ public class archive extends Command {
 				command = command+" keyuses:"+getParam("keyuses");
 			}
 			
-			JSONArray res 		= Command.runMultiCommand(command);
+			if(existsParam("anyphrase")) {
+				command = command+" anyphrase:"+getParam("anyphrase");
+			}
+			
+			JSONArray res 		= CommandRunner.getRunner().runMultiCommand(command);
 			JSONObject result 	= (JSONObject) res.get(0);
 			
 			//Shutdwon TEMP DB
@@ -891,7 +917,11 @@ public class archive extends Command {
 					command = command+" keyuses:"+getParam("keyuses");
 				}
 				
-				JSONArray res 		= Command.runMultiCommand(command);
+				if(existsParam("anyphrase")) {
+					command = command+" anyphrase:"+getParam("anyphrase");
+				}
+				
+				JSONArray res 		= CommandRunner.getRunner().runMultiCommand(command);
 				JSONObject result 	= (JSONObject) res.get(0);
 				
 				//Shutdown TEMP DB
@@ -931,7 +961,11 @@ public class archive extends Command {
 					command = command+" keyuses:"+getParam("keyuses");
 				}
 				
-				JSONArray res 		= Command.runMultiCommand(command);
+				if(existsParam("anyphrase")) {
+					command = command+" anyphrase:"+getParam("anyphrase");
+				}
+				
+				JSONArray res 		= CommandRunner.getRunner().runMultiCommand(command);
 				JSONObject result 	= (JSONObject) res.get(0);
 				
 				//Shutdown TEMP DB
@@ -1329,12 +1363,16 @@ public class archive extends Command {
 	 * A special PING message to  check a valid connection..
 	 */
 	public static IBD sendArchiveReq(String zHost, int zPort, MiniNumber zStartBlock) {
-		
+		return sendArchiveReq(zHost, zPort, zStartBlock, 3);
+	}
+	
+	public static IBD sendArchiveReq(String zHost, int zPort, MiniNumber zStartBlock, int zAttempts) {
+			
 		IBD ibd= null;
 		
 		int attempts = 0;
 		
-		while(attempts<3) {
+		while(attempts<zAttempts) {
 			try {
 				
 				//Create the Network Message
@@ -1399,7 +1437,7 @@ public class archive extends Command {
 				//Increase attempts
 				attempts++;			
 				
-				if(attempts<3) {
+				if(attempts<zAttempts) {
 					MinimaLogger.log(attempts+" Attempts > Wait 10 seconds and re-attempt..");
 					
 					//Wait 10 seconds

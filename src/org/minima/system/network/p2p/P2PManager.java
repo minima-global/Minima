@@ -172,6 +172,7 @@ public class P2PManager extends MessageProcessor {
         InetSocketAddress connectionAddress = null;
         if (!state.isNoConnect()) {
             
+        	//DEBUG LOOP
         	if(firstgo) {
         		firstgo = false;
         		
@@ -192,10 +193,11 @@ public class P2PManager extends MessageProcessor {
                 //MinimaLogger.log("[+] Connecting to saved node: " + connectionAddress);
             
             } else {
-                state.setDoingDiscoveryConnection(true);
-                P2PFunctions.log_info("[+] Doing discovery connection with default node");
-                //MinimaLogger.log("[+] Doing discovery connection with default node");
-                
+//                P2PFunctions.log_info("[+] Doing discovery connection with default node");
+//                //MinimaLogger.log("[+] Doing discovery connection with default node");
+//                
+
+//              state.setDoingDiscoveryConnection(true);
                 doDiscoveryPing();
             }
         }
@@ -217,7 +219,7 @@ public class P2PManager extends MessageProcessor {
     		//Only show the message every few minutes..
     		long timenow = System.currentTimeMillis();
     		if(timenow - mLastNotifyNoPeers > NOTIFY_NOPEERS_TIMER) {
-    			MinimaLogger.log("There are NO DEFAULT PEERS - please use command 'peers' to add a valid peer..");
+    			MinimaLogger.log("No default Peers found - please use command 'peers' to add a valid peer..");
     			mLastNotifyNoPeers = timenow;
     		}
     		
@@ -231,6 +233,7 @@ public class P2PManager extends MessageProcessor {
     		//Only check a few times - will try again later on next process loop
     		if(attempts>=3) {
     			MinimaLogger.log("Discovery node connection paused.. tried "+attempts+" times..");
+    			state.setDoingDiscoveryConnection(false);
     			return;
     		}
     		
@@ -459,7 +462,9 @@ public class P2PManager extends MessageProcessor {
                         mPeersChecker.PostMessage(new Message(P2PPeersChecker.PEERS_ADDPEERS).addObject("address", peer));
                     }
                 }
-                state.setDoingDiscoveryConnection(true);
+                
+                //Don;t set discovery on as there are no default peers..
+//                state.setDoingDiscoveryConnection(true);
                 doDiscoveryPing();
             }
         }
@@ -586,7 +591,7 @@ public class P2PManager extends MessageProcessor {
         P2PDB p2pdb = MinimaDB.getDB().getP2PDB();
         p2pdb.setVersion();
         
-        //Updater thew peers list
+        //Update the peers list
         updateP2PPeersList();
 //        if (state.getKnownPeers().size() > 0){
 //            p2pdb.setPeersList(new ArrayList<>(state.getKnownPeers()));
@@ -594,6 +599,8 @@ public class P2PManager extends MessageProcessor {
 
         //Stop the peers checker
         mPeersChecker.stopMessageProcessor();
+        
+        MinimaLogger.log("P2PDB shutdown..");
         
         //And finish with..
         stopMessageProcessor();

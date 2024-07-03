@@ -24,6 +24,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.Signature;
 import org.minima.objects.keys.TreeKey;
+import org.minima.system.network.minima.RelayPolicy;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
@@ -33,7 +34,7 @@ public class TxPoWChecker {
 	/**
 	 * What Network are we currently checking for
 	 */
-	public static MiniData CURRENT_NETWORK = TxHeader.TEST_NET;
+	public static MiniData CURRENT_NETWORK = TxHeader.MAIN_NET;
 	
 	/**
 	 * Max Time in future for Block time.. 24hrs..
@@ -458,9 +459,16 @@ public class TxPoWChecker {
 		}
 		
 		//Check Size is acceptable..
-		long size = zTxPoW.getSizeinBytesWithoutBlockTxns();
-		if(size > zBlock.getMagic().getMaxTxPoWSize().getAsLong()) {
+		long maxsize 	= zBlock.getMagic().getMaxTxPoWSize().getAsLong();
+		long size 		= zTxPoW.getSizeinBytesWithoutBlockTxns();
+		if(size > maxsize) {
 			MinimaLogger.log("TxPoW size too large.. "+size+" "+zTxPoW.getTxPoWID());
+			return false;
+		}
+		
+		//Check state store size..
+		if(!RelayPolicy.checkMaxStateStoreSize(zTxPoW,maxsize)) {
+			MinimaLogger.log("TxPoW state store too large..");
 			return false;
 		}
 		

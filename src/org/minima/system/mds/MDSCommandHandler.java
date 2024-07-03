@@ -70,6 +70,17 @@ public class MDSCommandHandler {
 			NETcommand net 	= new NETcommand(minidappid, data);
 			result 			= net.runCommand();
 		
+		}else if(command.equals("netauth")) {
+			
+			//Get the URL and the headers..
+			int dataindex 		= data.indexOf("&");
+			String url 			= data.substring(0, dataindex);
+			String authtoken  	= data.substring(dataindex+1);
+			
+			//Create a Command and run it..
+			NETcommand net 	= new NETcommand(minidappid, url, "", authtoken);
+			result 			= net.runCommand();
+			
 		}else if(command.equals("netpost")) {
 			
 			//Get the URL and the post data..
@@ -253,9 +264,12 @@ public class MDSCommandHandler {
 			
 		}else if(command.equals("dapplink")) {
 			
+			//Not allowed on Public MiniDAPP
+			boolean publicmini = (minidappid == mMDS.getPublicMiniDAPPID());
+			
 			//Get the MiniDapp in question..
 			MiniDAPP reqmini = mMDS.getMiniDAPPFromName(data.trim());
-			if(reqmini == null) {
+			if(reqmini == null || publicmini) {
 				//No MiniDAPP found..
 				JSONObject error = new JSONObject();
 				error.put("status", false);

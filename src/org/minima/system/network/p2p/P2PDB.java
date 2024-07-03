@@ -35,7 +35,7 @@ public class P2PDB extends JsonDB {
     public void setPeersList(List<InetSocketAddress> peers) {
         getAllData().put("peers", InetSocketAddressIO.addressesListToJSON(peers));
     }
-
+    
     /**
      * Sets the version number for the database using the P2PParams value
      */

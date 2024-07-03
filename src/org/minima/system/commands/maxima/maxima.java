@@ -42,6 +42,7 @@ public class maxima extends Command {
 				+ "action:\n"
 				+ "    info : Show your Maxima details - name, publickey, staticmls, mls, local identity and contact address.\n"
 				+ "    setname : Set your Maxima name so your contacts recognise you. Default 'noname'.\n"
+				+ "    seticon : Set your Maxima name Icon.\n"
 				+ "    hosts : List your Maxima hosts and see their Maxima public key, contact address, last seen time and if you are connected.\n"
 				+ "    send : Send a message to a contact. Must specify 'id|to|publickey', 'application' and 'data' parameters.\n"
 				+ "    sendall : Send a message to ALL your contacts. Must specify 'application' and 'data' parameters.\n"
@@ -49,6 +50,9 @@ public class maxima extends Command {
 				+ "\n"
 				+ "name: (optional)\n"
 				+ "    Set your name. Use with 'action:setname'.\n"
+				+ "\n"
+				+ "icon: (optional)\n"
+				+ "    Set your icon. Use with 'action:seticon'.\n"
 				+ "\n"
 				+ "id|to|publickey: (optional)\n"
 				+ "    The id, contact address or public key of the recipient of the message. Use with 'action:send'.\n"
@@ -84,7 +88,7 @@ public class maxima extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","name","id","to",
+		return new ArrayList<>(Arrays.asList(new String[]{"action","name","icon","id","to",
 				"publickey","application","data","poll","host","delay"}));
 	}
 	
@@ -111,14 +115,17 @@ public class maxima extends Command {
 			String fullhost = GeneralParams.MINIMA_HOST+":"+GeneralParams.MINIMA_PORT;
 			
 			//Show details
-			details.put("logs", GeneralParams.MAXIMA_LOGS);
 			details.put("name", MinimaDB.getDB().getUserDB().getMaximaName());
+			details.put("icon", MinimaDB.getDB().getUserDB().getMaximaIcon());
+			
 			details.put("publickey", max.getPublicKey().to0xString());
 			details.put("staticmls", max.isStaticMLS());
 			details.put("mls", max.getMLSHost());
 			details.put("localidentity", max.getLocalMaximaAddress(false));
 			details.put("p2pidentity", max.getLocalMaximaAddress(true));
 			details.put("contact", max.getRandomMaximaAddress());
+			
+			details.put("logs", GeneralParams.MAXIMA_LOGS);
 			
 			//get the messages on the stack
 			int msgnum = max.getMaxSender().getSize();
@@ -131,20 +138,26 @@ public class maxima extends Command {
 			String name = getParam("name");
 			
 			//Remove naughty chars
-			name = name.replace("\"", "");
-//			name = name.replace("'", "");
-			name = name.replace(";", "");
-						
-			//Remove emojis..
-//			String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
-//			String emotionless = name.replaceAll(characterFilter,"");
-//			MinimaDB.getDB().getUserDB().setMaximaName(emotionless);
-			//MinimaLogger.log("Set Maxima Name : "+name);
-			
+			name = name.replace("\"", "").replace("'", "").replace(";", "");
+									
 			MinimaDB.getDB().getUserDB().setMaximaName(name);
 			MinimaDB.getDB().saveUserDB();
 			
 			details.put("name", name);
+			
+			ret.put("response", details);
+			
+			//Refresh
+			max.PostMessage(MaximaManager.MAXIMA_REFRESH);
+			
+		}else if(func.equals("seticon")) {
+			
+			String icon = getParam("icon");
+									
+			MinimaDB.getDB().getUserDB().setMaximaIcon(icon);
+			MinimaDB.getDB().saveUserDB();
+			
+			details.put("icon", icon);
 			
 			ret.put("response", details);
 			

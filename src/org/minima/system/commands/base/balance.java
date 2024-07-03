@@ -9,10 +9,12 @@ import org.minima.database.txpowtree.TxPowTree;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.Token;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
@@ -21,7 +23,7 @@ import org.minima.utils.json.JSONObject;
 public class balance extends Command {
 
 	public balance() {
-		super("balance","(address:) (tokenid:) (confirmations:) - Show your total balance of Minima and tokens");
+		super("balance","(address:) (tokenid:) (confirmations:) (megammr:) - Show your total balance of Minima and tokens");
 	}
 	
 	@Override
@@ -42,6 +44,9 @@ public class balance extends Command {
 				+ "confirmations: (optional)\n"
 				+ "    Set the number of block confirmations required before a coin is considered confirmed in your balance. Default is 3.\n"
 				+ "\n"
+				+ "megammr: (optional)\n"
+				+ "    Search the MegaMMR for coins too.\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "balance\n"
@@ -53,7 +58,7 @@ public class balance extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"address","tokenid","confirmations","tokendetails"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"address","tokenid","confirmations","tokendetails","megammr"}));
 	}
 	
 	@Override
@@ -92,8 +97,27 @@ public class balance extends Command {
 		//Get the wallet.. to find the sendable coins..
 		Wallet walletdb = MinimaDB.getDB().getWallet();
 		
+		//Do we check the MegaMMR
+		boolean checkmegammr = getBooleanParam("megammr", false);
+		if(checkmegammr) {
+			checkmegammr = GeneralParams.IS_MEGAMMR;
+		}
+		
 		//Get the coins..
-		ArrayList<Coin> coins = TxPoWSearcher.getAllRelevantUnspentCoins(txptree.getTip());
+		ArrayList<Coin> coins = null;
+		if(address.equals("")) {
+			coins = TxPoWSearcher.getAllRelevantUnspentCoins(txptree.getTip());
+		}else {
+			
+			//Special search
+			coins = TxPoWSearcher.searchCoins(	txptree.getTip(), false, 
+					false, MiniData.ZERO_TXPOWID,
+					false, MiniNumber.ZERO,
+					true, new MiniData(address), 
+					false, MiniData.ZERO_TXPOWID, 
+					false, "", true,
+					false, Integer.MAX_VALUE,checkmegammr);
+		}
 			
 		//What is the top block
 		MiniNumber topblock = txptree.getTip().getBlockNumber();

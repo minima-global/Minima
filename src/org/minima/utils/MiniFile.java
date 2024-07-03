@@ -221,10 +221,7 @@ public class MiniFile {
 			
 			//Write it out..
 			FileOutputStream fos 		= new FileOutputStream(zFile, false);
-			
-			//256K buffer
 			BufferedOutputStream bos 	= new BufferedOutputStream(fos, 65536);
-			
 			DataOutputStream fdos 		= new DataOutputStream(bos);
 			
 			//And write it..
@@ -459,6 +456,8 @@ public class MiniFile {
 			return "application/zip";
 		}else if(ending.equals("pdf")) {
 			return "application/pdf";
+		}else if(ending.equals("wasm")) {
+			return "application/wasm";
 			
 		}else if(ending.equals("mp3")) {
 			return "audio/mp3";

@@ -113,7 +113,7 @@ public class MDSJS {
 	 * Simple Log
 	 */
 	public void log(String zMessage) {
-		log(zMessage, false);
+		log(zMessage, true);
 	}
 	
 	public void log(String zMessage, boolean zNotifyAll) {

@@ -50,6 +50,9 @@ public class MySQLConnect {
 	PreparedStatement SQL_LATEST_COIN			= null;
 	PreparedStatement SQL_TOTAL_COIN			= null;
 	
+	PreparedStatement SQL_INSERT_TXPOW 			= null;
+	PreparedStatement SQL_GET_TXPOW 			= null;
+	
 	boolean mReadOnly;
 	
 	public MySQLConnect(String zHost, String zDatabase, String zUsername, String zPassword) {
@@ -118,6 +121,16 @@ public class MySQLConnect {
 			//Run it..
 			stmt.execute(coins);
 			
+			//Create a complete TxPoW table
+			String txpow = "CREATE TABLE IF NOT EXISTS `txpow` ("
+							+ "  `id` bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,"
+							+ "  `txpowid` varchar(80) NOT NULL UNIQUE,"
+							+ "  `txpowdata` mediumblob NOT NULL"
+							+ ")";
+			
+			//Run it..
+			stmt.execute(txpow);
+			
 			//All done..
 			stmt.close();
 		}
@@ -141,6 +154,9 @@ public class MySQLConnect {
 					+ "VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )");
 		SQL_LATEST_COIN = mConnection.prepareStatement("SELECT MAX(blockcreated) as maxblock from coins");
 		SQL_TOTAL_COIN = mConnection.prepareStatement("SELECT COUNT(*) as tot from coins");
+	
+		SQL_INSERT_TXPOW 	= mConnection.prepareStatement("INSERT IGNORE INTO txpow ( txpowid, txpowdata ) VALUES ( ?, ? )");
+		SQL_GET_TXPOW 		= mConnection.prepareStatement("SELECT * FROM txpow WHERE txpowid=?");
 	}
 	
 	public void shutdown() {
@@ -155,9 +171,12 @@ public class MySQLConnect {
 	
 	public void wipeAll() throws SQLException {
 		Statement stmt = mConnection.createStatement();
+		
 		stmt.execute("DROP TABLE syncblock");
 		stmt.execute("DROP TABLE cascadedata");
 		stmt.execute("DROP TABLE coins");
+		stmt.execute("DROP TABLE txpow");
+		
 		stmt.close();
 		
 		//close..
@@ -612,6 +631,64 @@ public class MySQLConnect {
 		return error;
 	}
 	
+	public synchronized boolean saveTxPoW(TxPoW zTxPoW) {
+		try {
+			
+			//get the MiniData version..
+			MiniData syncdata = MiniData.getMiniDataVersion(zTxPoW);
+			
+			//Get the Query ready
+			SQL_INSERT_TXPOW.clearParameters();
+		
+			//Set main params
+			SQL_INSERT_TXPOW.setString(1, zTxPoW.getTxPoWID());
+			SQL_INSERT_TXPOW.setBytes(2, syncdata.getBytes());
+			
+			//Do it.
+			SQL_INSERT_TXPOW.execute();
+			
+			return true;
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return false;
+	}
+	
+	public synchronized TxPoW getTxPoW(String zTxPoWID) {
+		
+		try {
+			
+			//Set search params
+			SQL_GET_TXPOW.clearParameters();
+			SQL_GET_TXPOW.setString(1, zTxPoWID);
+			
+			//Run the query
+			ResultSet rs = SQL_GET_TXPOW.executeQuery();
+			
+			//Is there a valid result.. ?
+			if(rs.next()) {
+				
+				//Get the details..
+				byte[] syncdata 	= rs.getBytes("txpowdata");
+				
+				//Create MiniData version
+				MiniData minisync = new MiniData(syncdata);
+				
+				//Convert
+				TxPoW sb = TxPoW.convertMiniDataVersion(minisync);
+				
+				return sb;
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return null;
+	}
+
 	public static void main(String[] zArgs) throws SQLException {
 		
 		//Load the required classes
@@ -621,13 +698,30 @@ public class MySQLConnect {
 			e1.printStackTrace();
 		}
 		
-		MySQLConnect mysql = new MySQLConnect("localhost:3306", "coinsdb", "myuser", "myuser");
+		MySQLConnect mysql = new MySQLConnect("localhost:3306", "mydatabase", "myuser", "myuser");
 		mysql.init();
 				
-//		//Add some TxPoW..
-//		TxPoW txp = new TxPoW();
-//		txp.setBlockNumber(MiniNumber.ZERO);
-//		txp.calculateTXPOWID();
+		//Add some TxPoW..
+		TxPoW txp = new TxPoW();
+		txp.setBlockNumber(MiniNumber.ZERO);
+		txp.setTimeMilli(MiniNumber.ZERO);
+		txp.calculateTXPOWID();
+	
+		System.out.println("ID:"+txp.getTxPoWID());
+		
+		mysql.saveTxPoW(txp);
+		
+		//mysql.saveTxPoW(txp);
+	
+		//0xA04535D07E88F9AF7E9F8F706E4509526CB4E95203AB7730B7E4B7EF6B53D38B
+		//0x90C64548848ED69AF2F50D73358549AA6FFB809A2C186B769340680ECE8248CA
+		
+		//Now load it..
+		TxPoW tp = mysql.getTxPoW("0xA04535D07E88F9AF7E9F8F706E4509526CB4E95203AB7730B7E4B7EF6B53D38B");
+		
+		MinimaLogger.log(tp.toJSON().toString());
+		
+		
 //		TxBlock txblk = new TxBlock(txp);
 //		
 //		txp = new TxPoW();

@@ -1,6 +1,6 @@
 package org.minima.system.mds.handler;
 
-import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandRunner;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -25,7 +25,7 @@ public class CMDcommand {
 		
 		try {
 			//Now run this function..
-			JSONArray res = Command.runMultiCommand(mMiniDAPPID,mCompleteCommand);
+			JSONArray res = CommandRunner.getRunner().runMultiCommand(mMiniDAPPID,mCompleteCommand);
 			
 			//Get the result.. is it a multi command or single.. 
 			if(res.size() == 1) {

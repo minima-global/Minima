@@ -72,6 +72,9 @@ public class tokencreate extends Command {
 				+ "burn: (optional)\n"
 				+ "    Amount to burn with the tokencreate minting transaction.\n"
 				+ "\n"
+				+ "mine: (optional)\n"
+				+ "    Mine the TxPoW synchronously.\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "tokencreate name:newtoken amount:1000000\n"
@@ -86,7 +89,7 @@ public class tokencreate extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"name","amount","decimals","script",
-				"state","signtoken","webvalidate","burn"}));
+				"state","signtoken","webvalidate","burn","mine"}));
 	}
 	
 	@Override
@@ -98,6 +101,9 @@ public class tokencreate extends Command {
 			throw new CommandException("MUST specify name and amount");
 		}
 		
+		//Are we Mining synchronously
+		boolean minesync = getBooleanParam("mine", false);
+				
 		//Is there a state JSON
 		JSONObject state = new JSONObject();
 		if(existsParam("state")) {
@@ -410,12 +416,21 @@ public class tokencreate extends Command {
 		//Calculate the size..
 		txpow.calculateTXPOWID();
 		
-		//All good..
-		ret.put("response", txpow.getTransaction().toJSON());
-				
-		//Send it to the Miner..
-		Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txpow);
+		//Sync or Async mining..
+		if(minesync) {
+			boolean success = Main.getInstance().getTxPoWMiner().MineMaxTxPoW(false, txpow, 120000);
+			
+			if(!success) {
+				throw new CommandException("FAILED TO MINE txn in 120 seconds !?");
+			}
+			
+		}else {
+			Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txpow);
+		}
 	
+		//All good..
+		ret.put("response", txpow.toJSON());
+		
 		return ret;
 	}
 

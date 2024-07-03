@@ -114,6 +114,12 @@ public class send extends Command {
 				+ "mine: (optional)\n"
 				+ "    true or false - should you mine the transaction immediately.\n"
 				+ "\n"
+				+ "fromaddress: (optional)\n"
+				+ "    Only use this address for input coins.\n"
+				+ "\n"
+				+ "signkey: (optional)\n"
+				+ "    Sign the txn with only this key (use with fromaddress).\n"
+				+ "\n"
 				+ "storestate: (optional)\n"
 				+ "    true or false - defaults to true. Should the output coins store the state (will still appear in NOTIFYCOIN messages).\n"
 				+ "\n"
@@ -135,7 +141,8 @@ public class send extends Command {
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"action","uid",
 				"address","amount","multi","tokenid","state","burn","coinage",
-				"split","debug","dryrun","mine","password","storestate"}));
+				"split","debug","dryrun","mine","password","storestate",
+				"fromaddress","signkey"}));
 	}
 	
 	@Override
@@ -243,9 +250,33 @@ public class send extends Command {
 		if(coinage.isLess(GlobalParams.MINIMA_CONFIRM_DEPTH)) {
 			throw new CommandException("Coinage MUST be >= "+GlobalParams.MINIMA_CONFIRM_DEPTH);
 		}
-				
+		
+		//Is it from a specific address
+		String usepubkey 		= getAddressParam("signkey","");
+		boolean usefromaddress 	= false;
+		String fromaddress 		= getAddressParam("fromaddress","");
+		if(!fromaddress.equals("")) {
+			if(debug) {
+				MinimaLogger.log("Search only coins with address : "+fromaddress);
+			}
+			usefromaddress 	= true;
+		}
+		
 		//Lets build a transaction..
-		ArrayList<Coin> foundcoins	= TxPoWSearcher.getRelevantUnspentCoins(tip,tokenid,true);
+		ArrayList<Coin> foundcoins = null;
+		if(usefromaddress) {
+			
+			//Only search a specific address
+			foundcoins	= TxPoWSearcher.searchCoins(tip, true, 
+										false, MiniData.ZERO_TXPOWID, 
+										false, MiniNumber.ZERO,
+										true, new MiniData(fromaddress),
+										true, new MiniData(tokenid),
+										false);
+			
+		}else {
+			foundcoins	= TxPoWSearcher.getRelevantUnspentCoins(tip,tokenid,true);
+		}
 		ArrayList<Coin> relcoins 	= new ArrayList<>();
 		
 		//Now make sure they are old enough
@@ -435,6 +466,12 @@ public class send extends Command {
 			}
 		}
 		
+		//Are we spcifying the sign key
+		if(usepubkey != "") {
+			reqsigs.clear();
+			reqsigs.add(usepubkey);
+		}
+		
 		//Now make the sendamount correct
 		if(!tokenid.equals("0x00")) {
 			
@@ -537,7 +574,13 @@ public class send extends Command {
 				}
 			}
 			
+			//Create the change address..
 			MiniData chgaddress = new MiniData(newwalletaddress.getAddress());
+			
+			//Are we using a specific address..
+			if(usefromaddress) {
+				chgaddress = new MiniData(fromaddress);
+			}
 			
 			//Get the scaled token ammount..
 			MiniNumber changeamount = change;
@@ -579,7 +622,7 @@ public class send extends Command {
 			int port = Integer.parseInt(portstr);
 			
 			//Get the state var..
-			String var = (String) state.get(key);
+			String var = state.get(key)+"";
 
 			//Create a state variable..
 			StateVariable sv = new StateVariable(port, var);
@@ -596,7 +639,11 @@ public class send extends Command {
 		
 		//Now that we have constructed the transaction - lets sign it..
 		if(debug) {
-			MinimaLogger.log("Total signatures required : "+reqsigs.size());
+			if(usepubkey != "") {
+				MinimaLogger.log("(SIGNKEYS) Total signatures required : "+reqsigs.size());
+			}else {
+				MinimaLogger.log("Total signatures required : "+reqsigs.size());
+			}
 		}
 		
 		//Are we password unlocking..

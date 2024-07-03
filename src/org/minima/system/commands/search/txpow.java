@@ -2,6 +2,7 @@ package org.minima.system.commands.search;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowdb.sql.TxPoWSqlDB;
@@ -30,7 +31,12 @@ public class txpow extends Command {
 				+ "Search by txpowid, block or 0x / Mx address.\n"
 				+ "\n"
 				+ "txpowid: (optional)\n"
-				+ "    txpowid of the TxPoW to search for.\n"
+				+ "    TxPoW id of the TxPoW to search for.\n"
+				 + "    Returns the txpow details.\n"
+				+ "\n"
+				+ "onchain: (optional)\n"
+				+ "    TxPoW id to search for on chain. Must be in the unpruned chain.\n"
+				+ "    Returns block info and number of confirmations.\n"
 				+ "\n"
 				+ "block: (optional)\n"
 				+ "    Block number to search in. Must be in the unpruned chain.\n"
@@ -38,8 +44,11 @@ public class txpow extends Command {
 				+ "address: (optional)\n"
 				+ "    0x or Mx address. Search for TxPoWs containing this specific address.\n"
 				+ "\n"
+				+ "relevant: (optional)\n"
+				+ "    true or false. Only list TxPoWs relevant to this node.\n"
+				+ "\n"
 				+ "max: (optional)\n"
-				+ "    Max relevant TxPoW to retrieve.\n"
+				+ "    Max relevant TxPoW to retrieve. Default 100.\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
@@ -47,7 +56,9 @@ public class txpow extends Command {
 				+ "\n"
 				+ "txpow block:200\n"
 				+ "\n"
-				+ "txpow address:0xCEF6..\n";
+				+ "txpow address:0xCEF6..\n"
+				+ "\n"
+				+ "txpow onchain:0x000..\n";
 	}
 	
 	@Override
@@ -77,10 +88,21 @@ public class txpow extends Command {
 			
 			ArrayList<TxPoW> txps = MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant(max);
 			
+			//Only add them once..
 			JSONArray txns = new JSONArray();
+			HashSet<String> allreadyadded = new HashSet<>();
 			for(TxPoW txp : txps) {
-				txns.add(txp.toJSON());
+				String txpowid = txp.getTxPoWID();
+				if(!allreadyadded.contains(txpowid)) {
+					allreadyadded.add(txpowid);
+					txns.add(txp.toJSON());
+				}
 			}
+			
+//			JSONArray txns = new JSONArray();
+//			for(TxPoW txp : txps) {
+//				txns.add(txp.toJSON());
+//			}
 			
 			ret.put("response", txns);
 			
@@ -124,9 +146,15 @@ public class txpow extends Command {
 			
 			ArrayList<TxPoW> txps = TxPoWSearcher.searchTxPoWviaAddress(new MiniData(address));
 			
+			//Only add them once..
 			JSONArray txns = new JSONArray();
+			HashSet<String> allreadyadded = new HashSet<>();
 			for(TxPoW txp : txps) {
-				txns.add(txp.toJSON());
+				String txpowid = txp.getTxPoWID();
+				if(!allreadyadded.contains(txpowid)) {
+					allreadyadded.add(txpowid);
+					txns.add(txp.toJSON());
+				}
 			}
 			
 			ret.put("response", txns);

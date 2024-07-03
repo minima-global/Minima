@@ -49,6 +49,7 @@ public class mds extends Command {
 				+ "    install : Install a new MiniDapp and optionally set its permission. Must specify 'file'.\n"
 				+ "    update : Update and replace an existing MiniDapp. Must specify MiniDapp 'uid' and 'file' of new MiniDapp.\n"
 				+ "    uninstall : Uninstall a MiniDapp. Must specify MiniDapp 'uid'.\n"
+				+ "    download : Download the MiniDapp to your BASE folder.\n"
 				+ "    pending : List all pending commands waiting to be accepted or denied.\n"
 				+ "    accept : Accept a pending command. Must specify 'uid' of the pending command.\n"
 				+ "    deny : Deny a pending command. Must specify 'uid' of the pending command.\n"
@@ -77,6 +78,12 @@ public class mds extends Command {
 				+ "\n"
 				+ "mds action:uninstall uid:0xABA3..\n"
 				+ "\n"
+				+ "mds action:download uid:0xABA3..\n"
+				+ "\n"
+				+ "mds action:download uid:0xABA3.. locationonly:true\n"
+				+ "\n"
+				+ "mds action:download uid:0xABA3.. folder:Downloads\n"
+				+ "\n"
 				+ "mds action:pending\n"
 				+ "\n"
 				+ "mds action:accept uid:0xCDF6..\n"
@@ -88,7 +95,8 @@ public class mds extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","file","uid","trust"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","file","folder",
+				"uid","trust","enable","locationonly"}));
 	}
 	
 	@Override
@@ -123,7 +131,10 @@ public class mds extends Command {
 			mds.put("enabled", GeneralParams.MDS_ENABLED);
 			mds.put("connect", "https://"+GeneralParams.MINIMA_HOST+":"+GeneralParams.MDSFILE_PORT);
 			mds.put("password", Main.getInstance().getMDSManager().getMiniHUBPasword());
+			mds.put("publicmds", MinimaDB.getDB().getUserDB().getPublicMDS());
+			
 			mds.put("minidapps", arr);
+			
 			ret.put("response", mds);
 		
 		}else if(action.equals("pending")) {
@@ -262,6 +273,23 @@ public class mds extends Command {
 			//Now add to the DB
 			db.insertMiniDAPP(md);
 			
+			//Remove from the deleted list
+			MinimaDB.getDB().getUserDB().removeUninstalledMiniDAPP(md.getName());
+			MinimaDB.getDB().saveUserDB();
+			
+			//Now copy the minidapp itself..so you have a copy..
+			File copyfolder = Main.getInstance().getMDSManager().getMiniDAPPCopyDappFolder(md.getUID());
+			MiniFile.deleteFileOrFolder(copyfolder.getAbsolutePath(), copyfolder);
+			copyfolder.mkdirs();
+			File minisharefile 	= Main.getInstance().getMDSManager().getMiniDAPPShareFile(md);
+			
+			try {
+				MiniFile.copyFile(minidapp, minisharefile);
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
+			
+			//All done..
 			JSONObject mds = new JSONObject();
 			mds.put("installed", md.toJSON());
 			ret.put("response", mds);
@@ -270,6 +298,65 @@ public class mds extends Command {
 			Message installed = new Message(MDSManager.MDS_MINIDAPPS_INSTALLED);
 			installed.addObject("minidapp", md);
 			Main.getInstance().getMDSManager().PostMessage(installed);
+		
+		}else if(action.equals("download")) {
+			
+			String uid = getParam("uid");
+			if(!uid.startsWith("0x")) {
+				throw new CommandException("Invalid UID for MiniDAPP");
+			}
+			
+			//Get the Minidapp..
+			File minisharefile 	= Main.getInstance().getMDSManager().getMiniDAPPShareFile(uid);
+			if(!minisharefile.exists()) {
+				throw new CommandException("Original MiniDAPP file does not exist "+minisharefile.getAbsolutePath());
+			}
+			
+			//Do we just want the location
+			boolean locationonly = getBooleanParam("locationonly", false);
+			if(locationonly) {
+				JSONObject mds = new JSONObject();
+				mds.put("uid", uid);
+				mds.put("original", minisharefile.getAbsolutePath());
+				ret.put("response", mds);
+				return ret;
+			}
+			
+			File copyto 	= null;
+			String folder	= getParam("folder", "");
+			
+			if(folder.equals("")) {
+				
+				//Where to place it..
+				copyto = MiniFile.createBaseFile(minisharefile.getName());
+				
+			}else{
+				
+				//No back allowed
+				folder.replace("..", "");
+				
+				//User folder is base folder
+				File userFolder = new File(System.getProperty("user.home"),folder);
+				copyto 			= new File(userFolder,minisharefile.getName());
+			}
+			
+			//Log it.. 
+			//MinimaLogger.log("MDS Share Dapp : "+minisharefile.getAbsolutePath()+" to "+copyto.getAbsolutePath());
+			
+			//Check Parents Exist
+			if(!copyto.getParentFile().exists()) {
+				copyto.getParentFile().mkdirs();
+			}
+			
+			//Now download..
+			MiniFile.copyFile(minisharefile, copyto);
+			
+			//All done..
+			JSONObject mds = new JSONObject();
+			mds.put("uid", uid);
+			mds.put("original", minisharefile.getAbsolutePath());
+			mds.put("copy", copyto.getAbsolutePath());
+			ret.put("response", mds);
 			
 		}else if(action.equals("uninstall")) {
 
@@ -283,6 +370,15 @@ public class mds extends Command {
 			if(uid.equals(minihub)) {
 				throw new CommandException("Cannot delete the MiniHUB");
 			}
+			
+			//Add to uninstalled..
+			MiniDAPP md = Main.getInstance().getMDSManager().getMiniDAPP(uid);
+			if(md == null) {
+				throw new CommandException("MiniDAPP not found");
+			}
+			
+			MinimaDB.getDB().getUserDB().addUninstalledMiniDAPP(md.getName());
+			MinimaDB.getDB().saveUserDB();
 			
 			//Delete from the DB
 			db.deleteMiniDAPP(uid);
@@ -384,6 +480,18 @@ public class mds extends Command {
 			//Now add to the DB
 			db.insertMiniDAPP(newmd);
 			
+			//Now copy the minidapp itself..so you have a copy..
+			File copyfolder = Main.getInstance().getMDSManager().getMiniDAPPCopyDappFolder(newmd.getUID());
+			MiniFile.deleteFileOrFolder(copyfolder.getAbsolutePath(), copyfolder);
+			copyfolder.mkdirs();
+			File minisharefile 	= Main.getInstance().getMDSManager().getMiniDAPPShareFile(newmd);
+			
+			try {
+				MiniFile.copyFile(minifile, minisharefile);
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
+			
 			//There has been a change
 			Message installed = new Message(MDSManager.MDS_MINIDAPPS_INSTALLED);
 			installed.addObject("minidapp", newmd);
@@ -481,6 +589,16 @@ public class mds extends Command {
 			//There has been a change
 			Main.getInstance().getMDSManager().PostMessage(MDSManager.MDS_MINIDAPPS_RESETALL);
 		
+		}else if(action.equals("publicmds")) {
+			
+			boolean enable = getBooleanParam("enable");
+			
+			MinimaDB.getDB().getUserDB().setPublicMDS(enable);
+			
+			JSONObject mds = new JSONObject();
+			mds.put("publicmds", enable);
+			ret.put("response", mds);
+			
 		}else {
 			throw new CommandException("Unknown action : "+action);
 		}

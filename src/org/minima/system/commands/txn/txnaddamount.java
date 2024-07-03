@@ -18,6 +18,7 @@ import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.send.send;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -39,7 +40,7 @@ public class txnaddamount extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id","amount","address","onlychange","tokenid"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","amount","address","onlychange","tokenid","fromaddress"}));
 	}
 	
 	@Override
@@ -97,48 +98,90 @@ public class txnaddamount extends Command {
 		
 		//Add the amount
 		boolean addonlychange = getBooleanParam("onlychange", false);
-		if(!addonlychange) {
-			String addr = getAddressParam("address");
-			Coin maincoin = new Coin(new MiniData(addr), tokenamount, tokenid);
-			trans.addOutput(maincoin);
+		
+		//Use only one address
+		boolean 	useaddress 	= false;
+		MiniData 	fromaddress = new MiniData("0x00");
+		if(existsParam("fromaddress")) {
+			useaddress 	= true;
+			fromaddress = new MiniData(getAddressParam("fromaddress"));
 		}
 		
 		//Get all valid coins
-		ArrayList<Coin> coins = TxPoWSearcher.searchCoins(	tip, true, 
-															false, new MiniData("0x00"),
-															false,MiniNumber.ZERO,
-															false,new MiniData("0x00"), 
-															true, tokenid, true);
+		ArrayList<Coin> coins = null;
+		if(!useaddress) {
+			
+			//Normal Search
+			coins = TxPoWSearcher.searchCoins(	tip, true, 
+												false, MiniData.ZERO_TXPOWID,
+												false,MiniNumber.ZERO,
+												false,MiniData.ZERO_TXPOWID, 
+												true, tokenid, true);
+
+		}else {
+			
+			//Special search
+			coins = TxPoWSearcher.searchCoins(	tip, false, 
+												false, MiniData.ZERO_TXPOWID,
+												false, MiniNumber.ZERO,
+												true, fromaddress, 
+												true, tokenid, 
+												false, "", true,
+												false, Integer.MAX_VALUE,GeneralParams.IS_MEGAMMR);
+			
+		}
 		
 		//Get just this number..
 		ArrayList<Coin> finalcoins = send.selectCoins(coins, tokenamount);
 		
-		//Now add all these coins..
+		//How much added..
 		MiniNumber totaladded = MiniNumber.ZERO;
 		for(Coin cc : finalcoins) {
-			trans.addInput(cc);
 			totaladded = totaladded.add(cc.getAmount());
 		}
 		
 		//Is there change..
 		MiniNumber change = totaladded.sub(tokenamount);
+		
+		//Do we have the cash
+		if(change.isLess(MiniNumber.ZERO)) {
+			MiniNumber total = totaladded;
+			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
+				total = token.getScaledTokenAmount(total);
+			}
+			throw new CommandException("Not enough funds! Current balance : "+total);
+		}		
+		
+		//OK - Now add all these coins..
+		for(Coin cc : finalcoins) {
+			trans.addInput(cc);
+		}
+		
+		//And add the output
+		if(!addonlychange) {
+			String addr = getAddressParam("address");
+			Coin maincoin = new Coin(new MiniData(addr), tokenamount, tokenid);
+			
+			//Do we need to add the Token..
+			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
+				maincoin.setToken(token);
+			}
+			
+			trans.addOutput(maincoin);
+		}
+		
 		if(!change.isEqual(MiniNumber.ZERO)) {
 			
 			//Get a new address
 			ScriptRow newwalletaddress = MinimaDB.getDB().getWallet().getDefaultAddress();
 			MiniData chgaddress = new MiniData(newwalletaddress.getAddress());
-			
-			//Get the scaled token ammount..
-			MiniNumber changeamount = change;
-			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
-				//Use the token object we previously found
-				changeamount = token.getScaledMinimaAmount(change);
+			if(useaddress) {
+				chgaddress = fromaddress;
 			}
 			
 			//Change coin does not keep the state
-			Coin changecoin = new Coin(Coin.COINID_OUTPUT, chgaddress, changeamount, Token.TOKENID_MINIMA, false);
+			Coin changecoin = new Coin(Coin.COINID_OUTPUT, chgaddress, change, tokenid, false);
 			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
-				changecoin.resetTokenID(tokenid);
 				changecoin.setToken(token);
 			}
 			
@@ -164,3 +207,13 @@ public class txnaddamount extends Command {
 	}
 
 }
+
+
+
+
+
+
+
+
+
+

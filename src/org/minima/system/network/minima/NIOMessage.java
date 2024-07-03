@@ -26,6 +26,9 @@ import org.minima.system.Main;
 import org.minima.system.brains.TxPoWChecker;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.brains.TxPoWSearcher;
+import org.minima.system.commands.backup.mmrsync.MegaMMRIBD;
+import org.minima.system.commands.backup.mmrsync.MegaMMRSyncData;
+import org.minima.system.commands.backup.mmrsync.megammrsync;
 import org.minima.system.network.maxima.MaximaCTRLMessage;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.maxima.message.MaxTxPoW;
@@ -84,6 +87,9 @@ public class NIOMessage implements Runnable {
 	public static final MiniByte MSG_TXBLOCKREQ 		= new MiniByte(19);
 	public static final MiniByte MSG_TXBLOCK 			= new MiniByte(20);
 	public static final MiniByte MSG_TXBLOCKMINE 		= new MiniByte(21);
+	
+	public static final MiniByte MSG_MEGAMMRSYNC_REQ 	= new MiniByte(22);
+	public static final MiniByte MSG_MEGAMMRSYNC_RESP 	= new MiniByte(23);
 	
 	/**
 	 * Helper function that converts to String 
@@ -149,6 +155,8 @@ public class NIOMessage implements Runnable {
 	public static long LAST_TXBLOCKMINE_MSG = 0;
 	
 	public String mFullAdrress = "";
+	
+	public int HEAVIER_CHAIN_FOUND = 0;
 	
 	public NIOMessage(String zClientUID, MiniData zData) {
 		mClientUID 	= zClientUID;
@@ -409,6 +417,20 @@ public class NIOMessage implements Runnable {
 						//Disconnect
 						Main.getInstance().getNIOManager().disconnect(mClientUID,true);
 						
+						//Do we have a rescue NODE
+						if(!GeneralParams.RESCUE_MEGAMMR_NODE.equals("")) {
+							
+							//For now first time..
+							HEAVIER_CHAIN_FOUND++;
+							if(HEAVIER_CHAIN_FOUND > 0) {
+								
+								MinimaLogger.log("RESCUE NODE FOUND.. attempting rescue @ "+GeneralParams.RESCUE_MEGAMMR_NODE);
+								
+								//Post a message that does a RESCUE..
+								Main.getInstance().PostTimerMessage(new TimerMessage(1000, Main.MAIN_DO_RESCUE));
+							}
+						}
+						
 						return;
 						
 					}else {
@@ -501,6 +523,11 @@ public class NIOMessage implements Runnable {
 					//Check the Signatures
 					MinimaLogger.log("Invalid signatures on txpow from "+mClientUID+" "+txpow.getTxPoWID());
 					disconnectpeer = true;
+				
+				}else if(!RelayPolicy.checkMaxStateStoreSize(txpow,tip.getTxPoW().getMagic().getMaxTxPoWSize().getAsLong())) {
+					//Check state store size..
+					MinimaLogger.log("TxPoW state store too large..");
+					disconnectpeer = true;
 				}
 				
 				//Do we disconnect yet.. 
@@ -530,7 +557,7 @@ public class NIOMessage implements Runnable {
 				}
 				
 				//Check RELAY POLICY
-				if(!RelayPolicy.checkAllPolicies(txpow)) {
+				if(!RelayPolicy.checkAllPolicies(txpow,GeneralParams.MAX_RELAY_STORESTATESIZE)) {
 					fullyvalid = false;
 				}
 				
@@ -801,7 +828,7 @@ public class NIOMessage implements Runnable {
 				//Check within limits..
 				if(pulsemsg.size()>1000) {
 					//Too many..!
-					MinimaLogger.log("Too mnay messages in PULSE "+pulsemsg.size()+" max:1000");
+					MinimaLogger.log("Too many messages in PULSE "+pulsemsg.size()+" max:1000");
 					return;
 				}
 				
@@ -1073,7 +1100,9 @@ public class NIOMessage implements Runnable {
 					
 					//And post this on..
 					if(GeneralParams.IBDSYNC_LOGS) {
-						MinimaLogger.log("[+] Received Sync IBD. size:"+MiniFormat.formatSize(data.length)+" blocks:"+syncibd.getTxBlocks().size()+" top:"+top);
+						long timemilli 		= syncibd.getTxBlocks().get(0).getTxPoW().getTimeMilli().getAsLong();
+						String synctoptime 	= new Date(timemilli).toString();
+						MinimaLogger.log("[+] Received Sync IBD. size:"+MiniFormat.formatSize(data.length)+" blocks:"+syncibd.getTxBlocks().size()+" top:"+top+" @ "+synctoptime);
 					}
 					
 					//Send to the Processor
@@ -1256,6 +1285,31 @@ public class NIOMessage implements Runnable {
 				
 				//Mine it..
 				Main.getInstance().getTxPoWMiner().mineTxPoWAsync(txp);
+				
+			}else if(type.isEqual(MSG_MEGAMMRSYNC_REQ)) {
+				
+				if(!GeneralParams.IS_MEGAMMR) {
+					MinimaLogger.log("[!] Attempt to MegaMMR Sync when -megammr not enabled");
+					Main.getInstance().getNIOManager().disconnect(mClientUID);
+					return;
+				}
+				
+				MegaMMRSyncData msyncdata = new MegaMMRSyncData();
+				msyncdata.readDataStream(dis);
+				
+				//Now use that sync data to get all the coinproofs
+				MinimaLogger.log("Received MegaMMR SYNC request.. addresses:"
+									+msyncdata.getAllAddresses().size()
+									+" pubkeys:"+msyncdata.getAllPublicKeys().size());
+				
+				//Create the IBD complete sync package
+				MegaMMRIBD mibd = megammrsync.getCurrentMegaMMRIBD(msyncdata);
+				
+//				MinimaLogger.log("LONG DELAY NOW..");
+//				Thread.sleep(20000);
+				
+				//And send it back
+				NIOManager.sendNetworkMessage(mClientUID, MSG_MEGAMMRSYNC_RESP, mibd);
 				
 			}else {
 				

@@ -36,7 +36,7 @@ function runScript(){
 	
 	MDS.cmd("runscript script:\""+script+"\" "+state+" "+prevstate+" "+globals+" "+sigs+" "+scripts,function(json){
 		
-		console.log("RESULT : "+JSON.stringify(json));
+		//console.log("RESULT : "+JSON.stringify(json));
 		
 		var brkscr = json.response.trace.replace(/\n/g,"<br>");
 		
@@ -69,6 +69,7 @@ function runScript(){
 		
 		//Set the global address
 		document.getElementById("cleanaddress").innerHTML = json.response.clean.address;
+		document.getElementById("cleanmxaddress").innerHTML = json.response.clean.mxaddress;
 		document.getElementById("@ADDRESS").value = json.response.clean.address;
 	});
 	
@@ -157,7 +158,7 @@ function saveScript(sel){
 	
 	//Convert the whole thing to a tring
 	var jsontext = JSON.stringify(storejson);
-	//console.log("SAVE JSON:"+jsontext);
+	console.log("SAVE JSON:"+JSON.stringify(storejson,null,2));
 	
 	//Now store it..
     window.localStorage.setItem('ScriptIDE'+sel,jsontext);
@@ -182,11 +183,11 @@ function loadScript(){
 		//Convert to a JSON
 		var json = JSON.parse(jsontext);
 		
-		document.getElementById("scriptarea").value = json.script;
-		document.getElementById("state").value      = json.state;
-		document.getElementById("prevstate").value  = json.prevstate;
-		document.getElementById("mastscripts").value  = json.scripts;
-		document.getElementById("sigs").value       = json.sigs;
+		document.getElementById("scriptarea").value 	= json.script;
+		document.getElementById("state").value      	= json.state;
+		document.getElementById("prevstate").value  	= json.prevstate;
+		document.getElementById("mastscripts").value  	= json.scripts;
+		document.getElementById("sigs").value       	= json.sigs;
 		
 		//Load the OUTPUTS..
 		/*clearAllOutputs();
@@ -202,12 +203,11 @@ function loadScript(){
 		//Load the GLOBALS..
 		clearGlobals();
 		var globs = json.globals.split("#");
-		globlen   = globs.length;
-		for(i=0;i<globlen;i++){
-			if(globs[i] !== ""){
-				var glob = globs[i].split(":");
-				document.getElementById(glob[0]).value = glob[1];
-			}
+		
+		//Create a JSON and put the details in the IDE
+		var globobj = JSON.parse(globs);
+		for(data in globobj){
+			document.getElementById(data).value = globobj[data];
 		}
 		
 	}else{

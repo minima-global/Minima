@@ -79,12 +79,15 @@ public class mysql extends Command {
 				+ "    integrity : Check the block order and block parents are correct in the MySQL db.\n"
 				+ "    update : Update the MySQL db with the latest syncblocks from the node's archive db.\n"
 				+ "    addresscheck : Check the history of all the spent and unspent coins from an address.\n"
-				+ "    autobackup : Automatically save archive data to MySQL DB. Use with enable.\n"
+				+ "    autobackup : Automatically save archive data to MySQL DB. Use with enable. Also stores all TxPoW the node sees.\n"
+				+ "    findtxpow : Search for an individual TxPoW (only works if autobackup is enabled).\n"
 				+ "    resync : Perform a chain or seed re-sync from the specified MySQL db.\n"
 				+ "             Will shutdown the node so you must restart it once complete.\n"
 				+ "    wipe :  Be careful. Wipe the MySQL db.\n"
 				+ "    h2export : export the MySQL db to an archive gzip file which can be used to resync a node.\n"
 				+ "    h2import : import an archive gzip file to the MySQL db.\n"
+				+ "    rawexport : export the MySQL db to raw.dat file which can be used to resync a node (faster than H2).\n"
+				+ "    rawimport : import a raw.dat to the MySQL db.\n"
 				+ "\n"
 				+ "phrase: (optional)\n"
 				+ "     Use with action:resync. The 24 word seed phrase of the node to re-sync.\n"
@@ -114,22 +117,26 @@ public class mysql extends Command {
 				+ "\n"
 				+ "mysql host:dockermysql database:archivedb user:archiveuser password:archivepassword action:info\n"
 				+ "\n"
-				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:integrity\n"
+				+ "mysql ..LOGIN_DETAILS.. action:integrity\n"
 				+ "\n"
-				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:update\n"
+				+ "mysql ..LOGIN_DETAILS.. action:update\n"
 				+ "\n"
-				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:addresscheck address:MxG08.. \n"
+				+ "mysql ..LOGIN_DETAILS.. action:addresscheck address:MxG08.. \n"
 				+ "\n"
-				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:resync\n"
+				+ "mysql ..LOGIN_DETAILS.. action:resync\n"
 				+ "\n"
-				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:resync phrase:\"24 WORDS HERE\" keys:90 keyuses:2000\n"
+				+ "mysql ..LOGIN_DETAILS.. action:findtxpow txpowid:0x00FFEEDD..\n"
 				+ "\n"
-				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:h2export file:archivexport-DDMMYY.gzip\n";
+				+ "mysql ..LOGIN_DETAILS.. action:resync phrase:\"24 WORDS HERE\" keys:90 keyuses:2000\n"
+				+ "\n"
+				+ "mysql ..LOGIN_DETAILS.. action:h2export file:archivexport-DDMMYY.gzip\n";
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database","user","password","keys","keyuses","phrase","address","enable","file","statecheck","logs","maxexport","readonly"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database",
+				"user","password","keys","keyuses","phrase","address","txpowid",
+				"enable","file","statecheck","logs","maxexport","readonly"}));
 	}
 	
 	@Override
@@ -381,7 +388,7 @@ public class mysql extends Command {
 			Main.getInstance().PostNotifyEvent("MDS_RESYNC_START",new JSONObject());
 			
 			//How many Keys do we need to generate
-			int keys = getNumberParam("keys", new MiniNumber(Wallet.NUMBER_GETADDRESS_KEYS + 16)).getAsInt();
+			int keys = getNumberParam("keys", new MiniNumber(Wallet.NUMBER_GETADDRESS_KEYS)).getAsInt();
 			
 			//Set the key uses to this..
 			int keyuses = getNumberParam("keyuses", new MiniNumber(1000)).getAsInt();
@@ -608,6 +615,7 @@ public class mysql extends Command {
 				for(TxBlock block : mysqlblocks) {
 					
 					TxPoW txp 			= block.getTxPoW();
+					String txpid 		= block.getTxPoW().getTxPoWID();
 					long blocknumber 	= txp.getBlockNumber().getAsLong();
 					
 					//Date string
@@ -629,6 +637,7 @@ public class mysql extends Command {
 								
 								JSONObject created = new JSONObject();
 								created.put("block", blocknumber);
+								created.put("blockid", txpid);
 								created.put("date", date);
 								created.put("coin", cc.toJSON());
 								outarr.add(created);
@@ -652,6 +661,7 @@ public class mysql extends Command {
 								
 								JSONObject spent = new JSONObject();
 								spent.put("block", blocknumber);
+								spent.put("blockid", txpid);
 								spent.put("date", date);
 								spent.put("coin", incoin.getCoin().toJSON());
 								inarr.add(spent);
@@ -1058,6 +1068,22 @@ public class mysql extends Command {
 			
 			JSONObject resp = new JSONObject();
 			resp.put("time", MiniFormat.ConvertMilliToTime(timediff));
+			
+			ret.put("response", resp);
+			
+		}else if(action.equals("findtxpow")) {
+			
+			String txpowid = getParam("txpowid");
+			
+			JSONObject resp = new JSONObject();
+			
+			TxPoW txp = mysql.getTxPoW(txpowid);
+			if(txp == null) {
+				resp.put("found", false);
+			}else {
+				resp.put("found", true);
+				resp.put("txpow", txp.toJSON());
+			}
 			
 			ret.put("response", resp);
 			

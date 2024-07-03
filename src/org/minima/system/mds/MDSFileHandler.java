@@ -20,11 +20,13 @@ import java.util.StringTokenizer;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 
+import org.minima.database.MinimaDB;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.mds.multipart.MultipartData;
 import org.minima.system.mds.multipart.MultipartParser;
 import org.minima.system.mds.polling.PollStack;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 
@@ -51,6 +53,11 @@ public class MDSFileHandler implements Runnable {
 	 * MDS Command Handler
 	 */
 	MDSCommandHandler mCommands;
+	
+	/**
+	 * Only show Invalid ID message once  every minute..
+	 */
+	static long mLastInvalidIDException = 0;
 	
 	/**
 	 * Main Constructor
@@ -84,19 +91,10 @@ public class MDSFileHandler implements Runnable {
 	        
 	        // get first line of the request from the client
 	     	String input = bufferedReader.readLine();
-// 			int counter = 0;
-// 			while(input == null && counter<100){
-// 				//Wait a sec
-// 				Thread.sleep(1000);
-// 				
-// 				input = bufferedReader.readLine();
-// 				counter++;
-// 			}
  			
  			//Is it still NULL
  			if(input == null) {
  				return;
- 				//throw new IllegalArgumentException("Invalid NULL MDS File request ");
  			}
  			
 			// we parse the request with a string tokenizer
@@ -174,8 +172,32 @@ public class MDSFileHandler implements Runnable {
 				//Convert the sessionid
 				String minidappid = mMDS.convertSessionID(uid);
 				if(minidappid == null) {
-					throw new MDSCommandException("Invalid session id for MiniDAPP "+uid);
+					throw new MDSInvalidIDException("Invalid session id for MiniDAPP "+uid);
 				}
+				
+				//Are we resyncing..
+				if(Main.getInstance().isShuttongDownOrRestoring() && !command.equals("poll")) {
+					throw new MDSInvalidIDException("Attempt to access MDS during resync.. blocked");
+				}
+
+				/*if(Main.getInstance().isShuttongDownOrRestoring()) {
+					
+					//Check DB Open..
+					if(!MinimaDB.getDB().getMDSDB().isOpen()) {
+						throw new MDSInvalidIDException("Attempt to access MDS after shutdown");
+					}
+					
+					//Only allow the security MiniDAPP..
+					MiniDAPP mdcheck 	= mMDS.getMiniDAPP(minidappid);
+					String namev 		= mdcheck.getName();
+					
+					//MinimaLogger.log("MDS DURING SHUTDOWN : command:"+command+" name:"+namev);
+					
+					if(namev.equalsIgnoreCase("minihub") || !command.equals("poll")) {
+						MinimaLogger.log("Attempt to access MDS during resync from "+namev+" ..blocked", false);
+						throw new MDSInvalidIDException("Attempt to access MDS during resync.. blocked");
+					}
+				}*/
 				
 				//get the POST data
 				int contentlength = Integer.parseInt(allheaders.get("Content-Length"));
@@ -249,7 +271,7 @@ public class MDSFileHandler implements Runnable {
 					throw new IllegalArgumentException("Incorrect MDS Password");
 				}
 				
-				//Get the feault MiniHUB..
+				//Get the default MiniHUB..
 				String minihubuid = Main.getInstance().getMDSManager().getDefaultMiniHUB();
 				
 				//Load that MiniDFAPP..
@@ -297,7 +319,7 @@ public class MDSFileHandler implements Runnable {
 				//Check it..
 				String minidappid = mMDS.convertSessionID(minidappsessionid);
 				if(minidappid == null) {
-					throw new IllegalArgumentException("Invalid session id for uploadfile "+minidappsessionid);
+					throw new MDSInvalidIDException("Invalid session id for uploadfile "+minidappsessionid);
 				}
 				
 				//Get the jumppage
@@ -380,7 +402,7 @@ public class MDSFileHandler implements Runnable {
 				//Check it..
 				String minidappid = mMDS.convertSessionID(minidappsessionid);
 				if(minidappid == null) {
-					throw new IllegalArgumentException("Invalid session id for uploadfile "+minidappsessionid);
+					throw new MDSInvalidIDException("Invalid session id for uploadfile "+minidappsessionid);
 				}
 				
 				//Now.. save the file..
@@ -435,6 +457,59 @@ public class MDSFileHandler implements Runnable {
 				dos.writeBytes("\r\n");
 				dos.flush();
 				
+			}else if( fileRequested.startsWith("publicmds") ) {
+				
+				//Is the public site enabled..
+				if(!MinimaDB.getDB().getUserDB().getPublicMDS()) {
+					MinimaLogger.log("Access forbidden : Public MDS site disabled..!");
+					
+		    		dos.writeBytes("HTTP/1.0 404 OK\r\n");
+					dos.writeBytes("\r\n");
+					dos.flush();
+					return;
+				}
+				
+				//Is it the minihub..
+				if(fileRequested.equals("publicmds")) {
+					fileRequested = "publicmds/index.html";
+				}
+				
+				//Remove the params..
+				int index = fileRequested.indexOf("?");
+				if(index!=-1) {
+					fileRequested = fileRequested.substring(0,index);
+				}
+				
+				if(fileRequested.equals("publicmds/index.html")) {
+					
+					//Set the session ID
+					String success = loadResouceFile("publicmds/index.html");
+					
+					//Get the public sessionID
+					String seshid = mMDS.getPublicMiniDAPPSessionID();
+					
+					//Replace the doRedirect()
+					success = success.replace("var publicsessionid=\"0x00\";", 
+											   "var publicsessionid=\""+seshid+"\";");
+					
+					//Do we enable the Wallet..
+					if(GeneralParams.IS_MEGAMMR) {
+						success = success.replace("var showwallet=false","var showwallet=true");
+					}
+					
+					//And write that out..
+					writeHTMLPage(dos, success);
+				
+				}else if(fileRequested.endsWith("/mds.js")) {
+					
+					//Always send the latest version..
+					writeHTMLResouceFile(dos, "mdsjs/mds.js");
+				
+				}else {
+					//Write this page..
+					writeHTMLResouceFile(dos, fileRequested);
+				}
+				
 			}else {
 			
 				//Remove the params..
@@ -442,81 +517,114 @@ public class MDSFileHandler implements Runnable {
 				if(index!=-1) {
 					fileRequested = fileRequested.substring(0,index);
 				}
-			
+				
 				//Now get the content type
 				String contenttype 	= MiniFile.getContentType(fileRequested);
 				
 				//Now get the file..
 				File webfile = new File(mRoot, fileRequested);
 				
-				//Check is valid child of parent..
-				boolean ischild = MiniFile.isChild(mRoot, webfile);
+				//Are we asking for mds.js..
+				if(webfile.getName().equalsIgnoreCase("mds.js")) {
+					//MinimaLogger.log("MDSJS OVERRIDE : "+fileRequested);
+					
+					//Always send the latest version..
+					writeHTMLResouceFile(dos, "mdsjs/mds.js");
 				
-				if(!webfile.exists() || !ischild || webfile.isDirectory()) {
-		    		
-		    		MinimaLogger.log("HTTP : unknown file requested "+fileRequested+" "+webfile.getAbsolutePath());
-		    		
-		    		dos.writeBytes("HTTP/1.0 404 OK\r\n");
-					dos.writeBytes("\r\n");
-					dos.flush();
-		    		
-		    	}else {
-		    		
-		    		//MinimaLogger.log("File Requested : "+fileRequested,false);
-		    		
-		    		boolean downloader 	= false;
-		    		String filename 	= webfile.getName();
-		    		if(filename.contains(MINIMA_DOWNLOAD_AS_FILE)){
-		    			//Remove the ending..
-		    			filename 	= filename.replace(MINIMA_DOWNLOAD_AS_FILE, "");
-		    			downloader 	= true;
-		    		}
-		    		
-		    		//Get the data length
-		    		long filelen = webfile.length();
-		    		
-					//Calculate the size of the response
-					dos.writeBytes("HTTP/1.0 200 OK\r\n");
-					if(contenttype.startsWith("text/")) {
-						dos.writeBytes("Content-Type: "+contenttype+"; charset=UTF-8\r\n");
-					}else {
-						dos.writeBytes("Content-Type: "+contenttype+"\r\n");
-					}
+				}else {
 					
-					dos.writeBytes("Content-Length: " + filelen+ "\r\n");
-					dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
+					//Check is valid child of parent..
+					boolean ischild = MiniFile.isChild(mRoot, webfile);
 					
-					//Only cache Images ?
-					//if(contenttype.startsWith("image")) {
-						dos.writeBytes("Cache-Control: max-age=604800: *\r\n");
-					//}
-							
-					//Are we downloading this file..
-					if(downloader) {
-						dos.writeBytes("Content-Disposition: attachment; filename=\""+filename+"\"\r\n");
-					}
-					
-					//End Headers..
-					dos.writeBytes("\r\n");
-					
-					//Now write the data out.. stream..
-					FileInputStream fis = new FileInputStream(webfile);
-					byte[] buffer 		= new byte[32768];
-			        int length;
-			        while ((length = fis.read(buffer)) > 0) {
-			        	dos.write(buffer, 0, length);
-			        }
-				    fis.close();
-			        
-					//Flush the stream
-					dos.flush();
-		    	}
+					if(!webfile.exists() || !ischild || webfile.isDirectory()) {
+			    		
+			    		MinimaLogger.log("HTTP : unknown file requested "+fileRequested+" "+webfile.getAbsolutePath());
+			    		
+			    		dos.writeBytes("HTTP/1.0 404 OK\r\n");
+						dos.writeBytes("\r\n");
+						dos.flush();
+			    		
+			    	}else {
+			    		
+			    		//MinimaLogger.log("File Requested : "+fileRequested,false);
+			    		
+			    		boolean downloader 	= false;
+			    		String filename 	= webfile.getName();
+			    		if(filename.contains(MINIMA_DOWNLOAD_AS_FILE)){
+			    			//Remove the ending..
+			    			filename 	= filename.replace(MINIMA_DOWNLOAD_AS_FILE, "");
+			    			downloader 	= true;
+			    		}
+			    		
+			    		//Get the data length
+			    		long filelen = webfile.length();
+			    		
+						//Calculate the size of the response
+						dos.writeBytes("HTTP/1.0 200 OK\r\n");
+						if(contenttype.startsWith("text/")) {
+							dos.writeBytes("Content-Type: "+contenttype+"; charset=UTF-8\r\n");
+						}else {
+							dos.writeBytes("Content-Type: "+contenttype+"\r\n");
+						}
+						
+						dos.writeBytes("Content-Length: " + filelen+ "\r\n");
+						dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
+						
+						//Only cache Images ?
+						if(contenttype.startsWith("image") || contenttype.endsWith("css")) {
+							dos.writeBytes("Cache-Control: max-age=604800: *\r\n");
+						}
+								
+						//Are we downloading this file..
+						if(downloader) {
+							dos.writeBytes("Content-Disposition: attachment; filename=\""+filename+"\"\r\n");
+						}
+						
+						//End Headers..
+						dos.writeBytes("\r\n");
+						
+						//Now write the data out.. stream..
+						FileInputStream fis = new FileInputStream(webfile);
+						byte[] buffer 		= new byte[32768];
+				        int length;
+				        while ((length = fis.read(buffer)) > 0) {
+				        	dos.write(buffer, 0, length);
+				        }
+					    fis.close();
+				        
+						//Flush the stream
+						dos.flush();
+			    	}	
+				}				
 			}
 		
 		}catch(SSLHandshakeException exc) {
 		}catch(SSLException exc) {
 		}catch(MDSCommandException exc) {
 			MinimaLogger.log("MDSCommandException : "+exc.toString());
+			
+			// send HTTP Headers
+			try {
+				dos.writeBytes("HTTP/1.1 500 Internal Server Error\r\n");
+				dos.writeBytes("Server: HTTP MDS Server from Minima 1.3\r\n");
+				dos.writeBytes("Date: " + new Date()+"\r\n");
+				dos.writeBytes("Content-type: text/plain\r\n");
+				dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
+				dos.writeBytes("\r\n"); // blank line between headers and content, very important !
+				dos.flush(); // flush character output stream buffer
+			}catch (Exception e) {
+				// TODO: handle exception
+			}
+			
+		}catch(MDSInvalidIDException exc) {
+			
+			//Only show every so often..
+			long timenow 	= System.currentTimeMillis();
+			long lasterror 	= timenow - mLastInvalidIDException;
+			if(lasterror > 120 * 1000) {
+				MinimaLogger.log("MDS Invalid SessionID Exception : You need to close your MiniDAPPS, logout of the MDS and then log back in..");
+				mLastInvalidIDException = timenow;
+			}
 			
 			// send HTTP Headers
 			try {
@@ -639,10 +747,12 @@ public class MDSFileHandler implements Runnable {
 		zDos.writeBytes("\r\n");
 		zDos.write(file, 0, finallength);
 		zDos.flush();
-		
 	}
 	
 	public void writeHTMLResouceFile(DataOutputStream zDos, String zResource) throws IOException {
+		
+		//Now get the content type
+		String contenttype 	= MiniFile.getContentType(zResource);
 		
 		//Get the Resource file
 		InputStream is 	= getClass().getClassLoader().getResourceAsStream(zResource);
@@ -655,7 +765,14 @@ public class MDSFileHandler implements Runnable {
 		int finallength = file.length;
         
 		zDos.writeBytes("HTTP/1.0 200 OK\r\n");
-		zDos.writeBytes("Content-Type: text/html\r\n");
+		
+		if(contenttype.startsWith("text/")) {
+			zDos.writeBytes("Content-Type: "+contenttype+"; charset=UTF-8\r\n");
+		}else {
+			zDos.writeBytes("Content-Type: "+contenttype+"\r\n");
+		}
+		//zDos.writeBytes("Content-Type: text/html\r\n");
+		
 		zDos.writeBytes("Content-Length: " + finallength + "\r\n");
 		zDos.writeBytes("Access-Control-Allow-Origin: *\r\n");
 		zDos.writeBytes("\r\n");

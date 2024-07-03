@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.backup;
+import org.minima.system.commands.backup.decryptbackup;
 import org.minima.system.commands.backup.mysql;
 import org.minima.system.commands.backup.mysqlcoins;
 import org.minima.system.commands.backup.reset;
@@ -24,7 +25,6 @@ import org.minima.system.commands.base.convert;
 import org.minima.system.commands.base.getaddress;
 import org.minima.system.commands.base.hash;
 import org.minima.system.commands.base.hashtest;
-import org.minima.system.commands.base.incentivecash;
 import org.minima.system.commands.base.logs;
 import org.minima.system.commands.base.maths;
 import org.minima.system.commands.base.mmrcreate;
@@ -69,6 +69,10 @@ import org.minima.system.commands.send.sendpoll;
 import org.minima.system.commands.send.sendpost;
 import org.minima.system.commands.send.sendsign;
 import org.minima.system.commands.send.sendview;
+import org.minima.system.commands.send.wallet.createfrom;
+import org.minima.system.commands.send.wallet.postfrom;
+import org.minima.system.commands.send.wallet.sendfrom;
+import org.minima.system.commands.send.wallet.signfrom;
 import org.minima.system.commands.signatures.sign;
 import org.minima.system.commands.signatures.verify;
 import org.minima.system.commands.txn.txnbasics;
@@ -109,7 +113,7 @@ public class help extends Command {
 		if(!command.equals("")) {
 		
 			//Get the command..
-			Command cmd = Command.getCommandOnly(command);
+			Command cmd = CommandRunner.getRunner().getCommandOnly(command);
 			if(cmd == null) {
 				throw new CommandException("Command not found : "+command);
 			}
@@ -150,6 +154,11 @@ public class help extends Command {
 			addCommand(details, new sendsign());
 			addCommand(details, new sendpost());
 			addCommand(details, new multisig());
+			
+			addCommand(details, new sendfrom());
+			addCommand(details, new createfrom());
+			addCommand(details, new signfrom());
+			addCommand(details, new postfrom());
 			
 			addCommand(details, new balance());
 			addCommand(details, new tokencreate());
@@ -216,6 +225,7 @@ public class help extends Command {
 			addCommand(details, new backup());
 			addCommand(details, new restore());
 			addCommand(details, new restoresync());
+			addCommand(details, new decryptbackup());
 			addCommand(details, new reset());
 			addCommand(details, new archive());
 			addCommand(details, new vault());

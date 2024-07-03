@@ -203,6 +203,17 @@ public class MDSCompleteHandler implements Runnable {
 					NETcommand net 	= new NETcommand(minidappid, data);
 					result 			= net.runCommand();
 				
+				}else if(command.equals("netauth")) {
+					
+					//Get the URL and the post data..
+					int dataindex 	= data.indexOf("&");
+					String url 		= data.substring(0, dataindex);
+					String auth 	= data.substring(dataindex+1);
+					
+					//Create a Command and run it..
+					NETcommand net 	= new NETcommand(minidappid,url, "", auth);
+					result 			= net.runCommand();
+				
 				}else if(command.equals("netpost")) {
 					
 					//Get the URL and the post data..

@@ -20,49 +20,68 @@ import org.minima.utils.json.JSONObject;
 public class history extends Command {
 
 	public history() {
-		super("history","(max:) - Search for all relevant TxPoW");
+		super("history","(action:) (max:) (offset:) - Search for all relevant TxPoW");
 	}
 	
 	@Override
 	public String getFullHelp() {
 		return "\nhistory\n"
 				+ "\n"
-				+ "Return all TxPoW relevant to you.\n"
+				+ "Return all TxPoW relevant to you. Default to 100 max (can be slow)\n"
+				+ "\n"
+				+ "action: list or size (optional)\n"
+				+ "    Get list or check total size.\n"
 				+ "\n"
 				+ "max: (optional)\n"
 				+ "    Maximum number of TxPoW to retrieve.\n"
+				+ "\n"
+				+ "offset: (optional)\n"
+				+ "    Start the list from this point.\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "history\n"
 				+ "\n"
-				+ "history max:20\n";
+				+ "history max:20\n"
+				+ "\n"
+				+ "history max:20 offset:45\n";
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"max"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"max","offset","action"}));
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception{
 		JSONObject ret = getJSONReply();
-		
-		int max = getNumberParam("max",TxPoWSqlDB.MAX_RELEVANT_TXPOW).getAsInt();
-		
-		ArrayList<TxPoW> txps = MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant(max);
-		
-		JSONArray txns 			= new JSONArray();
-		JSONArray txndetails 	= new JSONArray();
-		for(TxPoW txp : txps) {
-			txns.add(txp.toJSON());
-			txndetails.add(getTxnDetails(txp));
-		}
 	
+		String action 	= getParam("action", "list");
 		JSONObject resp = new JSONObject();
-		resp.put("txpows", txns);
-		resp.put("details", txndetails);
-		resp.put("size", txns.size());
+		
+		if(action.equals("size")) {
+			
+			int size = MinimaDB.getDB().getTxPoWDB().getSQLDB().getRelevantSize();
+			resp.put("size", size);
+			
+		}else {
+			
+			int max 	= getNumberParam("max",TxPoWSqlDB.MAX_RELEVANT_TXPOW).getAsInt();
+			int offset 	= getNumberParam("offset",MiniNumber.ZERO).getAsInt();
+			
+			ArrayList<TxPoW> txps = MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant(max,offset);
+			
+			JSONArray txns 			= new JSONArray();
+			JSONArray txndetails 	= new JSONArray();
+			for(TxPoW txp : txps) {
+				txns.add(txp.toJSON());
+				txndetails.add(getTxnDetails(txp));
+			}
+			
+			resp.put("txpows", txns);
+			resp.put("details", txndetails);
+			resp.put("size", txns.size());
+		}
 		
 		ret.put("response", resp);
 		

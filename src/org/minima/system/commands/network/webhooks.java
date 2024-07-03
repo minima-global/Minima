@@ -10,7 +10,7 @@ import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class webhooks extends Command {
-
+	
 	public webhooks() {
 		super("webhooks","(action:list|add|remove|clear) (hook:url) - Add a web hook that is called with Minima events as they happen");
 	}
@@ -50,7 +50,7 @@ public class webhooks extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","hook","filter"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"enable","action","hook","filter"}));
 	}
 	
 	@Override
@@ -84,6 +84,11 @@ public class webhooks extends Command {
 		}else if(action.equals("clear")) {
 			notify.clearHooks();
 			
+		}else if(action.equals("errorlogs")) {
+			
+			boolean enable = getBooleanParam("enable");
+			
+			Main.getInstance().getNotifyManager().WEBHOOKS_ERROR_LOGS = enable;
 		}
 		
 		//List all the current hooks

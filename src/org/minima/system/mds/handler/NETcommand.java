@@ -11,6 +11,7 @@ public class NETcommand {
 	String mURL;
 	String mPostData 	= "";
 	String mReqType 	= "GET";
+	String mBasicAuth	= "";
 	
 	public NETcommand(String zMiniDAPPID, String zURL) {
 		mMiniDAPPID 	= zMiniDAPPID;
@@ -25,6 +26,13 @@ public class NETcommand {
 		mReqType 		= "POST";
 	}
 	
+	public NETcommand(String zMiniDAPPID, String zURL, String zData, String zBasicAuthorization) {
+		mMiniDAPPID 	= zMiniDAPPID;
+		mURL 			= zURL;
+		mPostData		= "";
+		mBasicAuth		= zBasicAuthorization;
+	}
+	
 	public String runCommand() {
 		
 		//Default fail result
@@ -32,6 +40,7 @@ public class NETcommand {
 		statfalse.put("request", mReqType);
 		statfalse.put("url", mURL);
 		statfalse.put("data", mPostData);
+		statfalse.put("basicauth", mBasicAuth);
 		statfalse.put("status", false);
 		statfalse.put("pending", false);
 		String result = statfalse.toJSONString();
@@ -41,8 +50,16 @@ public class NETcommand {
 			String resp = null;
 			
 			if(mIsGet) {
-				//Run a GET request
-				resp = RPCClient.sendGET(mURL);
+				
+				//Is there an ATH token..
+				if(mBasicAuth.equals("")) {
+					//Run a GET request
+					resp = RPCClient.sendGET(mURL);
+				}else {
+					//Run a GET request
+					resp = RPCClient.sendGETAuth(mURL,mBasicAuth);
+				}
+				
 			}else {
 				//Run a POST request
 				resp = RPCClient.sendPOST(mURL, mPostData);
@@ -52,6 +69,7 @@ public class NETcommand {
 			stattrue.put("request", mReqType);
 			stattrue.put("url", mURL);
 			stattrue.put("data", mPostData);
+			stattrue.put("basicauth", mBasicAuth);
 			stattrue.put("status", true);
 			stattrue.put("pending", false);
 			stattrue.put("response", resp);

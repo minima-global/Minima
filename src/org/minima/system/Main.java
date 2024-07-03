@@ -14,7 +14,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWProcessor;
-import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandRunner;
 import org.minima.system.genesis.GenesisMMR;
 import org.minima.system.genesis.GenesisTxPoW;
 import org.minima.system.mds.MDSManager;
@@ -36,6 +36,7 @@ import org.minima.utils.messages.MessageListener;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
 import org.minima.utils.messages.TimerProcessor;
+import org.minima.utils.mysql.MySQLConnect;
 import org.minima.utils.ssl.SSLManager;
 
 public class Main extends MessageProcessor {
@@ -97,6 +98,10 @@ public class Main extends MessageProcessor {
 	
 	public static final String MAIN_AUTOBACKUP_MYSQL 	= "MAIN_AUTOBACKUP_MYSQL";
 	long MAIN_AUTOBACKUP_MYSQL_TIMER					= 1000 * 60 * 60 * 2;
+	
+	public static final String MAIN_AUTOBACKUP_TXPOW 	= "MAIN_AUTOBACKUP_TXPOW";
+	
+	public static final String MAIN_DO_RESCUE 			= "MAIN_DO_RESCUE";
 	
 	/**
 	 * Auto backup every 24 hrs..
@@ -318,21 +323,21 @@ public class Main extends MessageProcessor {
 		//Create the TxpowMiner
 		mTxPoWMiner 	= new TxPoWMiner();
 				
-		//Recalc Tree if too large
-		try {
-			if(MinimaDB.getDB().getTxPoWTree().getHeaviestBranchLength() > 1200) {
-				MinimaLogger.log("Large tree.. recalculating..");
-				mTxPoWProcessor.onStartUpRecalc();
-				
-				//For now..
-				MinimaDB.getDB().saveState();
-				
-				//Clean..
-				System.gc();
-			}	
-		}catch(Exception exc) {
-			MinimaLogger.log(exc);
-		}
+//		//Recalc Tree if too large
+//		try {
+//			if(MinimaDB.getDB().getTxPoWTree().getHeaviestBranchLength() > 1200) {
+//				MinimaLogger.log("Large tree.. recalculating..");
+//				mTxPoWProcessor.onStartUpRecalc();
+//				
+//				//For now..
+//				MinimaDB.getDB().saveState();
+//				
+//				//Clean..
+//				System.gc();
+//			}	
+//		}catch(Exception exc) {
+//			MinimaLogger.log(exc);
+//		}
 		
 		//Are we running a private network
 		if(GeneralParams.GENESIS) {
@@ -584,6 +589,13 @@ public class Main extends MessageProcessor {
 		if(zResetCascadeTree) {
 			//Reset these 
 			MinimaDB.getDB().resetCascadeAndTxPoWTree();
+			
+			//Delete the cascade..
+			MinimaLogger.log("Deleting cascade..");
+			File cdb = MinimaDB.getDB().getCascadeFile();
+			if(cdb.exists()) {
+				cdb.delete();
+			}
 		}
 	}
 	
@@ -863,7 +875,7 @@ public class Main extends MessageProcessor {
 								+" action:update";
 				
 				//Run a mysql Backup of the archive data..
-				JSONArray res 	= Command.runMultiCommand(backupcommand);
+				JSONArray res 	= CommandRunner.getRunner().runMultiCommand(backupcommand);
 				JSONObject json = (JSONObject) res.get(0); 
 				boolean status  = (boolean) json.get("status");
 				
@@ -875,7 +887,37 @@ public class Main extends MessageProcessor {
 					MinimaLogger.log("MYSQL AUTOBACKUP OK "+response.toString());
 				}
 			}
+		
+		}else if(zMessage.getMessageType().equals(MAIN_AUTOBACKUP_TXPOW)) {
 			
+			//Are we storing all the TxPoW
+			if(GeneralParams.MYSQL_STORE_ALLTXPOW) {
+			
+				UserDB udb = MinimaDB.getDB().getUserDB();
+				
+				//Are we enabled..
+				if(udb.getAutoBackupMySQL()) {
+					
+					//Get the TxPoW
+					TxPoW txp = (TxPoW) zMessage.getObject("txpow");
+					
+					MySQLConnect mysql = new MySQLConnect(
+							udb.getAutoMySQLHost(), 
+							udb.getAutoMySQLDB(), 
+							udb.getAutoMySQLUser(), 
+							udb.getAutoMySQLPassword());
+					mysql.init();
+					
+					//Now save..
+					boolean status = mysql.saveTxPoW(txp);
+					
+					//Output
+					if(!status) {
+						MinimaLogger.log("[ERROR] MYSQL TXPOW AUTOBACKUP");
+					}
+				}
+			}
+		
 		}else if(zMessage.getMessageType().equals(MAIN_CLEANDB_SQL)) {
 			
 			//Do it again..
@@ -887,6 +929,28 @@ public class Main extends MessageProcessor {
 			//Same with the ArchiveDB - if not running an archive node
 			MinimaDB.getDB().getArchive().checkForCleanDB();
 			
+		}else if(zMessage.getMessageType().equals(MAIN_DO_RESCUE)) {
+			
+			if(!GeneralParams.RESCUE_MEGAMMR_NODE.equals("")) {
+				
+				MinimaLogger.log("Running MegaMMR Sync from Rescuse Node "+GeneralParams.RESCUE_MEGAMMR_NODE);
+				
+				//Make sure all keys created..
+				mInitKeysCreated = true;
+				
+				//Run a rescue command..
+				String command = "megammrsync action:resync host:"+GeneralParams.RESCUE_MEGAMMR_NODE;
+				
+				//And run it..
+				JSONObject res = CommandRunner.getRunner().runSingleCommand(command);
+				
+				//Output the result
+				MinimaLogger.log(res.toString());
+				
+				//At this point.. STOP..
+				Runtime.getRuntime().halt(0);
+			}
+		
 		}else if(zMessage.getMessageType().equals(MAIN_PULSE)) {
 			
 			//And then wait again..
@@ -950,7 +1014,7 @@ public class Main extends MessageProcessor {
 			if(MinimaDB.getDB().getUserDB().isAutoBackup()) {
 			
 				//Create a backup command..
-				JSONArray res = Command.runMultiCommand("backup");
+				JSONArray res = CommandRunner.getRunner().runMultiCommand("backup");
 				
 				//Output
 				MinimaLogger.log("AUTOBACKUP : "+res.toString());

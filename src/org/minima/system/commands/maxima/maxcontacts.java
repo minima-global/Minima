@@ -14,6 +14,7 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.CommandRunner;
 import org.minima.system.network.maxima.MaxMsgHandler;
 import org.minima.system.network.maxima.MaximaContactManager;
 import org.minima.system.network.maxima.MaximaManager;
@@ -252,6 +253,19 @@ public class maxcontacts extends Command {
 			
 			details.put("removed", id);
 		
+		}else if(func.equals("clear")) {
+			
+			//Remove all contacts
+			ArrayList<MaximaContact> contacts = maxdb.getAllContacts();
+			for(MaximaContact contact : contacts) {
+				//And send a message to sort this out
+				Message remove = new Message(MaximaContactManager.MAXCONTACTS_DELETECONTACT);
+				remove.addInteger("id", contact.getUID());
+				max.getContactsManager().PostMessage(remove);
+			}
+			
+			details.put("found", contacts.size());
+			
 		}else if(func.equals("search")) {
 			
 			MaximaContact chosen = null;
@@ -315,7 +329,7 @@ public class maxcontacts extends Command {
 				contact = contact.replaceAll(" ", "");
 				String command = "maxcontacts action:add contact:"+contact;
 				
-				JSONArray res 		= Command.runMultiCommand(command);
+				JSONArray res 		= CommandRunner.getRunner().runMultiCommand(command);
 				JSONObject result 	= (JSONObject) res.get(0);
 				resarray.add(result);
 			}

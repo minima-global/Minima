@@ -355,13 +355,28 @@ public class ParamConfigurer {
                 GeneralParams.NO_SYNC_IBD = true;
             }
         }),
-//        slavenode("slavenode", "Connect to this node only and only accept TxBlock messages.", (args, configurer) -> {
-//        	GeneralParams.CONNECT_LIST 			= args;
-//        	GeneralParams.P2P_ENABLED 			= false;
-//            GeneralParams.TXBLOCK_NODE 			= true;
-//            GeneralParams.NO_SYNC_IBD 			= true;
-//            GeneralParams.IS_ACCEPTING_IN_LINKS = false;
-//        }),
+        syncibdlogs("syncibdlogs", "Show detailed SYNC_IBD logs", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.IBDSYNC_LOGS = true;
+            }
+        }),
+        megammr("megammr", "Are we running in MEGA MMR mode", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.IS_MEGAMMR = true;
+            }
+        }),
+        notifyalltxpow("notifyalltxpow", "Send notification messages for ALL TxPoW (not just relevant)", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.NOTIFY_ALL_TXPOW = true;
+            }
+        }),
+        slavenode("slavenode", "Connect to this node only and only accept TxBlock messages.", (args, configurer) -> {
+        	GeneralParams.CONNECT_LIST 			= args;
+        	GeneralParams.P2P_ENABLED 			= false;
+            GeneralParams.TXBLOCK_NODE 			= true;
+            GeneralParams.NO_SYNC_IBD 			= true;
+            GeneralParams.IS_ACCEPTING_IN_LINKS = false;
+        }),
         limitbandwidth("limitbandwidth", "Limit the amount sent for archive sync", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.ARCHIVESYNC_LIMIT_BANDWIDTH = true;
@@ -393,7 +408,19 @@ public class ParamConfigurer {
             	TestParams.setTestParams();
             }
         }),
-        
+        nosslmds("nosslmds", "Disable the self signed SSL cert for MDS. Use STunnel or your own SSL proxy instead.", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.MDS_NOSSL = true;
+            }
+        }),
+        mysqlalltxpow("mysqlalltxpow", "Store all TxPoW in MySQL when autobackup enabled.", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.MYSQL_STORE_ALLTXPOW = true;
+            }
+        }),
+        rescuenode("rescuenode", "If you connect to a heavier chain use this MegaMMR node to resync", (arg, configurer) -> {
+        	GeneralParams.RESCUE_MEGAMMR_NODE 	= arg.trim();	
+        }),
         help("help", "Print this help", (args, configurer) -> {
             System.out.println("Minima Help");
             stream(values())

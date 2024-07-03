@@ -8,7 +8,7 @@ public class GlobalParams {
 	 * Which Version fo Minima are we running
 	 */
 	public static String MINIMA_BASE_VERSION 	= "1.0";
-	public static String MINIMA_BUILD_NUMBER 	= "40";
+	public static String MINIMA_BUILD_NUMBER 	= "41";
 	public static String MINIMA_VERSION 		= MINIMA_BASE_VERSION+"."+MINIMA_BUILD_NUMBER;
 	
 	/**
@@ -35,7 +35,7 @@ public class GlobalParams {
 	/**
 	 * Depth before we cascade..
 	 */
-	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(1024);
+	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(2048);
 	
 	/**
 	 * Number of blocks at each cascade level 

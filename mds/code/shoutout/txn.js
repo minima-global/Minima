@@ -1,6 +1,4 @@
 
-var SHOUTOUT_ADDRESS = "0x73686F75746F7574"
-
 function getMessageHash(category, title, message, user, pubkey, address, randid){
 	//Create one long string..
 	var fullmessage = category+title+message+user+pubkey+address+randid+"";
@@ -41,13 +39,11 @@ function sendTxnMessage(category, title, message, user, pubkey, address, randid,
 		state[2] = "["+message+"]";
 		state[3] = "["+user+"]";
 		state[4] = randid+"";
-		
-		//Maxima pubkey so does not get tracked..
 		state[5] = pubkey+"";
 		state[6] = signature+"";
 		state[7] = "["+address+"]";
 		
-		var func = "send amount:0.01 address:"+SHOUTOUT_ADDRESS+" state:"+JSON.stringify(state);
+		var func = "send storestate:false amount:0.01 address:"+SHOUTOUT_ADDRESS+" state:"+JSON.stringify(state);
 		
 		//run it..
 		MDS.cmd(func,function(sendresp){

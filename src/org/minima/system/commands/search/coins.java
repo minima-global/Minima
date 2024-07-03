@@ -17,7 +17,7 @@ import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.send.send;
-import org.minima.utils.MinimaLogger;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -61,8 +61,14 @@ public class coins extends Command {
 				+ "coinage: (optional)\n"
 				+ "    How old does the coin have to be.\n"
 				+ "\n"
+				+ "depth: (optional)\n"
+				+ "    How many blocks back to check from Blockchain tip.\n"
+				+ "\n"
 				+ "order: (optional)\n"
 				+ "    Order asc or desc (Ascending or Decending).\n"
+				+ "\n"
+				+ "megammr: (optional)\n"
+				+ "    Search the MegaMMR for coins too.\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
@@ -85,7 +91,7 @@ public class coins extends Command {
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"relevant","sendable","coinid","amount",
 				"address","tokenid","checkmempool","order","coinage","simplestate",
-				"totalamount","depth","state"}));
+				"totalamount","depth","state","megammr"}));
 	}
 	
 	@Override
@@ -144,7 +150,7 @@ public class coins extends Command {
 		MiniNumber coinage = getNumberParam("coinage", MiniNumber.ZERO);
 		
 		//Max Depth
-		int maxdepth = getNumberParam("depth", MiniNumber.MILLION).getAsInt();
+		int maxdepth = getNumberParam("depth", MiniNumber.BILLION).getAsInt();
 		
 		//Get the tree tip..
 		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
@@ -155,6 +161,12 @@ public class coins extends Command {
 			return ret;
 		}
 		
+		//Do we check the MegaMMR
+		boolean checkmegammr = getBooleanParam("megammr", false);
+		if(checkmegammr) {
+			checkmegammr = GeneralParams.IS_MEGAMMR;
+		}
+		
 		//Run the query
 		ArrayList<Coin> coins = TxPoWSearcher.searchCoins(	tip, relevant, 
 															scoinid, coinid,
@@ -162,7 +174,7 @@ public class coins extends Command {
 															saddress, address, 
 															stokenid, tokenid, 
 															sstate, statesearch, true,
-															simple, maxdepth);
+															simple, maxdepth,checkmegammr);
 		
 		//Make sure coins old enough..
 		ArrayList<Coin> agecoins = new ArrayList<>();
@@ -235,10 +247,19 @@ public class coins extends Command {
 			finalcoins = send.selectCoins(finalcoins, tokenamount);
 		}
 		
+		//Current block needed for age
+		MiniNumber cblock = tip.getTxPoW().getBlockNumber();
+		
 		//Put it all in an array
 		JSONArray coinarr = new JSONArray();
 		for(Coin cc : finalcoins) {
-			coinarr.add(cc.toJSON(simplestate));
+			
+			//Add coin age
+			JSONObject jsoncoin = cc.toJSON(simplestate);
+			jsoncoin.put("age", cblock.sub(cc.getBlockCreated()).toString());
+			
+			//Add to the total list
+			coinarr.add(jsoncoin);
 		}
 		
 		ret.put("response", coinarr);

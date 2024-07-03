@@ -1,0 +1,168 @@
+<html>
+
+<head>
+	<title>ETH Wallet</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="./style.css">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="jslib.js"></script>
+	
+	<script type="text/javascript" src="ethers-4.0.31.min.js"></script>
+	<script type="text/javascript" src="ethutil.js"></script>
+	
+	<script type="text/javascript" src="wminimaabi.js"></script>
+	<script type="text/javascript" src="etherc20util.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+
+	<br>
+
+	<h2>Test ETH Wallet</h2>
+	
+	
+	<table>
+	<tr>
+		<td>ETH ADDRESS :</td>
+		<td><div id="myethaddress"></div></td>
+	</tr>
+	
+	<tr><td>&nbsp;</td></tr>
+	<tr>
+		<td>ETH BALANCE :</td>
+		<td><div id="ethbalance"></div></td>
+	</tr>
+	<tr>
+		<td>ADDRESS :</td>
+		<td><input type=text id="ethaddress"></td>
+	</tr>
+	<tr>
+		<td>AMOUNT :</td>
+		<td><input type=text id="ethamount"></td>
+	</tr>
+	<tr><td><button onclick="sendeth();">SEND ETH</button></td></tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr>
+		<td>WMINIMA BALANCE :</td>
+		<td><div id="wminimabalance"></div></td>
+	</tr>
+	<tr>
+		<td>ADDRESS :</td>
+		<td><input type=text id="wminimaaddress"></td>
+	</tr>
+	<tr>
+		<td>AMOUNT :</td>
+		<td><input type=text id="wminimaamount"></td>
+	</tr>
+	<tr><td><button onclick="sendwMinima();">SEND WMINIMA</button></td></tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr>
+		<td>USDT BALANCE :</td>
+		<td><div id="usdtbalance"></div></td>
+	</tr>
+	<tr>
+		<td>ADDRESS :</td>
+		<td><input type=text id="usdtaddress"></td>
+	</tr>
+	<tr>
+		<td>AMOUNT :</td>
+		<td><input type=text id="usdtamount"></td>
+	</tr>
+	<tr><td><button onclick="sendUSDT();">SEND USDT</button></td></tr>
+	</table>
+	
+</center>
+
+<script type="text/javascript">
+	
+	//ETH Wallet
+	var privateKey 	= "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+	
+	function setBalance(){
+		
+		myethaddress.innerHTML = getETHERUMAddress();
+		
+		getETHEREUMBalance(function(balance){
+			ethbalance.innerHTML = balance;
+			
+			getERC20Balance(wMinimaContractAddress,function(wminbalance){
+				wminimabalance.innerHTML = wminbalance;
+				
+				getERC20Balance(USDTContractAddress,function(wminbalance){
+					usdtbalance.innerHTML = wminbalance;
+					
+				});
+			});
+		});
+	}
+	
+	function sendeth(){
+		var amount 	= ethamount.value;
+		var address = ethaddress.value;
+		
+		//Send it..
+		if(confirm("Send "+amount+" ETH to "+address+" ?")){
+			sendETH(address, amount, function(ethresp){
+				alert(JSON.stringify(ethresp));
+			});
+		}
+	}
+	
+	function sendwMinima(){
+		var amount 	= wminimaamount.value;
+		var address = wminimaaddress.value;
+		
+		//Send it..
+		if(confirm("Send "+amount+" wMinima to "+address+" ?")){
+			sendERC20(wMinimaContractAddress,18,address, amount, function(ethresp){
+				alert(JSON.stringify(ethresp));
+			});
+		}
+	}
+	
+	function sendUSDT(){
+		var amount 	= usdtamount.value;
+		var address = usdtaddress.value;
+		
+		//Send it..
+		if(confirm("Send "+amount+" USDT to "+address+" ?")){
+			sendERC20(USDTContractAddress,18,address, amount, function(ethresp){
+				alert(JSON.stringify(ethresp));
+			});
+		}
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//Init the ETH subsystem..
+			initialiseETH(privateKey,function(){
+				
+				setBalance();
+				
+			});
+			
+		}
+	});
+
+</script>
+
+</body>
+
+</html>

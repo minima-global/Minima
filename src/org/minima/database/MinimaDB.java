@@ -11,6 +11,7 @@ import org.minima.database.archive.TxBlockDB;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.maxima.MaximaDB;
 import org.minima.database.minidapps.MDSDB;
+import org.minima.database.mmr.MegaMMR;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPowTree;
 import org.minima.database.userprefs.UserDB;
@@ -23,6 +24,7 @@ import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.messages.TimerMessage;
 
 public class MinimaDB {
 
@@ -48,6 +50,11 @@ public class MinimaDB {
 	MaximaDB	 	mMaximaDB;
 	MDSDB			mMDSDB;
 	TxBlockDB		mTxBlockDB;
+	
+	/**
+	 * The MEGA MMR
+	 */
+	MegaMMR mMegaMMR;
 	
 	/**
 	 * For P2P Information
@@ -82,12 +89,13 @@ public class MinimaDB {
 		mMaximaDB	= new MaximaDB();
 		mMDSDB   	= new MDSDB();
 		mTxBlockDB	= new TxBlockDB();
-		
 		mP2PDB		= new P2PDB();
 		
 		mRWLock 	= new ReentrantReadWriteLock();
 		
 		mCoinNotify	= new HashSet<>();
+		
+		mMegaMMR	= new MegaMMR();
 	}
 	
 	/**
@@ -126,6 +134,10 @@ public class MinimaDB {
 		return mTxPoWTree;
 	}
 	
+	public MegaMMR getMegaMMR() {
+		return mMegaMMR;
+	}
+	
 	public Cascade getCascade() {
 		return mCascade;
 	}
@@ -158,6 +170,18 @@ public class MinimaDB {
 	
 	public MDSDB getMDSDB() {
 		return mMDSDB;
+	}
+	
+	public File getCascadeFile() {
+		return getDBFile("cascade.db");
+	}
+	
+	public File getDBFile(String zFilename) {
+		//Get the base Database folder
+		File basedb = getBaseDBFolder();
+		
+		//The File
+		return new File(basedb,zFilename);
 	}
 	
 	private long getDBFileSie(String zFilename) {
@@ -349,6 +373,14 @@ public class MinimaDB {
 			if(!Cascade.checkCascadeCorrect(mCascade)) {
 				throw new Exception("Your Cascade is BROKEN.. please 'reset' your node.");
 			}
+		
+			//Are we running in MEGA MMR mode..
+			if(GeneralParams.IS_MEGAMMR) {
+				mMegaMMR.loadMMR(new File(basedb,"megammr.mmr"));
+			}else {
+				//Delete if exists..
+				MiniFile.deleteFileOrFolder(basedb.getAbsolutePath() , new File(basedb,"megammr.mmr"));
+			}
 
 			//And check it ends where the tree ends..
 			if(mCascade.getTip() != null && mTxPoWTree.getRoot()!=null) {
@@ -356,6 +388,15 @@ public class MinimaDB {
 				MiniNumber treeroot  = mTxPoWTree.getRoot().getTxPoW().getBlockNumber();
 				if(!treeroot.isEqual(cascstart.increment())) {
 					throw new Exception("Your Cascade is BROKEN.. please 'reset' your node.");
+				}
+				
+				//Check the MEGA MMR starts on the correct block
+				if(GeneralParams.IS_MEGAMMR && !mMegaMMR.isEmpty()) {
+					if(!mMegaMMR.getMMR().getBlockTime().isEqual(treeroot.decrement())) {
+						throw new Exception("Your MEGAMMR is BROKEN "
+								+ "(does not start "+mMegaMMR.getMMR().getBlockTime()+" where "
+										+ "tree ends "+treeroot+").. please 'reset' your node.");
+					}
 				}
 			}
 			
@@ -366,18 +407,30 @@ public class MinimaDB {
 			getArchive().checkCascadeRequired(getCascade());
 			
 		}catch(Exception exc) {
-			MinimaLogger.log("SERIOUS ERROR loadAllDB ");
+			MinimaLogger.log("SERIOUS ERROR loadAllDB : ");
 			MinimaLogger.log(exc);
 			
-			//Are we on mobile or JNLP
-			if(GeneralParams.IS_MOBILE || GeneralParams.IS_JNLP) {
-			
-				//Set this param
-				Main.getInstance().setStartUpError(true, exc.toString());
+			//Do we have a rescue NODE
+			String err = exc.toString();
+			if(!GeneralParams.RESCUE_MEGAMMR_NODE.equals("")) {
+				
+				MinimaLogger.log("RESCUE NODE FOUND.. attempting rescue @ "+GeneralParams.RESCUE_MEGAMMR_NODE);
+				
+				//Post a message that does a RESCUE..
+				Main.getInstance().PostTimerMessage(new TimerMessage(1000, Main.MAIN_DO_RESCUE));
 				
 			}else {
-				//At this point.. STOP..
-				Runtime.getRuntime().halt(0);
+				
+				//Are we on mobile or JNLP
+				if(GeneralParams.IS_MOBILE || GeneralParams.IS_JNLP) {
+				
+					//Set this param
+					Main.getInstance().setStartUpError(true, err);
+					
+				}else {
+					//At this point.. STOP..
+					Runtime.getRuntime().halt(0);
+				}
 			}
 		}
 		
@@ -594,14 +647,18 @@ public class MinimaDB {
 			
 			//MinimaLogger.log("SAVESTATE USERDB:"+mUserDB.getAllData().toString());
 			mUserDB.saveDB(new File(basedb,"userprefs.db"));
-			
-			
-			//MinimaLogger.log("SAVE P2P DB.. "+mP2PDB.getPeersList().size());
 			mP2PDB.saveDB(new File(basedb,"p2p.db"));
 			
-			//Custom
+			//Cascade
 			mCascade.saveDB(new File(basedb,"cascade.db"));
+			
+			//TxPoWTree
 			mTxPoWTree.saveDB(new File(basedb,"chaintree.db"));
+			
+			//And are we MEGA MMR..
+			if(GeneralParams.IS_MEGAMMR) {
+				mMegaMMR.saveMMR(new File(basedb,"megammr.mmr"));
+			}
 			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);

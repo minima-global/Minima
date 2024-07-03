@@ -9,8 +9,12 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Random;
 
+import org.minima.database.MinimaDB;
+import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
@@ -34,6 +38,11 @@ public class MMR implements Streamable {
 	 * If you don't have it, ask your parent
 	 */
 	MMR mParent = null;
+	
+	/**
+	 * Are we going to use the MEGA MMR - only need it for the Tree (not everything else)
+	 */
+	boolean mUseMegaMMR = false;
 	
 	/**
 	 * What is the current entry number..
@@ -78,27 +87,28 @@ public class MMR implements Streamable {
 		mMaxEntries = new MMREntry[MAXROWS];
 		mMaxRow     = 0;
 		
-		//Parent MMRSet
-		mParent = zParent;
-	
 		//Not Finalized..
 		mFinalized = false;
 		
 		//Now add the peaks..
-		if(mParent != null) {
-			if(!mParent.isFinalized()) {
+		if(zParent != null) {
+			
+			//Parent MMRSet
+			setParent(zParent);
+			
+			if(!zParent.isFinalized()) {
 				//Finalise the parent..
-				mParent.finalizeSet();
+				zParent.finalizeSet();
 			}
 			
 			//Set the Time.. 1 more than parent
-			setBlockTime(mParent.getBlockTime().add(MiniNumber.ONE));
+			setBlockTime(zParent.getBlockTime().add(MiniNumber.ONE));
 			
 			//Calculate total entries..
 			BigInteger tot = BigInteger.ZERO;
 			BigInteger two = new BigInteger("2");
 			
-			ArrayList<MMREntry> peaks = mParent.getPeaks();
+			ArrayList<MMREntry> peaks = zParent.getPeaks();
 			for(MMREntry peak : peaks) {
 				setEntry(peak.getRow(), peak.getEntryNumber(), peak.getMMRData());
 				
@@ -110,7 +120,7 @@ public class MMR implements Streamable {
 			mEntryNumber = new MMREntryNumber(tot);
 			
 			//Check!
-			if(!mEntryNumber.isEqual(mParent.mEntryNumber)) {
+			if(!mEntryNumber.isEqual(zParent.mEntryNumber)) {
 				MinimaLogger.log("SERIOUS ERROR - Entry Number Mismatch! "+mEntryNumber+"/"+mParent.mEntryNumber);
 			}
 		}
@@ -134,18 +144,25 @@ public class MMR implements Streamable {
 	}
 	
 	public JSONObject toJSON() {
+		return toJSON(true);
+	}
+	
+	public JSONObject toJSON(boolean zEntries) {
 		JSONObject ret = new JSONObject();
 		
 		ret.put("block", mBlockTime);
 		ret.put("entrynumber", mEntryNumber);
+		ret.put("size", mSetEntries.size());
 
-		JSONArray jentry = new JSONArray();
-		Enumeration<MMREntry> entries = mSetEntries.elements();
-		while(entries.hasMoreElements()) {
-			MMREntry entry = entries.nextElement();
-			jentry.add(entry.toJSON());
+		if(zEntries) {
+			JSONArray jentry = new JSONArray();
+			Enumeration<MMREntry> entries = mSetEntries.elements();
+			while(entries.hasMoreElements()) {
+				MMREntry entry = entries.nextElement();
+				jentry.add(entry.toJSON());
+			}
+			ret.put("entries", jentry);
 		}
-		ret.put("entries", jentry);
 		
 		ret.put("maxrow", mMaxRow);
 		JSONArray maxentry = new JSONArray();
@@ -156,7 +173,11 @@ public class MMR implements Streamable {
 		}
 		ret.put("maxentries", maxentry);
 		
-		ret.put("root", getRoot().toJSON());
+		if(getRoot() == null) {
+			ret.put("root", null);
+		}else {
+			ret.put("root", getRoot().toJSON());
+		}
 		
 		return ret;
 	}
@@ -197,10 +218,16 @@ public class MMR implements Streamable {
 	
 	public void clearParent() {
 		mParent = null;
+		
+		//As it had a parent - we will be using the mega mmr
+		mUseMegaMMR = GeneralParams.IS_MEGAMMR;
 	}
 	
 	public void setParent(MMR zMMR) {
 		mParent = zMMR;
+		
+		//As it has a parent - we will be using the mega mmr
+		mUseMegaMMR = GeneralParams.IS_MEGAMMR;
 	}
 	
 	public MMR getParent() {
@@ -272,22 +299,42 @@ public class MMR implements Streamable {
 		//Cycle down through the MMR sets..
 		MMR current = this;
 		
-		//Now Loop..
+		//Get the entry name
 		String entryname = getHashTableEntry(zRow, zEntry);
-		while(current != null) {
+		
+		//Now Loop
+		boolean MEGACHECK = false;
+		while(current != null || MEGACHECK) {
+			
 			//Check within the designated range
 			if(current.getBlockTime().isLess(zMaxBack)) {
 				break;
 			}
 			
 			//Check if already added..
-			MMREntry entry   = current.mSetEntries.get(entryname);
+			MMREntry entry = current.mSetEntries.get(entryname);
+			
+			//Did we find it..
 			if(entry!=null) {
 				return entry;
 			}
 			
-			//Check the parent Set
-			current = current.getParent();	
+			//Are we megachecking..
+			if(!MEGACHECK) {
+				//Check the parent Set
+				current = current.getParent();
+				
+				//Are we at the end..
+				if(current == null && mUseMegaMMR) {
+					
+					//This is a MEGA MMR Check
+					MEGACHECK = true;
+					current   = MinimaDB.getDB().getMegaMMR().getMMR();
+				}
+			}else {
+				//we just did a MEGAMMR check.. that's it..
+				break;
+			}
 		}
 		
 		//If you can't find it - return empty entry..
@@ -360,10 +407,8 @@ public class MMR implements Streamable {
 			//Calculate the parent
 			if(entry.isLeft()) {
 				parentdata = MMRData.CreateMMRDataParentNode(entry.getMMRData(), sibling.getMMRData());
-//				parentdata = getParentMMRData(entry, sibling);
 			}else {
 				parentdata = MMRData.CreateMMRDataParentNode(sibling.getMMRData(), entry.getMMRData());
-//				parentdata = getParentMMRData(sibling, entry);
 			}
 			
 			//Make the entry the parent..
@@ -425,7 +470,7 @@ public class MMR implements Streamable {
 		
 		//Get the Peaks..
 		ArrayList<MMREntry> peaks = getPeaks();
-		
+			
 		//Now take all those values and put THEM in an MMR..
 		MMRData currentpeak    	= zPeak;
 		MMREntry keeper 		= null;
@@ -435,6 +480,7 @@ public class MMR implements Streamable {
 			
 			//Add all the peaks to it..
 			for(MMREntry peak : peaks) {
+						
 				//Add this..
 				MMREntry current = newmmr.addEntry(peak.getMMRData());
 				
@@ -453,11 +499,11 @@ public class MMR implements Streamable {
 				totalproof.addProofChunk(proof.getProofChunk(i));
 			}
 			
-			//Recalculate
-			currentpeak = totalproof.calculateProof(currentpeak);
+			//Recalculate - Start Peak + FULL Proof
+			currentpeak = totalproof.calculateProof(zPeak);
 			
 			//What to follow..
-			keeper      = null;
+			keeper = null;
 			
 			//Now get the peaks.. repeat..
 			peaks = newmmr.getPeaks();
@@ -471,7 +517,7 @@ public class MMR implements Streamable {
 	 * 
 	 * Can point to ROOT or to a PEAK
 	 */
-	private boolean checkProof(MMRData zMMRData, MMRProof zProof) {
+	public boolean checkProof(MMRData zMMRData, MMRProof zProof) {
 		//Calculate the final data unit
 		MMRData root = zProof.calculateProof(zMMRData);
 		
@@ -560,6 +606,11 @@ public class MMR implements Streamable {
 		
 		//Get the Peaks..
 		ArrayList<MMREntry> peaks = getPeaks();
+		
+		//Are there any peaks yet..
+		if(peaks.size() == 0) {
+			return null;
+		}
 		
 		//Now take all those values and put THEM in an MMR..
 		while(peaks.size() > 1) {
@@ -698,11 +749,16 @@ public class MMR implements Streamable {
 		}
 	}
 	
+	/**
+	 * You can remove the children if your value is ZERO.
+	 * 
+	 * You may still be needed as a sibling to a valid node.
+	 * 
+	 */
 	private void prune(MMREntry zStartNode) {
 		
-		//Is this a valid MMRENtry
+		//Already pruned..
 		if(zStartNode.isEmpty()) {
-			//Already pruned..
 			return;
 		}
 		
@@ -726,7 +782,6 @@ public class MMR implements Streamable {
 			removeHashTableEntry(leftchild);
 			removeHashTableEntry(rightchild);
 		}
-		
 	}
 	
 	/**
@@ -734,40 +789,49 @@ public class MMR implements Streamable {
 	 */
 	public static void main(String[] zArgs) {
 	
-//		System.out.println("** MMR Tree Prune POC **");
-//		
-//		MMR mmr = new MMR();
-//		
-//		//First bit of data
-//		MMRData zero 	= new MMRData(new MiniData("0x00"), new MiniNumber(0));
-//		MMRData one 	= new MMRData(new MiniData("0x01"), new MiniNumber(1));
-//		
-//		//Add 16 entries..
-//		for(int loop=0;loop<16;loop++) {
-//			mmr.addEntry(one);
-//		}
-//		printmmrtree(mmr);
-//		
-//		//Set random values to Zero..
-//		for(int zz=0;zz<24;zz++) {
-//			int rand 				= new Random().nextInt(16);
-//			MMREntryNumber entry 	= new MMREntryNumber(rand);
-//			MMREntry ent = mmr.getEntry(0, entry);
-//			if(ent.isEmpty() || ent.getMMRData().getValue().isEqual(MiniNumber.ZERO)) {
-//				continue;
-//			}
-//			
-//			System.out.println("\nSet entry "+rand+" to 0");
-//			MMRProof proof 	= mmr.getProofToPeak(entry);
-//			mmr.updateEntry(entry, proof, zero);
-//			mmr.pruneTree();
-//			printmmrtree(mmr);
-//		}
+		System.out.println("** MMR Tree Prune POC **");
+		
+		MMR mmr = new MMR();
+		
+		//First bit of data
+		MMRData zero 	= new MMRData(new MiniData("0x00"), new MiniNumber(0));
+		MMRData one 	= new MMRData(new MiniData("0x01"), new MiniNumber(1));
+		
+		int totcoins    = 20;
+		int rem 		= 5;
+		
+		for(int loop=0;loop<totcoins;loop++) {
+			mmr.addEntry(one);
+		}
+		printmmrtree(mmr);
+		
+		//Set random values to Zero..
+		for(int zz=0;zz<rem;zz++) {
+			int rand 				= new Random().nextInt(totcoins);
+			MMREntryNumber entry 	= new MMREntryNumber(rand);
+			MMREntry ent = mmr.getEntry(0, entry);
+			if(ent.isEmpty() || ent.getMMRData().getValue().isEqual(MiniNumber.ZERO)) {
+				continue;
+			}
+			
+			System.out.println("\nSet entry "+rand+" to 0");
+			
+			MMRProof checkproof = mmr.getProof(entry);
+			
+			MMRProof proof 	= mmr.getProofToPeak(entry);
+			mmr.updateEntry(entry, proof, zero);
+			mmr.pruneTree();
+			printmmrtree(mmr);
+		}
+		
+		System.out.println("");
+		
 	}
 	
 	public static void printinfo(MMR zTree) {
 		System.out.println("");
 		System.out.println("MMR TREE DATA");
+		System.out.println("Block Time      : "+zTree.getBlockTime());
 		System.out.println("Total tree size : "+zTree.getTotalEntries());
 		System.out.println("Current entry   : "+zTree.getEntryNumber());
 		//The Peaks..
@@ -775,8 +839,9 @@ public class MMR implements Streamable {
 		for(MMREntry peak : peaks) {
 			System.out.println("PEAK : "+peak);
 		}
-		MMRData root = zTree.getRoot();
 		System.out.println("Peaks : "+zTree.getPeaks().size());
+		
+		MMRData root = zTree.getRoot();
 		System.out.println("Root  : "+root);
 	}
 	
@@ -785,9 +850,11 @@ public class MMR implements Streamable {
 		int toprow = zTree.mMaxRow;
 		for(int i=toprow;i>=0;i--) {
 		
+			int major = 5;
+			
 			//The start gap
-			int startgap 	= (int) (Math.pow(2, i) -1) * 2;
-			int gap 		= (int) (Math.pow(2, i+1)) * 2;
+			int startgap 	= (int) (Math.pow(2, i) -1) * major;
+			int gap 		= (int) (Math.pow(2, i+1))  * major;
 			
 			//Get the row..
 			ArrayList<MMREntry> row = new ArrayList<>(); 
@@ -800,8 +867,8 @@ public class MMR implements Streamable {
 			}
 			
 			//The final char buffer for the row
-			char[] str = new char[256];
-			for(int c=0;c<128;c++) {
+			char[] str = new char[2048];
+			for(int c=0;c<512;c++) {
 				str[c] = ' ';
 			}
 			
@@ -811,8 +878,13 @@ public class MMR implements Streamable {
 				//Add the entry to the correct spot..
 				int xpos 	 = entry.getEntryNumber().getBigDecimal().intValue();
 				int finalpos = startgap+(xpos*gap);
+				
 				int value    = entry.getMMRData().getValue().getAsInt();
 				String valstr = ""+value;
+				
+//				MiniNumber val = entry.getMMRData().getValue();
+//				String valstr = ""+val.getAsBigDecimal().toEngineeringString();
+				
 				char[] cc = valstr.toCharArray();
 				
 				System.arraycopy(cc, 0, str, finalpos, cc.length);
@@ -823,8 +895,11 @@ public class MMR implements Streamable {
 		
 		//Print the peak value..
 		System.out.println("Total Entries       : "+zTree.mSetEntries.size());
-		System.out.println("Tree Peak Sum Value : "+zTree.getRoot().getValue());
-		
+		if(zTree.getRoot() == null) {
+			System.out.println("Tree Peak Sum Value : null");
+		}else {
+			System.out.println("Tree Peak Sum Value : "+zTree.getRoot().getValue());
+		}
 	}
 	
 }

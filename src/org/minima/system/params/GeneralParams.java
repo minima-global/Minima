@@ -271,6 +271,31 @@ public class GeneralParams {
 	public static boolean PEERSCHECKER_lOG = false;
 	
 	/**
+	 * Are we running a MEGA MMR
+	 */
+	public static boolean IS_MEGAMMR = false;
+	
+	/**
+	 * Notify on ALL TxPoW whether relevant or not
+	 */
+	public static boolean NOTIFY_ALL_TXPOW = false;
+	
+	/**
+	 * Do we MegaMMR sync on Heavier Chain
+	 */
+	public static String RESCUE_MEGAMMR_NODE 	= "";
+	
+	/**
+	 * Do we use use HTTP instead of self signed HTTPS for MDS
+	 */
+	public static boolean MDS_NOSSL = false;
+	
+	/**
+	 * Do we store all txpow with MySQL Autobackup
+	 */
+	public static boolean MYSQL_STORE_ALLTXPOW = false;
+	
+	/**
 	 * Reset all params to their default settings.. ANDROID keeps them after shutdown
 	 */
 	public static void resetDefaults() {
@@ -330,6 +355,11 @@ public class GeneralParams {
 		RPC_PASSWORD 		= "none";
 		SEED_PHRASE 		= "";
 		PEERSCHECKER_lOG 	= false;
+		IS_MEGAMMR 			= false;
+		NOTIFY_ALL_TXPOW 	= false;
+		RESCUE_MEGAMMR_NODE	= "";
+		MDS_NOSSL 			 = false;
+		MYSQL_STORE_ALLTXPOW = false;
 	}
 	
 }

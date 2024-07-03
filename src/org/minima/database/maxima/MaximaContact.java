@@ -45,7 +45,10 @@ public class MaximaContact {
 	
 	public MaximaContact(String zPublicKey) {
 		mPublicKey	= zPublicKey;
-		setname("noname");
+		
+		setName("noname");
+		setIcon("");
+		
 		setMinimaAddress("Mx00");
 		setBlockDetails(MiniNumber.ZERO, MiniNumber.ZERO, MiniData.ZERO_TXPOWID);
 		setMLS("");
@@ -67,7 +70,10 @@ public class MaximaContact {
 			
 			//Create a default
 			mExtraData = new JSONObject();
-			setname("noname");
+			
+			setName("noname");
+			setIcon("");
+			
 			setMinimaAddress("Mx00");
 			setBlockDetails(MiniNumber.ZERO, MiniNumber.ZERO, MiniData.ZERO_TXPOWID);
 			setMLS("");
@@ -95,15 +101,23 @@ public class MaximaContact {
 	}
 	
 	public String getMinimaAddress() {
-		return mExtraData.getString("minimaaddress");
+		return mExtraData.getString("minimaaddress","");
 	}
 	
-	public void setname(String zName) {
+	public void setName(String zName) {
 		mExtraData.put("name", zName);
 	}
 	
 	public String getName() {
-		return mExtraData.getString("name");
+		return mExtraData.getString("name","");
+	}
+	
+	public void setIcon(String zIcon) {
+		mExtraData.put("icon", zIcon);
+	}
+	
+	public String getIcon() {
+		return mExtraData.getString("icon","");
 	}
 	
 	public JSONObject getExtraData() {

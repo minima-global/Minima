@@ -20,6 +20,7 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.CommandRunner;
 import org.minima.system.commands.backup.vault;
 import org.minima.utils.Crypto;
 import org.minima.utils.json.JSONArray;
@@ -200,7 +201,7 @@ public class multisig extends Command {
 			}
 			
 			//Now run this!..
-			JSONArray result 		= Command.runMultiCommand(sendfunction);
+			JSONArray result 		= CommandRunner.getRunner().runMultiCommand(sendfunction);
 			JSONObject sendresult 	= (JSONObject) result.get(0); 
 			if((boolean) sendresult.get("status")) {
 				
@@ -324,7 +325,7 @@ public class multisig extends Command {
 			}
 			
 			//Find the coin
-			Coin cc = TxPoWSearcher.searchCoin(new MiniData(coinid));
+			Coin cc = TxPoWSearcher.searchCoin(new MiniData(coinid),false);
 			if(cc == null) {
 				throw new CommandException("CoinID not found : "+coinid);
 			}
@@ -380,7 +381,7 @@ public class multisig extends Command {
 						+ "txndelete id:"+txnname;
 			
 			//Run it..
-			JSONArray result = Command.runMultiCommand(txnsender);
+			JSONArray result = CommandRunner.getRunner().runMultiCommand(txnsender);
 			ret.put("response", result);
 		
 		}else if(action.equals("sign")) {
@@ -393,7 +394,7 @@ public class multisig extends Command {
 			String txnsigner = "txnimport id:"+txnname+" file:"+file+";";
 			
 			//Run that
-			JSONArray result 		= Command.runMultiCommand(txnsigner);
+			JSONArray result 		= CommandRunner.getRunner().runMultiCommand(txnsigner);
 			JSONObject importres 	= (JSONObject) result.get(0); 
 			if(!(boolean) importres.get("status")) {
 				throw new CommandException(importres.get("error").toString());
@@ -436,7 +437,7 @@ public class multisig extends Command {
 			}
 			
 			//Run it..
-			result = Command.runMultiCommand(txnsigner);
+			result = CommandRunner.getRunner().runMultiCommand(txnsigner);
 			
 			//Are we locking the DB
 			if(passwordlock) {
@@ -457,7 +458,7 @@ public class multisig extends Command {
 					+ "txndelete id:"+txnname;
 			
 			//Run it..
-			JSONArray result = Command.runMultiCommand(txnsigner);
+			JSONArray result = CommandRunner.getRunner().runMultiCommand(txnsigner);
 			ret.put("response", result);
 		
 		}else if(action.equals("view")) {
@@ -469,7 +470,7 @@ public class multisig extends Command {
 					+ "txndelete id:"+txnname;
 			
 			//Run it..
-			JSONArray result = Command.runMultiCommand(txnview);
+			JSONArray result = CommandRunner.getRunner().runMultiCommand(txnview);
 			ret.put("response", result);
 			
 		}else {

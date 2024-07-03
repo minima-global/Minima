@@ -85,7 +85,10 @@ public class coinexport extends Command {
 		//And create the Data version
 		MiniData dataproof = MiniData.getMiniDataVersion(cp);
 		
-		ret.put("response", dataproof.to0xString());
+		JSONObject resp = new JSONObject();
+		resp.put("coinproof", cp.toJSON());
+		resp.put("data", dataproof.to0xString());
+		ret.put("response", resp);
 		
 		return ret;
 	}

@@ -55,7 +55,7 @@ public class keys extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","publickey","phrase"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","publickey","phrase","modifier"}));
 	}
 	
 	@Override
@@ -73,7 +73,14 @@ public class keys extends Command {
 			boolean searchkey 	= false;
 			String pubkey 		= getParam("publickey", "");
 			if(!pubkey.equals("")) {
+				pubkey = new MiniData(pubkey).to0xString();
 				searchkey = true;
+			}
+			
+			boolean searchmod 	= false;
+			String modifier 	= getParam("modifier", "");
+			if(!modifier.equals("")) {
+				searchmod = true;
 			}
 			
 			//Get all the keys
@@ -97,6 +104,17 @@ public class keys extends Command {
 						
 						break;
 					}
+				}else if(searchmod) {
+					if(dets.getString("modifier").equals(modifier)) {
+						if(kr.getUses()>maxuses) {
+							maxuses = kr.getUses(); 
+						}
+						
+						arr.add(dets);
+						
+						break;
+					}
+				
 				}else {
 					if(kr.getUses()>maxuses) {
 						maxuses = kr.getUses(); 

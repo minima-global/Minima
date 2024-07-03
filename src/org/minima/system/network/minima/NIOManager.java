@@ -301,6 +301,8 @@ public class NIOManager extends MessageProcessor {
 			//Shut down the NIO
 			mNIOServer.shutdown();
 			
+			MinimaLogger.log("Shutdown Networking..");
+			
 			//Wait for it to stop..
 			while(mNIOServer.isRunning()) {
 				Thread.sleep(50);

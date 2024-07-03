@@ -113,6 +113,20 @@ public abstract class SqlDB {
 		createSQL();
 	}
 	
+	public boolean isOpen() throws SQLException {
+		
+		if(mSQLConnection == null) {
+			return false;
+		}
+		
+		if(mSQLConnection.isClosed()) {
+			return false;
+		}
+		
+		
+		return true;
+	}
+	
 	public boolean checkOpen() throws SQLException {
 		
 		//Check not NULL

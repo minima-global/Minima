@@ -11,9 +11,6 @@ MDS.load("jslib.js");
 MDS.load("sql.js");
 MDS.load("txn.js");
 
-//Main Shoutout Address
-var SHOUTOUT_ADDRESS = "0x73686F75746F7574"
-
 //Are we logging data
 var logs = false;
 
@@ -43,7 +40,7 @@ MDS.init(function(msg){
 				//Insert some start up Groups
 				addStartupGroup(filters,"minima");
 				addStartupGroup(filters,"minima.developer");
-				addStartupGroup(filters,"adult");
+				addStartupGroup(filters,"xxx");
 				addStartupGroup(filters,"art");
 				addStartupGroup(filters,"business");
 				addStartupGroup(filters,"crypto");
@@ -55,7 +52,7 @@ MDS.init(function(msg){
 				addStartupGroup(filters,"entertainment.films");
 				addStartupGroup(filters,"entertainment.music");
 				addStartupGroup(filters,"food");
-				addStartupGroup(filters,"food.recipies");
+				addStartupGroup(filters,"food.recipes");
 				addStartupGroup(filters,"food.restaurants");
 				addStartupGroup(filters,"games");
 				addStartupGroup(filters,"health");

@@ -1,0 +1,174 @@
+<html>
+
+<head>
+	<title>Mega Wallet</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="jslib.js"></script>
+	
+</head>
+
+<body>
+
+<script type="text/javascript">
+	header();
+</script>	
+
+<br>
+	<table>
+	
+	<tr>
+		<td>Token : </td>
+		<td><select id=tokens></select> </td>
+	</tr>
+	
+	<tr>
+		<td>To : </td>
+		<td><input type=text id="to"></td>
+	</tr>
+	
+	<tr>
+		<td>Amount : </td>
+		<td><input type=text id="amount"></td>
+	</tr>
+	
+	<tr>
+		<td>&nbsp;</td>
+	</tr>
+	
+	<tr>
+		<td>Secret Code : </td>
+		<td><input type=text id="secret"></td>
+	</tr>
+	
+	<!--   <tr>
+		<td>Key Uses : </td>
+		<td><input type=text id="keyuses"></td>
+	</tr>
+	-->
+	
+	</table>
+	<br>
+	
+	<button class=btn onclick="sendfunds();">Send Funds</button>
+		
+<script type="text/javascript">
+	footer();
+</script>	
+
+
+<script type="text/javascript">
+	
+	function sendfunds(){
+		
+		var address = MDS.form.getParams("address");
+		
+		//Get the vars
+		var sendto 		= to.value;
+		var sendamount 	= amount.value;
+		var sendsecret	= secret.value;
+		//var keyuses		= keyuses.value;
+		
+		//Get the token
+		var selector 	= document.getElementById("tokens");
+		var tokenname  	= selector.options[selector.selectedIndex].text;
+		var tokenid  	= selector.options[selector.selectedIndex].value;
+		
+		//Generats a key
+		MDS.cmd("keys action:genkey phrase:\""+sendsecret+"\"",function(resp){
+			
+			//Get the address
+			var addr = resp.response.miniaddress;
+			
+			//CHeck correct
+			if(address != addr){
+				alert("Incorrect seed for this address!\n\nPlease try again..");
+				return;
+			}
+			
+			var script 		= resp.response.script;
+			var privatekey 	= resp.response.privatekey;
+			var keyuses 	= randomInteger(0,200000);
+			
+			//Now do the send..
+			var cmd = 	 "sendfrom fromaddress:"+address
+						+" address:"+sendto
+						+" amount:"+sendamount
+						+" tokenid:"+tokenid
+						+" script:\""+script+"\""
+						+" privatekey:"+privatekey
+						+" keyuses:"+keyuses;
+			
+			MDS.cmd(cmd,function(resp){
+				
+				if(!resp.status){
+					alert(resp.error);
+					return;
+				}
+				
+				MDS.log(JSON.stringify(resp));
+				
+				//All good..
+				alert("Funds sent!");
+			});
+			
+		});
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//Get the address
+			var addr = MDS.form.getParams("address");
+			
+			//Do stuff.. from now..		
+			MDS.cmd("balance address:"+addr,function(balance){
+				
+				var len 	 = balance.response.length;
+				var selector = document.getElementById("tokens");
+				
+				for(var i=0;i<len;i++){
+					
+					//Get the token
+					var token = balance.response[i];
+					
+					//Create the Option
+					var option 		= document.createElement("option");
+				    option.value 	= token.tokenid;
+				    
+					if(token.tokenid == "0x00"){
+						//It's Minima
+					    //option.text  = "Minima ( "+token.confirmed+" )";
+					    option.text  = "Minima";
+					    selector.appendChild(option);
+					}else{
+						//option.text  = token.token.name+" ( "+token.confirmed+" )";
+						option.text  = token.token.name;
+					    selector.appendChild(option);
+					}
+				}
+				
+				
+			});
+		}
+	});
+
+</script>
+
+</body>
+
+</html>
