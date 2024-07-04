@@ -17,6 +17,7 @@ import org.minima.database.mmr.MMR;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.mmr.MegaMMR;
+import org.minima.database.txpowtree.TxPowTree;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
 import org.minima.objects.IBD;
@@ -191,9 +192,9 @@ public class megammr extends Command {
 			}
 			
 			//Get all your coin proofs..
-			MinimaLogger.log("Get all your CoinProofs");
-			MegaMMRSyncData mydata = megammrsync.getMyDetails();
-			ArrayList<CoinProof> cproofs = megammrsync.getAllCoinProofs(mydata);
+			//MinimaLogger.log("Get all your CoinProofs");
+			//MegaMMRSyncData mydata 			= megammrsync.getMyDetails();
+			//ArrayList<CoinProof> cproofs 	= megammrsync.getAllCoinProofs(mydata);
 			
 			//Now we have the file.. lets set it..
 			Main.getInstance().archiveResetReady(false);
@@ -215,6 +216,27 @@ public class megammr extends Command {
 				}
 			}
 			
+			//Get the tree
+			TxPowTree tree = MinimaDB.getDB().getTxPoWTree();
+			TxPoW topblock = tree.getTip().getTxPoW();
+			MinimaLogger.log("Current Top Block : "+topblock.getBlockNumber());
+			
+			//Now load the Mega MMR so is the current one..
+			MinimaDB.getDB().hardSetMegaMMR(mmrback.getMegaMMR());
+			TxPoW rootblock = tree.getRoot().getTxPoW();
+			
+			//Now check..
+			MinimaLogger.log("Current Tree Root : "+rootblock.getBlockNumber());
+			
+			//And the Mega MMR
+			MegaMMR currentmega = MinimaDB.getDB().getMegaMMR();
+			MinimaLogger.log("Current MegaMMR Tip : "+currentmega.getMMR().getBlockTime());
+			
+			//Get all your coin proofs..
+			MinimaLogger.log("Get all your CoinProofs");
+			MegaMMRSyncData mydata 		 = megammrsync.getMyDetails();
+			ArrayList<CoinProof> cproofs = megammrsync.getAllCoinProofs(mydata);
+			
 			//Import all YOUR coin proofs..
 			MinimaLogger.log("Transfer your CoinProofs.. "+cproofs.size());
 			for(CoinProof cp : cproofs) {
@@ -224,6 +246,10 @@ public class megammr extends Command {
 				
 				//Coin Import..
 				JSONObject coinproofresp = CommandRunner.getRunner().runSingleCommand("coinimport track:true data:"+cpdata.to0xString());
+				
+//				if(!(boolean)coinproofresp.get("status")) {
+//					MinimaLogger.log("Fail Import : "+coinproofresp.getString("error")+" @ "+cp.toJSON());
+//				}
 			}
 			
 			JSONObject resp = new JSONObject();
@@ -240,9 +266,9 @@ public class megammr extends Command {
 			MinimaDB.getDB().saveAllDB();
 			
 			//Now save the Mega MMR..
-			File basefolder = MinimaDB.getDB().getBaseDBFolder();
-	    	File mmrfile 	= new File(basefolder,"megammr.mmr");
-	    	mmrback.getMegaMMR().saveMMR(mmrfile);
+			//File basefolder = MinimaDB.getDB().getBaseDBFolder();
+	    	//File mmrfile 	= new File(basefolder,"megammr.mmr");
+	    	//mmrback.getMegaMMR().saveMMR(mmrfile);
 			
 			//And NOW shut down..
 			Main.getInstance().stopMessageProcessor();

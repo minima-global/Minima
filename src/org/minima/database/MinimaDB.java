@@ -138,6 +138,10 @@ public class MinimaDB {
 		return mMegaMMR;
 	}
 	
+	public void hardSetMegaMMR(MegaMMR zMEGA) {
+		mMegaMMR = zMEGA;
+	}
+	
 	public Cascade getCascade() {
 		return mCascade;
 	}
