@@ -374,7 +374,9 @@ public class TxPoWMiner extends MessageProcessor {
 			data = Crypto.getInstance().hashObject(data);
 		}
 		long timediff = System.currentTimeMillis() - timestart;
-		
+		if(timediff<=0) {
+			timediff = 1;
+		}
 		
 		MiniNumber timesecs = new MiniNumber(timediff).div(MiniNumber.THOUSAND);
 		
@@ -432,6 +434,9 @@ public class TxPoWMiner extends MessageProcessor {
 		
 		//Time diff..
 		long timediff = System.currentTimeMillis() - timenow;
+		if(timediff<=0) {
+			timediff = 1;
+		}
 		
 		MiniNumber timesecs = new MiniNumber(timediff).div(MiniNumber.THOUSAND);
 		
