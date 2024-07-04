@@ -375,10 +375,12 @@ public class TxPoWMiner extends MessageProcessor {
 		}
 		long timediff = System.currentTimeMillis() - timestart;
 		
-		
 		MiniNumber timesecs = new MiniNumber(timediff).div(MiniNumber.THOUSAND);
+		if(timesecs.isLessEqual(MiniNumber.ZERO)) {
+			timesecs = MiniNumber.ONE;
+		}
 		
-		MiniNumber spd 		= zHashes.div(timesecs);
+		MiniNumber spd = zHashes.div(timesecs);
 		
 //		MinimaLogger.log("OLD Method) Did "+ihashes+" in "+timesecs+ " speed:"+spd);
 		
@@ -432,6 +434,9 @@ public class TxPoWMiner extends MessageProcessor {
 		
 		//Time diff..
 		long timediff = System.currentTimeMillis() - timenow;
+		if(timediff<=0) {
+			timediff = 1;
+		}
 		
 		MiniNumber timesecs = new MiniNumber(timediff).div(MiniNumber.THOUSAND);
 		
