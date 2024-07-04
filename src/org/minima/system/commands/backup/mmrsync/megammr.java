@@ -247,9 +247,9 @@ public class megammr extends Command {
 				//Coin Import..
 				JSONObject coinproofresp = CommandRunner.getRunner().runSingleCommand("coinimport track:true data:"+cpdata.to0xString());
 				
-				if(!(boolean)coinproofresp.get("status")) {
-					MinimaLogger.log("Fail Import : "+coinproofresp.getString("error")+" @ "+cp.toJSON());
-				}
+//				if(!(boolean)coinproofresp.get("status")) {
+//					MinimaLogger.log("Fail Import : "+coinproofresp.getString("error")+" @ "+cp.toJSON());
+//				}
 			}
 			
 			JSONObject resp = new JSONObject();
