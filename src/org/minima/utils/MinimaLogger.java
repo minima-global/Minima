@@ -51,4 +51,15 @@ public class MinimaLogger {
 			MinimaLogger.log("     "+stack.toString(), zNotify);
 		}
 	}
+	
+	public static void logUncaught(Throwable zThrow, boolean zNotify){
+		//First the Full Exception
+		MinimaLogger.log("[!] UNCAUGHT EXCEPTION : "+zThrow.toString(), zNotify);
+		
+		//Now the Stack Trace
+		for(StackTraceElement stack : zThrow.getStackTrace()) {
+			//Print it..
+			MinimaLogger.log("     "+stack.toString(), zNotify);
+		}
+	}
 }
