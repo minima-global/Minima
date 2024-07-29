@@ -46,7 +46,21 @@ public class FastByteArrayStream extends ByteArrayOutputStream {
 			}
 			
 			//Make it bigger
-			buf = Arrays.copyOf(buf, csize+increase);
+			try {
+				buf = Arrays.copyOf(buf, csize+increase);
+			} catch (OutOfMemoryError e) {
+				
+				MinimaLogger.log("[!] SERIOUS OUT OF MEMORY ERROR at FastByteArrayStream "
+						+ " currentsize:"+csize
+						+ " required:"+required
+						+ " increase:"+increase
+						+ " count:"+count
+						+ " len:"+len
+						);
+				
+				//Hmm.. serious error..
+				Runtime.getRuntime().halt(0);
+			}
 		}
 		
 		//Now copy data
