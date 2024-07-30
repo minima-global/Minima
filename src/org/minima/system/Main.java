@@ -911,9 +911,16 @@ public class Main extends MessageProcessor {
 					//Now save..
 					boolean status = mysql.saveTxPoW(txp);
 					
+					//Shutdown..
+					mysql.shutdown();
+					
 					//Output
 					if(!status) {
-						MinimaLogger.log("[ERROR] MYSQL TXPOW AUTOBACKUP");
+						MinimaLogger.log("[ERROR] MYSQL TXPOW AUTOBACKUP "
+								+ " host:"+udb.getAutoMySQLHost()
+								+ " user:"+udb.getAutoMySQLUser()
+								+ " db:"+udb.getAutoMySQLDB()
+								);
 					}
 				}
 			}
