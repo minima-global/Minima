@@ -418,6 +418,13 @@ public class ParamConfigurer {
                 GeneralParams.MYSQL_STORE_ALLTXPOW = true;
             }
         }),
+        txpowdbstore("txpowdbstore", "How many days to store TxPoW in the internal H2 Database", (args, configurer) -> {
+        	GeneralParams.NUMBER_DAYS_SQLTXPOWDB = Long.parseLong(args.trim());
+        	if(GeneralParams.NUMBER_DAYS_SQLTXPOWDB<3) {
+        		GeneralParams.NUMBER_DAYS_SQLTXPOWDB=3;
+        		MinimaLogger.log("Invalid txpowdbstore.. MUST be >= 3.. setting to 3");
+        	}
+        }),
         rescuenode("rescuenode", "If you connect to a heavier chain use this MegaMMR node to resync", (arg, configurer) -> {
         	GeneralParams.RESCUE_MEGAMMR_NODE 	= arg.trim();	
         }),
