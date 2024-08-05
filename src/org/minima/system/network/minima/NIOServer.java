@@ -247,23 +247,30 @@ public class NIOServer implements Runnable {
 	                } catch (Exception e) {
 	                	
 	                    // Disconnect the user
-	                    client.disconnect();
-	                    
-	                    //Remove from the list..
-	                    mClients.remove(client.getUID());
-	
-	                    //Small Log..
-	                    if(mTraceON) {
-	                    	MinimaLogger.log("[NIOSERVER] NIOClient:"+client.getUID()+" "+e+" total:"+mClients.size(), false);
+	                    if(client != null) {
+	                    	
+	                    	//Disconnect..
+		                	client.disconnect();
+		                    
+		                    //Remove from the list..
+		                    mClients.remove(client.getUID());
+		
+		                    //Small Log..
+		                    if(mTraceON) {
+		                    	MinimaLogger.log("[NIOSERVER] NIOClient:"+client.getUID()+" "+e+" total:"+mClients.size(), false);
+		                    }
+		                    
+		                    //Tell the Network Manager
+		                    Message dissclient = new Message(NIOManager.NIO_DISCONNECTED)
+		                    		.addObject("client", client)
+		                    		.addBoolean("reconnect", !client.isIncoming());
+		                    
+		                    //Tell the manager
+		                    mNIOManager.PostMessage(dissclient);
+		                    
+	                    }else {
+	                    	MinimaLogger.log("[NIOSERVER] NULL Client disconnect in NIOServer.. ignoring..");
 	                    }
-	                    
-	                    //Tell the Network Manager
-	                    Message newclient = new Message(NIOManager.NIO_DISCONNECTED)
-	                    		.addObject("client", client)
-	                    		.addBoolean("reconnect", !client.isIncoming());
-	                    
-	                    //Tell the manager
-	                    mNIOManager.PostMessage(newclient);
 	                }
 	            }
 	        }
