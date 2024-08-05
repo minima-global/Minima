@@ -61,7 +61,10 @@ public class NIOServer implements Runnable {
 		
 		Enumeration<NIOClient> clients = mClients.elements();
 		while(clients.hasMoreElements()) {
-			allclients.add(clients.nextElement());
+			NIOClient client = clients.nextElement();
+			if(client != null) {
+				allclients.add(clients.nextElement());
+			}
 		}
 		
 		return allclients;
@@ -102,11 +105,13 @@ public class NIOServer implements Runnable {
 		Enumeration<NIOClient> clients = mClients.elements();
 		while(clients.hasMoreElements()) {
 			NIOClient nioc = clients.nextElement();
-			if(nioc.isValidGreeting()) {
-				try {
-					nioc.sendData(zData);
-				}catch(Exception exc) {
-					MinimaLogger.log(exc);
+			if(nioc != null) {
+				if(nioc.isValidGreeting()) {
+					try {
+						nioc.sendData(zData);
+					}catch(Exception exc) {
+						MinimaLogger.log(exc);
+					}
 				}
 			}
 		}
