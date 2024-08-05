@@ -281,7 +281,10 @@ public class NIOServer implements Runnable {
 			//Disconnect all clients..
 			Enumeration<NIOClient> clients = mClients.elements();
 			while(clients.hasMoreElements()) {
-				clients.nextElement().disconnect();
+				NIOClient client = clients.nextElement();
+				if(client !=null) {
+					client.disconnect();
+				}
 			}
 			
 			//Need to call this to shut down properly
