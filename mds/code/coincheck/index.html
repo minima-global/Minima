@@ -1,0 +1,136 @@
+<html>
+
+<head>
+	<title>Coin Checker</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="jslib.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+
+	<br>
+
+	<h1>Coins Checker</h1>
+	
+	<table>
+		<tr><td>Host :</td><td><input type=text id="host" value=""></td></tr>
+		<tr><td>Database :</td><td><input type=text id="database"></td></tr>
+		<tr><td>User :</td><td><input type=text id="user"></td></tr>
+		<tr><td>Password :</td><td><input type=text id="password"></td></tr>
+	</table>	
+	<br>
+	
+	<table>
+		<tr><td>Address :</td><td><input style="width:600;font-size:12" type=text id="address">&nbsp;<button onclick="convert();">CONVERT</button></td></tr>
+		<tr><td>Max block :</td><td><input type=text id="block" value=100></td></tr>
+	</table>
+	<br>
+	<button onclick="query();">QUERY</button><br>
+	<br>
+	<textarea cols=100 rows=6 id=querystring>
+	
+	</textarea>
+	<br><br>
+	<button onclick="search();">SEARCH</button><br>
+	
+	<pre style="width:800;text-align:left;" id=output>
+		
+	
+	</pre>
+</center>
+
+<script type="text/javascript">
+	
+	function convert(){
+		var searchaddress = address.value;
+		if(searchaddress.startsWith("Mx")){
+			MDS.cmd("convert from:mx to:hex data:"+searchaddress,function(resp){
+				address.value = resp.response.conversion;
+			});
+		}
+	}
+	
+	function query(){
+		
+		//Get the details..
+		var mysqlhost 		= host.value;
+		var mysqldatabase 	= database.value;
+		var mysqluser 		= user.value;
+		var mysqlpassword	= password.value;
+		
+		//Set the cookie..
+		setCookie("mysqlhost",mysqlhost);
+		setCookie("mysqldatabase",mysqldatabase);
+		setCookie("mysqluser",mysqluser);
+		setCookie("mysqlpassword",mysqlpassword);
+		
+		//Which address to search
+		var searchaddress = address.value;
+		var maxblock 	  = block.value;
+		
+		var cmd = "mysqlcoins host:"+mysqlhost+" database:"+mysqldatabase
+		+" user:"+mysqluser+" password:"+mysqlpassword
+		+" action:search query:\"SELECT * FROM coins WHERE ( address='"+searchaddress+"' OR state LIKE '%"+searchaddress+"%' ) AND spent=0 AND blockcreated<"+maxblock+" ORDER BY blockcreated ASC\"";
+		
+		querystring.innerHTML = cmd;
+	}
+	
+	function search(){
+		
+		var query = querystring.value;
+		
+		MDS.cmd(query,function(resp){
+			
+			//Is it pending..
+			if(resp.pending){
+				alert("This MiniDAPP requires WRITE permissions\n\n (mysqlcoins is a WRITE function)");
+				return;
+			}
+			
+			MDS.log(JSON.stringify(resp));
+			
+			//Calculate the total
+			var len = resp.response.rows.length;
+			var total=0;
+			for(var i=0;i<len;i++){
+				total += +resp.response.rows[i].amountdouble;
+			}
+			
+			output.innerHTML = "COINS FOUND : "+len+"<br>TOTAL AMOUNT : "+total+"<br><br>"+JSON.stringify(resp,null,2);	
+		});
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//Check cookies..
+			host.value 		= getCookie("mysqlhost");
+			database.value 	= getCookie("mysqldatabase");
+			user.value 		= getCookie("mysqluser");
+			password.value 	= getCookie("mysqlpassword");
+		}
+	});
+
+</script>
+
+</body>
+
+</html>

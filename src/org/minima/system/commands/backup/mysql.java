@@ -57,6 +57,8 @@ public class mysql extends Command {
 				+ "\n"
 				+ "Additionally export the MySQL db to a gzip file for resyncing with 'reset' or 'archive' command.\n"
 				+ "\n"
+				+ "You can use setlogin to auto set the login details"
+				+ "\n"
 				+ "host:\n"
 				+ "    The ip:port (or name of Docker container) running the MySQL db.\n"
 				+ "\n"
@@ -79,6 +81,8 @@ public class mysql extends Command {
 				+ "    integrity : Check the block order and block parents are correct in the MySQL db.\n"
 				+ "    update : Update the MySQL db with the latest syncblocks from the node's archive db.\n"
 				+ "    addresscheck : Check the history of all the spent and unspent coins from an address.\n"
+				+ "    setlogin : Set the MySQL login details so you don't need to type them in every time.\n"
+				+ "    clearlogin : Clear MySQL login details.\n"
 				+ "    autobackup : Automatically save archive data to MySQL DB. Use with enable. Also stores all TxPoW the node sees.\n"
 				+ "    findtxpow : Search for an individual TxPoW (only works if autobackup is enabled).\n"
 				+ "    resync : Perform a chain or seed re-sync from the specified MySQL db.\n"
@@ -113,23 +117,25 @@ public class mysql extends Command {
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
+				+ "mysql ..LOGIN_DETAILS.. action:setlogin\n"
+				+ "\n"
 				+ "mysql host:mysqlhost:port database:archivedb user:archiveuser password:archivepassword action:info\n"
 				+ "\n"
 				+ "mysql host:dockermysql database:archivedb user:archiveuser password:archivepassword action:info\n"
 				+ "\n"
-				+ "mysql ..LOGIN_DETAILS.. action:integrity\n"
+				+ "mysql (If you have not setlogin)..LOGIN_DETAILS.. action:integrity\n"
 				+ "\n"
-				+ "mysql ..LOGIN_DETAILS.. action:update\n"
+				+ "mysql action:update\n"
 				+ "\n"
-				+ "mysql ..LOGIN_DETAILS.. action:addresscheck address:MxG08.. \n"
+				+ "mysql action:addresscheck address:MxG08.. \n"
 				+ "\n"
-				+ "mysql ..LOGIN_DETAILS.. action:resync\n"
+				+ "mysql action:resync\n"
 				+ "\n"
-				+ "mysql ..LOGIN_DETAILS.. action:findtxpow txpowid:0x00FFEEDD..\n"
+				+ "mysql action:findtxpow txpowid:0x00FFEEDD..\n"
 				+ "\n"
-				+ "mysql ..LOGIN_DETAILS.. action:resync phrase:\"24 WORDS HERE\" keys:90 keyuses:2000\n"
+				+ "mysql action:resync phrase:\"24 WORDS HERE\" keys:90 keyuses:2000\n"
 				+ "\n"
-				+ "mysql ..LOGIN_DETAILS.. action:h2export file:archivexport-DDMMYY.gzip\n";
+				+ "mysql action:h2export file:archivexport-DDMMYY.gzip\n";
 	}
 	
 	@Override
@@ -152,11 +158,27 @@ public class mysql extends Command {
 		String action = getParam("action","info");
 		
 		//Get the details
-		String host 		= getParam("host");
-		String db 			= getParam("database");
-		String user 		= getParam("user");
-		String password 	= getParam("password");
+		UserDB udb 			= MinimaDB.getDB().getUserDB();
 		
+		String host 		= "";
+		String db 			= "";
+		String user 		= "";
+		String password 	= "";
+		
+		boolean autologindetail = MinimaDB.getDB().getUserDB().getAutoLoginDetailsMySQL();
+		if(autologindetail) {
+			host 		= udb.getAutoMySQLHost();
+			db 			= udb.getAutoMySQLDB();
+			user 		= udb.getAutoMySQLUser();
+			password 	= udb.getAutoMySQLPassword();
+		}else {
+			host 		= getParam("host");
+			db 			= getParam("database");
+			user 		= getParam("user");
+			password 	= getParam("password");
+		}
+		
+		//Are logs enabled
 		boolean logs		= getBooleanParam("logs", true);
 		
 		//Get the login details..
@@ -201,6 +223,13 @@ public class mysql extends Command {
 			boolean autobackup = MinimaDB.getDB().getUserDB().getAutoBackupMySQL();
 			resp.put("autobackup", autobackup);
 			
+			boolean logindetails = MinimaDB.getDB().getUserDB().getAutoLoginDetailsMySQL();
+			resp.put("logindetails", logindetails);
+			resp.put("user", user);
+			resp.put("password", "***");
+			resp.put("host", host);
+			resp.put("database", db);
+			
 			ret.put("response", resp);
 		
 		}else if(action.equals("wipe")) {
@@ -210,9 +239,41 @@ public class mysql extends Command {
 			
 			ret.put("response", "MySQL DB Wiped..");
 		
-		}else if(action.equals("autobackup")) {
+		}else if(action.equals("setlogin")) {
 			
-			UserDB udb = MinimaDB.getDB().getUserDB();
+			udb.setAutoMySQLHost(host);
+			udb.setAutoMySQLDB(db);
+			udb.setAutoMySQLUser(user);
+			udb.setAutoMySQLPassword(password);
+			
+			udb.setAutoLoginDetailsMySQL(true);
+			
+			JSONObject resp = new JSONObject();
+			boolean autologin = udb.getAutoLoginDetailsMySQL();
+			resp.put("logindetails", autologin);
+			resp.put("user", user);
+			resp.put("password", "***");
+			resp.put("host", host);
+			resp.put("database", db);
+			
+			ret.put("response", resp);
+			
+		}else if(action.equals("clearlogin")) {
+			
+			udb.setAutoMySQLHost("");
+			udb.setAutoMySQLDB("");
+			udb.setAutoMySQLUser("");
+			udb.setAutoMySQLPassword("");
+			
+			udb.setAutoLoginDetailsMySQL(false);
+			
+			JSONObject resp = new JSONObject();
+			boolean autologin = udb.getAutoLoginDetailsMySQL();
+			resp.put("logindetails", autologin);
+			
+			ret.put("response", resp);
+			
+		}else if(action.equals("autobackup")) {
 			
 			boolean enable = getBooleanParam("enable");
 			udb.setAutoBackupMySQL(enable);
