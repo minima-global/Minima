@@ -63,7 +63,7 @@ public class NIOServer implements Runnable {
 		while(clients.hasMoreElements()) {
 			NIOClient client = clients.nextElement();
 			if(client != null) {
-				allclients.add(clients.nextElement());
+				allclients.add(client);
 			}
 		}
 		
