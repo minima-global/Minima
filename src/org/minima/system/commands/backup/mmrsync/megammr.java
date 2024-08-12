@@ -29,6 +29,7 @@ import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.CommandRunner;
+import org.minima.system.commands.base.newaddress;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
@@ -191,16 +192,14 @@ public class megammr extends Command {
 				throw new CommandException(exc.toString());
 			}
 			
-			//Get all your coin proofs..
-			//MinimaLogger.log("Get all your CoinProofs");
-			//MegaMMRSyncData mydata 			= megammrsync.getMyDetails();
-			//ArrayList<CoinProof> cproofs 	= megammrsync.getAllCoinProofs(mydata);
-			
 			//Now we have the file.. lets set it..
 			Main.getInstance().archiveResetReady(false);
 			
 			//Get ready..
 			MinimaDB.getDB().getMegaMMR().clear();
+			
+			//Now load the Mega MMR so is the current one..
+			MinimaDB.getDB().hardSetMegaMMR(mmrback.getMegaMMR());
 			
 			//Now process the IBD.. Override the restore setting
 			MinimaLogger.log("Process new IBD");
@@ -216,16 +215,17 @@ public class megammr extends Command {
 				}
 			}
 			
+			//Quick clean
+			MinimaLogger.log("System memory clean..");
+			System.gc();
+			
 			//Get the tree
 			TxPowTree tree = MinimaDB.getDB().getTxPoWTree();
 			TxPoW topblock = tree.getTip().getTxPoW();
 			MinimaLogger.log("Current Top Block : "+topblock.getBlockNumber());
 			
-			//Now load the Mega MMR so is the current one..
-			MinimaDB.getDB().hardSetMegaMMR(mmrback.getMegaMMR());
-			TxPoW rootblock = tree.getRoot().getTxPoW();
-			
 			//Now check..
+			TxPoW rootblock = tree.getRoot().getTxPoW();
 			MinimaLogger.log("Current Tree Root : "+rootblock.getBlockNumber());
 			
 			//And the Mega MMR
@@ -264,11 +264,6 @@ public class megammr extends Command {
 			
 			//Now shutdown and save everything
 			MinimaDB.getDB().saveAllDB();
-			
-			//Now save the Mega MMR..
-			//File basefolder = MinimaDB.getDB().getBaseDBFolder();
-	    	//File mmrfile 	= new File(basefolder,"megammr.mmr");
-	    	//mmrback.getMegaMMR().saveMMR(mmrfile);
 			
 			//And NOW shut down..
 			Main.getInstance().stopMessageProcessor();
@@ -340,9 +335,22 @@ public class megammr extends Command {
 			throw new CommandException("Invalid IBD");
 		}
 		
+		//Check start and end.. This is where the MEGA MMR finishes..
+		MiniNumber lastblock = mmr.getBlockTime();
+		
 		//Load the IBD into the MMR..
 		ArrayList<TxBlock> blocks = mmrback.getIBD().getTxBlocks();
 		for(TxBlock block : blocks) {
+			
+			//Check is the next in line.. 
+			MiniNumber blknum = block.getTxPoW().getBlockNumber(); 
+			if(!blknum.isEqual(lastblock.increment())) {
+				throw new CommandException("Invalid block number.. not incremental.. last_in_mega:"+lastblock+" new_block:"+blknum);
+			}
+			
+			//Store for later
+			lastblock = blknum;
+			
 			//Add to the MegaMMR..
 			mega.addBlock(block);
 		}
@@ -394,6 +402,6 @@ public class megammr extends Command {
 	}
 	
 	public static void main(String[] zArgs) throws Exception {
-		checkMegaMMR(new File("./bin/megammrJune27.mmr"));
+		checkMegaMMR(new File("./bin/minima_megammr.mmr"));
 	}
 }
