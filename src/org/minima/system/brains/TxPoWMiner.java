@@ -104,7 +104,7 @@ public class TxPoWMiner extends MessageProcessor {
 				newnonce 		  = newnonce.add(BigInteger.ONE);
 				
 				//Copy these into the byte array of the TxHeader 
-				//start 2 numbers in so leading zero is not changed
+				//start 4 numbers in so leading zero is not changed
 				System.arraycopy(noncebytes, 0, data, 4, noncebytes.length);
 				
 				//Hash the data array
@@ -260,6 +260,10 @@ public class TxPoWMiner extends MessageProcessor {
 	 * Mine a TxPoW - Used to Mine Maxima Messages
 	 */
 	public boolean MineMaxTxPoW(boolean zMaxima, TxPoW zTxPoW, long zTimeLimit) {
+		return MineMaxTxPoW(zMaxima, zTxPoW, zTimeLimit, true);
+	}
+	
+	public boolean MineMaxTxPoW(boolean zMaxima, TxPoW zTxPoW, long zTimeLimit, boolean zPost) {
 		
 		//What is the time..
 		long timenow = System.currentTimeMillis();
@@ -281,7 +285,6 @@ public class TxPoWMiner extends MessageProcessor {
 		//Get the byte data
 		byte[] data = MiniData.getMiniDataVersion(zTxPoW.getTxHeader()).getBytes();
 		
-		
 		//Cycle until done..
 		MiniNumber finalnonce 	= MiniNumber.ZERO;
 		BigInteger newnonce 	= BigInteger.ZERO;
@@ -293,7 +296,7 @@ public class TxPoWMiner extends MessageProcessor {
 			newnonce 		  = newnonce.add(BigInteger.ONE);
 			
 			//Copy these into the byte array of the TxHeader 
-			//start 2 numbers in so leading zero is not changed
+			//start 4 numbers in so leading zero is not changed
 			System.arraycopy(noncebytes, 0, data, 4, noncebytes.length);
 			
 			//Hash the data array
@@ -344,8 +347,10 @@ public class TxPoWMiner extends MessageProcessor {
 		}
 		
 		//Post it on..
-		Main.getInstance().PostMessage(new Message(Main.MAIN_TXPOWMINED).addObject("txpow", zTxPoW));
-
+		if(zPost) {
+			Main.getInstance().PostMessage(new Message(Main.MAIN_TXPOWMINED).addObject("txpow", zTxPoW));
+		}
+		
 		//Remove the coins from our mining list
 		removeMiningCoins(zTxPoW);
 		

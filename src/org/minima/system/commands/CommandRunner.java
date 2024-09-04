@@ -110,6 +110,7 @@ import org.minima.system.commands.txn.txnimport;
 import org.minima.system.commands.txn.txninput;
 import org.minima.system.commands.txn.txnlist;
 import org.minima.system.commands.txn.txnlock;
+import org.minima.system.commands.txn.txnmine;
 import org.minima.system.commands.txn.txnmmr;
 import org.minima.system.commands.txn.txnoutput;
 import org.minima.system.commands.txn.txnpost;
@@ -159,7 +160,7 @@ public class CommandRunner {
 			new txnbasics(),new txncreate(), new txninput(),new txnlist(), new txnclear(),
 			new txnoutput(),new txnstate(),new txnsign(),new txnpost(),new txndelete(),
 			new txnexport(),new txnimport(),new txncheck(), new txnscript(), new txnauto(),
-			new txnaddamount(),new txnlock(), new txnmmr(),
+			new txnaddamount(),new txnlock(), new txnmmr(), new txnmine(),
 			
 			new coinimport(), new coinexport(),new cointrack(), new coincheck(),
 			

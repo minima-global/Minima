@@ -10,31 +10,34 @@ import org.minima.utils.json.JSONObject;
 public class txnlock extends Command {
 
 	public txnlock() {
-		super("txnlock","[id:] [port:] [value:] - Add a state variable");
+		super("txnlock","(action) (timeout) (unlockdelay) - Gain a lock. Stops multiple txnfunctions occuring simultaneously");
 	}
 	
 	@Override
 	public String getFullHelp() {
-		return "\ntxnstate\n"
+		return "\txnlock\n"
 				+ "\n"
-				+ "Add a state variable to a transaction.\n"
+				+ "When creating multiple transactions asynchronously you can ensure each is created one at a time.\n"
 				+ "\n"
-				+ "id:\n"
-				+ "    The id of the transaction.\n"
+				+ "action:\n"
+				+ "    lock - Gain a lock\n"
+				+ "    unlock - Release lock\n"
+				+ "    list/blank - Are we locked\n"
 				+ "\n"
-				+ "port:\n"
-				+ "    Port number of the state variable, from 0-255.\n"
+				+ "timeout:\n"
+				+ "    How long to wait for the lock\n"
 				+ "\n"
-				+ "value:\n"
-				+ "    Value for the state variable.\n"
+				+ "unlockdelay:\n"
+				+ "    Wait this amount of milli after unlock.\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
-				+ "txnstate id:multisig port:0 value:0xFED5..\n"
+				+ "txnlock\n"
 				+ "\n"
-				+ "txnstate id:multisig port:1 value:100 \n"
+				+ "txnlock action:lock timeout:10000\n"
 				+ "\n"
-				+ "txnstate id:multisig port:1 value:\"string\" \n";
+				+ "txnlock action:unlock unlockdelay:5000\n"
+				+ "\n";
 	}
 	
 	@Override
