@@ -1009,6 +1009,18 @@ public class Main extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(MAIN_NETRESTART)) {
 			
+			MinimaLogger.log("[!] MAIN restart networking..");
+			
+			//First disconnect everyone..
+			MinimaLogger.log("Disconnect all peers");
+			Main.getInstance().getNetworkManager().getNIOManager().PostMessage(NIOManager.NIO_DISCONNECTALL);
+			
+			//Now wait..
+			Thread.sleep(20000);
+			
+			//Reset the IBD timer
+			getTxPoWProcessor().resetFirstIBDTimer();
+			
 			//Restart the Networking..
 			restartNIO();
 

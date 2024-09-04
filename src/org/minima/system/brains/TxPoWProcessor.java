@@ -55,6 +55,10 @@ public class TxPoWProcessor extends MessageProcessor {
 		super("TXPOWPROCESSOR");
 	}
 	
+	public void resetFirstIBDTimer() {
+		mFirstIBD = System.currentTimeMillis();
+	}
+	
 	/**
 	 * Main entry point for a TxPoW into the system
 	 */
