@@ -1016,6 +1016,7 @@ public class Main extends MessageProcessor {
 			Main.getInstance().getNetworkManager().getNIOManager().PostMessage(NIOManager.NIO_DISCONNECTALL);
 			
 			//Now wait..
+			MinimaLogger.log("Wait 20 seconds..");
 			Thread.sleep(20000);
 			
 			//Reset the IBD timer
