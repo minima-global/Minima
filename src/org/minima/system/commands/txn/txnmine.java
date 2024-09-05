@@ -69,8 +69,6 @@ public class txnmine extends Command {
 		//Calculate the size..
 		txpow.calculateTXPOWID();
 		
-		MinimaLogger.log("NONCE PREMINE : "+txpow.getTxHeader().mNonce);
-		
 		//Now Mine it BUT dont POST it..
 		boolean success = Main.getInstance().getTxPoWMiner().MineMaxTxPoW(false, txpow, 120000, false);
 		
@@ -78,13 +76,12 @@ public class txnmine extends Command {
 			throw new CommandException("FAILED TO MINE txn in 120 seconds !?");
 		}
 		
-		//MinimaLogger.log("NONCE POSTMINE : "+txpow.getTxHeader().mNonce);
-		
 		//Now convert to DATA
 		MiniData txdata = MiniData.getMiniDataVersion(txpow);
 		
 		//Return the MINED txn..
 		JSONObject resp = new JSONObject();
+		resp.put("txpowid", txpow.getTxPoWID());
 		resp.put("data", txdata.to0xString());
 		ret.put("response", resp);
 		

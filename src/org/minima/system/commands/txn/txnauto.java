@@ -33,12 +33,12 @@ import org.minima.utils.json.JSONObject;
 public class txnauto extends Command {
 
 	public txnauto() {
-		super("txnauto","[id:] [amount:] [address:] (tokenid:) (txnsign:) - Create a transaction automatically");
+		super("txnauto","[id:] [amount:] [address:] (tokenid:) (sign:) (burn:) - Create a transaction automatically");
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id","amount","address","tokenid","txnsign"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","amount","address","tokenid","sign","burn"}));
 	}
 	
 	@Override
@@ -53,7 +53,13 @@ public class txnauto extends Command {
 		String address 		= getAddressParam("address");
 		MiniNumber amount 	= getNumberParam("amount");
 		String tokenid 		= getAddressParam("tokenid", "0x00");
-		boolean sign 		= getBooleanParam("txnsign",false);
+		boolean sign 		= getBooleanParam("sign",false);
+		
+		//Get the BURN
+		MiniNumber burn 	= getNumberParam("burn",MiniNumber.ZERO);
+		if(burn.isMore(MiniNumber.ZERO) && !tokenid.equals("0x00")) {
+			throw new CommandException("Currently BURN on precreated transactions only works for Minima.. tokenid:0x00.. not tokens.");
+		}
 		
 		if(db.getTransactionRow(id) != null) {
 			throw new CommandException("Txn with this ID already exists : "+id);
@@ -62,7 +68,7 @@ public class txnauto extends Command {
 		db.createTransaction(id);
 		
 		//Add the mounts..
-		String command = "txnaddamount id:"+id+" address:"+address+" amount:"+amount+" tokenid:"+tokenid;
+		String command = "txnaddamount id:"+id+" burn:"+burn+" address:"+address+" amount:"+amount+" tokenid:"+tokenid;
 		JSONObject result = CommandRunner.getRunner().runSingleCommand(command); 
 		if(!(boolean)result.get("status")) {
 			

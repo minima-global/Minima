@@ -33,13 +33,13 @@ public class createfrom extends Command {
 	}
 	
 	public createfrom() {
-		super("createfrom","[fromaddress:] [address:] [amount:] (tokenid:) [script:] - Create unsigned txn from a certain address");
+		super("createfrom","[fromaddress:] [address:] [amount:] (tokenid:) [script:] (burn:) - Create unsigned txn from a certain address");
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"fromaddress","address",
-				"amount","tokenid","script"}));
+				"amount","tokenid","script","burn"}));
 	}
 	
 	@Override
@@ -52,6 +52,12 @@ public class createfrom extends Command {
 		MiniNumber amount 	= getNumberParam("amount");
 		String tokenid 		= getAddressParam("tokenid", "0x00");
 		
+		//Get the BURN
+		MiniNumber burn 	= getNumberParam("burn",MiniNumber.ZERO);
+		if(burn.isMore(MiniNumber.ZERO) && !tokenid.equals("0x00")) {
+			throw new CommandException("Currently BURN on precreated transactions only works for Minima.. tokenid:0x00.. not tokens.");
+		}
+		
 		//Thew script of the address
 		String script 		= getParam("script");
 		
@@ -62,7 +68,7 @@ public class createfrom extends Command {
 		JSONObject result 	= runCommand("txncreate id:"+randomid);
 		
 		//Add the mounts..
-		String command 		= "txnaddamount id:"+randomid+" fromaddress: "+fromaddress+" address:"+toaddress+" amount:"+amount+" tokenid:"+tokenid;
+		String command 		= "txnaddamount id:"+randomid+" burn:"+burn+" fromaddress: "+fromaddress+" address:"+toaddress+" amount:"+amount+" tokenid:"+tokenid;
 		result = runCommand(command);
 		if(!(boolean)result.get("status")) {
 			

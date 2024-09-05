@@ -19,13 +19,45 @@ import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.send.send;
 import org.minima.system.params.GeneralParams;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class txnaddamount extends Command {
-
+	
+	//Are certain coins locked / already used.. so don't use 
+	public static ArrayList<String> LOCKED_COINS 	= new ArrayList<>();
+	public static boolean LOCKED_COINS_ENABLED 		= false;
+	
+	public static void enableCoinLock(boolean zCoinLockEnabled) {
+		LOCKED_COINS_ENABLED = zCoinLockEnabled;
+		if(!LOCKED_COINS_ENABLED) {
+			clearCoinLocked();
+		}
+	}
+	public static boolean isCoinLockEnabled() {
+		return LOCKED_COINS_ENABLED;
+	}
+	public static void addCoinLock(String zCoinID) {
+		if(LOCKED_COINS_ENABLED) {
+			if(!isCoinLocked(zCoinID)) {
+				LOCKED_COINS.add(zCoinID);
+			}
+		}
+	}
+	public static boolean isCoinLocked(String zCoinID) {
+		if(!LOCKED_COINS_ENABLED) {
+			return false;
+		}
+		return LOCKED_COINS.contains(zCoinID);
+	}
+	public static void clearCoinLocked() {
+		LOCKED_COINS.clear();
+	}
+	
+	
 	public txnaddamount() {
-		super("txnaddamount","[id:] [amount:] (address) (onlychange:) (tokenid:) - Add inputs and calculate change for a certain amount");
+		super("txnaddamount","[id:] [amount:] (address) (onlychange:) (tokenid:) (burn:) - Add inputs and calculate change for a certain amount");
 	}
 	
 	@Override
@@ -34,13 +66,15 @@ public class txnaddamount extends Command {
 				+ "\n"
 				+ "Add a certain amount to a transaction.\n"
 				+ "\n"
+				+ "Use in conjunction with txncoinlock to create multiple offline transactions.\n"
+				+ "\n"
 				+ "Output amount to an address OR only the change - if you have already added an output\n"
 				+ "\n";
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id","amount","address","onlychange","tokenid","fromaddress"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","amount","address","onlychange","tokenid","fromaddress","burn"}));
 	}
 	
 	@Override
@@ -66,6 +100,12 @@ public class txnaddamount extends Command {
 					throw new CommandException("Token not found : "+tokenid);
 				}
 			}
+		}
+		
+		//Get the BURN
+		MiniNumber burn 	= getNumberParam("burn",MiniNumber.ZERO);
+		if(burn.isMore(MiniNumber.ZERO) && !tokenid.equals("0x00")) {
+			throw new CommandException("Currently BURN on precreated transactions only works for Minima.. tokenid:0x00.. not tokens.");
 		}
 		
 		//The actual amount
@@ -131,6 +171,27 @@ public class txnaddamount extends Command {
 			
 		}
 		
+		//Now check for locked Coins..
+		if(isCoinLockEnabled()) {
+			
+			MinimaLogger.log("COINS LOCKED CHECKING.. "+LOCKED_COINS.toString());
+			
+			//Scan through and remove locked coins..
+			ArrayList<Coin> validcoins = new ArrayList<>();
+			for(Coin cc : coins) {
+				MinimaLogger.log("COIN.. "+cc.getCoinID().to0xString());
+				
+				if(!isCoinLocked(cc.getCoinID().to0xString())) {
+					validcoins.add(cc);
+				}
+			}
+			
+			//And switcheroo
+			coins = validcoins;
+		}else {
+			MinimaLogger.log("COINS LOCKED DISABLED");
+		}
+		
 		//Get just this number..
 		ArrayList<Coin> finalcoins = send.selectCoins(coins, tokenamount);
 		
@@ -155,6 +216,11 @@ public class txnaddamount extends Command {
 		//OK - Now add all these coins..
 		for(Coin cc : finalcoins) {
 			trans.addInput(cc);
+			
+			//Add if locked
+			if(isCoinLockEnabled()) {
+				addCoinLock(cc.getCoinID().to0xString());
+			}
 		}
 		
 		//And add the output
