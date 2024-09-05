@@ -103,8 +103,8 @@ public class txnaddamount extends Command {
 		}
 		
 		//Get the BURN
-		MiniNumber burn 	= getNumberParam("burn",MiniNumber.ZERO);
-		if(burn.isMore(MiniNumber.ZERO) && !tokenid.equals("0x00")) {
+		MiniNumber burn = getNumberParam("burn",MiniNumber.ZERO);
+		if(burn.isMore(MiniNumber.ZERO) && !tokenid.isEqual(Token.TOKENID_MINIMA)) {
 			throw new CommandException("Currently BURN on precreated transactions only works for Minima.. tokenid:0x00.. not tokens.");
 		}
 		
@@ -174,8 +174,6 @@ public class txnaddamount extends Command {
 		//Now check for locked Coins..
 		if(isCoinLockEnabled()) {
 			
-			MinimaLogger.log("COINS LOCKED CHECKING.. "+LOCKED_COINS.toString());
-			
 			//Scan through and remove locked coins..
 			ArrayList<Coin> validcoins = new ArrayList<>();
 			for(Coin cc : coins) {
@@ -188,12 +186,11 @@ public class txnaddamount extends Command {
 			
 			//And switcheroo
 			coins = validcoins;
-		}else {
-			MinimaLogger.log("COINS LOCKED DISABLED");
 		}
 		
 		//Get just this number..
-		ArrayList<Coin> finalcoins = send.selectCoins(coins, tokenamount);
+		MiniNumber amountplusburn  = tokenamount.add(burn);
+		ArrayList<Coin> finalcoins = send.selectCoins(coins, amountplusburn);
 		
 		//How much added..
 		MiniNumber totaladded = MiniNumber.ZERO;
@@ -205,11 +202,12 @@ public class txnaddamount extends Command {
 		MiniNumber change = totaladded.sub(tokenamount);
 		
 		//Do we have the cash
-		if(change.isLess(MiniNumber.ZERO)) {
+		if(change.isLess(burn)) {
 			MiniNumber total = totaladded;
 			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
 				total = token.getScaledTokenAmount(total);
 			}
+			
 			throw new CommandException("Not enough funds! Current balance : "+total);
 		}		
 		
@@ -236,7 +234,8 @@ public class txnaddamount extends Command {
 			trans.addOutput(maincoin);
 		}
 		
-		if(!change.isEqual(MiniNumber.ZERO)) {
+		MiniNumber finalchange = change.sub(burn);
+		if(finalchange.isMore(MiniNumber.ZERO)) {
 			
 			//Get a new address
 			ScriptRow newwalletaddress = MinimaDB.getDB().getWallet().getDefaultAddress();
@@ -246,7 +245,7 @@ public class txnaddamount extends Command {
 			}
 			
 			//Change coin does not keep the state
-			Coin changecoin = new Coin(Coin.COINID_OUTPUT, chgaddress, change, tokenid, false);
+			Coin changecoin = new Coin(Coin.COINID_OUTPUT, chgaddress, finalchange, tokenid, false);
 			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
 				changecoin.setToken(token);
 			}

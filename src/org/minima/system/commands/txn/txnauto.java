@@ -72,6 +72,9 @@ public class txnauto extends Command {
 		JSONObject result = CommandRunner.getRunner().runSingleCommand(command); 
 		if(!(boolean)result.get("status")) {
 			
+			//Delete the txn..
+			db.deleteTransaction(id);
+			
 			//Not enough funds!
 			throw new CommandException(result.getString("error"));
 		}
@@ -91,6 +94,9 @@ public class txnauto extends Command {
 			command = "txnsign id:"+id+" publickey:auto";
 			result = CommandRunner.getRunner().runSingleCommand(command); 
 			if(!(boolean)result.get("status")) {
+				
+				//Delete the txn..
+				db.deleteTransaction(id);
 				
 				//Not enough funds!
 				throw new CommandException(result.getString("error"));
