@@ -26,45 +26,72 @@ import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.CommandRunner;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.json.JSONObject;
 
 public class txnauto extends Command {
 
 	public txnauto() {
-		super("txnauto","[id:] [amount:] [address:] - Create a send transaction automatically");
+		super("txnauto","[id:] [amount:] [address:] (tokenid:) (txnsign:) - Create a transaction automatically");
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id","amount","address"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","amount","address","tokenid","txnsign"}));
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception {
 		
-		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
+		JSONObject ret = getJSONReply();
 		
-		//The transaction
-		String id = getParam("id");
+		TxnDB db  = MinimaDB.getDB().getCustomTxnDB();
 		
-		//The details..
+		//Params
+		String id 			= getParam("id");
 		String address 		= getAddressParam("address");
-		MiniNumber amount	= getNumberParam("amount");
+		MiniNumber amount 	= getNumberParam("amount");
+		String tokenid 		= getAddressParam("tokenid", "0x00");
+		boolean sign 		= getBooleanParam("txnsign",false);
 		
 		if(db.getTransactionRow(id) != null) {
 			throw new CommandException("Txn with this ID already exists : "+id);
 		}
 		
-		//Create the Txn
 		db.createTransaction(id);
 		
-		//And now add all the relevant coins..
+		//Add the mounts..
+		String command = "txnaddamount id:"+id+" address:"+address+" amount:"+amount+" tokenid:"+tokenid;
+		JSONObject result = CommandRunner.getRunner().runSingleCommand(command); 
+		if(!(boolean)result.get("status")) {
+			
+			//Not enough funds!
+			throw new CommandException(result.getString("error"));
+		}
 		
+		//Now sort the scripts and MMR
+		TxnRow txnrow = db.getTransactionRow(id); 
 		
+		//Get the Transaction
+		Transaction trans = txnrow.getTransaction();
+		Witness wit		  = txnrow.getWitness();
 		
+		//Set the MMR data and Scripts
+		txnutils.setMMRandScripts(trans, wit);
+	
+		//Do we sign..
+		if(sign) {
+			command = "txnsign id:"+id+" publickey:auto";
+			result = CommandRunner.getRunner().runSingleCommand(command); 
+			if(!(boolean)result.get("status")) {
+				
+				//Not enough funds!
+				throw new CommandException(result.getString("error"));
+			}
+		}
 		
-		JSONObject ret = getJSONReply();
+		//Output the current trans..
 		ret.put("response", db.getTransactionRow(id).toJSON());
 		
 		return ret;
