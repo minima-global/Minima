@@ -26,28 +26,40 @@ import org.minima.utils.json.JSONObject;
 public class txnmine extends Command {
 
 	public txnmine() {
-		super("txnmine","[id:] - Mine a txn but don't post it");
+		super("txnmine","(id:) (data:) - Mine a txn but don't post it from either ID or txnexport Data");
 	}
 	
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","data"}));
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 
-		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
+		TxnDB db 		= MinimaDB.getDB().getCustomTxnDB();
+		TxnRow txnrow 	= null;
 		
-		//The transaction
-		String id 			= getParam("id");
+		//Are we loading from ID or from data..
+		if(existsParam("id")) {
+			//The transaction
+			String id 			= getParam("id");
+			
+			//Get the Transaction
+			txnrow 	= db.getTransactionRow(getParam("id"));
+			if(txnrow == null) {
+				throw new CommandException("Transaction not found : "+id);
+			}
 		
-		//Get the Transaction
-		TxnRow txnrow 	= db.getTransactionRow(getParam("id"));
-		if(txnrow == null) {
-			throw new CommandException("Transaction not found : "+id);
+		}else {
+			
+			//Get the HEX data
+			MiniData dv = getDataParam("data");
+			
+			//Convert to a TxnRow
+			txnrow = TxnRow.convertMiniDataVersion(dv);
 		}
 		
 		//Clear any previous checks..

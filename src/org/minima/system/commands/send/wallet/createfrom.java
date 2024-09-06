@@ -13,25 +13,6 @@ import org.minima.utils.json.JSONObject;
 
 public class createfrom extends Command {
 
-	public class AddressAmount {
-		
-		MiniData 	mAddress;
-		MiniNumber 	mAmount;
-		
-		public AddressAmount(MiniData zAddress, MiniNumber zAmount) {
-			mAddress 	= zAddress;
-			mAmount		= zAmount;
-		}
-		
-		public MiniData getAddress(){
-			return mAddress;
-		}
-		
-		public MiniNumber getAmount() {
-			return mAmount;
-		}
-	}
-	
 	public createfrom() {
 		super("createfrom","[fromaddress:] [address:] [amount:] (tokenid:) [script:] (burn:) - Create unsigned txn from a certain address");
 	}

@@ -12,25 +12,6 @@ import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class sendfrom extends Command {
-
-	public class AddressAmount {
-		
-		MiniData 	mAddress;
-		MiniNumber 	mAmount;
-		
-		public AddressAmount(MiniData zAddress, MiniNumber zAmount) {
-			mAddress 	= zAddress;
-			mAmount		= zAmount;
-		}
-		
-		public MiniData getAddress(){
-			return mAddress;
-		}
-		
-		public MiniNumber getAmount() {
-			return mAmount;
-		}
-	}
 	
 	public sendfrom() {
 		super("sendfrom","[fromaddress:] [address:] [amount:] (tokenid:) [script:] [privatekey:] [keyuses:] (burn:) (mine:) - Send Minima or Tokens from a certain address");
