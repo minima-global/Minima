@@ -197,10 +197,10 @@ public class txnaddamount extends Command {
 		}
 		
 		//Is there change..
-		MiniNumber change = totaladded.sub(tokenamount);
+		MiniNumber change = totaladded.sub(amountplusburn);
 		
 		//Do we have the cash
-		if(change.isLess(burn)) {
+		if(change.isLess(MiniNumber.ZERO)) {
 			MiniNumber total = totaladded;
 			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
 				total = token.getScaledTokenAmount(total);
@@ -232,8 +232,7 @@ public class txnaddamount extends Command {
 			trans.addOutput(maincoin);
 		}
 		
-		MiniNumber finalchange = change.sub(burn);
-		if(finalchange.isMore(MiniNumber.ZERO)) {
+		if(change.isMore(MiniNumber.ZERO)) {
 			
 			//Get a new address
 			ScriptRow newwalletaddress = MinimaDB.getDB().getWallet().getDefaultAddress();
@@ -243,7 +242,7 @@ public class txnaddamount extends Command {
 			}
 			
 			//Change coin does not keep the state
-			Coin changecoin = new Coin(Coin.COINID_OUTPUT, chgaddress, finalchange, tokenid, false);
+			Coin changecoin = new Coin(Coin.COINID_OUTPUT, chgaddress, change, tokenid, false);
 			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
 				changecoin.setToken(token);
 			}
