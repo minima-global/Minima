@@ -177,8 +177,6 @@ public class txnaddamount extends Command {
 			//Scan through and remove locked coins..
 			ArrayList<Coin> validcoins = new ArrayList<>();
 			for(Coin cc : coins) {
-				MinimaLogger.log("COIN.. "+cc.getCoinID().to0xString());
-				
 				if(!isCoinLocked(cc.getCoinID().to0xString())) {
 					validcoins.add(cc);
 				}
