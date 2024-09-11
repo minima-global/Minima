@@ -8,6 +8,7 @@ import org.minima.objects.Coin;
 import org.minima.objects.Token;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.CommandRunner;
@@ -18,13 +19,13 @@ import org.minima.utils.json.JSONObject;
 public class constructfrom extends Command {
 
 	public constructfrom() {
-		super("constructfrom","[coinlist:] [script:] [toaddress:] [toamount:] [changeaddress:] [changeamount:] - Create unsigned txn from a list of coins");
+		super("constructfrom","[coinlist:] [script:] [toaddress:] [toamount:] [changeaddress:] [changeamount:] (tokenid:) - Create unsigned txn from a list of coins");
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"coinlist","script","toaddress",
-				"toamount","changeaddress","changeamount"}));
+				"toamount","changeaddress","changeamount","tokenid"}));
 	}
 	
 	@Override
@@ -40,6 +41,9 @@ public class constructfrom extends Command {
 		
 		MiniNumber changeamount = getNumberParam("changeamount");
 		String changeaddress 	= getAddressParam("changeaddress");
+		
+		//Could be a token..
+		String tokenid 			= getParam("tokenid", "0x00");
 		
 		//ID of the custom transaction
 		String randomid 	= MiniData.getRandomData(32).to0xString();
@@ -68,11 +72,11 @@ public class constructfrom extends Command {
 		}
 		
 		//Add the output coin..
-		result 	= runCommand("txnoutput id:"+randomid+" address:"+toaddress+" amount:"+toamount);
+		result 	= runCommand("txnoutput id:"+randomid+" address:"+toaddress+" amount:"+toamount+" tokenid:"+tokenid);
 		
 		//Add the change
 		if(changeamount.isMore(MiniNumber.ZERO)) {
-			result 	= runCommand("txnoutput id:"+randomid+" address:"+changeaddress+" amount:"+changeamount);
+			result 	= runCommand("txnoutput id:"+randomid+" address:"+changeaddress+" amount:"+changeamount+" tokenid:"+tokenid);
 		}
 		
 		//Add the scripts..
