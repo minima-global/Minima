@@ -67,7 +67,7 @@ public class createfrom extends Command {
 		runCommand("txnmmr id:"+randomid);
 		
 		//Now export the txn..
-		result = runCommand("txnexport id:"+randomid);
+		result = runCommand("txnexport id:"+randomid+" showtxn:true");
 		
 		//And delete..
 		runCommand("txndelete id:"+randomid);

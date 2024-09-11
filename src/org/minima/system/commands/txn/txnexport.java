@@ -43,7 +43,7 @@ public class txnexport extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id","file"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","file","showtxn"}));
 	}
 	
 	@Override
@@ -53,6 +53,8 @@ public class txnexport extends Command {
 		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
 		
 		String id   = getParam("id");
+		
+		boolean showtxn = getBooleanParam("showtxn", false);
 		
 		//Get the Transaction..
 		TxnRow txnrow 	= db.getTransactionRow(getParam("id"));
@@ -84,6 +86,11 @@ public class txnexport extends Command {
 			MiniData dv = MiniData.getMiniDataVersion(txnrow);
 			
 			JSONObject resp = new JSONObject();
+			
+			if(showtxn) {
+				resp.put("txn", txnrow.toJSON());	
+			}
+			
 			resp.put("data", dv.to0xString());
 			ret.put("response", resp);
 		}
