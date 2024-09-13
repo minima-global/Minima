@@ -296,6 +296,11 @@ public class GeneralParams {
 	public static boolean MYSQL_STORE_ALLTXPOW = false;
 	
 	/**
+	 * Hard set the Public MDS UID
+	 */
+	public static String PUBLICMDS_SESSION_UID = "";
+	
+	/**
 	 * Reset all params to their default settings.. ANDROID keeps them after shutdown
 	 */
 	public static void resetDefaults() {
@@ -347,19 +352,20 @@ public class GeneralParams {
 		BLOCK_LOGS = false;
 		ARCHIVESYNC_LIMIT_BANDWIDTH = false;
 		RPC_CRLF = false;
-		DEFAULT_MINIDAPPS 	= true;
-		RPC_ENABLED 		= false;
-		RPC_AUTHENTICATE 	= false;
-		RPC_SSL				= false;
-		RPC_AUTHSTYLE 		= "basic";
-		RPC_PASSWORD 		= "none";
-		SEED_PHRASE 		= "";
-		PEERSCHECKER_lOG 	= false;
-		IS_MEGAMMR 			= false;
-		NOTIFY_ALL_TXPOW 	= false;
-		RESCUE_MEGAMMR_NODE	= "";
-		MDS_NOSSL 			 = false;
-		MYSQL_STORE_ALLTXPOW = false;
+		DEFAULT_MINIDAPPS 	  = true;
+		RPC_ENABLED 		  =  false;
+		RPC_AUTHENTICATE 	  = false;
+		RPC_SSL				  = false;
+		RPC_AUTHSTYLE 		  = "basic";
+		RPC_PASSWORD 		  = "none";
+		SEED_PHRASE 		  = "";
+		PEERSCHECKER_lOG 	  = false;
+		IS_MEGAMMR 			  = false;
+		NOTIFY_ALL_TXPOW 	  = false;
+		RESCUE_MEGAMMR_NODE	  = "";
+		MDS_NOSSL 			  = false;
+		MYSQL_STORE_ALLTXPOW  = false;
+		PUBLICMDS_SESSION_UID = "";
 	}
 	
 }

@@ -630,7 +630,11 @@ public class MDSManager extends MessageProcessor {
 			}
 			
 			//Create the Public SessionID
-			mPublicMiniSessionID = MiniData.getRandomData(128).to0xString();
+			if(GeneralParams.PUBLICMDS_SESSION_UID.equals("")) {
+				mPublicMiniSessionID = MiniData.getRandomData(128).to0xString();
+			}else {
+				mPublicMiniSessionID = new String(GeneralParams.PUBLICMDS_SESSION_UID);
+			}
 			
 			//Install the default MiniHUB..
 			doDefaultMiniHUB();
