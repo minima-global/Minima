@@ -78,11 +78,22 @@ var MDS = {
 		
 		//Are we HTTP or HTTPS
 		if(window.location.protocol.startsWith("https")){
-			MDS.filehost = "https://"+host+":"+port+"/";
-			MDS.mainhost = "https://"+host+":"+port+"/mdscommand_/";
+			if(port == 0){
+				MDS.filehost = "https://"+host+"/";
+				MDS.mainhost = "https://"+host+"/mdscommand_/";
+			}else{
+				MDS.filehost = "https://"+host+":"+port+"/";
+				MDS.mainhost = "https://"+host+":"+port+"/mdscommand_/";	
+			}
+			
 		}else{
-			MDS.filehost = "http://"+host+":"+port+"/";
-			MDS.mainhost = "http://"+host+":"+port+"/mdscommand_/";
+			if(port == 0){
+				MDS.filehost = "http://"+host+"/";
+				MDS.mainhost = "http://"+host+"/mdscommand_/";
+			}else{
+				MDS.filehost = "http://"+host+":"+port+"/";
+				MDS.mainhost = "http://"+host+":"+port+"/mdscommand_/";	
+			}
 		}
 		
 		MDS.log("MDS HOST  : "+MDS.filehost);
