@@ -3,6 +3,8 @@ package org.minima.system.mds.publicmds;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.minidapps.MiniDAPP;
@@ -36,6 +38,14 @@ public class MDSPublicPage {
 			}
 		}
 		
+		//Sort alphabetically..
+		Collections.sort(publicmini, new Comparator<MiniDAPP>() {
+			@Override
+			public int compare(MiniDAPP o1, MiniDAPP o2) {
+				return o1.getName().compareTo(o2.getName());
+			}			
+		});
+		
 		//Get the base file..
 		String fileRequested = loadResouceFile("publicmds/index_gen.html");
 		
@@ -49,10 +59,14 @@ public class MDSPublicPage {
 		
 		String divlist = "";
 		
+		
 		for(MiniDAPP mini : zMinis) {
 			
+			String icon = "../"+mini.getUID()+"/"+mini.getIcon();
+			
 			divlist += "<div id=\"publicminidapp_"+mini.getUID()+"\">"
-					+ "<button class='button-56' onclick=\"opendapp('"+mini.getUID()+"');\">"+mini.getName()+"</button><br>"
+					+ "<button class='button-56' onclick=\"opendapp('"+mini.getUID()+"');\">"
+					+ "<img width=50 src='"+icon+"'>&nbsp;&nbsp;"+mini.getName()+"</button><br>"
 					+ "</div>";
 		}
 		
