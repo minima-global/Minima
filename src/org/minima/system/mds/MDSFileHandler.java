@@ -26,6 +26,7 @@ import org.minima.system.Main;
 import org.minima.system.mds.multipart.MultipartData;
 import org.minima.system.mds.multipart.MultipartParser;
 import org.minima.system.mds.polling.PollStack;
+import org.minima.system.mds.publicmds.MDSPublicPage;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
@@ -60,6 +61,11 @@ public class MDSFileHandler implements Runnable {
 	static long mLastInvalidIDException = 0;
 	
 	/**
+	 * The Public Pages
+	 */
+	MDSPublicPage mPublicMDS;
+	
+	/**
 	 * Main Constructor
 	 * @param zSocket
 	 */
@@ -69,6 +75,7 @@ public class MDSFileHandler implements Runnable {
 		mRoot 		= zRootFolder;
 		mMDS 		= zMDS;
 		mCommands 	= new MDSCommandHandler(mMDS, zPStack);
+		mPublicMDS  = new MDSPublicPage(zMDS);
 	}
 	
 	@Override
@@ -474,6 +481,10 @@ public class MDSFileHandler implements Runnable {
 					fileRequested = "publicmds/index.html";
 				}
 				
+				if(fileRequested.equals("publicmdsgen")) {
+					fileRequested = "publicmdsgen/index.html";
+				}
+				
 				//Remove the params..
 				int index = fileRequested.indexOf("?");
 				if(index!=-1) {
@@ -500,11 +511,34 @@ public class MDSFileHandler implements Runnable {
 					//And write that out..
 					writeHTMLPage(dos, success);
 				
-				}else if(fileRequested.endsWith("/mds.js")) {
+				}else if(fileRequested.equals("publicmdsgen/index.html")) {
 					
+					//Use the PublicMDS generator..
+					String publicindex = mPublicMDS.getIndexPage();
+					
+//					//Set the session ID
+//					String success = loadResouceFile("publicmds/index.html");
+//					
+//					//Get the public sessionID
+//					String seshid = mMDS.getPublicMiniDAPPSessionID();
+//					
+//					//Replace the doRedirect()
+//					success = success.replace("var publicsessionid=\"0x00\";", 
+//											   "var publicsessionid=\""+seshid+"\";");
+//					
+//					//Do we enable the Wallet..
+//					if(GeneralParams.IS_MEGAMMR) {
+//						success = success.replace("var showwallet=false","var showwallet=true");
+//					}
+					
+					//And write that out..
+					writeHTMLPage(dos, publicindex);
+				
+				}else if(fileRequested.endsWith("/mds.js")) {
+				
 					//Always send the latest version..
 					writeHTMLResouceFile(dos, "mdsjs/mds.js");
-				
+			
 				}else {
 					//Write this page..
 					writeHTMLResouceFile(dos, fileRequested);

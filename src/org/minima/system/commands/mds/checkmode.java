@@ -2,6 +2,7 @@ package org.minima.system.commands.mds;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.minidapps.MiniDAPP;
+import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.utils.json.JSONObject;
 
@@ -39,6 +40,13 @@ public class checkmode extends Command {
 			resp.put("name", "MINIMA");
 			resp.put("mode", "WRITE");
 			resp.put("writemode", true);
+		
+		}else if(minidappid.equals(Main.getInstance().getMDSManager().getPublicMiniDAPPID())) {
+			
+			resp.put("name", "PUBLICMDS");
+			resp.put("mode", "READ");
+			resp.put("writemode", false);
+		
 		}else {
 			//Get that MiniDAPP..
 			MiniDAPP md = MinimaDB.getDB().getMDSDB().getMiniDAPP(minidappid);

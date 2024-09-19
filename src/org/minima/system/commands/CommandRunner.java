@@ -244,15 +244,32 @@ public class CommandRunner {
 				break;
 			}
 			
-			//Is this a MiniDAPP..
-			if(!zMiniDAPPID.equals("0x00")) {
+			//What is the command
+			String comname = cmd.getName();
 			
-				//What is the command
-				String comname = cmd.getName();
+			//Check this MiniDAPP can make this call..
+			boolean allowed = isCommandAllowed(comname);
+			
+			//Is this a MiniDAPP..
+			if(zMiniDAPPID.equals(Main.getInstance().getMDSManager().getPublicMiniDAPPID())) {
 				
-				//Check this MiniDAPP can make this call..
-				boolean allowed = isCommandAllowed(comname);
+				//Public MiniDAPPs cannot add to pending..
+				if(!allowed) {
+					result=  new JSONObject();
+					result.put("command", command);
+					result.put("status", false);
+					result.put("pending", false);
+					result.put("error", "Public MDS cannot run WRITE commands");
+					
+					//Add to the List..
+					finalresult.add(result);
+					
+					//And that's all folks..
+					break;
+				}
 				
+			}else if(!zMiniDAPPID.equals("0x00")) {
+			
 				if(!allowed) {
 					
 					//Get that MiniDAPP..
