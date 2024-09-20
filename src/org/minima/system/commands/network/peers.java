@@ -130,29 +130,35 @@ public class peers extends Command {
 				peerstr = urllist;
 			}
 			
-			//Break up 
+			//Break up
+			ArrayList<String> validpeers   = new ArrayList<>();
+			ArrayList<String> invalidpeers = new ArrayList<>();
 			StringTokenizer strtok = new StringTokenizer(peerstr,",");
 			while(strtok.hasMoreTokens()) {
 				String peer = strtok.nextToken();
 				
 				//Get the IP..
 				Message checker = connect.createConnectMessage(peer);
-				if(checker == null) {
-					throw new CommandException("Invalid peer : "+peer);
+				if(checker != null) {
+					
+					//Create an address
+					InetSocketAddress addr = new InetSocketAddress(checker.getString("host"), checker.getInteger("port"));
+					
+					//Now send to the peers checker..
+					Message msg = new Message(P2PPeersChecker.PEERS_CHECKPEERS).addObject("address", addr);
+					msg.addBoolean("force", true);
+					
+					p2pchecker.PostMessage(msg);
+					validpeers.add(peer);
+				}else {
+					invalidpeers.add(peer);
 				}
-				
-				//Create an address
-				InetSocketAddress addr = new InetSocketAddress(checker.getString("host"), checker.getInteger("port"));
-				
-				//Now send to the peers checker..
-				Message msg = new Message(P2PPeersChecker.PEERS_CHECKPEERS).addObject("address", addr);
-				msg.addBoolean("force", true);
-				
-				p2pchecker.PostMessage(msg);
 			}
 			
 			JSONObject resp = new JSONObject();
-			resp.put("message","Peers added to checking queue..");
+			resp.put("valid",validpeers.toString());
+			resp.put("invalid",invalidpeers.toString());
+			resp.put("message","Valid Peers added to checking queue..");
 			ret.put("response", resp);
 			
 		}else if(action.equals("publish")) {
