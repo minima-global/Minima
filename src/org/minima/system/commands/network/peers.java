@@ -79,6 +79,9 @@ public class peers extends Command {
 			int maxpeers = getNumberParam("max", MiniNumber.THOUSAND).getAsInt();
 			String peerslist = getPeersList(maxpeers);
 			int numberpeers  = peerslist.split(",").length; 
+			if(peerslist.trim().equals("")) {
+				numberpeers = 0;
+			}
 			
 			P2PManager p2PManager = (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();
 			

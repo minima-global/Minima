@@ -129,7 +129,7 @@ public class MDSManager extends MessageProcessor {
 	 * Public MDS uses this MiniDAPP Handle..
 	 */
 	MiniDAPP mPublicMiniDAPP;
-	String mPublicMiniSessionID = "0x00";
+	String mPublicMiniSessionID = "0xDEAD";
 	String mPublicMiniUID 		= "0xFFDDEECCBBAA0099";
 	
 	/**
@@ -1057,7 +1057,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("maxcontacts", "default/maxcontacts-1.14.0.mds.zip", allminis, false);
 			checkInstalled("maximize", "default/maximize-1.3.0.mds.zip", allminis, false);
 			checkInstalled("maxsolo", "default/maxsolo-2.7.2.mds.zip", allminis, false);
-			checkInstalled("megawallet", "default/megawallet-1.5.0.mds.zip", allminis, false);
+			//checkInstalled("megawallet", "default/megawallet-1.5.0.mds.zip", allminis, false);
 			checkInstalled("miniswap", "default/miniswap-2.14.3.mds.zip", allminis, false);
 			checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
 			checkInstalled("script ide", "default/scriptide-2.1.1.mds.zip", allminis, false);
