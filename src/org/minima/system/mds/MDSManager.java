@@ -1066,7 +1066,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("terminal", "default/terminal-2.3.2.mds.zip", allminis, false);
 			checkInstalled("the safe", "default/thesafe-1.7.0.mds.zip", allminis, false);
 			checkInstalled("vestr", "default/vestr-1.8.1.mds.zip", allminis, false);
-			checkInstalled("wallet", "default/wallet-2.45.0.mds.zip", allminis, false);
+			checkInstalled("wallet", "default/wallet-2.46.1.mds.zip", allminis, false);
 		}
 	}
 	
