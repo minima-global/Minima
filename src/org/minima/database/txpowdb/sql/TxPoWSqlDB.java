@@ -38,6 +38,9 @@ public class TxPoWSqlDB extends SqlDB {
 	PreparedStatement SQL_DELETE_TXPOW 		= null;
 	PreparedStatement SQL_EXISTS 			= null;
 	
+	PreparedStatement SQL_SELECT_TOPTXPOW 		= null;
+	PreparedStatement SQL_SELECT_TOPTXPOW_SIZE 	= null;
+	
 	PreparedStatement SQL_SELECT_RELEVANT 		= null;
 	PreparedStatement SQL_SELECT_RELEVANTSIZE 	= null;
 	
@@ -91,6 +94,9 @@ public class TxPoWSqlDB extends SqlDB {
 		
 			SQL_SELECT_RELEVANT 	= mSQLConnection.prepareStatement("SELECT * FROM txpow WHERE isrelevant=1 ORDER BY timemilli DESC LIMIT ? OFFSET ?");
 			SQL_SELECT_RELEVANTSIZE = mSQLConnection.prepareStatement("SELECT Count(*) AS tot FROM txpow WHERE isrelevant=1");
+			
+			SQL_SELECT_TOPTXPOW 	 = mSQLConnection.prepareStatement("SELECT * FROM txpow ORDER BY timemilli DESC LIMIT ? OFFSET ?");
+			SQL_SELECT_TOPTXPOW_SIZE = mSQLConnection.prepareStatement("SELECT Count(*) AS tot FROM txpow WHERE timemilli > ?");
 	}
 	
 	public void wipeDB() throws SQLException {
@@ -301,6 +307,73 @@ public class TxPoWSqlDB extends SqlDB {
 		return txpows;
 	}
 
+	public synchronized ArrayList<TxPoW> getLatestTxPoW(int zLimit, int zOffset) {
+		ArrayList<TxPoW> txpows = new ArrayList<>();
+
+		try {
+			
+			//Make sure..
+			checkOpen();
+			
+			//Get the query ready
+			SQL_SELECT_TOPTXPOW.clearParameters();
+			
+			//Set the Limit..
+			SQL_SELECT_TOPTXPOW.setInt(1, zLimit);
+			SQL_SELECT_TOPTXPOW.setInt(2, zOffset);
+			
+			//Run the query
+			ResultSet rs = SQL_SELECT_TOPTXPOW.executeQuery();
+			
+			//Could be multiple results
+			while(rs.next()) {
+				
+				//Get the blob of data
+				byte[] txpdata 	= rs.getBytes("txpowdata");
+				
+				//Create MiniData version
+				MiniData minitxp = new MiniData(txpdata);
+				
+				//Convert into a TxPoW..
+				TxPoW txpow = TxPoW.convertMiniDataVersion(minitxp);
+				
+				//Add to our list
+				txpows.add(txpow);
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return txpows;
+	}
+	
+	public synchronized int getLatestTxPoWSize(long zMinMilliTime) {
+		try {
+			//Make sure..
+			checkOpen();
+			
+			//Get the query ready
+			SQL_SELECT_TOPTXPOW_SIZE.clearParameters();
+			SQL_SELECT_TOPTXPOW_SIZE.setLong(1, zMinMilliTime);
+			
+			//Run the query
+			ResultSet rs = SQL_SELECT_TOPTXPOW_SIZE.executeQuery();
+			
+			//Could be multiple results
+			if(rs.next()) {
+				//Get the total numer of rows
+				return rs.getInt("tot");
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		//Error has occurred
+		return -1;
+	}
+	
 	public synchronized int getSize() {
 		try {
 			//Make sure..
