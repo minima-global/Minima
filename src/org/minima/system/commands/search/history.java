@@ -20,7 +20,7 @@ import org.minima.utils.json.JSONObject;
 public class history extends Command {
 
 	public history() {
-		super("history","(action:) (max:) (offset:) - Search for all relevant TxPoW");
+		super("history","(action:) (max:) (offset:) (relevant:) - Search for all relevant TxPoW");
 	}
 	
 	@Override
@@ -38,6 +38,9 @@ public class history extends Command {
 				+ "offset: (optional)\n"
 				+ "    Start the list from this point.\n"
 				+ "\n"
+				+ "relevant: (optional)\n"
+				+ "    Do you want YOUR transactions or ALL transactions (defaults to true).\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "history\n"
@@ -49,7 +52,7 @@ public class history extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"max","offset","action"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"max","offset","action","relevant","startmilli"}));
 	}
 	
 	@Override
@@ -59,18 +62,36 @@ public class history extends Command {
 		String action 	= getParam("action", "list");
 		JSONObject resp = new JSONObject();
 		
+		boolean relevant = getBooleanParam("relevant",true);
+		
 		if(action.equals("size")) {
 			
-			int size = MinimaDB.getDB().getTxPoWDB().getSQLDB().getRelevantSize();
-			resp.put("size", size);
+			if(relevant) {
+				int size = MinimaDB.getDB().getTxPoWDB().getSQLDB().getRelevantSize();
+				resp.put("size", size);
+			
+			}else {
+				
+				long oneday 		= 1000 * 60 * 60 * 24;
+				long defaultstart 	= System.currentTimeMillis() - oneday; 
+				long starttime 		= getNumberParam("startmilli", new MiniNumber(defaultstart)).getAsLong();
+				int size 			= MinimaDB.getDB().getTxPoWDB().getSQLDB().getLatestTxPoWSize(starttime);
+				resp.put("startmilli", starttime);
+				resp.put("size", size);
+			}
 			
 		}else {
 			
 			int max 	= getNumberParam("max",TxPoWSqlDB.MAX_RELEVANT_TXPOW).getAsInt();
 			int offset 	= getNumberParam("offset",MiniNumber.ZERO).getAsInt();
 			
-			ArrayList<TxPoW> txps = MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant(max,offset);
-			
+			ArrayList<TxPoW> txps;
+			if(relevant) {
+				txps = MinimaDB.getDB().getTxPoWDB().getSQLDB().getAllRelevant(max,offset);
+			}else {
+				txps = MinimaDB.getDB().getTxPoWDB().getSQLDB().getLatestTxPoW(max,offset);
+			}
+				
 			JSONArray txns 			= new JSONArray();
 			JSONArray txndetails 	= new JSONArray();
 			for(TxPoW txp : txps) {
@@ -78,6 +99,7 @@ public class history extends Command {
 				txndetails.add(getTxnDetails(txp));
 			}
 			
+			resp.put("relevant", relevant);
 			resp.put("txpows", txns);
 			resp.put("details", txndetails);
 			resp.put("size", txns.size());
