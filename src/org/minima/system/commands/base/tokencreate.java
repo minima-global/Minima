@@ -89,7 +89,7 @@ public class tokencreate extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"name","amount","decimals","script",
-				"state","signtoken","webvalidate","burn","mine"}));
+				"state","signtoken","webvalidate","burn","mine","uselimits"}));
 	}
 	
 	@Override
@@ -103,7 +103,10 @@ public class tokencreate extends Command {
 		
 		//Are we Mining synchronously
 		boolean minesync = getBooleanParam("mine", false);
-				
+		
+		//Are we adding limits to the NUmber of Tokens allowed..
+		boolean uselimits = getBooleanParam("uselimits", true);
+		
 		//Is there a state JSON
 		JSONObject state = new JSONObject();
 		if(existsParam("state")) {
@@ -141,7 +144,7 @@ public class tokencreate extends Command {
 			decimals = Integer.parseInt((String)getParams().get("decimals"));
 			
 			//Safety check.. not consensus set - could be more.
-			if(decimals>16) {
+			if(uselimits && decimals>16) {
 				throw new Exception("MAX 16 decimal places");
 			}
 		}
@@ -160,9 +163,11 @@ public class tokencreate extends Command {
 		MiniNumber totaltoks = new MiniNumber(amount).floor(); 
 		
 		//Safety check Amount is within tolerant levels.. could use ALL their Minima otherwise..
-		if(totaltoks.isMore(MiniNumber.TRILLION)) {
+		if(uselimits && totaltoks.isMore(MiniNumber.TRILLION)) {
 			throw new CommandException("MAX 1 Trillion coins for a token");
-		}else if(totaltoks.isLessEqual(MiniNumber.ZERO)) {
+		}
+		
+		if(totaltoks.isLessEqual(MiniNumber.ZERO)) {
 			throw new CommandException("Cannot create less than 1 token");
 		}
 		
