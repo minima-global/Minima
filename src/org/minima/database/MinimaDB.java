@@ -560,7 +560,7 @@ public class MinimaDB {
 			MinimaLogger.log("ArchiveDB shutdown..");
 			mArchive.saveDB(zCompact);
 			
-			MinimaLogger.log("All DB Shutdown..");
+			MinimaLogger.log("All SQL DB Shutdown..");
 			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
