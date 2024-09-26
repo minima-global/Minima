@@ -145,6 +145,8 @@ public class restoresync extends Command {
 			MinimaDB.getDB().getUserDB().loadDB(udb);
 			MinimaDB.getDB().getUserDB().clearUninstalledMiniDAPP();
 			
+			MinimaLogger.log("RESTORE SYNC USERDB UNINSTALLED WIPED");
+			
 			udb = new File(basedb,"p2p.db");
 			MinimaDB.getDB().getP2PDB().loadDB(udb);
 			
@@ -218,7 +220,7 @@ public class restoresync extends Command {
 			Main.getInstance().shutdownFinalProcs();
 			
 			//Now save the Databases..
-			MinimaDB.getDB().saveSQL(false);
+			MinimaDB.getDB().saveAllDB();
 			
 			//And NOW shut down..
 			Main.getInstance().stopMessageProcessor();

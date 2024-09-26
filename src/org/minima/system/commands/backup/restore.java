@@ -21,6 +21,7 @@ import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.encrypt.GenerateKey;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.ssl.SSLManager;
@@ -135,6 +136,8 @@ public class restore extends Command {
 			MinimaDB.getDB().getUserDB().loadDB(udb);
 			MinimaDB.getDB().getUserDB().clearUninstalledMiniDAPP();
 			
+			MinimaLogger.log("RESTORE USERDB UNINSTALLED WIPED");
+			
 			udb = new File(basedb,"p2p.db");
 			MinimaDB.getDB().getP2PDB().loadDB(udb);
 					
@@ -187,8 +190,11 @@ public class restore extends Command {
 		ret.put("message", "Restart Minima for restore to take effect!");
 		
 		//Now save the Databases..
-		MinimaDB.getDB().saveSQL(false);
+		//MinimaDB.getDB().saveSQL(false);
 		
+		//Now shutdown and save everything
+		MinimaDB.getDB().saveAllDB();
+				
 		//Normally yes
 		if(doshutdown) {
 			
