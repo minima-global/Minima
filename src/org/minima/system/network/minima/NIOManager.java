@@ -744,6 +744,12 @@ public class NIOManager extends MessageProcessor {
 				
 				//Get the tip.. 
 				TxPoWTreeNode tip 	= MinimaDB.getDB().getTxPoWTree().getTip();
+				
+				//Do we have a tip
+				if(tip == null) {
+					return;
+				}
+				
 				long tiptime 		= tip.getTxPoW().getTimeMilli().getAsLong();
 				
 				//Difference..
