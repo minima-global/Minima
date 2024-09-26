@@ -1,5 +1,6 @@
 package org.minima.system.commands.send;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -23,6 +24,7 @@ import org.minima.system.commands.CommandException;
 import org.minima.system.commands.CommandRunner;
 import org.minima.system.commands.backup.vault;
 import org.minima.utils.Crypto;
+import org.minima.utils.MiniFile;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -129,6 +131,9 @@ public class multisig extends Command {
 		
 		//The actual address
 		String msaddress = new Address(multisig.MULTISIG_CONTRACT).getAddressData().to0xString();
+		
+		//ID of the custom transaction
+		String randomid 	= MiniData.getRandomData(32).to0xString();
 		
 		if(action.equals("create")) {
 			
@@ -359,9 +364,9 @@ public class multisig extends Command {
 			
 			//Create a txn..
 			String txnsender = 
-						  "txncreate id:"+txnname+";"
-						+ "txninput  id:"+txnname+" coinid:"+coinid+";"
-						+ "txnoutput id:"+txnname+" storestate:false amount:"+amount+" address:"+address+" tokenid:"+tokenid+";";
+						  "txncreate id:"+randomid+";"
+						+ "txninput  id:"+randomid+" coinid:"+coinid+";"
+						+ "txnoutput id:"+randomid+" storestate:false amount:"+amount+" address:"+address+" tokenid:"+tokenid+";";
 
 			//Is there change
 			if(change.isMore(MiniNumber.ZERO)) {
@@ -369,16 +374,16 @@ public class multisig extends Command {
 				//Copy the complete coin state
 				ArrayList<StateVariable> allstate = cc.getState();
 				for(StateVariable statevar : allstate) {
-					txnsender +=  "txnstate id:"+txnname+" port:"+statevar.getPort()+" value:"+statevar.getData().toString()+";";	
+					txnsender +=  "txnstate id:"+randomid+" port:"+statevar.getPort()+" value:"+statevar.getData().toString()+";";	
 				}
 	
 				//And the change
-				txnsender +=  "txnoutput id:"+txnname+" storestate:true amount:"+change+" address:"+coinaddress+" tokenid:"+tokenid+";";
+				txnsender +=  "txnoutput id:"+randomid+" storestate:true amount:"+change+" address:"+coinaddress+" tokenid:"+tokenid+";";
 			}
 						
 			//And finish off..
-			txnsender +=  "txnexport id:"+txnname+" file:"+txnname+";"
-						+ "txndelete id:"+txnname;
+			txnsender +=  "txnexport id:"+randomid+" file:"+txnname+";"
+						+ "txndelete id:"+randomid;
 			
 			//Run it..
 			JSONArray result = CommandRunner.getRunner().runMultiCommand(txnsender);
@@ -389,9 +394,12 @@ public class multisig extends Command {
 			//Which file..
 			String file = getParam("file");
 			
+			//What is the file..
+			File actualfile 	= MiniFile.createBaseFile(file);
+			File signedtxn   	= new File(actualfile.getParentFile(), "signed_"+actualfile.getName());
+			
 			//The signer function
-			String txnname  = "signed_"+file;
-			String txnsigner = "txnimport id:"+txnname+" file:"+file+";";
+			String txnsigner = "txnimport id:"+randomid+" file:"+file+";";
 			
 			//Run that
 			JSONArray result 		= CommandRunner.getRunner().runMultiCommand(txnsigner);
@@ -408,7 +416,7 @@ public class multisig extends Command {
 			
 			//now find the public key
 			TxnDB db 						  = MinimaDB.getDB().getCustomTxnDB();
-			TxnRow txnrow 					  = db.getTransactionRow(txnname);
+			TxnRow txnrow 					  = db.getTransactionRow(randomid);
 			Transaction trans 				  = txnrow.getTransaction();
 			Coin multicoin 					  = trans.getAllInputs().get(0);
 			ArrayList<StateVariable> allstate = multicoin.getState();
@@ -417,13 +425,13 @@ public class multisig extends Command {
 				String possiblepubkey = statevar.getData().toString();
 				KeyRow key = wallet.getKeyFromPublic(possiblepubkey);
 				if(key != null) {
-					txnsigner	+= "txnsign id:"+txnname+" publickey:"+possiblepubkey+";";
+					txnsigner	+= "txnsign id:"+randomid+" publickey:"+possiblepubkey+";";
 				}
 			}
 			
 			//Finish up
-			txnsigner	+= "txnexport id:"+txnname+" file:"+txnname+";"
-						+  "txndelete id:"+txnname;
+			txnsigner	+= "txnexport id:"+randomid+" file:"+signedtxn.getAbsolutePath()+";"
+						+  "txndelete id:"+randomid;
 			
 			//Unlock DB at the start - rather than every time you run txnsign
 			boolean passwordlock = false;
@@ -451,11 +459,10 @@ public class multisig extends Command {
 			
 			//Which file..
 			String file 		= getParam("file");
-			String txnname  	= "post_"+file;
 			String txnsigner 	= 
-					  "txnimport id:"+txnname+" file:"+file+";"
-					+ "txnpost   id:"+txnname+" auto:true;"
-					+ "txndelete id:"+txnname;
+					  "txnimport id:"+randomid+" file:"+file+";"
+					+ "txnpost   id:"+randomid+" auto:true;"
+					+ "txndelete id:"+randomid;
 			
 			//Run it..
 			JSONArray result = CommandRunner.getRunner().runMultiCommand(txnsigner);
@@ -464,10 +471,9 @@ public class multisig extends Command {
 		}else if(action.equals("view")) {
 			
 			String file 		= getParam("file");
-			String txnname  	= MiniData.getRandomData(32).to0xString();
 			String txnview 		= 
-					  "txnimport id:"+txnname+" file:"+file+";"
-					+ "txndelete id:"+txnname;
+					  "txnimport id:"+randomid+" file:"+file+";"
+					+ "txndelete id:"+randomid;
 			
 			//Run it..
 			JSONArray result = CommandRunner.getRunner().runMultiCommand(txnview);
@@ -478,6 +484,17 @@ public class multisig extends Command {
 		}
 		
 		return ret;
+	}
+	
+	private File getRequiredFile() throws CommandException {
+		
+		//What is the filename - could be relative or absolute
+		String filename 	= getParam("file");
+		
+		//Convert to an actual File
+		File theactualfile 	= MiniFile.createBaseFile(filename);
+		
+		return theactualfile;
 	}
 	
 	@Override
