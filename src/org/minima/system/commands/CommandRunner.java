@@ -53,6 +53,7 @@ import org.minima.system.commands.base.random;
 import org.minima.system.commands.base.seedrandom;
 import org.minima.system.commands.base.slavenode;
 import org.minima.system.commands.base.status;
+import org.minima.system.commands.base.systemcheck;
 import org.minima.system.commands.base.test;
 import org.minima.system.commands.base.tokencreate;
 import org.minima.system.commands.base.tokenvalidate;
@@ -145,7 +146,7 @@ public class CommandRunner {
 			new archive(), new logs(), new history(), new convert(),new maths(),
 			new checkpending(), new checkmode(), new restoresync(),
 			
-			new decryptbackup(), new megammrsync(),
+			new decryptbackup(), new megammrsync(), new systemcheck(),
 			
 			new multisig(), new checkaddress(),
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),

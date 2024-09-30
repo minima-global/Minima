@@ -64,7 +64,7 @@ public class MinimaDB {
 	/**
 	 * LOCKING the MinimaDB for read write operations..
 	 */
-	ReadWriteLock mRWLock;
+	ReentrantReadWriteLock mRWLock;
 	
 	/**
 	 * The coin Addresses to Notify
@@ -117,6 +117,10 @@ public class MinimaDB {
 		}else {
 			mRWLock.writeLock().unlock();
 		}
+	}
+	
+	public String getRWLockInfo() {
+		return mRWLock.toString();
 	}
 	
 	/**

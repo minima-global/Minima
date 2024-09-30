@@ -69,6 +69,14 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     	return mTraceFilter;
     }
     
+    public boolean checkTraceFilter(String zMsg) {
+    	if(mTrace && zMsg.toLowerCase().contains(mTraceFilter.toLowerCase())) {
+    		return true;
+    	}
+    	
+    	return false;
+    }
+    
     public boolean isRunning(){
     	return mRunning;
     }
@@ -123,6 +131,7 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
                 	//Are we logging  ?
                 	long timenow = 0;
                 	if(mTrace) {
+                		//Call can slow things down so only do if needed
                 		timenow = System.currentTimeMillis();
                 	}
                 
@@ -132,8 +141,8 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
                     if(mTrace) {
                     	long timediff = System.currentTimeMillis() - timenow;
                     	String tracemsg = msg.toString();
-                		if(tracemsg.contains(mTraceFilter)) {
-                			MinimaLogger.log("["+mMainThread.getName()+"] (stack:"+getSize()+") time:"+timediff+" \t"+msg, false);
+                		if(checkTraceFilter(msg.toString())) {
+                    		MinimaLogger.log("TRACE > ["+mMainThread.getName()+"] (stack:"+getSize()+") process_time_milli:"+timediff+" \t"+msg, false);
                 		}
                     }
                     

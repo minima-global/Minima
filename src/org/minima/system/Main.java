@@ -140,6 +140,11 @@ public class Main extends MessageProcessor {
 	long CHECKER_TIMER							= 1000 * 180;
 	
 	/**
+	 * USe to ttest if MAIN thread running correctly..
+	 */
+	public static final String MAIN_CALLCHECKER 	= "MAIN_CALLCHECKER";
+	
+	/**
 	 * Notify Users..
 	 */
 	public static final String MAIN_NEWBLOCK 	= "MAIN_NEWBLOCK";
@@ -1102,6 +1107,13 @@ public class Main extends MessageProcessor {
 			
 			//A Ping Message.. The top TxPoWID
 			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_PING, tip.getTxPoW().getTxPoWIDData());
+		
+		}else if(zMessage.getMessageType().equals(MAIN_CALLCHECKER)) {
+			
+			boolean timed = zMessage.getBoolean("timer", false);
+			
+			//Sent to check this is running..
+			MinimaLogger.log("MAIN Checker Call Recieved.. timer:"+timed);
 		}
 	}
 	
