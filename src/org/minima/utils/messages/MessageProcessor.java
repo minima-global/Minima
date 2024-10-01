@@ -43,6 +43,11 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
 	String mName;
 	
 	/**
+	 * Current Message being processed..
+	 */
+	Message mLastMessage = null;
+	
+	/**
 	 * Constructor
 	 */
     public MessageProcessor(String zName){
@@ -67,6 +72,10 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     
     public String getTraceFilter() {
     	return mTraceFilter;
+    }
+    
+    public Message getLastMessage() {
+    	return mLastMessage;
     }
     
     public boolean checkTraceFilter(String zMsg) {
@@ -128,22 +137,25 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
             while(msg != null && mRunning){          
                 //Process that message
                 try{
+                	//Check for trace
+                	String tracemsg = msg.toString();
+            		
                 	//Are we logging  ?
                 	long timenow = 0;
-                	if(mTrace) {
+                	if(checkTraceFilter(tracemsg)) {
                 		//Call can slow things down so only do if needed
                 		timenow = System.currentTimeMillis();
                 	}
                 
+                	//Store incase sys check
+                	mLastMessage = msg;
+                	
                 	//Process Message
                     processMessage(msg);
                 
-                    if(mTrace) {
+                    if(checkTraceFilter(tracemsg)) {
                     	long timediff = System.currentTimeMillis() - timenow;
-                    	String tracemsg = msg.toString();
-                		if(checkTraceFilter(msg.toString())) {
-                    		MinimaLogger.log("TRACE > ["+mMainThread.getName()+"] (stack:"+getSize()+") process_time_milli:"+timediff+" \t"+msg, false);
-                		}
+                    	MinimaLogger.log("TRACE > ["+mMainThread.getName()+"] (stack:"+getSize()+") process_time_milli:"+timediff+" \t"+msg, true);
                     }
                     
                 }catch(Error noclass){

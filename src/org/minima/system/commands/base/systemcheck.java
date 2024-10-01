@@ -9,10 +9,12 @@ import org.minima.database.MinimaDB;
 import org.minima.database.txpowtree.TxPowTree;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
+import org.minima.system.brains.TxPoWProcessor;
 import org.minima.system.commands.Command;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
+import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
 
 public class systemcheck extends Command {
@@ -31,6 +33,22 @@ public class systemcheck extends Command {
 		JSONObject ret = getJSONReply();
 	
 		
+		JSONObject resp = new JSONObject();
+		
+		//Get info about each Process Manager
+		resp.put("TxPowProcesssor", getInfo(Main.getInstance().getTxPoWProcessor()));
+		resp.put("TxPowMiner", getInfo(Main.getInstance().getTxPoWMiner()));
+		resp.put("NIOManager", getInfo(Main.getInstance().getNIOManager()));
+		resp.put("P2PManager", getInfo(Main.getInstance().getNetworkManager().getP2PManager()));
+		resp.put("MDSManager", getInfo(Main.getInstance().getMDSManager()));
+		resp.put("SendPollManager", getInfo(Main.getInstance().getSendPoll()));
+		resp.put("NotifyManager", getInfo(Main.getInstance().getNotifyManager()));
+		
+		resp.put("RWLockInfo", MinimaDB.getDB().getRWLockInfo());
+		resp.put("Shutting Down", Main.getInstance().isShuttingDown());
+		
+		ret.put("response", resp);
+
 		//Check the Read Write Lock..
 		MinimaLogger.log("Posting Checker Call in TxPoWProcessor..");
 		Main.getInstance().getTxPoWProcessor().postCheckCall();
@@ -45,17 +63,20 @@ public class systemcheck extends Command {
 		TimerMessage timed = new TimerMessage(1000, msg);
 		MinimaLogger.log("Posting TIMED Checker Call in Main..");
 		Main.getInstance().PostTimerMessage(timed);
+
+		return ret;
+	}
+	
+	public JSONObject getInfo(MessageProcessor zProc) {
+		JSONObject ret = new JSONObject();
+		ret.put("stack", zProc.getSize());
 		
-		//Wait 5 secs
-		MinimaLogger.log("Wait 5 secs");
-		Thread.sleep(5000);
-		
-		JSONObject resp = new JSONObject();
-		resp.put("RWLockInfo", MinimaDB.getDB().getRWLockInfo());
-		resp.put("Shutting Down", Main.getInstance().isShuttingDown());
-		
-		ret.put("response", resp);
-		
+		Message lst = zProc.getLastMessage();
+		if(lst == null) {
+			ret.put("lastmessage", null);
+		}else {
+			ret.put("lastmessage", lst.toString());
+		}
 		return ret;
 	}
 	
