@@ -1,4 +1,4 @@
-package org.minima.system.commands.send.multisignature;
+package org.minima.system.commands.send;
 
 import java.io.File;
 import java.util.ArrayList;
