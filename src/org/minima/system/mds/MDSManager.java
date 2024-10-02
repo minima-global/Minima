@@ -1062,7 +1062,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
 			checkInstalled("script ide", "default/scriptide-2.1.1.mds.zip", allminis, false);
 			checkInstalled("shout out", "default/shoutout-1.4.0.mds.zip", allminis, false);
-			checkInstalled("sql bench", "default/sqlbench-0.5.1.mds.zip", allminis, false);
+			checkInstalled("sql bench", "default/sqlbench-0.6.mds.zip", allminis, false);
 			checkInstalled("terminal", "default/terminal-2.3.2.mds.zip", allminis, false);
 			checkInstalled("the safe", "default/thesafe-1.7.0.mds.zip", allminis, false);
 			checkInstalled("vestr", "default/vestr-1.8.1.mds.zip", allminis, false);
