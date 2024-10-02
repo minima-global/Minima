@@ -93,6 +93,7 @@ import org.minima.system.commands.send.sendpoll;
 import org.minima.system.commands.send.sendpost;
 import org.minima.system.commands.send.sendsign;
 import org.minima.system.commands.send.sendview;
+import org.minima.system.commands.send.multisignature.multisigread;
 import org.minima.system.commands.send.wallet.constructfrom;
 import org.minima.system.commands.send.wallet.createfrom;
 import org.minima.system.commands.send.wallet.postfrom;
@@ -148,7 +149,7 @@ public class CommandRunner {
 			
 			new decryptbackup(), new megammrsync(), new systemcheck(),
 			
-			new multisig(), new checkaddress(),
+			new multisig(), new multisigread(), new checkaddress(),
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
 			
 			new ping(), new random(), new seedrandom(), new mysql(), new mysqlcoins(), new slavenode(), new checkrestore(),
