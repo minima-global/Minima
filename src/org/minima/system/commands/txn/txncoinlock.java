@@ -3,12 +3,7 @@ package org.minima.system.commands.txn;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.minima.database.MinimaDB;
-import org.minima.database.userprefs.txndb.TxnDB;
-import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.system.commands.Command;
-import org.minima.system.commands.CommandException;
-import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class txncoinlock extends Command {

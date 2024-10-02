@@ -16,7 +16,6 @@ import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.network.p2p.P2PPeersChecker;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.RPCClient;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;

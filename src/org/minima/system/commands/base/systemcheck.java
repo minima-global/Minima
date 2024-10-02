@@ -6,10 +6,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.txpowtree.TxPowTree;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
-import org.minima.system.brains.TxPoWProcessor;
 import org.minima.system.commands.Command;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
