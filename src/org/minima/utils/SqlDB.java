@@ -193,7 +193,7 @@ public abstract class SqlDB {
 			//Close the connection
 			mSQLConnection.close();
 		
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			MinimaLogger.log(e);
 		}
 	}
@@ -225,7 +225,7 @@ public abstract class SqlDB {
 			//Close the connection
 			mSQLConnection.close();
 		
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			MinimaLogger.log(e);
 		}
 	}
