@@ -34,6 +34,7 @@ import org.minima.system.commands.base.printtree;
 import org.minima.system.commands.base.quit;
 import org.minima.system.commands.base.random;
 import org.minima.system.commands.base.status;
+import org.minima.system.commands.base.timemilli;
 import org.minima.system.commands.base.tokencreate;
 import org.minima.system.commands.base.tokenvalidate;
 import org.minima.system.commands.base.trace;
@@ -140,6 +141,7 @@ public class help extends Command {
 			addCommand(details, new trace());
 			addCommand(details, new logs());
 			addCommand(details, new hashtest());
+			addCommand(details, new timemilli());
 			addCommand(details, new checkaddress());
 			
 			addCommand(details, new history());

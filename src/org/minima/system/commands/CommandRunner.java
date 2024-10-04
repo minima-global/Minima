@@ -55,6 +55,7 @@ import org.minima.system.commands.base.slavenode;
 import org.minima.system.commands.base.status;
 import org.minima.system.commands.base.systemcheck;
 import org.minima.system.commands.base.test;
+import org.minima.system.commands.base.timemilli;
 import org.minima.system.commands.base.tokencreate;
 import org.minima.system.commands.base.tokenvalidate;
 import org.minima.system.commands.base.trace;
@@ -145,7 +146,7 @@ public class CommandRunner {
 			new sendfrom(), new createfrom(), new signfrom(), new postfrom(), new constructfrom(),
 			
 			new archive(), new logs(), new history(), new convert(),new maths(),
-			new checkpending(), new checkmode(), new restoresync(),
+			new checkpending(), new checkmode(), new restoresync(), new timemilli(),
 			
 			new decryptbackup(), new megammrsync(), new systemcheck(),
 			

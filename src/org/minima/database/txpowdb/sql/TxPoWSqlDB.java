@@ -44,6 +44,16 @@ public class TxPoWSqlDB extends SqlDB {
 	PreparedStatement SQL_SELECT_RELEVANT 		= null;
 	PreparedStatement SQL_SELECT_RELEVANTSIZE 	= null;
 	
+	/**
+	 * Show when a new block is added
+	 */
+	public static boolean LOG_ADD_BLOCKS = false;
+	
+	/**
+	 * Show when a new block is added
+	 */
+	public static boolean LOG_ADD_TRANSACTION = false;
+	
 	public TxPoWSqlDB() {
 		super();
 	}
@@ -129,8 +139,57 @@ public class TxPoWSqlDB extends SqlDB {
 		stmt.close();
 	}
 	
+	public synchronized int customSizeQuery(String zWhereCondition) {
+		try {
+			
+			//Make sure..
+			checkOpen();
+			
+			//Sanitize
+			String where = zWhereCondition.toLowerCase().replaceAll(";", "");
+			where = where.replaceAll("update", "");
+			where = where.replaceAll("delete", "");
+			where = where.replaceAll("insert", "");
+			
+			//Create the SQL
+			String sql = "SELECT Count(*) AS tot FROM txpow WHERE "+where;
+			
+			//Create the various tables..
+			Statement stmt = mSQLConnection.createStatement();
+			
+			//Execute the SQL..
+			boolean res = stmt.execute(sql);
+			
+			//Get the results
+			ResultSet rs = stmt.getResultSet();
+			
+			//Could be multiple results
+			if(rs.next()) {
+				//Get the total numer of rows
+				return rs.getInt("tot");
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return -1;
+	}
+	
 	public synchronized boolean addTxPoW(TxPoW zTxPoW, boolean zIsRelevant) {
 		try {
+			
+			if(LOG_ADD_BLOCKS) {
+				if(zTxPoW.isBlock()) {
+					MinimaLogger.log("[+] BLOCK ADDED TO TXPOWDB : "+zTxPoW.getBlockNumber());
+				}
+			}
+			
+			if(LOG_ADD_TRANSACTION) {
+				if(zTxPoW.isTransaction()) {
+					MinimaLogger.log("[+] TRANSACTION ADDED TO TXPOWDB : "+zTxPoW.getBlockNumber()+" - "+zTxPoW.getTransaction().toJSON().toString());
+				}
+			}
 			
 			//Make sure..
 			checkOpen();

@@ -14,6 +14,7 @@ import org.minima.objects.Transaction;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -29,8 +30,8 @@ public class history extends Command {
 				+ "\n"
 				+ "Return all TxPoW relevant to you. Default to 100 max (can be slow)\n"
 				+ "\n"
-				+ "action: list or size (optional)\n"
-				+ "    Get list or check total size.\n"
+				+ "action: list or size or customsize(optional)\n"
+				+ "    defaults to list.\n"
 				+ "\n"
 				+ "max: (optional)\n"
 				+ "    Maximum number of TxPoW to retrieve.\n"
@@ -41,18 +42,25 @@ public class history extends Command {
 				+ "relevant: (optional)\n"
 				+ "    Do you want YOUR transactions or ALL transactions (defaults to true).\n"
 				+ "\n"
+				+ "where: (optional)\n"
+				+ "    Use with customsize to search for a specific set. This is the WHERE clause in SQL query.\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "history\n"
 				+ "\n"
 				+ "history max:20\n"
 				+ "\n"
+				+ "history action:size relevant:false\n"
+				+ "\n"
+				+ "history action:customsize where:\"isblock=1 AND timemilli>1728037509020\"\n"
+				+ "\n"
 				+ "history max:20 offset:45\n";
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"max","offset","action","relevant","startmilli"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"max","offset","action","relevant","startmilli","where"}));
 	}
 	
 	@Override
@@ -80,7 +88,14 @@ public class history extends Command {
 				resp.put("size", size);
 			}
 			
-		}else {
+		}else if(action.equals("customsize")) {
+			
+			String where = getParam("where");
+			
+			int size = MinimaDB.getDB().getTxPoWDB().getSQLDB().customSizeQuery(where);
+			resp.put("size", size);
+			
+		}else if(action.equals("list")) {
 			
 			int max 	= getNumberParam("max",TxPoWSqlDB.MAX_RELEVANT_TXPOW).getAsInt();
 			int offset 	= getNumberParam("offset",MiniNumber.ZERO).getAsInt();
@@ -103,6 +118,9 @@ public class history extends Command {
 			resp.put("txpows", txns);
 			resp.put("details", txndetails);
 			resp.put("size", txns.size());
+		
+		}else{
+			throw new CommandException("Invalid action:"+action);
 		}
 		
 		ret.put("response", resp);
