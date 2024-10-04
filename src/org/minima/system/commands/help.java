@@ -75,6 +75,7 @@ import org.minima.system.commands.send.wallet.sendfrom;
 import org.minima.system.commands.send.wallet.signfrom;
 import org.minima.system.commands.signatures.sign;
 import org.minima.system.commands.signatures.verify;
+import org.minima.system.commands.txn.txnaddamount;
 import org.minima.system.commands.txn.txnauto;
 import org.minima.system.commands.txn.txnbasics;
 import org.minima.system.commands.txn.txncheck;
@@ -193,6 +194,7 @@ public class help extends Command {
 			addCommand(details, new txnlist());
 			addCommand(details, new txncreate());
 			addCommand(details, new txnauto());
+			addCommand(details, new txnaddamount());
 			addCommand(details, new txnbasics());
 			addCommand(details, new txndelete());
 			addCommand(details, new txncheck());
