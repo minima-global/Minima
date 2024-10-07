@@ -3,6 +3,7 @@
  */
 package org.minima.utils.messages;
 
+import org.minima.database.MinimaDB;
 import org.minima.utils.MinimaLogger;
 
 /**
@@ -170,7 +171,12 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
                 }catch(Exception exc){
                 	MinimaLogger.log("MESSAGE PROCESSING ERROR @ "+msg.getMessageType());
                 	MinimaLogger.log(exc);
-                } 
+                
+                }finally {
+                	
+                	//Make sure the write lock is released..
+                	MinimaDB.getDB().safeReleaseWriteLock();
+				} 
                 
                 //Are there more messages..
                 msg = getNextMessage();

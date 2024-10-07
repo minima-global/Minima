@@ -64,6 +64,8 @@ public class MinimaDB {
 	 * LOCKING the MinimaDB for read write operations..
 	 */
 	ReentrantReadWriteLock mRWLock;
+	public static String  mCurrentWriteLockThread = "";
+	public static boolean mCurrentWriteLockState  = false;
 	
 	/**
 	 * The coin Addresses to Notify
@@ -106,14 +108,32 @@ public class MinimaDB {
 		if(zLock) {
 			mRWLock.readLock().lock();
 		}else {
-			mRWLock.readLock().unlock();
+			
+			//Try and unlock this READ lock
+			try {
+				mRWLock.readLock().unlock();
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
 		}
 	}
 	
 	public void writeLock(boolean zLock) {
+		
+		//Which thread is this..
+		mCurrentWriteLockThread = Thread.currentThread().getName();
+		mCurrentWriteLockState  = zLock;
+		
 		if(zLock) {
 			mRWLock.writeLock().lock();
 		}else {
+			mRWLock.writeLock().unlock();
+		}
+	}
+	
+	public void safeReleaseWriteLock() {
+		//Release it if held by this thread..
+		if(mRWLock.writeLock().isHeldByCurrentThread()) {
 			mRWLock.writeLock().unlock();
 		}
 	}
@@ -551,6 +571,7 @@ public class MinimaDB {
 		writeLock(true);
 		
 		try {
+	
 			//Clean shutdown of SQL DBs
 			MinimaLogger.log("Wallet shutdown..");
 			mWallet.saveDB(true);
@@ -567,10 +588,11 @@ public class MinimaDB {
 			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
+			
+		}finally {
+			//Release the krakken
+			writeLock(false);
 		}
-		
-		//Release the krakken
-		writeLock(false);
 	}
 	
 	public void fullDBRestartMemFree() {
