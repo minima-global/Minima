@@ -8,6 +8,8 @@ import java.util.Hashtable;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowdb.sql.TxPoWSqlDB;
+import org.minima.database.txpowtree.TxPoWTreeNode;
+import org.minima.database.txpowtree.TxPowTree;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.Transaction;
@@ -30,14 +32,20 @@ public class history extends Command {
 				+ "\n"
 				+ "Return all TxPoW relevant to you. Default to 100 max (can be slow)\n"
 				+ "\n"
-				+ "action: list or size or customsize(optional)\n"
-				+ "    defaults to list.\n"
+				+ "action: (optional) default is 'list'\n"
+				+ "	     list : List your transactions\n"
+				+ "      size : Count how many transaction you have in History\n"
+				+ "      customsize : use with 'where' to search TxPoWDB\n"
+				+ "      transactions : How Many transactions in chain for 'depth' blocks"
 				+ "\n"
 				+ "max: (optional)\n"
 				+ "    Maximum number of TxPoW to retrieve.\n"
 				+ "\n"
 				+ "offset: (optional)\n"
 				+ "    Start the list from this point.\n"
+				+ "\n"
+				+ "depth: (optional)\n"
+				+ "    How far down chain to search for transactions.\n"
 				+ "\n"
 				+ "relevant: (optional)\n"
 				+ "    Do you want YOUR transactions or ALL transactions (defaults to true).\n"
@@ -53,6 +61,8 @@ public class history extends Command {
 				+ "\n"
 				+ "history action:size relevant:false\n"
 				+ "\n"
+				+ "history action:transactions depth:1720\n"
+				+ "\n"
 				+ "history action:customsize where:\"isblock=1 AND timemilli>1728037509020\"\n"
 				+ "\n"
 				+ "history max:20 offset:45\n";
@@ -60,7 +70,7 @@ public class history extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"max","offset","action","relevant","startmilli","where"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"depth","max","offset","action","relevant","startmilli","where"}));
 	}
 	
 	@Override
@@ -94,6 +104,34 @@ public class history extends Command {
 			
 			int size = MinimaDB.getDB().getTxPoWDB().getSQLDB().customSizeQuery(where);
 			resp.put("size", size);
+			
+		}else if(action.equals("transactions")) {
+			
+			int depth = getNumberParam("depth", new MiniNumber(1720)).getAsInt();
+			
+			//Now cycle down through the chain
+			TxPoWTreeNode tip 		= MinimaDB.getDB().getTxPoWTree().getTip();
+			MiniNumber startblock 	= tip.getBlockNumber();
+			int count 		= 0;
+			int totaltxns 	= 0;
+			while(count<depth && tip!=null) {
+				
+				//Get the TxPoW.. 
+				TxPoW txp = tip.getTxPoW();
+				if(txp.isTransaction()) {
+					totaltxns++;
+				}
+				
+				totaltxns += txp.getTransactions().size();
+				
+				//Now move down..
+				count++;
+				tip = tip.getParent();
+			}
+			
+			resp.put("startblock", startblock);
+			resp.put("depth", count);
+			resp.put("transactions", totaltxns);
 			
 		}else if(action.equals("list")) {
 			
