@@ -34,6 +34,7 @@ public class systemcheck extends Command {
 		JSONObject resp = new JSONObject();
 		
 		//Get info about each Process Manager
+		resp.put("Main", getInfo(Main.getInstance()));
 		resp.put("TxPowProcesssor", getInfo(Main.getInstance().getTxPoWProcessor()));
 		resp.put("TxPowMiner", getInfo(Main.getInstance().getTxPoWMiner()));
 		resp.put("NIOManager", getInfo(Main.getInstance().getNIOManager()));
@@ -43,6 +44,10 @@ public class systemcheck extends Command {
 		resp.put("NotifyManager", getInfo(Main.getInstance().getNotifyManager()));
 		
 		resp.put("RWLockInfo", MinimaDB.getDB().getRWLockInfo());
+		
+		resp.put("writelockthread", MinimaDB.getDB().mCurrentWriteLockThread);
+		resp.put("writelockthreadstate", MinimaDB.getDB().mCurrentWriteLockState);
+		
 		resp.put("Shutting Down", Main.getInstance().isShuttingDown());
 		
 		ret.put("response", resp);

@@ -592,7 +592,6 @@ public class TxPoWProcessor extends MessageProcessor {
 						MinimaLogger.log(exc);
 					}
 					
-					
 					//Are we ruinning in MEGA MMR
 					if(GeneralParams.IS_MEGAMMR) {
 						//MinimaLogger.log("MEGAMMR : Add block "+txpnode.getTxBlock().getTxPoW().getBlockNumber());
@@ -654,10 +653,11 @@ public class TxPoWProcessor extends MessageProcessor {
 			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
-		}
 		
-		//Unlock..
-		MinimaDB.getDB().writeLock(false);
+		}finally {
+			//Unlock..
+			MinimaDB.getDB().writeLock(false);	
+		}
 		
 	}
 	
@@ -774,10 +774,12 @@ public class TxPoWProcessor extends MessageProcessor {
 								
 							}catch(Exception exc) {
 								MinimaLogger.log(exc);
+							
+							}finally {
+								//Unlock..
+								MinimaDB.getDB().writeLock(false);
 							}
 							
-							//Unlock..
-							MinimaDB.getDB().writeLock(false);
 						}
 						
 					}else {
