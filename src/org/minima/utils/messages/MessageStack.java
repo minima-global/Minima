@@ -121,13 +121,20 @@ public class MessageStack{
 
         	LinkedList<Message> newMessages = new LinkedList<>();
         	
+        	//Create a new list
         	for(Message msg : mMessages) {
 				if(!zExclude.contains(msg.getMessageType())) {
 					newMessages.add(msg);
 				}
 			}
         	
-        	mMessages = newMessages;
+        	//Clear the old list
+        	mMessages.clear();
+        	
+        	//Now add the new list
+        	for(Message msg : newMessages) {
+				mMessages.add(msg);
+			}
 		}
     }
     
