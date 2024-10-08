@@ -62,6 +62,10 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
         mMainThread.start();
     }
     
+    public String getName() {
+    	return mName;
+    }
+    
     public void setFullLogging(boolean zLogON, String zTraceFilter) {
     	mTrace 			= zLogON;
     	mTraceFilter 	= zTraceFilter;
@@ -156,7 +160,7 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
                 
                     if(checkTraceFilter(tracemsg)) {
                     	long timediff = System.currentTimeMillis() - timenow;
-                    	MinimaLogger.log("TRACE > ["+mMainThread.getName()+"] (stack:"+getSize()+") process_time_milli:"+timediff+" \t"+msg, true);
+                    	MinimaLogger.log("TRACE > ["+mMainThread.getName()+"] (stack:"+getSize()+") process_time_milli:"+timediff+" \t"+msg, false);
                     }
                     
                 }catch(Error noclass){

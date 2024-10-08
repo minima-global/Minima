@@ -5,6 +5,8 @@ package org.minima.utils.messages;
 
 import java.util.LinkedList;
 
+import org.minima.utils.MinimaLogger;
+
 /**
  * Thread Safe Message Stack
  * 
@@ -110,6 +112,19 @@ public class MessageStack{
     public void clear(){
         synchronized (mMessages) {
 			mMessages.clear();
+		}
+    }
+    
+    /**
+     * Print out the stack - NO NOTIFY
+     */
+    public void printAllMessages() {
+    	synchronized (mMessages) {
+    		int count=0;
+			for(Message msg : mMessages) {
+				MinimaLogger.log("MSG_PROC ["+count+"] : "+msg.toString(),false);
+				count++;
+			}
 		}
     }
 }

@@ -23,7 +23,7 @@ public class systemcheck extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"show","action"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"processor","action"}));
 	}
 	
 	@Override
@@ -33,41 +33,81 @@ public class systemcheck extends Command {
 		
 		JSONObject resp = new JSONObject();
 		
-		//Get info about each Process Manager
-		resp.put("Main", getInfo(Main.getInstance()));
-		resp.put("TxPowProcesssor", getInfo(Main.getInstance().getTxPoWProcessor()));
-		resp.put("TxPowMiner", getInfo(Main.getInstance().getTxPoWMiner()));
-		resp.put("NIOManager", getInfo(Main.getInstance().getNIOManager()));
-		resp.put("P2PManager", getInfo(Main.getInstance().getNetworkManager().getP2PManager()));
-		resp.put("MDSManager", getInfo(Main.getInstance().getMDSManager()));
-		resp.put("SendPollManager", getInfo(Main.getInstance().getSendPoll()));
-		resp.put("NotifyManager", getInfo(Main.getInstance().getNotifyManager()));
+		String action=getParam("action","list");
 		
-		resp.put("RWLockInfo", MinimaDB.getDB().getRWLockInfo());
+		if(action.equals("list")) {
+			//Get info about each Process Manager
+			resp.put("Main", getInfo(Main.getInstance()));
+			resp.put("TxPowProcesssor", getInfo(Main.getInstance().getTxPoWProcessor()));
+			resp.put("TxPowMiner", getInfo(Main.getInstance().getTxPoWMiner()));
+			resp.put("NIOManager", getInfo(Main.getInstance().getNIOManager()));
+			resp.put("P2PManager", getInfo(Main.getInstance().getNetworkManager().getP2PManager()));
+			resp.put("MDSManager", getInfo(Main.getInstance().getMDSManager()));
+			resp.put("SendPollManager", getInfo(Main.getInstance().getSendPoll()));
+			resp.put("NotifyManager", getInfo(Main.getInstance().getNotifyManager()));
+			
+			resp.put("RWLockInfo", MinimaDB.getDB().getRWLockInfo());
+			
+			resp.put("writelockthread", MinimaDB.getDB().mCurrentWriteLockThread);
+			resp.put("writelockthreadstate", MinimaDB.getDB().mCurrentWriteLockState);
+			
+			resp.put("Shutting Down", Main.getInstance().isShuttingDown());
+			
+			//Check the Read Write Lock..
+			MinimaLogger.log("Posting Checker Call in TxPoWProcessor..");
+			Main.getInstance().getTxPoWProcessor().postCheckCall();
+
+			//Post a message to the Mina thread also..
+			MinimaLogger.log("Posting Checker Call in Main..");
+			Main.getInstance().PostMessage(Main.MAIN_CALLCHECKER);
+			
+			//And a timer message
+			Message msg = new Message(Main.MAIN_CALLCHECKER);
+			msg.addBoolean("timer", true);
+			TimerMessage timed = new TimerMessage(1000, msg);
+			MinimaLogger.log("Posting TIMED Checker Call in Main..");
+			Main.getInstance().PostTimerMessage(timed);
 		
-		resp.put("writelockthread", MinimaDB.getDB().mCurrentWriteLockThread);
-		resp.put("writelockthreadstate", MinimaDB.getDB().mCurrentWriteLockState);
-		
-		resp.put("Shutting Down", Main.getInstance().isShuttingDown());
+		}else if(action.equals("details")) {
+			
+			String proc = getParam("processor");
+			
+			if(proc.equalsIgnoreCase("p2pmanager")) {
+				printDetails(Main.getInstance().getNetworkManager().getP2PManager());
+				
+			}else if(proc.equalsIgnoreCase("niomanager")) {
+				printDetails(Main.getInstance().getNIOManager());
+			
+			}else if(proc.equalsIgnoreCase("main")) {
+				printDetails(Main.getInstance());
+			
+			}else if(proc.equalsIgnoreCase("txpowprocessor")) {
+				printDetails(Main.getInstance().getTxPoWProcessor());
+			
+			}else if(proc.equalsIgnoreCase("txpowminer")) {
+				printDetails(Main.getInstance().getTxPoWMiner());
+			
+			}else if(proc.equalsIgnoreCase("mdsmanager")) {
+				printDetails(Main.getInstance().getMDSManager());
+			
+			}else if(proc.equalsIgnoreCase("notifymanager")) {
+				printDetails(Main.getInstance().getNotifyManager());
+			
+			}else if(proc.equalsIgnoreCase("senpollmanager")) {
+				printDetails(Main.getInstance().getSendPoll());
+			}
+			
+			resp.put("details", "Sent to Minima Log");
+		}
 		
 		ret.put("response", resp);
 
-		//Check the Read Write Lock..
-		MinimaLogger.log("Posting Checker Call in TxPoWProcessor..");
-		Main.getInstance().getTxPoWProcessor().postCheckCall();
-
-		//Post a message to the Mina thread also..
-		MinimaLogger.log("Posting Checker Call in Main..");
-		Main.getInstance().PostMessage(Main.MAIN_CALLCHECKER);
-		
-		//And a timer message
-		Message msg = new Message(Main.MAIN_CALLCHECKER);
-		msg.addBoolean("timer", true);
-		TimerMessage timed = new TimerMessage(1000, msg);
-		MinimaLogger.log("Posting TIMED Checker Call in Main..");
-		Main.getInstance().PostTimerMessage(timed);
-
 		return ret;
+	}
+	
+	public void printDetails(MessageProcessor zProc) {
+		MinimaLogger.log("Processor Details : "+zProc.getName(),false);
+		zProc.printAllMessages();
 	}
 	
 	public JSONObject getInfo(MessageProcessor zProc) {
@@ -83,40 +123,9 @@ public class systemcheck extends Command {
 		return ret;
 	}
 	
-	
-	// get a file from the resources folder
-    // works everywhere, IDEA, unit test and JAR file.
-    private InputStream getFileFromResourceAsStream(String fileName) {
-
-        // The class loader that loaded the class
-        ClassLoader classLoader = getClass().getClassLoader();
-        InputStream inputStream = classLoader.getResourceAsStream(fileName);
-
-        // the stream holding the file content
-        if (inputStream == null) {
-            MinimaLogger.log("file not found! " + fileName);
-        }
-            
-        return inputStream;
-
-    }
-	
+		
 	@Override
 	public Command getFunction() {
 		return new systemcheck();
-	}
-
-	public static void main(String[] zArgs) {
-		
-		for(int i=0;i<512;i++) {
-			
-			MiniData data = new MiniData(new BigInteger(Integer.toString(i)));
-			
-			System.out.println(data.to0xString());
-			
-		}
-		
-		
-		
 	}
 }
