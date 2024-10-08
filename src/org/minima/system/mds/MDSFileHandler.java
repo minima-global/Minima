@@ -516,21 +516,6 @@ public class MDSFileHandler implements Runnable {
 					//Use the PublicMDS generator..
 					String publicindex = mPublicMDS.getIndexPage();
 					
-//					//Set the session ID
-//					String success = loadResouceFile("publicmds/index.html");
-//					
-//					//Get the public sessionID
-//					String seshid = mMDS.getPublicMiniDAPPSessionID();
-//					
-//					//Replace the doRedirect()
-//					success = success.replace("var publicsessionid=\"0x00\";", 
-//											   "var publicsessionid=\""+seshid+"\";");
-//					
-//					//Do we enable the Wallet..
-//					if(GeneralParams.IS_MEGAMMR) {
-//						success = success.replace("var showwallet=false","var showwallet=true");
-//					}
-					
 					//And write that out..
 					writeHTMLPage(dos, publicindex);
 				
