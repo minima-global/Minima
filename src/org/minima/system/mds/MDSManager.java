@@ -1046,7 +1046,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("dapp store", "default/dapp_store-1.0.8.mds.zip", allminis, true);
 			
 			//The rest are normal
-			checkInstalled("block", "default/block-3.1.0.mds.zip", allminis, false);
+			checkInstalled("block", "default/block-3.2.0.mds.zip", allminis, false);
 			checkInstalled("chatter", "default/chatter-1.10.4.mds.zip", allminis, false);
 			checkInstalled("docs", "default/docs-2.1.0.mds.zip", allminis, false);
 			checkInstalled("ethwallet", "default/ethwallet-1.9.4.mds.zip", allminis, false);
