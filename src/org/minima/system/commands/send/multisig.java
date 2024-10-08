@@ -350,7 +350,7 @@ public class multisig extends Command {
 			
 			//Which key do we sign with
 			String tokenid		= cc.getTokenID().to0xString();	
-			String address		= getParam("address");
+			String address		= getAddressParam("address");
 			String coinaddress  = cc.getAddress().to0xString();
 			
 			//CANNOT send funds back to yourself as do not storew the state
