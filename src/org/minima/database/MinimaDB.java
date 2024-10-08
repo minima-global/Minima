@@ -733,7 +733,7 @@ public class MinimaDB {
 		}
 		
 		//We need read lock 
-		readLock(true);
+		//readLock(true);
 		
 		try {
 			//Get the base Database folder
@@ -747,7 +747,7 @@ public class MinimaDB {
 		}
 		
 		//Release the krakken
-		readLock(false);
+		//readLock(false);
 	}
 	
 	/**

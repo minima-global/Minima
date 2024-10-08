@@ -3,6 +3,7 @@
  */
 package org.minima.utils.messages;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 import org.minima.utils.MinimaLogger;
@@ -112,6 +113,21 @@ public class MessageStack{
     public void clear(){
         synchronized (mMessages) {
 			mMessages.clear();
+		}
+    }
+    
+    public void clearExcept(ArrayList<String> zExclude){
+        synchronized (mMessages) {
+
+        	LinkedList<Message> newMessages = new LinkedList<>();
+        	
+        	for(Message msg : mMessages) {
+				if(!zExclude.contains(msg.getMessageType())) {
+					newMessages.add(msg);
+				}
+			}
+        	
+        	mMessages = newMessages;
 		}
     }
     
