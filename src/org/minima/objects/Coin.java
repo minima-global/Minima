@@ -95,6 +95,10 @@ public class Coin implements Streamable {
 		this(Coin.COINID_OUTPUT, zAddress, zAmount, zTokenID, true);
 	}
 	
+	public Coin(MiniData zAddress, MiniNumber zAmount, MiniData zTokenID, boolean zStoreState) {
+		this(Coin.COINID_OUTPUT, zAddress, zAmount, zTokenID, zStoreState);
+	}
+	
 	public Coin(MiniData zCoinID, MiniData zAddress, MiniNumber zAmount, MiniData zTokenID) {
 		this(zCoinID, zAddress, zAmount, zTokenID, true);
 	}

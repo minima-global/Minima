@@ -73,7 +73,7 @@ public class txnaddamount extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id","amount","address","onlychange","tokenid","fromaddress","burn"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","amount","address","onlychange","tokenid","fromaddress","burn","storestate"}));
 	}
 	
 	@Override
@@ -218,10 +218,13 @@ public class txnaddamount extends Command {
 			}
 		}
 		
+		//Are we storing the state
+		boolean storestate = getBooleanParam("storestate", true);
+		
 		//And add the output
 		if(!addonlychange) {
 			String addr = getAddressParam("address");
-			Coin maincoin = new Coin(new MiniData(addr), tokenamount, tokenid);
+			Coin maincoin = new Coin(new MiniData(addr), tokenamount, tokenid, storestate);
 			
 			//Do we need to add the Token..
 			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
