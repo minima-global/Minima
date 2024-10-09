@@ -123,7 +123,7 @@ public class MessageStack{
         	
         	//Create a new list
         	for(Message msg : mMessages) {
-				if(!zExclude.contains(msg.getMessageType())) {
+				if(zExclude.contains(msg.getMessageType())) {
 					newMessages.add(msg);
 				}
 			}
