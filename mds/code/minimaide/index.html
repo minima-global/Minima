@@ -1,9 +1,16 @@
 <html>
 
 <head>
-	<!--   The MINIMA MDS Javascript Library -->
-	<script type="text/javascript" src="mds.js"></script>
-	<script type="text/javascript" src="ide.js"></script>
+	
+	<!-- JQuery -->
+	<script src="./js/jquery-3.7.1.min.js"></script>
+	<script src="./js/jquery-ui.js"></script>
+	
+	<!-- The MINIMA MDS Javascript Library -->
+	<script type="text/javascript" src="./js/mds.js"></script>
+	
+	<link href="./js/jquery-ui.css" rel="stylesheet">
+	
 	<link rel="stylesheet" type="text/css" href="ide.css">
 	
 	<title>Minima IDE</title>
@@ -11,107 +18,124 @@
 
 <body>
 
-<header>
-  <span>
-    <span class="fa fa-file-text-o" aria-hidden="true"></span>
-  <span class="title">Untitled</span> &#8212; Notepad
-  </span>
-  <nav>
-    <ul>
-      <li>File
-        <ul>
-          <li id="new_file">New</li>
-          <li>Open
-            <ul>
-              <li id="open_cookie_button">Cookie</li>
-              <li id="open_file_button">File</li>
-            </ul></li>
-          <li>Save  
-            <ul>
-              <li id="save_cookie">Cookie</li>
-              <li id="save_file">File</li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-      <li>Edit
-        <ul>
-          <li id="undo">Undo</li>
-          <li>Redo</li>
-          <li>Cute</li>
-          <li id="copy">Copy</li>
-          <li id="paste">Paste</li>
-          <li>Find</li>
-          <li>Change to</li>
-          <li>Go to</li>
-          <li>Select all</li>
-        </ul>
-      </li>
-      <li>Format
-        <ul>
-          <li>Font</li>
-        </ul>
-      </li>
-      <li>View
-        <ul>
-          <li id="option_statusbar">Status Bar</li>
-        </ul>
-      </li>
-      <li>Author</li>
-    </ul>
-  </nav>
-</header>
-<main>
-  <textarea id="main"></textarea>
-  <div class="status-bar flex hide">
-    <div>Line: <span id="line_number">1</span></div>
-    <div>Letters: <span id="letters_number">0</span></div>
-  </div>
-  <div class="alert hide">
-    <div>Alert</div>
-    <div>Note saved</div>
-  </div>
-  <div id="save_cookie_dialog" class="dialog-window auto-height">
-    <div>Save file to cookie</div>
-    <div>
-      <form id="save_cookie_form">
-        <label for="save_cookie_form_name">Name:</label>
-        <input type="text" id="save_cookie_form_name" class="input">
-        <button type="submit" class="button">Save</button>
-      </form>
-    </div>
-  </div> 
-  <div id="save_file_dialog" class="dialog-window auto-height">
-    <div>Save file</div>
-    <div>
-      <form id="save_file_form">
-        <label for="save_file_form_name">File name:</label>
-        <input type="text" id="save_file_form_name" class="input">
-        <button type="submit" class="button">Save</button>
-      </form>
-    </div>
-  </div> 
-  <div id="open_cookie_dialog" class="dialog-window">
-    <div>Open file from cookie</div>
-    <div>
-      <div class="open_cookie_div"></div>
-    </div>
-  </div>
-  <input type="file" class="open_file" id="open_file">
-</main>
+<style>
+  #dialog label, #dialog input { display:block; }
+  #dialog label { margin-top: 0.5em; }
+  #dialog input, #dialog textarea { width: 95%; }
+  //#tabs { margin-top: 1em; }
+  #tabs li .ui-icon-close { float: left; margin: 0.4em 0.2em 0 0; cursor: pointer; }
+  #add_tab { cursor: pointer; }
+</style>
 
+<script>
+  $( function() {
+    var tabTitle = $( "#tab_title" ),
+      tabContent = $( "#tab_content" ),
+      tabTemplate = "<li><a href='#{href}'>#{label}</a> <span class='ui-icon ui-icon-close' role='presentation'>Remove Tab</span></li>",
+      tabCounter = 2;
+ 
+    var tabs = $( "#tabs" ).tabs();
+ 
+    // Modal dialog init: custom buttons and a "close" callback resetting the form inside
+    var dialog = $( "#dialog" ).dialog({
+      autoOpen: false,
+      modal: true,
+      buttons: {
+        Add: function() {
+          addTab();
+          $( this ).dialog( "close" );
+        },
+        Cancel: function() {
+          $( this ).dialog( "close" );
+        }
+      },
+      close: function() {
+        form[ 0 ].reset();
+      }
+    });
+ 
+    // AddTab form: calls addTab function on submit and closes the dialog
+    var form = dialog.find( "form" ).on( "submit", function( event ) {
+      addTab();
+      dialog.dialog( "close" );
+      event.preventDefault();
+    });
+ 
+    // Actual addTab function: adds new tab using the input from the form above
+    function addTab() {
+      var label = tabTitle.val() || "Tab " + tabCounter,
+        id = "tabs-" + tabCounter,
+        li = $( tabTemplate.replace( /#\{href\}/g, "#" + id ).replace( /#\{label\}/g, label ) ),
+        tabContentHtml = tabContent.val() || "Tab " + tabCounter + " content.";
+ 
+      tabs.find( ".ui-tabs-nav" ).append( li );
+      tabs.append( "<div id='" + id + "'><p>" + tabContentHtml + "</p></div>" );
+      tabs.tabs( "refresh" );
+      tabCounter++;
+    }
+ 
+    // AddTab button: just opens the dialog
+    $( "#add_tab" )
+      .button()
+      .on( "click", function() {
+        dialog.dialog( "open" );
+      });
+ 
+    // Close icon: removing the tab on click
+    tabs.on( "click", "span.ui-icon-close", function() {
+      var panelId = $( this ).closest( "li" ).remove().attr( "aria-controls" );
+      $( "#" + panelId ).remove();
+      tabs.tabs( "refresh" );
+    });
+ 
+    tabs.on( "keyup", function( event ) {
+      if ( event.altKey && event.keyCode === $.ui.keyCode.BACKSPACE ) {
+        var panelId = tabs.find( ".ui-tabs-active" ).remove().attr( "aria-controls" );
+        $( "#" + panelId ).remove();
+        tabs.tabs( "refresh" );
+      }
+    });
+  } );
+  </script>
+  
 
-<script type="text/javascript">
+<table border=1 style="width:100%;height:100%">
 	
-	//Initialise MiFi
-	MDS.init(function(msg){
-		if(msg.event == "inited"){
-		
-		}
-	});
+	<tr>
+		<td colspan=2><button id="add_tab">Add Tab</button></td>
+	</tr>
 	
-</script>
+	<tr>
+		<td class=filesrow>files</td>
+		<td class=mainrow>
+			<div id="tabs" style="height:99%">
+			  <ul>
+			    <li><a href="#tabs-1">Nunc tincidunt</a> <span class="ui-icon ui-icon-close" role="presentation">Remove Tab</span></li>
+			  </ul>
+			  <div id="tabs-1">
+			    <p>Proin elit arcu, rutrum commodo, vehicula tempus, commodo a, risus. Curabitur nec arcu. Donec sollicitudin mi sit amet mauris. Nam elementum quam ullamcorper ante. Etiam aliquet massa et lorem. Mauris dapibus lacus auctor risus. Aenean tempor ullamcorper leo. Vivamus sed magna quis ligula eleifend adipiscing. Duis orci. Aliquam sodales tortor vitae ipsum. Aliquam nulla. Duis aliquam molestie erat. Ut et mauris vel pede varius sollicitudin. Sed ut dolor nec orci tincidunt interdum. Phasellus ipsum. Nunc tristique tempus lectus.</p>
+			  </div>
+			</div>
+		</td>
+	</tr>
+	
+	<tr>
+		<td colspan=2>Bottom Row!</td>
+	</tr>
+	
+</table>
 
+<div id="dialog" title="Tab data">
+  <form>
+    <fieldset class="ui-helper-reset">
+      <label for="tab_title">Title</label>
+      <input type="text" name="tab_title" id="tab_title" value="Tab Title" class="ui-widget-content ui-corner-all">
+      <label for="tab_content">Content</label>
+      <textarea name="tab_content" id="tab_content" class="ui-widget-content ui-corner-all">Tab content</textarea>
+    </fieldset>
+  </form>
+</div>
+ 
 </body>
 
 </html>
