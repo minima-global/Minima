@@ -427,6 +427,9 @@ public class NIOManager extends MessageProcessor {
 						
 						MinimaLogger.log("INFO : "+nc.getUID()+"@"+nc.getFullAddress()+" connection failed - no more reconnect attempts ");
 						
+						//Add to our Invalid Peers list
+						P2PFunctions.addInvalidPeer(nc.getFullAddress());
+						
 					}else {
 						MinimaLogger.log("INFO : "+nc.getUID()+"@"+nc.getFullAddress()+" Resetting reconnect attempts (no other connections) for "+nc.getFullAddress());
 						
