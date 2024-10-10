@@ -50,6 +50,7 @@ import org.minima.system.commands.base.printmmr;
 import org.minima.system.commands.base.printtree;
 import org.minima.system.commands.base.quit;
 import org.minima.system.commands.base.random;
+import org.minima.system.commands.base.scanchain;
 import org.minima.system.commands.base.seedrandom;
 import org.minima.system.commands.base.slavenode;
 import org.minima.system.commands.base.status;
@@ -148,7 +149,7 @@ public class CommandRunner {
 			new archive(), new logs(), new history(), new convert(),new maths(),
 			new checkpending(), new checkmode(), new restoresync(), new timemilli(),
 			
-			new decryptbackup(), new megammrsync(), new systemcheck(),
+			new decryptbackup(), new megammrsync(), new systemcheck(), new scanchain(),
 			
 			new multisig(), new multisigread(), new checkaddress(),
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
