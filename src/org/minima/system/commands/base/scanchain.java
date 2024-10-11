@@ -21,7 +21,7 @@ import org.minima.utils.json.JSONObject;
 public class scanchain extends Command {
 
 	public scanchain() {
-		super("scanchain","(depth:) - Scan back through the chain and see every address used");
+		super("scanchain","(depth:) - Scan back through the chain and see all transaction data");
 	}
 	
 	@Override
@@ -40,41 +40,44 @@ public class scanchain extends Command {
 			throw new CommandException("NO Blocks yet..");
 		}
 		
+		MiniNumber startblock = tip.getBlockNumber(); 
+		
 		//How deep..
 		int depth = getNumberParam("depth", new MiniNumber(16)).getAsInt();
 		
 		//Now search back through the chain
 		JSONArray blockdata = new JSONArray();
 		int counter = 0;
-		while(tip != null && counter<depth) {
+		while(tip != null && counter<=depth) {
 			
 			TxPoW topblock = tip.getTxPoW();
 			
 			JSONObject blockjson = new JSONObject();
-			blockjson.put("number", topblock.getBlockNumber());
+			blockjson.put("block", topblock.getBlockNumber());
+			blockjson.put("depth", startblock.sub(topblock.getBlockNumber()));
 			blockjson.put("timemilli", topblock.getTimeMilli());
 			blockjson.put("date", new Date(topblock.getTimeMilli().getAsLong()));
 			blockjson.put("txpowid", topblock.getTxPoWID());
 			
-			JSONArray inputs  = new JSONArray();
-			JSONArray outputs = new JSONArray();
+			//All the transaction data in the block
+			JSONArray transactiondata  = new JSONArray();
 			
-			//Scan it..
-			checkTxPoWAddresses(topblock, inputs, outputs);
+			//Is this block a transaction
+			if(topblock.isTransaction()) {
+				transactiondata.add(getTransactionDetails(topblock));
+			}
 			
-			//Now scan all txpow in the block
+			//Add all the transactions
 			ArrayList<MiniData> alltrans = topblock.getBlockTransactions();
 			for(MiniData txid : alltrans) {
 				TxPoW txpow = MinimaDB.getDB().getTxPoWDB().getTxPoW(txid.to0xString());
 				if(txpow != null) {
 					//Scan it..
-					checkTxPoWAddresses(txpow, inputs, outputs);
+					transactiondata.add(getTransactionDetails(txpow));
 				}
 			}
 			
-			//Add data..
-			blockjson.put("inputs", inputs);
-			blockjson.put("outputs", outputs);
+			blockjson.put("transactions", transactiondata);
 			
 			//And add to final list
 			blockdata.add(blockjson);
@@ -91,31 +94,22 @@ public class scanchain extends Command {
 		
 		return ret;
 	}
-
-	public void checkTxPoWAddresses(TxPoW zTxPOW, JSONArray zInputs,JSONArray zOutputs) {
+	
+	public JSONObject getTransactionDetails(TxPoW zTxPoW) {
 		
-		if(zTxPOW.isTransaction()) {
-			
-			//Get the transaction
-			Transaction trans = zTxPOW.getTransaction();
-			
-			//Get the inputs
-			ArrayList<Coin> ins = trans.getAllInputs();
-			for(Coin cc : ins) {
-				JSONObject cjson = cc.toJSON();
-				cjson.put("spent", true);
-				cjson.put("txpowid", zTxPOW.getTxPoWID());
-				zInputs.add(cjson);
-			}
-			
-			//Get the outputs
-			ArrayList<Coin> outs = trans.getAllOutputs();
-			for(Coin cc : outs) {
-				JSONObject cjson = cc.toJSON();
-				cjson.put("txpowid", zTxPOW.getTxPoWID());
-				zOutputs.add(cjson);
-			}
+		JSONObject ret = new JSONObject();
+		ret.put("txpowid",zTxPoW.getTxPoWID());
+		ret.put("istransaction",!zTxPoW.getTransaction().isEmpty());
+		if(!zTxPoW.getTransaction().isEmpty()) {
+			ret.put("transaction",zTxPoW.getTransaction().toJSON());
 		}
+		
+		ret.put("isburntransaction",!zTxPoW.getBurnTransaction().isEmpty());
+		if(!zTxPoW.getBurnTransaction().isEmpty()) {
+			ret.put("burntransaction",zTxPoW.getBurnTransaction().toJSON());
+		}
+		
+		return ret;
 	}
 	
 	@Override

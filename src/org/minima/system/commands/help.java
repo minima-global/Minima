@@ -33,6 +33,7 @@ import org.minima.system.commands.base.newaddress;
 import org.minima.system.commands.base.printtree;
 import org.minima.system.commands.base.quit;
 import org.minima.system.commands.base.random;
+import org.minima.system.commands.base.scanchain;
 import org.minima.system.commands.base.status;
 import org.minima.system.commands.base.timemilli;
 import org.minima.system.commands.base.tokencreate;
@@ -136,6 +137,7 @@ public class help extends Command {
 			
 			addCommand(details, new status());
 			addCommand(details, new block());
+			addCommand(details, new scanchain());
 			addCommand(details, new printtree());
 			addCommand(details, new burn());
 			addCommand(details, new trace());
