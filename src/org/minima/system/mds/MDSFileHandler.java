@@ -250,6 +250,7 @@ public class MDSFileHandler implements Runnable {
 						fileRequested.equals("httperror.html") ||
 						fileRequested.equals("noconnect.html") ||
 						fileRequested.equals("favicon.png") ||
+						fileRequested.equals("favicon.ico") ||
 						fileRequested.equals("Manrope-Regular.ttf") ||
 						fileRequested.equals("background.svg")) {
 				
@@ -545,12 +546,11 @@ public class MDSFileHandler implements Runnable {
 				
 				//Are we asking for mds.js..
 				if(webfile.getName().equalsIgnoreCase("mds.js")) {
-					//MinimaLogger.log("MDSJS OVERRIDE : "+fileRequested);
 					
 					//Always send the latest version..
 					writeHTMLResouceFile(dos, "mdsjs/mds.js");
-				
-				}else {
+			
+				}else{
 					
 					//Check is valid child of parent..
 					boolean ischild = MiniFile.isChild(mRoot, webfile);
