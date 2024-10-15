@@ -56,7 +56,7 @@ public class scanchain extends Command {
 			blockjson.put("block", topblock.getBlockNumber());
 			blockjson.put("depth", startblock.sub(topblock.getBlockNumber()));
 			blockjson.put("timemilli", topblock.getTimeMilli());
-			blockjson.put("date", new Date(topblock.getTimeMilli().getAsLong()));
+			blockjson.put("date", new Date(topblock.getTimeMilli().getAsLong()).toString() );
 			blockjson.put("txpowid", topblock.getTxPoWID());
 			
 			//All the transaction data in the block
