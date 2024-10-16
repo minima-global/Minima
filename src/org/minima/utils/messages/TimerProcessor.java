@@ -76,6 +76,23 @@ public class TimerProcessor implements Runnable {
 		}
 	}
 	
+	public int getSize() {
+		int size = 0;
+		synchronized (mMessagesLock) {
+			size = mTimerMessages.size();
+		}
+		return size;
+	}
+	
+	public void printAllMessages() {
+		synchronized (mMessagesLock) {
+			//Cycle through all the timers
+			for(TimerMessage tm : mTimerMessages) {
+				MinimaLogger.log(tm.toString(),false);
+			}
+		}
+	}
+	
 	@Override
 	public void run() {
 		while(mRunning) {

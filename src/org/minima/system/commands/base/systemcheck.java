@@ -14,6 +14,7 @@ import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
+import org.minima.utils.messages.TimerProcessor;
 
 public class systemcheck extends Command {
 
@@ -45,6 +46,10 @@ public class systemcheck extends Command {
 			resp.put("MDSManager", getInfo(Main.getInstance().getMDSManager()));
 			resp.put("SendPollManager", getInfo(Main.getInstance().getSendPoll()));
 			resp.put("NotifyManager", getInfo(Main.getInstance().getNotifyManager()));
+			
+			//The Timer Processor..
+			TimerProcessor tp = TimerProcessor.getTimerProcessor();
+			resp.put("TimerProcessor", tp.getSize());
 			
 			resp.put("RWLockInfo", MinimaDB.getDB().getRWLockInfo());
 			
@@ -95,6 +100,10 @@ public class systemcheck extends Command {
 			
 			}else if(proc.equalsIgnoreCase("senpollmanager")) {
 				printDetails(Main.getInstance().getSendPoll());
+			
+			}else if(proc.equalsIgnoreCase("timerprocessor")) {
+				MinimaLogger.log("Processor Details  : TimerProcessor",false);
+				TimerProcessor.getTimerProcessor().printAllMessages();
 			}
 			
 			resp.put("details", "Sent to Minima Log");
