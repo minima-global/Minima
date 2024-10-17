@@ -44,6 +44,8 @@ public class TxPoWSqlDB extends SqlDB {
 	PreparedStatement SQL_SELECT_RELEVANT 		= null;
 	PreparedStatement SQL_SELECT_RELEVANTSIZE 	= null;
 	
+	PreparedStatement SQL_SELECT_OLDEST 		= null;
+	
 	/**
 	 * Show when a new block is added
 	 */
@@ -494,6 +496,11 @@ public class TxPoWSqlDB extends SqlDB {
 			//Current MAX time..
 			long maxtime = System.currentTimeMillis() - MAX_SQL_MILLI;
 			if(zHard) {
+				
+				if(LOG_ADD_BLOCKS) {
+					MinimaLogger.log("[+] TxPoWDB wipe clean..");
+				}
+				
 				maxtime = System.currentTimeMillis() + 100000;
 			}
 			
@@ -504,7 +511,12 @@ public class TxPoWSqlDB extends SqlDB {
 			SQL_DELETE_TXPOW.setLong(1, maxtime);
 			
 			//Run the query
-			return SQL_DELETE_TXPOW.executeUpdate();
+			int num = SQL_DELETE_TXPOW.executeUpdate();
+			if(LOG_ADD_BLOCKS) {
+				MinimaLogger.log("[+] TxPoWDB clean up deleted : "+num);
+			}
+			
+			return num;
 			
 		} catch (SQLException e) {
 			MinimaLogger.log(e);
