@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.archive.ArchiveManager;
 import org.minima.database.txpowdb.sql.TxPoWSqlDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.TxBlock;
@@ -15,6 +16,7 @@ import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.CommandRunner;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -160,7 +162,14 @@ public class txpow extends Command {
 			
 			TxPoW txpow = TxPoWSearcher.getTxPoWBlock(block);
 			if(txpow == null) {
-				throw new CommandException("TxPoW not found @ height "+block);
+				
+				//Search the Archive..
+				TxBlock txblock = MinimaDB.getDB().getArchive().loadBlockFromNumber(block);
+				if(txblock == null) {
+					throw new CommandException("TxPoW not found @ height "+block);
+				}
+				
+				txpow = txblock.getTxPoW();
 			}
 			
 			ret.put("response", txpow.toJSON());
