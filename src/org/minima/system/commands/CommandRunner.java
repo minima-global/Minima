@@ -50,10 +50,13 @@ import org.minima.system.commands.base.printmmr;
 import org.minima.system.commands.base.printtree;
 import org.minima.system.commands.base.quit;
 import org.minima.system.commands.base.random;
+import org.minima.system.commands.base.scanchain;
 import org.minima.system.commands.base.seedrandom;
 import org.minima.system.commands.base.slavenode;
 import org.minima.system.commands.base.status;
+import org.minima.system.commands.base.systemcheck;
 import org.minima.system.commands.base.test;
+import org.minima.system.commands.base.timemilli;
 import org.minima.system.commands.base.tokencreate;
 import org.minima.system.commands.base.tokenvalidate;
 import org.minima.system.commands.base.trace;
@@ -86,12 +89,14 @@ import org.minima.system.commands.search.keys;
 import org.minima.system.commands.search.tokens;
 import org.minima.system.commands.search.txpow;
 import org.minima.system.commands.send.multisig;
+import org.minima.system.commands.send.multisigread;
 import org.minima.system.commands.send.send;
 import org.minima.system.commands.send.sendnosign;
 import org.minima.system.commands.send.sendpoll;
 import org.minima.system.commands.send.sendpost;
 import org.minima.system.commands.send.sendsign;
 import org.minima.system.commands.send.sendview;
+import org.minima.system.commands.send.wallet.constructfrom;
 import org.minima.system.commands.send.wallet.createfrom;
 import org.minima.system.commands.send.wallet.postfrom;
 import org.minima.system.commands.send.wallet.sendfrom;
@@ -103,6 +108,7 @@ import org.minima.system.commands.txn.txnauto;
 import org.minima.system.commands.txn.txnbasics;
 import org.minima.system.commands.txn.txncheck;
 import org.minima.system.commands.txn.txnclear;
+import org.minima.system.commands.txn.txncoinlock;
 import org.minima.system.commands.txn.txncreate;
 import org.minima.system.commands.txn.txndelete;
 import org.minima.system.commands.txn.txnexport;
@@ -110,6 +116,8 @@ import org.minima.system.commands.txn.txnimport;
 import org.minima.system.commands.txn.txninput;
 import org.minima.system.commands.txn.txnlist;
 import org.minima.system.commands.txn.txnlock;
+import org.minima.system.commands.txn.txnmine;
+import org.minima.system.commands.txn.txnminepost;
 import org.minima.system.commands.txn.txnmmr;
 import org.minima.system.commands.txn.txnoutput;
 import org.minima.system.commands.txn.txnpost;
@@ -136,14 +144,14 @@ public class CommandRunner {
 			new mds(), new sendpoll(), new healthcheck(), new mempool(), new block(), new reset(),
 			
 			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(), new sendview(),
-			new sendfrom(), new createfrom(), new signfrom(), new postfrom(),
+			new sendfrom(), new createfrom(), new signfrom(), new postfrom(), new constructfrom(),
 			
 			new archive(), new logs(), new history(), new convert(),new maths(),
-			new checkpending(), new checkmode(), new restoresync(),
+			new checkpending(), new checkmode(), new restoresync(), new timemilli(),
 			
-			new decryptbackup(), new megammrsync(),
+			new decryptbackup(), new megammrsync(), new systemcheck(), new scanchain(),
 			
-			new multisig(), new checkaddress(),
+			new multisig(), new multisigread(), new checkaddress(),
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
 			
 			new ping(), new random(), new seedrandom(), new mysql(), new mysqlcoins(), new slavenode(), new checkrestore(),
@@ -159,7 +167,7 @@ public class CommandRunner {
 			new txnbasics(),new txncreate(), new txninput(),new txnlist(), new txnclear(),
 			new txnoutput(),new txnstate(),new txnsign(),new txnpost(),new txndelete(),
 			new txnexport(),new txnimport(),new txncheck(), new txnscript(), new txnauto(),
-			new txnaddamount(),new txnlock(), new txnmmr(),
+			new txnaddamount(),new txnlock(), new txnmmr(), new txnmine(), new txnminepost(), new txncoinlock(),
 			
 			new coinimport(), new coinexport(),new cointrack(), new coincheck(),
 			
@@ -240,15 +248,32 @@ public class CommandRunner {
 				break;
 			}
 			
-			//Is this a MiniDAPP..
-			if(!zMiniDAPPID.equals("0x00")) {
+			//What is the command
+			String comname = cmd.getName();
 			
-				//What is the command
-				String comname = cmd.getName();
+			//Check this MiniDAPP can make this call..
+			boolean allowed = isCommandAllowed(comname);
+			
+			//Is this a MiniDAPP..
+			if(zMiniDAPPID.equals(Main.getInstance().getMDSManager().getPublicMiniDAPPID())) {
 				
-				//Check this MiniDAPP can make this call..
-				boolean allowed = isCommandAllowed(comname);
+				//Public MiniDAPPs cannot add to pending..
+				if(!allowed) {
+					result=  new JSONObject();
+					result.put("command", command);
+					result.put("status", false);
+					result.put("pending", false);
+					result.put("error", "Public MDS cannot run WRITE commands");
+					
+					//Add to the List..
+					finalresult.add(result);
+					
+					//And that's all folks..
+					break;
+				}
 				
+			}else if(!zMiniDAPPID.equals("0x00")) {
+			
 				if(!allowed) {
 					
 					//Get that MiniDAPP..

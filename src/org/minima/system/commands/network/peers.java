@@ -16,7 +16,6 @@ import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.network.p2p.P2PPeersChecker;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.RPCClient;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -79,6 +78,9 @@ public class peers extends Command {
 			int maxpeers = getNumberParam("max", MiniNumber.THOUSAND).getAsInt();
 			String peerslist = getPeersList(maxpeers);
 			int numberpeers  = peerslist.split(",").length; 
+			if(peerslist.trim().equals("")) {
+				numberpeers = 0;
+			}
 			
 			P2PManager p2PManager = (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();
 			
@@ -122,34 +124,38 @@ public class peers extends Command {
 					throw new CommandException("No peers found @ "+peerstr);
 				}
 				
-				MinimaLogger.log("Peers downloaded "+urllist);
-				
 				peerstr = urllist;
 			}
 			
-			//Break up 
+			//Break up
+			ArrayList<String> validpeers   = new ArrayList<>();
+			ArrayList<String> invalidpeers = new ArrayList<>();
 			StringTokenizer strtok = new StringTokenizer(peerstr,",");
 			while(strtok.hasMoreTokens()) {
 				String peer = strtok.nextToken();
 				
 				//Get the IP..
 				Message checker = connect.createConnectMessage(peer);
-				if(checker == null) {
-					throw new CommandException("Invalid peer : "+peer);
+				if(checker != null) {
+					
+					//Create an address
+					InetSocketAddress addr = new InetSocketAddress(checker.getString("host"), checker.getInteger("port"));
+					
+					//Now send to the peers checker..
+					Message msg = new Message(P2PPeersChecker.PEERS_CHECKPEERS).addObject("address", addr);
+					msg.addBoolean("force", true);
+					
+					p2pchecker.PostMessage(msg);
+					validpeers.add(peer);
+				}else {
+					invalidpeers.add(peer);
 				}
-				
-				//Create an address
-				InetSocketAddress addr = new InetSocketAddress(checker.getString("host"), checker.getInteger("port"));
-				
-				//Now send to the peers checker..
-				Message msg = new Message(P2PPeersChecker.PEERS_CHECKPEERS).addObject("address", addr);
-				msg.addBoolean("force", true);
-				
-				p2pchecker.PostMessage(msg);
 			}
 			
 			JSONObject resp = new JSONObject();
-			resp.put("message","Peers added to checking queue..");
+			resp.put("valid",validpeers.toString());
+			resp.put("invalid",invalidpeers.toString());
+			resp.put("message","Valid peers added to checking queue..");
 			ret.put("response", resp);
 			
 		}else if(action.equals("publish")) {
@@ -192,31 +198,28 @@ public class peers extends Command {
 			P2PPeersChecker p2pchecker 	= p2pmanager.getPeersChecker();
 	        
 			//And now add those peers
-			//Break up 
 			StringTokenizer strtok = new StringTokenizer(peerstr,",");
 			while(strtok.hasMoreTokens()) {
 				String peer = strtok.nextToken();
 				
 				//Get the IP..
 				Message checker = connect.createConnectMessage(peer);
-				if(checker == null) {
-					throw new CommandException("Invalid peer : "+peer);
+				if(checker != null) {
+					//Create an address
+					InetSocketAddress addr = new InetSocketAddress(checker.getString("host"), checker.getInteger("port"));
+					
+					//Now send to the peers checker..
+					Message msg = new Message(P2PPeersChecker.PEERS_CHECKPEERS).addObject("address", addr);
+					msg.addBoolean("force", true);
+					
+					p2pchecker.PostMessage(msg);
 				}
-				
-				//Create an address
-				InetSocketAddress addr = new InetSocketAddress(checker.getString("host"), checker.getInteger("port"));
-				
-				//Now send to the peers checker..
-				Message msg = new Message(P2PPeersChecker.PEERS_CHECKPEERS).addObject("address", addr);
-				msg.addBoolean("force", true);
-				
-				p2pchecker.PostMessage(msg);
 			}
 			
 			JSONObject resp = new JSONObject();
 			resp.put("peers",peerstr);
 			resp.put("location",url);
-			resp.put("message","Peers added to checking queue..");
+			resp.put("message","Valid peers added to checking queue..");
 			ret.put("response", resp);
 			
 		}else {

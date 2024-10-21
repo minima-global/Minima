@@ -190,6 +190,14 @@ public class UserDB extends JsonDB{
 	/**
 	 * Are we auto backing up the MySQLDB
 	 */
+	public boolean getAutoLoginDetailsMySQL() {
+		return getBoolean("mysql_autologindetails", false);
+	}
+	
+	public void setAutoLoginDetailsMySQL(boolean zLoginDetails) {
+		setBoolean("mysql_autologindetails", zLoginDetails);
+	}
+	
 	public boolean getAutoBackupMySQL() {
 		return getBoolean("mysql_autobackup", false);
 	}

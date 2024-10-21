@@ -52,6 +52,10 @@ public class TxnRow implements Streamable {
 	}
 	
 	public JSONObject toJSON() {
+		return toJSON(true);
+	}
+	
+	public JSONObject toJSON(boolean zShowWitness) {
 		JSONObject ret = new JSONObject();
 		ret.put("id", mID);
 		
@@ -60,15 +64,18 @@ public class TxnRow implements Streamable {
 		
 		//Now output
 		ret.put("transaction", mTransaction.toJSON());
-		ret.put("witness", mWitness.toJSON());
 		
-		//Now output the full output coins with correct coinid
-		ArrayList<Coin> coinidcoins = mTransaction.getAllOutputs();
-		JSONArray coinarr 		= new JSONArray();
-		for(Coin cc : coinidcoins) {
-			coinarr.add(MiniData.getMiniDataVersion(cc).to0xString());
+		if(zShowWitness) {
+			ret.put("witness", mWitness.toJSON());
+			
+			//Now output the full output coins with correct coinid
+			ArrayList<Coin> coinidcoins = mTransaction.getAllOutputs();
+			JSONArray coinarr 		= new JSONArray();
+			for(Coin cc : coinidcoins) {
+				coinarr.add(MiniData.getMiniDataVersion(cc).to0xString());
+			}
+			ret.put("outputcoindata", coinarr);
 		}
-		ret.put("outputcoindata", coinarr);
 		
 		return ret;		
 	}

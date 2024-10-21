@@ -12,7 +12,7 @@ import org.minima.utils.messages.MessageProcessor;
 public class trace extends Command {
 
 	public trace() {
-		super("trace","[enable:true|false] (filter:) - Show the message stacks of the internal Minima Engine with optional filter string. Only works on terminal.");
+		super("trace","[enable:true|false] (filter:) (network:) - Show the message stacks of the internal Minima Engine with optional filter string. Only works on terminal.");
 	}
 	
 	@Override
@@ -27,6 +27,9 @@ public class trace extends Command {
 				+ "filter: (optional)\n"
 				+ "    A case sensitive string to filter the messages by.\n"
 				+ "\n"
+				+ "network: (optional)\n"
+				+ "    true or false, show low level network messages\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "trace enable:true\n"
@@ -37,6 +40,8 @@ public class trace extends Command {
 				+ "\n"
 				+ "trace enable:true filter:MDS\n"
 				+ "\n"
+				+ "trace enable:true filter:MDS network:true\n"
+				+ "\n"
 				+ "trace enable:true filter:NOTIFYMANAGER\n"
 				+ "\n"
 				+ "trace enable:true filter:TXPOWPROCESSOR\n"
@@ -46,7 +51,7 @@ public class trace extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"enable","filter"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"enable","filter","network"}));
 	}
 	
 	@Override
@@ -67,12 +72,14 @@ public class trace extends Command {
 		
 		MessageProcessor.setTrace(on, filter);
 		
-		NIOClient.mTraceON = on;
-		NIOServer.mTraceON = on;
-		
+		boolean  network = getBooleanParam("network", false);
+		NIOClient.mTraceON = network;
+		NIOServer.mTraceON = network;
+	
 		JSONObject tr = new JSONObject();
 		tr.put("enabled", on);
 		tr.put("filter", filter);
+		tr.put("shownetwork", network);
 		
 		ret.put("response", tr);
 		

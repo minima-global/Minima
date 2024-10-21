@@ -15,25 +15,6 @@ import org.minima.utils.json.JSONObject;
 
 public class signfrom extends Command {
 
-	public class AddressAmount {
-		
-		MiniData 	mAddress;
-		MiniNumber 	mAmount;
-		
-		public AddressAmount(MiniData zAddress, MiniNumber zAmount) {
-			mAddress 	= zAddress;
-			mAmount		= zAmount;
-		}
-		
-		public MiniData getAddress(){
-			return mAddress;
-		}
-		
-		public MiniNumber getAmount() {
-			return mAmount;
-		}
-	}
-	
 	public signfrom() {
 		super("signfrom","[data:] [privatekey:] [keyuses:] - Sign a creatfrom txn");
 	}

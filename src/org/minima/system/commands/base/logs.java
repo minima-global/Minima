@@ -3,6 +3,8 @@ package org.minima.system.commands.base;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.minima.database.txpowdb.TxPoWDB;
+import org.minima.database.txpowdb.sql.TxPoWSqlDB;
 import org.minima.system.commands.Command;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.json.JSONObject;
@@ -10,7 +12,7 @@ import org.minima.utils.json.JSONObject;
 public class logs extends Command {
 
 	public logs() {
-		super("logs","(scripts:) (mining:) (maxima:) (networking:) (blocks:) (ibd:) - Enable full logs for various parts of Minima");
+		super("logs","(scripts:) (mining:) (maxima:) (networking:) (blocks:) (ibd:) (txpowdb:) - Enable full logs for various parts of Minima");
 	}
 	
 	@Override
@@ -40,6 +42,9 @@ public class logs extends Command {
 				+ "peerschecker: (optional)\n"
 				+ "    true or false, true turns on detailed logs for IBD processing.\n"
 				+ "\n"
+				+ "txpowdb: (optional)\n"
+				+ "    true or false, true turns on logs for adding TxPoW to TxPoWDB.\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "logs scripts:true\n"
@@ -49,7 +54,8 @@ public class logs extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"scripts","mining","maxima","blocks","networking","ibd","peerschecker"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"scripts","mining","maxima",
+				"blocks","networking","ibd","peerschecker","txpowdb"}));
 	}
 	
 	@Override
@@ -126,11 +132,24 @@ public class logs extends Command {
 			}
 		}
 		
+		//Are we logging IBD data
+		if(existsParam("txpowdb")) {
+			String mining = getParam("txpowdb", "false");
+			if(mining.equals("true")) {
+				TxPoWSqlDB.LOG_ADD_BLOCKS 		= true;
+				TxPoWSqlDB.LOG_ADD_TRANSACTION 	= true;
+			}else {
+				TxPoWSqlDB.LOG_ADD_BLOCKS 		= false;
+				TxPoWSqlDB.LOG_ADD_TRANSACTION 	= false;
+			}
+		}
+		
 		JSONObject resp = new JSONObject();
 		resp.put("scripts", GeneralParams.SCRIPTLOGS);
 		resp.put("mining", GeneralParams.MINING_LOGS);
 		resp.put("maxima", GeneralParams.MAXIMA_LOGS);
 		resp.put("blocks", GeneralParams.BLOCK_LOGS);
+		resp.put("txpowdb", TxPoWSqlDB.LOG_ADD_BLOCKS);
 		resp.put("networking", GeneralParams.NETWORKING_LOGS);
 		resp.put("ibd", GeneralParams.IBDSYNC_LOGS);
 		resp.put("peerschecker", GeneralParams.PEERSCHECKER_lOG);

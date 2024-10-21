@@ -187,8 +187,11 @@ public class restore extends Command {
 		ret.put("message", "Restart Minima for restore to take effect!");
 		
 		//Now save the Databases..
-		MinimaDB.getDB().saveSQL(false);
+		//MinimaDB.getDB().saveSQL(false);
 		
+		//Now shutdown and save everything
+		MinimaDB.getDB().saveAllDB();
+				
 		//Normally yes
 		if(doshutdown) {
 			

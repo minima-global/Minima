@@ -3,7 +3,10 @@
  */
 package org.minima.utils.messages;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+
+import org.minima.utils.MinimaLogger;
 
 /**
  * Thread Safe Message Stack
@@ -110,6 +113,41 @@ public class MessageStack{
     public void clear(){
         synchronized (mMessages) {
 			mMessages.clear();
+		}
+    }
+    
+    public void clearExcept(ArrayList<String> zExclude){
+        synchronized (mMessages) {
+
+        	LinkedList<Message> newMessages = new LinkedList<>();
+        	
+        	//Create a new list
+        	for(Message msg : mMessages) {
+				if(zExclude.contains(msg.getMessageType())) {
+					newMessages.add(msg);
+				}
+			}
+        	
+        	//Clear the old list
+        	mMessages.clear();
+        	
+        	//Now add the new list
+        	for(Message msg : newMessages) {
+				mMessages.add(msg);
+			}
+		}
+    }
+    
+    /**
+     * Print out the stack - NO NOTIFY
+     */
+    public void printAllMessages() {
+    	synchronized (mMessages) {
+    		int count=0;
+			for(Message msg : mMessages) {
+				MinimaLogger.log("MSG_PROC ["+count+"] : "+msg.toString(),false);
+				count++;
+			}
 		}
     }
 }

@@ -140,6 +140,11 @@ public class Main extends MessageProcessor {
 	long CHECKER_TIMER							= 1000 * 180;
 	
 	/**
+	 * USe to ttest if MAIN thread running correctly..
+	 */
+	public static final String MAIN_CALLCHECKER 	= "MAIN_CALLCHECKER";
+	
+	/**
 	 * Notify Users..
 	 */
 	public static final String MAIN_NEWBLOCK 	= "MAIN_NEWBLOCK";
@@ -911,9 +916,16 @@ public class Main extends MessageProcessor {
 					//Now save..
 					boolean status = mysql.saveTxPoW(txp);
 					
+					//Shutdown..
+					mysql.shutdown();
+					
 					//Output
 					if(!status) {
-						MinimaLogger.log("[ERROR] MYSQL TXPOW AUTOBACKUP");
+						MinimaLogger.log("[ERROR] MYSQL TXPOW AUTOBACKUP "
+								+ " host:"+udb.getAutoMySQLHost()
+								+ " user:"+udb.getAutoMySQLUser()
+								+ " db:"+udb.getAutoMySQLDB()
+								);
 					}
 				}
 			}
@@ -1002,6 +1014,19 @@ public class Main extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(MAIN_NETRESTART)) {
 			
+			MinimaLogger.log("[!] MAIN restart networking..");
+			
+			//First disconnect everyone..
+			MinimaLogger.log("Disconnect all peers");
+			Main.getInstance().getNetworkManager().getNIOManager().PostMessage(NIOManager.NIO_DISCONNECTALL);
+			
+			//Now wait..
+			MinimaLogger.log("Wait 20 seconds..");
+			Thread.sleep(20000);
+			
+			//Reset the IBD timer
+			getTxPoWProcessor().resetFirstIBDTimer();
+			
 			//Restart the Networking..
 			restartNIO();
 
@@ -1082,6 +1107,13 @@ public class Main extends MessageProcessor {
 			
 			//A Ping Message.. The top TxPoWID
 			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_PING, tip.getTxPoW().getTxPoWIDData());
+		
+		}else if(zMessage.getMessageType().equals(MAIN_CALLCHECKER)) {
+			
+			boolean timed = zMessage.getBoolean("timer", false);
+			
+			//Sent to check this is running..
+			MinimaLogger.log("MAIN Checker Call Recieved.. timer:"+timed);
 		}
 	}
 	

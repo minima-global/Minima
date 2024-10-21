@@ -3,6 +3,7 @@
  */
 package org.minima.utils.messages;
 
+import org.minima.database.MinimaDB;
 import org.minima.utils.MinimaLogger;
 
 /**
@@ -43,6 +44,11 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
 	String mName;
 	
 	/**
+	 * Current Message being processed..
+	 */
+	Message mLastMessage = null;
+	
+	/**
 	 * Constructor
 	 */
     public MessageProcessor(String zName){
@@ -56,6 +62,10 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
         mMainThread.start();
     }
     
+    public String getName() {
+    	return mName;
+    }
+    
     public void setFullLogging(boolean zLogON, String zTraceFilter) {
     	mTrace 			= zLogON;
     	mTraceFilter 	= zTraceFilter;
@@ -67,6 +77,18 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     
     public String getTraceFilter() {
     	return mTraceFilter;
+    }
+    
+    public Message getLastMessage() {
+    	return mLastMessage;
+    }
+    
+    public boolean checkTraceFilter(String zMsg) {
+    	if(mTrace && zMsg.toLowerCase().contains(mTraceFilter.toLowerCase())) {
+    		return true;
+    	}
+    	
+    	return false;
     }
     
     public boolean isRunning(){
@@ -120,21 +142,25 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
             while(msg != null && mRunning){          
                 //Process that message
                 try{
+                	//Check for trace
+                	String tracemsg = msg.toString();
+            		
                 	//Are we logging  ?
                 	long timenow = 0;
-                	if(mTrace) {
+                	if(checkTraceFilter(tracemsg)) {
+                		//Call can slow things down so only do if needed
                 		timenow = System.currentTimeMillis();
                 	}
                 
+                	//Store incase sys check
+                	mLastMessage = msg;
+                	
                 	//Process Message
                     processMessage(msg);
                 
-                    if(mTrace) {
+                    if(checkTraceFilter(tracemsg)) {
                     	long timediff = System.currentTimeMillis() - timenow;
-                    	String tracemsg = msg.toString();
-                		if(tracemsg.contains(mTraceFilter)) {
-                			MinimaLogger.log("["+mMainThread.getName()+"] (stack:"+getSize()+") time:"+timediff+" \t"+msg, false);
-                		}
+                    	MinimaLogger.log("TRACE > ["+mMainThread.getName()+"] (stack:"+getSize()+") process_time_milli:"+timediff+" \t"+msg, false);
                     }
                     
                 }catch(Error noclass){
@@ -149,7 +175,12 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
                 }catch(Exception exc){
                 	MinimaLogger.log("MESSAGE PROCESSING ERROR @ "+msg.getMessageType());
                 	MinimaLogger.log(exc);
-                } 
+                
+                }finally {
+                	
+                	//Make sure the write lock is released..
+                	MinimaDB.getDB().safeReleaseWriteLock();
+				} 
                 
                 //Are there more messages..
                 msg = getNextMessage();

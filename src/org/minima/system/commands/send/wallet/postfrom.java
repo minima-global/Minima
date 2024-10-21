@@ -7,7 +7,6 @@ import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniNumber;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandRunner;
 import org.minima.utils.json.JSONArray;
@@ -15,25 +14,6 @@ import org.minima.utils.json.JSONObject;
 
 public class postfrom extends Command {
 
-	public class AddressAmount {
-		
-		MiniData 	mAddress;
-		MiniNumber 	mAmount;
-		
-		public AddressAmount(MiniData zAddress, MiniNumber zAmount) {
-			mAddress 	= zAddress;
-			mAmount		= zAmount;
-		}
-		
-		public MiniData getAddress(){
-			return mAddress;
-		}
-		
-		public MiniNumber getAmount() {
-			return mAmount;
-		}
-	}
-	
 	public postfrom() {
 		super("postfrom","[data:] (mine:) - Post a signfrom txn ");
 	}

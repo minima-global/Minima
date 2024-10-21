@@ -26,6 +26,7 @@ import org.minima.system.Main;
 import org.minima.system.mds.multipart.MultipartData;
 import org.minima.system.mds.multipart.MultipartParser;
 import org.minima.system.mds.polling.PollStack;
+import org.minima.system.mds.publicmds.MDSPublicPage;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
@@ -60,6 +61,11 @@ public class MDSFileHandler implements Runnable {
 	static long mLastInvalidIDException = 0;
 	
 	/**
+	 * The Public Pages
+	 */
+	MDSPublicPage mPublicMDS;
+	
+	/**
 	 * Main Constructor
 	 * @param zSocket
 	 */
@@ -69,6 +75,7 @@ public class MDSFileHandler implements Runnable {
 		mRoot 		= zRootFolder;
 		mMDS 		= zMDS;
 		mCommands 	= new MDSCommandHandler(mMDS, zPStack);
+		mPublicMDS  = new MDSPublicPage(zMDS);
 	}
 	
 	@Override
@@ -243,6 +250,7 @@ public class MDSFileHandler implements Runnable {
 						fileRequested.equals("httperror.html") ||
 						fileRequested.equals("noconnect.html") ||
 						fileRequested.equals("favicon.png") ||
+						fileRequested.equals("favicon.ico") ||
 						fileRequested.equals("Manrope-Regular.ttf") ||
 						fileRequested.equals("background.svg")) {
 				
@@ -474,6 +482,10 @@ public class MDSFileHandler implements Runnable {
 					fileRequested = "publicmds/index.html";
 				}
 				
+				if(fileRequested.equals("publicmdsgen")) {
+					fileRequested = "publicmdsgen/index.html";
+				}
+				
 				//Remove the params..
 				int index = fileRequested.indexOf("?");
 				if(index!=-1) {
@@ -500,11 +512,19 @@ public class MDSFileHandler implements Runnable {
 					//And write that out..
 					writeHTMLPage(dos, success);
 				
-				}else if(fileRequested.endsWith("/mds.js")) {
+				}else if(fileRequested.equals("publicmdsgen/index.html")) {
 					
+					//Use the PublicMDS generator..
+					String publicindex = mPublicMDS.getIndexPage();
+					
+					//And write that out..
+					writeHTMLPage(dos, publicindex);
+				
+				}else if(fileRequested.endsWith("/mds.js")) {
+				
 					//Always send the latest version..
 					writeHTMLResouceFile(dos, "mdsjs/mds.js");
-				
+			
 				}else {
 					//Write this page..
 					writeHTMLResouceFile(dos, fileRequested);
@@ -526,12 +546,11 @@ public class MDSFileHandler implements Runnable {
 				
 				//Are we asking for mds.js..
 				if(webfile.getName().equalsIgnoreCase("mds.js")) {
-					//MinimaLogger.log("MDSJS OVERRIDE : "+fileRequested);
 					
 					//Always send the latest version..
 					writeHTMLResouceFile(dos, "mdsjs/mds.js");
-				
-				}else {
+			
+				}else{
 					
 					//Check is valid child of parent..
 					boolean ischild = MiniFile.isChild(mRoot, webfile);

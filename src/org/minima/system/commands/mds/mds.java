@@ -44,6 +44,8 @@ public class mds extends Command {
 				+ "\n"
 				+ "Accept/deny pending commands from MiniDapps with READ permissions.\n"
 				+ "\n"
+				+ "The Public MDS (if enabled) is accessible from your https://127.0.0.1:MDS_PORT/publicmds/ \n"
+				+ "\n"
 				+ "action: (optional)\n"
 				+ "    list : List your installed MiniDapps. Default parameter.\n"
 				+ "    install : Install a new MiniDapp and optionally set its permission. Must specify 'file'.\n"
@@ -54,6 +56,7 @@ public class mds extends Command {
 				+ "    accept : Accept a pending command. Must specify 'uid' of the pending command.\n"
 				+ "    deny : Deny a pending command. Must specify 'uid' of the pending command.\n"
 				+ "    permission : Set permission for a MiniDapp to READ or WRITE. Must specify existing MiniDapp 'uid' and 'trust'.\n"
+				+ "    publicmds : Enable or disable the PUblic MDS. \n"
 				+ "\n"
 				+ "file: (optional)\n"
 				+ "    The file name of the MiniDapp to install. Can either be in the Minima folder or specify the file path.\n"
@@ -89,6 +92,8 @@ public class mds extends Command {
 				+ "mds action:accept uid:0xCDF6..\n"
 				+ "\n"
 				+ "mds action:deny uid:0xCDF6..\n"
+				+ "\n"
+				+ "mds action:publicmds enable:true\n"
 				+ "\n"
 				+ "mds action:permission uid:0xABA3.. trust:write\n";
 	}

@@ -168,17 +168,17 @@ public class GeneralParams {
 	/**
 	 * Maximumum output Coins allowed in txn for relay policy
 	 */
-	public static int MAX_RELAY_OUTPUTCOINS = 15;
+	public static int MAX_RELAY_OUTPUTCOINS = 32;
 	
 	/**
-	 * Maximumum state size store for ALL coins for relay policy
+	 * Maximumum state size store for ALL coins for relay policy - 64K
 	 */
-	public static long MAX_RELAY_STORESTATESIZE = 10000;
+	public static long MAX_RELAY_STORESTATESIZE = 65536;
 	
 	/**
 	 * Max Split coins
 	 */
-	public static MiniNumber MAX_SPLIT_COINS = new MiniNumber(10);
+	public static MiniNumber MAX_SPLIT_COINS = new MiniNumber(20);
 	
 	/**
 	 * How many days do you keep the TxPoW in the SQL DB
@@ -296,6 +296,11 @@ public class GeneralParams {
 	public static boolean MYSQL_STORE_ALLTXPOW = false;
 	
 	/**
+	 * Hard set the Public MDS UID
+	 */
+	public static String PUBLICMDS_SESSION_UID = "";
+	
+	/**
 	 * Reset all params to their default settings.. ANDROID keeps them after shutdown
 	 */
 	public static void resetDefaults() {
@@ -347,19 +352,20 @@ public class GeneralParams {
 		BLOCK_LOGS = false;
 		ARCHIVESYNC_LIMIT_BANDWIDTH = false;
 		RPC_CRLF = false;
-		DEFAULT_MINIDAPPS 	= true;
-		RPC_ENABLED 		= false;
-		RPC_AUTHENTICATE 	= false;
-		RPC_SSL				= false;
-		RPC_AUTHSTYLE 		= "basic";
-		RPC_PASSWORD 		= "none";
-		SEED_PHRASE 		= "";
-		PEERSCHECKER_lOG 	= false;
-		IS_MEGAMMR 			= false;
-		NOTIFY_ALL_TXPOW 	= false;
-		RESCUE_MEGAMMR_NODE	= "";
-		MDS_NOSSL 			 = false;
-		MYSQL_STORE_ALLTXPOW = false;
+		DEFAULT_MINIDAPPS 	  = true;
+		RPC_ENABLED 		  =  false;
+		RPC_AUTHENTICATE 	  = false;
+		RPC_SSL				  = false;
+		RPC_AUTHSTYLE 		  = "basic";
+		RPC_PASSWORD 		  = "none";
+		SEED_PHRASE 		  = "";
+		PEERSCHECKER_lOG 	  = false;
+		IS_MEGAMMR 			  = false;
+		NOTIFY_ALL_TXPOW 	  = false;
+		RESCUE_MEGAMMR_NODE	  = "";
+		MDS_NOSSL 			  = false;
+		MYSQL_STORE_ALLTXPOW  = false;
+		PUBLICMDS_SESSION_UID = "";
 	}
 	
 }

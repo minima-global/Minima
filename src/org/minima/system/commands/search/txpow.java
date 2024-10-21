@@ -5,14 +5,18 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.archive.ArchiveManager;
 import org.minima.database.txpowdb.sql.TxPoWSqlDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
+import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.CommandRunner;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -72,12 +76,35 @@ public class txpow extends Command {
 		
 		//Get the txpowid
 		if(existsParam("txpowid")) {
-			String txpowid = getParam("txpowid");
+			String txpowid = getAddressParam("txpowid");
 			
 			//Search for a given txpow
 			TxPoW txpow = MinimaDB.getDB().getTxPoWDB().getTxPoW(txpowid);
 			if(txpow == null) {
-				throw new CommandException("TxPoW not found : "+txpowid);
+				
+				//Lets check the archive..
+				TxBlock block = MinimaDB.getDB().getArchive().loadBlock(txpowid);
+				if(block!=null) {
+					txpow = block.getTxPoW();
+				}else {
+					
+					//Lets check the Mysql..
+					boolean autologindetail = MinimaDB.getDB().getUserDB().getAutoLoginDetailsMySQL();
+					if(autologindetail) {
+					
+						//Run a search of the MySQL
+						String command 		= "mysql action:findtxpow txpowid:"+txpowid;
+						JSONArray res 		= CommandRunner.getRunner().runMultiCommand(command);
+						JSONObject result 	= (JSONObject) res.get(0);
+						
+						if((boolean) result.get("found")) {
+							ret.put("response", result.get("txpow"));
+							return ret;
+						}
+					}else {
+						throw new CommandException("TxPoW not found : "+txpowid);
+					}
+				}
 			}
 		
 			ret.put("response", txpow.toJSON());
@@ -135,7 +162,14 @@ public class txpow extends Command {
 			
 			TxPoW txpow = TxPoWSearcher.getTxPoWBlock(block);
 			if(txpow == null) {
-				throw new CommandException("TxPoW not found @ height "+block);
+				
+				//Search the Archive..
+				TxBlock txblock = MinimaDB.getDB().getArchive().loadBlockFromNumber(block);
+				if(txblock == null) {
+					throw new CommandException("TxPoW not found @ height "+block);
+				}
+				
+				txpow = txblock.getTxPoW();
 			}
 			
 			ret.put("response", txpow.toJSON());

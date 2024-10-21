@@ -6,6 +6,7 @@ import java.util.Date;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
+import org.minima.database.userprefs.UserDB;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
 import org.minima.objects.TxBlock;
@@ -30,6 +31,8 @@ public class mysqlcoins extends Command {
 				+ "Create a coins db from your mysql data and search it.\n"
 				+ "\n"
 				+ "Use the same database you already use for your TxBlocks. Just creates a new table.\n"
+				+ "\n"
+				+ "You can use setlogin in mysql function to auto set the login details"
 				+ "\n"
 				+ "host:\n"
 				+ "    The ip:port (or name of Docker container) running the MySQL db.\n"
@@ -70,13 +73,13 @@ public class mysqlcoins extends Command {
 				+ "\n"
 				+ "mysqlcoins host:127.0.0.1:3306 database:coinsdb user:myuser password:myuser action:update maxcoins:100\n"
 				+ "\n"
-				+ "mysqlcoins LOGIN_DETAILS.. action:search where:\"address='0x791E78C60652B0E19B8FE9EB035B122B261490C477FD76E38C0C928187076103'\"\n"
+				+ "mysqlcoins (If you have not setlogin in mysql function)..LOGIN_DETAILS.. action:search where:\"address='0x791E78C60652B0E19B8FE9EB035B122B261490C477FD76E38C0C928187076103'\"\n"
 				+ "\n"
-				+ "mysqlcoins LOGIN_DETAILS.. action:search where:\"address='0x791E78C60652B0E19B8FE9EB035B122B261490C477FD76E38C0C928187076103' spent:false limit:1\"\n"
+				+ "mysqlcoins action:search where:\"address='0x791E78C60652B0E19B8FE9EB035B122B261490C477FD76E38C0C928187076103' spent:false limit:1\"\n"
 				+ "\n"
-				+ "mysqlcoins LOGIN_DETAILS.. action:search address:Mx87DE..\n"
+				+ "mysqlcoins action:search address:Mx87DE..\n"
 				+ "\n"
-				+ "mysqlcoins LOGIN_DETAILS.. action:search query:\"address='0x791E78C60652B0E19B8FE9EB035B122B261490C477FD76E38C0C928187076103' AND state LIKE '%0xFFEEDD%' LIMIT 10\"\n"
+				+ "mysqlcoins action:search query:\"address='0x791E78C60652B0E19B8FE9EB035B122B261490C477FD76E38C0C928187076103' AND state LIKE '%0xFFEEDD%' LIMIT 10\"\n"
 				;
 	}
 	
@@ -98,10 +101,25 @@ public class mysqlcoins extends Command {
 		String action = getParam("action","info");
 		
 		//Get the details
-		String host 		= getParam("host");
-		String db 			= getParam("database");
-		String user 		= getParam("user");
-		String password 	= getParam("password");
+		UserDB udb 			= MinimaDB.getDB().getUserDB();
+		
+		String host 		= "";
+		String db 			= "";
+		String user 		= "";
+		String password 	= "";
+		
+		boolean autologindetail = MinimaDB.getDB().getUserDB().getAutoLoginDetailsMySQL();
+		if(autologindetail) {
+			host 		= udb.getAutoMySQLHost();
+			db 			= udb.getAutoMySQLDB();
+			user 		= udb.getAutoMySQLUser();
+			password 	= udb.getAutoMySQLPassword();
+		}else {
+			host 		= getParam("host");
+			db 			= getParam("database");
+			user 		= getParam("user");
+			password 	= getParam("password");
+		}
 		
 		boolean logs	= getBooleanParam("logs", false);
 		int maxblocks	= getNumberParam("maxblocks", MiniNumber.BILLION).getAsInt();

@@ -21,11 +21,14 @@ public class txndelete extends Command {
 				+ "Delete a previously created custom transaction.\n"
 				+ "\n"
 				+ "id:\n"
-				+ "    The id of the transaction to delete.\n"
+				+ "    The id of the transaction to delete or 'all' to clear ALL transactions.\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
-				+ "txndelete id:multisig\n";
+				+ "txndelete id:multisig\n"
+				+ "\n"
+				+ "txndelete id:all\n"
+				+ "\n";
 	}
 	
 	@Override
@@ -41,8 +44,13 @@ public class txndelete extends Command {
 		
 		String id 	= getParam("id");
 		
-		//Get the Transaction..
-		boolean found = db.deleteTransaction(id);
+		boolean found = true;
+		if(id.equals("all")) {
+			db.clearTxns();
+		}else {
+			//Get the Transaction..
+			found = db.deleteTransaction(id);
+		}
 		
 		JSONObject resp = new JSONObject();
 		if(found) {

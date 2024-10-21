@@ -1,0 +1,235 @@
+<html>
+  <head>
+    <title>Public MDS</title>
+    <link rel="shortcut icon" type="image/png" href="./favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+
+  <body>
+  
+  <style>
+  @font-face {
+	font-family: Manrope;
+	src: url('./Manrope-Regular.ttf');
+}
+
+body {
+	margin: 0;
+	padding: 0;
+	font-family: Manrope, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+	'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+	sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;  
+	line-height: 1.5;
+
+
+	color-scheme: light dark;
+	color: rgba(255, 255, 255, 0.87);
+	background-color: #242424;
+
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	-webkit-text-size-adjust: 100%;	
+}
+
+#grid {
+	display: grid;
+	grid-template-areas: 'header' 'main';
+	grid-template-rows: 56px 1fr;
+	grid-template-columns: 1fr;
+}
+#grid header {
+	grid-area: header;
+}
+#grid main {
+	grid-area: main;
+	display: grid;
+	grid-template-columns: 1fr minmax(0, 560px) 1fr;
+}
+
+#grid main #content{
+	padding: 0 16px;
+	text-align: center;
+}
+
+#grid main #content h1 {
+	padding: 0;
+	margin: 0;
+}
+
+#grid main #content p { 
+	font-family: 600;
+	margin-top:0;
+}
+
+#hdr {
+	display: flex; 
+	align-items: center;
+	flex-direction: column-reverse;
+}
+
+button {
+	background-color: #242424;
+	border: none;
+	border-radius: 8px;
+	padding: 16px 16px;
+	width: 100%;
+	margin: 0 auto;
+	max-width: 240px;
+	font-size: 16px;
+	font-weight: 600;
+}
+
+/* CSS */
+.button-56 {
+  align-items: center;
+  background-color: #747bff;
+  border: 2px solid #111;
+  border-radius: 8px;
+  box-sizing: border-box;
+  color: #111;
+  cursor: pointer;
+  display: flex;
+  font-family: Inter,sans-serif;
+  font-size: 16px;
+  height: 64px;
+  justify-content: left;
+  line-height: 24px;
+  
+  padding: 0 15px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.button-56:after {
+  background-color: #111;
+  border-radius: 8px;
+  content: "";
+  display: block;
+  height: 64px;
+  left: 0;
+  width: 100%;
+  position: absolute;
+  top: -2px;
+  transform: translate(8px, 8px);
+  transition: transform .2s ease-out;
+  z-index: -1;
+}
+
+.button-56:hover:after {
+  transform: translate(0, 0);
+}
+
+.button-56:active {
+  background-color: #ffdeda;
+  outline: 0;
+}
+
+.button-56:hover {
+  outline: 0;
+}
+.block {
+  margin-top: 32px;
+}
+.wallet {
+  background-color: #ffa010;
+}
+
+@media (min-width: 768px) {
+  .button-56 {
+    padding: 0 20px;
+  }
+}
+
+#no-wallet-feature {
+	background-color: rgb(194 65 12);
+	margin: 0 auto;
+	color: white;
+	padding: 8px;
+	border-radius: 8px;
+	max-width: 200px;
+}
+
+code {
+	font-size: 16px;
+}
+
+@media (prefers-color-scheme: light) {
+  body {
+    color: #213547;
+    background-color: #f7f7f7;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    color: rgb(148 163 184);
+  }
+
+  input:focus {
+    color: #213547;
+  }
+}
+  </style>
+  
+  
+    <br />
+    <div>
+      <div id="grid">
+        <header></header>
+
+        <main>
+          <div></div>
+          <div id="content">
+            <div id="hdr">
+              <h1>Minima Public MDS</h1>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="icon icon-tabler icon-tabler-globe"
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                fill="none"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M7 9a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
+                <path d="M5.75 15a8.015 8.015 0 1 0 9.25 -13" />
+                <path d="M11 17v4" />
+                <path d="M7 21h8" />
+              </svg>
+            </div>
+            <p>
+            <br>Here is a list of Public MiniDAPPs you have access to
+            </p>
+
+			###DIVLIST###
+            
+          </div>
+          <div></div>
+        </main>
+      </div>
+
+      <script type="text/javascript">
+        //These are replaced server side..
+        var publicsessionid="0xFFEEDD";
+        
+        //Open a MiniDAPP with correct sessionID
+        function opendapp(minidappuid) {
+          window.open("../" + minidappuid + "/index.html?uid=" + publicsessionid);
+        }
+        
+      </script>
+    </div>
+  </body>
+</html>

@@ -3,7 +3,6 @@ package org.minima.database;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.HashSet;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.minima.database.archive.ArchiveManager;
@@ -64,7 +63,9 @@ public class MinimaDB {
 	/**
 	 * LOCKING the MinimaDB for read write operations..
 	 */
-	ReadWriteLock mRWLock;
+	ReentrantReadWriteLock mRWLock;
+	public static String  mCurrentWriteLockThread = "";
+	public static boolean mCurrentWriteLockState  = false;
 	
 	/**
 	 * The coin Addresses to Notify
@@ -107,16 +108,38 @@ public class MinimaDB {
 		if(zLock) {
 			mRWLock.readLock().lock();
 		}else {
-			mRWLock.readLock().unlock();
+			
+			//Try and unlock this READ lock
+			try {
+				mRWLock.readLock().unlock();
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
 		}
 	}
 	
 	public void writeLock(boolean zLock) {
+		
+		//Which thread is this..
+		mCurrentWriteLockThread = Thread.currentThread().getName();
+		mCurrentWriteLockState  = zLock;
+		
 		if(zLock) {
 			mRWLock.writeLock().lock();
 		}else {
 			mRWLock.writeLock().unlock();
 		}
+	}
+	
+	public void safeReleaseWriteLock() {
+		//Release it if held by this thread..
+		if(mRWLock.writeLock().isHeldByCurrentThread()) {
+			mRWLock.writeLock().unlock();
+		}
+	}
+	
+	public String getRWLockInfo() {
+		return mRWLock.toString();
 	}
 	
 	/**
@@ -548,6 +571,7 @@ public class MinimaDB {
 		writeLock(true);
 		
 		try {
+	
 			//Clean shutdown of SQL DBs
 			MinimaLogger.log("Wallet shutdown..");
 			mWallet.saveDB(true);
@@ -560,14 +584,15 @@ public class MinimaDB {
 			MinimaLogger.log("ArchiveDB shutdown..");
 			mArchive.saveDB(zCompact);
 			
-			MinimaLogger.log("All DB Shutdown..");
+			MinimaLogger.log("All SQL DB Shutdown..");
 			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
+			
+		}finally {
+			//Release the krakken
+			writeLock(false);
 		}
-		
-		//Release the krakken
-		writeLock(false);
 	}
 	
 	public void fullDBRestartMemFree() {
@@ -708,7 +733,7 @@ public class MinimaDB {
 		}
 		
 		//We need read lock 
-		readLock(true);
+		//readLock(true);
 		
 		try {
 			//Get the base Database folder
@@ -722,7 +747,7 @@ public class MinimaDB {
 		}
 		
 		//Release the krakken
-		readLock(false);
+		//readLock(false);
 	}
 	
 	/**

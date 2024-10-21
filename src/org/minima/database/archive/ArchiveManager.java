@@ -34,6 +34,7 @@ public class ArchiveManager extends SqlDB {
 	PreparedStatement SQL_FIND_SYNCBLOCK 		= null;
 	PreparedStatement SQL_EXISTS_SYNCBLOCK 		= null;
 	PreparedStatement SQL_SELECT_RANGE			= null;
+	PreparedStatement SQL_SELECT_FROMBBLOCK		= null;
 	PreparedStatement SQL_TOTAL_COUNT 			= null;
 	PreparedStatement SQL_DELETE_TXBLOCKS		= null;
 	
@@ -108,6 +109,7 @@ public class ArchiveManager extends SqlDB {
 		SQL_TOTAL_COUNT			= mSQLConnection.prepareStatement("SELECT COUNT(*) as tot FROM syncblock");
 
 		SQL_SELECT_RANGE		= mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block>? AND block<?");
+		SQL_SELECT_FROMBBLOCK   = mSQLConnection.prepareStatement("SELECT syncdata FROM syncblock WHERE block=?");
 		
 		SQL_DELETE_TXBLOCKS		= mSQLConnection.prepareStatement("DELETE FROM syncblock WHERE block < ?");
 		
@@ -641,6 +643,43 @@ public class ArchiveManager extends SqlDB {
 		}
 		
 		return blocks;
+	}
+	
+	public synchronized TxBlock loadBlockFromNumber(MiniNumber zBlock) {
+		
+		try {
+			
+			//Make sure..
+			checkOpen();
+		
+			//Set Search params
+			SQL_SELECT_FROMBBLOCK.clearParameters();
+			SQL_SELECT_FROMBBLOCK.setLong(1,zBlock.getAsLong());
+			
+			//Run the query
+			ResultSet rs = SQL_SELECT_FROMBBLOCK.executeQuery();
+			
+			//Multiple results
+			if(rs.next()) {
+				
+				//Get the details..
+				byte[] syncdata 	= rs.getBytes("syncdata");
+				
+				//Create MiniData version
+				MiniData minisync = new MiniData(syncdata);
+				
+				//Convert
+				TxBlock sb = TxBlock.convertMiniDataVersion(minisync);
+				
+				//Add to our list
+				return sb;
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return null;
 	}
 	
 	public int checkForCleanDB() {

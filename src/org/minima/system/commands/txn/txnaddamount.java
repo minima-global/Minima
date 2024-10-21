@@ -23,9 +23,40 @@ import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class txnaddamount extends Command {
-
+	
+	//Are certain coins locked / already used.. so don't use 
+	public static ArrayList<String> LOCKED_COINS 	= new ArrayList<>();
+	public static boolean LOCKED_COINS_ENABLED 		= false;
+	
+	public static void enableCoinLock(boolean zCoinLockEnabled) {
+		LOCKED_COINS_ENABLED = zCoinLockEnabled;
+		if(!LOCKED_COINS_ENABLED) {
+			clearCoinLocked();
+		}
+	}
+	public static boolean isCoinLockEnabled() {
+		return LOCKED_COINS_ENABLED;
+	}
+	public static void addCoinLock(String zCoinID) {
+		if(LOCKED_COINS_ENABLED) {
+			if(!isCoinLocked(zCoinID)) {
+				LOCKED_COINS.add(zCoinID);
+			}
+		}
+	}
+	public static boolean isCoinLocked(String zCoinID) {
+		if(!LOCKED_COINS_ENABLED) {
+			return false;
+		}
+		return LOCKED_COINS.contains(zCoinID);
+	}
+	public static void clearCoinLocked() {
+		LOCKED_COINS.clear();
+	}
+	
+	
 	public txnaddamount() {
-		super("txnaddamount","[id:] [amount:] (address) (onlychange:) (tokenid:) - Add inputs and calculate change for a certain amount");
+		super("txnaddamount","[id:] [amount:] (address) (onlychange:) (tokenid:) (burn:) - Add inputs and calculate change for a certain amount");
 	}
 	
 	@Override
@@ -34,13 +65,15 @@ public class txnaddamount extends Command {
 				+ "\n"
 				+ "Add a certain amount to a transaction.\n"
 				+ "\n"
+				+ "Use in conjunction with txncoinlock to create multiple offline transactions.\n"
+				+ "\n"
 				+ "Output amount to an address OR only the change - if you have already added an output\n"
 				+ "\n";
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id","amount","address","onlychange","tokenid","fromaddress"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","amount","address","onlychange","tokenid","fromaddress","burn","storestate"}));
 	}
 	
 	@Override
@@ -66,6 +99,12 @@ public class txnaddamount extends Command {
 					throw new CommandException("Token not found : "+tokenid);
 				}
 			}
+		}
+		
+		//Get the BURN
+		MiniNumber burn = getNumberParam("burn",MiniNumber.ZERO);
+		if(burn.isMore(MiniNumber.ZERO) && !tokenid.isEqual(Token.TOKENID_MINIMA)) {
+			throw new CommandException("Currently BURN on precreated transactions only works for Minima.. tokenid:0x00.. not tokens.");
 		}
 		
 		//The actual amount
@@ -131,8 +170,24 @@ public class txnaddamount extends Command {
 			
 		}
 		
+		//Now check for locked Coins..
+		if(isCoinLockEnabled()) {
+			
+			//Scan through and remove locked coins..
+			ArrayList<Coin> validcoins = new ArrayList<>();
+			for(Coin cc : coins) {
+				if(!isCoinLocked(cc.getCoinID().to0xString())) {
+					validcoins.add(cc);
+				}
+			}
+			
+			//And switcheroo
+			coins = validcoins;
+		}
+		
 		//Get just this number..
-		ArrayList<Coin> finalcoins = send.selectCoins(coins, tokenamount);
+		MiniNumber amountplusburn  = tokenamount.add(burn);
+		ArrayList<Coin> finalcoins = send.selectCoins(coins, amountplusburn);
 		
 		//How much added..
 		MiniNumber totaladded = MiniNumber.ZERO;
@@ -141,7 +196,7 @@ public class txnaddamount extends Command {
 		}
 		
 		//Is there change..
-		MiniNumber change = totaladded.sub(tokenamount);
+		MiniNumber change = totaladded.sub(amountplusburn);
 		
 		//Do we have the cash
 		if(change.isLess(MiniNumber.ZERO)) {
@@ -149,18 +204,27 @@ public class txnaddamount extends Command {
 			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
 				total = token.getScaledTokenAmount(total);
 			}
+			
 			throw new CommandException("Not enough funds! Current balance : "+total);
 		}		
 		
 		//OK - Now add all these coins..
 		for(Coin cc : finalcoins) {
 			trans.addInput(cc);
+			
+			//Add if locked
+			if(isCoinLockEnabled()) {
+				addCoinLock(cc.getCoinID().to0xString());
+			}
 		}
+		
+		//Are we storing the state
+		boolean storestate = getBooleanParam("storestate", true);
 		
 		//And add the output
 		if(!addonlychange) {
 			String addr = getAddressParam("address");
-			Coin maincoin = new Coin(new MiniData(addr), tokenamount, tokenid);
+			Coin maincoin = new Coin(new MiniData(addr), tokenamount, tokenid, storestate);
 			
 			//Do we need to add the Token..
 			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
@@ -170,7 +234,7 @@ public class txnaddamount extends Command {
 			trans.addOutput(maincoin);
 		}
 		
-		if(!change.isEqual(MiniNumber.ZERO)) {
+		if(change.isMore(MiniNumber.ZERO)) {
 			
 			//Get a new address
 			ScriptRow newwalletaddress = MinimaDB.getDB().getWallet().getDefaultAddress();

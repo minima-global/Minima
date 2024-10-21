@@ -14,6 +14,7 @@ import org.minima.system.params.GlobalParams;
 import org.minima.system.params.ParamConfigurer;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.MinimaUncaughtException;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -96,7 +97,7 @@ public class Minima {
 		File dataFolder 	= new File(System.getProperty("user.home"),".minima");
 		
 		//Depends on the VERSION
-		File minimafolder 			= new File(dataFolder,GlobalParams.MINIMA_BASE_VERSION);
+		File minimafolder 	= new File(dataFolder,GlobalParams.MINIMA_BASE_VERSION);
 		
 		//Reset ALL the GeneralParams - ANDROID KEEPS THEM after a shutdown
 		GeneralParams.resetDefaults();
@@ -145,6 +146,26 @@ public class Minima {
 		} catch (ClassNotFoundException e1) {
 			//e1.printStackTrace();
 		}
+		
+		//Catch ALL Uncaught Exceptions..
+		Thread.setDefaultUncaughtExceptionHandler(new MinimaUncaughtException());
+		
+		//TEST ERRORS
+		/*List<byte[]> list = new ArrayList<>();
+		int index = 1;
+		while (index < 100000) {
+				// 1MB each loop, 1 x 1024 x 1024 = 1048576
+				byte[] b = new byte[10485760];
+				list.add(b);
+				Runtime rt = Runtime.getRuntime();
+				System.out.printf("[%d] free memory: %s%n", index++, rt.freeMemory());
+		}
+		
+		byte[] pp = null;
+		if(true) {
+			int len = pp.length;
+			MinimaLogger.log("PP allocated : "+MiniFormat.formatSize(len));
+		}*/
 		
 		//Main handler..
 		Main main = new Main();

@@ -33,7 +33,9 @@ import org.minima.system.commands.base.newaddress;
 import org.minima.system.commands.base.printtree;
 import org.minima.system.commands.base.quit;
 import org.minima.system.commands.base.random;
+import org.minima.system.commands.base.scanchain;
 import org.minima.system.commands.base.status;
+import org.minima.system.commands.base.timemilli;
 import org.minima.system.commands.base.tokencreate;
 import org.minima.system.commands.base.tokenvalidate;
 import org.minima.system.commands.base.trace;
@@ -75,6 +77,8 @@ import org.minima.system.commands.send.wallet.sendfrom;
 import org.minima.system.commands.send.wallet.signfrom;
 import org.minima.system.commands.signatures.sign;
 import org.minima.system.commands.signatures.verify;
+import org.minima.system.commands.txn.txnaddamount;
+import org.minima.system.commands.txn.txnauto;
 import org.minima.system.commands.txn.txnbasics;
 import org.minima.system.commands.txn.txncheck;
 import org.minima.system.commands.txn.txnclear;
@@ -84,6 +88,8 @@ import org.minima.system.commands.txn.txnexport;
 import org.minima.system.commands.txn.txnimport;
 import org.minima.system.commands.txn.txninput;
 import org.minima.system.commands.txn.txnlist;
+import org.minima.system.commands.txn.txnmine;
+import org.minima.system.commands.txn.txnminepost;
 import org.minima.system.commands.txn.txnoutput;
 import org.minima.system.commands.txn.txnpost;
 import org.minima.system.commands.txn.txnscript;
@@ -131,11 +137,13 @@ public class help extends Command {
 			
 			addCommand(details, new status());
 			addCommand(details, new block());
+			addCommand(details, new scanchain());
 			addCommand(details, new printtree());
 			addCommand(details, new burn());
 			addCommand(details, new trace());
 			addCommand(details, new logs());
 			addCommand(details, new hashtest());
+			addCommand(details, new timemilli());
 			addCommand(details, new checkaddress());
 			
 			addCommand(details, new history());
@@ -189,6 +197,8 @@ public class help extends Command {
 			
 			addCommand(details, new txnlist());
 			addCommand(details, new txncreate());
+			addCommand(details, new txnauto());
+			addCommand(details, new txnaddamount());
 			addCommand(details, new txnbasics());
 			addCommand(details, new txndelete());
 			addCommand(details, new txncheck());
@@ -201,6 +211,8 @@ public class help extends Command {
 			addCommand(details, new txnpost());
 			addCommand(details, new txnimport());
 			addCommand(details, new txnexport());
+			addCommand(details, new txnmine());
+			addCommand(details, new txnminepost());
 			
 			addCommand(details, new network());
 			addCommand(details, new maxima());

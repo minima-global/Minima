@@ -43,4 +43,12 @@ public class TimerMessage extends Message {
 	public long getTimer() {
 		return mTimer;
 	}
+	
+	@Override
+	public String toString(){
+		long timenow =  System.currentTimeMillis();
+		long diff 	 =  mTimer - timenow;
+		
+		return "Timer:"+mTimer+" Delay:"+diff+" milli Msg:"+super.toString();
+	}
 }

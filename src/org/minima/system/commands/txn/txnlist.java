@@ -14,7 +14,7 @@ import org.minima.utils.json.JSONObject;
 public class txnlist extends Command {
 
 	public txnlist() {
-		super("txnlist","(id:) - List current custom transactions");
+		super("txnlist","(id:) (transactiononly:) - List current custom transactions");
 	}
 	
 	@Override
@@ -37,7 +37,7 @@ public class txnlist extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","transactiononly"}));
 	}
 	
 	@Override
@@ -49,13 +49,15 @@ public class txnlist extends Command {
 		//The transaction
 		String id = getParam("id","");
 		
+		boolean transonly = getBooleanParam("transactiononly",false);
+		
 		if(id.equals("")) {
 			//The transaction
 			ArrayList<TxnRow> txns = db.listTxns();
 			
 			JSONArray arr = new JSONArray();
 			for(TxnRow txnrow : txns) {
-				arr.add(txnrow.toJSON());
+				arr.add(txnrow.toJSON(!transonly));
 			}
 			
 			ret.put("response", arr);
@@ -65,7 +67,7 @@ public class txnlist extends Command {
 				throw new CommandException("Transaction not found : "+id);
 			}
 			
-			ret.put("response", txnrow.toJSON());
+			ret.put("response", txnrow.toJSON(!transonly));
 		}
 		
 		return ret;

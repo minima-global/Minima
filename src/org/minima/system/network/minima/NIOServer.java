@@ -61,7 +61,10 @@ public class NIOServer implements Runnable {
 		
 		Enumeration<NIOClient> clients = mClients.elements();
 		while(clients.hasMoreElements()) {
-			allclients.add(clients.nextElement());
+			NIOClient client = clients.nextElement();
+			if(client != null) {
+				allclients.add(client);
+			}
 		}
 		
 		return allclients;
@@ -102,11 +105,13 @@ public class NIOServer implements Runnable {
 		Enumeration<NIOClient> clients = mClients.elements();
 		while(clients.hasMoreElements()) {
 			NIOClient nioc = clients.nextElement();
-			if(nioc.isValidGreeting()) {
-				try {
-					nioc.sendData(zData);
-				}catch(Exception exc) {
-					MinimaLogger.log(exc);
+			if(nioc != null) {
+				if(nioc.isValidGreeting()) {
+					try {
+						nioc.sendData(zData);
+					}catch(Exception exc) {
+						MinimaLogger.log(exc);
+					}
 				}
 			}
 		}
@@ -247,23 +252,30 @@ public class NIOServer implements Runnable {
 	                } catch (Exception e) {
 	                	
 	                    // Disconnect the user
-	                    client.disconnect();
-	                    
-	                    //Remove from the list..
-	                    mClients.remove(client.getUID());
-	
-	                    //Small Log..
-	                    if(mTraceON) {
-	                    	MinimaLogger.log("[NIOSERVER] NIOClient:"+client.getUID()+" "+e+" total:"+mClients.size(), false);
+	                    if(client != null) {
+	                    	
+	                    	//Disconnect..
+		                	client.disconnect();
+		                    
+		                    //Remove from the list..
+		                    mClients.remove(client.getUID());
+		
+		                    //Small Log..
+		                    if(mTraceON) {
+		                    	MinimaLogger.log("[NIOSERVER] NIOClient:"+client.getUID()+" "+e+" total:"+mClients.size(), false);
+		                    }
+		                    
+		                    //Tell the Network Manager
+		                    Message dissclient = new Message(NIOManager.NIO_DISCONNECTED)
+		                    		.addObject("client", client)
+		                    		.addBoolean("reconnect", !client.isIncoming());
+		                    
+		                    //Tell the manager
+		                    mNIOManager.PostMessage(dissclient);
+		                    
+	                    }else {
+	                    	MinimaLogger.log("[NIOSERVER] NULL Client disconnect in NIOServer.. ignoring..");
 	                    }
-	                    
-	                    //Tell the Network Manager
-	                    Message newclient = new Message(NIOManager.NIO_DISCONNECTED)
-	                    		.addObject("client", client)
-	                    		.addBoolean("reconnect", !client.isIncoming());
-	                    
-	                    //Tell the manager
-	                    mNIOManager.PostMessage(newclient);
 	                }
 	            }
 	        }
@@ -274,7 +286,10 @@ public class NIOServer implements Runnable {
 			//Disconnect all clients..
 			Enumeration<NIOClient> clients = mClients.elements();
 			while(clients.hasMoreElements()) {
-				clients.nextElement().disconnect();
+				NIOClient client = clients.nextElement();
+				if(client !=null) {
+					client.disconnect();
+				}
 			}
 			
 			//Need to call this to shut down properly

@@ -218,7 +218,7 @@ public class restoresync extends Command {
 			Main.getInstance().shutdownFinalProcs();
 			
 			//Now save the Databases..
-			MinimaDB.getDB().saveSQL(false);
+			MinimaDB.getDB().saveAllDB();
 			
 			//And NOW shut down..
 			Main.getInstance().stopMessageProcessor();

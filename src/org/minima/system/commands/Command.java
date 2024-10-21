@@ -144,7 +144,13 @@ public abstract class Command {
 	
 	public MiniData getDataParam(String zParamName) throws CommandException {
 		String hex = getParam(zParamName);
-		return new MiniData(hex);
+		
+		try {
+			MiniData datahex = new MiniData(hex);
+			return datahex;
+		}catch(Exception exc) {
+			throw new CommandException("Invalid Data param specified : "+zParamName+" "+hex);
+		}
 	}
 	
 	public JSONObject getJSONObjectParam(String zParamName) throws CommandException{

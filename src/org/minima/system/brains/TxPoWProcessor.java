@@ -36,6 +36,11 @@ public class TxPoWProcessor extends MessageProcessor {
 	private static final String TXPOWPROCESSOR_PROCESS_ARCHIVEIBD 	= "TXP_PROCESS_ARCHIVEIBD";
 	
 	/**
+	 * A checker Call
+	 */
+	private static final String TXPOWPROCESSOR_CHECKER_CALL 		= "TXPOWPROCESSOR_CHECKER_CALL";
+	
+	/**
 	 * Ask for Txns in blocks less than this old
 	 */
 	private static final MiniNumber THREE_HOURS = new MiniNumber(1000 * 60 * 60 * 3);
@@ -53,6 +58,10 @@ public class TxPoWProcessor extends MessageProcessor {
 	
 	public TxPoWProcessor() {
 		super("TXPOWPROCESSOR");
+	}
+	
+	public void resetFirstIBDTimer() {
+		mFirstIBD = System.currentTimeMillis();
 	}
 	
 	/**
@@ -583,7 +592,6 @@ public class TxPoWProcessor extends MessageProcessor {
 						MinimaLogger.log(exc);
 					}
 					
-					
 					//Are we ruinning in MEGA MMR
 					if(GeneralParams.IS_MEGAMMR) {
 						//MinimaLogger.log("MEGAMMR : Add block "+txpnode.getTxBlock().getTxPoW().getBlockNumber());
@@ -645,11 +653,16 @@ public class TxPoWProcessor extends MessageProcessor {
 			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
+		
+		}finally {
+			//Unlock..
+			MinimaDB.getDB().writeLock(false);	
 		}
 		
-		//Unlock..
-		MinimaDB.getDB().writeLock(false);
-		
+	}
+	
+	public void postCheckCall() {
+		PostMessage(TXPOWPROCESSOR_CHECKER_CALL);
 	}
 	
 	@Override
@@ -761,10 +774,12 @@ public class TxPoWProcessor extends MessageProcessor {
 								
 							}catch(Exception exc) {
 								MinimaLogger.log(exc);
+							
+							}finally {
+								//Unlock..
+								MinimaDB.getDB().writeLock(false);
 							}
 							
-							//Unlock..
-							MinimaDB.getDB().writeLock(false);
 						}
 						
 					}else {
@@ -980,7 +995,14 @@ public class TxPoWProcessor extends MessageProcessor {
 			
 			//And now recalculate tree
 			recalculateTree();
+		
+		
+		}else if(zMessage.isMessageType(TXPOWPROCESSOR_CHECKER_CALL)) {
+				
+				//Sent to check this is running..
+				MinimaLogger.log("TXPOWPROCESSOR Checker Call Recieved..");
 		}
+		
 	}
 	
 	/**

@@ -38,8 +38,23 @@ public class TxPoWSqlDB extends SqlDB {
 	PreparedStatement SQL_DELETE_TXPOW 		= null;
 	PreparedStatement SQL_EXISTS 			= null;
 	
+	PreparedStatement SQL_SELECT_TOPTXPOW 		= null;
+	PreparedStatement SQL_SELECT_TOPTXPOW_SIZE 	= null;
+	
 	PreparedStatement SQL_SELECT_RELEVANT 		= null;
 	PreparedStatement SQL_SELECT_RELEVANTSIZE 	= null;
+	
+	PreparedStatement SQL_SELECT_OLDEST 		= null;
+	
+	/**
+	 * Show when a new block is added
+	 */
+	public static boolean LOG_ADD_BLOCKS = false;
+	
+	/**
+	 * Show when a new block is added
+	 */
+	public static boolean LOG_ADD_TRANSACTION = false;
 	
 	public TxPoWSqlDB() {
 		super();
@@ -91,6 +106,9 @@ public class TxPoWSqlDB extends SqlDB {
 		
 			SQL_SELECT_RELEVANT 	= mSQLConnection.prepareStatement("SELECT * FROM txpow WHERE isrelevant=1 ORDER BY timemilli DESC LIMIT ? OFFSET ?");
 			SQL_SELECT_RELEVANTSIZE = mSQLConnection.prepareStatement("SELECT Count(*) AS tot FROM txpow WHERE isrelevant=1");
+			
+			SQL_SELECT_TOPTXPOW 	 = mSQLConnection.prepareStatement("SELECT * FROM txpow ORDER BY timemilli DESC LIMIT ? OFFSET ?");
+			SQL_SELECT_TOPTXPOW_SIZE = mSQLConnection.prepareStatement("SELECT Count(*) AS tot FROM txpow WHERE timemilli > ?");
 	}
 	
 	public void wipeDB() throws SQLException {
@@ -123,8 +141,57 @@ public class TxPoWSqlDB extends SqlDB {
 		stmt.close();
 	}
 	
+	public synchronized int customSizeQuery(String zWhereCondition) {
+		try {
+			
+			//Make sure..
+			checkOpen();
+			
+			//Sanitize
+			String where = zWhereCondition.toLowerCase().replaceAll(";", "");
+			where = where.replaceAll("update", "");
+			where = where.replaceAll("delete", "");
+			where = where.replaceAll("insert", "");
+			
+			//Create the SQL
+			String sql = "SELECT Count(*) AS tot FROM txpow WHERE "+where;
+			
+			//Create the various tables..
+			Statement stmt = mSQLConnection.createStatement();
+			
+			//Execute the SQL..
+			boolean res = stmt.execute(sql);
+			
+			//Get the results
+			ResultSet rs = stmt.getResultSet();
+			
+			//Could be multiple results
+			if(rs.next()) {
+				//Get the total numer of rows
+				return rs.getInt("tot");
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return -1;
+	}
+	
 	public synchronized boolean addTxPoW(TxPoW zTxPoW, boolean zIsRelevant) {
 		try {
+			
+			if(LOG_ADD_BLOCKS) {
+				if(zTxPoW.isBlock()) {
+					MinimaLogger.log("[+] BLOCK ADDED TO TXPOWDB : "+zTxPoW.getBlockNumber());
+				}
+			}
+			
+			if(LOG_ADD_TRANSACTION) {
+				if(zTxPoW.isTransaction()) {
+					MinimaLogger.log("[+] TRANSACTION ADDED TO TXPOWDB : "+zTxPoW.getBlockNumber()+" - "+zTxPoW.getTransaction().toJSON().toString());
+				}
+			}
 			
 			//Make sure..
 			checkOpen();
@@ -301,6 +368,73 @@ public class TxPoWSqlDB extends SqlDB {
 		return txpows;
 	}
 
+	public synchronized ArrayList<TxPoW> getLatestTxPoW(int zLimit, int zOffset) {
+		ArrayList<TxPoW> txpows = new ArrayList<>();
+
+		try {
+			
+			//Make sure..
+			checkOpen();
+			
+			//Get the query ready
+			SQL_SELECT_TOPTXPOW.clearParameters();
+			
+			//Set the Limit..
+			SQL_SELECT_TOPTXPOW.setInt(1, zLimit);
+			SQL_SELECT_TOPTXPOW.setInt(2, zOffset);
+			
+			//Run the query
+			ResultSet rs = SQL_SELECT_TOPTXPOW.executeQuery();
+			
+			//Could be multiple results
+			while(rs.next()) {
+				
+				//Get the blob of data
+				byte[] txpdata 	= rs.getBytes("txpowdata");
+				
+				//Create MiniData version
+				MiniData minitxp = new MiniData(txpdata);
+				
+				//Convert into a TxPoW..
+				TxPoW txpow = TxPoW.convertMiniDataVersion(minitxp);
+				
+				//Add to our list
+				txpows.add(txpow);
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return txpows;
+	}
+	
+	public synchronized int getLatestTxPoWSize(long zMinMilliTime) {
+		try {
+			//Make sure..
+			checkOpen();
+			
+			//Get the query ready
+			SQL_SELECT_TOPTXPOW_SIZE.clearParameters();
+			SQL_SELECT_TOPTXPOW_SIZE.setLong(1, zMinMilliTime);
+			
+			//Run the query
+			ResultSet rs = SQL_SELECT_TOPTXPOW_SIZE.executeQuery();
+			
+			//Could be multiple results
+			if(rs.next()) {
+				//Get the total numer of rows
+				return rs.getInt("tot");
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		//Error has occurred
+		return -1;
+	}
+	
 	public synchronized int getSize() {
 		try {
 			//Make sure..
@@ -362,6 +496,11 @@ public class TxPoWSqlDB extends SqlDB {
 			//Current MAX time..
 			long maxtime = System.currentTimeMillis() - MAX_SQL_MILLI;
 			if(zHard) {
+				
+				if(LOG_ADD_BLOCKS) {
+					MinimaLogger.log("[+] TxPoWDB wipe clean..");
+				}
+				
 				maxtime = System.currentTimeMillis() + 100000;
 			}
 			
@@ -372,7 +511,12 @@ public class TxPoWSqlDB extends SqlDB {
 			SQL_DELETE_TXPOW.setLong(1, maxtime);
 			
 			//Run the query
-			return SQL_DELETE_TXPOW.executeUpdate();
+			int num = SQL_DELETE_TXPOW.executeUpdate();
+			if(LOG_ADD_BLOCKS) {
+				MinimaLogger.log("[+] TxPoWDB clean up deleted : "+num);
+			}
+			
+			return num;
 			
 		} catch (SQLException e) {
 			MinimaLogger.log(e);

@@ -63,7 +63,7 @@ public class MegaMMR implements Streamable {
 			mMMR.setEntry(peak.getRow(), peak.getEntryNumber(), peak.getMMRData());
 		}
 		
-		//Calculate the Entry NUmber
+		//Calculate the Entry Number
 		mMMR.calculateEntryNumberFromPeaks();
 		
 		//Now you have all the previous peaks.. update the spent coins..

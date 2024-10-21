@@ -59,6 +59,11 @@ public class P2PManager extends MessageProcessor {
 
     public int INITIAL_PEERS_LIST_NUM = 0;
     
+    public static final String P2P_HEALTH_CHECK = "P2P_HEALTH_CHECK";
+    public long P2P_HEALTH_CHECK_TIMER = 1000 * 60 * 10;
+    
+    ArrayList<String> EXCLUDE_FROM_CLEAR = new ArrayList<>();
+    
     /**
      * Separate thread for checking peers
      */
@@ -75,12 +80,18 @@ public class P2PManager extends MessageProcessor {
         //Start the Peers checker..
         mPeersChecker = new P2PPeersChecker(this);
         
-        //And start the loop timer..
+        //Check Message number..
+        PostTimerMessage(new TimerMessage(P2P_HEALTH_CHECK_TIMER, P2P_HEALTH_CHECK));
+        
+        //All the Timed Loop messages
         PostTimerMessage(new TimerMessage(10_000, P2P_LOOP));
         PostTimerMessage(new TimerMessage(P2PParams.NODE_NOT_ACCEPTING_CHECK_DELAY, P2P_ASSESS_CONNECTIVITY));
-        
-        //First time save after 5 minutes
         PostTimerMessage(new TimerMessage(1000 * 60 * 5, P2P_SAVE_DATA));
+        
+        //These messages excluded when we clear the list
+        EXCLUDE_FROM_CLEAR.add(P2P_LOOP);
+        EXCLUDE_FROM_CLEAR.add(P2P_ASSESS_CONNECTIVITY);
+        EXCLUDE_FROM_CLEAR.add(P2P_SAVE_DATA);
     }
     
     public P2PPeersChecker getPeersChecker() {
@@ -270,6 +281,23 @@ public class P2PManager extends MessageProcessor {
         } else if (zMessage.isMessageType(P2PFunctions.P2P_SHUTDOWN)) {
             shutdown();
         
+        } else if (zMessage.isMessageType(P2P_HEALTH_CHECK)) {
+            
+        	//How many messages are in the stack..
+        	int count = getSize();
+        	
+        	//If too many wipe..
+        	if(count > 50) {
+        		
+        		MinimaLogger.log("[!] P2P Message Overload - clear non-timer messages");
+        		
+        		//Wipe the List
+        		clearExcept(EXCLUDE_FROM_CLEAR);
+        	}
+        	
+        	//And check again in 10 minutes..
+        	PostTimerMessage(new TimerMessage(P2P_HEALTH_CHECK_TIMER, P2P_HEALTH_CHECK));
+        	
         } else if (zMessage.isMessageType(P2P_SAVE_DATA)) {
         	
         	//Update the peers
@@ -294,6 +322,7 @@ public class P2PManager extends MessageProcessor {
             }
         } else if (zMessage.isMessageType(P2PFunctions.P2P_MESSAGE)) {
             sendMsgs.addAll(processJsonMessages(zMessage, state));
+            
         } else if (zMessage.isMessageType(P2P_LOOP)) {
             sendMsgs.addAll(processLoop(state));
             PostTimerMessage(new TimerMessage(state.getLoopDelay(), P2P_LOOP));

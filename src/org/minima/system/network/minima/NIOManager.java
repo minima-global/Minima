@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
+import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Greeting;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
@@ -83,6 +84,7 @@ public class NIOManager extends MessageProcessor {
 	 */
 	public static final String NIO_HEALTHCHECK 	= "NIO_HEALTHCHECK";
 	long NIO_HEALTHCHECK_TIMER 	= 1000 * 60 * 20;
+	long MAX_TIP_TIME_GAP		= 1000 * 60 * 120;
 	
 	/**
 	 * SYNC Back max time
@@ -290,7 +292,7 @@ public class NIOManager extends MessageProcessor {
 			PostTimerMessage(new TimerMessage(LASTREAD_CHECKER, NIO_CHECKLASTMSG));
 			
 			//DO a health check on the state of the networking
-			//PostTimerMessage(new TimerMessage(NIO_HEALTHCHECK_TIMER, NIO_HEALTHCHECK));
+			PostTimerMessage(new TimerMessage(NIO_HEALTHCHECK_TIMER, NIO_HEALTHCHECK));
 			
 		}else if(zMessage.getMessageType().equals(NIO_SHUTDOWN)) {
 			
@@ -424,6 +426,9 @@ public class NIOManager extends MessageProcessor {
 						mNetworkManager.getP2PManager().PostMessage(newconn);
 						
 						MinimaLogger.log("INFO : "+nc.getUID()+"@"+nc.getFullAddress()+" connection failed - no more reconnect attempts ");
+						
+						//Add to our Invalid Peers list
+						P2PFunctions.addInvalidPeer(nc.getFullAddress());
 						
 					}else {
 						MinimaLogger.log("INFO : "+nc.getUID()+"@"+nc.getFullAddress()+" Resetting reconnect attempts (no other connections) for "+nc.getFullAddress());
@@ -731,22 +736,53 @@ public class NIOManager extends MessageProcessor {
 		
 		}else if(zMessage.getMessageType().equals(NIO_HEALTHCHECK)) {
 			
-			//Check the number of Connecting Clients.. if too great.. restart the networking..
-			if(getNumberOfConnnectingClients() > 20 ) {
-				
-				//Log..
-				MinimaLogger.log("Too Many connecting clients "+getNumberOfConnectedClients()+".. restarting networking");
-				
-				//Something not right..
-				Message netstart = new Message(Main.MAIN_NETRESTART);
-				netstart.addBoolean("repeat", false);
-				Main.getInstance().PostMessage(netstart);
-				
-			}else {
+			//Recheck every 20 minutes
+			PostTimerMessage(new TimerMessage(NIO_HEALTHCHECK_TIMER, NIO_HEALTHCHECK));
 			
-				//DO a health check on the state of the networking
-				PostTimerMessage(new TimerMessage(NIO_HEALTHCHECK_TIMER, NIO_HEALTHCHECK));
+			//Are we connected to the internet
+			if(GeneralParams.P2P_ENABLED && P2PFunctions.isNetAvailable()) {
+			
+				//Current time
+				long timenow = System.currentTimeMillis();
+				
+				//Get the tip.. 
+				TxPoWTreeNode tip 	= MinimaDB.getDB().getTxPoWTree().getTip();
+				
+				//Do we have a tip
+				if(tip == null) {
+					return;
+				}
+				
+				long tiptime 		= tip.getTxPoW().getTimeMilli().getAsLong();
+				
+				//Difference..
+				long diff 			= timenow - tiptime;
+				
+				//Is the gap too great
+				if(diff > MAX_TIP_TIME_GAP) {
+					
+					MinimaLogger.log("[!] Chain Tip too far behind.. restart Networking!");
+					
+					//Something wrong.. restart the Networking..
+					Main.getInstance().PostMessage(Main.MAIN_NETRESTART);
+				}
 			}
+			
+			//Check the number of Connecting Clients.. if too great.. restart the networking..
+//			if(getNumberOfConnnectingClients() > 20 ) {
+//				
+//				//Log..
+//				MinimaLogger.log("Too Many connecting clients "+getNumberOfConnectedClients()+".. restarting networking");
+//				
+//				//Something not right..
+//				Message netstart = new Message(Main.MAIN_NETRESTART);
+//				netstart.addBoolean("repeat", false);
+//				Main.getInstance().PostMessage(netstart);
+//				
+//			}else {
+//			
+//				
+//			}
 		}
 	}
 	
