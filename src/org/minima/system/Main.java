@@ -349,7 +349,10 @@ public class Main extends MessageProcessor {
 			//Create a genesis node
 			doGenesis();
 		}
-				
+		
+		//Clear the Peer Invalid list
+		P2PFunctions.clearInvalidPeers();
+		
 		//Start the networking..
 		mNetwork = new NetworkManager();
 				
@@ -1026,6 +1029,9 @@ public class Main extends MessageProcessor {
 			
 			//Reset the IBD timer
 			getTxPoWProcessor().resetFirstIBDTimer();
+			
+			//Clear the Peer Invalid list
+			P2PFunctions.clearInvalidPeers();
 			
 			//Restart the Networking..
 			restartNIO();
