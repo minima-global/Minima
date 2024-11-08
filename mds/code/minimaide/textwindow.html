@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>code-input with highlight.js</title>
+    
+    <!--Import highlight.js-->
+    <!--For a downloaded version of highlight.js, replace the file paths for both CSS and JS below with the relative file paths from this HTML file.-->
+    <!--This is similar to the "self hosted" example below.-->
+    <!--Guide: https://highlightjs.org/#usage#:~:text=As%20HTML%20Tags-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/default.min.css">
+    <!--You can also choose custom themes by changing "default" above to the theme name from https://highlightjs.org/demo-->
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+    
+    <!--Import highlight.js languages-->
+    <!--You can copy this line to import additional languages, replacing "javascript" with a language name from https://highlightjs.org/demo.-->
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/javascript.min.js"></script>
+    
+    <!--Import code-input-->
+    <!--The same goes for downloaded versions.-->
+    <script src="https://cdn.jsdelivr.net/gh/WebCoder49/code-input@2.3/code-input.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/WebCoder49/code-input@2.3/code-input.min.css">
+    
+    <!--Import some code-input plugins-->
+    <!--The same goes for downloaded versions.-->
+    <!--Plugin files are here: https://github.com/WebCoder49/code-input/tree/main/plugins.-->
+    <script src="https://cdn.jsdelivr.net/gh/WebCoder49/code-input@2.3/plugins/indent.min.js"></script>
+    
+    <!--Register code-input template-->
+    <script>
+      codeInput.registerTemplate("syntax-highlighted", 
+        codeInput.templates.hljs(
+          hljs, 
+          [
+            // You can add or remove plugins in this list from https://github.com/WebCoder49/code-input/blob/main/plugins/README.md.
+            // All plugins used must be imported above.
+            new codeInput.plugins.Indent(true, 2) // Allow Tab-key indentation, with 2 spaces indentation
+          ]
+        )
+      );
+      // Register templates with different names here, if needed.
+    </script>
+  </head>
+  <body>
+  Thisis a test<br><Br>
+    <!--The language attribute is case-insensitive but must refer to a language imported above.-->
+
+    <code-input template="syntax-highlighted" language="JavaScript">// Demo editable code
+		console.log("Hello, World!");
+			
+		
+	
+
+	</code-input>
+    
+    <!--Additional usage details are here: https://github.com/WebCoder49/code-input/blob/main/README.md-->
+    <!--A list of plugins are here. We recommend the Autodetect plugin with highlight.js: https://github.com/WebCoder49/code-input/blob/main/plugins/README.md-->
+  </body>
+</html>
