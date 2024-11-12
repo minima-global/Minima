@@ -740,6 +740,7 @@ public class NIOManager extends MessageProcessor {
 			PostTimerMessage(new TimerMessage(NIO_HEALTHCHECK_TIMER, NIO_HEALTHCHECK));
 			
 			//Are we connected to the internet
+			boolean restartsent = false;
 			if(GeneralParams.P2P_ENABLED && P2PFunctions.isNetAvailable()) {
 			
 				//Current time
@@ -764,8 +765,28 @@ public class NIOManager extends MessageProcessor {
 					MinimaLogger.log("[!] Chain Tip too far behind.. restart Networking!");
 					
 					//Something wrong.. restart the Networking..
+					restartsent = true;
 					Main.getInstance().PostMessage(Main.MAIN_NETRESTART);
 				}
+			}
+			
+			//Check the P2P message count - can explode..
+			if(GeneralParams.P2P_ENABLED) {
+				
+				//How many messages are in the stack..
+	        	int count = Main.getInstance().getNetworkManager().getP2PManager().getSize();
+	        	
+	        	//If too many restart networking..
+	        	if(count > 50) {
+	        		
+	        		MinimaLogger.log("[!] P2P Message Overload - Restart");
+	        		
+	        		//Wipe the List
+	        		if(!restartsent) {
+	        			restartsent = true;
+	        			Main.getInstance().PostMessage(Main.MAIN_NETRESTART);
+	        		}
+	        	}
 			}
 			
 			//Check the number of Connecting Clients.. if too great.. restart the networking..
