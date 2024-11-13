@@ -467,7 +467,7 @@ public class maxima extends Command {
 		//Send a message..
 		String fullto 	= zFullTo;
 		int indexp 		= fullto.indexOf("@");
-		int index 		= fullto.indexOf(":");
+		int index 		= fullto.lastIndexOf(":");
 		
 		//Get the Public Key
 		String publickey = fullto.substring(0,indexp);
