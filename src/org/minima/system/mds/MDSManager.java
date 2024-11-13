@@ -168,8 +168,8 @@ public class MDSManager extends MessageProcessor {
 		
 		//Create the Public MiniDAPP
 		conf = new JSONObject();
-		conf.put("name", "UntrustedMDS");
-		conf.put("description", "Untrusted MiniDAPPs used by the public");
+		conf.put("name", "Restricted MDS");
+		conf.put("description", "Restricted MiniDAPPs used by the public");
 		conf.put("version", "1.0");
 		conf.put("permission", "read");
 		mUntrustedMiniDAPP = new MiniDAPP(mUntrustedMiniUID, conf);
