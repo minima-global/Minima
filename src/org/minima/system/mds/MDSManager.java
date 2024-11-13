@@ -133,6 +133,13 @@ public class MDSManager extends MessageProcessor {
 	String mPublicMiniUID 		= "0xFFDDEECCBBAA0099";
 	
 	/**
+	 * Untrusted Read DAPP use this MiniDAPP Handle..
+	 */
+	MiniDAPP	mUntrustedMiniDAPP;
+	String 		mUntrustedMiniSessionID = "0xDEADDEADDEAD";
+	String 		mUntrustedMiniUID 		= "0x8877665544332211";
+	
+	/**
 	 * Main Constructor
 	 */
 	public MDSManager() {
@@ -158,6 +165,14 @@ public class MDSManager extends MessageProcessor {
 		conf.put("version", "1.0");
 		conf.put("permission", "read");
 		mPublicMiniDAPP = new MiniDAPP(mPublicMiniUID, conf);
+		
+		//Create the Public MiniDAPP
+		conf = new JSONObject();
+		conf.put("name", "UntrustedMDS");
+		conf.put("description", "Untrusted MiniDAPPs used by the public");
+		conf.put("version", "1.0");
+		conf.put("permission", "read");
+		mUntrustedMiniDAPP = new MiniDAPP(mUntrustedMiniUID, conf);
 		
 		//And Initialise the MDS properly
 		PostMessage(MDS_INIT);
@@ -281,10 +296,14 @@ public class MDSManager extends MessageProcessor {
 	
 	public MiniDAPP getMiniDAPP(String zMiniDAPPID) {
 		
-		//Is it the Public
+		//Is it the Public / Untrusted
 		if(zMiniDAPPID == mPublicMiniUID) {
 			return mPublicMiniDAPP;
-		}
+			
+		}else if(zMiniDAPPID == mUntrustedMiniUID) {
+			return mUntrustedMiniDAPP;
+			
+		} 
 		
 		//Check the DB
 		return MinimaDB.getDB().getMDSDB().getMiniDAPP(zMiniDAPPID);
@@ -295,9 +314,12 @@ public class MDSManager extends MessageProcessor {
 		//Check the Public..
 		if(zName.equalsIgnoreCase(mPublicMiniDAPP.getName())) {
 			return mPublicMiniDAPP;
+		
+		}else if(zName.equalsIgnoreCase(mUntrustedMiniDAPP.getName())) {
+			return mUntrustedMiniDAPP;
 		}
 		
-		//Serach the DB
+		//Search the DB
 		ArrayList<MiniDAPP> allmini = MinimaDB.getDB().getMDSDB().getAllMiniDAPPs();
 		for(MiniDAPP mini : allmini) {
 			if(mini.getName().equalsIgnoreCase(zName)) {
@@ -319,6 +341,14 @@ public class MDSManager extends MessageProcessor {
 		return mPublicMiniUID;
 	}
 	
+	public String getUntrustedMiniDAPPSessionID() {
+		return mUntrustedMiniSessionID;
+	}
+	
+	public String getUntrustedMiniDAPPID() {
+		return mUntrustedMiniUID;
+	}
+	
 	/**
 	 * Return the MINIDAPPID for a given SESSIONID
 	 */
@@ -327,6 +357,9 @@ public class MDSManager extends MessageProcessor {
 		//Is it the Public..
 		if(zSessionID.equals(mPublicMiniSessionID)) {
 			return mPublicMiniUID;
+		
+		}else if(zSessionID.equals(mUntrustedMiniSessionID)) {
+			return mUntrustedMiniUID;
 		}
 		
 		return mSessionID.get(zSessionID);
@@ -340,7 +373,10 @@ public class MDSManager extends MessageProcessor {
 		//Is it the Public..
 		if(zMiniDAPPID.equals(mPublicMiniUID)) {
 			return mPublicMiniSessionID;
-		}
+		
+		}else if(zMiniDAPPID.equals(mUntrustedMiniUID)) {
+			return mUntrustedMiniSessionID;
+		} 
 		
 		//Search the rest
 		Enumeration<String> keys = mSessionID.keys();
@@ -635,6 +671,9 @@ public class MDSManager extends MessageProcessor {
 			}else {
 				mPublicMiniSessionID = new String(GeneralParams.PUBLICMDS_SESSION_UID);
 			}
+			
+			//Create random sessionid for untrusted Minidapps
+			mUntrustedMiniSessionID = MiniData.getRandomData(128).to0xString();
 			
 			//Install the default MiniHUB..
 			doDefaultMiniHUB();
