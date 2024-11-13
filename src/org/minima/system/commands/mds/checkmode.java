@@ -40,6 +40,7 @@ public class checkmode extends Command {
 			resp.put("name", "MINIMA");
 			resp.put("mode", "WRITE");
 			resp.put("public", false);
+			resp.put("publicuid", Main.getInstance().getMDSManager().getPublicMiniDAPPSessionID());
 			resp.put("writemode", true);
 		
 		}else if(minidappid.equals(Main.getInstance().getMDSManager().getPublicMiniDAPPID())) {
@@ -47,6 +48,7 @@ public class checkmode extends Command {
 			resp.put("name", "PUBLICMDS");
 			resp.put("mode", "READ");
 			resp.put("public", true);
+			resp.put("publicuid", Main.getInstance().getMDSManager().getPublicMiniDAPPSessionID());
 			resp.put("writemode", false);
 		
 		}else {
@@ -56,8 +58,9 @@ public class checkmode extends Command {
 			//Return the result
 			resp.put("name", md.getName());
 			resp.put("mode", md.getPermission().toUpperCase());
-			resp.put("writemode", md.getPermission().equalsIgnoreCase("write"));
 			resp.put("public", false);
+			resp.put("publicuid", Main.getInstance().getMDSManager().getPublicMiniDAPPSessionID());
+			resp.put("writemode", md.getPermission().equalsIgnoreCase("write"));
 			
 		}
 		

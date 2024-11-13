@@ -134,9 +134,12 @@ public class mds extends Command {
 
 			JSONObject mds = new JSONObject();
 			mds.put("enabled", GeneralParams.MDS_ENABLED);
+			
 			mds.put("connect", "https://"+GeneralParams.MINIMA_HOST+":"+GeneralParams.MDSFILE_PORT);
 			mds.put("password", Main.getInstance().getMDSManager().getMiniHUBPasword());
+			
 			mds.put("publicmds", MinimaDB.getDB().getUserDB().getPublicMDS());
+			mds.put("publicmdsuid", Main.getInstance().getMDSManager().getPublicMiniDAPPSessionID());
 			
 			mds.put("minidapps", arr);
 			
