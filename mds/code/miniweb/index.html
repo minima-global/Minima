@@ -1,7 +1,7 @@
 <html>
 
 <head>
-	<title>BASIC</title>
+	<title>MiniWEB</title>
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
@@ -14,18 +14,51 @@
 	<!-- And the ICON for the page -->
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	
-	<!-- Load the local JS lib -->
-	<script type="text/javascript" src="jslib.js"></script>
+	<!-- JS -->
+	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/auth.js"></script>
+	<script type="text/javascript" src="gui.js"></script>
 	
 </head>
 
 <body>
 
 <center>
+<br>
 
-	<br>
+<div id="topmenu"></div>
 
-	<h2>Hello World!</h2>
+<br><br>
+
+<table id=mywebpackets width=80% style="text-align:center;"></table>
+
+<br>
+<button class=solobutton onclick="jumpToNewFile();">New File Packet</button>	
+
+<!--  
+<br><br>
+TEST TABLE
+<br><br>
+<table class=filepacketview border=0>
+	<tr>
+		<td><b>Mx200G787S776UYFEPVPQMGTN6G6WAAK03K975</b> v1</td>
+		<td style="text-align:right">NOT Published</td>
+	</tr>
+	<tr>
+		<td colspan=2><br>no description yet..<br><br></td>
+	</tr>
+	<tr>
+		<td>
+			<button class=solobutton>Edit</button>
+			<button class=solobutton>Delete</button>
+		</td>
+		<td style="text-align:right">
+			<button class=solobutton>Browse</button>
+		</td>
+	</tr>
+</table>
+-->
+	
 	
 </center>
 
@@ -37,8 +70,35 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			
-			//Do stuff.. from now..		
+			//Reset 
+			if(false){
+				wipeDB();
+				MDS.log("DB Wiped!")
+				return;
+			}
 			
+			//Create the Top Menu
+			var topmenu = document.getElementById("topmenu");
+			createTopMenu(topmenu);
+			
+			var thetable = document.getElementById("mywebpackets");
+			
+			//Get started	
+			createDB(function(){
+				
+				//Start up the auth
+				authInit(function(userpubkey){
+					
+					//Load my Packets..
+					getMyFilePackets(USER_PUBKEY,function(found){
+						
+						//And display them..
+						createWebPacketList(found,thetable);
+						
+					});
+					
+				});	
+			});
 		}
 	});
 

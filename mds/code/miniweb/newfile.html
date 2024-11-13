@@ -1,0 +1,161 @@
+<html>
+
+<head>
+	<title>MiniWEB</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- JS -->
+	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/auth.js"></script>
+	<script type="text/javascript" src="gui.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+<br>
+
+<div id="topmenu"></div>
+<br><br>
+
+<table class=filepacketview>
+	<tr>
+		<td class=edittableident>Name : </td>
+		<td id=filepacket_name width=100%></td>
+	</tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr>
+		<td class=edittableident>Description : </td>
+		<td><textarea placeholder="Describe this file packet..." id=filepacket_description rows=5 cols=40></textarea></td>
+	</tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr>
+		<td class=edittableident>File : </td>
+		<td><button onclick="embedFile();">&nbsp;Load ZIP File&nbsp;</button></td>
+	</tr>
+	
+	<tr>
+		<td class=edittableident>Size : </td>
+		<td id=filepacket_size></td>
+	</tr>
+	
+</table>	
+
+<br>
+<button class=solobutton onclick="updatePacket();">Create File Packet</button>	
+	
+</center>
+
+<script type="text/javascript">
+	
+	var filepacket 	= {};
+	
+	function updatePacket(){
+		
+		//Check file..
+		if(filepacket.data.file == ""){
+			alert("No ZIP file loaded");
+			return;
+		}
+		
+		//Check description
+		filepacket.data.description = filepacket_description.value.trim();
+		if(filepacket.data.description == ""){
+			alert("No Description found");
+			return;
+		}
+		
+		//first sign this..
+		signFilepacket(filepacket,function(signed){
+			
+			//Now add this to the DB
+			insertFilePacket(false, signed, function(){
+				//Jump Home!
+				jumpToMyFiles();
+			});
+		});
+	}
+	
+	function embedFile(){
+		input = document.createElement('input');
+		input.type = 'file';
+		input.onchange = function(){
+			files 	= Array.from(input.files);
+			file 	= files[0]; 
+			
+			//Is it an image..
+			MDS.log(file.name+" "+file.size);
+			var filename = file.name.toLowerCase(); 
+						
+			//Check size..
+			if(file.size > 51200){
+				alert("File too big ("+file.size+")! MAX:51200 (50k)");
+				return;
+			}
+				
+			var reader = new FileReader();
+		    reader.readAsDataURL(file);
+		    reader.onload = function () {
+		      
+		      var datatype 		= reader.result.indexOf(";");
+		      var restype  		= reader.result.substring(0,datatype);
+		      MDS.log("FILE Type : "+restype);
+		      
+		      var res  		= reader.result.indexOf(",");
+		      var data 		= reader.result.substring(res+1);
+		      filepacket.data.file 	= "0x"+MDS.util.base64ToHex(data);
+		      
+		      MDS.log("FILE HEX LEN : "+filepacket.data.file.length);
+		      
+		      var size = filepacket.data.file.length;
+		      document.getElementById("filepacket_size").innerHTML = (size-2)/2+" bytes";
+		    };
+		    reader.onerror = function (error) {
+		      console.log('Error: ', error);
+		    };
+		};
+		input.click();
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//Create the Top Menu
+			var topmenu = document.getElementById("topmenu");
+			createTopMenu(topmenu);
+			
+			//Start up the auth
+			authInit(function(userpubkey){
+			
+				//Create a new Packet..
+				createNewFilePacket(function(fp){
+					
+					//Store this..
+					filepacket = fp;
+					
+					//Set the details.
+					document.getElementById("filepacket_name").innerHTML = filepacket.data.name;
+				});
+			});
+		}
+	});
+
+</script>
+
+</body>
+
+</html>

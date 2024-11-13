@@ -1,0 +1,250 @@
+<html>
+
+<head>
+	<title>MiniWEB</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- JS -->
+	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/auth.js"></script>
+	<script type="text/javascript" src="gui.js"></script>
+	<script type="text/javascript" src="./js/jszip.min.js"></script>
+	<script type="text/javascript" src="./ziputil.js"></script>
+	
+	<style type="text/css">
+	
+		body {
+			margin: 0 auto;
+			padding:0;
+			width : 100%;
+			height : 100%;
+		}
+		
+		.mainiframe{
+			margin: 0 auto;
+			padding:0;
+			width : 100%;
+			height : 100%;
+		}
+		
+	</style>
+	
+</head>
+
+<body>
+
+<!--  <iframe class="mainiframe" id="webframe" frameborder="0"  sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>-->
+
+<iframe class="mainiframe" id="webframe" frameborder="0"  sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+
+
+<script type="text/javascript">
+	
+	var BASE_PAGE 		= "";
+	var BASE_INTERNAL 	= "/currentsite";
+	
+	var BASE_WEB 		= "/mnssite";
+	var REL_WEB 		= "mnssite";
+	
+	//Is there apage defined..
+	var BASE_URL = MDS.form.getParams("mxsite");
+	
+	//listen for post messages..
+	window.onmessage = function(event){
+		
+		//What was the message
+		var msg = event.data;
+		if(msg){
+			var action = msg.action;
+			if(action == "MINIWEB_JUMPTOURL"){
+				MDS.log("BROWSER JUMP : "+JSON.stringify(msg));
+				
+				var resp 		= {};
+				resp.action 	= "MDS_RESPONSE";
+				resp.randid 	= msg.randid;
+				resp.data 		= true;
+				
+				document.getElementById('webframe').contentWindow.postMessage(resp,"*");
+				
+				//location.href="browser.html?uid="+MDS.minidappuid+"&mxsite="+msg.data;
+			}
+		}
+	};
+	
+	var LOAD_CALLBACK = null;
+	webframe.addEventListener("load", function() {
+	  	
+		MDS.log("Frame loaded");
+		
+		/*//Get the doc..
+		var doc = document.getElementById('webframe').contentWindow.document;
+		
+		//Sort Images
+		var imgs = doc.getElementsByTagName("img");
+		MDS.log("images found "+imgs.length);
+		for (var i = 0; i < imgs.length; i++) {
+	        if(imgs[i].name){
+	        	
+	        	var fiximage = BASE_PAGE+"miniweb/"+imgs[i].name.substring(10);
+	        	MDS.log("FIX image : "+fiximage);
+	        	
+	        	imgs[i].src =  fiximage;
+	        }
+	    }
+		
+		//Sort Links
+		var hrefs = doc.getElementsByTagName("a");
+		MDS.log("HREFS found "+hrefs.length);
+		for (var i = 0; i < hrefs.length; i++) {
+	        if(hrefs[i].name){
+	        	var fiximage = BASE_PAGE+"miniweb/"+hrefs[i].name.substring(10);
+	        	MDS.log("FIX link : "+fiximage);
+	        	hrefs[i].href =  fiximage;
+	        }
+	    }*/
+    
+		if(LOAD_CALLBACK){
+	  		LOAD_CALLBACK();
+	  	}
+	});
+	
+	function loadPage(page, callback){
+		
+		if(callback){
+			LOAD_CALLBACK = callback;
+		}else{
+			LOAD_CALLBACK = null;
+		}
+		
+		//Set the page
+		webframe.src=BASE_PAGE+page;
+	}
+	
+	function go(domainreq){
+		
+		domain = domainreq;
+		if(domain == ""){
+			return;
+		}
+		
+		if(domain.startsWith("miniweb://")){
+			domain = domain.substring(10);
+		}
+		
+		MDS.log("MNS jump to domain : "+domain);
+		
+		//Which folder to extract to..
+		var webfolder 		= BASE_WEB+"/"+domain;
+		var relwebfolder 	= REL_WEB+"/"+domain+"/index.html";
+		
+		loadPage("loading.html");
+		
+		return;
+		
+		//Does site data exists allready..
+		MDS.file.listweb(webfolder,function(listweb){
+			if(listweb.response.exists){
+				loadPage(relwebfolder);
+			}else{
+				loadPage("loading.html",function(){
+					
+					//Create an API call
+					var api = {};
+					api.action 	= "GET";
+					api.data 	= domain;
+					
+					MDS.log("Load and Extract webfiles for "+domain);
+					MDS.api.call("mns",JSON.stringify(api),function(resp){
+						if(resp.status){
+							var fulldata = JSON.parse(resp.data);
+							if(fulldata.FOUND){
+								if(fulldata.DATAHEX == "0x00"){
+									loadPage("notfound.html");
+								}else{
+									//Extract the files..
+									extractZIP(fulldata.DATAHEX, function(zipresp){
+										MDS.file.deletefromweb(webfolder,function(delweb){
+											MDS.file.copytoweb(BASE_INTERNAL, webfolder, function(copyweb){
+												loadPage(relwebfolder);
+											});
+										});
+									});
+								}
+							}else{
+								loadPage("notfound.html");	
+							}
+						}else{
+							loadPage("notfound.html");	
+						}
+					});
+				});
+			}
+		});
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		if(msg.event == "inited"){
+			
+			//Where are we going
+			var mxsite = MDS.form.getParams("mxsite");
+			
+			//Get the main Page
+			var mainstartpage = ""+window.location;
+			var index = mainstartpage.indexOf("browser.html");
+			BASE_PAGE = mainstartpage.substring(0,index);
+			
+			MDS.log("BASE:"+BASE_PAGE);
+			
+			var internal 	= "/extractfolder/"+mxsite;
+			var webfolder 	= "/miniweb/"+mxsite;
+			
+			var fullweb =BASE_PAGE+webfolder.substring(1)+"/index.html";
+			MDS.log("GO:"+fullweb);
+			
+			//NOW - browse..
+			webframe.src=fullweb
+			
+			MDS.cmd("checkmode", function(resp){
+				
+				MDS.log("publicuid"+resp.response.untrustedmdsuid);
+				
+			});
+			
+			//Load that page
+			/*getFilePacket(mxsite,function(fp){
+				MDS.log("Loaded : "+fp.data.name);
+				
+				//Extract it..
+				extractZIP(fp.data.file, internal, function(){
+					
+					//Now copy this to web - delete old
+					MDS.file.deletefromweb(webfolder,function(delweb){
+						
+						//And copy..
+						MDS.file.copytoweb(internal, webfolder, function(copyweb){
+							
+							var fullweb =BASE_PAGE+webfolder.substring(1)+"/index.html";
+							MDS.log("GO:"+fullweb);
+							
+							//NOW - browse..
+							webframe.src=fullweb
+						});
+					});
+				});
+			});*/
+		}
+	});
+
+</script>
+
+</body>
+
+</html>
