@@ -12,6 +12,8 @@ import org.minima.system.commands.backup.reset;
 import org.minima.system.commands.backup.restore;
 import org.minima.system.commands.backup.restoresync;
 import org.minima.system.commands.backup.vault;
+import org.minima.system.commands.backup.mmrsync.megammr;
+import org.minima.system.commands.backup.mmrsync.megammrsync;
 import org.minima.system.commands.base.balance;
 import org.minima.system.commands.base.block;
 import org.minima.system.commands.base.burn;
@@ -241,6 +243,9 @@ public class help extends Command {
 			addCommand(details, new reset());
 			addCommand(details, new archive());
 			addCommand(details, new vault());
+			
+			addCommand(details, new megammr());
+			addCommand(details, new megammrsync());
 			
 			addCommand(details, new mysql());
 			addCommand(details, new mysqlcoins());
