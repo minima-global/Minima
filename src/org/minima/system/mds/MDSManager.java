@@ -1082,7 +1082,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("security", "default/security-1.10.1.mds.zip", allminis, true);
 			
 			//Dappstore gets write permissions
-			checkInstalled("dapp store", "default/dapp_store-1.1.7.mds.zip", allminis, true);
+			checkInstalled("dapp store", "default/dappStore-1.1.8.mds.zip", allminis, true);
 			
 			//The rest are normal
 			checkInstalled("block", "default/block-3.2.4.mds.zip", allminis, false);
