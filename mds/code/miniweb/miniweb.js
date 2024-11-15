@@ -4,6 +4,9 @@
  */
 var DATA_URI_REQUESTS = [];
 
+/**
+ * Initialise thew MiniWEB library
+ */
 function miniweb_Init(){
 	//listen for post messages..
 	window.onmessage = function(event){
@@ -37,19 +40,16 @@ function miniweb_Init(){
 			    return item.randid !== randid;
 			});
 			
-			console.log(" Size : "+DATA_URI_REQUESTS.length);
+			console.log("Size : "+DATA_URI_REQUESTS.length);
 		}
 	};
 }
 
-function miniweb_GetDataURI(minifile,callback){
-	
-	MDS.log("function called getDataURI "+minifile);
+function miniweb_GetURL(minifile,callback){
 	
 	//First store this request in thelist..
 	var request 		= {};
 	request.randid		= Math.floor(Math.random() * 1000000000); 
-	request.minifile 	= minifile;
 	request.callback 	= callback;
 	
 	//Push it on the stack
@@ -57,7 +57,27 @@ function miniweb_GetDataURI(minifile,callback){
 	
 	//Make a request msg to the top window..
 	var msg 	= {};
-	msg.action 	= "MINIWEB_DATAURI";
+	msg.action 	= "MINIWEB_GETMINIWEBURL";
+	msg.data 	= minifile;
+	msg.randid	= request.randid;
+	
+	//Send this to the parent window..
+	window.top.postMessage(msg, '*');
+}
+
+function miniweb_GetDataURI(minifile,callback){
+	
+	//First store this request in thelist..
+	var request 		= {};
+	request.randid		= Math.floor(Math.random() * 1000000000); 
+	request.callback 	= callback;
+	
+	//Push it on the stack
+	DATA_URI_REQUESTS.push(request);
+	
+	//Make a request msg to the top window..
+	var msg 	= {};
+	msg.action 	= "MINIWEB_GETDATAURI";
 	msg.data 	= minifile;
 	msg.randid	= request.randid;
 	
@@ -67,13 +87,15 @@ function miniweb_GetDataURI(minifile,callback){
 
 function miniweb_JumpToURL(minifile,callback){
 	
-	MDS.log("function called miniweb_JumpToURL "+minifile);
-	
 	//First store this request in thelist..
 	var request 		= {};
 	request.randid		= Math.floor(Math.random() * 1000000000); 
-	request.callback 	= callback;
-	
+	if(callback){
+		request.callback 	= callback;	
+	}else{
+		request.callback 	= null;
+	}
+		
 	//Push it on the stack
 	DATA_URI_REQUESTS.push(request);
 	

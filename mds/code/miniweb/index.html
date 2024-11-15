@@ -8,9 +8,6 @@
 	<!-- Load the main MDS JS lib -->
 	<script type="text/javascript" src="mds.js"></script>
 	
-	<!-- Load the CSS Style sheet -->
-	<link rel="stylesheet" href="style.css">
-	
 	<!-- And the ICON for the page -->
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	
@@ -18,6 +15,12 @@
 	<script type="text/javascript" src="./js/sql.js"></script>
 	<script type="text/javascript" src="./js/auth.js"></script>
 	<script type="text/javascript" src="gui.js"></script>
+	
+	<script type="text/javascript" src="./js/purify.min.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
 	
 </head>
 
@@ -30,39 +33,41 @@
 
 <br><br>
 
-<table id=mywebpackets width=80% style="text-align:center;"></table>
-
-<br>
-<button class=solobutton onclick="jumpToNewFile();">New File Packet</button>	
-
-<!--  
-<br><br>
-TEST TABLE
-<br><br>
-<table class=filepacketview border=0>
+<table width=80% class=filepacketview style="text-align:center;">
 	<tr>
-		<td><b>Mx200G787S776UYFEPVPQMGTN6G6WAAK03K975</b> v1</td>
-		<td style="text-align:right">NOT Published</td>
-	</tr>
-	<tr>
-		<td colspan=2><br>no description yet..<br><br></td>
-	</tr>
-	<tr>
-		<td>
-			<button class=solobutton>Edit</button>
-			<button class=solobutton>Delete</button>
-		</td>
-		<td style="text-align:right">
-			<button class=solobutton>Browse</button>
-		</td>
+		<td style="text-align:left;"><button class=solobutton onclick="jumpToNewFile();">New MiniWeb File</button></td>
+		<td style="text-align:right;"><button class=solobutton onclick="jumpToPublish();">Publish</button></td>
 	</tr>
 </table>
--->
-	
+<br>
+
+<div id=mywebpackets></div>
+
+<br>
 	
 </center>
 
 <script type="text/javascript">
+	
+	function showYourWebPackets(){
+		//Load my Packets..
+		getMyFilePackets(USER_PUBKEY,function(found){
+			
+			if(found.length == 0){
+				mywebpackets.innerHTML = "No File packets found..";
+				return;
+			}
+			
+			var html = "";
+			var len = found.length;
+			for(var i=0;i<len;i++){
+				html += createWebPacketView(found[i]);	
+			}
+			
+			mywebpackets.innerHTML = html;
+		});
+	}
+	
 	
 	//Main message handler..
 	MDS.init(function(msg){
@@ -78,10 +83,7 @@ TEST TABLE
 			}
 			
 			//Create the Top Menu
-			var topmenu = document.getElementById("topmenu");
-			createTopMenu(topmenu);
-			
-			var thetable = document.getElementById("mywebpackets");
+			createTopMenu(document.getElementById("topmenu"));
 			
 			//Get started	
 			createDB(function(){
@@ -89,14 +91,7 @@ TEST TABLE
 				//Start up the auth
 				authInit(function(userpubkey){
 					
-					//Load my Packets..
-					getMyFilePackets(USER_PUBKEY,function(found){
-						
-						//And display them..
-						createWebPacketList(found,thetable);
-						
-					});
-					
+					showYourWebPackets();
 				});	
 			});
 		}

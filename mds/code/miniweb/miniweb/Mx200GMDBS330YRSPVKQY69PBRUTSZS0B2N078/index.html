@@ -1,35 +1,17 @@
 <html>
 
 <head>
-	<title>Spartacus</title>
-	
-	<!-- Load the main MDS JS lib -->
-	<script type="text/javascript" src="mds.js"></script>
-	<script type="text/javascript" src="../../miniweb.js"></script>
-		
+	<title>Spartacus</title>	
 </head>
 
 <body>
 
 <script type="text/javascript">
 
-	miniweb_Init();
-
 	function jumpToMNSDomain(domain){
-		miniweb_JumpToURL("Mx200GMFWSQ6ZMUHSH7NYRGJ3NCKY3APR4W3VC",function(data){
-			MDS.log("miniweb_JumpToURL : "+JSON.stringify(data));
-		});	
+		window.top.postMessage("mns://"+domain, '*')	
 	}
 
-	/*getDataURI("miniweb://Mx200GMFWSQ6ZMUHSH7NYRGJ3NCKY3APR4W3VC/images/home.png",function(data){
-		MDS.log("getDataURI : "+JSON.stringify(data));
-	});*/
-	
-	/*miniweb_JumpToURL("miniweb://Mx200GMFWSQ6ZMUHSH7NYRGJ3NCKY3APR4W3VC/",function(data){
-		MDS.log("miniweb_JumpToURL : "+JSON.stringify(data));
-	});*/
-	
-	
 </script>
 
 <center>

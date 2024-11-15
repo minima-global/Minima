@@ -1,0 +1,56 @@
+<html>
+
+<head>
+	<title>MiniWEB</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- JS -->
+	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/auth.js"></script>
+	<script type="text/javascript" src="gui.js"></script>
+	<script type="text/javascript" src="./js/purify.min.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+<br>
+
+<div id="topmenu"></div>
+
+<br><br>
+
+HELP!	
+</center>
+
+<script type="text/javascript">
+	
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//Create the Top Menu
+			createTopMenu(document.getElementById("topmenu"));
+			
+		}
+	});
+
+</script>
+
+</body>
+
+</html>

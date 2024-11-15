@@ -1,0 +1,62 @@
+<html>
+
+<head>
+	<title>Spartacus</title>
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	<script type="text/javascript" src="../../miniweb.js"></script>
+		
+</head>
+
+<body>
+
+<center>
+
+<br>
+<h1>Spartacus</h1>
+<br>
+Hello friends.. Welcome to my MNS Site..!
+<br>
+
+<br>
+<a href="linkpage.html">Link to page</a>
+<br><br>
+<img src="images/spartacus.jpg">	
+<br><br>
+
+My TEst Image : 
+<img id="testimage">
+
+<button onclick="miniweb_JumpToURL('miniweb://Mx200GMDBS330YRSPVKQY69PBRUTSZS0B2N078/');">JUMP TO POPO</button>	
+ 
+ <script type="text/javascript">
+ 
+ 	//MUST initialise the MiniWEB system.. IF you want to use miniweb_GetURL functions..
+ 	miniweb_Init();
+ 	
+ 	//This extracts the data if necessary
+ 	/*miniweb_GetURL("miniweb://Mx200GMDBS330YRSPVKQY69PBRUTSZS0B2N078/images/spartacus.jpg",function(link){
+ 		MDS.log("GOT LINK : "+JSON.stringify(link));
+ 	});*/
+ 	
+ 	//This extracts the data if necessary
+ 	miniweb_GetDataURI("miniweb://Mx200GMDBS330YRSPVKQY69PBRUTSZS0B2N078/images/spartacus.jpg",function(link){
+ 		MDS.log("DATA URI : "+JSON.stringify(link));
+ 		document.getElementById("testimage").src = link;
+ 	});
+ 	
+ 	//Main MDS message handler..
+	/*MDS.init(function(msg){
+		if(msg.event == "inited"){
+			MDS.log("SPARTACUS MDS INITED!");
+		}
+	});*/
+ 
+ </script>
+ 
+</center>
+
+</body>
+
+</html>

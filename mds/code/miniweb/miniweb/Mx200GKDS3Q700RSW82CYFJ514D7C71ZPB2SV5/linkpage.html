@@ -1,0 +1,26 @@
+<html>
+
+<head>
+	<title>My Test Site</title>
+</head>
+
+<body>
+
+<script type="text/javascript">
+
+	function jumpToMNSDomain(domain){
+		window.top.postMessage("mns://"+domain, '*')	
+	}
+
+</script>
+
+<center>
+
+Link page!!<br>
+<br>
+<a href="index.html">HOME</a><br>
+<br>
+<button onclick="jumpToMNSDomain('spartacus');">JUMP TO SPARTACUS</button>	
+</center>
+</body>
+</html>

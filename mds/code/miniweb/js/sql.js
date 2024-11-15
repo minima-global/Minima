@@ -97,6 +97,7 @@ function getFilePacket(name, callback){
 			packet.data.version 	= row.VERSION;
 			packet.data.file		= row.DATA;
 			packet.signature 		= row.SIGNATURE;
+			packet.published 		= row.PUBLISHED;
 			 		 
 			callback(packet);	
 		}else{
@@ -127,6 +128,38 @@ function getMyFilePackets(userkey, callback){
 			packet.data.version 	= row.VERSION;
 			packet.data.file		= row.DATA;
 			packet.signature 		= row.SIGNATURE;
+			packet.published 		= row.PUBLISHED;
+			
+			packets.push(packet);
+		}
+		
+		callback(packets);
+	});
+}
+
+function getAllUnpublishedFilePackets(userkey, callback){
+	
+	//Find a record
+	var sql = "SELECT * FROM filepackets WHERE published=0 AND owner='"+userkey+"' ORDER BY id ASC";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		
+		var packets = [];
+		var len = msg.rows.length;
+		for(var i=0;i<len;i++){
+			var row = msg.rows[i];
+			
+			var packet  			= {};
+			packet.data				= {};
+			packet.data.name 		= row.NAME;
+			packet.data.owner 		= row.OWNER;
+			packet.data.randid 		= row.RANDID;
+			packet.data.description	= decodeStringFromDB(row.DESCRIPTION);
+			packet.data.version 	= row.VERSION;
+			packet.data.file		= row.DATA;
+			packet.signature 		= row.SIGNATURE;
+			packet.published 		= row.PUBLISHED;
 			
 			packets.push(packet);
 		}
@@ -140,9 +173,30 @@ function updateFilePacket(packetjson, callback){
 	//Update the record..
 	var sql = "UPDATE filepackets SET "
 			 +" description='"+encodeStringForDB(packetjson.data.description)+"'"	 
-			 +" version="+packetjson.data.version
+			 +", version="+packetjson.data.version
 			 +", data='"+packetjson.data.file
-			 +"', signature='"+packetjson.signature+"' WHERE name='"+packetjson.data.name+"'";
+			 +"', signature='"+packetjson.signature+"'"
+			 +", published=0 WHERE name='"+packetjson.data.name+"'";
+					
+	MDS.sql(sql,function(msg){
+		callback(true);
+	});
+}
+
+function updateFilePacketsToPublished(callback){
+	
+	//Update the record..
+	var sql = "UPDATE filepackets SET published=1";
+					
+	MDS.sql(sql,function(msg){
+		callback(true);
+	});
+}
+
+function deleteFilePacket(name, callback){
+	
+	//Update the record..
+	var sql = "DELETE FROM filepackets WHERE name='"+name+"'";
 					
 	MDS.sql(sql,function(msg){
 		callback(true);

@@ -1,58 +1,67 @@
-/* MNS backend service
+/* MinWEB backend service
 * 
 * @spartacusrex
 */
 
-if(true){
-	return true;
-}
 
 //Load js libs
 MDS.load("./js/jslib.js");
-MDS.load("./jssql.js");
-MDS.load("search.js");
-MDS.load("txns.js");
+MDS.load("./js/auth.js");
+MDS.load("./js/sql.js");
+MDS.load("./js/txns.js");
 
-//Are we logging data
-var logs = false;
+var logging = true;
 
 //Process an incoming coin from cascade or resync
 function processCoin(coin,block){
 	
-	//Check is Valid amount..
-	if(coin.address != MNS_ADDRESS){
-		MDS.log("Wrong coin address! "+coin.address);
-		return;
-	}else if(coin.tokenid != "0x00"){
-		MDS.log("Message not sent as Minima.. ! "+coin.tokenid);
-		return;
-	}
-	/*else if(+coin.amount < 0.01){
-		MDS.log("Message below 0.01 Minima threshold.. ! "+coin.amount);
-		return;
-	}*/
-	
-	//Get the coin..
-	var coinstate  	= coin.state;
-	var owner 		= stripBrackets(coinstate[0]);
-	var transfer 	= stripBrackets(coinstate[1]);
-	var name 		= stripBrackets(coinstate[2]);
-	var datastr		= stripBrackets(coinstate[3]);
-	var datahex		= coinstate[4];
-	var sig			= coinstate[5];
-	
-	//check sig..
-	verifySig(owner, transfer, name, datastr, datahex, sig, function(valid){
-		if(valid){
-			updateName(owner, transfer, name, datastr, datahex, block, function(resp,msg){
-				if(!resp){
-					MDS.log("UPDATE:"+resp+" Name:"+name+" Message:"+msg);	
+	try{
+		
+		//Get the file packet
+		var onchainfp = convertToFilePacket(coin);		
+		
+		//Verify the signature
+		verifyFilepacket(onchainfp,function(verify){
+			
+			//Was it valid
+			if(!verify){
+				MDS.log("INVALID file packet : "+onchainfp.data.name);
+			}	
+			
+			//If it's valid do wer have it.. ?
+			getFilePacket(onchainfp.data.name,function(oldfp){
+				
+				//Check if this is newer
+				if(oldfp){
+					
+					//Check version
+					if(oldfp.data.version<onchainfp.data.version){
+						
+						//Update to the new version
+						updateFilePacket(onchainfp,function(update){
+							if(logging){
+								MDS.log("UPDATE Filepacket : "+onchainfp.data.name);	
+							}	
+						});
+					}else{
+						MDS.log("Filepacket SAME VERSION : "+onchainfp.data.name);
+					}	
+					
+				}else{
+					
+					//We don't have it - add it..
+					insertFilePacket(true, onchainfp, function(insert){
+						if(logging){
+							MDS.log("NEW Filepacket : "+onchainfp.data.name);	
+						}	
+					});
 				}
-			});		
-		}else{
-			MDS.log("INVALID COIN SIGNATURE : "+name);
-		}
-	});
+			});
+		})
+		
+	}catch(error){
+		MDS.log("error processCoin : "+error)	
+	}
 }
 
 //Main message handler..
@@ -64,30 +73,28 @@ MDS.init(function(msg){
 		//Init the DB		
 		createDB(function(){
 			
-			//Put in a blank
-			setBlankPending();
-				
 			//Notify of new messages..
-			MDS.cmd("coinnotify action:add address:"+MNS_ADDRESS,function(startup){});
+			MDS.cmd("coinnotify action:add address:"+MINIWEB_FILE_ADDRESS,function(startup){});
+			MDS.cmd("coinnotify action:add address:"+MINIWEB_FILE_REQUEST,function(startup){});
 			
-			MDS.log("Inited");
+			//Scan the chain for any coins we may have missed!
+			
+			MDS.log("MiniWEB Inited");
 		});
 		
-	}else if(msg.event == "NOTIFYCASCADECOIN"){
+	}else if(msg.event == "NOTIFYCOIN"){
 			
 		//Is it the one that matters
-		if(msg.data.address ==  MNS_ADDRESS){
-			processCoin(msg.data.coin,msg.data.txblock);
+		if(msg.data.address ==  MINIWEB_FILE_ADDRESS){
+			processCoin(msg.data.coin);
+		
+		}else if(msg.data.address ==  MINIWEB_FILE_REQUEST){
+			
+			//Are they asking for one of ours!
+			//processCoin(msg.data.coin,msg.data.txblock);
+		
 		}
 		
-	}else if(msg.event == "MDS_RESYNC_START"){
-		
-		//Minima is performing a resync.. 
-		MDS.log("Start the sync process .. wipe db");
-		wipeDB(function(){
-			createDB(function(){});		
-		});		
-	
 	}else if(msg.event == "MDSAPI"){
 		
 		//API request are in JSON format
@@ -100,46 +107,13 @@ MDS.init(function(msg){
 			var domain = apicall.data;
 			
 			//Do a search
-			searchForMNSRecord(domain,function(record){
+			/*searchForMNSRecord(domain,function(record){
 				MDS.api.reply(msg.data.from,msg.data.id,JSON.stringify(record));
-			});	
+			});*/	
 			
 		}else{
 			MDS.log("INVALID API : "+JSON.stringify(msg));
 		}
 	
-	}else if(msg.event == "MDS_PENDING"){
-			
-		//What is the pending request UID
-		var pendinguid = msg.data.uid;
-		var status	   = msg.data.status;
-		
-		//Get the current pending..
-		MDS.keypair.get("pending",function(pendres){
-			
-			//Get the details..
-			var pendingact 	= JSON.parse(pendres.value);
-			var internaluid = pendingact.pendinguid; 
-			
-			//IS it this one.. Could be the SEND or a different one.. 
-			if(internaluid == pendinguid){
-				if(status){
-					//Do the send..
-					var sig 		= msg.data.result.response;
-					var owner 		= pendingact.owner;
-					var transfer 	= pendingact.transfer;
-					var name 		= pendingact.name;
-					var datastr		= pendingact.datastr;
-					var datahex		= pendingact.datahex;
-					
-					sendNameUpdateAfterPending(owner, transfer, name, datastr, datahex, sig, function(resp){							
-						//MDS.log(JSON.stringify(resp));
-					});
-				}
-			}
-			
-			//And put in a blank
-			setBlankPending();
-		});
 	}
 });		
