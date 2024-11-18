@@ -153,6 +153,10 @@ public class Main extends MessageProcessor {
 	
 	public static final String MAIN_NEWCOIN 			= "NEWCOIN";
 	public static final String MAIN_NOTIFYCOIN 			= "NOTIFYCOIN";
+	
+	//Notify when data hits the cascade
+	public static final String MAIN_NOTIFYCASCADEBLOCK 	= "NOTIFYCASCADEBLOCK";
+	public static final String MAIN_NOTIFYCASCADETXN 	= "NOTIFYCASCADETXN";
 	public static final String MAIN_NOTIFYCASCADECOIN 	= "NOTIFYCASCADECOIN";
 	
 	/**

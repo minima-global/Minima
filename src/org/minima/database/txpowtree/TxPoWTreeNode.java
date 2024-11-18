@@ -27,6 +27,8 @@ import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
+import com.mysql.cj.x.protobuf.MysqlxDatatypes.Array;
+
 public class TxPoWTreeNode implements Streamable {
 
 	/**
@@ -598,9 +600,48 @@ public class TxPoWTreeNode implements Streamable {
 	
 	public static void CheckTxBlockForNotifyCoins(TxBlock zBlock) {
 		
-		String blockid 		= zBlock.getTxPoW().getTxPoWID();
-		String blocknumber 	= zBlock.getTxPoW().getBlockNumber().toString();
+		TxPoW txp			= zBlock.getTxPoW();
+		String blockid 		= txp.getTxPoWID();
+		String blocknumber 	= txp.getBlockNumber().toString();
 		MinimaDB db	 		= MinimaDB.getDB();
+		
+		//Get the block transactions
+		ArrayList<String> transactions = txp.getTransactions();
+		
+		//This Block is now in the cascade
+		JSONObject blockdata = new JSONObject();
+		blockdata.put("txpow", txp.toJSON());
+		Main.getInstance().PostNotifyEvent(Main.MAIN_NOTIFYCASCADEBLOCK, blockdata);
+		
+		//Is THIS block a TXN..
+		if(txp.isTransaction()) {
+			//Send a message
+			JSONObject data = new JSONObject();
+			data.put("txblockid", blockid);
+			data.put("txblock", blocknumber);
+			data.put("txpowid", blockid);
+			
+			//And Post it..
+			Main.getInstance().PostNotifyEvent(Main.MAIN_NOTIFYCASCADETXN, data);
+			
+			//Add to the DB
+			MinimaDB.getDB().getTxPoWDB().getOnChainDB().addOnChainTxPoW(blockid, txp.getBlockNumber(), blockid);
+		}
+		
+		//Cycle through all the txns as they are NOW on chain permanently..
+		for(String txn : transactions) {
+			//Send a message
+			JSONObject data = new JSONObject();
+			data.put("txblockid", blockid);
+			data.put("txblock", blocknumber);
+			data.put("txpowid", txn);
+			
+			//And Post it..
+			Main.getInstance().PostNotifyEvent(Main.MAIN_NOTIFYCASCADETXN, data);
+			
+			//Add to the DB
+			MinimaDB.getDB().getTxPoWDB().getOnChainDB().addOnChainTxPoW(blockid, txp.getBlockNumber(), txn);
+		}
 		
 		//Get all the input coins..
 		ArrayList<CoinProof> inputs = zBlock.getInputCoinProofs();
@@ -621,8 +662,6 @@ public class TxPoWTreeNode implements Streamable {
 				data.put("txblock", blocknumber);
 				data.put("spent", true);
 				data.put("coin", coinjson);
-				
-				//MinimaLogger.log("NOTIFY CASCADE COIN : "+data.toString());
 				
 				//And Post it..
 				Main.getInstance().PostNotifyEvent(Main.MAIN_NOTIFYCASCADECOIN, data);
@@ -658,11 +697,23 @@ public class TxPoWTreeNode implements Streamable {
 				data.put("spent", false);
 				data.put("coin", coinjson);
 				
-				//MinimaLogger.log("NOTIFY CASCADE COIN : "+data.toString());
-				
 				//And Post it..
 				Main.getInstance().PostNotifyEvent(Main.MAIN_NOTIFYCASCADECOIN, data);
 			}
 		}
+	}
+	
+	public static void main(String[] zArgs) {
+		
+		ArrayList<String> tt = new ArrayList<>();
+		tt.add("one");
+		tt.add("two");
+		tt.add("three");
+		
+		JSONObject data = new JSONObject();
+		data.put("test", "this");
+		data.put("transactions", tt.toString());
+		
+		System.out.println(data.toString());
 	}
 }

@@ -610,6 +610,7 @@ public class MinimaDB {
 			//Wipe the old data..
 			mTxPoWDB.wipeDBRAM();
 			mTxPoWDB.getSQLDB().cleanDB(true);
+			mTxPoWDB.getOnChainDB().cleanDB(true);
 			mArchive.checkForCleanDB();
 			
 			//Shut them down

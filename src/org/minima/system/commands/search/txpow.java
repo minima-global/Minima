@@ -6,6 +6,7 @@ import java.util.HashSet;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
+import org.minima.database.txpowdb.onchain.TxPoWOnChainDB;
 import org.minima.database.txpowdb.sql.TxPoWSqlDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.TxBlock;
@@ -140,7 +141,29 @@ public class txpow extends Command {
 			
 			TxPoW block = TxPoWSearcher.searchChainForTxPoW(txpowid);
 			if(block == null) {
-				resp.put("found", false);
+				
+				//Now search the DB
+				TxPoWOnChainDB chaindb 	= MinimaDB.getDB().getTxPoWDB().getOnChainDB();
+				JSONObject onchaintxpow = chaindb.getOnChainTxPoW(txpowid.to0xString());
+				if((boolean)onchaintxpow.get("found")) {
+					
+					MiniNumber fblock = new MiniNumber(onchaintxpow.get("block").toString());
+					
+					//Found in the DB
+					TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+					
+					resp.put("found", true);
+					resp.put("block", fblock.toString());
+					resp.put("blockid", onchaintxpow.get("blockid").toString());
+					resp.put("tip", tip.getBlockNumber().toString());
+					
+					MiniNumber depth  = tip.getBlockNumber().sub(fblock);
+					resp.put("confirmations", depth.toString());
+					
+				}else {
+					resp.put("found", false);
+				}
+				
 			}else {
 				
 				TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
