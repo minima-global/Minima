@@ -31,11 +31,23 @@
 
 <br><br>
 
-HELP!	
+MiniWEB allows you to publish small websites and files across the Minima network.<br>
+<br>
+The maximum	size for a miniweb file is 50k.<br>
+<br>
+Here is an example : <Br><br>
+
+<textarea readonly id="jumpscript" spellcheck="false" style="resize: none;width:600;height:100;"></textarea><br>
+
 </center>
 
 <script type="text/javascript">
 	
+jumpscript.value="<script type=\"text/javascript\">\n"+
+"    function jumpToMNSDomain(domain){\n"+
+"        window.top.postMessage(domain, '*')\n"+	
+"    }\n"+
+"<\/script>";
 	
 	//Main message handler..
 	MDS.init(function(msg){
