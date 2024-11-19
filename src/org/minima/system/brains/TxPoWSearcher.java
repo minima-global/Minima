@@ -10,6 +10,7 @@ import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Token;
+import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -196,6 +197,16 @@ public class TxPoWSearcher {
 						
 						//Make a copy..
 						Coin copycoin = coin.deepCopy();
+						
+						//Are we storing state - if not see if we have the removed state
+						if(!copycoin.storeState() && !MEGACHECK) {
+							
+							//Get it..
+							ArrayList<StateVariable> removedstate = tip.getTxBlock().removedState(coinid);
+							if(removedstate != null) {
+								copycoin.setState(removedstate);
+							}
+						}
 						
 						//OK - fresh unspent coin
 						coinentry.add(copycoin);
