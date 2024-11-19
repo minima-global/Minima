@@ -196,6 +196,8 @@
 			domain = domain.substring(10);
 		}
 		
+		MDS.log("Browser GO : "+domain);
+		
 		//Get the base domain for this page
 		var basedomain = getBaseDomain(domain);
 		var webfolder 		= addDomains(BASE_WEB,basedomain);
@@ -250,15 +252,19 @@
 					MINIWEB_UID = MDS.minidappuid;
 				}
 				
-				var wipeold = false;
+				var wipeold = true;
 				
 				if(wipeold){
 					//Delete all the old sites on refresh..
 					MDS.file.deletefromweb(BASE_WEB,function(delweb){
-						MDS.log("Cleared web site cache..");
-						
-						//NOW GO..
-						go(MAIN_URL);	
+						MDS.file.delete(BASE_INTERNAL,function(del){
+							
+							MDS.log("Cleared web site cache..");
+							
+							//NOW GO..
+							go(MAIN_URL);	
+							
+						});
 					});
 				}else{
 					//NOW GO..

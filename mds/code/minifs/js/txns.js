@@ -21,7 +21,9 @@ function sendFilePacket(filepacket, callback){
 	
 	//Now post..
 	MDS.cmd(txn,function(resp){
-		callback(resp);
+		if(callback){
+			callback(resp);	
+		}
 	});
 }
 
@@ -47,40 +49,16 @@ function sendFileRequest(name, callback){
 	
 	//What are the state variables..
 	var state = {};
-	state[0]  = 1;
-	state[1]  = "["+name+"]";
+	state[0]  = "["+name+"]";
 	
 	//Now construct a txn
 	var txn = "send amount:0.000000000001 address:"+MINIWEB_FILE_REQUEST+" storestate:false state:"+JSON.stringify(state);
 	
 	//Now post..
 	MDS.cmd(txn,function(resp){
-		callback(resp);
-	});
-}
-
-//Send a file packet..
-function sendMultiFileRequest(namearray, callback){
-	
-	var len = namearray.length;
-	if(len<1 || namearray>250){
-		MDS.log("Invalid number for name array file requests "+len);
-		return;
-	}
-	
-	//What are the state variables..
-	var state = {};
-	state[0]  = len;
-	for(var i=0;i<len;i++){
-		state[i+1]  = "["+namearray[i]+"]";
-	}
-
-	//Now construct a txn
-	var txn = "send amount:0.000000000001 address:"+MINIWEB_FILE_REQUEST+" storestate:false state:"+JSON.stringify(state);
-	
-	//Now post..
-	MDS.cmd(txn,function(resp){
-		callback(resp);
+		if(callback){
+			callback(resp);	
+		}
 	});
 }
 

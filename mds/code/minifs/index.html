@@ -54,7 +54,9 @@
 		getMyFilePackets(USER_PUBKEY,function(found){
 			
 			if(found.length == 0){
-				mywebpackets.innerHTML = "No File packets found..";
+				mywebpackets.innerHTML = 
+					"<table class=filepacketview border=0><tr><td>"+
+					"No File packets found..</td></tr></table>";
 				return;
 			}
 			
@@ -67,7 +69,6 @@
 			mywebpackets.innerHTML = html;
 		});
 	}
-	
 	
 	//Main message handler..
 	MDS.init(function(msg){

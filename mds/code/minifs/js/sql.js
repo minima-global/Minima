@@ -168,6 +168,39 @@ function getAllUnpublishedFilePackets(userkey, callback){
 	});
 }
 
+function searchFilePackets(searchterm, callback){
+	
+	//Find a record
+	//var sql = "SELECT * FROM filepackets WHERE description LIKE '%"+searchterm+"%' ORDER BY id ASC LIMIT 50";
+	var sql = "SELECT * FROM filepackets WHERE LOWER(description) LIKE '%"+searchterm.toLowerCase()+"%' ORDER BY id ASC LIMIT 50";
+	//var sql = "SELECT * FROM filepackets WHERE description REGEXP_LIKE '%"+searchterm+"%' ORDER BY id ASC LIMIT 50";			
+	
+	//Run this..
+	MDS.sql(sql,function(msg){
+		
+		var packets = [];
+		var len = msg.rows.length;
+		for(var i=0;i<len;i++){
+			var row = msg.rows[i];
+			
+			var packet  			= {};
+			packet.data				= {};
+			packet.data.name 		= row.NAME;
+			packet.data.owner 		= row.OWNER;
+			packet.data.randid 		= row.RANDID;
+			packet.data.description	= decodeStringFromDB(row.DESCRIPTION);
+			packet.data.version 	= row.VERSION;
+			packet.data.file		= row.DATA;
+			packet.signature 		= row.SIGNATURE;
+			packet.published 		= row.PUBLISHED;
+			
+			packets.push(packet);
+		}
+		
+		callback(packets);
+	});
+}
+
 function updateFilePacket(packetjson, callback){
 	
 	//Update the record..

@@ -60,7 +60,7 @@ function createWebPacketView(filepacket){
 	+ "		<td style=\"text-align:right\" nowrap>"+pub+"</td>\n"
 	+ "	</tr>\n"
 	+ "	<tr>\n"
-	+ "		<td colspan=2>"+(filepacket.data.file.length-2)/2+" bytes<br></td>\n"
+	+ "		<td colspan=2>Version : "+filepacket.data.version+" ( "+(filepacket.data.file.length-2)/2+" bytes )<br></td>\n"
 	+ "	</tr>\n"
 	+ "	<tr>\n"
 	+ "		<td colspan=2><br>"+DOMPurify.sanitize(filepacket.data.description)+"<br><br></td>\n"
@@ -69,6 +69,29 @@ function createWebPacketView(filepacket){
 	+ "		<td>\n"
 	+ "			<button class=solobutton onclick=\"editSite('"+filepacket.data.name+"')\">Edit</button>\n"
 	+ "			<button class=solobutton onclick=\"deleteSite('"+filepacket.data.name+"')\">Delete</button>\n"
+	+ "		</td>\n"
+	+ "		<td style=\"text-align:right\">\n"
+	+ "			<button class=solobutton onclick=\"openBrowser('"+filepacket.data.name+"')\">Browse</button>\n"
+	+ "		</td>\n"
+	+ "	</tr>\n"
+	+ "</table><br>"
+	
+	return guidata;
+}
+
+function createSearchPacketView(filepacket){
+	
+	var guidata =
+	"<table class=filepacketview border=0>\n"
+	+ "	<tr>\n"
+	+ "		<td><b>"+filepacket.data.name+"</b></td>\n"
+	+ "		<td style=\"text-align:right\" nowrap>&nbsp</td>\n"
+	+ "	</tr>\n"
+	+ "	<tr>\n"
+	+ "		<td colspan=2><br>"+DOMPurify.sanitize(filepacket.data.description)+"<br><br></td>\n"
+	+ "	</tr>\n"
+	+ "	<tr>\n"
+	+ "		<td>&nbsp;\n"
 	+ "		</td>\n"
 	+ "		<td style=\"text-align:right\">\n"
 	+ "			<button class=solobutton onclick=\"openBrowser('"+filepacket.data.name+"')\">Browse</button>\n"

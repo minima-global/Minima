@@ -84,7 +84,7 @@
 		}
 		
 		//Check different
-		if( (filepacket.data.file==old_data) && (filepacket.data.description==old_desc)){
+		if( (filepacket.data.file == old_data) && (filepacket.data.description == old_desc)){
 			alert("No Change in File or Description.. ?");
 			return;
 		}
@@ -164,7 +164,7 @@
 					
 					//Set the details.
 					document.getElementById("filepacket_name").innerHTML = filepacket.data.name;
-					document.getElementById("filepacket_version").innerHTML = +filepacket.data.version+1;
+					document.getElementById("filepacket_version").innerHTML = +filepacket.data.version;
 					document.getElementById("filepacket_description").value = filepacket.data.description;
 					
 					var size = filepacket.data.file.length;
