@@ -1,7 +1,7 @@
 <html>
 
 <head>
-	<title>MiniWEB</title>
+	<title>MiniFS</title>
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
@@ -25,12 +25,21 @@
 <body>
 
 <center>
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table width=100% border=0>
+			<tr>
+				<td><img height=45 src="mns.png"></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>MiniFS</b></td>
+				<td class='topicdate' nowrap>
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToMyFiles();" height=30 src="home.png">&nbsp;&nbsp;
+				</td>
+			</tr>
+		</table>
+	</div>
+
 <br>
 
-<div id="topmenu"></div>
-<br><br>
-
-<div id=unpublisheddiv></div>
+	<div id=unpublisheddiv></div>
 
 <br>
 <button id=publishbutton class=solobutton onclick="publishFiles()">Publish all unpublished files</button>	
@@ -41,6 +50,12 @@
 	
 	var unpublished = [];
 	var haveshownpending = false;
+	
+	function showTitleOnAndroid(){
+		if (window.navigator.userAgent.includes('Minima Browser')) {
+			Android.showTitleBar();
+		}
+	}
 	
 	function publishFiles(){
 		
@@ -72,9 +87,6 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			
-			//Create the Top Menu
-			createTopMenu(document.getElementById("topmenu"));
-			
 			//Start up the auth
 			authInit(function(userpubkey){
 			
@@ -92,9 +104,7 @@
 					}else{
 						unpublisheddiv.innerHTML = "You currently have <b>"+unpublished.length+"</b> unpublished files<br>"
 						+"<br>"
-						+"Publishing a file requires 1 on-chain txn per file<br>"
-						+"<br>"
-						+"You will need to confirm EACH pending txn..";	
+						+"Publishing a file requires 1 on-chain txn per file<br>";	
 					}
 				});
 			});

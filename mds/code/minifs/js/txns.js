@@ -17,7 +17,7 @@ function sendFilePacket(filepacket, callback){
 	state[6]  = filepacket.signature;
 	
 	//Now construct a txn
-	var txn = "send amount:0.000000000001 address:"+MINIWEB_FILE_ADDRESS+" storestate:false state:"+JSON.stringify(state);
+	var txn = "sendpoll amount:0.000000000001 address:"+MINIWEB_FILE_ADDRESS+" storestate:false state:"+JSON.stringify(state);
 	
 	//Now post..
 	MDS.cmd(txn,function(resp){
@@ -52,7 +52,7 @@ function sendFileRequest(name, callback){
 	state[0]  = "["+name+"]";
 	
 	//Now construct a txn
-	var txn = "send amount:0.000000000001 address:"+MINIWEB_FILE_REQUEST+" storestate:false state:"+JSON.stringify(state);
+	var txn = "sendpoll amount:0.000000000001 address:"+MINIWEB_FILE_REQUEST+" storestate:false state:"+JSON.stringify(state);
 	
 	//Now post..
 	MDS.cmd(txn,function(resp){

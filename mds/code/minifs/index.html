@@ -1,7 +1,7 @@
 <html>
 
 <head>
-	<title>MiniWEB</title>
+	<title>MiniFS</title>
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
@@ -27,15 +27,24 @@
 <body>
 
 <center>
-<br>
-
-<div id="topmenu"></div>
-
-<br><br>
+	
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table width=100% border=0>
+			<tr>
+				<td><img height=45 src="mns.png"></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>MiniFS</b></td>
+				<td class='topicdate' nowrap>
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToMyFiles();" height=30 src="home.png">&nbsp;&nbsp;
+				</td>
+			</tr>
+		</table>
+	</div>
+	
+	<br>
 
 <table width=80% class=filepacketview style="text-align:center;">
 	<tr>
-		<td style="text-align:left;"><button class=solobutton onclick="jumpToNewFile();">New MiniWeb File</button></td>
+		<td style="text-align:left;"><button class=solobutton onclick="jumpToNewFile();">New MiniFS File</button></td>
 		<td style="text-align:right;"><button class=solobutton onclick="jumpToPublish();">Publish</button></td>
 	</tr>
 </table>
@@ -48,6 +57,12 @@
 </center>
 
 <script type="text/javascript">
+	
+	function showTitleOnAndroid(){
+		if (window.navigator.userAgent.includes('Minima Browser')) {
+			Android.showTitleBar();
+		}
+	}
 	
 	function showYourWebPackets(){
 		//Load my Packets..
@@ -83,16 +98,39 @@
 				return;
 			}
 			
-			//Create the Top Menu
-			createTopMenu(document.getElementById("topmenu"));
-			
 			//Get started	
 			createDB(function(){
 				
 				//Start up the auth
 				authInit(function(userpubkey){
 					
-					showYourWebPackets();
+					//Now set the RESTRICTED_UID
+					MDS.cmd("checkmode",function(resp){
+						
+						//Get the restricted  
+						if(resp.response.mode=="WRITE"){
+							WRITE_MODE = true;
+						}
+						
+						//The Browser UID
+						RESTRICTED_UID = resp.response.untrustedmdsuid;
+						
+						
+						//Get the dapplink..
+						MDS.dapplink("browsefs",function(dappresp){
+							
+							//Get link to the Browser MiniDAPP
+							if(dappresp.status){
+								BROWSER_DAPPLINK = dappresp.base.replace("index.html","browse.html");	
+								MDS.log("BROWSELINK = "+BROWSER_DAPPLINK);
+							}else{
+								MDS.log("BrowseFS MiniDAPP not found");
+							}
+							
+							//Now load your webpackets
+							showYourWebPackets();	
+						});
+					});
 				});	
 			});
 		}

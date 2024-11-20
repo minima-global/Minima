@@ -24,10 +24,20 @@
 <body>
 
 <center>
-<br>
+	
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table width=100% border=0>
+			<tr>
+				<td><img height=45 src="mns.png"></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>MiniFS</b></td>
+				<td class='topicdate' nowrap>
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToMyFiles();" height=30 src="home.png">&nbsp;&nbsp;
+				</td>
+			</tr>
+		</table>
+	</div>
 
-<div id="topmenu"></div>
-<br><br>
+<br>
 
 <table class=filepacketview>
 	<tr>
@@ -60,6 +70,12 @@
 <script type="text/javascript">
 	
 	var filepacket 	= {};
+	
+	function showTitleOnAndroid(){
+		if (window.navigator.userAgent.includes('Minima Browser')) {
+			Android.showTitleBar();
+		}
+	}
 	
 	function updatePacket(){
 		
@@ -133,10 +149,6 @@
 		
 		//Do initialisation
 		if(msg.event == "inited"){
-			
-			//Create the Top Menu
-			var topmenu = document.getElementById("topmenu");
-			createTopMenu(topmenu);
 			
 			//Start up the auth
 			authInit(function(userpubkey){

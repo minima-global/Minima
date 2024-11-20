@@ -171,7 +171,6 @@ function getAllUnpublishedFilePackets(userkey, callback){
 function searchFilePackets(searchterm, callback){
 	
 	//Find a record
-	//var sql = "SELECT * FROM filepackets WHERE description LIKE '%"+searchterm+"%' ORDER BY id ASC LIMIT 50";
 	var sql = "SELECT * FROM filepackets WHERE LOWER(description) LIKE '%"+searchterm.toLowerCase()+"%' ORDER BY id ASC LIMIT 50";
 	//var sql = "SELECT * FROM filepackets WHERE description REGEXP_LIKE '%"+searchterm+"%' ORDER BY id ASC LIMIT 50";			
 	

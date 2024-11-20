@@ -222,7 +222,8 @@ MDS.init(function(msg){
 			getFilePacket(request,function(fp){
 				
 				//Create a resp object
-				var resp = {};
+				var resp 	= {};
+				resp.status = true;
 					
 				//Do we have it..
 				if(fp){
@@ -251,7 +252,31 @@ MDS.init(function(msg){
 				MDS.api.reply(msg.data.from,msg.data.id,JSON.stringify(resp));
 			});
 			
+		}else if(apicall.action == "SEARCH"){
+			
+			//DOMAIN is specified as the data
+			var request = apicall.data.trim();
+			
+			searchFilePackets(request,function(allfound){
+				
+				//Create a resp object
+				var resp 		= {};
+				resp.status 	= true;
+				resp.term 		= request;
+				resp.results 	= allfound;
+				
+				//Send it
+				MDS.api.reply(msg.data.from,msg.data.id,JSON.stringify(resp));
+			});
+			
 		}else{
+			
+			var resp 	= {};
+			resp.status = false;
+			
+			//Send it
+			MDS.api.reply(msg.data.from,msg.data.id,JSON.stringify(resp));
+				
 			MDS.log("INVALID API CALL : "+JSON.stringify(msg));
 		}
 	}
