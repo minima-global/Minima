@@ -120,15 +120,17 @@ public class MinimaDB {
 	
 	public void writeLock(boolean zLock) {
 		
-		//Which thread is this..
-		mCurrentWriteLockThread = Thread.currentThread().getName();
-		mCurrentWriteLockState  = zLock;
-		
 		if(zLock) {
 			mRWLock.writeLock().lock();
+			
+			//Which thread is this..
+			mCurrentWriteLockThread = Thread.currentThread().getName();
+			
 		}else {
 			mRWLock.writeLock().unlock();
 		}
+		
+		mCurrentWriteLockState  = zLock;
 	}
 	
 	public void safeReleaseWriteLock() {
