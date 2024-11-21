@@ -145,6 +145,12 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_CALLCHECKER 	= "MAIN_CALLCHECKER";
 	
 	/**
+	 * Used to check the P2P and MDS systems.. every 20 minutes
+	 */
+	public static final String MAIN_P2PNETMDS_CHECKER 	= "MAIN_P2PNETMDS_CHECKER";
+	long P2PNETMDS_TIMER								= 1000 * 60 * 20;
+	
+	/**
 	 * Notify Users..
 	 */
 	public static final String MAIN_NEWBLOCK 	= "MAIN_NEWBLOCK";
@@ -402,6 +408,9 @@ public class Main extends MessageProcessor {
 		
 		//MYSQL AutoBackup - do one in 5 minutes then every 2 hours
 		PostTimerMessage(new TimerMessage(1000 * 60 * 5, MAIN_AUTOBACKUP_MYSQL));
+		
+		//P2P MDS NET checker
+		PostTimerMessage(new TimerMessage(P2PNETMDS_TIMER, MAIN_P2PNETMDS_CHECKER));
 				
 		//Quick Clean up..
 		System.gc();
@@ -1031,6 +1040,10 @@ public class Main extends MessageProcessor {
 			MinimaLogger.log("Wait 20 seconds..");
 			Thread.sleep(20000);
 			
+			//Stop and restart the MDS..
+			MinimaLogger.log("Clear MDS");
+			mMDS.clear();
+			
 			//Reset the IBD timer
 			getTxPoWProcessor().resetFirstIBDTimer();
 			
@@ -1118,6 +1131,61 @@ public class Main extends MessageProcessor {
 			//A Ping Message.. The top TxPoWID
 			NIOManager.sendNetworkMessageAll(NIOMessage.MSG_PING, tip.getTxPoW().getTxPoWIDData());
 		
+		}else if(zMessage.getMessageType().equals(MAIN_P2PNETMDS_CHECKER)) {
+			
+			//Repost
+			PostTimerMessage(new TimerMessage(P2PNETMDS_TIMER, MAIN_P2PNETMDS_CHECKER));
+			
+			//Are we connected to the internet
+			boolean restartsent = false;
+			if(GeneralParams.P2P_ENABLED && P2PFunctions.isNetAvailable()) {
+			
+				//Current time
+				long timenow = System.currentTimeMillis();
+				
+				//Get the tip.. 
+				TxPoWTreeNode tip 	= MinimaDB.getDB().getTxPoWTree().getTip();
+				
+				//Do we have a tip
+				if(tip == null) {
+					return;
+				}
+				
+				long tiptime 		= tip.getTxPoW().getTimeMilli().getAsLong();
+				
+				//Difference..
+				long diff 			= timenow - tiptime;
+				
+				//Is the gap too great - 2 Hours
+				if(diff > 1000 * 60 * 120) {
+					
+					MinimaLogger.log("[!] Chain Tip too far behind.. restart Networking!");
+					
+					//Something wrong.. restart the Networking..
+					restartsent = true;
+					Main.getInstance().PostMessage(Main.MAIN_NETRESTART);
+				}
+			}
+			
+			//Check the P2P message count - can explode..
+			if(GeneralParams.P2P_ENABLED) {
+				
+				//How many messages are in the stack..
+	        	int count = Main.getInstance().getNetworkManager().getP2PManager().getSize();
+	        	
+	        	//If too many restart networking..
+	        	if(count > 50) {
+	        		
+	        		MinimaLogger.log("[!] P2P Message Overload - Restart");
+	        		
+	        		//Wipe the List
+	        		if(!restartsent) {
+	        			restartsent = true;
+	        			Main.getInstance().PostMessage(Main.MAIN_NETRESTART);
+	        		}
+	        	}
+			}
+			
 		}else if(zMessage.getMessageType().equals(MAIN_CALLCHECKER)) {
 			
 			boolean timed = zMessage.getBoolean("timer", false);

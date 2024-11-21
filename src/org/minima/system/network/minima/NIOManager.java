@@ -291,8 +291,8 @@ public class NIOManager extends MessageProcessor {
 			//Check how long since last connect for each client..
 			PostTimerMessage(new TimerMessage(LASTREAD_CHECKER, NIO_CHECKLASTMSG));
 			
-			//DO a health check on the state of the networking
-			PostTimerMessage(new TimerMessage(NIO_HEALTHCHECK_TIMER, NIO_HEALTHCHECK));
+			//DO a health check on the state of the networking - Now done in Main
+			//PostTimerMessage(new TimerMessage(NIO_HEALTHCHECK_TIMER, NIO_HEALTHCHECK));
 			
 		}else if(zMessage.getMessageType().equals(NIO_SHUTDOWN)) {
 			
@@ -737,7 +737,7 @@ public class NIOManager extends MessageProcessor {
 		}else if(zMessage.getMessageType().equals(NIO_HEALTHCHECK)) {
 			
 			//Recheck every 20 minutes
-			PostTimerMessage(new TimerMessage(NIO_HEALTHCHECK_TIMER, NIO_HEALTHCHECK));
+			/*PostTimerMessage(new TimerMessage(NIO_HEALTHCHECK_TIMER, NIO_HEALTHCHECK));
 			
 			//Are we connected to the internet
 			boolean restartsent = false;
@@ -788,6 +788,7 @@ public class NIOManager extends MessageProcessor {
 	        		}
 	        	}
 			}
+			*/
 			
 			//Check the number of Connecting Clients.. if too great.. restart the networking..
 //			if(getNumberOfConnnectingClients() > 20 ) {
