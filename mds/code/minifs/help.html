@@ -17,7 +17,7 @@
 	<!-- JS -->
 	<script type="text/javascript" src="./js/sql.js"></script>
 	<script type="text/javascript" src="./js/auth.js"></script>
-	<script type="text/javascript" src="gui.js"></script>
+	<script type="text/javascript" src="./js/gui.js"></script>
 	<script type="text/javascript" src="./js/purify.min.js"></script>
 	
 </head>
@@ -25,40 +25,100 @@
 <body>
 
 <center>
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table width=100% border=0>
+			<tr>
+				<td><img height=45 src="minifs.png"></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>MiniFS</b></td>
+				<td class='topicdate' nowrap>
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToHelp();" height=30 src="./images/help.png">&nbsp;&nbsp;					
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToMyFiles();" height=30 src="./images/home.png">&nbsp;&nbsp;
+				</td>
+			</tr>
+		</table>
+	</div>
+	
+	<br>
+
+<div style="text-align:left; max-width:800;">
+<b>MiniFS</b> allows you to publish small zip files across the Minima network in a normal transaction.<br>
+<br>
+The maximum	size for a MiniFS file is 50k. These files can only be updated by the User who created them - whilst preserving the Mx.. address.<br>
+<br>
+Files are picked up by anyone running the MiniFS application and can be accessed by other MiniDAPPs.<br>
+<br>
+MiniFS uses the MDS API system to allow other MiniDAPPs to access the files.<br>
+<br>
+Currently supported operations are :<br>
 <br>
 
-<div id="topmenu"></div>
-
-<br><br>
-
-MiniWEB allows you to publish small websites and files across the Minima network.<br>
+<table>
+	<tr>
+		<td style="text-align:right;"><b>LOAD</b> : </td>
+		<td style="text-align:left;">Load a file given the Mx.. address</td>
+	</tr>
+	<tr>
+		<td style="text-align:right;"><b>SEARCH</b> : </td>
+		<td style="text-align:left;">Search through the description of all files</td>
+	</tr>
+</table>
 <br>
-The maximum	size for a miniweb file is 50k.<br>
+If you try and Load a file you don't have a request is made over Maxima ( important to have Maxima Contacts ) 
+to see if they have it. If not - then an onchain request is made for the user to re-publish it.<br>
 <br>
-Here is an example : <Br><br>
 
-<textarea readonly id="jumpscript" spellcheck="false" style="resize: none;width:600;height:100;"></textarea><br>
+<textarea readonly id="jumpscript" spellcheck="false" style="resize: none;width:600;height:440;"></textarea><br>
+<br>
+The JS files required to extract the ZIP data are provided in this MiniDAPP.<br>
+<br>
+It's very simple..<br>
+<br>
+<a href="./js/ziputil.js" download>ziputil.js</a> - provides extractZIP(zipdata, mdsfolder, callback)<br>
+<a href="./js/jszip.min.js" download>jszip.min.js</a> - Is the zip js lib<br>
+<br>
+Include both and away you go!<br>
+<br>
+ 
+( <b>BrowseFS</b> uses this system..) <br>
+<br>
+
+</div>
+
 
 </center>
 
 <script type="text/javascript">
 	
-jumpscript.value="<script type=\"text/javascript\">\n"+
-"    function jumpToMNSDomain(domain){\n"+
-"        window.top.postMessage(domain, '*')\n"+	
-"    }\n"+
+jumpscript.value="\n//Script to run an MDS API call on MiniFS"+
+"\n<script type=\"text/javascript\">\n"+
+"\n"+
+"    //Create the API call object\n"+
+"    var apicall    = {}\n"+
+"    apicall.action = \"LOAD\"\n"+
+"    apicall.data   = Mx200GC1JWNV8CCYYSVZN90TY279423ZA1TH04\n"+
+"\n"+
+"    //Now call the MiniFS minidapp with is this data\n"+
+"    MDS.api.call(\"minifs\",JSON.stringify(api),function(resp){\n"+
+"        \n"+	
+"        //Was the MiniDAPP found\n"+
+"        if(resp.status){\n"+
+"\n"+
+"            //Convert the returned string to JSON Object\n"+
+"            var data = JSON.parse(resp.data);\n"+
+"\n"+
+"            //You now have the response! - do what you want\n"+
+"            MDS.log(JSON.stringify(data));\n"+
+"        }\n"+
+	
+"    });\n"+
+"\n"+
 "<\/script>";
 	
 	//Main message handler..
 	MDS.init(function(msg){
 		
 		//Do initialisation
-		if(msg.event == "inited"){
-			
-			//Create the Top Menu
-			createTopMenu(document.getElementById("topmenu"));
-			
-		}
+		if(msg.event == "inited"){}
 	});
 
 </script>

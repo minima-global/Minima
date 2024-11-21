@@ -33,6 +33,12 @@ function editSite(mxsite){
 	location.href="edit.html?uid="+MDS.minidappuid+"&mxsite="+mxsite;	
 }
 
+function showTitleOnAndroid(){
+	if (window.navigator.userAgent.includes('Minima Browser')) {
+		Android.showTitleBar();
+	}
+}
+
 function deleteSite(mxsite){
 	if(confirm("Are you sure you wish to delete this ?")){
 		
