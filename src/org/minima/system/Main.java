@@ -1042,7 +1042,7 @@ public class Main extends MessageProcessor {
 			
 			//Stop and restart the MDS..
 			MinimaLogger.log("Clear MDS");
-			mMDS.clear();
+			mMDS.clearExceptString("MDS_TIMER");
 			
 			//Reset the IBD timer
 			getTxPoWProcessor().resetFirstIBDTimer();
