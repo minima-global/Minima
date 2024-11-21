@@ -1037,8 +1037,8 @@ public class Main extends MessageProcessor {
 			Main.getInstance().getNetworkManager().getNIOManager().PostMessage(NIOManager.NIO_DISCONNECTALL);
 			
 			//Now wait..
-			MinimaLogger.log("Wait 20 seconds..");
-			Thread.sleep(20000);
+			MinimaLogger.log("Wait 10 seconds..");
+			Thread.sleep(10000);
 			
 			//Stop and restart the MDS..
 			MinimaLogger.log("Clear MDS");
