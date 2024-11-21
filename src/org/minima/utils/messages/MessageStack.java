@@ -138,6 +138,28 @@ public class MessageStack{
 		}
     }
     
+    public void clearExceptString(String zExclude){
+        synchronized (mMessages) {
+
+        	LinkedList<Message> newMessages = new LinkedList<>();
+        	
+        	//Create a new list
+        	for(Message msg : mMessages) {
+				if(msg.getMessageType().contains(zExclude)) {
+					newMessages.add(msg);
+				}
+			}
+        	
+        	//Clear the old list
+        	mMessages.clear();
+        	
+        	//Now add the new list
+        	for(Message msg : newMessages) {
+				mMessages.add(msg);
+			}
+		}
+    }
+    
     /**
      * Print out the stack - NO NOTIFY
      */
