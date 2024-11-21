@@ -23,7 +23,7 @@ public class TxPoWOnChainDB extends SqlDB {
 	/**
 	 * How long does data remain the SQL DB in milli seconds
 	 */
-	public static long MAX_ONCHAINSQL_MILLI = 1000 * 60 * 60 * 24 * 365;
+	public static long MAX_ONCHAINSQL_MILLI = 1000 * 60 * 60 * 24 * 1000;
 	
 	/**
 	 * Prepared SQL statements

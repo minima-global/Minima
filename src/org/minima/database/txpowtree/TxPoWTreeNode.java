@@ -613,6 +613,9 @@ public class TxPoWTreeNode implements Streamable {
 		blockdata.put("txpow", txp.toJSON());
 		Main.getInstance().PostNotifyEvent(Main.MAIN_NOTIFYCASCADEBLOCK, blockdata);
 		
+		//Always add to the onChain DB 
+		MinimaDB.getDB().getTxPoWDB().getOnChainDB().addOnChainTxPoW(blockid, txp.getBlockNumber(), blockid);
+		
 		//Is THIS block a TXN..
 		if(txp.isTransaction()) {
 			//Send a message
@@ -623,9 +626,6 @@ public class TxPoWTreeNode implements Streamable {
 			
 			//And Post it..
 			Main.getInstance().PostNotifyEvent(Main.MAIN_NOTIFYCASCADETXN, data);
-			
-			//Add to the DB
-			MinimaDB.getDB().getTxPoWDB().getOnChainDB().addOnChainTxPoW(blockid, txp.getBlockNumber(), blockid);
 		}
 		
 		//Cycle through all the txns as they are NOW on chain permanently..
