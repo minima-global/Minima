@@ -97,15 +97,15 @@
 				//Start up the auth
 				authInit(function(userpubkey){
 					
-					//Now set the RESTRICTED_UID
+					//What mode are we in
 					MDS.cmd("checkmode",function(resp){
 						
 						//Get the restricted  
 						if(resp.response.mode=="WRITE"){
 							WRITE_MODE = true;
 						}else{
-							alert("This application requires WRITE MODE..\n\n"
-								+"To send and requests files in the background.");
+							alert("This application works MUCH better in WRITE MODE..\n\n"
+								+"To send and request files in the background.");
 						}
 						
 						//The Browser UID

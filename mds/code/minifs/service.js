@@ -15,13 +15,14 @@ var logging = true;
 /**
  * Which addresses have you sent out recently - clear list every 24 hours
  */
-var RECENT_SENDS_TIMER 	= 0;
-
-var RECENT_SENDS 		= [];
-var RECENT_SENDS_TOTAL	= 0;
-
+var RECENT_SENDS_TIMER 		= 0;
+var RECENT_SENDS 			= [];
+var RECENT_SENDS_TOTAL		= 0;
 var RECENT_REQUESTS 		= [];
 var RECENT_REQUESTS_TOTAL	= 0;
+
+//Requests sent over Maxima
+var RECENT_MAXIMA_REQUESTS	= [];
 
 //Time before we reset RECENTS - 24 hours
 var twentfourhours = 1000 * 60 * 60 * 24;
@@ -142,6 +143,45 @@ function resetRecents(){
 	RECENT_REQUESTS_TOTAL	= 0;
 }
 
+/**
+ * First send a Maxima message - if that fails send a Txn request
+ */
+function loadMxSite(mxsite, callback){
+	
+	//Check if we have just done this
+	if(RECENT_MAXIMA_REQUESTS.includes(mxsite)){
+		if(logging){
+			MDS.log("loadMaxima Site already sent : "+mxsite);
+		}
+		
+		if(callback){
+			callback(false);
+		}
+		return;
+	}
+	
+	RECENT_MAXIMA_REQUESTS.push(mxsite);
+	
+	//Construct a file request
+	var filereq 	= {};
+	filereq.action 	= "FILE_REQUEST";
+	filereq.data 	= mxsite;
+	
+	if(logging){
+		MDS.log("loadMaxima Site : "+mxsite);
+	}
+	
+	//First send via Maxima.. 
+	MDS.cmd("maxima action:sendall application:minifs data:"+JSON.stringify(filereq), function(maxresp){
+		MDS.log("MAXCMD:"+JSON.stringify(maxresp));
+		
+		//Now you wait..
+		if(callback){
+			callback(true);
+		}	
+	}); 
+}
+
 //Main message handler..
 MDS.init(function(msg){
 	
@@ -192,12 +232,52 @@ MDS.init(function(msg){
 		
 		}
 	
-	//MDS_TIMER_1HOUR
-	}else if(msg.event == "MDS_TIMER_10SECONDS"){
+	}else if(msg.event == "MDS_TIMER_60SECONDS"){
+		
+		if(logging){
+			MDS.log("1 Minute check : ");
+		}
+		
+		//Check MAXIMA requests
+		var len = RECENT_MAXIMA_REQUESTS.length;
+		for(var i=0;i<len;i++){
+			var request = RECENT_MAXIMA_REQUESTS[i];
+			
+			if(logging){
+				MDS.log("1 Minute check found : "+request);
+			}
+		
+			//Do we have it..
+			getFilePacket(request,function(fp){
+				
+				//Do we have it
+				if(!fp){
+					
+					MDS.log("Filepacket Cannot find : "+request);
+					
+					//Don't have it send an txn request
+					if(RECENT_REQUESTS.includes(request)){
+						MDS.log("Filepacket REQUESTED recently : "+request);
+					}else{
+						RECENT_REQUESTS.push(request)
+						RECENT_REQUESTS_TOTAL++;
+						
+						sendFileRequest(request,function(){
+							MDS.log("Filepacket REQUESTED : "+request);
+						});
+					}	
+				}
+			});	
+		}
+		
+		//Clear the Queue
+		RECENT_MAXIMA_REQUESTS = [];
+		
+	}else if(msg.event == "MDS_TIMER_1HOUR"){
 	
 		//What time is it..
-		//if(getTimeMilli() - RECENT_SENDS_TIMER > twentfourhours){
-		if(getTimeMilli() - RECENT_SENDS_TIMER > 1000 * 60 * 5){
+		if(getTimeMilli() - RECENT_SENDS_TIMER > twentfourhours){
+		//if(getTimeMilli() - RECENT_SENDS_TIMER > 1000 * 60 * 5){
 			
 			//Reset the values..
 			resetRecents();	
@@ -233,8 +313,16 @@ MDS.init(function(msg){
 				}else{
 					resp.found 			= false;
 					
+					//Try and load this site
+					loadMxSite(request,function(reqresp){
+						resp.requested 	= reqresp;
+						
+						//Send it
+						MDS.api.reply(msg.data.from,msg.data.id,JSON.stringify(resp));
+					});
+					
 					//Request this file..
-					if(RECENT_REQUESTS.includes(request)){
+					/*if(RECENT_REQUESTS.includes(request)){
 						MDS.log("Filepacket REQUESTED recently : "+request);
 						resp.requested 	= false;
 					}else{
@@ -245,11 +333,8 @@ MDS.init(function(msg){
 						sendFileRequest(request,function(){
 							MDS.log("Filepacket REQUESTED : "+request);
 						});
-					}			
+					}*/			
 				}
-				
-				//Send it
-				MDS.api.reply(msg.data.from,msg.data.id,JSON.stringify(resp));
 			});
 			
 		}else if(apicall.action == "SEARCH"){
