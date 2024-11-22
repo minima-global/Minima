@@ -161,6 +161,13 @@ public class restore extends Command {
 				txpsqldb.addTxPoW(txp, true);
 			}
 			
+		//Close up shop..
+		disciph.close();
+		cis.close();
+		dis.close();
+		gzin.close();
+		bais.close();
+		
 		//Allow saving state
 		MinimaDB.getDB().setAllowSaveState(true);
 		
@@ -177,13 +184,6 @@ public class restore extends Command {
 		MinimaDB.getDB().getArchive().saveDB(false);
 		MinimaDB.getDB().getArchive().getSQLFile().delete();
 	
-		//Close up shop..
-		disciph.close();
-		cis.close();
-		dis.close();
-		gzin.close();
-		bais.close();
-		
 		//And now clean up..
 		MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
 		
