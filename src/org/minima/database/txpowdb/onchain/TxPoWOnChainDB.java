@@ -365,11 +365,6 @@ public class TxPoWOnChainDB extends SqlDB {
 	
 	public synchronized int cleanDB(boolean zHard) {
 		
-		//For NOW do not delete!.
-		if(true) {
-			return 0;
-		}
-		
 		try {
 			
 			//Make sure..
