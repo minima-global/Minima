@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Date;
 
 import org.minima.database.txpowdb.sql.TxPoWSqlDB;
 import org.minima.objects.TxPoW;
@@ -16,6 +17,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SqlDB;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class TxPoWOnChainDB extends SqlDB {
@@ -32,6 +34,14 @@ public class TxPoWOnChainDB extends SqlDB {
 	PreparedStatement SQL_SELECT_ONCHAINTXPOW 		= null;
 	PreparedStatement SQL_DELETE_ONCHAINTXPOW 		= null;
 	
+	PreparedStatement SQL_SELECT_ONBLOCKTXPOW 		= null;
+	PreparedStatement SQL_SELECT_ONBLOCKNUMTXPOW 	= null;
+	
+	PreparedStatement SQL_SELECT_FIRSTTXPOW 		= null;
+	PreparedStatement SQL_SELECT_LASTTXPOW 			= null;
+	
+	PreparedStatement SQL_TOTAL_TXPOW 				= null;
+	
 	public TxPoWOnChainDB() {
 		super();
 	}
@@ -46,11 +56,11 @@ public class TxPoWOnChainDB extends SqlDB {
 			Statement stmt = mSQLConnection.createStatement();
 			
 			//Create main table
-			String create = "CREATE TABLE IF NOT EXISTS `txpow` ("
+			String create = "CREATE TABLE IF NOT EXISTS `onchaintxpow` ("
 							+ "  `id` bigint auto_increment,"
-							+ "  `blockid` varchar(80) NOT NULL UNIQUE,"
+							+ "  `blockid` varchar(80) NOT NULL,"
 							+ "  `block` bigint NOT NULL,"
-							+ "  `txpowid` varchar(80) NOT NULL UNIQUE,"
+							+ "  `txpowid` varchar(80) NOT NULL,"
 							+ "  `timemilli` bigint NOT NULL"
 							+ ")";
 			
@@ -61,10 +71,18 @@ public class TxPoWOnChainDB extends SqlDB {
 			stmt.close();
 			
 			//Create some prepared statements..
-			SQL_INSERT_ONCHAINTXPOW = mSQLConnection.prepareStatement("INSERT IGNORE INTO txpow "
+			SQL_INSERT_ONCHAINTXPOW = mSQLConnection.prepareStatement("INSERT IGNORE INTO onchaintxpow "
 					+ "( blockid, block, txpowid, timemilli ) VALUES ( ?, ? ,? ,? )");
-			SQL_SELECT_ONCHAINTXPOW	= mSQLConnection.prepareStatement("SELECT * FROM txpow WHERE txpowid=?");
-			SQL_DELETE_ONCHAINTXPOW	= mSQLConnection.prepareStatement("DELETE FROM txpow WHERE timemilli < ?");
+			SQL_SELECT_ONCHAINTXPOW	= mSQLConnection.prepareStatement("SELECT * FROM onchaintxpow WHERE txpowid=?");
+			SQL_DELETE_ONCHAINTXPOW	= mSQLConnection.prepareStatement("DELETE FROM onchaintxpow WHERE timemilli < ?");
+	
+			SQL_SELECT_ONBLOCKTXPOW		= mSQLConnection.prepareStatement("SELECT * FROM onchaintxpow WHERE blockid=?");
+			SQL_SELECT_ONBLOCKNUMTXPOW	= mSQLConnection.prepareStatement("SELECT * FROM onchaintxpow WHERE block=?");
+			
+			SQL_TOTAL_TXPOW			= mSQLConnection.prepareStatement("SELECT COUNT(*) AS tot FROM onchaintxpow");
+			
+			SQL_SELECT_FIRSTTXPOW 	= mSQLConnection.prepareStatement("SELECT * FROM onchaintxpow ORDER BY timemilli ASC LIMIT 1");
+			SQL_SELECT_LASTTXPOW 	= mSQLConnection.prepareStatement("SELECT * FROM onchaintxpow ORDER BY timemilli DESC LIMIT 1");
 	}
 	
 	public void wipeDB() throws SQLException {
@@ -79,11 +97,11 @@ public class TxPoWOnChainDB extends SqlDB {
 		stmt.execute("DROP ALL OBJECTS");
 		
 		//Create main table
-		String create = "CREATE TABLE IF NOT EXISTS `txpow` ("
+		String create = "CREATE TABLE IF NOT EXISTS `onchaintxpow` ("
 						+ "  `id` bigint auto_increment,"
-						+ "  `blockid` varchar(80) NOT NULL UNIQUE,"
+						+ "  `blockid` varchar(80) NOT NULL,"
 						+ "  `block` bigint NOT NULL,"
-						+ "  `txpowid` varchar(80) NOT NULL UNIQUE,"
+						+ "  `txpowid` varchar(80) NOT NULL,"
 						+ "  `timemilli` bigint NOT NULL"
 						+ ")";
 		
@@ -159,6 +177,185 @@ public class TxPoWOnChainDB extends SqlDB {
 		return onchain;
 	}
 	
+	public synchronized JSONArray getInBlockTxPoW(String zTxPoWID) {
+		
+		JSONArray ret = new JSONArray();
+		
+		try {
+			
+			//Make sure..
+			checkOpen();
+			
+			//Get the query ready
+			SQL_SELECT_ONBLOCKTXPOW.clearParameters();
+			
+			//Set the txpowid we are searching for
+			SQL_SELECT_ONBLOCKTXPOW.setString(1, zTxPoWID);
+		
+			//Run the query
+			ResultSet rs = SQL_SELECT_ONBLOCKTXPOW.executeQuery();
+			
+			//Is there a result..
+			while(rs.next()) {
+				
+				JSONObject onchain = new JSONObject();
+				
+				//Get the blob of data
+				onchain.put("txpowid", rs.getString("txpowid"));
+				onchain.put("blockid", rs.getString("blockid"));
+				onchain.put("block", rs.getLong("block"));
+				onchain.put("timemilli", rs.getLong("timemilli"));
+				
+				ret.add(onchain);
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return ret;
+	}
+	
+	public synchronized JSONArray getInBlockTxPoW(long zBlock) {
+		
+		JSONArray ret = new JSONArray();
+		
+		try {
+			
+			//Make sure..
+			checkOpen();
+			
+			//Get the query ready
+			SQL_SELECT_ONBLOCKNUMTXPOW.clearParameters();
+			
+			//Set the txpowid we are searching for
+			SQL_SELECT_ONBLOCKNUMTXPOW.setLong(1, zBlock);
+		
+			//Run the query
+			ResultSet rs = SQL_SELECT_ONBLOCKNUMTXPOW.executeQuery();
+			
+			//Is there a result..
+			while(rs.next()) {
+				
+				JSONObject onchain = new JSONObject();
+				
+				//Get the blob of data
+				onchain.put("txpowid", rs.getString("txpowid"));
+				onchain.put("blockid", rs.getString("blockid"));
+				onchain.put("block", rs.getLong("block"));
+				onchain.put("timemilli", rs.getLong("timemilli"));
+				
+				ret.add(onchain);
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return ret;
+	}
+	
+	public synchronized JSONObject getFirstTxPoW() {
+		
+		//Get the blob of data
+		JSONObject onchain = new JSONObject();
+		onchain.put("found", false);
+		
+		try {
+			
+			//Make sure..
+			checkOpen();
+			
+			//Get the query ready
+			SQL_SELECT_FIRSTTXPOW.clearParameters();
+			
+			//Run the query
+			ResultSet rs = SQL_SELECT_FIRSTTXPOW.executeQuery();
+			
+			//Is there a result..
+			if(rs.next()) {
+				
+				//Get the blob of data
+				onchain.put("found", true);
+				onchain.put("txpowid", rs.getString("txpowid"));
+				onchain.put("blockid", rs.getString("blockid"));
+				onchain.put("block", rs.getLong("block"));
+				
+				long tm = rs.getLong("timemilli");
+				onchain.put("timemilli", tm);
+				onchain.put("date", new Date(tm).toString());
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return onchain;
+	}
+	
+	public synchronized JSONObject getLastTxPoW() {
+		
+		//Get the blob of data
+		JSONObject onchain = new JSONObject();
+		onchain.put("found", false);
+		
+		try {
+			
+			//Make sure..
+			checkOpen();
+			
+			//Get the query ready
+			SQL_SELECT_LASTTXPOW.clearParameters();
+			
+			//Run the query
+			ResultSet rs = SQL_SELECT_LASTTXPOW.executeQuery();
+			
+			//Is there a result..
+			if(rs.next()) {
+				
+				//Get the blob of data
+				onchain.put("found", true);
+				onchain.put("txpowid", rs.getString("txpowid"));
+				onchain.put("blockid", rs.getString("blockid"));
+				onchain.put("block", rs.getLong("block"));
+				
+				long tm = rs.getLong("timemilli");
+				onchain.put("timemilli", tm);
+				onchain.put("date", new Date(tm).toString());
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return onchain;
+	}
+	
+	
+	
+	public synchronized int getSize() {
+		try {
+			//Make sure..
+			checkOpen();
+			
+			//Run the query
+			ResultSet rs = SQL_TOTAL_TXPOW.executeQuery();
+			
+			//Could be multiple results
+			if(rs.next()) {
+				//Get the total numer of rows
+				return rs.getInt("tot");
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		//Error has occurred
+		return -1;
+	}
+	
+	
 	/**
 	 * Returns how many rows were deleted
 	 */
@@ -167,6 +364,12 @@ public class TxPoWOnChainDB extends SqlDB {
 	}
 	
 	public synchronized int cleanDB(boolean zHard) {
+		
+		//For NOW do not delete!.
+		if(true) {
+			return 0;
+		}
+		
 		try {
 			
 			//Make sure..
