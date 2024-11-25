@@ -63,7 +63,7 @@ public class connect extends Command {
 
 	public static Message createConnectMessage(String zFullHost) {
 		//IP and PORT
-		int index = zFullHost.lastIndexOf(":");
+		int index = zFullHost.indexOf(":");
 		if(index == -1) {
 			return null;
 		}
