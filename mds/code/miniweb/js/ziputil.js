@@ -3,8 +3,9 @@
  * Extract zip HEX data to an MDS folder 
  */
 function extractZIP(zipdata, mdsfolder, callback){
-		
-	MDS.file.delete(mdsfolder,function(respdel){
+	
+	//Delet the old folder if exists	
+	MDS.file.delete(mdsfolder,function(){
 		
 		//Convert to base64..
 		var b64 = MDS.util.hexToBase64(zipdata);
@@ -15,20 +16,21 @@ function extractZIP(zipdata, mdsfolder, callback){
 			
 			const numberOfCallbacks = Object.keys(zip.files).length - 1;
 			var counter=0;
-			//MDS.log("START.. "+numberOfCallbacks);
+			
+			//Cycle through each file
 			zip.forEach(function(relpath, file){
 				zip.file(relpath).async("base64").then(function(data){
 					
+					//Convert the base 64 data to HEX
 					var conv 		= MDS.util.base64ToHex(data);
 					var fullfile 	= mdsfolder+"/"+relpath;
 					
-					//console.log(counter+" FILE : "+fullfile);
-					
+					//Save the HEX data
 					MDS.file.savebinary(fullfile,conv,function(saveresp){
-						console.log(counter+" FILE : "+fullfile);
+						
+						//If we reach the last file - call the callback
 						counter++;
 						if(counter>numberOfCallbacks){
-							//MDS.log("END.. ");
 							callback();
 						}	
 					});

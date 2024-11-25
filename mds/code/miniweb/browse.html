@@ -200,7 +200,7 @@
 		var webfolder 	= addDomains(BASE_WEB,basedomain);
 		
 		var finalpage = addDomains(BASE_WEB,domain);
-		if(!finalpage.endsWith(".html")){
+		if(!finalpage.includes(".html")){
 			finalpage = addDomains(finalpage,"index.html");
 		}
 		
