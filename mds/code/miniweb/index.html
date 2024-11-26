@@ -1,0 +1,147 @@
+<html>
+
+<head>
+	<title>BASIC</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="./js/purify.min.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table width=100% border=0>
+			<tr>
+				<td><img height=45 src="browser.png"></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>BrowseFS</b></td>
+				<!--  <td class='topicdate' nowrap>
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToMyFiles();" height=30 src="home.png">&nbsp;&nbsp;
+				</td>-->
+			</tr>
+		</table>
+	</div>
+	
+	<br><br>
+
+	<input type="text" id="searchfield" size=44> <button onclick="search();">Search</button> 
+
+	<br><br><br>
+	
+	<div id=mywebpackets></div>
+	
+	
+</center>
+
+<script type="text/javascript">
+	
+	function showTitleOnAndroid(){
+		if (window.navigator.userAgent.includes('Minima Browser')) {
+			Android.showTitleBar();
+		}
+	}
+
+	function openBrowser(mxsite){
+		window.open("browse.html?uid="+MDS.minidappuid+"&mxsite="+mxsite);
+	}
+	
+	function createSearchPacketView(filepacket){
+		
+		var guidata =
+		"<table class=filepacketview border=0>\n"
+		+ "	<tr>\n"
+		+ "		<td><b>"+filepacket.data.name+"</b></td>\n"
+		+ "		<td style=\"text-align:right\" nowrap>&nbsp</td>\n"
+		+ "	</tr>\n"
+		+ "	<tr>\n"
+		+ "		<td colspan=2><br>"+DOMPurify.sanitize(filepacket.data.description)+"<br><br></td>\n"
+		+ "	</tr>\n"
+		+ "	<tr>\n"
+		+ "		<td>&nbsp;\n"
+		+ "		</td>\n"
+		+ "		<td style=\"text-align:right\">\n"
+		+ "			<button class=solobutton onclick=\"openBrowser('"+filepacket.data.name+"')\">Browse</button>\n"
+		+ "		</td>\n"
+		+ "	</tr>\n"
+		+ "</table><br>"
+		
+		return guidata;
+	}
+	
+	function search(){
+		var text = searchfield.value.trim();
+		
+		if(text.startsWith("Mx")){
+			
+			//Just jump to that page!
+			openBrowser(text);
+			
+		}else{
+			
+			//Now lets load the file..
+			var api 	= {};
+			api.action 	= "SEARCH";
+			api.data 	= text;
+			
+			//Send it to MiniWEB
+			MDS.api.call("minifs",JSON.stringify(api),function(resp){
+				
+				//Call wqas replied to ?
+				if(resp.status){
+					
+					var data = JSON.parse(resp.data);
+					
+					var found = data.results; 
+					
+					if(found.length == 0){
+						mywebpackets.innerHTML = 
+							"<table class=filepacketview border=0><tr><td>"+
+							"No File packets found for <b>"+text+"</b></td></tr></table>";
+						return;
+					}
+					
+					var html = "";
+					var len = found.length;
+					for(var i=0;i<len;i++){
+						html += createSearchPacketView(found[i]);	
+					}
+					
+					mywebpackets.innerHTML = html;
+					
+				}else{
+					alert("MiniFS MinDAPP not found..");
+				}
+			});	
+		}
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//Do stuff.. from now..		
+			
+		}
+	});
+
+</script>
+
+</body>
+
+</html>

@@ -265,7 +265,8 @@ public class MDSCommandHandler {
 		}else if(command.equals("dapplink")) {
 			
 			//Not allowed on Public MiniDAPP
-			boolean publicmini = (minidappid == mMDS.getPublicMiniDAPPID());
+			boolean publicmini = (minidappid == mMDS.getPublicMiniDAPPID()) || 
+								 (minidappid == mMDS.getUntrustedMiniDAPPID());
 			
 			//Get the MiniDapp in question..
 			MiniDAPP reqmini = mMDS.getMiniDAPPFromName(data.trim());

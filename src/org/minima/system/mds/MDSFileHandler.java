@@ -471,9 +471,8 @@ public class MDSFileHandler implements Runnable {
 				if(!MinimaDB.getDB().getUserDB().getPublicMDS()) {
 					MinimaLogger.log("Access forbidden : Public MDS site disabled..!");
 					
-		    		dos.writeBytes("HTTP/1.0 404 OK\r\n");
-					dos.writeBytes("\r\n");
-					dos.flush();
+					write404Page(dos);
+					
 					return;
 				}
 				
@@ -559,10 +558,9 @@ public class MDSFileHandler implements Runnable {
 			    		
 			    		MinimaLogger.log("HTTP : unknown file requested "+fileRequested+" "+webfile.getAbsolutePath());
 			    		
-			    		dos.writeBytes("HTTP/1.0 404 OK\r\n");
-						dos.writeBytes("\r\n");
-						dos.flush();
-			    		
+			    		//Write the page..
+			    		write404Page(dos);
+			    					    		
 			    	}else {
 			    		
 			    		//MinimaLogger.log("File Requested : "+fileRequested,false);
@@ -707,6 +705,21 @@ public class MDSFileHandler implements Runnable {
 			} 	
 		}	
 	}	
+	
+	public void write404Page(DataOutputStream dos) throws IOException {
+		
+		String page = "<html><head></head><body><br><br>Page not found..</body></html>";
+		
+		dos.writeBytes("HTTP/1.0 404 OK\r\n");
+		dos.writeBytes("Server: HTTP MDS Server from Minima 1.3\r\n");
+		dos.writeBytes("Date: " + new Date()+"\r\n");
+		dos.writeBytes("Content-type: text/plain\r\n");
+		dos.writeBytes("Content-Length: " + page.length()+ "\r\n");
+		dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
+		dos.writeBytes("\r\n"); // blank line between headers and content, very important !
+		dos.writeUTF(page);
+		dos.flush();
+	}
 	
 	private static Map<String, String> getQueryMap(String query) {  
 	    String[] params 		= query.split("&");  

@@ -21,6 +21,7 @@ import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.encrypt.GenerateKey;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.ssl.SSLManager;
@@ -114,6 +115,9 @@ public class restore extends Command {
 		}
 		DataInputStream disciph = new DataInputStream(gzin);
 		
+		//If it has not stopped - First stop everything.. and get ready to restore the files..
+		Main.getInstance().restoreReady(doshutdown);
+		
 		//The total size of files..
 		long total = 1;
 		
@@ -123,21 +127,30 @@ public class restore extends Command {
 		//Stop saving state
 		MinimaDB.getDB().setAllowSaveState(false);
 		
+			MinimaLogger.log("Restoring backup files..");
+		
 			//The rest write directly 
 			File basedb = MinimaDB.getDB().getBaseDBFolder();
-			total += readNextBackup(new File(basedb,"cascade.db"), disciph);
-			total += readNextBackup(new File(basedb,"chaintree.db"), disciph);
-			total += readNextBackup(new File(basedb,"userprefs.db"), disciph);
-			total += readNextBackup(new File(basedb,"p2p.db"), disciph);
+			
+			File cascfile = new File(basedb,"cascade.db");
+			total += readNextBackup(cascfile, disciph);
+			
+			File treefile = new File(basedb,"chaintree.db");
+			total += readNextBackup(treefile, disciph);
+			
+			File udb = new File(basedb,"userprefs.db");
+			total += readNextBackup(udb, disciph);
+			
+			File p2pdb = new File(basedb,"p2p.db");
+			total += readNextBackup(p2pdb, disciph);
 			
 			//Load these values 
-			File udb = new File(basedb,"userprefs.db");
 			MinimaDB.getDB().getUserDB().loadDB(udb);
 			MinimaDB.getDB().getUserDB().clearUninstalledMiniDAPP();
+			MinimaDB.getDB().getP2PDB().loadDB(p2pdb);
+			MinimaDB.getDB().getCascade().loadDB(cascfile);
+			MinimaDB.getDB().getTxPoWTree().loadDB(treefile);
 			
-			udb = new File(basedb,"p2p.db");
-			MinimaDB.getDB().getP2PDB().loadDB(udb);
-					
 			//Now load the relevant TxPoW
 			TxPoWList txplist = readNextTxPoWList(disciph);
 			
@@ -148,11 +161,15 @@ public class restore extends Command {
 				txpsqldb.addTxPoW(txp, true);
 			}
 			
+		//Close up shop..
+		disciph.close();
+		cis.close();
+		dis.close();
+		gzin.close();
+		bais.close();
+		
 		//Allow saving state
 		MinimaDB.getDB().setAllowSaveState(true);
-				
-		//If it has not stopped - First stop everything.. and get ready to restore the files..
-		Main.getInstance().restoreReady(doshutdown);
 		
 		//Now load the sql
 		MinimaDB.getDB().getWallet().restoreFromFile(new File(restorefolder,"wallet.sql"));
@@ -167,13 +184,6 @@ public class restore extends Command {
 		MinimaDB.getDB().getArchive().saveDB(false);
 		MinimaDB.getDB().getArchive().getSQLFile().delete();
 	
-		//Close up shop..
-		disciph.close();
-		cis.close();
-		dis.close();
-		gzin.close();
-		bais.close();
-		
 		//And now clean up..
 		MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
 		

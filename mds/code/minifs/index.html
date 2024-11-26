@@ -1,0 +1,138 @@
+<html>
+
+<head>
+	<title>MiniFS</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- JS -->
+	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/auth.js"></script>
+	<script type="text/javascript" src="./js/gui.js"></script>
+	<script type="text/javascript" src="./js/purify.min.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+</head>
+
+<body>
+
+<center>
+	
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table width=100% border=0>
+			<tr>
+				<td><img height=45 src="minifs.png"></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>MiniFS</b></td>
+				<td class='topicdate' nowrap>
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToHelp();" height=30 src="./images/help.png">&nbsp;&nbsp;					
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToMyFiles();" height=30 src="./images/home.png">&nbsp;&nbsp;
+				</td>
+			</tr>
+		</table>
+	</div>
+	
+	<br>
+
+<table width=80% class=filepacketview style="text-align:center;">
+	<tr>
+		<td style="text-align:left;"><button class=solobutton onclick="jumpToNewFile();">New MiniFS File</button></td>
+		<td style="text-align:right;"><button class=solobutton onclick="jumpToPublish();">Publish</button></td>
+	</tr>
+</table>
+<br>
+
+<div id=mywebpackets></div>
+
+<br>
+	
+</center>
+
+<script type="text/javascript">
+	
+	function showYourWebPackets(){
+		//Load my Packets..
+		getMyFilePackets(USER_PUBKEY,function(found){
+			
+			if(found.length == 0){
+				mywebpackets.innerHTML = 
+					"<table class=filepacketview border=0><tr><td>"+
+					"No File packets found..</td></tr></table>";
+				return;
+			}
+			
+			var html = "";
+			var len = found.length;
+			for(var i=0;i<len;i++){
+				html += createWebPacketView(found[i]);	
+			}
+			
+			mywebpackets.innerHTML = html;
+		});
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//Reset 
+			if(false){
+				wipeDB();
+				MDS.log("DB Wiped!")
+				return;
+			}
+			
+			//Get started	
+			createDB(function(){
+				
+				//Start up the auth
+				authInit(function(userpubkey){
+					
+					//What mode are we in
+					MDS.cmd("checkmode",function(resp){
+						
+						//Get the restricted  
+						if(resp.response.mode=="WRITE"){
+							WRITE_MODE = true;
+						}else{
+							alert("This application works MUCH better in WRITE MODE..\n\n"
+								+"To send and request files in the background.");
+						}
+						
+						//The Browser UID
+						RESTRICTED_UID = resp.response.untrustedmdsuid;
+						
+						//Get the dapplink..
+						MDS.dapplink("browsefs",function(dappresp){
+							
+							//Get link to the Browser MiniDAPP
+							if(dappresp.status){
+								BROWSER_DAPPLINK = dappresp.base.replace("index.html","browse.html");	
+								MDS.log("BROWSELINK = "+BROWSER_DAPPLINK);
+							}else{
+								MDS.log("BrowseFS MiniDAPP not found");
+							}
+							
+							//Now load your webpackets
+							showYourWebPackets();	
+						});
+					});
+				});	
+			});
+		}
+	});
+
+</script>
+
+</body>
+
+</html>

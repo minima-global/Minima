@@ -37,9 +37,11 @@ public class checkmode extends Command {
 		
 		JSONObject resp = new JSONObject();
 		if(minidappid.equals("0x00")) {
+			
 			resp.put("name", "MINIMA");
 			resp.put("mode", "WRITE");
 			resp.put("public", false);
+			resp.put("untrustedmdsuid", Main.getInstance().getMDSManager().getUntrustedMiniDAPPSessionID());
 			resp.put("writemode", true);
 		
 		}else if(minidappid.equals(Main.getInstance().getMDSManager().getPublicMiniDAPPID())) {
@@ -47,18 +49,27 @@ public class checkmode extends Command {
 			resp.put("name", "PUBLICMDS");
 			resp.put("mode", "READ");
 			resp.put("public", true);
+			resp.put("untrustedmdsuid", Main.getInstance().getMDSManager().getUntrustedMiniDAPPSessionID());
 			resp.put("writemode", false);
 		
-		}else {
+		}else if(minidappid.equals(Main.getInstance().getMDSManager().getUntrustedMiniDAPPID())) {
+			
+			resp.put("name", "RESTRICTEDMDS");
+			resp.put("mode", "READ");
+			resp.put("public", false);
+			resp.put("untrustedmdsuid", Main.getInstance().getMDSManager().getUntrustedMiniDAPPSessionID());
+			resp.put("writemode", false);
+		
+		}else{
 			//Get that MiniDAPP..
 			MiniDAPP md = MinimaDB.getDB().getMDSDB().getMiniDAPP(minidappid);
 			
 			//Return the result
 			resp.put("name", md.getName());
 			resp.put("mode", md.getPermission().toUpperCase());
-			resp.put("writemode", md.getPermission().equalsIgnoreCase("write"));
 			resp.put("public", false);
-			
+			resp.put("untrustedmdsuid", Main.getInstance().getMDSManager().getUntrustedMiniDAPPSessionID());
+			resp.put("writemode", md.getPermission().equalsIgnoreCase("write"));
 		}
 		
 		resp.put("dblocked",!MinimaDB.getDB().getWallet().isBaseSeedAvailable());

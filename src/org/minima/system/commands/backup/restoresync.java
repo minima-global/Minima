@@ -121,9 +121,19 @@ public class restoresync extends Command {
 		//Create the cipher..
 		Cipher ciph = GenerateKey.getCipherSYM(Cipher.DECRYPT_MODE, ivparam.getBytes(), secret);
 		CipherInputStream cis 	= new CipherInputStream(dis, ciph);
-		GZIPInputStream gzin 	= new GZIPInputStream(cis);
+		
+		GZIPInputStream gzin 	= null;
+		try {
+			gzin 	= new GZIPInputStream(cis);
+		}catch(Exception exc) {
+			//Incorrect password ?
+			throw new CommandException("Incorrect Password!");
+		}
 		DataInputStream disciph = new DataInputStream(gzin);
 		
+		//If it has not stopped - First stop everything.. and get ready to restore the files..
+		Main.getInstance().restoreReady(false);
+				
 		//The total size of files..
 		long total = 1;
 		
@@ -132,21 +142,30 @@ public class restoresync extends Command {
 		
 		//Stop saving state
 		MinimaDB.getDB().setAllowSaveState(false);
-				
+		
+			MinimaLogger.log("Restoring backup files..");
+		
 			//The rest write directly 
 			File basedb = MinimaDB.getDB().getBaseDBFolder();
-			total += readNextBackup(new File(basedb,"cascade.db"), disciph);
-			total += readNextBackup(new File(basedb,"chaintree.db"), disciph);
-			total += readNextBackup(new File(basedb,"userprefs.db"), disciph);
-			total += readNextBackup(new File(basedb,"p2p.db"), disciph);
-		
-			//Load these values 
+			
+			File cascfile = new File(basedb,"cascade.db");
+			total += readNextBackup(cascfile, disciph);
+			
+			File treefile = new File(basedb,"chaintree.db");
+			total += readNextBackup(treefile, disciph);
+			
 			File udb = new File(basedb,"userprefs.db");
+			total += readNextBackup(udb, disciph);
+			
+			File p2pdb = new File(basedb,"p2p.db");
+			total += readNextBackup(p2pdb, disciph);
+			
+			//Now Load these values 
 			MinimaDB.getDB().getUserDB().loadDB(udb);
 			MinimaDB.getDB().getUserDB().clearUninstalledMiniDAPP();
-			
-			udb = new File(basedb,"p2p.db");
-			MinimaDB.getDB().getP2PDB().loadDB(udb);
+			MinimaDB.getDB().getP2PDB().loadDB(p2pdb);
+			MinimaDB.getDB().getCascade().loadDB(cascfile);
+			MinimaDB.getDB().getTxPoWTree().loadDB(treefile);
 			
 			//Now load the relevant TxPoW
 			TxPoWList txplist = readNextTxPoWList(disciph);
@@ -157,12 +176,16 @@ public class restoresync extends Command {
 			for(TxPoW txp : txplist.mTxPoWs) {
 				txpsqldb.addTxPoW(txp, true);
 			}
-			
+		
+		//Close up shop..
+		disciph.close();
+		cis.close();
+		dis.close();
+		gzin.close();
+		bais.close();
+		
 		//Allow saving state
 		MinimaDB.getDB().setAllowSaveState(true);
-				
-		//If it has not stopped - First stop everything.. and get ready to restore the files..
-		Main.getInstance().restoreReady(false);
 		
 		//Now load the sql
 		MinimaDB.getDB().getWallet().restoreFromFile(new File(restorefolder,"wallet.sql"));
@@ -174,13 +197,6 @@ public class restoresync extends Command {
 		//Wipe ArchiveDB	
 		MinimaDB.getDB().getArchive().saveDB(false);
 		MinimaDB.getDB().getArchive().getSQLFile().delete();
-	
-		//Close up shop..
-		disciph.close();
-		cis.close();
-		dis.close();
-		gzin.close();
-		bais.close();
 		
 		//And now clean up..
 		MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);

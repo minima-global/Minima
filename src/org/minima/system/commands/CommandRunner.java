@@ -273,11 +273,11 @@ public class CommandRunner {
 				}
 				
 			}else if(!zMiniDAPPID.equals("0x00")) {
-			
+				
 				if(!allowed) {
 					
-					//Get that MiniDAPP..
-					MiniDAPP md = MinimaDB.getDB().getMDSDB().getMiniDAPP(zMiniDAPPID);
+					//Get the MiniDAPP
+					MiniDAPP md = Main.getInstance().getMDSManager().getMiniDAPP(zMiniDAPPID);
 					
 					//Does it have WRITE permission..
 					if(!md.getPermission().equalsIgnoreCase("write")) {

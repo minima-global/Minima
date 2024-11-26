@@ -2,9 +2,14 @@
 
 <head>
 	
+	<link rel="icon" type="image/x-icon"  href="/favicon.ico">
+ 
 	<!-- JQuery -->
 	<script src="./js/jquery-3.7.1.min.js"></script>
 	<script src="./js/jquery-ui.js"></script>
+	
+	<!-- Ace Editor -->
+	<script src="src/ace.js" type="text/javascript" charset="utf-8"></script>
 	
 	<!-- The MINIMA MDS Javascript Library -->
 	<script type="text/javascript" src="./js/mds.js"></script>
@@ -12,6 +17,10 @@
 	<link href="./js/jquery-ui.css" rel="stylesheet">
 	
 	<link rel="stylesheet" type="text/css" href="ide.css">
+	
+	
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
 	
 	<title>Minima IDE</title>
 </head>
@@ -22,20 +31,233 @@
   #dialog label, #dialog input { display:block; }
   #dialog label { margin-top: 0.5em; }
   #dialog input, #dialog textarea { width: 95%; }
-  //#tabs { margin-top: 1em; }
-  #tabs li .ui-icon-close { float: left; margin: 0.4em 0.2em 0 0; cursor: pointer; }
+  #tabs li .ui-icon-close { float: left; margin: 0.1em 0.1em 0 0; cursor: pointer; }
   #add_tab { cursor: pointer; }
+  
+  .ui-tabs .ui-tabs-panel {
+    padding: 0em 0em 0em 0;
+}
+
+  /*.ui-menu { width: 150px; }*/
+
+/* Make jQuery UI Menu into a horizontal menubar with vertical dropdown */
+#menubar > li { /* Menubar buttons */
+  display: inline-block;
+}
+#menubar > li > ul > li { /* Menubar buttons inside dropdown */
+  display: block;
+}
+
+/* Change dropdown carets to correct direction */
+#menubar > li > div > span.ui-icon-caret-1-e {
+  /* Caret on menubar */
+  background:url(https://www.drupal.org/files/issues/ui-icons-222222-256x240.png) no-repeat -64px -16px !important;
+}
+#menubar ul li div span.ui-icon-caret-1-e {
+  /* Caret on dropdowns */
+  background:url(https://www.drupal.org/files/issues/ui-icons-222222-256x240.png) no-repeat -32px -16px !important;
+}
+  
 </style>
 
 <script>
-  $( function() {
+  
+  </script>
+
+<table border=1 style="width:100%;height:100%">
+	
+	<tr>
+		<td colspan=2>
+			<ul id="menubar">
+			  <li>
+			  	<div class=idemenuitem>Option 1</div>
+			  	<ul>
+			      
+			      <li><div class=idemenuitem>Car Hifi</div></li>
+			      
+			      <li>
+			      	<div class=idemenuitem>Utilities</div>
+			      	<ul>
+				      <li><div class=idemenuitem>Car Hifi</div></li>
+				      <li>
+				      	<li><div class=idemenuitem>Option 2</div></li>
+			  			<li><div class=idemenuitem>Option 3</div></li>
+				      </li>
+				      
+				      <li>
+				      	<div class=idemenuitem>Utilities</div>
+				      	<ul>
+					      <li><div class=idemenuitem">Car Hifi</div></li>
+					      <li>
+					      	<li><div class=idemenuitem>Option 2</div></li>
+				  			<li><div class=idemenuitem>Option 3</div></li>
+					      </li>
+					    </ul>
+				      </li>
+				      
+				    </ul>
+			      </li>
+			      
+			    </ul>
+			  
+			  </li>
+			  <li><div class=idemenuitem>Option 2</div></li>
+			  <li><div class=idemenuitem>Option 3</div></li>
+			</ul>
+		
+		
+		</td>
+	</tr>
+	
+	<tr>
+		<td colspan=2><button id="add_tab">Add Tab</button></td>
+	</tr>
+	
+	
+	<tr>
+		<td class=filesrow>
+			  
+			  <div id="jstree_demo_div">
+			  <!-- in this example the tree is populated from inline HTML -->
+			    <ul>
+			      <li>Root node 1
+			        <ul>
+			          <li id="child_node_1">Child node 1</li>
+			          <li>Child node 2
+			          	<ul>
+				          <li id="child_node_1">Child node 1</li>
+				          <li>Child node 2
+				          	<ul>
+					          <li id="child_node_1">Child node 1</li>
+					          <li>Child node 2
+					          	<ul>
+						          <li id="child_node_1">Child node 1</li>
+						          <li>Child node 2
+						          
+						          </li>
+						        </ul>
+					          </li>
+					        </ul>
+				          </li>
+				        </ul>
+			          
+			          </li>
+			        </ul>
+			      </li>
+			      <li>Root node 2</li>
+			    </ul>
+			  
+			  </div>
+
+		</td>
+		
+		
+		<td id="mainview" class=mainrow style="border:3px solid green">
+			
+			<div id="tabs">
+			
+			  <ul id="tabsrow" style="border:3px solid blue">
+			  
+			   <li><a href="#tabs-1">Nunc tincidunt</a> <span class="ui-icon ui-icon-close" role="presentation">Remove Tab</span></li>
+			  
+			  </ul>
+			  
+			  <div id="tabs-1" style="border:3px solid red">
+					
+					<div id="editor" style="width:100%;height:200;">some text</div>
+			  		  	
+			  </div>
+			  
+			</div>
+		</td>
+	</tr>
+	
+	<tr>
+		<td colspan=2>Bottom Row!</td>
+	</tr>
+	
+</table>
+
+<script>
+
+	var tabs;
+
+	function startup(){
+		//Sort the tabs
+	      tabs = $( "#tabs" ).tabs({
+	    	  activate: function( event, ui ) {
+	    		  var title = $("#tabs .ui-tabs-active").text();
+				MDS.log("TAB "+title);	  
+	   		  }
+	   	 	} ,
+	 		  //{heightStyle: "auto"} 	  
+	      );
+	      var previouslyFocused = false;
+	      tabs.find( ".ui-tabs-nav" ).sortable({
+	          axis: "x",
+	     
+	          // Sortable removes focus, so we need to restore it if the tab was focused
+	          // prior to sorting
+	          start: function(event, ui) {
+	            previouslyFocused = document.activeElement === ui.item[ 0 ];
+	          },
+	          stop: function(event, ui) {
+	            tabs.tabs( "refresh" );
+	            if (previouslyFocused) {
+	              ui.item.trigger( "focus" );
+	            }
+	          }
+	        });
+	      
+	      $('#jstree_demo_div').jstree();
+	      
+	      $('#jstree_demo_div').on("changed.jstree", function (e, data) {
+	    	  console.log(data.selected);
+	    	});
+	     
+	}
+
+	//setTimeout(function(){startup();},1000);
+
+$( function() {
+	
+	startup();
+	
+	function sizes(){
+		
+		var ww = $("#mainview").width();
+		var hh = $("#mainview").height();
+		
+		var hhtitle = $("#tabsrow").height();
+		
+		console.log("mainrow "+ww+" "+hh);
+		console.log("tabsrow "+hhtitle);
+		
+		$("#editor").height(hh - hhtitle-20);
+	}
+	
+	setTimeout(function(){sizes();},1000);
+	
+	
     var tabTitle = $( "#tab_title" ),
       tabContent = $( "#tab_content" ),
       tabTemplate = "<li><a href='#{href}'>#{label}</a> <span class='ui-icon ui-icon-close' role='presentation'>Remove Tab</span></li>",
       tabCounter = 2;
- 
-    var tabs = $( "#tabs" ).tabs();
- 
+       
+      //Set up MENU
+      $('#menubar').menu();
+      $('#menubar').menu({
+        position: { my: 'left top', at: 'left bottom' },
+        blur: function() {
+          $(this).menu('option', 'position', { my: 'left top', at: 'left bottom' });
+        },
+        focus: function(e, ui) {
+          if ($('#menubar').get(0) !== $(ui).get(0).item.parent().get(0)) {
+            $(this).menu('option', 'position', { my: 'left top', at: 'right top' });
+          }
+        }
+      }); 
+     
     // Modal dialog init: custom buttons and a "close" callback resetting the form inside
     var dialog = $( "#dialog" ).dialog({
       autoOpen: false,
@@ -96,34 +318,31 @@
       }
     });
   } );
-  </script>
   
+    var editor = ace.edit("editor");
+    editor.setTheme("ace/theme/eclipse");
+    ////editor.session.setMode("ace/mode/javascript");
+    editor.session.setMode("ace/mode/html");
+    
+    
+    //Get width..
+    /*$("#mainview").css( "border", "3px solid red" );
+    var ww = $("#mainview").width();
+    var hh = $("#mainview").height();
+    
+    console.log("SIZE : "+ww+" "+hh);
+    //$("#tabs-1").height(hh);
+    
+    /*$("#tabs-1").css( "border", "3px solid green" );
+    $("#tabsrow").css( "border", "3px solid blue" );
+    var hh2 = $("#tabsrow").height();
+    
+    var finh = hh-hh2;
+    $("#tabs-1").height(hh);
+    */
+    
+</script>
 
-<table border=1 style="width:100%;height:100%">
-	
-	<tr>
-		<td colspan=2><button id="add_tab">Add Tab</button></td>
-	</tr>
-	
-	<tr>
-		<td class=filesrow>files</td>
-		<td class=mainrow>
-			<div id="tabs" style="height:99%">
-			  <ul>
-			    <li><a href="#tabs-1">Nunc tincidunt</a> <span class="ui-icon ui-icon-close" role="presentation">Remove Tab</span></li>
-			  </ul>
-			  <div id="tabs-1">
-			    <p>Proin elit arcu, rutrum commodo, vehicula tempus, commodo a, risus. Curabitur nec arcu. Donec sollicitudin mi sit amet mauris. Nam elementum quam ullamcorper ante. Etiam aliquet massa et lorem. Mauris dapibus lacus auctor risus. Aenean tempor ullamcorper leo. Vivamus sed magna quis ligula eleifend adipiscing. Duis orci. Aliquam sodales tortor vitae ipsum. Aliquam nulla. Duis aliquam molestie erat. Ut et mauris vel pede varius sollicitudin. Sed ut dolor nec orci tincidunt interdum. Phasellus ipsum. Nunc tristique tempus lectus.</p>
-			  </div>
-			</div>
-		</td>
-	</tr>
-	
-	<tr>
-		<td colspan=2>Bottom Row!</td>
-	</tr>
-	
-</table>
 
 <div id="dialog" title="Tab data">
   <form>

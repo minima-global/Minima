@@ -6,6 +6,7 @@ import java.util.HashSet;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
+import org.minima.database.txpowdb.onchain.TxPoWOnChainDB;
 import org.minima.database.txpowdb.sql.TxPoWSqlDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.TxBlock;
@@ -16,6 +17,7 @@ import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.CommandRunner;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -67,15 +69,44 @@ public class txpow extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"txpowid","block","address","onchain","relevant","max"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"txpowid","block",
+				"address","onchain","relevant","max","action","inblock"}));
 	}
 	
 	@Override
 	public JSONObject runCommand() throws Exception{
 		JSONObject ret = getJSONReply();
 		
-		//Get the txpowid
-		if(existsParam("txpowid")) {
+		
+		//Are we getting info..
+		if(existsParam("action")) {
+			
+			String action = getParam("action");
+			if(action.equals("info")) {
+				
+				JSONObject txdb = new JSONObject();
+				int txpowdbsize = MinimaDB.getDB().getTxPoWDB().getSqlSize();
+				txdb.put("size",txpowdbsize);
+				
+				//Get some details..
+				TxPoWOnChainDB ocdb = MinimaDB.getDB().getTxPoWDB().getOnChainDB();
+				JSONObject onchaindb = new JSONObject();
+				onchaindb.put("size", ocdb.getSize());
+				onchaindb.put("first", ocdb.getFirstTxPoW());
+				onchaindb.put("last", ocdb.getLastTxPoW());
+				
+				JSONObject infojson = new JSONObject();
+				infojson.put("storedays", GeneralParams.NUMBER_DAYS_SQLTXPOWDB);
+				infojson.put("txpowdb", txdb);
+				infojson.put("onchaindb", onchaindb);
+				
+				ret.put("response", infojson);
+			
+			}else {
+				throw new CommandException("Invalid action : "+action);
+			}
+		
+		}else if(existsParam("txpowid")) {
 			String txpowid = getAddressParam("txpowid");
 			
 			//Search for a given txpow
@@ -133,6 +164,31 @@ public class txpow extends Command {
 			
 			ret.put("response", txns);
 			
+		}else if(existsParam("inblock")) {
+			TxPoWOnChainDB chaindb 	= MinimaDB.getDB().getTxPoWDB().getOnChainDB();
+			JSONObject resp 		= new JSONObject();
+			JSONArray onchaintxpow 	= null;
+			
+			String inb = getParam("inblock");
+			if(inb.startsWith("0x")) {
+				MiniData txpowid = getDataParam("inblock");
+				
+				//Now search the DB
+				onchaintxpow  = chaindb.getInBlockTxPoW(txpowid.to0xString());
+			}else {
+				
+				//Its a number
+				MiniNumber block = getNumberParam("inblock");
+				
+				//Now search the DB
+				onchaintxpow  = chaindb.getInBlockTxPoW(block.getAsLong());
+			}
+				
+			resp.put("txns", onchaintxpow);
+			
+			ret.put("response", resp);
+			
+			
 		}else if(existsParam("onchain")) {
 			MiniData txpowid = getDataParam("onchain");
 		
@@ -140,7 +196,29 @@ public class txpow extends Command {
 			
 			TxPoW block = TxPoWSearcher.searchChainForTxPoW(txpowid);
 			if(block == null) {
-				resp.put("found", false);
+				
+				//Now search the DB
+				TxPoWOnChainDB chaindb 	= MinimaDB.getDB().getTxPoWDB().getOnChainDB();
+				JSONObject onchaintxpow = chaindb.getOnChainTxPoW(txpowid.to0xString());
+				if((boolean)onchaintxpow.get("found")) {
+					
+					MiniNumber fblock = new MiniNumber(onchaintxpow.get("block").toString());
+					
+					//Found in the DB
+					TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+					
+					resp.put("found", true);
+					resp.put("block", fblock.toString());
+					resp.put("blockid", onchaintxpow.get("blockid").toString());
+					resp.put("tip", tip.getBlockNumber().toString());
+					
+					MiniNumber depth  = tip.getBlockNumber().sub(fblock);
+					resp.put("confirmations", depth.toString());
+					
+				}else {
+					resp.put("found", false);
+				}
+				
 			}else {
 				
 				TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();

@@ -134,9 +134,13 @@ public class mds extends Command {
 
 			JSONObject mds = new JSONObject();
 			mds.put("enabled", GeneralParams.MDS_ENABLED);
+			
 			mds.put("connect", "https://"+GeneralParams.MINIMA_HOST+":"+GeneralParams.MDSFILE_PORT);
 			mds.put("password", Main.getInstance().getMDSManager().getMiniHUBPasword());
+			
 			mds.put("publicmds", MinimaDB.getDB().getUserDB().getPublicMDS());
+			mds.put("publicmdsuid", Main.getInstance().getMDSManager().getPublicMiniDAPPSessionID());
+			mds.put("untrustedmdsuid", Main.getInstance().getMDSManager().getUntrustedMiniDAPPSessionID());
 			
 			mds.put("minidapps", arr);
 			
@@ -510,6 +514,14 @@ public class mds extends Command {
 			
 			String uid 		= getParam("uid");
 			String trust 	= getParam("trust");
+			
+			//Check not Public or Untrusted
+			if(uid.equals(Main.getInstance().getMDSManager().getPublicMiniDAPPID())) {
+				throw new CommandException("Cannot set WRITE permission for Public MiniDAPP");
+			
+			}else if(uid.equals(Main.getInstance().getMDSManager().getUntrustedMiniDAPPID())) {
+				throw new CommandException("Cannot set WRITE permission for Untrusted MiniDAPP");
+			} 
 			
 			//Get the MIninDAPP..
 			MiniDAPP md = db.getMiniDAPP(uid);

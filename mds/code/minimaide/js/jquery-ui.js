@@ -4848,7 +4848,7 @@ var widgetsAccordion = $.widget( "ui.accordion", {
 var widgetsMenu = $.widget( "ui.menu", {
 	version: "1.14.0",
 	defaultElement: "<ul>",
-	delay: 300,
+	delay: 50,
 	options: {
 		icons: {
 			submenu: "ui-icon-caret-1-e"

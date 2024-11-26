@@ -80,8 +80,8 @@ public class P2PManager extends MessageProcessor {
         //Start the Peers checker..
         mPeersChecker = new P2PPeersChecker(this);
         
-        //Check Message number..
-        PostTimerMessage(new TimerMessage(P2P_HEALTH_CHECK_TIMER, P2P_HEALTH_CHECK));
+        //Check Message number.. Now doing this in the niomanager health check
+        //PostTimerMessage(new TimerMessage(P2P_HEALTH_CHECK_TIMER, P2P_HEALTH_CHECK));
         
         //All the Timed Loop messages
         PostTimerMessage(new TimerMessage(10_000, P2P_LOOP));

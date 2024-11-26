@@ -277,7 +277,7 @@ public class multisigread extends Command {
 			String file 		= getParam("file");
 			String txnsigner 	= 
 					  "txnimport id:"+randomid+" file:"+file+";"
-					+ "txnpost   id:"+randomid+" auto:true;"
+					+ "txnpost   id:"+randomid+" mine:true auto:true;"
 					+ "txndelete id:"+randomid;
 			
 			//Run it..

@@ -83,7 +83,7 @@ public class P2PFunctions {
     		MinimaLogger.log("INVALID PEER added to List! "+zHostPost);
     		mInvalidPeers.add(zHostPost);
     	}else {
-    		MinimaLogger.log("INVALID PEER already added to list.. "+zHostPost);
+    		//MinimaLogger.log("INVALID PEER already added to list.. "+zHostPost);
     	}
     }
     

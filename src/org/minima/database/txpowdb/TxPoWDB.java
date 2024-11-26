@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.txpowdb.onchain.TxPoWOnChainDB;
 import org.minima.database.txpowdb.ram.RamDB;
 import org.minima.database.txpowdb.ram.RamData;
 import org.minima.database.txpowdb.sql.TxPoWSqlDB;
@@ -31,26 +32,47 @@ import org.minima.utils.messages.Message;
  */
 public class TxPoWDB {
 
+	/**
+	 * The RAM DB
+	 */
 	RamDB mRamDB;
+	
+	/**
+	 * The SQL DB cache of all the txpow
+	 */
 	TxPoWSqlDB mSqlDB;
 	
+	/**
+	 * The store of which transactions are ONCHAIN
+	 */
+	TxPoWOnChainDB mOnChainDB;
+	
 	public TxPoWDB() {
-		mRamDB = new RamDB();
-		mSqlDB = new TxPoWSqlDB();
+		mRamDB 		= new RamDB();
+		
+		//The SQL DBs
+		mSqlDB 		= new TxPoWSqlDB();
+		mOnChainDB	= new TxPoWOnChainDB();
 	}
 	
 	public void loadSQLDB(File zFile) throws SQLException {
 		//Set the SQL DB base file
 		mSqlDB.loadDB(zFile);
+		
+		//Create a subfolder for the onchain data
+		File onchainfile = new File(zFile.getParentFile(),"onchain");
+		mOnChainDB.loadDB(onchainfile);
 	}
 	
 	public void hardCloseSQLDB() {
 		mSqlDB.hardCloseDB();
+		mOnChainDB.hardCloseDB();
 	}
 	
 	public void saveDB(boolean zCompact) {
 		//Shut down the SQL DB cleanly
 		mSqlDB.saveDB(zCompact);
+		mOnChainDB.saveDB(zCompact);
 	}
 	
 	/**
@@ -185,6 +207,10 @@ public class TxPoWDB {
 		return mSqlDB;
 	}
 	
+	public TxPoWOnChainDB getOnChainDB() {
+		return mOnChainDB;
+	}
+	
 	/**
 	 * Remove OLD TxPoWs from the DB - no longer needed..
 	 * 
@@ -201,6 +227,7 @@ public class TxPoWDB {
 	
 	public void cleanDBSQL() {
 		mSqlDB.cleanDB();
+		mOnChainDB.cleanDB();
 	}
 	
 	/**

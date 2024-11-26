@@ -119,7 +119,7 @@ public class multisig extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"id","action","root","required",
-				"file","publickeys","amount", "tokenid","coinid","address","password"}));
+				"file","publickeys","amount", "tokenid","coinid","address","password","mine"}));
 	}
 	
 	@Override
@@ -461,7 +461,7 @@ public class multisig extends Command {
 			String file 		= getParam("file");
 			String txnsigner 	= 
 					  "txnimport id:"+randomid+" file:"+file+";"
-					+ "txnpost   id:"+randomid+" auto:true;"
+					+ "txnpost   id:"+randomid+" mine:true auto:true;"
 					+ "txndelete id:"+randomid;
 			
 			//Run it..

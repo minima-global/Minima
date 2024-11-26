@@ -22,3 +22,7 @@ body, html
 	vertical-align:top;
 	height:100%;
 }
+
+.idemenuitem{
+	white-space: nowrap;
+}

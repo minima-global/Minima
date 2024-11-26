@@ -120,15 +120,17 @@ public class MinimaDB {
 	
 	public void writeLock(boolean zLock) {
 		
-		//Which thread is this..
-		mCurrentWriteLockThread = Thread.currentThread().getName();
-		mCurrentWriteLockState  = zLock;
-		
 		if(zLock) {
 			mRWLock.writeLock().lock();
+			
+			//Which thread is this..
+			mCurrentWriteLockThread = Thread.currentThread().getName();
+			
 		}else {
 			mRWLock.writeLock().unlock();
 		}
+		
+		mCurrentWriteLockState  = zLock;
 	}
 	
 	public void safeReleaseWriteLock() {
@@ -610,6 +612,7 @@ public class MinimaDB {
 			//Wipe the old data..
 			mTxPoWDB.wipeDBRAM();
 			mTxPoWDB.getSQLDB().cleanDB(true);
+			mTxPoWDB.getOnChainDB().cleanDB(true);
 			mArchive.checkForCleanDB();
 			
 			//Shut them down
