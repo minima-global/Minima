@@ -1,7 +1,7 @@
 <html>
 
 <head>
-	<title>BASIC</title>
+	<title>MiniWEB</title>
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
@@ -15,7 +15,7 @@
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	
 	<!-- Load the local JS lib -->
-	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="./js/jslib.js"></script>
 	<script type="text/javascript" src="./js/purify.min.js"></script>
 	
 </head>
@@ -28,7 +28,7 @@
 		<table width=100% border=0>
 			<tr>
 				<td><img height=45 src="browser.png"></td>
-				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>BrowseFS</b></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>MiniWEB</b></td>
 				<!--  <td class='topicdate' nowrap>
 					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToMyFiles();" height=30 src="home.png">&nbsp;&nbsp;
 				</td>-->
@@ -59,6 +59,26 @@
 		window.open("browse.html?uid="+MDS.minidappuid+"&mxsite="+mxsite);
 	}
 	
+	function downloadSite(hexdata, filename) {
+
+		if(confirm("This will download "+filename+" ?")){
+			//Convert to base 64..
+			var b64 = MDS.util.hexToBase64(hexdata);
+					
+			//Consrtruct the data URI
+			var datauri = "data:application/zip;base64,"+b64;  
+				
+			var link 		= document.createElement("a");
+			link.download 		= filename;
+			link.href 			= datauri;
+			
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+			delete link;		
+		}
+	}
+	
 	function createSearchPacketView(filepacket){
 		
 		var guidata =
@@ -71,9 +91,8 @@
 		+ "		<td colspan=2><br>"+DOMPurify.sanitize(filepacket.data.description)+"<br><br></td>\n"
 		+ "	</tr>\n"
 		+ "	<tr>\n"
-		+ "		<td>&nbsp;\n"
-		+ "		</td>\n"
-		+ "		<td style=\"text-align:right\">\n"
+		+ "		<td colspan=2 style=\"text-align:right\">\n"
+		+ "			<button class=solobutton onclick=\"downloadSite('"+filepacket.data.file+"','"+filepacket.data.name+".zip')\">Download</button>\n"
 		+ "			<button class=solobutton onclick=\"openBrowser('"+filepacket.data.name+"')\">Browse</button>\n"
 		+ "		</td>\n"
 		+ "	</tr>\n"
@@ -91,6 +110,8 @@
 			openBrowser(text);
 			
 		}else{
+			
+			mywebpackets.innerHTML = "Searching..";
 			
 			//Now lets load the file..
 			var api 	= {};
@@ -134,9 +155,15 @@
 		
 		//Do initialisation
 		if(msg.event == "inited"){
-			
-			//Do stuff.. from now..		
-			
+			MDS.cmd("checkmode",function(resp){
+				
+				//Get the restricted  
+				if(resp.response.writemode){
+					alert("This application MUST NEVER be in WRITE mode..\n\nPlease change it to READ mode.");
+					return;
+				}
+				
+			});
 		}
 	});
 

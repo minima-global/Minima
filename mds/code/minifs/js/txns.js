@@ -27,6 +27,19 @@ function sendFilePacket(filepacket, callback){
 	});
 }
 
+function checkFilePacketCoin(coin){
+	
+	var coinstate = coin.state;
+	
+	for(var i=0;i<7;i++){
+		if(!coinstate[i]){
+			return false;
+		}	
+	}
+	
+	return  true;	
+}
+
 function convertToFilePacket(coin){
 	
 	var coinstate = coin.state;

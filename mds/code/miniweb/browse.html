@@ -1,7 +1,7 @@
 <html>
 
 <head>
-	<title>BrowseFS</title>
+	<title>MiniWEB</title>
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
@@ -15,6 +15,7 @@
 	<script type="text/javascript" src="./js/jszip.min.js"></script>
 	<script type="text/javascript" src="./js/ziputil.js"></script>
 	<script type="text/javascript" src="./js/jslib.js"></script>
+	<script type="text/javascript" src="./js/mimetypes.js"></script>
 	
 	<style type="text/css">
 	
@@ -38,7 +39,8 @@
 
 <body>
 
-<iframe class="mainiframe" id="webframe" frameborder="0"  sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+<iframe class="mainiframe" id="webframe" frameborder="0"  
+		sandbox="allow-scripts allow-modals" referrerpolicy="no-referrer"></iframe>
 
 <script type="text/javascript">
 	
@@ -48,10 +50,7 @@
 	//Get the current window location
 	var mainstartpage 	= ""+window.location;
 	var index 			= mainstartpage.indexOf("browse.html");
-	BASE_PAGE 			= mainstartpage.substring(0,index-1);
-	
-	//BASE_PAGE = "https://127.0.0.1:10003/0x8877665544332211";
-	MDS.log("BASE PAGE : "+BASE_PAGE);
+	MINWEB_PAGE 		= mainstartpage.substring(0,index-1);
 	
 	//listen for post messages..
 	window.onmessage = function(event){
@@ -64,7 +63,7 @@
 				
 				//Tell the iFrame we got the message
 				var resp 		= {};
-				resp.action 	= "MDS_RESPONSE";
+				resp.action 	= "MINIWEB_RESPONSE";
 				resp.randid 	= msg.randid;
 				resp.data 		= true;
 				
@@ -73,88 +72,62 @@
 				
 				//And now jump to the page..
 				go(msg.data);
-			
-			}else if(action == "MINIWEB_GETMINIWEBURL"){
-				
-				var domain = msg.data;
-				
-				//Get the base domain..
-				extractDomainToWeb(domain,function(extracted){
 					
-					if(extracted){
-	
-						var finalpage = addDomains(BASE_PAGE,convertDomainToURL(domain));
-						
-						//Tell the iFrame we got the message
-						var resp 		= {};
-						resp.action 	= "MDS_RESPONSE";
-						resp.randid 	= msg.randid;
-						resp.data 		= finalpage;
-						
-						//Post to the iFrame
-						document.getElementById('webframe').contentWindow.postMessage(resp,"*");
-						
-					}else{
-						
-						//Need to Load it!..
-						
-					}
-				});
-			
 			}else if(action == "MINIWEB_GETDATAURI"){
 				
-				var webfile = msg.data;
+				//What file
+				var domain = msg.data;
 				
-				//Get the base domain..
-				extractDomain(webfile,function(extracted){
+				//Does site data exists allready..
+				webFolderExists(domain, function(exists){
 					
-					if(extracted){
-						var internalfile = convertDomainToInternal(webfile);
+					//Do we need to load / extract ?
+					if(exists){
 						
-						//Load the file..
-						MDS.file.loadbinary(internalfile, function(loader){
-							
-							//Blank DATA URI
-							var datauri= "data:,";
-							
-							//Create a respoinse JSON
-							var res = {};
-							
-							if(loader.response.exists){
-								res.exists = true;
-								
-								//get the HEX data
-								var hexdata = loader.response.load.data;
-								
-								//Convert to base 64..
-								var b64 = MDS.util.hexToBase64(hexdata);
-								
-								//Consrtruct the data URI
-								datauri= "data:"+getMimeTypeFromExtension(internalfile)+";base64,"+b64;
-							}else{
-								res.exists = false;
-							}
-							
-							//Tell the iFrame we got the message
-							var resp 		= {};
-							resp.action 	= "MDS_RESPONSE";
-							resp.randid 	= msg.randid;
-							resp.data 		= datauri;
-							
-							//Post to the iFrame
-							document.getElementById('webframe').contentWindow.postMessage(resp,"*");
-						});
+						//Send them the Data URI
+						completeDataURI(domain,msg.randid);
 						
 					}else{
 						
-						//Need to Load it!..
-						
+						//Lets load this filepacket
+						loadFilePacket(domain,function(loaded, minifsfound, requested){
+							
+							//Send them the Data URI
+							completeDataURI(domain,msg.randid);
+						});
 					}
-				});
-			
+				});		
 			}
 		}
 	};
+	
+	function completeDataURI(domain, msgid){
+		
+		//Load this previously extracted
+		loadDataURI(domain, function(found, datauri){
+			
+			//Tell the iFrame we got the message
+			var resp 		= {};
+			resp.action 	= "MINIWEB_RESPONSE";
+			resp.randid 	= msgid;
+			
+			var data = {};
+			
+			if(!found){
+				data.found = false;
+				data.data  = "data:,";
+				
+			}else{
+				data.found = true;
+				data.data  = datauri;
+			}
+			
+			resp.data = data;
+			
+			//Post to the iFrame
+			document.getElementById('webframe').contentWindow.postMessage(resp,"*");
+		});
+	}
 	
 	//Listen for when the iFrame has loaded
 	var LOAD_CALLBACK = null;
@@ -164,7 +137,7 @@
 	  	}
 	});
 	
-	//LOad a page in the iFrame
+	//Load a page in the iFrame
 	function loadPage(page, callback){
 		
 		if(callback){
@@ -173,7 +146,11 @@
 			LOAD_CALLBACK = null;
 		}
 		
-		var fullpage = addDomains(BASE_PAGE,page);
+		//First add the base page
+		var fullpage = addDomains(MINWEB_PAGE,page);
+		
+		//Now ADD the MDS UID for the restriced MDS
+		fullpage = addURLParam(fullpage,"uid",MINIWEB_UID); 
 		
 		MDS.log("Load Page : "+fullpage);
 		
@@ -195,78 +172,39 @@
 		
 		MDS.log("Browser GO : "+domain);
 		
-		//Get the base domain for this page
-		var basedomain  = getBaseDomain(domain);
-		var webfolder 	= addDomains(BASE_WEB,basedomain);
-		
+		//What is the final page
 		var finalpage = addDomains(BASE_WEB,domain);
 		if(!finalpage.includes(".html")){
 			finalpage = addDomains(finalpage,"index.html");
 		}
 		
 		//Does site data exists allready..
-		MDS.file.listweb(webfolder,function(listweb){
+		webFolderExists(domain, function(exists){
 			
-			//Does the repo exists
-			if(listweb.response.exists){
+			//Do we need to load / extract ?
+			if(exists){
+				
+				//Just jump straight to page
 				loadPage(finalpage);
 			}else{
 				
 				//Extract the repo and then load
-				loadPage("loading.html",function(){
+				loadPage("loading.html", function(){
 					
-					//Now lets load the file..
-					var api 	= {};
-					api.action 	= "LOAD";
-					api.data 	= basedomain;
-					
-					//Send it to MiniWEB
-					MDS.api.call("minifs",JSON.stringify(api),function(resp){
+					//Lets load this filepacket
+					loadFilePacket(domain,function(loaded, minifsfound, requested){
 						
-						//Call wqas replied to ?
-						if(resp.status){
-							
-							//Parse the data
-							var data = JSON.parse(resp.data);
-							
-							//Did we fiund it
-							if(data.found){
-								
-								//OK - extract 
-								var fp = data.filepacket;
-								
-								extractFilePacketToWeb(fp, function(resp){
-									MDS.log("Extracted..");
-									loadPage(finalpage);
-									
-								});
-								
-							}else{
-								if(data.requested){
-									alert("The Site was not found.\n\nA request has been sent to re-publish it!.")
-								}else{
-									alert("The Site was not found.\n\nA request was already sent.. waiting..")
-								}
-								
-								loadPage("loading_notfound.html");
-							}
-							
-						}else{
-							alert("Could not conatct MiniFS MiniDAPP ?");
-						}
-					});
-					
-					/*extractDomainToWeb(basedomain, function(extracted){
-						
-						if(extracted){
+						if(loaded){
+							//Load the final page
 							loadPage(finalpage);
 						}else{
-							loadPage("loading_notfound.html");
+							if(!minifsfound){
+								alert("Could not conatct MiniFS MiniDAPP ?");
+							}
 							
-							//Start Shoutout..
-							//..
+							loadPage("loading_notfound.html");
 						}
-					});*/	
+					});	
 				});
 			}
 		});
@@ -279,19 +217,11 @@
 			//Try this first.. then do normal if not exists..
 			MDS.cmd("checkmode", function(resp){
 				
-				//This only works on 1.0.43 onwards..
-				if(resp.response.untrustedmdsuid){
-					//Use this as the UID for websites..
-					MINIWEB_UID = resp.response.untrustedmdsuid;
-					
-				}else{
-					
-					//Use Our own UID
-					MINIWEB_UID = MDS.minidappuid;
-				}
+				//Use this as the UID for websites..
+				MINIWEB_UID = resp.response.untrustedmdsuid;
 				
 				var wipeold = true;
-				
+					
 				if(wipeold){
 					//Delete all the old sites on refresh..
 					MDS.file.deletefromweb(BASE_WEB,function(delweb){
@@ -301,14 +231,12 @@
 							
 							//NOW GO..
 							go(MAIN_URL);	
-							
 						});
 					});
 				}else{
 					//NOW GO..
 					go(MAIN_URL);
 				}
-				
 			});
 		}
 	});

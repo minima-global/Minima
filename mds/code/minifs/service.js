@@ -32,6 +32,8 @@ function processNewSiteCoin(coin){
 	
 	try{
 		
+		MDS.log("processNewSiteCoin "+JSON.stringify(coin));
+					
 		//Get the file packet
 		var onchainfp = convertToFilePacket(coin);		
 		
@@ -202,7 +204,7 @@ MDS.init(function(msg){
 				MDS.cmd("coinnotify action:add address:"+MINIWEB_FILE_REQUEST,function(startup){});
 				
 				//Scan the chain for any coins we may have missed!
-				MDS.cmd("coins address:"+MINIWEB_FILE_ADDRESS,function(resp){
+				/*MDS.cmd("coins address:"+MINIWEB_FILE_ADDRESS,function(resp){
 					var len = resp.response.length;
 					for(var i=0;i<len;i++){
 						processNewSiteCoin(resp.response[i]);
@@ -214,7 +216,7 @@ MDS.init(function(msg){
 					for(var i=0;i<len;i++){
 						processRequestCoin(resp.response[i]);
 					}
-				});
+				});*/
 				
 				MDS.log("MiniWEB Inited");
 			});	
@@ -233,10 +235,6 @@ MDS.init(function(msg){
 		}
 	
 	}else if(msg.event == "MDS_TIMER_60SECONDS"){
-		
-		if(logging){
-			MDS.log("1 Minute check : ");
-		}
 		
 		//Check MAXIMA requests
 		var len = RECENT_MAXIMA_REQUESTS.length;
@@ -310,6 +308,10 @@ MDS.init(function(msg){
 					resp.found 			= true;
 					resp.requested 		= false;
 					resp.filepacket		= fp;
+					
+					//Send it
+					MDS.api.reply(msg.data.from,msg.data.id,JSON.stringify(resp));
+						
 				}else{
 					resp.found 			= false;
 					
@@ -319,21 +321,7 @@ MDS.init(function(msg){
 						
 						//Send it
 						MDS.api.reply(msg.data.from,msg.data.id,JSON.stringify(resp));
-					});
-					
-					//Request this file..
-					/*if(RECENT_REQUESTS.includes(request)){
-						MDS.log("Filepacket REQUESTED recently : "+request);
-						resp.requested 	= false;
-					}else{
-						RECENT_REQUESTS.push(request)
-						RECENT_REQUESTS_TOTAL++;
-						resp.requested = true;
-						
-						sendFileRequest(request,function(){
-							MDS.log("Filepacket REQUESTED : "+request);
-						});
-					}*/			
+					});		
 				}
 			});
 			
@@ -364,5 +352,99 @@ MDS.init(function(msg){
 				
 			MDS.log("INVALID API CALL : "+JSON.stringify(msg));
 		}
+	
+	}else if(msg.event == "MAXIMA"){
+		
+		//Is it for minifs..
+		if(msg.data.application == "minifs"){
+			
+			//The Maxima user that sent this request
+			var publickey = msg.data.from;
+											
+			//Convert the data..
+			MDS.cmd("convert from:HEX to:String data:"+msg.data.data,function(resp){
+							
+				//And create the actual JSON
+				var minifsjson = JSON.parse(resp.response.conversion);
+				
+				if(logging){
+					MDS.log("RECEIVED MAXIMA MESSAGE : "+JSON.stringify(minifsjson));
+				}
+				
+				//Do we have it..
+				if(minifsjson.action == "FILE_REQUEST"){
+					
+					var mxsite = minifsjson.data.trim();
+					
+					//DO we have it..
+					getFilePacket(mxsite,function(fp){						
+						
+						//Do we have it..
+						if(fp){
+							
+							//Send it to him!..
+							var filereq 	= {};
+							filereq.action 	= "FILE_SENT";
+							filereq.data 	= fp;
+	 						
+							//And send!
+							MDS.cmd("maxima action:send publickey:"+publickey
+										+" application:minifs data:"+JSON.stringify(filereq), function(resp){
+							
+								if(logging){
+									MDS.log("SENT MXSITE over MAXIMA "+mxsite);
+								}			
+							});
+						}
+					});
+					
+				}else if(minifsjson.action == "FILE_SENT"){
+					
+					//Get the data
+					var fp = minifsjson.data;
+					
+					//Verify it..
+					verifyFilepacket(fp, function(verify){
+						
+						if(verify){
+							
+							//DO we have it..
+							getFilePacket(mxsite,function(myfp){						
+								
+								//Do we have it..
+								if(!myfp){
+									
+									//Insert it..
+									insertFilePacket(true,fp,function(){
+										if(logging){
+											MDS.log("RECEIVED MXSITE over MAXIMA "+fp.data.name);
+										}			
+									});	
+										
+								}else{
+									
+									//Check version!
+									if(myfp.data.version < fp.data.version){
+										
+										//Update!!
+										updateExternalFilePacket(fp,function(){
+											if(logging){
+												MDS.log("Updated MXSITE over MAXIMA with newer version "+fp.data.name);
+											}	
+										});							
+									}
+								}
+							});
+						}else{
+							
+							if(logging){
+								MDS.log("RECEIVED INVALID MXSITE over MAXIMA "+fp.data.name+" FROM : "+publickey);
+							}
+						}
+					});
+				}
+			});
+		}
 	}
+	
 });		

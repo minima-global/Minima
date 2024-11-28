@@ -1,11 +1,11 @@
 
 /**
- * List of ALL the Data requests 
+ * List of all MinWeb requests 
  */
-var DATA_URI_REQUESTS = [];
+var MINIWEB_REQUESTS = [];
 
 /**
- * Initialise thew MiniWEB library
+ * Initialise the MiniWEB library
  */
 function miniweb_Init(){
 	//listen for post messages..
@@ -15,18 +15,16 @@ function miniweb_Init(){
 		var msg = event.data;
 		if(msg){
 			
-			MDS.log("Inside got message : "+JSON.stringify(msg)+" DATASIZE:"+DATA_URI_REQUESTS.length);
-			
 			//Get the randid..
 			var randid 	= msg.randid;
 			
 			//Now cycle..
-			var len 	= DATA_URI_REQUESTS.length;
+			var len 	= MINIWEB_REQUESTS.length;
+			var found 	= false;
 			for(var i=0;i<len;i++){
-				var datauri = DATA_URI_REQUESTS[i];
+				var datauri = MINIWEB_REQUESTS[i];
 				if(datauri.randid == randid){
-					
-					MDS.log("Found Data URI");
+					found 	= true;
 					
 					//Call back..
 					if(datauri.callback){
@@ -35,36 +33,21 @@ function miniweb_Init(){
 				}
 			}
 			
+			if(!found){
+				MDS.log("MinWEB Request not found : "+JSON.stringify(msg));
+			}
+			
 			//Now remove that elemnt
-			DATA_URI_REQUESTS = DATA_URI_REQUESTS.filter(function(item) {
+			MINIWEB_REQUESTS = MINIWEB_REQUESTS.filter(function(item) {
 			    return item.randid !== randid;
 			});
-			
-			console.log("Size : "+DATA_URI_REQUESTS.length);
 		}
 	};
 }
 
-function miniweb_GetURL(minifile,callback){
-	
-	//First store this request in thelist..
-	var request 		= {};
-	request.randid		= Math.floor(Math.random() * 1000000000); 
-	request.callback 	= callback;
-	
-	//Push it on the stack
-	DATA_URI_REQUESTS.push(request);
-	
-	//Make a request msg to the top window..
-	var msg 	= {};
-	msg.action 	= "MINIWEB_GETMINIWEBURL";
-	msg.data 	= minifile;
-	msg.randid	= request.randid;
-	
-	//Send this to the parent window..
-	window.top.postMessage(msg, '*');
-}
-
+/**
+ * Load the data from ANY MiniFS file as a Data URI
+ */
 function miniweb_GetDataURI(minifile,callback){
 	
 	//First store this request in thelist..
@@ -73,7 +56,7 @@ function miniweb_GetDataURI(minifile,callback){
 	request.callback 	= callback;
 	
 	//Push it on the stack
-	DATA_URI_REQUESTS.push(request);
+	MINIWEB_REQUESTS.push(request);
 	
 	//Make a request msg to the top window..
 	var msg 	= {};
@@ -85,6 +68,9 @@ function miniweb_GetDataURI(minifile,callback){
 	window.top.postMessage(msg, '*');
 }
 
+/**
+ * Jump to a specific miniweb://.. page
+ */
 function miniweb_JumpToURL(minifile,callback){
 	
 	//First store this request in thelist..
@@ -97,7 +83,7 @@ function miniweb_JumpToURL(minifile,callback){
 	}
 		
 	//Push it on the stack
-	DATA_URI_REQUESTS.push(request);
+	MINIWEB_REQUESTS.push(request);
 	
 	//Make a request msg to the top window..
 	var msg 	= {};

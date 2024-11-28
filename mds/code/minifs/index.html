@@ -44,6 +44,9 @@
 <table width=80% class=filepacketview style="text-align:center;">
 	<tr>
 		<td style="text-align:left;"><button class=solobutton onclick="jumpToNewFile();">New MiniFS File</button></td>
+		
+		<td style="text-align:center;"><div id=fpcount>Scanning..</div></td>
+		
 		<td style="text-align:right;"><button class=solobutton onclick="jumpToPublish();">Publish</button></td>
 	</tr>
 </table>
@@ -64,17 +67,21 @@
 			if(found.length == 0){
 				mywebpackets.innerHTML = 
 					"<table class=filepacketview border=0><tr><td>"+
-					"No File packets found..</td></tr></table>";
-				return;
+					"You have <b>0</b> Personal Files..</td></tr></table>";
+			}else{
+				var html = "";
+				var len = found.length;
+				for(var i=0;i<len;i++){
+					html += createWebPacketView(found[i]);	
+				}
+				
+				mywebpackets.innerHTML = html;	
 			}
 			
-			var html = "";
-			var len = found.length;
-			for(var i=0;i<len;i++){
-				html += createWebPacketView(found[i]);	
-			}
-			
-			mywebpackets.innerHTML = html;
+			//How many total..
+			getTotalFilePackets(function(total){
+				fpcount.innerHTML = "<b>"+total+"</b> total files.."
+			});
 		});
 	}
 	
@@ -104,22 +111,18 @@
 						if(resp.response.mode=="WRITE"){
 							WRITE_MODE = true;
 						}else{
-							alert("This application works MUCH better in WRITE MODE..\n\n"
+							alert("This application requires WRITE MODE..\n\n"
 								+"To send and request files in the background.");
 						}
 						
-						//The Browser UID
-						RESTRICTED_UID = resp.response.untrustedmdsuid;
-						
 						//Get the dapplink..
-						MDS.dapplink("browsefs",function(dappresp){
+						MDS.dapplink("miniweb",function(dappresp){
 							
 							//Get link to the Browser MiniDAPP
+							BROWSER_DAPPLINK = "";
 							if(dappresp.status){
+								//Store this to open 
 								BROWSER_DAPPLINK = dappresp.base.replace("index.html","browse.html");	
-								MDS.log("BROWSELINK = "+BROWSER_DAPPLINK);
-							}else{
-								MDS.log("BrowseFS MiniDAPP not found");
 							}
 							
 							//Now load your webpackets

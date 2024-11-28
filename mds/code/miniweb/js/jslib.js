@@ -3,7 +3,7 @@
  * The Base internal and Web folders for the file packets
  */
 var BASE_INTERNAL 	= "/extractfolder/";
-var BASE_WEB 		= "/miniweb/";
+var BASE_WEB 		= "/root/mxsites/";
 	
 /**
  * Utiulity function to concatenate URLS fixing forward slashes..
@@ -23,6 +23,27 @@ function addDomains(base,addition){
 	
 	return bb+add;
 }
+
+/**
+ * Add ther restriced UID to the URL - So MDS works..
+ */
+function addURLParam(base,param,value){
+	
+	//Does it already contain this param..
+	if(base.includes(param+"=")){
+		return base;
+	}
+	
+	//Does it already have some params..
+	if(base.indexOf("?") == -1){
+		
+		return base+"?"+param+"="+value;
+	}
+	
+	//There must already be some values..
+	return base+"&"+param+"="+value;
+}
+
 
 /**
  * Get the BASE Domain of a miniweb URL
@@ -51,113 +72,6 @@ function getBaseDomain(fulllink){
 	var basefolder = ff.substring(0,index);
 		
 	return basefolder;
-}
-
-/**
- * Just Extract the Domain data to the internaL folder
- */
-function extractDomain(domainreq, callback){
-	
-	//Clean up input - just in case
-	var basedomain = getBaseDomain(domainreq);
-	
-	//File locations
-	var internalfolder = addDomains(BASE_INTERNAL,basedomain);
-	
-	//Does it exist..
-	MDS.file.list(internalfolder,function(listweb){
-		MDS.log(JSON.stringify(listweb));
-		
-		if(listweb.response.exists){
-			
-			//Folder already exists leave it..
-			callback(true);
-			return;
-			
-		}else{
-			
-			//Extract the data if we have it..
-			getFilePacket(basedomain,function(fp){
-								
-				//Did we find it!
-				if(!fp){
-					callback(false);
-					return;
-				}
-				
-				try{
-					//Extract it..
-					extractZIP(fp.data.file, internalfolder, function(){
-						callback(true);
-					});		
-				}catch(error){
-					MDS.log("ERROR unzipping : "+basedomain);
-					callback(true);
-				}
-			});		
-		}
-	});
-}
-
-function extractDomainToWeb(domainreq, callback){
-	
-	//Get the base domain for this page
-	var basedomain = getBaseDomain(domainreq);
-	
-	//File locations
-	var internalfolder = addDomains(BASE_INTERNAL,basedomain);
-	var webfolder 	   = addDomains(BASE_WEB,basedomain);
-	
-	//Does the WEB folder already exist
-	MDS.file.listweb(webfolder,function(listweb){
-		if(listweb.response.exists){
-			callback(true);
-		}else{
-			
-			//Extract the data if we have it..
-			extractDomain(basedomain, function(extracted){
-				if(extracted){
-					//And copy to WEB folder..
-					MDS.file.copytoweb(internalfolder, webfolder, function(copyweb){
-						callback(true);
-					});
-						
-				}else{
-					//We don't have the data'
-					callback(false);
-				}
-			});		
-		}
-	});	
-}
-
-function extractFilePacketToWeb(filepacket, callback){
-	
-	//Get the base domain for this page
-	var basedomain = filepacket.data.name;
-	
-	//File locations
-	var internalfolder = addDomains(BASE_INTERNAL,basedomain);
-	var webfolder 	   = addDomains(BASE_WEB,basedomain);
-	
-	MDS.log("Internal   : "+internalfolder);
-	MDS.log("Web folder : "+webfolder);
-	
-	//Delete all the old sites on refresh..
-	MDS.file.deletefromweb(webfolder,function(delweb){
-		MDS.file.delete(internalfolder,function(del){
-		
-			//Extract it to internal..
-			extractZIP(filepacket.data.file, internalfolder, function(){
-				
-				//And copy to Web
-				MDS.file.copytoweb(internalfolder, webfolder, function(copyweb){
-					MDS.log("COPY TO WEB "+JSON.stringify(copyweb));
-					callback();
-				});
-			});			
-		});
-	});
 }
 
 function convertDomainToURL(domainreq){
@@ -191,3 +105,115 @@ function convertDomainToInternal(domainreq){
 	
 	return finalpage;
 }
+
+/**
+ * Does the current domain exist in WEB folder
+ */
+function webFolderExists(domain, callback){
+	
+	//Get the base web folder
+	var basedomain  = getBaseDomain(domain);
+	var webfolder 	= addDomains(BASE_WEB,basedomain);
+		
+	MDS.file.listweb(webfolder,function(listweb){
+		callback(listweb.response.exists);
+	});
+}
+
+/**
+ * Load MiniFS Filepacket 
+ */
+function loadFilePacket(domain, callback){
+	
+	//Get the base domain
+	var basedomain = getBaseDomain(domain);
+	
+	//Now lets load the file..
+	var api 	= {};
+	api.action 	= "LOAD";
+	api.data 	= basedomain;
+	
+	//Send it to MiniWEB
+	MDS.api.call("minifs",JSON.stringify(api),function(resp){
+		
+		//Call wqas replied to ?
+		if(resp.status){
+			
+			//Parse the data
+			var data = JSON.parse(resp.data);
+			
+			//Did we fiund it
+			if(data.found){
+				
+				//Extract to WEB
+				extractFilePacketToWeb(data.filepacket, function(resp){
+					callback(true);
+				});
+				
+			}else{
+				//Did we get the data, did we find the MiniFS MIniDAPP, and did we request!
+				callback(false,true,data.requested);
+			}
+			
+		}else{
+			//Could not find thew MiniFS MiniDAPP
+			callback(false,false,false);
+		}
+	});
+}
+
+/**
+ * Extract a ZIP filepacket to Internal and Web Folder
+ */
+function extractFilePacketToWeb(filepacket, callback){
+	
+	//Get the base domain for this page
+	var basedomain = filepacket.data.name;
+	
+	//File locations
+	var internalfolder = addDomains(BASE_INTERNAL,basedomain);
+	var webfolder 	   = addDomains(BASE_WEB,basedomain);
+	
+	//Delete all the old sites on refresh..
+	MDS.file.deletefromweb(webfolder,function(delweb){
+		MDS.file.delete(internalfolder,function(del){
+		
+			//Extract it to internal..
+			extractZIP(filepacket.data.file, internalfolder, function(){
+				
+				//And copy to Web
+				MDS.file.copytoweb(internalfolder, webfolder, function(copyweb){
+					callback();
+				});
+			});			
+		});
+	});
+}
+
+function loadDataURI(domainreq,callback){
+	
+	//Get the internal File..
+	var internalfile = convertDomainToInternal(domainreq);
+	
+	//Now load it
+	MDS.file.loadbinary(internalfile, function(loader){
+		
+		//Find it ?
+		if(loader.status){
+			
+			//get the HEX data
+			var hexdata = loader.response.load.data;
+			
+			//Convert to base 64..
+			var b64 = MDS.util.hexToBase64(hexdata);
+			
+			//Consrtruct the data URI
+			callback(true,"data:"+getMimeTypeFromExtension(internalfile)+";base64,"+b64);
+			
+			return;
+		}
+
+		callback(false);
+	});
+}
+
