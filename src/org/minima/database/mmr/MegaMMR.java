@@ -27,13 +27,23 @@ public class MegaMMR implements Streamable {
 	//All the UNSPENT Coins
 	Hashtable<String,Coin> mAllUnspentCoins;
 	
+	//Are we pruning the 
+	boolean PRUNE_UNSPENDABLE = false;
+	
 	public MegaMMR() {
-		
+		this(false);
+	}
+	
+	public MegaMMR(boolean zPruneable) {
+			
 		//The actual MMR
 		mMMR = new MMR();
 		
 		//The Unspent Coins
 		mAllUnspentCoins = new Hashtable<>();
+		
+		//Are we pruning wrong length addresses
+		PRUNE_UNSPENDABLE = zPruneable;
 	}
 	
 	public MMR getMMR() {
@@ -46,6 +56,10 @@ public class MegaMMR implements Streamable {
 	
 	public boolean isEmpty() {
 		return mMMR.getAllEntries().size() == 0;
+	}
+	
+	public boolean isPruning() {
+		return PRUNE_UNSPENDABLE;
 	}
 	
 	/**
@@ -106,8 +120,11 @@ public class MegaMMR implements Streamable {
 			//And add to the MMR
 			mMMR.addEntry(mmrdata);	
 			
-			//Add to the total List of coins for this block
-			mAllUnspentCoins.put(output.getCoinID().to0xString(), newcoin);
+			//MinimaLogger.log("Attempt to add coin to MegaMMR "+output.toJSON().toJSONString());
+			if(!isPrunable(output)) {
+				//Add to the total List of coins for this block
+				mAllUnspentCoins.put(output.getCoinID().to0xString(), newcoin);
+			}
 		}
 		
 		//Check values are correct..
@@ -168,8 +185,26 @@ public class MegaMMR implements Streamable {
 		int size = MiniNumber.ReadFromStream(zIn).getAsInt();
 		for(int i=0;i<size;i++) {
 			Coin cc = Coin.ReadFromStream(zIn);
-			mAllUnspentCoins.put(cc.getCoinID().to0xString(), cc);
+			
+			//Do we prune it..
+			if(!isPrunable(cc)) {
+				mAllUnspentCoins.put(cc.getCoinID().to0xString(), cc);
+			}
 		}
+	}
+	
+	/**
+	 * Can we PRUNE this coin
+	 */
+	public boolean isPrunable(Coin zCoin) {
+		if(PRUNE_UNSPENDABLE) {
+			if(zCoin.getAddress().getLength() != 32) {
+				//MinimaLogger.log("Unspendable coin pruned "+zCoin.toJSON().toJSONString());
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	
