@@ -150,7 +150,7 @@ public class Minima {
 		//Catch ALL Uncaught Exceptions..
 		Thread.setDefaultUncaughtExceptionHandler(new MinimaUncaughtException());
 		
-		//TEST ERRORS
+		//TEST ERRORS - not used for now
 		/*List<byte[]> list = new ArrayList<>();
 		int index = 1;
 		while (index < 100000) {
