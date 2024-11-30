@@ -120,7 +120,8 @@ WantedBy=multi-user.target
 
 EOF
 
-
+sed -i 's/#Storage=auto/Storage=persistent/g' /etc/systemd/journald.conf
+sudo systemctl restart systemd-journald
 systemctl daemon-reload
 systemctl enable minima_$PORT
 systemctl start minima_$PORT
