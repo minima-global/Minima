@@ -62,6 +62,8 @@ import org.minima.system.commands.base.tokenvalidate;
 import org.minima.system.commands.base.trace;
 import org.minima.system.commands.maxima.maxcontacts;
 import org.minima.system.commands.maxima.maxcreate;
+import org.minima.system.commands.maxima.maxdecrypt;
+import org.minima.system.commands.maxima.maxencrypt;
 import org.minima.system.commands.maxima.maxextra;
 import org.minima.system.commands.maxima.maxima;
 import org.minima.system.commands.maxima.maxsign;
@@ -153,6 +155,7 @@ public class CommandRunner {
 			
 			new multisig(), new multisigread(), new checkaddress(),
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
+			new maxencrypt(), new maxdecrypt(),
 			
 			new ping(), new random(), new seedrandom(), new mysql(), new mysqlcoins(), new slavenode(), new checkrestore(),
 			//new file(),
