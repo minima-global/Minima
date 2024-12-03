@@ -4,11 +4,13 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Date;
 
 import org.minima.objects.base.MiniData;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.encrypt.SignVerify;
+import org.minima.utils.json.JSONObject;
 
 public class MaximumMessage implements Streamable {
 
@@ -22,9 +24,20 @@ public class MaximumMessage implements Streamable {
 		mData = zData;
 	}
 
+	public JSONObject toJSON() {
+		JSONObject ret = new JSONObject();
+		
+		ret.put("data", mData.to0xString());
+		ret.put("publickey", mPublicKey.to0xString());
+		ret.put("signature", mSignature.to0xString());
+		
+		return ret;
+	}
+	
 	public MiniData getData() {
 		return mData;
 	}
+	
 	
 	public void createSignature(MiniData zPublicKey, MiniData zPrivateKey) throws Exception {
 		
