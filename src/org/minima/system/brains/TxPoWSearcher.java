@@ -98,7 +98,7 @@ public class TxPoWSearcher {
 				zAmount, zCheckAddress, zAddress, zCheckTokenID, zTokenID, zSimpleOnly, Integer.MAX_VALUE);
 	}
 	
-	public static synchronized ArrayList<Coin> searchCoins(	TxPoWTreeNode zStartNode, boolean zRelevant, 
+	public static ArrayList<Coin> searchCoins(	TxPoWTreeNode zStartNode, boolean zRelevant, 
 			boolean zCheckCoinID, MiniData zCoinID,
 			boolean zCheckAmount, MiniNumber zAmount,
 			boolean zCheckAddress, MiniData zAddress,
@@ -111,7 +111,7 @@ public class TxPoWSearcher {
 				zSimpleOnly, zDepth,false);
 	}
 	
-	public static synchronized ArrayList<Coin> searchCoins(	TxPoWTreeNode zStartNode, boolean zRelevant, 
+	public static ArrayList<Coin> searchCoins(	TxPoWTreeNode zStartNode, boolean zRelevant, 
 												boolean zCheckCoinID, MiniData zCoinID,
 												boolean zCheckAmount, MiniNumber zAmount,
 												boolean zCheckAddress, MiniData zAddress,
