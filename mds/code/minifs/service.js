@@ -18,10 +18,10 @@ var logging = true;
 var RECENT_SENDS_TIMER 		= 0;
 var RECENT_SENDS 			= [];
 var RECENT_SENDS_TOTAL		= 0;
+
 var RECENT_REQUESTS 		= [];
 var RECENT_REQUESTS_TOTAL	= 0;
 
-//Requests sent over Maxima
 var RECENT_MAXIMA_REQUESTS	= [];
 
 //Time before we reset RECENTS - 24 hours
@@ -33,6 +33,12 @@ function processNewSiteCoin(coin){
 	try{
 		
 		MDS.log("processNewSiteCoin "+JSON.stringify(coin));
+		
+		//First check it has appropriate data
+		if(!checkFilePacketCoin(coin)){
+			MDS.log("Invalid MiniFS Coin"+JSON.stringify(coin));
+			return;
+		}
 					
 		//Get the file packet
 		var onchainfp = convertToFilePacket(coin);		
@@ -204,21 +210,21 @@ MDS.init(function(msg){
 				MDS.cmd("coinnotify action:add address:"+MINIWEB_FILE_REQUEST,function(startup){});
 				
 				//Scan the chain for any coins we may have missed!
-				/*MDS.cmd("coins address:"+MINIWEB_FILE_ADDRESS,function(resp){
+				MDS.cmd("coins address:"+MINIWEB_FILE_ADDRESS,function(resp){
 					var len = resp.response.length;
 					for(var i=0;i<len;i++){
 						processNewSiteCoin(resp.response[i]);
 					}
 				});
 				
-				MDS.cmd("coins address:"+MINIWEB_FILE_REQUEST,function(resp){
+				/*MDS.cmd("coins address:"+MINIWEB_FILE_REQUEST,function(resp){
 					var len = resp.response.length;
 					for(var i=0;i<len;i++){
 						processRequestCoin(resp.response[i]);
 					}
 				});*/
 				
-				MDS.log("MiniWEB Inited");
+				MDS.log("MiniFS Inited");
 			});	
 		});
 		
