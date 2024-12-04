@@ -18,7 +18,7 @@ public class maxmessage extends Command {
 	
 	/*@Override
 	public String getFullHelp() {
-		return "\nmaxcreate\n"
+		return "\nmaxmessage\n"
 				+ "\n"
 				+ "Create a 128 bit RSA public and private key. You can use them with maxsign and maxverify.\n"
 				+ "\n"
