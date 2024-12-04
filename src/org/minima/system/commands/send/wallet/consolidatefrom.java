@@ -91,7 +91,7 @@ public class consolidatefrom extends Command {
 		
 		//Cycle through the top coins
 		for(Coin cc : coins){
-			total = total.add(cc.getAmount()); 
+			total = total.add(cc.getTokenAmount()); 
 			coincount++;
 			
 			//Add this coin to the transaction
