@@ -66,6 +66,7 @@ import org.minima.system.commands.maxima.maxdecrypt;
 import org.minima.system.commands.maxima.maxencrypt;
 import org.minima.system.commands.maxima.maxextra;
 import org.minima.system.commands.maxima.maxima;
+import org.minima.system.commands.maxima.maxmessage;
 import org.minima.system.commands.maxima.maxsign;
 import org.minima.system.commands.maxima.maxverify;
 import org.minima.system.commands.mds.checkmode;
@@ -160,7 +161,7 @@ public class CommandRunner {
 			
 			new ping(), new random(), new seedrandom(), new mysql(), new mysqlcoins(), new slavenode(), new checkrestore(),
 			//new file(),
-			new megammr(),
+			new megammr(), new maxmessage(),
 			
 			new vault(), new consolidate(), new coinnotify(),
 			new backup(), new restore(), new test(), 
