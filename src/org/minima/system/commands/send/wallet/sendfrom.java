@@ -50,7 +50,7 @@ public class sendfrom extends Command {
 		String randomid 	= MiniData.getRandomData(32).to0xString();
 		
 		//Are we mining
-		boolean mine 		= getBooleanParam("mine", false);
+		boolean mine 		= getBooleanParam("mine", true);
 		
 		//Now construct the transaction..
 		JSONObject result 	= runCommand("txncreate id:"+randomid);
