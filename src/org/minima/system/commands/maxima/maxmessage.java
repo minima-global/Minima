@@ -51,8 +51,6 @@ public class maxmessage extends Command {
 			MiniData pubkey 	= Main.getInstance().getMaxima().getPublicKey();
 			MiniData privkey 	= Main.getInstance().getMaxima().getPrivateKey();
 			
-			int y=0;
-			
 			//Now create a Max Message Object
 			MaximumMessage mm = new MaximumMessage(data);
 			mm.createSignature(pubkey, privkey);
