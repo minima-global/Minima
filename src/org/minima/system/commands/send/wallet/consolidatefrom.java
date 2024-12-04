@@ -109,6 +109,10 @@ public class consolidatefrom extends Command {
 			if(burn.isLess(total)) {
 				total = total.sub(burn);
 			}else {
+				
+				//Remove the txn..
+				runCommand("txndelete id:"+randomid);
+				
 				throw new CommandException("Burn greater than total amount added "+burn+" / "+total);
 			}
 		}
