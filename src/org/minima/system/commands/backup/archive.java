@@ -1063,6 +1063,84 @@ public class archive extends Command {
 			//Tell listener..
 			Main.getInstance().NotifyMainListenerOfShutDown();
 			
+		}else if(action.equals("inspectraw")) {
+			
+			long timestart = System.currentTimeMillis();
+			
+			//Create a temp name
+			String infile 	= getParam("file");
+			File fileinfile = MiniFile.createBaseFile(infile);
+			
+			RawArchiveInput rawin = new RawArchiveInput(fileinfile);
+			rawin.connect();
+			
+			//Is there a cascade..
+			Cascade casc = rawin.getCascade();
+			if(casc != null) {
+				MinimaLogger.log("Cascade found.. ");
+			}
+			
+			//Load a range..
+			long endblock 	= -1;
+			TxBlock lastblock = null;
+			int counter = 0;
+			
+			MiniNumber lasttxblock = MiniNumber.ZERO;
+			while(true) {
+				//Get the next batch of data..
+				IBD syncibd 				= rawin.getNextIBD();
+				ArrayList<TxBlock> blocks 	= syncibd.getTxBlocks();
+				
+				if(counter % 10 ==0) {
+					if(blocks.size()>0) {
+						MinimaLogger.log("Loading from RAW Block : "+blocks.get(0).getTxPoW().getBlockNumber(),false);
+					}
+				}
+			
+				if(blocks.size()==0) {
+					//All blocks checked
+					break;
+				}
+				
+				//Cycle and add to our DB..
+				boolean exit = false;
+				for(TxBlock block : blocks) {
+					
+					//Which block is this..
+					MiniNumber blocknum = block.getTxPoW().getBlockNumber();
+					
+					//Check it..
+					if(!blocknum.isEqual(lasttxblock.increment())){
+						MinimaLogger.log("INVALID non sequential blocks.. lastblock:"+lasttxblock+" new:"+blocknum);
+						exit = true;
+						break;
+					}
+					
+					//Keep it..
+					lasttxblock = blocknum;
+				}
+				
+				//Clean up..
+				counter++;
+				if(counter % 10 == 0) {
+					System.gc();
+				}
+				
+				if(exit) {
+					break;
+				}
+			}
+			
+			//Shutdown TEMP DB
+			rawin.stop();
+			
+			long timediff = System.currentTimeMillis() - timestart;
+			
+			JSONObject resp = new JSONObject();
+			resp.put("time", MiniFormat.ConvertMilliToTime(timediff));
+			
+			ret.put("response", resp);
+			
 		}else if(action.equals("inspect")) {
 			
 			//Get the file

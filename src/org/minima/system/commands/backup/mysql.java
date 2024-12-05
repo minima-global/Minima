@@ -142,7 +142,7 @@ public class mysql extends Command {
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database",
 				"user","password","keys","keyuses","phrase","address","txpowid",
-				"enable","file","statecheck","logs","maxexport","readonly"}));
+				"enable","file","statecheck","logs","maxexport","readonly","startfix","endfix"}));
 	}
 	
 	@Override
@@ -310,7 +310,7 @@ public class mysql extends Command {
 			long startload 	= mysqllastblock; 
 			while(true) {
 				if(logs) {
-					MinimaLogger.log("MySQL Verifying from : "+startload);
+					MinimaLogger.log("MySQL Verifying from : "+startload, false);
 				}
 				ArrayList<TxBlock> blocks = mysql.loadBlockRange(new MiniNumber(startload));
 				if(blocks.size()==0) {
@@ -1128,6 +1128,93 @@ public class mysql extends Command {
 			long timediff = System.currentTimeMillis() - timestart;
 			
 			JSONObject resp = new JSONObject();
+			resp.put("time", MiniFormat.ConvertMilliToTime(timediff));
+			
+			ret.put("response", resp);
+			
+		}else if(action.equals("fixmissing")) {
+			
+			long timestart = System.currentTimeMillis();
+			
+			//Create a temp name
+			String infile 	= getParam("file");
+			File fileinfile = MiniFile.createBaseFile(infile);
+			
+			RawArchiveInput rawin = new RawArchiveInput(fileinfile);
+			rawin.connect();
+			
+			//Start and end blocks
+			long startchecking = 0;
+			if(existsParam("startfix")) {
+				startchecking = getNumberParam("startfix").getAsLong();
+			}
+			
+			//Is there a cascade..
+			/*Cascade casc = rawin.getCascade();
+			if(casc != null) {
+				MinimaLogger.log("Cascade found.. ");
+				mysql.saveCascade(casc);
+			}*/
+			
+			//Load a range..
+			long endblock 	= -1;
+			TxBlock lastblock = null;
+			int counter = 0;
+			
+			boolean savingblocks = false;
+			int totalsaved = 0; 
+			while(true) {
+				//Get the next batch of data..
+				IBD syncibd 				= rawin.getNextIBD();
+				ArrayList<TxBlock> blocks 	= syncibd.getTxBlocks();
+				
+				if(logs) {
+					if(counter % 10 ==0) {
+						if(blocks.size()>0) {
+							MinimaLogger.log("Loading from RAW Block : "+blocks.get(0).getTxPoW().getBlockNumber()+" SAVING:"+savingblocks,false);
+						}
+					}
+				}
+				
+				if(blocks.size()==0) {
+					//All blocks checked
+					break;
+				}
+				
+				//Cycle and add to our DB..
+				for(TxBlock block : blocks) {
+					
+					//Which block is this..
+					long blocknum = block.getTxPoW().getBlockNumber().getAsLong();
+					
+					if(blocknum > startchecking) {
+						savingblocks = true;
+						
+						//Get the block..
+						TxBlock txblk = mysql.loadBlockFromNum(blocknum);
+						
+						if(txblk == null) {
+							mysql.saveBlock(block);
+							totalsaved++;
+							MinimaLogger.log("Save MISSING block : "+blocknum);
+						}
+					}
+				}
+				
+				//Clean up..
+				counter++;
+				if(counter % 10 == 0) {
+					System.gc();
+				}
+			}
+			
+			//Shutdown TEMP DB
+			rawin.stop();
+			
+			long timediff = System.currentTimeMillis() - timestart;
+			
+			JSONObject resp = new JSONObject();
+			resp.put("missing", totalsaved);
 			resp.put("time", MiniFormat.ConvertMilliToTime(timediff));
 			
 			ret.put("response", resp);
