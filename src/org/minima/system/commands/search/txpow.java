@@ -128,10 +128,20 @@ public class txpow extends Command {
 						JSONArray res 		= CommandRunner.getRunner().runMultiCommand(command);
 						JSONObject result 	= (JSONObject) res.get(0);
 						
-						if((boolean) result.get("found")) {
-							ret.put("response", result.get("txpow"));
+						//FOR NOW..
+						//MinimaLogger.log("MYSQL TXPOW SEARCH : "+result.toJSONString());
+						
+						//Get the response..
+						JSONObject response = (JSONObject)result.get("response");
+						
+						if((boolean)response.get("found")) {
+							ret.put("response", response.get("txpow"));
 							return ret;
+						
+						}else {
+							throw new CommandException("TxPoW not found : "+txpowid);
 						}
+						
 					}else {
 						throw new CommandException("TxPoW not found : "+txpowid);
 					}
