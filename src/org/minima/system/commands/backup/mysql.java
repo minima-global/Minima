@@ -142,7 +142,8 @@ public class mysql extends Command {
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database",
 				"user","password","keys","keyuses","phrase","address","txpowid",
-				"enable","file","statecheck","logs","maxexport","readonly","startfix","endfix"}));
+				"enable","file","statecheck","logs","maxexport",
+				"readonly","startfix","endfix","block"}));
 	}
 	
 	@Override
@@ -1221,16 +1222,43 @@ public class mysql extends Command {
 			
 		}else if(action.equals("findtxpow")) {
 			
-			String txpowid = getParam("txpowid");
-			
 			JSONObject resp = new JSONObject();
 			
-			TxPoW txp = mysql.getTxPoW(txpowid);
-			if(txp == null) {
-				resp.put("found", false);
+			if(existsParam("txpowid")) {
+				String txpowid = getParam("txpowid");
+				TxPoW txp = mysql.getTxPoW(txpowid);
+				
+				if(txp == null) {
+					
+					//Could be a block
+					TxBlock txblk = mysql.loadBlockFromID(txpowid);
+					
+					if(txblk == null) {
+						resp.put("found", false);
+					}else {
+						resp.put("found", true);
+						resp.put("txpow", txblk.getTxPoW().toJSON());
+					}
+					
+				}else {
+					resp.put("found", true);
+					resp.put("txpow", txp.toJSON());
+				}
+			}else if(existsParam("block")) {
+				
+				MiniNumber block = getNumberParam("block");
+				
+				TxBlock txp = mysql.loadBlockFromNum(block.getAsLong());
+				
+				if(txp == null) {
+					resp.put("found", false);
+				}else {
+					resp.put("found", true);
+					resp.put("txpow", txp.getTxPoW().toJSON());
+				}
+				
 			}else {
-				resp.put("found", true);
-				resp.put("txpow", txp.toJSON());
+				throw new CommandException("MUST provide either txpowid or block for findtxpow function");
 			}
 			
 			ret.put("response", resp);
