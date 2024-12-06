@@ -299,6 +299,25 @@ public class vault extends Command {
 				+ "Currently ("+Main.getInstance().getAllDefaultKeysSize()+"/"+Wallet.NUMBER_GETADDRESS_KEYS+")");
 	}
 	
+	/**
+	 * Stop All keys created
+	 */
+	public static void stopAllKeysCreated() throws CommandException {
+		
+		//Are they all created..
+		if(Main.getInstance().getAllKeysCreated()) {
+			return;
+		}
+		
+		//Stop all new keys 
+		MinimaDB.getDB().getWallet().setStopNewKeys(true);
+		
+		//Small Pause..
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {}
+	}
+	
 	public static void passwordLockDB(String zPassword) throws CommandException {
 		
 		//Display the base seed..

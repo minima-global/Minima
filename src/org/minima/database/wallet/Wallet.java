@@ -396,6 +396,12 @@ public class Wallet extends SqlDB {
 	 */
 	public void setStopNewKeys(boolean zStopNewKeys) {
 		STOP_NEWKEYS = zStopNewKeys;
+		
+		if(STOP_NEWKEYS) {
+			MinimaLogger.log("Disallow creation of NEW default keys..");
+		}else {
+			MinimaLogger.log("Re-allow creation of NEW default keys..");
+		}
 	}
 	
 	public int getDefaultKeysNumber() {
