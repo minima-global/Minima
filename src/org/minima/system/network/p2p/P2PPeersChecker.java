@@ -142,13 +142,14 @@ public class P2PPeersChecker extends MessageProcessor {
             Set<String> localAddresses = P2PFunctions.getLocalAddresses();
             
             boolean islocal = P2PFunctions.isIPLocal(address.getHostString());
-            if (GeneralParams.ALLOW_ALL_IP || !islocal) {
+            boolean isipv6  = P2PFunctions.isIPv6(address.getHostString());
+            if (GeneralParams.ALLOW_ALL_IP || (!islocal && !isipv6)) {
            
             	//Do we have room for more..
             	checkUnverifiedPeer(address);
            
             } else {
-				P2PFunctions.log_debug("[-] Prevent node from adding localhost address to peers list "+address.getHostString());
+				P2PFunctions.log_debug("[-] Prevent node from adding localhost / ipv6 address to peers list "+address.getHostString());
 			}
 
         } else if (zMessage.getMessageType().equals(PEERS_CHECKPEERS)) {
