@@ -187,6 +187,16 @@ public class NIOMessage implements Runnable {
 			return;
 		}
 		
+		//Is this message from an invalid peer
+		/*if(!mFullAdrress.equals("")) {
+			if(P2PFunctions.isInvalidPeer(mFullAdrress)) {
+				//Just disconnect
+				mData = null;
+				Main.getInstance().getNIOManager().disconnect(mClientUID);
+				return;
+			}
+		}*/
+		
 		//Convert..
 		bais 	= new ByteArrayInputStream(data);
 		dis 	= new DataInputStream(bais);
@@ -235,6 +245,15 @@ public class NIOMessage implements Runnable {
 //			if(true) {
 //				MinimaLogger.log(tracemsg,false);
 //			}
+			
+			//Log to TRAFFIC monitor
+			try {
+				String strtype 		= convertMessageType(type);
+				int size 			= data.length;
+				NIOTraffic traffic 	= Main.getInstance().getNIOManager().getTrafficListener();
+				traffic.addReadBytes(strtype, size);
+			}catch(Exception exc) {}
+			
 			
 			//Now find the right message
 			if(type.isEqual(MSG_GREETING)) {

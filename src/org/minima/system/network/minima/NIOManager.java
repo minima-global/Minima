@@ -913,13 +913,23 @@ public class NIOManager extends MessageProcessor {
 		}
 		
 		//For ALL or for ONE
+		String howmany = "single";
 		if(!zUID.equals("")) {
 			//Send it..
 			Main.getInstance().getNIOManager().getNIOServer().sendMessage(zUID,niodata);
 		}else {
 			//Send it..
 			Main.getInstance().getNIOManager().getNIOServer().sendMessageAll(niodata);
+			howmany = "all";
 		}
+		
+		//Log to TRAFFIC monitor
+		try {
+			String strtype 		= NIOMessage.convertMessageType(zType);
+			int size 			= niodata.getLength();
+			NIOTraffic traffic 	= Main.getInstance().getNIOManager().getTrafficListener();
+			traffic.addWriteBytes(strtype+"_"+howmany, size);
+		}catch(Exception exc) {}
 	}
 	
 	public static MiniData createNIOMessage(MiniByte zType, Streamable zObject) throws IOException {
