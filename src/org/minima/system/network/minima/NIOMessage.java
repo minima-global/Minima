@@ -113,6 +113,8 @@ public class NIOMessage implements Runnable {
 			return "P2P";
 		}else if(zType.isEqual(MSG_PING)) {
 			return "PING";
+		}else if(zType.isEqual(MSG_SINGLE_PONG)) {
+			return "MSG_SINGLE_PONG";
 		}else if(zType.isEqual(MSG_MAXIMA_CTRL)) {
 			return "MAXIMA_CTRL";
 		}else if(zType.isEqual(MSG_MAXIMA_TXPOW)) {
@@ -122,6 +124,18 @@ public class NIOMessage implements Runnable {
 			return "MSG_IBD_REQ";
 		}else if(zType.isEqual(MSG_IBD_RESP)) {
 			return "MSG_IBD_RESP";
+		
+		}else if(zType.isEqual(MSG_ARCHIVE_DATA)) {
+			return "MSG_ARCHIVE_DATA";
+		}else if(zType.isEqual(MSG_ARCHIVE_REQ)) {
+			return "MSG_ARCHIVE_REQ";
+		}else if(zType.isEqual(MSG_ARCHIVE_SINGLE_REQ)) {
+			return "MSG_ARCHIVE_SINGLE_REQ";
+		
+		}else if(zType.isEqual(MSG_MEGAMMRSYNC_REQ)) {
+			return "MSG_MEGAMMRSYNC_REQ";
+		}else if(zType.isEqual(MSG_MEGAMMRSYNC_RESP)) {
+			return "MSG_MEGAMMRSYNC_RESP";
 		
 		}else if(zType.isEqual(MSG_TXBLOCKID)) {
 			return "TXBLOCKID";
