@@ -133,7 +133,7 @@ public class NIOMessage implements Runnable {
 			return "TXBLOCKMINE";
 		}
 		
-		return "UNKNOWN";
+		return "UNKNOWN_"+zType.toString();
 	}
 	
 	/**
