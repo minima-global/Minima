@@ -583,6 +583,13 @@ public class NIOManager extends MessageProcessor {
 			//We are no  longer attempting to connect
 			mConnectingClients.remove(nioc.getUID());
 			
+			//IS THIS AN INVALID PEER..
+			if(P2PFunctions.isInvalidPeer(nioc.getFullAddress())) {
+				MinimaLogger.log("Disconnecting invalid peer before sending or recieving ANY data..");
+				disconnect(nioc.getUID());
+				return;
+			}
+			
 			//Is this an outgoing connection..
 			if(!nioc.isIncoming()) {
 				

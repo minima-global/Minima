@@ -1068,9 +1068,6 @@ public class Main extends MessageProcessor {
 				MinimaLogger.log("AUTOBACKUP : "+res.toString());
 			}
 			
-			//Clear the Invalid Peers
-			P2PFunctions.clearInvalidPeers();
-			
 			//Recalculate the hash speed..
 			MiniNumber hashcheck 	= new MiniNumber("250000");
 			MiniNumber hashrate 	= TxPoWMiner.calculateHashSpeed(hashcheck);
@@ -1185,6 +1182,9 @@ public class Main extends MessageProcessor {
 	        		}
 	        	}
 			}
+			
+			//Clear the Invalid peers..
+			P2PFunctions.clearInvalidPeers();
 			
 		}else if(zMessage.getMessageType().equals(MAIN_CALLCHECKER)) {
 			
