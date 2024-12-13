@@ -18,6 +18,7 @@ import org.minima.system.commands.base.balance;
 import org.minima.system.commands.base.block;
 import org.minima.system.commands.base.burn;
 import org.minima.system.commands.base.checkaddress;
+import org.minima.system.commands.base.coincheck;
 import org.minima.system.commands.base.coinexport;
 import org.minima.system.commands.base.coinimport;
 import org.minima.system.commands.base.coinnotify;
@@ -189,6 +190,7 @@ public class help extends Command {
 			addCommand(details, new mmrcreate());
 			addCommand(details, new mmrproof());
 			
+			addCommand(details, new coincheck());
 			addCommand(details, new coinimport());
 			addCommand(details, new coinexport());
 			addCommand(details, new cointrack());
