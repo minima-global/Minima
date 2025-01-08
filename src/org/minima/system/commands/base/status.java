@@ -308,11 +308,11 @@ public class status extends Command {
 			MinimaLogger.log("Database done..");
 		}
 		
-		//Network..
-		NetworkManager netmanager = Main.getInstance().getNetworkManager();
-		if(netmanager!=null) {
-			details.put("network", netmanager.getStatus());
-		}
+//		//Network..
+//		NetworkManager netmanager = Main.getInstance().getNetworkManager();
+//		if(netmanager!=null) {
+//			details.put("network", netmanager.getStatus());
+//		}
 		
 		if(debug) {
 			MinimaLogger.log("Network done..");

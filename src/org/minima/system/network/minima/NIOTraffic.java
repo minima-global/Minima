@@ -8,9 +8,9 @@ import org.minima.utils.json.JSONObject;
 
 public class NIOTraffic {
 
-	public long mStartTime;
-	public long mTotalRead;
-	public long mTotalWrite;
+	long mStartTime;
+	long mTotalRead;
+	long mTotalWrite;
 	
 	Hashtable<String, Long> mReadBreakDown 	= new Hashtable<>();
 	Hashtable<String, Long> mWriteBreakDown = new Hashtable<>();
@@ -19,7 +19,7 @@ public class NIOTraffic {
 		reset();
 	}
 	
-	public void reset() {
+	public synchronized void reset() {
 		mStartTime 	= System.currentTimeMillis();
 		mTotalRead 	= 0;
 		mTotalWrite = 0;
@@ -28,19 +28,19 @@ public class NIOTraffic {
 		mWriteBreakDown = new Hashtable<>();
 	}
 	
-	public long getStartTime() {
+	public synchronized long getStartTime() {
 		return mStartTime;
 	}
 	
-	public long getTotalRead() {
+	public synchronized long getTotalRead() {
 		return mTotalRead;
 	}
 	
-	public long getTotalWrite() {
+	public synchronized long getTotalWrite() {
 		return mTotalWrite;
 	}
 	
-	public JSONObject getBreakdown() {
+	public synchronized JSONObject getBreakdown() {
 		JSONObject ret = new JSONObject();
 		
 		//First the Reads
@@ -70,16 +70,16 @@ public class NIOTraffic {
 		return ret;
 	}
 	
-//	public void addReadBytes(String zFrom, int zRead) {
-//		addReadBreakAmount(zFrom, zRead);
-//	}
-	
-//	public void addWriteBytes(int zWrite) {
-//		mTotalWrite += zWrite;
-//	}
-	
-	public void addReadBytes(String zFrom, long zAmount) {
+	public synchronized void addToTotalRead(long zAmount) {
 		mTotalRead += zAmount;
+	}
+	
+	public synchronized void addToTotalWrite(long zAmount) {
+		mTotalWrite += zAmount;
+	}
+	
+	public synchronized void addReadBytes(String zFrom, long zAmount) {
+		//mTotalRead += zAmount;
 		
 		long current=0;
 		if(mReadBreakDown.containsKey(zFrom)) {
@@ -89,8 +89,8 @@ public class NIOTraffic {
 		mReadBreakDown.put(zFrom, Long.valueOf(current+zAmount));
 	}
 	
-	public void addWriteBytes(String zFrom, long zAmount) {
-		mTotalWrite += zAmount;
+	public synchronized void addWriteBytes(String zFrom, long zAmount) {
+		//mTotalWrite += zAmount;
 		
 		long current=0;
 		if(mWriteBreakDown.containsKey(zFrom)) {

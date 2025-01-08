@@ -1050,6 +1050,9 @@ public class Main extends MessageProcessor {
 			//Clear the Peer Invalid list
 			P2PFunctions.clearInvalidPeers();
 			
+			//Clear the IBD sent list
+			NIOMessage.mHaveSentIBDRecently.clear();
+			
 			//Restart the Networking..
 			restartNIO();
 
@@ -1185,6 +1188,9 @@ public class Main extends MessageProcessor {
 			
 			//Clear the Invalid peers..
 			P2PFunctions.clearInvalidPeers();
+			
+			//Clear the IBD sent list
+			NIOMessage.mHaveSentIBDRecently.clear();
 			
 		}else if(zMessage.getMessageType().equals(MAIN_CALLCHECKER)) {
 			

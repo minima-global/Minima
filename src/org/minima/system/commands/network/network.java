@@ -6,6 +6,7 @@ import java.util.Arrays;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.network.NetworkManager;
 import org.minima.system.network.minima.NIOClientInfo;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.json.JSONArray;
@@ -66,8 +67,17 @@ public class network extends Command {
 				}
 			}
 			
+			JSONObject resp = new JSONObject();
+			resp.put("connections", clarr);
+			
+			//Network..
+			NetworkManager netmanager = Main.getInstance().getNetworkManager();
+			if(netmanager!=null) {
+				resp.put("network", netmanager.getStatus());
+			}
+			
 			//Add to the response
-			ret.put("response", clarr);
+			ret.put("response", resp);
 			
 		}else if(action.equals("reset")) {
 			

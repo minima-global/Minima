@@ -221,7 +221,15 @@ public class NIOClient {
 	}
 	
 	public String getFullAddress() {
+		if(mMinimaPort != -1) {
+			return mHost+":"+mMinimaPort;
+		}
+		
 		return mHost+":"+mPort;
+	}
+	
+	public String getFullMinimaAddress() {
+		return getFullAddress();
 	}
 	
 	public boolean isValidGreeting() {
@@ -317,13 +325,13 @@ public class NIOClient {
  			MinimaLogger.log("[NIOCLIENT] "+mUID+" read "+readbytes, false);
  		}
  		
+ 		//Add to the Traffic Listener..
+ 	   	mNIOManager.getTrafficListener().addToTotalRead(readbytes);
+		
  	   	//Nothing..
  	   	if(readbytes == 0) {
  	   		return;
  	   	}
- 	   	
- 	   	//Add to the Traffic Listener..
- 	   	mNIOManager.getTrafficListener().addReadBytes("NIO_handleRead",readbytes);
  	   	
  	   	//Ready to read
 // 	   	mBufferIn.flip();
@@ -476,7 +484,7 @@ public class NIOClient {
 		}
 		
 		//Add to the Traffic Listener..
- 	   	mNIOManager.getTrafficListener().addWriteBytes("NIO_handleWrite",write);
+ 	   	mNIOManager.getTrafficListener().addToTotalWrite(write);
 		
 		//Any left
 		synchronized (mMessages) {

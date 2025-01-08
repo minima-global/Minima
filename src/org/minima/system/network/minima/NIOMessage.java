@@ -58,6 +58,11 @@ public class NIOMessage implements Runnable {
 	public static ConcurrentHashMap<String, Long> mLastChainSync = new ConcurrentHashMap<>();
 	
 	/**
+	 * Have we sent an IBD in the last 30 mins..  
+	 */
+	public static HashSet<String> mHaveSentIBDRecently = new HashSet<>(); 
+	
+	/**
 	 * Base Message types sent over the network
 	 */
 	public static final MiniByte MSG_GREETING 		= new MiniByte(0);
@@ -388,23 +393,34 @@ public class NIOMessage implements Runnable {
 //					Main.getInstance().getNIOManager().getNIOServer().setWelcome(mClientUID, welcome);
 //				}
 				
-				//Create an IBD response to that Greeting..
-				IBD ibd = new IBD();
-				boolean isvalid = ibd.createIBD(greet);
-				
-				//Was it a vaild IBD - with a crossover..
-				if(!isvalid) {
-					 //Add him to the invalid peers list
-					if(!mFullAdrress.equals("")) {
-						P2PFunctions.addInvalidPeer(mFullAdrress);
+				//Have we sent an IBD message already..
+				String miniaddress = nioclient.getFullMinimaAddress();
+				if(mHaveSentIBDRecently.contains(miniaddress)) {
+					MinimaLogger.log("Allready sent an IBD to "+miniaddress+" in last 30 mins..");
+					
+				}else {
+					
+					//Add to our list
+					mHaveSentIBDRecently.add(miniaddress);
+					
+					//Create an IBD response to that Greeting..
+					IBD ibd = new IBD();
+					boolean isvalid = ibd.createIBD(greet);
+					
+					//Was it a vaild IBD - with a crossover..
+					if(!isvalid) {
+						 //Add him to the invalid peers list
+						if(!mFullAdrress.equals("")) {
+							P2PFunctions.addInvalidPeer(mFullAdrress);
+						}
+						
+						//Still send him OUR IBD so they know they are on the wrong chain  aswell.
+						//..
 					}
 					
-					//Stil send him OUR IBD so they know they are on the wrong chain  aswell.
-					//..
+					//Send it
+					NIOManager.sendNetworkMessage(mClientUID, MSG_IBD, ibd);
 				}
-				
-				//Send it
-				NIOManager.sendNetworkMessage(mClientUID, MSG_IBD, ibd);
 				
 			}else if(type.isEqual(MSG_IBD)) {
 				

@@ -162,7 +162,6 @@ public class NetworkManager {
 			mins = 1;
 		}
 		
-		
 		Date starter = new Date(traffic.getStartTime());
 		readwrite.put("from", starter.toString());
 		readwrite.put("totalread", MiniFormat.formatSize(traffic.getTotalRead()));
@@ -174,9 +173,7 @@ public class NetworkManager {
 		readwrite.put("read",MiniFormat.formatSize(speedread)+"/min");
 		readwrite.put("write",MiniFormat.formatSize(speedwrite)+"/min");
 		
-		
 		stats.put("traffic", readwrite);
-		
 		
 		return stats;
 	}
