@@ -73,7 +73,7 @@ public class network extends Command {
 			//Network..
 			NetworkManager netmanager = Main.getInstance().getNetworkManager();
 			if(netmanager!=null) {
-				resp.put("network", netmanager.getStatus());
+				resp.put("details", netmanager.getStatus());
 			}
 			
 			//Add to the response

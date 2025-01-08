@@ -148,7 +148,7 @@ public class Main extends MessageProcessor {
 	 * Used to check the P2P and MDS systems.. every 20 minutes
 	 */
 	public static final String MAIN_P2PNETMDS_CHECKER 	= "MAIN_P2PNETMDS_CHECKER";
-	long P2PNETMDS_TIMER								= 1000 * 60 * 20;
+	long P2PNETMDS_TIMER								= 1000 * 60 * 30;
 	
 	/**
 	 * Notify Users..
