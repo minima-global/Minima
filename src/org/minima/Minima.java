@@ -138,7 +138,7 @@ public class Minima {
 		MinimaLogger.log("* (_/\\/\\_)(____)(_)\\_)(____)(_/\\/\\_)(__)(__) *");
 		MinimaLogger.log("*                                            *");
 		MinimaLogger.log("**********************************************");
-		MinimaLogger.log("Welcome to Minima v"+GlobalParams.MINIMA_VERSION+" - for assistance type help. Then press enter.");
+		MinimaLogger.log("Welcome to Minima "+GlobalParams.getFullMicroVersion()+" - for assistance type help. Then press enter.");
 		
 		//Load the required MySQL classes
 		try {
