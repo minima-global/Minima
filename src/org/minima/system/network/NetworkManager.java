@@ -127,6 +127,10 @@ public class NetworkManager {
 	}
 	
 	public JSONObject getStatus() {
+		return getStatus(false);
+	}
+	
+	public JSONObject getStatus(boolean zAll) {
 		JSONObject stats = new JSONObject();
 		
 		UserDB udb 				= MinimaDB.getDB().getUserDB();
@@ -143,6 +147,10 @@ public class NetworkManager {
 		rpcjson.put("enabled", GeneralParams.RPC_ENABLED);
 		rpcjson.put("port", GeneralParams.RPC_PORT);
 		stats.put("rpc", rpcjson);
+		
+		if(!zAll) {
+			return stats;
+		}
 		
 		//P2P stats
 		if(GeneralParams.P2P_ENABLED) {
