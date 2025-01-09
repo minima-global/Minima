@@ -296,7 +296,7 @@ public class megammr extends Command {
 			
 			JSONObject resp = new JSONObject();
 			resp.put("cascadetip", casctip);
-			resp.put("cascadedate", new Date(cascade.getTimeMilli().getAsLong()));
+			resp.put("cascadedate", new Date(cascade.getTimeMilli().getAsLong()).toString());
 			resp.put("chaintip", chaintip);
 			resp.put("weight", weight.toString());
 			ret.put("response", resp);
