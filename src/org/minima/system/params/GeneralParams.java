@@ -301,6 +301,11 @@ public class GeneralParams {
 	public static String PUBLICMDS_SESSION_UID = "";
 	
 	/**
+	 * Do we prune all addresses shorter than 32 bytes (unspendable) from megammr
+	 */
+	public static boolean MEGAMMR_MEGAPRUNE = false;
+	
+	/**
 	 * Reset all params to their default settings.. ANDROID keeps them after shutdown
 	 */
 	public static void resetDefaults() {
@@ -366,6 +371,7 @@ public class GeneralParams {
 		MDS_NOSSL 			  = false;
 		MYSQL_STORE_ALLTXPOW  = false;
 		PUBLICMDS_SESSION_UID = "";
+		MEGAMMR_MEGAPRUNE 	  = false;
 	}
 	
 }

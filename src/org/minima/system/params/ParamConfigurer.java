@@ -439,8 +439,13 @@ public class ParamConfigurer {
         }),
     	seed("seed", "Use this seed phrase if starting a new node", (args, configurer) -> {
             GeneralParams.SEED_PHRASE = args;
+        }),
+    	megaprune("megaprune", "Prune short (unspendable) addresses from the megammr", (args, configurer) -> {
+            if ("true".equals(args)) {
+            	GeneralParams.MEGAMMR_MEGAPRUNE = true;
+            }
         });
-    	
+        
         private final String key;
         private String helpMsg;
         private final BiConsumer<String, ParamConfigurer> consumer;

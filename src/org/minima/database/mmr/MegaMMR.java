@@ -34,7 +34,7 @@ public class MegaMMR implements Streamable {
 		this(false);
 	}
 	
-	public MegaMMR(boolean zPruneable) {
+	public MegaMMR(boolean zMegaPruneable) {
 			
 		//The actual MMR
 		mMMR = new MMR();
@@ -43,7 +43,7 @@ public class MegaMMR implements Streamable {
 		mAllUnspentCoins = new Hashtable<>();
 		
 		//Are we pruning wrong length addresses
-		PRUNE_UNSPENDABLE = zPruneable;
+		PRUNE_UNSPENDABLE = zMegaPruneable;
 	}
 	
 	public MMR getMMR() {
