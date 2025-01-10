@@ -789,7 +789,11 @@ public class MMR implements Streamable {
 	 * 
 	 * Recursive Scan for unspendable coins
 	 */
+	public static int removedUnspend = 0;
 	public void scanUnspendableTree() {
+		
+		removedUnspend = 0;
+		
 		//Get the Peaks..
 		ArrayList<MMREntry> peaks = getPeaks();
 		for(MMREntry peak : peaks) {
@@ -827,15 +831,25 @@ public class MMR implements Streamable {
 		
 		//Is this a ZERO node.. if so remove the children
 		if(leftunspend && rightunspend) {
-			MinimaLogger.log("SCAN REMOVE CHILDREN : "+zStartNode);
+			
+			if(!leftchild.isEmpty()) {
+				removedUnspend++;
+			}
+			if(!rightchild.isEmpty()) {
+				removedUnspend++;
+			}
+			
+			//This node is unspendable
 			zStartNode.getMMRData().setUnspendable(true);
 			
+			//Remove the Children
 			removeHashTableEntry(leftchild);
 			removeHashTableEntry(rightchild);
 			
 			return true;
 		}
 		
+		//This node is spendable
 		zStartNode.getMMRData().setUnspendable(false);
 		
 		return false;

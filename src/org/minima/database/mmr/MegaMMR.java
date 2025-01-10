@@ -121,11 +121,8 @@ public class MegaMMR implements Streamable {
 			//And add to the MMR
 			mMMR.addEntry(mmrdata);	
 			
-			//MinimaLogger.log("Attempt to add coin to MegaMMR "+output.toJSON().toJSONString());
-			//if(!isPrunable(output)) {
-				//Add to the total List of coins for this block
-				mAllUnspentCoins.put(output.getCoinID().to0xString(), newcoin);
-			//}
+			//Add to the total List of coins for this block
+			mAllUnspentCoins.put(output.getCoinID().to0xString(), newcoin);
 		}
 		
 		//Check values are correct..
@@ -137,11 +134,30 @@ public class MegaMMR implements Streamable {
 	}
 	
 	/**
+	 * Can we PRUNE this coin - may even check a custom list.. ?
+	 */
+	private boolean isPrunable(Coin zCoin) {
+		if(PRUNE_UNSPENDABLE) {
+			if(zCoin.getAddress().getLength() != 32) {
+				//MinimaLogger.log("Unspendable coin @ "+zCoin.toJSON().toJSONString());
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * Scan the WHOLE tree for unspendable coins..
 	 */
-	public void scanUnspendable() {
+	private void pruneUnspendable() {
 		
-		MinimaLogger.log("All Coins size : "+mAllUnspentCoins.size());
+		//Time how long it takes..
+		long timestart 	= System.currentTimeMillis();
+		MinimaLogger.log("Start Prune MegaMMR Coins:"+mAllUnspentCoins.size()+" MMREntries:"+getMMR().getTotalEntries()); 
+		
+		//Create acopy with the correct list
+		Hashtable<String,Coin> newAllCoins = new Hashtable<>();
 		
 		//First scan ALL the coins..
 		Enumeration<Coin> coins = mAllUnspentCoins.elements();
@@ -151,7 +167,12 @@ public class MegaMMR implements Streamable {
 			//Is it unspendable..
 			boolean unspend = isPrunable(cc);
 			
-			//Set it..
+			//Add to the new list
+			if(!unspend) {
+				newAllCoins.put(cc.getCoinID().to0xString(), cc);
+			}
+			
+			//get it..
 			MMREntry ment = mMMR.getEntry(0, cc.getMMREntryNumber());
 				
 			//Set the MMRData
@@ -160,10 +181,17 @@ public class MegaMMR implements Streamable {
 			}
 		}
 	
-		MinimaLogger.log("");
-		
 		//Now scan from the peaks..
 		mMMR.scanUnspendableTree();
+		
+		//And now reset the list..
+		mAllUnspentCoins = newAllCoins;
+		
+		long timediff = System.currentTimeMillis() - timestart;
+		MinimaLogger.log("Final Pruned MegaMMR Coins:"+mAllUnspentCoins.size()
+						+" MMREntries:"+getMMR().getTotalEntries()
+						+" Removed:"+getMMR().removedUnspend
+						+" time:"+timediff+"ms");
 	}
 	
 	
@@ -186,6 +214,12 @@ public class MegaMMR implements Streamable {
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
+		
+		//Are we pruning the unspendable coins
+		if(PRUNE_UNSPENDABLE) {
+			pruneUnspendable();
+		}
+		
 		//First write out the VERSION
 		MiniNumber.WriteToStream(zOut, 1);
 		
@@ -219,24 +253,13 @@ public class MegaMMR implements Streamable {
 			Coin cc = Coin.ReadFromStream(zIn);
 			
 			//Do we prune it..
-			//if(!isPrunable(cc)) {
-				mAllUnspentCoins.put(cc.getCoinID().to0xString(), cc);
-			//}
-		}
-	}
-	
-	/**
-	 * Can we PRUNE this coin - may even check a custom blacklist.. ?
-	 */
-	public boolean isPrunable(Coin zCoin) {
-		if(PRUNE_UNSPENDABLE) {
-			if(zCoin.getAddress().getLength() != 32) {
-				MinimaLogger.log("Unspendable coin @ "+zCoin.toJSON().toJSONString());
-				return true;
-			}
+			mAllUnspentCoins.put(cc.getCoinID().to0xString(), cc);
 		}
 		
-		return false;
+		//Are we pruning the unspendable coins
+		if(PRUNE_UNSPENDABLE) {
+			pruneUnspendable();
+		}
 	}
 	
 	
@@ -251,9 +274,9 @@ public class MegaMMR implements Streamable {
 			
 			//Create a coin..
 			MiniData address = MiniData.getRandomData(32);
-			if(i>2 && i<6) {
+			//if(i>2 && i<6) {
 				address = MiniData.ZERO_TXPOWID;
-			}
+			//}
 			MiniNumber amount 	= MiniNumber.ONE;
 			
 			Coin cc = new Coin(MiniData.getRandomData(32), address, amount, Token.TOKENID_MINIMA);
@@ -272,16 +295,16 @@ public class MegaMMR implements Streamable {
 		MMR.printmmrtree(mega.getMMR());
 		
 		//Now scan
-		mega.scanUnspendable();
+		mega.pruneUnspendable();
 		
 		MMR.printmmrtree(mega.getMMR());
 		
 		if(true) {
-			return;
+		//	return;
 		}
 		
 		//Now scan
-		mega.scanUnspendable();
+		mega.pruneUnspendable();
 		
 		MMR.printmmrtree(mega.getMMR());
 		
@@ -289,7 +312,7 @@ public class MegaMMR implements Streamable {
 			
 			//Create a coin..
 			MiniData address = MiniData.getRandomData(32);
-			if(i>1 && i<8) {
+			if(i>1 && i<9) {
 				address = MiniData.ZERO_TXPOWID;
 			}
 			MiniNumber amount 	= MiniNumber.ONE;
@@ -310,12 +333,12 @@ public class MegaMMR implements Streamable {
 		MMR.printmmrtree(mega.getMMR());
 		
 		//Now scan
-		mega.scanUnspendable();
+		mega.pruneUnspendable();
 		
 		MMR.printmmrtree(mega.getMMR());
 		
 		//Now scan
-		mega.scanUnspendable();
+		mega.pruneUnspendable();
 		
 		MMR.printmmrtree(mega.getMMR());
 		
