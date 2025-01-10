@@ -63,7 +63,7 @@ public class MMREntry implements Streamable {
 	public boolean isEmpty() {
 		return mIsEmpty;
 	}
-	
+		
 	public boolean checkPosition(MMREntry zEntry) {
 		return (zEntry.getRow() == mRow) && zEntry.getEntryNumber().isEqual(mEntryNumber);
 	}
@@ -82,7 +82,12 @@ public class MMREntry implements Streamable {
 		
 		ret.put("row", mRow);
 		ret.put("entry", mEntryNumber.toString());
-		ret.put("data", mMMRData.toJSON());
+		
+		if(mMMRData == null) {
+			ret.put("data", null);
+		}else {
+			ret.put("data", mMMRData.toJSON());
+		}
 		
 		return ret;
 	}
