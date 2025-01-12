@@ -154,7 +154,7 @@ public class MegaMMR implements Streamable {
 		
 		//Time how long it takes..
 		long timestart 	= System.currentTimeMillis();
-		MinimaLogger.log("NEW - Start Prune MegaMMR Coins:"+mAllUnspentCoins.size()+" MMREntries:"+getMMR().getTotalEntries()); 
+		MinimaLogger.log("Start Prune MegaMMR Coins:"+mAllUnspentCoins.size()+" MMREntries:"+getMMR().getTotalEntries()); 
 		
 		//First scan ALL the coins..
 		Enumeration<Coin> coins = mAllUnspentCoins.elements();
@@ -172,9 +172,6 @@ public class MegaMMR implements Streamable {
 	
 		//Now scan from the peaks..
 		mMMR.scanUnspendableTree();
-		
-		//Now get the list of removed coins..
-		MinimaLogger.log("FOUND PRUNED : "+mMMR.mPrunedCoins.size()); 
 		
 		//Create a copy with the correct list
 		Hashtable<String,Coin> newAllCoins = new Hashtable<>();
@@ -218,7 +215,7 @@ public class MegaMMR implements Streamable {
 	
 	public void saveMMR(File zFile) {
 		MiniFile.saveObjectDirect(zFile, this);
-		MinimaLogger.log("Saving MegaMMR size : "+MiniFormat.formatSize(zFile.length()));
+		//MinimaLogger.log("Saving MegaMMR size : "+MiniFormat.formatSize(zFile.length()));
 	}
 	
 	@Override
