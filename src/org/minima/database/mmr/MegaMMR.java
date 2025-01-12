@@ -154,49 +154,6 @@ public class MegaMMR implements Streamable {
 		
 		//Time how long it takes..
 		long timestart 	= System.currentTimeMillis();
-		MinimaLogger.log("Start Prune MegaMMR Coins:"+mAllUnspentCoins.size()+" MMREntries:"+getMMR().getTotalEntries()); 
-		
-		//Create acopy with the correct list
-		Hashtable<String,Coin> newAllCoins = new Hashtable<>();
-		
-		//First scan ALL the coins..
-		Enumeration<Coin> coins = mAllUnspentCoins.elements();
-		while(coins.hasMoreElements()) {
-			Coin cc = coins.nextElement();
-			
-			//Is it unspendable..
-			boolean unspend = isPrunable(cc);
-			
-			//Add to the new list
-			if(!unspend) {
-				newAllCoins.put(cc.getCoinID().to0xString(), cc);
-			}
-			
-			//get it..
-			MMREntry ment = mMMR.getEntry(0, cc.getMMREntryNumber());
-				
-			//Set the MMRData
-			if(!ment.isEmpty()) {
-				ment.getMMRData().setUnspendable(unspend);
-			}
-		}
-	
-		//Now scan from the peaks..
-		mMMR.scanUnspendableTree();
-		
-		//And now reset the list..
-		mAllUnspentCoins = newAllCoins;
-		
-		long timediff = System.currentTimeMillis() - timestart;
-		MinimaLogger.log("Final Pruned MegaMMR Coins:"+mAllUnspentCoins.size()
-						+" MMREntries:"+getMMR().getTotalEntries()
-						+" time:"+timediff+"ms");
-	}
-	
-	private void pruneUnspendableNew() {
-		
-		//Time how long it takes..
-		long timestart 	= System.currentTimeMillis();
 		MinimaLogger.log("NEW - Start Prune MegaMMR Coins:"+mAllUnspentCoins.size()+" MMREntries:"+getMMR().getTotalEntries()); 
 		
 		//First scan ALL the coins..
@@ -269,7 +226,7 @@ public class MegaMMR implements Streamable {
 		
 		//Are we pruning the unspendable coins
 		if(PRUNE_UNSPENDABLE) {
-			pruneUnspendableNew();
+			pruneUnspendable();
 		}
 		
 		//First write out the VERSION
@@ -310,7 +267,7 @@ public class MegaMMR implements Streamable {
 		
 		//Are we pruning the unspendable coins
 		if(PRUNE_UNSPENDABLE) {
-			pruneUnspendableNew();
+			pruneUnspendable();
 		}
 	}
 	
@@ -347,7 +304,7 @@ public class MegaMMR implements Streamable {
 		MMR.printmmrtree(mega.getMMR());
 		
 		//Now scan
-		mega.pruneUnspendableNew();
+		mega.pruneUnspendable();
 		
 		MMR.printmmrtree(mega.getMMR());
 		
@@ -356,7 +313,7 @@ public class MegaMMR implements Streamable {
 		}
 		
 		//Now scan
-		mega.pruneUnspendableNew();
+		mega.pruneUnspendable();
 		
 		MMR.printmmrtree(mega.getMMR());
 		
@@ -392,12 +349,12 @@ public class MegaMMR implements Streamable {
 		MMR.printmmrtree(mega.getMMR());
 		
 		//Now scan
-		mega.pruneUnspendableNew();
+		mega.pruneUnspendable();
 		
 		MMR.printmmrtree(mega.getMMR());
 		
 		//Now scan
-		mega.pruneUnspendableNew();
+		mega.pruneUnspendable();
 		
 		MMR.printmmrtree(mega.getMMR());
 		
