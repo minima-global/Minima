@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Random;
 
@@ -789,10 +790,10 @@ public class MMR implements Streamable {
 	 * 
 	 * Recursive Scan for unspendable coins
 	 */
-	public static int removedUnspend = 0;
+	public static HashSet<String> mPrunedCoins = new HashSet<>();
 	public void scanUnspendableTree() {
 		
-		removedUnspend = 0;
+		mPrunedCoins.clear();
 		
 		//Get the Peaks..
 		ArrayList<MMREntry> peaks = getPeaks();
@@ -829,15 +830,18 @@ public class MMR implements Streamable {
 		boolean leftunspend  = scanUnspendable(leftchild);
 		boolean rightunspend = scanUnspendable(rightchild);
 		
+		boolean leftzero = true;
+		if(!leftchild.isEmpty()) {
+			leftzero =	leftchild.getMMRData().getValue().isEqual(MiniNumber.ZERO);
+		}
+		
+		boolean rightzero = true;
+		if(!rightchild.isEmpty()) {
+			rightzero =	rightchild.getMMRData().getValue().isEqual(MiniNumber.ZERO);
+		}
+		
 		//Is this a ZERO node.. if so remove the children
-		if(leftunspend && rightunspend) {
-			
-			if(!leftchild.isEmpty()) {
-				removedUnspend++;
-			}
-			if(!rightchild.isEmpty()) {
-				removedUnspend++;
-			}
+		if((leftunspend || leftzero) && (rightunspend || rightzero)) {
 			
 			//This node is unspendable
 			zStartNode.getMMRData().setUnspendable(true);
@@ -845,6 +849,16 @@ public class MMR implements Streamable {
 			//Remove the Children
 			removeHashTableEntry(leftchild);
 			removeHashTableEntry(rightchild);
+			
+			//Add to our list.. if these are on row 0
+			if(childrow==0) {
+				if(!leftchild.isEmpty()) {
+					mPrunedCoins.add(leftchild.getEntryNumber().toString());
+				}
+				if(!rightchild.isEmpty()) {
+					mPrunedCoins.add(rightchild.getEntryNumber().toString());
+				}
+			}
 			
 			return true;
 		}
