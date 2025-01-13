@@ -141,6 +141,11 @@ public class GeneralParams {
 	public static String P2P_ADDNODES = "";
 	
 	/**
+	 * Is the P2P2 System Enabled
+	 */
+	public static boolean P2P2_ENABLED = false;
+	
+	/**
 	 * Are all IP allowed for Maxima Hosts
 	 */
 	public static boolean ALLOW_ALL_IP = false;
@@ -372,6 +377,7 @@ public class GeneralParams {
 		MYSQL_STORE_ALLTXPOW  = false;
 		PUBLICMDS_SESSION_UID = "";
 		MEGAMMR_MEGAPRUNE 	  = false;
+		P2P2_ENABLED 		  = false;
 	}
 	
 }

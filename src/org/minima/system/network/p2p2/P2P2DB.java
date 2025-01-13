@@ -3,6 +3,7 @@ package org.minima.system.network.p2p2;
 import java.util.ArrayList;
 
 import org.minima.utils.JsonDB;
+import org.minima.utils.json.JSONArray;
 
 public class P2P2DB extends JsonDB {
 
@@ -10,9 +11,9 @@ public class P2P2DB extends JsonDB {
 		super();
 	}
 	
-	public ArrayList<String> getAllKnownPeers(){
+	public JSONArray getAllKnownPeers(){
 		
-		ArrayList<String> allpeers = new ArrayList<>();
+		JSONArray allpeers = new JSONArray();
 		allpeers.add("127.0.0.1:10001");
 		
 		return allpeers;

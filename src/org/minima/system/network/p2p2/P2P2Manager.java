@@ -6,6 +6,7 @@ import java.util.Random;
 import org.minima.database.MinimaDB;
 import org.minima.system.Main;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
@@ -34,7 +35,7 @@ public class P2P2Manager extends MessageProcessor{
 	
 	public String getRandomPeerFromList() {
 		//Get all the valid P2P addresses..
-		ArrayList<String> allpeers = MinimaDB.getDB().getP2P2DB().getAllKnownPeers();
+		JSONArray allpeers = MinimaDB.getDB().getP2P2DB().getAllKnownPeers();
 		
 		if(allpeers.size() == 0) {
 			return "";
@@ -44,7 +45,7 @@ public class P2P2Manager extends MessageProcessor{
 		int rand = new Random().nextInt(allpeers.size());
 		
 		//Now pick one at random..
-		return allpeers.get(rand);
+		return (String)allpeers.get(rand);
 	}
 	
 	//PING 3 random hosts and connect to the one with the LEAST connections
