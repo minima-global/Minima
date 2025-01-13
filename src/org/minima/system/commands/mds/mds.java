@@ -350,7 +350,8 @@ public class mds extends Command {
 			}
 			
 			//Log it.. 
-			//MinimaLogger.log("MDS Share Dapp : "+minisharefile.getAbsolutePath()+" to "+copyto.getAbsolutePath());
+			MinimaLogger.log("MDS Share Dapp : "+minisharefile.getAbsolutePath()+" to "+copyto.getAbsolutePath());
+			MinimaLogger.log("PArent : "+copyto.getParentFile());
 			
 			//Check Parents Exist
 			if(!copyto.getParentFile().exists()) {

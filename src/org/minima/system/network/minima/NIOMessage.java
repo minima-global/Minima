@@ -1080,6 +1080,13 @@ public class NIOMessage implements Runnable {
 					pinggreet.getExtraData().put("50hash", "0x00");
 				}
 				
+				//Add the NUMBER of connections..
+				JSONObject connections = new JSONObject();
+				connections.put("connections",Main.getInstance().getNIOManager().getAllConnectedDetails());
+				
+				//Add the Peers List! of P2P2..
+				//..
+				
 				//Is the P2P Enable..
 				if(GeneralParams.P2P_ENABLED) {
 					

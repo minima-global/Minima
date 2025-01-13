@@ -39,6 +39,7 @@ import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
@@ -190,6 +191,48 @@ public class NIOManager extends MessageProcessor {
 		
 		return connections;
 	}
+	
+	public ArrayList<NIOClient> getAllValidOutGoingConnectedClients() {
+		//A list of all the connections
+		ArrayList<NIOClient> connections = new ArrayList<>();
+		
+		//Who are we connected to..
+		ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+		for(NIOClient conn : conns) {
+			if(conn.isValidGreeting() && conn.isOutgoing()) {
+				connections.add(conn);
+			}
+		}
+		
+		return connections;
+	} 
+	
+	public JSONObject getAllConnectedDetails() {
+		//A list of all the connections
+		ArrayList<NIOClient> connections = new ArrayList<>();
+		
+		int incoming = 0;
+		int outgoing = 0;
+		int total 	 = 0;
+		
+		//Who are we connected to..
+		ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+		for(NIOClient conn : conns) {
+			if(conn.isOutgoing()) {
+				outgoing++;
+			}else {
+				incoming++;
+			}
+			total++;
+		}
+		
+		JSONObject ret = new JSONObject();
+		ret.put("total", total);
+		ret.put("incoming", incoming);
+		ret.put("outgoing", outgoing);
+		
+		return ret;
+	} 
 	
 	public NIOClient checkConnected(String zHost, boolean zOnlyConnected) {
 		
