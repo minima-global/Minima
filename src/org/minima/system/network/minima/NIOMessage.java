@@ -1081,16 +1081,15 @@ public class NIOMessage implements Runnable {
 				}
 				
 				//Add the NUMBER of connections..
-				JSONObject connections = new JSONObject();
-				connections.put("connections",Main.getInstance().getNIOManager().getAllConnectedDetails());
+				pinggreet.getExtraData().put("connections",Main.getInstance().getNIOManager().getAllConnectedDetails());
 				
 				//Add the Peers List! of P2P2..
 				if(GeneralParams.P2P2_ENABLED) {
 					
-				}
-				
-				//Is the P2P Enable..
-				if(GeneralParams.P2P_ENABLED) {
+					//Add the Peers List
+					pinggreet.getExtraData().put("peers-list", MinimaDB.getDB().getP2P2DB().getAllKnownPeers());
+					
+				}else if(GeneralParams.P2P_ENABLED) {
 					
 					//Get the peers list
 					P2PManager p2PManager 	= (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();
