@@ -790,9 +790,14 @@ public class MMR implements Streamable {
 	 * 
 	 * Recursive Scan for unspendable coins
 	 */
-	public static HashSet<String> mPrunedCoins = new HashSet<>();
+	private HashSet<String> mPrunedCoins = new HashSet<>();
+	public HashSet<String> getPrunedUnspendableCoins() {
+		return mPrunedCoins;
+	}
+	
 	public void scanUnspendableTree() {
 		
+		//Clear the pruned coins for a fresh start
 		mPrunedCoins.clear();
 		
 		//Get the Peaks..
