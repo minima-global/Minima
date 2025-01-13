@@ -336,6 +336,11 @@ public class ParamConfigurer {
         p2plogleveldebug("p2p-log-level-debug", "Set the P2P log level to debug", (args, configurer) -> {
             P2PParams.LOG_LEVEL = P2PFunctions.Level.DEBUG;
         }),
+        p2p2("p2p2", "Enable the new P2P2 system", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.P2P2_ENABLED = true;
+            }
+        }),
         connect("connect", "Disable the p2p and manually connect to this list of host:port", (args, configurer) -> {
             GeneralParams.P2P_ENABLED = false;
             GeneralParams.CONNECT_LIST = args;
