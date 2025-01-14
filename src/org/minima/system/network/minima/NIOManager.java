@@ -218,12 +218,14 @@ public class NIOManager extends MessageProcessor {
 		//Who are we connected to..
 		ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
 		for(NIOClient conn : conns) {
-			if(conn.isOutgoing()) {
-				outgoing++;
-			}else {
-				incoming++;
+			if(conn.isValidGreeting()) {
+				if(conn.isOutgoing()) {
+					outgoing++;
+				}else {
+					incoming++;
+				}
+				total++;
 			}
-			total++;
 		}
 		
 		JSONObject ret = new JSONObject();
