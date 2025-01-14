@@ -176,7 +176,7 @@ public class MegaMMR implements Streamable {
 	/**
 	 * Scan the WHOLE tree for unspendable coins..
 	 */
-	private static boolean PRUNE_LOGS = true;
+	private static boolean PRUNE_LOGS = false;
 	private void pruneUnspendable(boolean zScanMMR) {
 		
 		//Time how long it takes..
