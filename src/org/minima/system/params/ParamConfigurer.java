@@ -445,7 +445,7 @@ public class ParamConfigurer {
     	seed("seed", "Use this seed phrase if starting a new node", (args, configurer) -> {
             GeneralParams.SEED_PHRASE = args;
         }),
-    	megaprune("megaprune", "Prune short (unspendable) addresses from the megammr", (args, configurer) -> {
+    	megaprune("megaprune", "Prune unspendable addresses from the megammr", (args, configurer) -> {
             if ("true".equals(args)) {
             	GeneralParams.MEGAMMR_MEGAPRUNE = true;
             }
