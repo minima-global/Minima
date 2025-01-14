@@ -1079,16 +1079,16 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("pending", "default/pending-1.2.0.mds.zip", allminis, true);
 			
 			//Security MiniDAPP - backups / restore
-			checkInstalled("security", "default/security-1.10.1.mds.zip", allminis, true);
+			checkInstalled("security", "default/security-1.12.0.mds.zip", allminis, true);
 			
 			//Dappstore gets write permissions
 			checkInstalled("dapp store", "default/dappStore-1.1.10.mds.zip", allminis, true);
 			
 			//The rest are normal
-			checkInstalled("block", "default/block-3.2.4.mds.zip", allminis, false);
+			checkInstalled("block", "default/block-3.3.4.mds.zip", allminis, false);
 			checkInstalled("chatter", "default/chatter-1.12.0.mds.zip", allminis, false);
 			checkInstalled("docs", "default/docs-2.1.0.mds.zip", allminis, false);
-			checkInstalled("ethwallet", "default/ethwallet-1.10.0.mds.zip", allminis, false);
+			checkInstalled("ethwallet", "default/ethwallet-1.11.0.mds.zip", allminis, false);
 			checkInstalled("filez", "default/filez-1.9.4.mds.zip", allminis, false);
 			checkInstalled("future cash", "default/futurecash-2.7.1.mds.zip", allminis, false);
 			checkInstalled("health", "default/health-1.1.5.mds.zip", allminis, false);
@@ -1097,7 +1097,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("maximize", "default/maximize-1.3.0.mds.zip", allminis, false);
 			checkInstalled("maxsolo", "default/maxsolo-2.7.2.mds.zip", allminis, false);
 			//checkInstalled("megawallet", "default/megawallet-1.5.0.mds.zip", allminis, false);
-			checkInstalled("miniswap", "default/miniswap-2.18.7.mds.zip", allminis, false);
+			checkInstalled("miniswap", "default/miniswap-2.19.2.mds.zip", allminis, false);
 			checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
 			checkInstalled("script ide", "default/scriptide-2.1.1.mds.zip", allminis, false);
 			checkInstalled("shout out", "default/shoutout-1.4.0.mds.zip", allminis, false);
