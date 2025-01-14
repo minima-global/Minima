@@ -51,7 +51,7 @@ public class MegaMMRBackup implements Streamable {
 		
 		int version = MiniNumber.ReadFromStream(zIn).getAsInt();
 		
-		mMegaMMR = new MegaMMR(GeneralParams.MEGAMMR_MEGAPRUNE);
+		mMegaMMR = new MegaMMR();
 		mMegaMMR.readDataStream(zIn);
 		
 		mIBD = IBD.ReadFromStream(zIn);

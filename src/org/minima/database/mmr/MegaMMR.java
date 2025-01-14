@@ -15,6 +15,7 @@ import org.minima.objects.Token;
 import org.minima.objects.TxBlock;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
@@ -28,23 +29,13 @@ public class MegaMMR implements Streamable {
 	//All the UNSPENT Coins
 	Hashtable<String,Coin> mAllUnspentCoins;
 	
-	//Are we pruning the 
-	boolean PRUNE_UNSPENDABLE = false;
-	
 	public MegaMMR() {
-		this(false);
-	}
-	
-	public MegaMMR(boolean zMegaPruneable) {
 			
 		//The actual MMR
 		mMMR = new MMR();
 		
 		//The Unspent Coins
 		mAllUnspentCoins = new Hashtable<>();
-		
-		//Are we pruning wrong length addresses
-		PRUNE_UNSPENDABLE = zMegaPruneable;
 	}
 	
 	public MMR getMMR() {
@@ -57,10 +48,6 @@ public class MegaMMR implements Streamable {
 	
 	public boolean isEmpty() {
 		return mMMR.getAllEntries().size() == 0;
-	}
-	
-	public boolean isPruning() {
-		return PRUNE_UNSPENDABLE;
 	}
 	
 	/**
@@ -140,10 +127,25 @@ public class MegaMMR implements Streamable {
 	 * Can we PRUNE this coin - may even check a custom list.. ?
 	 */
 	private boolean isPrunable(Coin zCoin) {
-		if(PRUNE_UNSPENDABLE) {
+		if(GeneralParams.MEGAMMR_MEGAPRUNE) {
+			
+			//Check for spendable coin address
 			if(zCoin.getAddress().getLength() != 32) {
-				//MinimaLogger.log("Unspendable coin @ "+zCoin.toJSON().toJSONString());
 				return true;
+			}
+			
+			//Does it have a state
+			if(GeneralParams.MEGAMMR_MEGAPRUNE_STATE) {
+				if(zCoin.getState().size() > 0) {
+					return true;
+				}
+			}
+			
+			//Is it a token other than Minima
+			if(GeneralParams.MEGAMMR_MEGAPRUNE_TOKENS) {
+				if(!zCoin.getTokenID().isEqual(Token.TOKENID_MINIMA)){
+					return true;
+				}
 			}
 		}
 		
@@ -174,7 +176,7 @@ public class MegaMMR implements Streamable {
 	/**
 	 * Scan the WHOLE tree for unspendable coins..
 	 */
-	private static boolean PRUNE_LOGS = false;
+	private static boolean PRUNE_LOGS = true;
 	private void pruneUnspendable(boolean zScanMMR) {
 		
 		//Time how long it takes..
@@ -234,14 +236,16 @@ public class MegaMMR implements Streamable {
 	
 	public void saveMMR(File zFile) {
 		MiniFile.saveObjectDirect(zFile, this);
-		//MinimaLogger.log("Saving MegaMMR size : "+MiniFormat.formatSize(zFile.length()));
+		if(PRUNE_LOGS) {
+			MinimaLogger.log("Saving MegaMMR size : "+MiniFormat.formatSize(zFile.length()));
+		}
 	}
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
 		
 		//Are we pruning the unspendable coins
-		if(PRUNE_UNSPENDABLE) {
+		if(GeneralParams.MEGAMMR_MEGAPRUNE) {
 			pruneUnspendable(false);
 		}
 		
@@ -282,7 +286,7 @@ public class MegaMMR implements Streamable {
 		}
 		
 		//Are we pruning the unspendable coins
-		if(PRUNE_UNSPENDABLE) {
+		if(GeneralParams.MEGAMMR_MEGAPRUNE) {
 			pruneUnspendable(true);
 		}else {
 			//Just Scan it..
@@ -293,7 +297,7 @@ public class MegaMMR implements Streamable {
 	
 	public static void main(String[] zArgs) {
 		
-		MegaMMR mega 	= new MegaMMR(true);
+		MegaMMR mega 	= new MegaMMR();
 		MMR mmr 		= mega.getMMR();
 		
 		int coinnum =10;

@@ -306,9 +306,19 @@ public class GeneralParams {
 	public static String PUBLICMDS_SESSION_UID = "";
 	
 	/**
-	 * Do we prune all addresses shorter than 32 bytes (unspendable) from megammr
+	 * Do we prune The MegaMMR
 	 */
 	public static boolean MEGAMMR_MEGAPRUNE = false;
+	
+	/**
+	 * Do we prune all addresses with a state (useful for exchanges that don't need them)
+	 */
+	public static boolean MEGAMMR_MEGAPRUNE_STATE = false;
+	
+	/**
+	 * Do we prune all tokens - only Minima allowed
+	 */
+	public static boolean MEGAMMR_MEGAPRUNE_TOKENS = false;
 	
 	/**
 	 * Reset all params to their default settings.. ANDROID keeps them after shutdown
@@ -376,7 +386,11 @@ public class GeneralParams {
 		MDS_NOSSL 			  = false;
 		MYSQL_STORE_ALLTXPOW  = false;
 		PUBLICMDS_SESSION_UID = "";
-		MEGAMMR_MEGAPRUNE 	  = false;
+		
+		MEGAMMR_MEGAPRUNE 	  		= false;
+		MEGAMMR_MEGAPRUNE_STATE 	= false;
+		MEGAMMR_MEGAPRUNE_TOKENS	= false;
+		
 		P2P2_ENABLED 		  = false;
 	}
 	

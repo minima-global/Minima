@@ -449,6 +449,18 @@ public class ParamConfigurer {
             if ("true".equals(args)) {
             	GeneralParams.MEGAMMR_MEGAPRUNE = true;
             }
+        }),
+    	megaprunestate("megaprunestate", "Prune all coins with a state (useful for exchanges)", (args, configurer) -> {
+            if ("true".equals(args)) {
+            	GeneralParams.MEGAMMR_MEGAPRUNE 		= true;
+            	GeneralParams.MEGAMMR_MEGAPRUNE_STATE 	= true;
+            }
+        }),
+    	megaprunetokens("megaprunetokens", "Prune all tokens - only keep Minima coins", (args, configurer) -> {
+            if ("true".equals(args)) {
+            	GeneralParams.MEGAMMR_MEGAPRUNE 		= true;
+            	GeneralParams.MEGAMMR_MEGAPRUNE_TOKENS  = true;
+            }
         });
         
         private final String key;

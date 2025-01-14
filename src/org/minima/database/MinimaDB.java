@@ -101,7 +101,7 @@ public class MinimaDB {
 		
 		mCoinNotify	= new HashSet<>();
 		
-		mMegaMMR	= new MegaMMR(GeneralParams.MEGAMMR_MEGAPRUNE);
+		mMegaMMR	= new MegaMMR();
 	}
 	
 	/**
