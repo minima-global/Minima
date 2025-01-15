@@ -15,7 +15,7 @@ var logging = true;
 /**
  * Some Variable maximums.. 
  */
-var MAX_SENDS_PER_DAY = 20;
+var MAX_SENDS_PER_DAY = 100;
 
 /**
  * Which addresses have you sent out recently - clear list every 24 hours
@@ -54,7 +54,7 @@ function processNewSiteCoin(coin){
 			MDS.log("Received Coin Filepacket : "+onchainfp.data.name);	
 		}
 		
-		//Verify the signature
+		//Verify the name and signature
 		verifyFilepacket(onchainfp,function(verify){
 			
 			//Was it valid
@@ -115,8 +115,8 @@ function processRequestCoin(coin){
 		
 		//Have we sent it recently
 		if(RECENT_SENDS.includes(request)){
-			MDS.log("Filepacket SENT recently : "+request);
-			return;
+			MDS.log("Filepacket SENT recently : "+request+" FOR NOW!! - still sending..");
+			//return;
 		}
 		
 		//Is it one of Ours..
@@ -228,7 +228,7 @@ MDS.init(function(msg){
 				MDS.cmd("coinnotify action:add address:"+MINIWEB_FILE_REQUEST,function(startup){});
 				
 				//Scan the chain for any coins we may have missed!
-				MDS.cmd("coins address:"+MINIWEB_FILE_ADDRESS,function(resp){
+				/*MDS.cmd("coins address:"+MINIWEB_FILE_ADDRESS,function(resp){
 					var len = resp.response.length;
 					for(var i=0;i<len;i++){
 						processNewSiteCoin(resp.response[i]);
@@ -240,7 +240,7 @@ MDS.init(function(msg){
 					for(var i=0;i<len;i++){
 						processRequestCoin(resp.response[i]);
 					}
-				});
+				});*/
 				
 				MDS.log("MiniFS Inited");
 			});	
@@ -275,17 +275,23 @@ MDS.init(function(msg){
 				//Do we have it
 				if(!fp){
 					
-					MDS.log("Filepacket Cannot find : "+request);
+					if(logging){
+						MDS.log("Filepacket Cannot find : "+request);
+					}
 					
 					//Don't have it send an txn request
 					if(RECENT_REQUESTS.includes(request)){
-						MDS.log("Filepacket REQUESTED recently : "+request);
+						if(logging){
+							MDS.log("Filepacket REQUESTED recently : "+request);
+						}
 					}else{
 						RECENT_REQUESTS.push(request)
 						RECENT_REQUESTS_TOTAL++;
 						
 						sendFileRequest(request,function(){
-							MDS.log("Filepacket REQUESTED : "+request);
+							if(logging){
+								MDS.log("Filepacket REQUESTED : "+request);
+							}
 						});
 					}	
 				}

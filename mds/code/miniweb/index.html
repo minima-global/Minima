@@ -17,6 +17,7 @@
 	<!-- Load the local JS lib -->
 	<script type="text/javascript" src="./js/jslib.js"></script>
 	<script type="text/javascript" src="./js/purify.min.js"></script>
+	<script type="text/javascript" src="./js/sql.js"></script>
 	
 </head>
 
@@ -37,8 +38,14 @@
 	</div>
 	
 	<br><br>
+	Jump to a bookmark :<br><br>
+	<select id=bookmarkbar class="searchfield" style="width:300" onchange="bookmkchange();"></select>
+	
+	<br><br>
+	Or search through your files..
+	<br><br>
 
-	<input type="text" id="searchfield" size=44> <button onclick="search();">Search</button> 
+	<input class=searchfield type="text" id="searchfield" size=44> <button class=solobutton onclick="search();">Search</button> 
 
 	<br><br><br>
 	
@@ -57,6 +64,43 @@
 
 	function openBrowser(mxsite){
 		window.open("browse.html?uid="+MDS.minidappuid+"&mxsite="+mxsite);
+	}
+	
+	function loadBookmarks(){
+		
+		//Clear thge bookmarks
+		bookmarkbar.innerHTML = "";
+		
+		//Load from SQL
+		getAllBookmarks(function(rows){
+			
+			var opt 		= document.createElement("option");
+			opt.value		= "";
+		   	opt.innerHTML 	= "Choose : "; // whatever property it has
+		   	
+		   // then append it to the select element
+		   bookmarkbar.appendChild(opt);
+		   	
+			//Now add to the select
+			var len = rows.length;
+			for(var i=0;i<len;i++){
+				var opt 		= document.createElement("option");
+				opt.value		= rows[i].BOOKMARK;
+			   	opt.innerHTML 	= rows[i].NAME; // whatever property it has
+	
+			   // then append it to the select element
+			   bookmarkbar.appendChild(opt);	
+			}
+		});
+	}
+	
+	function bookmkchange(){
+		var id 		= bookmarkbar.selectedIndex;
+		var text 	= bookmarkbar.options[id].text;
+		var value 	= bookmarkbar.options[id].value;
+		if(value != ""){
+			openBrowser(value);	
+		}
 	}
 	
 	function downloadSite(hexdata, filename) {
@@ -84,7 +128,7 @@
 		var guidata =
 		"<table class=filepacketview border=0>\n"
 		+ "	<tr>\n"
-		+ "		<td><b>"+filepacket.data.name+"</b></td>\n"
+		+ "		<td><b>"+DOMPurify.sanitize(filepacket.data.name)+"</b></td>\n"
 		+ "		<td style=\"text-align:right\" nowrap>&nbsp</td>\n"
 		+ "	</tr>\n"
 		+ "	<tr>\n"
@@ -155,6 +199,11 @@
 		
 		//Do initialisation
 		if(msg.event == "inited"){
+			
+			createDB(function(){
+				loadBookmarks();
+			});
+			
 			MDS.cmd("checkmode",function(resp){
 				
 				//Get the restricted  
@@ -162,7 +211,6 @@
 					alert("This application MUST NEVER be in WRITE mode..\n\nPlease change it to READ mode.");
 					return;
 				}
-				
 			});
 		}
 	});

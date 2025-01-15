@@ -16,14 +16,21 @@
 	<script type="text/javascript" src="./js/ziputil.js"></script>
 	<script type="text/javascript" src="./js/jslib.js"></script>
 	<script type="text/javascript" src="./js/mimetypes.js"></script>
+	<script type="text/javascript" src="./js/sql.js"></script>
 	
 	<style type="text/css">
 	
+		@font-face {
+			font-family: Manrope;
+			src: url('./Manrope-Regular.ttf');
+		}
+		
 		body {
 			margin: 0 auto;
 			padding:0;
 			width : 100%;
 			height : 100%;
+			font-family: Manrope;
 		}
 		
 		.mainiframe{
@@ -34,21 +41,26 @@
 		}
 		
 		.webmenushow{
-		    position: absolute;
-		    top: 0;
-		    left: 0;
-		    background-color : red;
-		    padding : 10;
+		    position: fixed;
+		    top: 4;
+		    left: 4;
+		    background-color : ccc;
 		    display : block;
+		    z-index: 10;
+		    border: 0.5px solid #555;
+  			border-radius: 8px;
+  			padding: 4px 4px;
+  			font-family: Manrope;
+  			font-size: 14px;
 		}
 		
-		.webmenuhide{
-		    position: absolute;
-		    top: 0;
-		    left: 0;
-		    background-color : blue;
-		    padding : 10;
-		    display : none;
+		.addressbar{
+		    font-family: Manrope;
+  			font-size: 10px;
+		}
+		
+		.simplebutton{
+		    min-width:60;
 		}
 
 	</style>
@@ -57,21 +69,34 @@
 
 <body>
 
+<!--  The MAIN address bar and bookmarks view -->
 <div class="webmenushow" id=webfull>
-   <button onclick="hidebar()">HIDE</button>
-   <input type=text id=mxaddress size=50>
-   <button>ADD</button>
-   <br><br>
-   <select>
-   		<option value="Mx38743874">MxHello</option>
-   		<option value="Mx38743874">MxHello</option>
-   		<option value="Mx38743874">MxHello</option>
-   		<option value="Mx38743874">MxHello</option>
-   </select>
+   <table>
+   		<tr>
+   			<td><button class=simplebutton onclick="hidebar()">HIDE</button></td>
+   			<td><input class=addressbar type=text id=mxaddress size=50></td>
+   			<td><button class=simplebutton onclick="gobar();">GO</button></td>
+   		</tr>
+   	<tr>
+		 <td>
+		 	<button class=simplebutton onclick="addBookmark();">ADD</button>
+		 </td>
+		 <td>
+			<select id=bookmarkbar style="width:100%" onchange="bookmkchange();"></select>
+		 </td>
+		 <td>
+		 	<button class=simplebutton onclick="remBookmark();">REM</button>
+		 </td>
+		</tr>   	
+   </table>
 </div>
 
-<div class="webmenuhide" id=webhide>
-	<button onclick="showbar()">SHOW</button>
+<div class="webmenushow" id=webhide>
+	<table>
+   		<tr>
+   			<td><button class=simplebutton onclick="showbar()">MINIWEB</button></td>
+   		</tr>
+   </table>
 </div>
 
 <iframe class="mainiframe" id="webframe" frameborder="0"  
@@ -79,14 +104,9 @@
 
 <script type="text/javascript">
 	
-	//Is there apage defined..
-	var MAIN_URL = MDS.form.getParams("mxsite");
-	
-	//Get the current window location
-	var mainstartpage 	= ""+window.location;
-	var index 			= mainstartpage.indexOf("browse.html");
-	MINWEB_PAGE 		= mainstartpage.substring(0,index-1);
-	
+	/**
+	 * Address bar Functionaloity 
+	 */
 	function hidebar(){
 		webfull.style.display = "none";
 		webhide.style.display = "block";
@@ -96,6 +116,74 @@
 		webfull.style.display = "block";
 		webhide.style.display = "none";
 	}
+	
+	function addBookmark(){
+		var bookmk   = mxaddress.value; 
+		var name     = prompt(bookmk+"\n\nBookmark name ?\n","");
+		if(name != null){
+			name = name.trim();
+			if(name != ""){
+				insertBookMark(name,bookmk, function(){
+					loadBookmarks();
+				});	
+			}
+		}
+	}
+	
+	function remBookmark(){
+		//remove the currently selected
+		var id 		= bookmarkbar.selectedIndex;
+		var text 	= bookmarkbar.options[id].text;
+		var value 	= bookmarkbar.options[id].value;
+		
+		deleteBookmark(text,function(){
+			loadBookmarks();
+		});
+	}
+	
+	function gobar(){
+		//Get the address.. and go there
+		go(mxaddress.value);
+	}
+	
+	function loadBookmarks(){
+		
+		//Clear thge bookmarks
+		bookmarkbar.innerHTML = "";
+		
+		//Load from SQL
+		getAllBookmarks(function(rows){
+			//Now add to the select
+			var len = rows.length;
+			for(var i=0;i<len;i++){
+				var opt 		= document.createElement("option");
+				opt.value		= rows[i].BOOKMARK;
+			   	opt.innerHTML 	= rows[i].NAME; // whatever property it has
+	
+			   // then append it to the select element
+			   bookmarkbar.appendChild(opt);	
+			}
+		});
+	}
+	
+	function bookmkchange(){
+		var id 		= bookmarkbar.selectedIndex;
+		var text 	= bookmarkbar.options[id].text;
+		var value 	= bookmarkbar.options[id].value;
+		go(value);
+	}
+	
+	showbar();
+
+	/**
+	 * Main Website functionality!
+	 */
+	var MAIN_URL = MDS.form.getParams("mxsite");
+	
+	//Get the current window location
+	var mainstartpage 	= ""+window.location;
+	var index 			= mainstartpage.indexOf("browse.html");
+	MINWEB_PAGE 		= mainstartpage.substring(0,index-1);
 	
 	//listen for post messages..
 	window.onmessage = function(event){
@@ -215,6 +303,10 @@
 			domain = domain.substring(10);
 		}
 		
+		if(domain.endsWith("/")){
+			domain = domain.substring(0, domain.length-1);
+		}
+		
 		MDS.log("Browser GO : "+domain);
 		mxaddress.value = domain;
 		
@@ -260,7 +352,12 @@
 	MDS.init(function(msg){
 		if(msg.event == "inited"){
 			
-			//Try this first.. then do normal if not exists..
+			//Create the DB and load the Bookmarks
+			createDB(function(){
+				loadBookmarks();
+			});
+			
+			//Get the READ ONLY mode uid
 			MDS.cmd("checkmode", function(resp){
 				
 				//Use this as the UID for websites..
