@@ -33,11 +33,46 @@
 			height : 100%;
 		}
 		
+		.webmenushow{
+		    position: absolute;
+		    top: 0;
+		    left: 0;
+		    background-color : red;
+		    padding : 10;
+		    display : block;
+		}
+		
+		.webmenuhide{
+		    position: absolute;
+		    top: 0;
+		    left: 0;
+		    background-color : blue;
+		    padding : 10;
+		    display : none;
+		}
+
 	</style>
 	
 </head>
 
 <body>
+
+<div class="webmenushow" id=webfull>
+   <button onclick="hidebar()">HIDE</button>
+   <input type=text id=mxaddress size=50>
+   <button>ADD</button>
+   <br><br>
+   <select>
+   		<option value="Mx38743874">MxHello</option>
+   		<option value="Mx38743874">MxHello</option>
+   		<option value="Mx38743874">MxHello</option>
+   		<option value="Mx38743874">MxHello</option>
+   </select>
+</div>
+
+<div class="webmenuhide" id=webhide>
+	<button onclick="showbar()">SHOW</button>
+</div>
 
 <iframe class="mainiframe" id="webframe" frameborder="0"  
 		sandbox="allow-scripts allow-modals" referrerpolicy="no-referrer"></iframe>
@@ -51,6 +86,16 @@
 	var mainstartpage 	= ""+window.location;
 	var index 			= mainstartpage.indexOf("browse.html");
 	MINWEB_PAGE 		= mainstartpage.substring(0,index-1);
+	
+	function hidebar(){
+		webfull.style.display = "none";
+		webhide.style.display = "block";
+	}
+	
+	function showbar(){
+		webfull.style.display = "block";
+		webhide.style.display = "none";
+	}
 	
 	//listen for post messages..
 	window.onmessage = function(event){
@@ -171,6 +216,7 @@
 		}
 		
 		MDS.log("Browser GO : "+domain);
+		mxaddress.value = domain;
 		
 		//What is the final page
 		var finalpage = addDomains(BASE_WEB,domain);

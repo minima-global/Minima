@@ -13,6 +13,11 @@ MDS.load("./js/txns.js");
 var logging = true;
 
 /**
+ * Some Variable maximums.. 
+ */
+var MAX_SENDS_PER_DAY = 20;
+
+/**
  * Which addresses have you sent out recently - clear list every 24 hours
  */
 var RECENT_SENDS_TIMER 		= 0;
@@ -32,7 +37,9 @@ function processNewSiteCoin(coin){
 	
 	try{
 		
-		MDS.log("processNewSiteCoin "+JSON.stringify(coin));
+		if(logging){
+			MDS.log("processNewSiteCoin "+JSON.stringify(coin));	
+		}
 		
 		//First check it has appropriate data
 		if(!checkFilePacketCoin(coin)){
@@ -53,6 +60,7 @@ function processNewSiteCoin(coin){
 			//Was it valid
 			if(!verify){
 				MDS.log("INVALID file packet : "+onchainfp.data.name);
+				return;
 			}	
 			
 			//If it's valid do wer have it.. ?
@@ -65,13 +73,15 @@ function processNewSiteCoin(coin){
 					if(oldfp.data.version<onchainfp.data.version){
 						
 						//Update to the new version
-						updateFilePacket(onchainfp,function(update){
+						updateExternalFilePacket(onchainfp,function(update){
 							if(logging){
 								MDS.log("UPDATE Filepacket : "+onchainfp.data.name);	
 							}	
 						});
 					}else{
-						MDS.log("Filepacket SAME VERSION : "+onchainfp.data.name);
+						if(logging){
+							MDS.log("Filepacket SAME VERSION : "+onchainfp.data.name);
+						}
 					}	
 					
 				}else{
@@ -112,10 +122,18 @@ function processRequestCoin(coin){
 		//Is it one of Ours..
 		getFilePacket(request,function(fp){
 			
-			//Do we havie it and are we the owner
+			//Do we have it and are we the owner
 			if(fp){
 				if(fp.data.owner == USER_PUBKEY){
 					
+					//Have we sent the maximum already
+					if(RECENT_SENDS_TOTAL >= MAX_SENDS_PER_DAY){
+						if(logging){
+							MDS.log("SENT MAX already : "+request+" total:"+RECENT_SENDS_TOTAL);	
+						}
+						return;
+					}
+										
 					//OK! - send it unless we have already done it..
 					sendFilePacket(fp,function(res){
 						
@@ -217,12 +235,12 @@ MDS.init(function(msg){
 					}
 				});
 				
-				/*MDS.cmd("coins address:"+MINIWEB_FILE_REQUEST,function(resp){
+				MDS.cmd("coins address:"+MINIWEB_FILE_REQUEST,function(resp){
 					var len = resp.response.length;
 					for(var i=0;i<len;i++){
 						processRequestCoin(resp.response[i]);
 					}
-				});*/
+				});
 				
 				MDS.log("MiniFS Inited");
 			});	

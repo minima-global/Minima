@@ -17,7 +17,7 @@ function sendFilePacket(filepacket, callback){
 	state[6]  = filepacket.signature;
 	
 	//Now construct a txn
-	var txn = "sendpoll amount:0.000000000001 address:"+MINIWEB_FILE_ADDRESS+" storestate:false state:"+JSON.stringify(state);
+	var txn = "sendpoll amount:0.000000000001 address:"+MINIWEB_FILE_ADDRESS+" storestate:true state:"+JSON.stringify(state);
 	
 	//Now post..
 	MDS.cmd(txn,function(resp){

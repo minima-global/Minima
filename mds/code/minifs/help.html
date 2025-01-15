@@ -41,12 +41,17 @@
 	<br>
 
 <div style="text-align:left; max-width:800;">
+
+<h2>Help</h2>
+
 <b>MiniFS</b> allows you to publish small zip files across the Minima network in a normal transaction.<br>
 <br>
 The maximum	size for a MiniFS file is 50k. These files can only be updated by the User who created them - whilst preserving the Mx.. address.<br>
 <br>
 Files are picked up by anyone running the MiniFS application and can be accessed by other MiniDAPPs.<br>
-<br>
+
+<h2>Technical</h2>
+
 MiniFS uses the MDS API system to allow other MiniDAPPs to access the files.<br>
 <br>
 Currently supported operations are :<br>
@@ -79,7 +84,7 @@ It's very simple..<br>
 Include both and away you go!<br>
 <br>
  
-( <b>BrowseFS</b> uses this system..) <br>
+( <b>MiniWEB</b> uses this system..) <br>
 <br>
 
 </div>
@@ -104,10 +109,13 @@ jumpscript.value="\n//Example script to run an MDS API call on MiniFS"+
 "        if(resp.status){\n"+
 "\n"+
 "            //Convert the returned string to JSON Object\n"+
-"            var data = JSON.parse(resp.data);\n"+
+"            var minifs = JSON.parse(resp.data);\n"+
 "\n"+
 "            //You now have the response! - do what you want\n"+
-"            MDS.log(JSON.stringify(data));\n"+
+"            MDS.log(JSON.stringify(minifs));\n"+
+"\n"+
+"            //Extract it to an internal folder\n"+
+"            extractZIP(minifs.filepacket.data.file, \"folder\", function(){});\n"+
 "        }\n"+
 	
 "    });\n"+
