@@ -721,8 +721,8 @@ public class Main extends MessageProcessor {
 				try {Thread.sleep(250);} catch (InterruptedException e) {}
 				timewaited += 250;
 				
-				//If we have waited 30 secs.. something not right..
-				if(timewaited > 30000) {
+				//If we have waited 10 secs.. something not right..
+				if(timewaited > 10000) {
 					//Hard shutdown..
 					mNetwork.hardShutDown();
 					break;
