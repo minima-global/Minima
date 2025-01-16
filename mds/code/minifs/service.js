@@ -38,7 +38,7 @@ function processNewSiteCoin(coin){
 	try{
 		
 		if(logging){
-			MDS.log("processNewSiteCoin "+JSON.stringify(coin));	
+			//MDS.log("processNewSiteCoin "+JSON.stringify(coin));	
 		}
 		
 		//First check it has appropriate data
@@ -137,6 +137,11 @@ function processRequestCoin(coin){
 					//OK! - send it unless we have already done it..
 					sendFilePacket(fp,function(res){
 						
+						if(res.pending){
+							MDS.log("Cannot SEND file after request as in READ MODE : "+request);
+							return;
+						}
+						
 						//Add to our list
 						RECENT_SENDS.push(request);
 						RECENT_SENDS_TOTAL++;
@@ -227,14 +232,14 @@ MDS.init(function(msg){
 				MDS.cmd("coinnotify action:add address:"+MINIWEB_FILE_REQUEST,function(startup){});
 				
 				//Scan the chain for any coins we may have missed!
-				MDS.cmd("coins address:"+MINIWEB_FILE_ADDRESS,function(resp){
+				MDS.cmd("coins simplestate:true address:"+MINIWEB_FILE_ADDRESS,function(resp){
 					var len = resp.response.length;
 					for(var i=0;i<len;i++){
 						processNewSiteCoin(resp.response[i]);
 					}
 				});
 				
-				MDS.cmd("coins address:"+MINIWEB_FILE_REQUEST,function(resp){
+				MDS.cmd("coins simplestate:true address:"+MINIWEB_FILE_REQUEST,function(resp){
 					var len = resp.response.length;
 					for(var i=0;i<len;i++){
 						processRequestCoin(resp.response[i]);
@@ -274,10 +279,6 @@ MDS.init(function(msg){
 				//Do we have it
 				if(!fp){
 					
-					if(logging){
-						MDS.log("Filepacket Cannot find : "+request);
-					}
-					
 					//Don't have it send an txn request
 					if(RECENT_REQUESTS.includes(request)){
 						if(logging){
@@ -287,7 +288,13 @@ MDS.init(function(msg){
 						RECENT_REQUESTS.push(request)
 						RECENT_REQUESTS_TOTAL++;
 						
-						sendFileRequest(request,function(){
+						sendFileRequest(request,function(res){
+							
+							if(res.pending){
+								MDS.log("Cannot Request file as in READ MODE : "+request);
+								return;
+							}
+						
 							if(logging){
 								MDS.log("Filepacket REQUESTED : "+request);
 							}
