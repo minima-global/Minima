@@ -249,6 +249,15 @@ public class NetworkManager {
 		return 	mNIOManager.isShutdownComplete() &&  mP2PManager.isShutdownComplete();
 	}
 	
+	public void hardShutDown() {
+		try {
+			mNIOManager.hardShutDown();
+		} catch (Exception e) {
+			MinimaLogger.log(e);
+		} 
+		mP2PManager.stopMessageProcessor();
+	}
+	
 	public MessageProcessor getP2PManager() {
 		return mP2PManager;
 	}

@@ -644,6 +644,7 @@ public class Main extends MessageProcessor {
 			timewaited+=250;
 			if(timewaited>10000) {
 				MinimaLogger.log("Network shutdown took too long..");
+				mNetwork.hardShutDown();
 				break;
 			}
 		}
@@ -715,8 +716,17 @@ public class Main extends MessageProcessor {
 			mNetwork.shutdownNetwork();
 				
 			//Wait for the networking to finish
+			long timewaited = 0;
 			while(!mNetwork.isShutDownComplete()) {
-				try {Thread.sleep(50);} catch (InterruptedException e) {}
+				try {Thread.sleep(250);} catch (InterruptedException e) {}
+				timewaited += 250;
+				
+				//If we have waited 30 secs.. something not right..
+				if(timewaited > 30000) {
+					//Hard shutdown..
+					mNetwork.hardShutDown();
+					break;
+				}
 			}
 					
 			//Wait a second..

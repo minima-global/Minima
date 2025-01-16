@@ -296,6 +296,18 @@ public class NIOManager extends MessageProcessor {
 //		return null;
 	}
 	
+	public void hardShutDown() throws InterruptedException {
+		//Stop the Thread pool
+		THREAD_POOL.shutdown();
+		THREAD_POOL.awaitTermination(8000, TimeUnit.MILLISECONDS);
+		
+		//Shut down the NIO
+		mNIOServer.shutdown();
+		
+		//Stop this..
+		stopMessageProcessor();
+	}
+	
 	public NIOTraffic getTrafficListener() {
 		return mTrafficListener;
 	}
