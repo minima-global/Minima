@@ -1,0 +1,170 @@
+<html>
+
+<head>
+	<title>MiniWEB</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="./js/jslib.js"></script>
+	<script type="text/javascript" src="./js/purify.min.js"></script>
+	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/gui.js"></script>
+		
+</head>
+
+<body>
+
+<center>
+
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table width=100% border=0>
+			<tr>
+				<td><img height=45 src="browser.png"></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>MiniWEB</b></td>
+				<td class='topicdate' nowrap>
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToHelp();" height=30 src="help.png">&nbsp;&nbsp;					
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToHome();" height=30 src="home.png">&nbsp;&nbsp;
+				</td>
+				<!--  <td class='topicdate' nowrap>
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToMyFiles();" height=30 src="home.png">&nbsp;&nbsp;
+				</td>-->
+			</tr>
+		</table>
+	</div>
+<br>
+		
+	<div style="text-align:left; max-width:800;">
+
+<b>MiniWEB</b> allows you to browse files published over MiniFS.<br>
+<br>
+MiniSites can link to each other - just like the regular Internet.<br>
+<br>
+You can jump to a new site or load data as a Data URI - for images, text, raw data etc..<br>
+<br>
+They also have access to the MDS system.<br>
+<br>
+MiniSites run in a READ ONLY mode that is separate from the MiniWEB dapp itself.<br>
+<br>
+
+<h2>Technical</h2>
+
+MiniWEB sites have access to a shared folder that contains mds.js and the MiniWEB JS library.<br>
+<br>
+From the root page of your website you would access them like so :<br>
+<br>
+
+<code>
+//Load these 2 JS files from your pages..<br>
+&ltscript type="text/javascript" src="../../miniweb/mds.js"&gt&lt/script&gt<br>
+&ltscript type="text/javascript" src="../../miniweb/miniweb.js"&gt&lt/script&gt<br>
+</code><br>
+
+The functions that you have access to are..<br>
+<br>
+<code>
+
+//Initialise the miniweb system<br>
+function miniweb_Init();<br>
+<br>
+//Allows you to jump to a miniweb site<br>
+function miniweb_JumpToURL(minifile,callback);<br>
+<br>
+//Get the raw Byte data of the file as a Data URI..<br>
+function miniweb_GetDataURI(minifile,callback);<br>
+
+</code>
+<br>
+Here is a complete HTML page example..<br>
+<br>
+<div id="testscript" style="font-size:12;"></div>
+<br>
+Here is link to a very simple complete test site <a href="testsite.zip" download>testsite.zip</a> that you can load into <b>MiniFS</b>
+	
+</div>		
+	
+</center>
+
+<script type="text/javascript">
+	
+testscript.innerHTML = 
+	"&lthtml&gt<br>"
+	+ "<br>"
+	+ "&lthead&gt<br>"
+	+ "	&lttitle&gtMiniWEB Site&lt/title&gt<br>"
+	+ "	<br>"
+	+ "	&lt!-- Load the main MDS JS lib --&gt<br>"
+	+ "	&ltscript type=\"text/javascript\" src=\"../../miniweb/mds.js\"&gt&lt/script&gt<br>"
+	+ "	&ltscript type=\"text/javascript\" src=\"../../miniweb/miniweb.js\"&gt&lt/script&gt<br>"
+	+ "		<br>"
+	+ "&lt/head&gt<br>"
+	+ "<br>"
+	+ "&ltbody&gt<br>"
+	+ "&ltcenter&gt<br>"
+	+ "<br>"
+	+ "&ltbr&gt<br>"
+	+ "&lth1&gtTest Site&lt/h1&gt<br>"
+	+ "&ltbr&gt<br>"
+	+ "Hello friends.. Welcome to my MiniWEB Site..!&ltbr&gt<br>"
+	+ "&ltbr&gt<br>"
+	+ "&lta href=\"linkpage.html\"&gtRegular link to another page&lt/a&gt&ltbr&gt<br>"
+	+ "&ltbr&gt<br>"
+	+ "&ltimg src=\"images/somimage.jpg\"&gt	<br>"
+	+ "&ltbr&gt&ltbr&gt<br>"
+	+ "&ltimg id=\"crossloadedImage\"&gt&ltbr&gt<br>"
+	+ "&ltbr&gt<br>"
+	+ "&ltbutton onclick=\"miniweb_JumpToURL('miniweb://Mx200G6CYQNDU597WPAGCA0BVWFSQZ0KGKFSAK');\"&gtJUMP TO OTHER SITE IN JS&lt/button&gt	<br>"
+	+ " <br>"
+	+ "&ltscript type=\"text/javascript\"&gt<br>"
+	+ "<br>"
+	+ "&nbsp;&nbsp;&nbsp;&nbsp;//MUST initialise the MiniWEB system..<br>"
+	+ "&nbsp;&nbsp;&nbsp;&nbsp;miniweb_Init();<br>"
+	+ "<br>"
+	+ "&nbsp;&nbsp;&nbsp;&nbsp;//Load an image from a different site.. can use this to load ANY type of data..<br>"
+	+ "&nbsp;&nbsp;&nbsp;&nbsp;miniweb_GetDataURI(\"miniweb://Mx200GUKPEZ0HANY6G22R8PJ53MFM8503RSNVP/images/spartacus.jpg\", function(datauri){<br>"
+	+ "<br>"
+	+ "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//return a JSON with the data if found..<br>"
+	+ "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MDS.log(JSON.stringify(datauri));	<br>"
+	+ "<br>"
+	+ "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//If found set it!<br>"
+	+ "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(datauri.found){<br>"
+	+ "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;crossloadedImage.src = datauri.data;	<br>"
+	+ "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>"
+	+ "&nbsp;&nbsp;&nbsp;&nbsp;});<br>"
+	+ "<br>"
+	+ "&nbsp;&nbsp;&nbsp;&nbsp;//MDS Works..<br>"
+	+ "&nbsp;&nbsp;&nbsp;&nbsp;MDS.init(function(msg){<br>"
+	+ "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(msg.event == \"inited\"){<br>"
+	+ "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MDS.log(\"MDS Inited..\");<br>"
+	+ "&nbsp;&nbsp;&nbsp;&nbsp;}<br>"
+	+ "});<br>"
+	+ "<br>"
+	+ "&lt/script&gt<br>"
+	+ " <br>"
+	+ "&lt/center&gt<br>"
+	+ "&lt/body&gt<br>"
+	+ "&lt/html&gt";
+	
+	function showTitleOnAndroid(){
+		if (window.navigator.userAgent.includes('Minima Browser')) {
+			Android.showTitleBar();
+		}
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){});
+	
+</script>
+
+</body>
+
+</html>

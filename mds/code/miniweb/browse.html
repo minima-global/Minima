@@ -150,7 +150,14 @@
 		
 		//Clear thge bookmarks
 		bookmarkbar.innerHTML = "";
-		
+	
+		var opt 		= document.createElement("option");
+		opt.value		= "";
+	   	opt.innerHTML 	= "Bookmarks : "; // whatever property it has
+	   	
+	    // then append it to the select element
+	    bookmarkbar.appendChild(opt);
+	   	
 		//Load from SQL
 		getAllBookmarks(function(rows){
 			//Now add to the select
@@ -170,10 +177,12 @@
 		var id 		= bookmarkbar.selectedIndex;
 		var text 	= bookmarkbar.options[id].text;
 		var value 	= bookmarkbar.options[id].value;
-		go(value);
+		if(value != ""){
+			go(value);	
+		}
 	}
 	
-	showbar();
+	hidebar();
 
 	/**
 	 * Main Website functionality!

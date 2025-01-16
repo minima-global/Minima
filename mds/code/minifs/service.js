@@ -115,8 +115,8 @@ function processRequestCoin(coin){
 		
 		//Have we sent it recently
 		if(RECENT_SENDS.includes(request)){
-			MDS.log("Filepacket SENT recently : "+request+" FOR NOW!! - still sending..");
-			//return;
+			MDS.log("Filepacket SENT recently : "+request);
+			return;
 		}
 		
 		//Is it one of Ours..
@@ -194,12 +194,11 @@ function loadMxSite(mxsite, callback){
 	filereq.data 	= mxsite;
 	
 	if(logging){
-		MDS.log("loadMaxima Site : "+mxsite);
+		MDS.log("Attempt to load Site Over Maxima : "+mxsite);
 	}
 	
 	//First send via Maxima.. 
 	MDS.cmd("maxima action:sendall application:minifs data:"+JSON.stringify(filereq), function(maxresp){
-		MDS.log("MAXCMD:"+JSON.stringify(maxresp));
 		
 		//Now you wait..
 		if(callback){
@@ -228,7 +227,7 @@ MDS.init(function(msg){
 				MDS.cmd("coinnotify action:add address:"+MINIWEB_FILE_REQUEST,function(startup){});
 				
 				//Scan the chain for any coins we may have missed!
-				/*MDS.cmd("coins address:"+MINIWEB_FILE_ADDRESS,function(resp){
+				MDS.cmd("coins address:"+MINIWEB_FILE_ADDRESS,function(resp){
 					var len = resp.response.length;
 					for(var i=0;i<len;i++){
 						processNewSiteCoin(resp.response[i]);
@@ -240,7 +239,7 @@ MDS.init(function(msg){
 					for(var i=0;i<len;i++){
 						processRequestCoin(resp.response[i]);
 					}
-				});*/
+				});
 				
 				MDS.log("MiniFS Inited");
 			});	
