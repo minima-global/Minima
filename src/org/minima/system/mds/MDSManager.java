@@ -1142,7 +1142,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("filez", "default/filez-1.9.4.mds.zip", allminis, false);
 			checkInstalled("future cash", "default/futurecash-2.7.1.mds.zip", allminis, false);
 			checkInstalled("health", "default/health-1.1.5.mds.zip", allminis, false);
-			checkInstalled("logs", "default/logs-1.0.2.mds.zip", allminis, false);
+			checkInstalled("logs", "default/logs-1.0.4.mds.zip", allminis, false);
 			checkInstalled("maxcontacts", "default/maxcontacts-1.14.0.mds.zip", allminis, false);
 			checkInstalled("maximize", "default/maximize-1.3.0.mds.zip", allminis, false);
 			checkInstalled("maxsolo", "default/maxsolo-2.7.2.mds.zip", allminis, false);
