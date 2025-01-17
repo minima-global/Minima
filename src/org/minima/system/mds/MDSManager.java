@@ -102,7 +102,8 @@ public class MDSManager extends MessageProcessor {
 	/**
 	 * All the current Contexts
 	 */
-	ArrayList<MDSJS> mRunnables = new ArrayList();
+	ArrayList<ServiceJSRunner> mServices = new ArrayList();
+	//ArrayList<MDSJS> mRunnables = new ArrayList();
 	
 	/**
 	 * All the Pending Commands
@@ -592,6 +593,10 @@ public class MDSManager extends MessageProcessor {
 		mSqlDB.remove(zMiniDAPPID);
 	}
 	
+	public ArrayList<ServiceJSRunner> getAllServices(){
+		return mServices;
+	}
+ 	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
@@ -693,12 +698,15 @@ public class MDSManager extends MessageProcessor {
 			
 			//Shutdown the Runnables
 			MinimaLogger.log("Shutdown MDS runnables..");
-			for(MDSJS mds : mRunnables) {
+			/*for(MDSJS mds : mRunnables) {
 				try {
 					mds.shutdown();
 				}catch(Exception exc) {
 					MinimaLogger.log(exc);
 				}
+			}*/
+			for(ServiceJSRunner mdsjs : mServices) {
+				mdsjs.stopJS();
 			}
 			
 			//Shut down the servers
@@ -799,18 +807,38 @@ public class MDSManager extends MessageProcessor {
 			
 			//Send message to the runnables first..
 			if(sendtoall) {
-				for(MDSJS mds : mRunnables) {
+//				for(MDSJS mds : mRunnables) {
+//					try {
+//						
+//						if(to.equals("*")) {
+//							//Send to the runnable
+//							mds.callMainCallback(poll);
+//						}else {
+//							
+//							//Check the MiniDAPPID
+//							if(mds.getMiniDAPPID().equals(to)) {
+//								//Send to the runnable
+//								mds.callMainCallback(poll);
+//							}
+//						}
+//						
+//					}catch(Exception exc) {
+//						MinimaLogger.log(exc, false);
+//					}
+//				}
+				
+				for(ServiceJSRunner mds : mServices) {
 					try {
 						
 						if(to.equals("*")) {
 							//Send to the runnable
-							mds.callMainCallback(poll);
+							mds.sendPollMessage(poll);
 						}else {
 							
 							//Check the MiniDAPPID
-							if(mds.getMiniDAPPID().equals(to)) {
+							if(mds.getMiniDappID().equals(to)) {
 								//Send to the runnable
-								mds.callMainCallback(poll);
+								mds.sendPollMessage(poll);
 							}
 						}
 						
@@ -842,12 +870,16 @@ public class MDSManager extends MessageProcessor {
 		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_RESETALL)) {
 			
 			//Shut down all the Context Objkects..
-			for(MDSJS mds : mRunnables) {
-				mds.shutdown();
+//			for(MDSJS mds : mRunnables) {
+//				mds.shutdown();
+//			}
+			for(ServiceJSRunner mds : mServices) {
+				mds.stopJS();
 			}
 			
 			//Now clear
-			mRunnables.clear();
+//			mRunnables.clear();
+			mServices.clear();
 			mSessionID.clear();
 			
 			//Scan through and see what we have..
@@ -879,18 +911,30 @@ public class MDSManager extends MessageProcessor {
 			//Remove a MiniDAPP
 			String uid = zMessage.getString("uid");
 			
-			//First remove the Runnable
-			ArrayList<MDSJS> runnables = new ArrayList();
-			for(MDSJS mds : mRunnables) {
-				if(mds.getMiniDAPPID().equals(uid)) {
-					mds.shutdown();
+//			//First remove the Runnable
+//			ArrayList<MDSJS> runnables = new ArrayList();
+//			for(MDSJS mds : mRunnables) {
+//				if(mds.getMiniDAPPID().equals(uid)) {
+//					mds.shutdown();
+//				}else {
+//					runnables.add(mds);
+//				}
+//			}
+//			
+//			//And switch the list over..
+//			mRunnables = runnables;
+			
+			ArrayList<ServiceJSRunner> services = new ArrayList();
+			for(ServiceJSRunner mds : mServices) {
+				if(mds.getMiniDappID().equals(uid)) {
+					mds.stopJS();
 				}else {
-					runnables.add(mds);
+					services.add(mds);
 				}
 			}
 			
 			//And switch the list over..
-			mRunnables = runnables;
+			mServices = services;
 			
 			//And now remove the sessionid
 			mSessionID.remove(convertMiniDAPPID(uid));
@@ -920,58 +964,64 @@ public class MDSManager extends MessageProcessor {
 		File service = new File(getMiniDAPPWebFolder(zDAPP.getUID()),"service.js");
 		if(service.exists()) {
 			
-			try {
-				MinimaLogger.log("Start Service "+zDAPP.getName());
-				
-				//Load the file..
-				byte[] serv = MiniFile.readCompleteFile(service);
-				String code = new String(serv,MiniString.MINIMA_CHARSET);
-				
-				//Load it into the service runner..
-				Context ctx = Context.enter();
-				ctx.setOptimizationLevel(-1);
-				ctx.setLanguageVersion(Context.VERSION_ES6);
-				ctx.setMaximumInterpreterStackDepth(1024);
-				
-				//Stop JAVA classes from being run..
-				try {
-					ctx.setClassShutter(new ClassShutter() {
-						public boolean visibleToScripts(String className) {					
-							
-							//ONLY MDSJS can be called form JS
-							if(className.startsWith("org.minima.system.mds.runnable")) {
-								return true;
-							}
-								
-							//MinimaLogger.log("RHINOJS JAVA CLASS DENIED ACCESS : "+className);
-							
-							return false;
-						}
-					});
-				}catch(SecurityException sec) {
-					if(sec.getMessage().equals("Cannot overwrite existing ClassShutter object")) {
-						//we already set it..
-					}else {
-						MinimaLogger.log(sec);
-					}
-				}
-				
-				//Create the Scope
-				Scriptable scope = ctx.initStandardObjects();
-				
-				//Create an MDSJS object
-				MDSJS mdsjs = new MDSJS(this, zDAPP.getUID(), zDAPP.getName(), ctx, scope);
-				ScriptableObject.putProperty(scope, "MDS", Context.javaToJS(mdsjs, scope));
-				
-				//Add the main code to the Runnable
-				ctx.evaluateString(scope, code, "<mds_"+zDAPP.getUID()+">", 1, null);
+			//Create a NEW ServiceJsRunner
+			ServiceJSRunner runner = new ServiceJSRunner(zDAPP, this);
 			
-				//Add to our list
-				mRunnables.add(mdsjs);
+			//Add to the List
+			mServices.add(runner);
 			
-			}catch(Exception exc) {
-				MinimaLogger.log("ERROR starting service "+zDAPP.getName()+" "+exc);
-			}
+//			try {
+//				MinimaLogger.log("Start Service "+zDAPP.getName());
+//				
+//				//Load the file..
+//				byte[] serv = MiniFile.readCompleteFile(service);
+//				String code = new String(serv,MiniString.MINIMA_CHARSET);
+//				
+//				//Load it into the service runner..
+//				Context ctx = Context.enter();
+//				ctx.setOptimizationLevel(-1);
+//				ctx.setLanguageVersion(Context.VERSION_ES6);
+//				ctx.setMaximumInterpreterStackDepth(1024);
+//				
+//				//Stop JAVA classes from being run..
+//				try {
+//					ctx.setClassShutter(new ClassShutter() {
+//						public boolean visibleToScripts(String className) {					
+//							
+//							//ONLY MDSJS can be called form JS
+//							if(className.startsWith("org.minima.system.mds.runnable")) {
+//								return true;
+//							}
+//								
+//							//MinimaLogger.log("RHINOJS JAVA CLASS DENIED ACCESS : "+className);
+//							
+//							return false;
+//						}
+//					});
+//				}catch(SecurityException sec) {
+//					if(sec.getMessage().equals("Cannot overwrite existing ClassShutter object")) {
+//						//we already set it..
+//					}else {
+//						MinimaLogger.log(sec);
+//					}
+//				}
+//				
+//				//Create the Scope
+//				Scriptable scope = ctx.initStandardObjects();
+//				
+//				//Create an MDSJS object
+//				MDSJS mdsjs = new MDSJS(this, zDAPP.getUID(), zDAPP.getName(), ctx, scope);
+//				ScriptableObject.putProperty(scope, "MDS", Context.javaToJS(mdsjs, scope));
+//				
+//				//Add the main code to the Runnable
+//				ctx.evaluateString(scope, code, "<mds_"+zDAPP.getUID()+">", 1, null);
+//			
+//				//Add to our list
+//				mRunnables.add(mdsjs);
+//			
+//			}catch(Exception exc) {
+//				MinimaLogger.log("ERROR starting service "+zDAPP.getName()+" "+exc);
+//			}
 		}
 	}
 	

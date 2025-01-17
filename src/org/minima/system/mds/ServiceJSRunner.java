@@ -45,6 +45,11 @@ public class ServiceJSRunner extends MessageProcessor{
 	}
 	
 	public void stopJS() {
+		
+		//Clear the message stack
+		clear();
+		
+		//Send the shutdown message - must be from the processor thread
 		PostMessage(SERVICEJS_STOP);
 	}
 	
@@ -76,7 +81,7 @@ public class ServiceJSRunner extends MessageProcessor{
 				ctx.setMaximumInterpreterStackDepth(1024);
 				
 				//Stop JAVA classes from being run..
-				try {
+				//try {
 					ctx.setClassShutter(new ClassShutter() {
 						public boolean visibleToScripts(String className) {					
 							
@@ -90,15 +95,9 @@ public class ServiceJSRunner extends MessageProcessor{
 							return false;
 						}
 					});
-				}catch(SecurityException sec) {
-					MinimaLogger.log(sec.toString());
-					
-					if(sec.getMessage().equals("Cannot overwrite existing ClassShutter object")) {
-						//we already set it..
-					}else {
-						MinimaLogger.log(sec);
-					}
-				}
+				/*}catch(SecurityException sec) {
+					//MinimaLogger.log(sec.toString());
+				}*/
 				
 				//Create the Scope
 				Scriptable scope = ctx.initStandardObjects();
@@ -123,15 +122,20 @@ public class ServiceJSRunner extends MessageProcessor{
 		
 		if(zMessage.getMessageType().equals(SERVICEJS_INIT)) {
 			
-			MinimaLogger.log("Start service.js "+mMiniDapp.getName());
-			
+			//Start the service
 			setupMiniDAPP();
 		
 			MinimaLogger.log("Started service.js "+mMiniDapp.getName());
 			
 		}else if(zMessage.getMessageType().equals(SERVICEJS_STOP)) {
 		
-			mMDSJS.shutdown();
+			//MinimaLogger.log("ServiceJS Stopped : "+mMiniDapp.getName());
+			
+			try {
+				mMDSJS.shutdown();
+			}catch (Exception e) {
+				MinimaLogger.log(e);
+			}
 			
 			stopMessageProcessor();
 			
