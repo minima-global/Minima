@@ -80,24 +80,19 @@ public class ServiceJSRunner extends MessageProcessor{
 				ctx.setLanguageVersion(Context.VERSION_ES6);
 				ctx.setMaximumInterpreterStackDepth(1024);
 				
-				//Stop JAVA classes from being run..
-				//try {
-					ctx.setClassShutter(new ClassShutter() {
-						public boolean visibleToScripts(String className) {					
-							
-							//ONLY MDSJS can be called form JS
-							if(className.startsWith("org.minima.system.mds.runnable")) {
-								return true;
-							}
-								
-							//MinimaLogger.log("RHINOJS JAVA CLASS DENIED ACCESS : "+className);
-							
-							return false;
+				//Stop any JAVA classes from being run..
+				ctx.setClassShutter(new ClassShutter() {
+					public boolean visibleToScripts(String className) {					
+						
+						//ONLY MDSJS can be called form JS
+						if(className.startsWith("org.minima.system.mds.runnable")) {
+							return true;
 						}
-					});
-				/*}catch(SecurityException sec) {
-					//MinimaLogger.log(sec.toString());
-				}*/
+							
+						//MinimaLogger.log("RHINOJS JAVA CLASS DENIED ACCESS : "+className);
+						return false;
+					}
+				});
 				
 				//Create the Scope
 				Scriptable scope = ctx.initStandardObjects();
