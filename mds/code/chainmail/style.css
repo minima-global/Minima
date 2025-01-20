@@ -1,0 +1,20 @@
+@font-face {
+	font-family: Manrope;
+	src: url('./Manrope-Regular.ttf');
+}
+
+body {
+	font-family: Manrope; 
+    margin: 20;   /* Remove body margins */
+}
+
+.titlebar{
+  width:100%;
+  min-width:460;
+  height:50px;
+  text-align: left;
+  
+  max-width:840;
+  border: 2px solid #0000ff;
+  border-radius: 10px;
+}
