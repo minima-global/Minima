@@ -107,7 +107,7 @@ public class ServiceJSRunner extends MessageProcessor{
 				ScriptableObject.putProperty(scope, "MDS", Context.javaToJS(mMDSJS, scope));
 				
 				//Add the main code to the Runnable
-				ctx.evaluateString(scope, code, "<mds_"+mMiniDapp.getUID()+">", 1, null);
+				ctx.evaluateString(scope, code, "<mds_"+mMiniDapp.getName()+"_"+mMiniDapp.getUID()+">", 1, null);
 			
 			}catch(Exception exc) {
 				MinimaLogger.log("ERROR starting service "+mMiniDapp.getName()+" "+exc);
