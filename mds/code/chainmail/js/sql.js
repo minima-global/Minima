@@ -144,7 +144,7 @@ function insertContact(username, publickey, callback){
 	});
 }
 
-function loadContacts(publickey, callback){
+function loadContacts(callback){
 	
 	//Find a record
 	var sql = "SELECT * FROM contacts ORDER BY username ASC";
@@ -155,11 +155,13 @@ function loadContacts(publickey, callback){
 	});
 }
 
-function deleteContact(publickey, callback){
+function deleteContactID(id, callback){
 	//Update the record..
-	var sql = "DELETE FROM contacts WHERE publickey='"+publickey+"'";
+	var sql = "DELETE FROM contacts WHERE id="+id;
 					
 	MDS.sql(sql,function(msg){
-		callback(true);
+		if(callback){
+			callback(true);	
+		}
 	});
 }

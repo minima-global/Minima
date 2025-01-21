@@ -1,0 +1,132 @@
+<html>
+
+<head>
+	<title>ChainMail</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="./js/sql.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table width=100% border=0>
+			<tr>
+				<td><img height=45 src="./images/webmail.png"></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>ChainMail</b></td>
+				<td class='topicdate' nowrap>
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToNewMessage();" height=30 src="./images/newmail.png">&nbsp;&nbsp;
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToContacts();" height=30 src="./images/contacts.png">&nbsp;&nbsp;					
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToHome();" height=30 src="./images/home.png">&nbsp;&nbsp;
+				</td>
+			</tr>
+		</table>
+	</div>
+	
+	<br>
+	<table class=addcontact>
+		<tr>
+			<td class=tablerowname>Name : </td>
+			<td><input type="text" id=newname></td>
+		</tr>
+		<tr>
+			<td class=tablerowname>Public key : </td>
+			<td><input type="text" id=newpubkey></td>			
+		</tr>
+		<tr>
+			<td style="text-align:center" colspan="2"><input type="submit" value="Add Contact" onclick="addContact();"/></td>
+		</tr>
+	</table>
+	
+	<br>
+	<table id=contactlist class=contacts></table>
+	
+	
+</center>
+
+<script type="text/javascript">
+	
+	function addContact(){
+		
+		var name   = newname.value.trim();
+		var pubkey = newpubkey.value.trim();
+		
+		insertContact(name, pubkey, function(){
+			loadContactList();
+		});
+	}
+	
+	function delContact(id){
+		deleteContactID(id,function(){
+			loadContactList();
+		});
+	}
+	
+	function loadContactList(){
+		
+		//Clear table..
+		contactlist.innerHTML="";
+		
+		//Load the contacts
+		loadContacts(function(msg){
+			
+			for(var i=0;i<msg.count;i++){
+				var contact = msg.rows[i];
+				
+				var row 	 = contactlist.insertRow();
+				var username = row.insertCell();
+				username.style.width="100%";
+				
+				var pubkey 	 = row.insertCell();
+				var del		 = row.insertCell();
+				
+				username.innerHTML 	= contact.USERNAME;
+				pubkey.innerHTML   	= contact.PUBLICKEY+"&nbsp;&nbsp;&nbsp;&nbsp;"; 
+				del.innerHTML 		= "<button onclick='delContact("+contact.ID+");'>DELETE</button>"
+			}
+			
+			if(msg.count==0){
+				var row 	 = contactlist.insertRow();
+				var username = row.insertCell();
+				username.style.width="100%";
+				
+				var pubkey 	 = row.insertCell();
+				var del		 = row.insertCell();
+				
+				username.innerHTML 	= "No contacts yet..";
+				pubkey.innerHTML   	= "&nbsp;&nbsp;&nbsp;&nbsp;"; 
+				del.innerHTML 		= ""
+			}
+			
+		});
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			loadContactList()
+		}
+	});
+
+</script>
+
+</body>
+
+</html>

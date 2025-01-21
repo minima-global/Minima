@@ -1,0 +1,122 @@
+<html>
+
+<head>
+	<title>ChainMail</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="./js/sql.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table width=100% border=0>
+			<tr>
+				<td><img height=45 src="./images/webmail.png"></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>ChainMail</b></td>
+				<td class='topicdate' nowrap>
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToNewMessage();" height=30 src="./images/newmail.png">&nbsp;&nbsp;
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToContacts();" height=30 src="./images/contacts.png">&nbsp;&nbsp;					
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToHome();" height=30 src="./images/home.png">&nbsp;&nbsp;
+				</td>
+			</tr>
+		</table>
+	</div>
+	
+	<br>
+	<table class=contacts>
+		<tr>
+			<td class=tablerowname>Contact : </td>
+			<td><select id="contacts" onchange="contactChosen();"><option value="">Please select</option></select></td>
+		</tr>
+		<tr>
+			<td class=tablerowname>Public Key : </td>
+			<td><input type="text" id=sendto></td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td class=tablerowname>Subject : </td>
+			<td><input type="text" id=sendsubject></td>
+		</tr>
+		<tr>
+			<td class=tablerowname>Message : </td>
+			<td><textarea rows=10 cols=50 id=sendmessage></textarea></td>
+		</tr>
+		
+		<tr>
+			<td style="text-align:center" colspan="2"><input type="submit" value="Send Chain Message" onclick="send();"/></td>
+		</tr>
+		
+	</table>
+	
+	
+</center>
+
+<script type="text/javascript">
+	
+	function contactChosen(){
+		sendto.value=contacts.value;
+	}
+	
+	function loadContactList(){
+		
+		//Load the contacts
+		loadContacts(function(msg){
+			
+			for(var i=0;i<msg.count;i++){
+				var contact = msg.rows[i];
+				
+				var opt 		= document.createElement('option');
+	            opt.value 		= contact.PUBLICKEY;
+	            opt.innerHTML 	= contact.USERNAME;
+	            contacts.appendChild(opt);
+
+			}
+			
+		});
+	}
+	
+	function send(){
+		
+		//Create a complete message
+		var sendjson  		= {};
+		sendjson.from 		= "FROM NAME";
+		sendjson.to	  		= sendto.value;
+		sendjson.subject 	= sendsubject.value;
+		sendjson.message	= sendmessage.value;
+		
+		console.log(JSON.stringify(sendjson,null,2));
+		
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			loadContactList()
+		}
+	});
+
+</script>
+
+</body>
+
+</html>

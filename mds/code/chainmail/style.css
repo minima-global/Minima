@@ -18,3 +18,30 @@ body {
   border: 2px solid #0000ff;
   border-radius: 10px;
 }
+
+.contacts{
+  width:100%;
+  min-width:460;
+  height:50px;
+  text-align: left;
+  
+  max-width:840;
+  border: 2px solid #0000ff;
+  border-radius: 10px;
+}
+
+.addcontact{
+  width:100%;
+  min-width:460;
+  height:50px;
+  text-align: left;
+  
+  max-width:840;
+  border: 2px solid #0000ff;
+  border-radius: 10px;
+}
+
+.tablerowname{
+  text-align:right;
+  font-weight:bold;
+}
