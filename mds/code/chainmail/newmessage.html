@@ -96,14 +96,32 @@
 	function send(){
 		
 		//Create a complete message
-		var sendjson  		= {};
-		sendjson.from 		= "FROM NAME";
-		sendjson.to	  		= sendto.value;
-		sendjson.subject 	= sendsubject.value;
-		sendjson.message	= sendmessage.value;
+		var sendjson  			= {};
+		
+		//MAXIMA DETAILS
+		sendjson.fromname 		= "FROM NAME";
+		sendjson.frompublickey 	= "FROM PUBKEY";
+		
+		//TO PUBLIC KEY
+		sendjson.to				= sendto.value;
+		
+		//SUBJECT AND MESSAGE
+		sendjson.subject 		= sendsubject.value;
+		sendjson.message		= sendmessage.value;
 		
 		console.log(JSON.stringify(sendjson,null,2));
 		
+		//This to a HEX datadump..
+		var strversion = encodeStringForDB(JSON.stringify(sendjson));
+		
+		//Now do a maxmessage!
+		MDS.cmd("convert from:string to:hex data:\""+strversion+"\"", function(resp){
+			//console.log(JSON.stringify(resp,null,2));
+			
+			//Now convert to an encrypted max message..
+			
+			
+		});
 	}
 	
 	//Main message handler..
@@ -111,7 +129,10 @@
 		
 		//Do initialisation
 		if(msg.event == "inited"){
-			loadContactList()
+			loadContactList();
+			
+			//Listen for a message
+			
 		}
 	});
 
