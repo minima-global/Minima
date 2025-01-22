@@ -37,6 +37,8 @@ body {
   max-width:840;
   border: 2px solid #0000ff;
   border-radius: 10px;
+  
+  cursor:pointer;
 }
 
 .addcontact{

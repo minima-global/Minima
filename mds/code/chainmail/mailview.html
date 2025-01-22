@@ -40,13 +40,25 @@
 	
 	<br>
 	
-	<table class=maintable id=messagetable>
 	
-	</table>
-	<br>
+	<div id=messageview class=maintable>
+		
+		<div style="text-align:right">
+		hello 
+		</div>
+		<br>
+		
+		<div style="text-align:left">
+		hello 
+		</div>
+		<br>
+		
+		<div style="text-align:right">
+		hello 
+		</div>
+		<br>
 	
-	<div class=maintable style="text-align:center;">
-		<br>All messages are signed and encrypted<br><br>
+		
 	</div>
 	 
 	
@@ -54,14 +66,32 @@
 
 <script type="text/javascript">
 	
+	//Get the HASREF conversation
+	var hashref = MDS.form.getParams("hashref");
+	
+	function createSingleView(msg){
+		
+	}
+	
+	function loadCompleteMail(){
+		loadAllMessages(hashref,function(allmessages){
+			
+			for(var i=0;i<allmessages.count;i++){
+				
+				
+				
+			}
+			
+			
+		});
+	}
 	
 	//Main message handler..
 	MDS.init(function(msg){
 		
 		//Do initialisation
 		if(msg.event == "inited"){
-			
-			
+			loadCompleteMail();
 		}
 	});
 

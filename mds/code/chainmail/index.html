@@ -81,11 +81,15 @@
 		});
 	}
 	
+	function viewFull(hashref){
+		location.href="mailview.html?uid="+MDS.minidappuid+"&hashref="+hashref;
+	}
+	
 	function createMessageRow(row, mail){
 		
 		var messagerow = messagetable.insertRow();
 		messagerow.onclick = function(){
-			alert("Hello "+row);	
+			viewFull("0xFF");	
 		};
 		
 		var from 	= messagerow.insertCell();
