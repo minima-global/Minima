@@ -63,12 +63,19 @@ public class maxmessage extends Command {
 			//Now create an encrypted version
 			MiniData encrypt = getDataParam("publickey");
 			
-			CryptoPackage cp = new CryptoPackage();
-			cp.encrypt(mdata.getBytes(), encrypt.getBytes());
-			MiniData encdata = cp.getCompleteEncryptedData();
-			
-			//resp.put("encrypted", true);
-			resp.put("data", encdata.to0xString());
+			//Try and encrypt the message
+			try {
+				CryptoPackage cp = new CryptoPackage();
+				cp.encrypt(mdata.getBytes(), encrypt.getBytes());
+				MiniData encdata = cp.getCompleteEncryptedData();
+				
+				//resp.put("encrypted", true);
+				resp.put("data", encdata.to0xString());
+				
+			}catch(Exception exc) {
+				//Something went wrong - prob invalid key
+				throw new CommandException("Invalid Publickey..cannot encrypt");
+			}
 			
 			//Now create an encrypted version
 			/*if(existsParam("encrypt")) {
