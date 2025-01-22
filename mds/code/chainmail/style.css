@@ -27,6 +27,8 @@ body {
   max-width:840;
   border: 2px solid #0000ff;
   border-radius: 10px;
+  
+  border-spacing:8;
 }
 
 .maintable{
@@ -39,6 +41,8 @@ body {
   border-radius: 10px;
   
   cursor:pointer;
+  
+  border-spacing:8;
 }
 
 .addcontact{
