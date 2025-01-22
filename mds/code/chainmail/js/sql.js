@@ -2,6 +2,7 @@ function wipeDB(callback){
 	//Run this..
 	MDS.sql("DROP TABLE `chainmessages`",function(msg){
 		MDS.sql("DROP TABLE `contacts`",function(msg){
+			MDS.log("DB Wiped..");
 			if(callback){
 				callback();
 			}
@@ -87,34 +88,38 @@ function createDB(callback){
  */
 function insertMessage(messagejson, incoming, callback){
 	
-	//First create the HASHREF
-	getHashRef(messagejson,function(hashref){
-		//Boolean is 0 / 1
-		var incom = 0;
-		var read  = 1;
-		if(incoming){
-			incom = 1;
-			read  = 0;
-		}
-		
-		//Insert this unread message
-		var sql = "INSERT INTO chainmessages(hashref, fromname, frompublickey, topublickey, subject, message, incoming, read, date) "
-				 +"VALUES ('"+hashref
-				 		+"','"+encodeStringForDB(messagejson.fromname)
-						+"','"+messagejson.frompublickey			   
-						+"','"+messagejson.topublickey			   
-						+"','"+encodeStringForDB(subject)
-				 		+"','"+encodeStringForDB(message)
-					    +"',"+incom
-					    +","+read
-						+","+getTimeMilli()+")";
-		
-		MDS.sql(sql,function(msg){
-			if(callback){
-				callback(msg);	
+	try{
+		//First create the HASHREF
+		getHashRef(messagejson,function(hashref){
+			//Boolean is 0 / 1
+			var incom = 0;
+			var read  = 1;
+			if(incoming){
+				incom = 1;
+				read  = 0;
 			}
-		});
-	});
+			
+			//Insert this unread message
+			var sql = "INSERT INTO chainmessages(hashref, fromname, frompublickey, topublickey, subject, message, incoming, read, date) "
+					 +"VALUES ('"+hashref
+					 		+"','"+encodeStringForDB(messagejson.fromname)
+							+"','"+encodeStringForDB(messagejson.frompublickey)			   
+							+"','"+encodeStringForDB(messagejson.topublickey)			   
+							+"','"+encodeStringForDB(messagejson.subject)
+					 		+"','"+encodeStringForDB(messagejson.message)
+						    +"',"+incom
+						    +","+read
+							+","+getTimeMilli()+")";
+			
+			MDS.sql(sql,function(msg){
+				if(callback){
+					callback(msg);	
+				}
+			});
+		});	
+	}catch(error){
+		MDS.log(error);
+	}
 }
 
 /**

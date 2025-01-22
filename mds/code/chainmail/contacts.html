@@ -41,12 +41,12 @@
 	<br>
 	<table class=addcontact>
 		<tr>
-			<td class=tablerowname>Name : </td>
-			<td><input type="text" id=newname></td>
+			<td nowrap class=tablerowname>Name : </td>
+			<td><input class=inputfields type="text" id=newname></td>
 		</tr>
 		<tr>
-			<td class=tablerowname>Public key : </td>
-			<td><input type="text" id=newpubkey></td>			
+			<td nowrap class=tablerowname>Public key : </td>
+			<td><input class=inputfields type="text" id=newpubkey></td>			
 		</tr>
 		<tr>
 			<td style="text-align:center" colspan="2"><input type="submit" value="Add Contact" onclick="addContact();"/></td>
@@ -72,9 +72,15 @@
 	}
 	
 	function delContact(id){
-		deleteContactID(id,function(){
-			loadContactList();
-		});
+		if(confirm("Delete this contact ?")){
+			deleteContactID(id,function(){
+				loadContactList();
+			});	
+		}
+	}
+	
+	function messageContact(pubkey){
+		location.href="newmessage.html?uid="+MDS.minidappuid+"&contactkey="+pubkey;
 	}
 	
 	function loadContactList(){
@@ -89,14 +95,18 @@
 				var contact = msg.rows[i];
 				
 				var row 	 = contactlist.insertRow();
+				
+				
+				var mess 	 = row.insertCell();
 				var username = row.insertCell();
 				username.style.width="100%";
 				
 				var pubkey 	 = row.insertCell();
 				var del		 = row.insertCell();
 				
+				mess.innerHTML		= "<button onclick='messageContact(\""+contact.PUBLICKEY+"\");'>MESSAGE</button>"
 				username.innerHTML 	= contact.USERNAME;
-				pubkey.innerHTML   	= contact.PUBLICKEY+"&nbsp;&nbsp;&nbsp;&nbsp;"; 
+				pubkey.innerHTML   	= contact.PUBLICKEY.substring(0,20)+"..&nbsp;&nbsp;&nbsp;&nbsp;"; 
 				del.innerHTML 		= "<button onclick='delContact("+contact.ID+");'>DELETE</button>"
 			}
 			

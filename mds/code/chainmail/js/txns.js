@@ -15,9 +15,6 @@ function sendMessage(sendjson, callback){
 	
 	try{
 		
-		//Who is this message for
-		var pubkeyto = sendjson.to;
-		
 		//First convert the JSON - from sql.js
 		var strversion = URLencodeString(JSON.stringify(sendjson));
 		
@@ -28,7 +25,7 @@ function sendMessage(sendjson, callback){
 			var hexdata = resp.response.conversion;
 			
 			//Now convert to an encrypted max message..
-			MDS.cmd("maxmessage action:encrypt publickey:"+pubkeyto+" data:"+hexdata, function(maxmess){
+			MDS.cmd("maxmessage action:encrypt publickey:"+sendjson.topublickey+" data:"+hexdata, function(maxmess){
 				
 				//Did we encrypt it..
 				if(!maxmess.status){

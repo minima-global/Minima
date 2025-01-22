@@ -43,22 +43,22 @@
 	<table class=contacts>
 		<tr>
 			<td class=tablerowname>Contact : </td>
-			<td><select id="contacts" onchange="contactChosen();"><option value="">Please select</option></select></td>
+			<td><select class=inputfields id="contacts" onchange="contactChosen();"><option value="">Please select</option></select></td>
 		</tr>
 		<tr>
 			<td class=tablerowname>Public Key : </td>
-			<td><input type="text" id=sendto></td>
+			<td><input class=inputfields type="text" id=sendto></td>
 		</tr>
 		<tr>
 			<td>&nbsp;</td>
 		</tr>
 		<tr>
 			<td class=tablerowname>Subject : </td>
-			<td><input type="text" id=sendsubject></td>
+			<td><input class=inputfields type="text" id=sendsubject></td>
 		</tr>
 		<tr>
 			<td class=tablerowname>Message : </td>
-			<td><textarea rows=10 cols=50 id=sendmessage></textarea></td>
+			<td><textarea class=inputfields rows=10 cols=50 id=sendmessage></textarea></td>
 		</tr>
 		
 		<tr>
@@ -76,6 +76,9 @@
 		sendto.value=contacts.value;
 	}
 	
+	//Are we messaging someone in particular
+	var message_contact = MDS.form.getParams("contactkey");
+	
 	function loadContactList(){
 		
 		//Load the contacts
@@ -88,9 +91,16 @@
 	            opt.value 		= contact.PUBLICKEY;
 	            opt.innerHTML 	= contact.USERNAME;
 	            contacts.appendChild(opt);
-
 			}
 			
+			if(message_contact != null){
+				
+				//Set the select
+				contacts.value = message_contact;
+				
+				//Set it..
+				sendto.value=message_contact;
+			}
 		});
 	}
 	
@@ -104,13 +114,11 @@
 		sendjson.frompublickey 	= "FROM PUBKEY";
 		
 		//TO PUBLIC KEY
-		sendjson.to				= sendto.value;
+		sendjson.topublickey	= sendto.value.trim();
 		
 		//SUBJECT AND MESSAGE
-		sendjson.subject 		= sendsubject.value;
-		sendjson.message		= sendmessage.value;
-		
-		//console.log(JSON.stringify(sendjson,null,2));
+		sendjson.subject 		= sendsubject.value.trim();
+		sendjson.message		= sendmessage.value.trim();
 		
 		//Encrypt and send..
 		sendMessage(sendjson,function(success, sendresp){
@@ -119,8 +127,11 @@
 				return;
 			}
 			
-			console.log(JSON.stringify(sendresp));
-			alert("Message Sent!");
+			if(sendresp.pending){
+				alert("Transaction Pending..\n\nIt has been added to your database..");		
+			}else{
+				alert("Message Sent!");	
+			}
 		});
 	}
 	
@@ -136,7 +147,7 @@
 					MDS.log("New Message "+JSON.stringify(message));
 					
 					//Add to the database..
-					insertMessage(message.subject, message.frompublickey, message.message, true, function(insresp){
+					insertMessage(message, true, function(insresp){
 						
 					});				
 				}
@@ -149,7 +160,12 @@
 		
 		//Do initialisation
 		if(msg.event == "inited"){
-			loadContactList();
+			
+			//wipeDB();
+			
+			createDB(function(){
+				loadContactList();	
+			});
 			
 			//Listen for coins..
 			MDS.cmd("coinnotify action:add address:"+CHAINMAIL_ADDRESS,function(startup){});

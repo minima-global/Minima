@@ -44,4 +44,10 @@ body {
 .tablerowname{
   text-align:right;
   font-weight:bold;
+  width:150;
+}
+
+.inputfields{
+	width:100%;
+	max-width:500;
 }
