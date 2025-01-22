@@ -78,14 +78,14 @@ public class SendPollManager extends MessageProcessor{
 				String result 	= cmd.runCommand();
 				
 				JSONObject res  = (JSONObject) new JSONParser().parse(result);
-				if((boolean)res.get("status") || (boolean)res.get("pending")) {
+				if((boolean)res.get("status")) {
 					
 					//It worked..remove from the list..
 					removeCommand(command.getUID());
 				}
 				
 				//Pause..
-				Thread.sleep(500);
+				Thread.sleep(1000);
 			}
 			
 			//And do it again
