@@ -17,6 +17,7 @@
 	<!-- Load the local JS lib -->
 	<script type="text/javascript" src="jslib.js"></script>
 	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/txns.js"></script>
 	
 </head>
 
@@ -111,15 +112,15 @@
 		
 		console.log(JSON.stringify(sendjson,null,2));
 		
-		//This to a HEX datadump..
-		var strversion = encodeStringForDB(JSON.stringify(sendjson));
+		sendMessage(sendjson,function(sendresp){
+			
+			console.log(JSON.stringify(sendresp,null,2));
 		
-		//Now do a maxmessage!
-		MDS.cmd("convert from:string to:hex data:\""+strversion+"\"", function(resp){
-			//console.log(JSON.stringify(resp,null,2));
-			
-			//Now convert to an encrypted max message..
-			
+			//And decode..
+			checkEncryptedData(sendresp,function(decode){
+				console.log(JSON.stringify(decode,null,2));
+					
+			});
 			
 		});
 	}
