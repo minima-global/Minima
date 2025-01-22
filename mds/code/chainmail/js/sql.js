@@ -30,13 +30,15 @@ function getHashRef(messagejson, callback){
 	var left 	= messagejson.frompublickey.localeCompare(messagejson.topublickey);
 	var hashstr = "";
 	if(left>0){
-		hashstr = ""+messagejson.frompublickey+""+messagejson.topublickey+messagejson.subject;
+		hashstr = "string:"+messagejson.frompublickey+""+messagejson.topublickey+messagejson.subject;
 	}else{
-		hashstr = ""+messagejson.topublickey+""+messagejson.frompublickey+messagejson.subject;
+		hashstr = "string:"+messagejson.topublickey+""+messagejson.frompublickey+messagejson.subject;
 	}
 	
 	//Now hash that
 	MDS.cmd("hash type:sha3 data:"+encodeStringForDB(hashstr), function(hashresp){
+		MDS.log(JSON.stringify(hashresp));
+		
 		callback(hashresp.response.hash);
 	});
 }

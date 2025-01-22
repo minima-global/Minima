@@ -39,9 +39,16 @@
 	</div>
 	
 	<br>
-	<pre id=tester style="text-align:left;">
 	
-	</pre>
+	<table class=maintable id=messagetable>
+	
+	</table>
+	<br>
+	
+	<div class=maintable style="text-align:center;">
+		<br>All messages are signed and encrypted<br><br>
+	</div>
+	 
 	
 </center>
 
@@ -74,6 +81,37 @@
 		});
 	}
 	
+	function createMessageRow(row, mail){
+		
+		var messagerow = messagetable.insertRow();
+		messagerow.onclick = function(){
+			alert("Hello "+row);	
+		};
+		
+		var from 	= messagerow.insertCell();
+		
+		var subject = messagerow.insertCell();
+		subject.style.width="100%";
+		
+		var date	= messagerow.insertCell();
+		
+		from.innerHTML 		= "&nbsp;&nbsp;&nbsp;"+mail.FROMNAME+"&nbsp;&nbsp;&nbsp;";
+		subject.innerHTML 	= mail.SUBJECT;
+		date.innerHTML 		= new Date(+mail.DATE).toLocaleTimeString();
+	}
+	
+	function loadMail(){
+		
+		messagetable.innerHTML = "";
+		
+		loadTopMessages(function(msg){
+			
+			for(var i=0;i<msg.count;i++){
+				createMessageRow(i, msg.rows[i]);	
+			}
+		});
+	}
+	
 	//Main message handler..
 	MDS.init(function(msg){
 		
@@ -87,7 +125,9 @@
 					runtests();
 				});
 			}else{
-				runtests()
+				//runtests();
+				
+				loadMail();
 			}
 		}
 	});

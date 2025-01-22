@@ -72,6 +72,9 @@
 
 <script type="text/javascript">
 	
+	var maxname = "";
+	var maxkey	= "";
+	
 	function contactChosen(){
 		sendto.value=contacts.value;
 	}
@@ -110,8 +113,8 @@
 		var sendjson  			= {};
 		
 		//MAXIMA DETAILS
-		sendjson.fromname 		= "FROM NAME";
-		sendjson.frompublickey 	= "FROM PUBKEY";
+		sendjson.fromname 		= maxname;
+		sendjson.frompublickey 	= maxkey;
 		
 		//TO PUBLIC KEY
 		sendjson.topublickey	= sendto.value.trim();
@@ -165,6 +168,12 @@
 			
 			createDB(function(){
 				loadContactList();	
+			});
+			
+			//Get your details
+			MDS.cmd("maxima",function(maxresp){
+				maxname = maxresp.response.name;
+				maxkey	= maxresp.response.publickey;
 			});
 			
 			//Listen for coins..
