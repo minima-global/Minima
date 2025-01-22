@@ -17,6 +17,7 @@
 	<!-- Load the local JS lib -->
 	<script type="text/javascript" src="jslib.js"></script>
 	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/purify.min.js"></script>
 	
 </head>
 
@@ -46,7 +47,7 @@
 	<br>
 	
 	<div class=maintable style="text-align:center;">
-		<br>All messages are signed and encrypted<br><br>
+		<br>All messages are signed and end to end encrypted<br><br>
 	</div>
 	 
 	
@@ -85,6 +86,11 @@
 		location.href="mailview.html?uid="+MDS.minidappuid+"&hashref="+hashref;
 	}
 	
+	
+	function safeString(str){
+		return DOMPurify.sanitize(decodeStringFromDB(str));
+	}
+	
 	function createMessageRow(row, mail){
 		
 		var messagerow = messagetable.insertRow();
@@ -92,15 +98,15 @@
 			viewFull("0xFF");	
 		};
 		
-		var from 	= messagerow.insertCell();
+		var from 		 = messagerow.insertCell();
+		from.style.width = "150";
 		
 		var subject = messagerow.insertCell();
-		subject.style.width="100%";
-		
 		var date	= messagerow.insertCell();
+		date.style.width = "50";
 		
-		from.innerHTML 		= "&nbsp;&nbsp;&nbsp;"+mail.FROMNAME+"&nbsp;&nbsp;&nbsp;";
-		subject.innerHTML 	= mail.SUBJECT;
+		from.innerHTML 		= safeString(mail.FROMNAME);
+		subject.innerHTML 	= safeString(mail.SUBJECT);
 		date.innerHTML 		= new Date(+mail.DATE).toLocaleTimeString();
 	}
 	
