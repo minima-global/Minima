@@ -110,19 +110,38 @@
 		sendjson.subject 		= sendsubject.value;
 		sendjson.message		= sendmessage.value;
 		
-		console.log(JSON.stringify(sendjson,null,2));
+		//console.log(JSON.stringify(sendjson,null,2));
 		
-		sendMessage(sendjson,function(sendresp){
+		//Encrypt and send..
+		sendMessage(sendjson,function(success, sendresp){
+			if(!success){
+				alert("Error sending mail..\n\n"+sendresp);
+				return;
+			}
 			
-			console.log(JSON.stringify(sendresp,null,2));
-		
-			//And decode..
-			checkEncryptedData(sendresp,function(decode){
-				console.log(JSON.stringify(decode,null,2));
-					
-			});
-			
+			console.log(JSON.stringify(sendresp));
+			alert("Message Sent!");
 		});
+	}
+	
+	//Is this coi mail for us..
+	function processNewMessage(coin){
+
+		//Does it have a message..
+		if(coin.address == CHAINMAIL_ADDRESS && coin.state[99]){
+			
+			checkEncryptedData(coin.state[99],function(success, message){
+				if(success){
+					//It for us!
+					MDS.log("New Message "+JSON.stringify(message));
+					
+					//Add to the database..
+					insertMessage(message.subject, message.frompublickey, message.message, true, function(insresp){
+						
+					});				
+				}
+			});
+		}
 	}
 	
 	//Main message handler..
@@ -132,7 +151,17 @@
 		if(msg.event == "inited"){
 			loadContactList();
 			
+			//Listen for coins..
+			MDS.cmd("coinnotify action:add address:"+CHAINMAIL_ADDRESS,function(startup){});
+				
+			
 			//Listen for a message
+			
+		}else if(msg.event == "NOTIFYCOIN"){
+			
+			if(msg.data.address ==  CHAINMAIL_ADDRESS){
+				processNewMessage(msg.data.coin);
+			}
 			
 		}
 	});

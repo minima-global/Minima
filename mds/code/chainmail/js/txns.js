@@ -41,13 +41,11 @@ function sendMessage(sendjson, callback){
 				state[99]  = maxmess.response.data;
 				
 				//Now construct a txn
-				var txn = "sendpoll amount:0.000000000001 address:"+CHAINMAIL_ADDRESS+" state:"+JSON.stringify(state);
+				var txn = "send amount:0.000000000001 address:"+CHAINMAIL_ADDRESS+" state:"+JSON.stringify(state);
 				
 				//Now post..
-				MDS.cmd(txn,function(resp){
-					if(callback){
-						callback(true);	
-					}
+				MDS.cmd(txn,function(resp){	
+					callback(true,resp);
 				});		
 			});
 		});	
@@ -63,7 +61,7 @@ function checkEncryptedData(data, callback){
 		
 		//First try and decode it..
 		MDS.cmd("maxmessage action:decrypt data:"+data,function(decresp){
-			console.log(JSON.stringify(decresp,null,2));
+			//console.log(JSON.stringify(decresp,null,2));
 			
 			//Is this message for us ?
 			if(!decresp.status){
@@ -89,8 +87,6 @@ function checkEncryptedData(data, callback){
 				
 				//And make a JSON..
 				var original = JSON.parse(normal);
-				
-				console.log(JSON.stringify(original,null,2));
 								
 				//And send it back..
 				callback(true,original);		

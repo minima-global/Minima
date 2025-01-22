@@ -23,15 +23,40 @@ function getTimeMilli(){
 	return recdate.getTime();	
 }
 
+function getHashRef(messagejson, callback){
+	
+	//Hash the publickeys + subject in alphabetic order
+	var left 	= messagejson.frompublickey.localeCompare(messagejson.topublickey);
+	var hashstr = "";
+	if(left>0){
+		hashstr = ""+messagejson.frompublickey+""+messagejson.topublickey+messagejson.subject;
+	}else{
+		hashstr = ""+messagejson.topublickey+""+messagejson.frompublickey+messagejson.subject;
+	}
+	
+	//Now hash that
+	MDS.cmd("hash type:sha3 data:"+encodeStringForDB(hashstr), function(hashresp){
+		callback(hashresp.response.hash);
+	});
+}
+
 function createDB(callback){
 	
 	//Create the DB if not exists
 	var initsql = "CREATE TABLE IF NOT EXISTS `chainmessages` ( "
 				+"  `id` bigint auto_increment, "
+				
+				+"  `hashref` varchar(256) NOT NULL, "
+				
+				+"  `fromname` varchar(1024) NOT NULL, "
+				+"  `frompublickey` varchar(1024) NOT NULL, "
+				+"  `topublickey` varchar(1024) NOT NULL, "
+								
 				+"  `subject` varchar(1024) NOT NULL, "
-				+"  `publickey` varchar(1024) NOT NULL, "
 				+"  `message` varchar(8192) NOT NULL, "
+				
 				+"  `incoming` int NOT NULL, "
+				
 				+"  `read` int NOT NULL, "
 				+"  `date` bigint NOT NULL "
 				+" )";
@@ -60,26 +85,35 @@ function createDB(callback){
 /**
  * MESSAGE FUNCTIONS
  */
-function insertMessage(subject, publickey, message, incoming, callback){
+function insertMessage(messagejson, incoming, callback){
 	
-	//Boolean is 0 / 1
-	var incom = 0;
-	if(incoming){
-		incom = 1;
-	}
-	
-	//Insert this unread message
-	var sql = "INSERT INTO chainmessages(subject, publickey, message, incoming,read, date) "
-			 +"VALUES ('"+encodeStringForDB(subject)
-			 	   +"','"+publickey			   
-				   +"','"+encodeStringForDB(message)
-				   +"',"+incom
-				   +", 0, "+getTimeMilli()+")";
-	
-	MDS.sql(sql,function(msg){
-		if(callback){
-			callback(msg);	
+	//First create the HASHREF
+	getHashRef(messagejson,function(hashref){
+		//Boolean is 0 / 1
+		var incom = 0;
+		var read  = 1;
+		if(incoming){
+			incom = 1;
+			read  = 0;
 		}
+		
+		//Insert this unread message
+		var sql = "INSERT INTO chainmessages(hashref, fromname, frompublickey, topublickey, subject, message, incoming, read, date) "
+				 +"VALUES ('"+hashref
+				 		+"','"+encodeStringForDB(messagejson.fromname)
+						+"','"+messagejson.frompublickey			   
+						+"','"+messagejson.topublickey			   
+						+"','"+encodeStringForDB(subject)
+				 		+"','"+encodeStringForDB(message)
+					    +"',"+incom
+					    +","+read
+						+","+getTimeMilli()+")";
+		
+		MDS.sql(sql,function(msg){
+			if(callback){
+				callback(msg);	
+			}
+		});
 	});
 }
 
@@ -88,15 +122,15 @@ function insertMessage(subject, publickey, message, incoming, callback){
  */
 function loadTopMessages(callback){
 	MDS.sql("SELECT * from chainmessages WHERE ID in "
-		+"( SELECT max(ID) FROM chainmessages GROUP BY subject ) ORDER BY ID DESC", function(sqlmsg){
+		+"( SELECT max(ID) FROM chainmessages GROUP BY hashref ) ORDER BY ID DESC", function(sqlmsg){
 		callback(sqlmsg);	
 	});
 }
 
-function loadAllMessages(publickey, callback){
+function loadAllMessages(hashref, callback){
 	
 	//Find a record
-	var sql = "SELECT * FROM chainmessages WHERE publickey='"+publickey+"' ORDER BY id ASC";
+	var sql = "SELECT * FROM chainmessages WHERE hashref='"+hashref+"' ORDER BY id ASC";
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
@@ -104,10 +138,10 @@ function loadAllMessages(publickey, callback){
 	});
 }
 
-function readAllMessages(publickey, callback){
+function readAllMessages(hashref, callback){
 	
 	//Find a record
-	var sql = "UPDATE chainmessages SET read=1 WHERE publickey='"+publickey+"'";
+	var sql = "UPDATE chainmessages SET read=1 WHERE hashref='"+hashref+"'";
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
@@ -115,10 +149,20 @@ function readAllMessages(publickey, callback){
 	});
 }
 
-function deleteMessages(publickey, callback){
+function deleteUserMessages(publickey, callback){
 	
 	//Update the record..
 	var sql = "DELETE FROM chainmessages WHERE publickey='"+publickey+"'";
+					
+	MDS.sql(sql,function(msg){
+		callback(true);
+	});
+}
+
+function deleteMailMessages(hashref, callback){
+	
+	//Update the record..
+	var sql = "DELETE FROM chainmessages WHERE hashref='"+hashref+"'";
 					
 	MDS.sql(sql,function(msg){
 		callback(true);
