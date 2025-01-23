@@ -119,7 +119,7 @@ public class maxima extends Command {
 			details.put("icon", MinimaDB.getDB().getUserDB().getMaximaIcon());
 			
 			details.put("publickey", max.getPublicKey().to0xString());
-			details.put("publickeymx", Address.makeMinimaAddress(max.getPublicKey()));
+			details.put("mxpublickey", Address.makeMinimaAddress(max.getPublicKey()));
 			
 			details.put("staticmls", max.isStaticMLS());
 			details.put("mls", max.getMLSHost());

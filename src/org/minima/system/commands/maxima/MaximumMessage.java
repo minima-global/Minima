@@ -7,6 +7,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Date;
 
+import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
@@ -32,6 +33,7 @@ public class MaximumMessage implements Streamable {
 		
 		ret.put("data", mData.to0xString());
 		ret.put("publickey", mPublicKey.to0xString());
+		ret.put("mxpublickey", Address.makeMinimaAddress(mPublicKey));
 		ret.put("signature", mSignature.to0xString());
 		ret.put("valid", checkSignature());
 		
