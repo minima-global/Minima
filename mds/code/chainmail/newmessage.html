@@ -130,6 +130,17 @@
 		sendjson.subject 		= sendsubject.value.trim();
 		sendjson.message		= sendmessage.value.trim();
 		
+		//Check not blank
+		if(sendjson.message == ""){
+			alert("Cannot send blank messages..");
+			return;
+		}
+		
+		if(sendjson.subject == ""){
+			alert("Cannot send blank subject..");
+			return;
+		}
+		
 		//Encrypt and send..
 		sendMessage(sendjson,function(success, sendresp){
 			if(!success){

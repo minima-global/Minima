@@ -54,6 +54,7 @@
 		</tr>
 		<tr>
 			<td style="text-align:center">
+			    <button class=solobutton onclick="addContact();">Add Contact</button>&nbsp;&nbsp;&nbsp;
 				<button class=solobutton onclick="send();">Send Reply</button>
 			</td>
 		</tr>
@@ -70,7 +71,8 @@
 	var maxname = "";
 	var maxkey	= "";
 	
-	var topubkey = "";
+	var toname 		= "";
+	var topubkey 	= "";
 	
 	function createSingleView(msg){
 		
@@ -106,19 +108,32 @@
 				//Is the Pubkey different from ours..kkep it as that is the recipient..
 				if(msg.FROMPUBLICKEY != maxkey){
 					topubkey = msg.FROMPUBLICKEY;
-				}else if(msg.TOPUBLICKEY != maxkey){
-					topubkey = msg.TOPUBLICKEY;
-				}		
+					toname	 = msg.FROMNAME;
+				}
+				
+				if(topubkey == ""){
+					if(msg.TOPUBLICKEY != maxkey){
+						topubkey = msg.TOPUBLICKEY;
+					}	
+				}	
 			}
 			
 			//If no different pubkey was fund must be a message to yourself
 			if(topubkey == ""){
 				topubkey = maxkey;
+				toname	 = maxname;
 			}
 			
 			//Set it..
 			messageview.innerHTML = fullmsg;
 		});
+	}
+	
+	//Add this user as a contact
+	function addContact(){
+		location.href="contacts.html?uid="+MDS.minidappuid
+				+"&addcontactname="+toname
+				+"&addcontactpublickey="+topubkey;
 	}
 	
 	function send(){
@@ -136,6 +151,12 @@
 		//SUBJECT AND MESSAGE
 		sendjson.subject 		= subject;
 		sendjson.message		= sendmessage.value.trim();
+		
+		//Check not blank
+		if(sendjson.message == ""){
+			alert("Cannot send blank messages..");
+			return;
+		}
 		
 		//Encrypt and send..
 		sendMessage(sendjson,function(success, sendresp){

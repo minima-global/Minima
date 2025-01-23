@@ -64,13 +64,24 @@
 
 <script type="text/javascript">
 	
+	//Are we adding a user..
+	var addname = MDS.form.getParams("addcontactname");
+	var addkey  = MDS.form.getParams("addcontactpublickey");
+	if(addname != null){
+		newname.value = addname;
+	}
+	if(addkey != null){
+		newpubkey.value = addkey;
+	}
+	
 	function addContact(){
-		
 		var name   = newname.value.trim();
 		var pubkey = newpubkey.value.trim();
-		
 		insertContact(name, pubkey, function(){
 			loadContactList();
+			
+			newname.value   = "";
+			newpubkey.value = "";
 		});
 	}
 	
