@@ -30,15 +30,13 @@ function getHashRef(messagejson, callback){
 	var left 	= messagejson.frompublickey.localeCompare(messagejson.topublickey);
 	var hashstr = "";
 	if(left>0){
-		hashstr = "string:"+messagejson.frompublickey+""+messagejson.topublickey+messagejson.subject;
+		hashstr = "hashref:"+messagejson.frompublickey+""+messagejson.topublickey+messagejson.subject;
 	}else{
-		hashstr = "string:"+messagejson.topublickey+""+messagejson.frompublickey+messagejson.subject;
+		hashstr = "hashref:"+messagejson.topublickey+""+messagejson.frompublickey+messagejson.subject;
 	}
 	
 	//Now hash that
 	MDS.cmd("hash type:sha3 data:"+encodeStringForDB(hashstr), function(hashresp){
-		MDS.log(JSON.stringify(hashresp));
-		
 		callback(hashresp.response.hash);
 	});
 }
@@ -129,7 +127,7 @@ function insertMessage(messagejson, incoming, callback){
  */
 function loadTopMessages(callback){
 	MDS.sql("SELECT * from chainmessages WHERE ID in "
-		+"( SELECT max(ID) FROM chainmessages GROUP BY hashref ) ORDER BY ID DESC", function(sqlmsg){
+		+"( SELECT max(ID) FROM chainmessages GROUP BY hashref ) ORDER BY ID DESC LIMIT 50", function(sqlmsg){
 		callback(sqlmsg);	
 	});
 }

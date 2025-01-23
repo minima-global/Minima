@@ -145,25 +145,10 @@
 			}else{
 				alert("Message Sent!");	
 			}
-		});
-	}
-	
-	//Is this coi mail for us..
-	function processNewMessage(coin){
-
-		//Does it have a message..
-		if(coin.address == CHAINMAIL_ADDRESS && coin.state[99]){
 			
-			checkEncryptedData(coin.state[99],function(success, message){
-				if(success){
-					//It for us!
-					MDS.log("New Message "+JSON.stringify(message));
-					
-					//Add to the database..
-					insertMessage(message, true, function(insresp){});				
-				}
-			});
-		}
+			//Jump home..
+			jumpToHome();
+		});
 	}
 	
 	//Main message handler..
@@ -171,28 +156,14 @@
 		
 		//Do initialisation
 		if(msg.event == "inited"){
-			
-			//wipeDB();
-			
-			createDB(function(){
-				loadContactList();	
-			});
-			
+				
 			//Get your details
 			MDS.cmd("maxima",function(maxresp){
 				maxname = maxresp.response.name;
 				maxkey	= maxresp.response.publickey;
+				
+				loadContactList();
 			});
-			
-			//Listen for coins..
-			MDS.cmd("coinnotify action:add address:"+CHAINMAIL_ADDRESS,function(startup){});
-			
-		}else if(msg.event == "NOTIFYCOIN"){
-			
-			if(msg.data.address ==  CHAINMAIL_ADDRESS){
-				processNewMessage(msg.data.coin);
-			}
-			
 		}
 	});
 

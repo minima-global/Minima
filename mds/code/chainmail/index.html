@@ -102,13 +102,9 @@
 			//Do stuff.. from now..		
 			var wipedb = false;
 			if(wipedb){
-				wipeDB(function(){
-					loadMail();
-				});
+				wipeDB(function(){});
 			}else{
-				createDB(function(){
-					loadMail();
-				});
+				loadMail();
 			}
 		}
 	});
