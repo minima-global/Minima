@@ -8,7 +8,7 @@ MDS.load("jslib.js");
 MDS.load("./js/sql.js");
 MDS.load("./js/txns.js");
 
-var logging = true;
+var logging = false;
 
 //Is this coin mail for us..
 function processNewMessage(coin){
@@ -26,10 +26,8 @@ function processNewMessage(coin){
 				
 				//Add to the database..
 				insertMessage(message, true, function(insresp){
-					
 					//Notify the User
-					//..
-					
+					MDS.notify(message.fromname+" : "+message.message);
 				});				
 			}
 		});
@@ -47,14 +45,11 @@ MDS.init(function(msg){
 			
 			//Listen for coins..
 			MDS.cmd("coinnotify action:add address:"+CHAINMAIL_ADDRESS,function(startup){});
-			
 		});
 		
 	}else if(msg.event == "NOTIFYCOIN"){
-		
 		if(msg.data.address ==  CHAINMAIL_ADDRESS){
 			processNewMessage(msg.data.coin);
 		}	
 	}
-	
 });		

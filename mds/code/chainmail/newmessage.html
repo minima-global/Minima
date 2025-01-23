@@ -149,16 +149,17 @@
 			}
 			
 			//Add to the database..
-			insertMessage(sendjson, false, function(insresp){});
-			
-			if(sendresp.pending){
-				alert("Transaction Pending..\n\nIt has been added to your database..");		
-			}else{
-				alert("Message Sent!");	
-			}
-			
-			//Jump home..
-			jumpToHome();
+			insertMessage(sendjson, false, function(insresp){
+				
+				if(sendresp.pending){
+					alert("Transaction Pending..\n\nIt has still been added to your database..");		
+				}else{
+					alert("Message Sent!");	
+				}
+				
+				//Jump home..
+				jumpToHome();
+			});			
 		});
 	}
 	
@@ -171,7 +172,7 @@
 			//Get your details
 			MDS.cmd("maxima",function(maxresp){
 				maxname = maxresp.response.name;
-				maxkey	= maxresp.response.publickey;
+				maxkey	= maxresp.response.mxpublickey;
 				
 				loadContactList();
 			});

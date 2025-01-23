@@ -82,7 +82,6 @@ function createDB(callback){
 	});
 }
 
-
 /**
  * MESSAGE FUNCTIONS
  */

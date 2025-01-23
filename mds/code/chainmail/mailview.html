@@ -79,7 +79,7 @@
 		//Incoming or outgoing..
 		var view = "<br><div class=messagebox>";
 		var boxtype = "";
-		if(msg.INCOMING == 0){
+		if(msg.INCOMING == 1){
 			boxtype="incoming";
 		}else{
 			boxtype="outgoing";
@@ -108,7 +108,7 @@
 				//Is the Pubkey different from ours..kkep it as that is the recipient..
 				if(msg.FROMPUBLICKEY != maxkey){
 					topubkey = msg.FROMPUBLICKEY;
-					toname	 = msg.FROMNAME;
+					toname	 = safeDecodeString(msg.FROMNAME);
 				}
 				
 				if(topubkey == ""){
@@ -188,9 +188,12 @@
 			//Get your details
 			MDS.cmd("maxima",function(maxresp){
 				maxname = maxresp.response.name;
-				maxkey	= maxresp.response.publickey;
+				maxkey	= maxresp.response.mxpublickey;
 				
-				loadCompleteMail();
+				//Set all messages to READ
+				readAllMessages(hashref,function(){
+					loadCompleteMail();	
+				});
 			});
 			
 		}

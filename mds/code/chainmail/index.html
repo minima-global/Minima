@@ -17,6 +17,7 @@
 	<!-- Load the local JS lib -->
 	<script type="text/javascript" src="jslib.js"></script>
 	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/txns.js"></script>
 	<script type="text/javascript" src="./js/purify.min.js"></script>
 	
 </head>
@@ -54,7 +55,7 @@
 
 <script type="text/javascript">
 	
-	function createMessageRow(row, mail){
+	function createMessageRow(mail){
 		
 		var messagerow = messagetable.insertRow();
 		messagerow.onclick = function(){
@@ -73,8 +74,21 @@
 		date.className+=" myrighttd";
 		date.style.width = "180";
 		
-		from.innerHTML 		= safeDecodeString(mail.FROMNAME);
-		subject.innerHTML 	= safeDecodeString(mail.SUBJECT);
+		//MDS.log(JSON.stringify(mail));
+		
+		if(mail.READ == 0){
+			from.innerHTML 		= "<b>"+safeDecodeString(mail.FROMNAME)+"</b>";
+			subject.innerHTML 	= "<b>"+safeDecodeString(mail.SUBJECT)+"</b>"
+						+"<br><span style='font-size:14;'><b>"+safeDecodeString(mail.MESSAGE)+"</b></span>";
+			
+		}else{
+			from.innerHTML 		= safeDecodeString(mail.FROMNAME);
+			subject.innerHTML 	= safeDecodeString(mail.SUBJECT)
+						+"<br><span style='font-size:12;color:#888888'>"+safeDecodeString(mail.MESSAGE)+"</span>";
+				
+		}
+		
+					
 		date.innerHTML 		= new Date(+mail.DATE).toLocaleTimeString()+" "+new Date(+mail.DATE).toLocaleDateString();
 		
 	}
@@ -87,7 +101,7 @@
 		//Add the messages
 		loadTopMessages(function(msg){
 			for(var i=0;i<msg.count;i++){
-				createMessageRow(i, msg.rows[i]);	
+				createMessageRow(msg.rows[i]);	
 			}
 			
 			//Are we blank
@@ -116,13 +130,17 @@
 					
 					youraddress.innerHTML = "<br>Your ChainMail Address : <br><br>"
 								+"<div style='margin:auto;max-width:90%;font-size:10;'>"
-								+maxresp.response.publickey+"</div><br>";
+								+maxresp.response.mxpublickey+"</div><br>";
 					
 					loadMail();
 				});
 				
 				
 			}
+		}else if(msg.event == "NOTIFYCOIN"){
+			if(msg.data.address == CHAINMAIL_ADDRESS){
+				loadMail();
+			}	
 		}
 	});
 
