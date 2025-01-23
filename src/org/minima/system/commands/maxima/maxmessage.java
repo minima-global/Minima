@@ -61,7 +61,7 @@ public class maxmessage extends Command {
 			resp.put("message", mm.toJSON());
 			
 			//Now create an encrypted version
-			MiniData encrypt = getDataParam("publickey");
+			MiniData encrypt = new MiniData(getAddressParam("publickey"));
 			
 			//Try and encrypt the message
 			try {
