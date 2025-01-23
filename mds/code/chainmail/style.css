@@ -127,3 +127,82 @@ body {
   	max-width:840;
 }
 
+/*Simple Button!!*/
+.solobutton {
+    min-width:100;
+    background-color: #eee;
+    border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	font-family: Manrope;
+  	font-size: 14px;
+}
+.solobutton-edit {
+	font-family: Manrope;
+	background: #fff;
+}
+.solobutton-edit:focus {
+	font-family: Manrope;
+	border: 0.5px solid #EDEDED;
+}
+
+.solobutton:hover {
+	font-family: Manrope;
+	cursor: pointer;
+    color: #fff;
+	background-color: #0000ff;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+	border-color: #16181C;
+}
+
+.solobutton[disabled]:hover {
+	cursor: default;
+    color: #fff;
+    background-color: #eee;
+    border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	font-size: 14px;
+}
+
+.solobutton:active {
+  	opacity: 0.8;
+	font-style: italic;
+}
+
+
+/*Simple Button!!*/
+.smallbutton {
+    min-width:80;
+    background-color: #eee;
+    border: 0.5px solid #EDEDED;
+  	border-radius: 4px;
+  	padding: 2px 2px;
+  	font-family: Manrope;
+  	font-size: 10px;
+}
+.smallbutton-edit {
+	font-family: Manrope;
+	background: #fff;
+}
+.smallbutton-edit:focus {
+	font-family: Manrope;
+	border: 0.5px solid #EDEDED;
+}
+
+.smallbutton:hover {
+	font-family: Manrope;
+	cursor: pointer;
+    color: #fff;
+	background-color: #0000ff;
+  	border-radius: 4px;
+  	padding: 2px 2px;
+	border-color: #16181C;
+}
+
+.smallbutton:active {
+  	opacity: 0.8;
+	font-style: italic;
+}
+

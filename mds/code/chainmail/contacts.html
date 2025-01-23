@@ -54,7 +54,7 @@
 			<td><input class=inputfields type="text" id=newpubkey></td>			
 		</tr>
 		<tr>
-			<td style="text-align:center" colspan="2"><br><input type="submit" value="Add Contact" onclick="addContact();"/><br><br></td>
+			<td style="text-align:center" colspan="2"><br><button class=solobutton onclick="addContact();">Add Contact</button><br><br></td>
 		</tr>
 	</table>
 	
@@ -107,10 +107,10 @@
 				var pubkey 	 = row.insertCell();
 				var del		 = row.insertCell();
 				
-				mess.innerHTML		= "<button onclick='messageContact(\""+contact.PUBLICKEY+"\");'>MESSAGE</button>"
+				mess.innerHTML		= "<button class=smallbutton onclick='messageContact(\""+contact.PUBLICKEY+"\");'>MESSAGE</button>"
 				username.innerHTML 	= safeDecodeString(contact.USERNAME);
 				pubkey.innerHTML   	= contact.PUBLICKEY.substring(0,20)+"..&nbsp;&nbsp;&nbsp;&nbsp;"; 
-				del.innerHTML 		= "<button onclick='delContact("+contact.ID+");'>DELETE</button>"
+				del.innerHTML 		= "<button class=smallbutton onclick='delContact("+contact.ID+");'>DELETE</button>"
 			}
 			
 			if(msg.count==0){
