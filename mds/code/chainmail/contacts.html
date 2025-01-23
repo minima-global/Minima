@@ -17,6 +17,7 @@
 	<!-- Load the local JS lib -->
 	<script type="text/javascript" src="jslib.js"></script>
 	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/purify.min.js"></script>
 	
 </head>
 
@@ -107,7 +108,7 @@
 				var del		 = row.insertCell();
 				
 				mess.innerHTML		= "<button onclick='messageContact(\""+contact.PUBLICKEY+"\");'>MESSAGE</button>"
-				username.innerHTML 	= contact.USERNAME;
+				username.innerHTML 	= safeDecodeString(contact.USERNAME);
 				pubkey.innerHTML   	= contact.PUBLICKEY.substring(0,20)+"..&nbsp;&nbsp;&nbsp;&nbsp;"; 
 				del.innerHTML 		= "<button onclick='delContact("+contact.ID+");'>DELETE</button>"
 			}

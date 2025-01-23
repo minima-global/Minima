@@ -18,6 +18,7 @@
 	<script type="text/javascript" src="jslib.js"></script>
 	<script type="text/javascript" src="./js/sql.js"></script>
 	<script type="text/javascript" src="./js/txns.js"></script>
+	<script type="text/javascript" src="./js/purify.min.js"></script>
 	
 </head>
 
@@ -98,7 +99,7 @@
 				
 				var opt 		= document.createElement('option');
 	            opt.value 		= contact.PUBLICKEY;
-	            opt.innerHTML 	= contact.USERNAME;
+	            opt.innerHTML 	= safeDecodeString(contact.USERNAME);
 	            contacts.appendChild(opt);
 			}
 			
@@ -136,6 +137,9 @@
 				return;
 			}
 			
+			//Add to the database..
+			insertMessage(sendjson, false, function(insresp){});
+			
 			if(sendresp.pending){
 				alert("Transaction Pending..\n\nIt has been added to your database..");		
 			}else{
@@ -156,9 +160,7 @@
 					MDS.log("New Message "+JSON.stringify(message));
 					
 					//Add to the database..
-					insertMessage(message, true, function(insresp){
-						
-					});				
+					insertMessage(message, true, function(insresp){});				
 				}
 			});
 		}
@@ -184,9 +186,6 @@
 			
 			//Listen for coins..
 			MDS.cmd("coinnotify action:add address:"+CHAINMAIL_ADDRESS,function(startup){});
-				
-			
-			//Listen for a message
 			
 		}else if(msg.event == "NOTIFYCOIN"){
 			

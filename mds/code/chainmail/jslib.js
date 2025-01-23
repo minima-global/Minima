@@ -16,3 +16,7 @@ function showTitleOnAndroid(){
 		Android.showTitleBar();
 	}
 }
+
+function safeDecodeString(str){
+	return DOMPurify.sanitize(decodeStringFromDB(str));
+}

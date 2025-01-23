@@ -55,67 +55,38 @@
 
 <script type="text/javascript">
 	
-	function runtests(){
-		createDB(function(){
-			
-			if(false){
-				//Now add some stuff..
-				insertMessage("some Subject","0xDD","Hello Sent! 4 ",0,function(){
-					insertMessage("some Subject","0xDD","Reply 4",1,function(){
-						loadAllMessages("0xDD",function(msg){
-							tester.innerHTML = JSON.stringify(msg,null,2);
-						});		
-					});	
-				});	
-			
-			}else{
-				
-				loadTopMessages(function(msg){
-					tester.innerHTML = JSON.stringify(msg,null,2);
-				});
-				
-				/*loadAllMessages("0xFF",function(msg){
-					tester.innerHTML = JSON.stringify(msg,null,2);
-				});*/	
-			}
-				
-		});
-	}
-	
-	function viewFull(hashref){
-		location.href="mailview.html?uid="+MDS.minidappuid+"&hashref="+hashref;
-	}
-	
-	
-	function safeString(str){
-		return DOMPurify.sanitize(decodeStringFromDB(str));
-	}
-	
 	function createMessageRow(row, mail){
 		
 		var messagerow = messagetable.insertRow();
 		messagerow.onclick = function(){
-			viewFull("0xFF");	
+			location.href="mailview.html?uid="+MDS.minidappuid+"&hashref="+mail.HASHREF+"&subject="+mail.SUBJECT;	
 		};
+		messagerow.className+=" mytr";
 		
 		var from 		 = messagerow.insertCell();
 		from.style.width = "150";
+		from.className+=" mylefttd";
 		
 		var subject = messagerow.insertCell();
-		var date	= messagerow.insertCell();
-		date.style.width = "50";
+		subject.className+=" mylefttd";
 		
-		from.innerHTML 		= safeString(mail.FROMNAME);
-		subject.innerHTML 	= safeString(mail.SUBJECT);
-		date.innerHTML 		= new Date(+mail.DATE).toLocaleTimeString();
+		var date	= messagerow.insertCell();
+		date.className+=" myrighttd";
+		date.style.width = "180";
+		
+		from.innerHTML 		= safeDecodeString(mail.FROMNAME);
+		subject.innerHTML 	= safeDecodeString(mail.SUBJECT);
+		date.innerHTML 		= new Date(+mail.DATE).toLocaleTimeString()+" "+new Date(+mail.DATE).toLocaleDateString();
+		
 	}
 	
 	function loadMail(){
 		
+		//Clear table
 		messagetable.innerHTML = "";
 		
+		//Add the messages
 		loadTopMessages(function(msg){
-			
 			for(var i=0;i<msg.count;i++){
 				createMessageRow(i, msg.rows[i]);	
 			}
@@ -132,12 +103,12 @@
 			var wipedb = false;
 			if(wipedb){
 				wipeDB(function(){
-					runtests();
+					loadMail();
 				});
 			}else{
-				//runtests();
-				
-				loadMail();
+				createDB(function(){
+					loadMail();
+				});
 			}
 		}
 	});

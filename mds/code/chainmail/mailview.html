@@ -17,6 +17,8 @@
 	<!-- Load the local JS lib -->
 	<script type="text/javascript" src="jslib.js"></script>
 	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/txns.js"></script>
+	<script type="text/javascript" src="./js/purify.min.js"></script>
 	
 </head>
 
@@ -39,50 +41,120 @@
 	</div>
 	
 	<br>
+	<div class=subjectrow id=subjectview></div>
 	
+	<div id=messageview></div>
+	<br>
 	
-	<div id=messageview class=maintable>
-		
-		<div style="text-align:right">
-		hello 
-		</div>
-		<br>
-		
-		<div style="text-align:left">
-		hello 
-		</div>
-		<br>
-		
-		<div style="text-align:right">
-		hello 
-		</div>
-		<br>
-	
-		
-	</div>
-	 
+	<table class=contacts>
+		<tr>
+			<td style="text-align:center">
+				<textarea id=sendmessage class=inputfields rows=10 cols=50></textarea>
+			</td>
+		</tr>
+		<tr>
+			<td style="text-align:center">
+				<button onclick="send();">Send Reply</button>
+			</td>
+		</tr>
+	</table>
 	
 </center>
 
 <script type="text/javascript">
 	
 	//Get the HASREF conversation
+	var subject = MDS.form.getParams("subject");
 	var hashref = MDS.form.getParams("hashref");
+	
+	var maxname = "";
+	var maxkey	= "";
+	
+	var topubkey = "";
 	
 	function createSingleView(msg){
 		
+		//Incoming or outgoing..
+		var view = "<br><div class=messagebox>";
+		var boxtype = "";
+		if(msg.INCOMING == 0){
+			boxtype="incoming";
+		}else{
+			boxtype="outgoing";
+		}
+		
+		view += "<div class="+boxtype+"><b>"+safeDecodeString(msg.FROMNAME)+"</b><br>"+safeDecodeString(msg.MESSAGE)+"</div>";
+		
+		view += "</div>";
+		
+		return view;
 	}
 	
 	function loadCompleteMail(){
 		loadAllMessages(hashref,function(allmessages){
 			
+			//Set the subject
+			subjectview.innerHTML = safeDecodeString(subject);
+			
+			var fullmsg = "";
 			for(var i=0;i<allmessages.count;i++){
 				
+				var msg = allmessages.rows[i];
 				
-				
+				fullmsg += createSingleView(msg);
+			
+				//Is the Pubkey different from ours..kkep it as that is the recipient..
+				if(msg.FROMPUBLICKEY != maxkey){
+					topubkey = msg.FROMPUBLICKEY;
+				}else if(msg.TOPUBLICKEY != maxkey){
+					topubkey = msg.TOPUBLICKEY;
+				}		
 			}
 			
+			//If no different pubkey was fund must be a message to yourself
+			if(topubkey == ""){
+				topubkey = maxkey;
+			}
 			
+			//Set it..
+			messageview.innerHTML = fullmsg;
+		});
+	}
+	
+	function send(){
+		
+		//Create a complete message
+		var sendjson  			= {};
+		
+		//MAXIMA DETAILS
+		sendjson.fromname 		= maxname;
+		sendjson.frompublickey 	= maxkey;
+		
+		//TO PUBLIC KEY
+		sendjson.topublickey	= topubkey;
+		
+		//SUBJECT AND MESSAGE
+		sendjson.subject 		= subject;
+		sendjson.message		= sendmessage.value.trim();
+		
+		//Encrypt and send..
+		sendMessage(sendjson,function(success, sendresp){
+			if(!success){
+				alert("Error sending mail..\n\n"+sendresp);
+				return;
+			}
+			
+			//Add to the database..
+			insertMessage(sendjson, false, function(insresp){
+				if(sendresp.pending){
+					alert("Transaction Pending..\n\nIt has been added to your database..");		
+				}else{
+					alert("Message Sent!");	
+				}	
+				
+				//refresh..
+				window.location.reload();
+			});
 		});
 	}
 	
@@ -91,7 +163,15 @@
 		
 		//Do initialisation
 		if(msg.event == "inited"){
-			loadCompleteMail();
+			
+			//Get your details
+			MDS.cmd("maxima",function(maxresp){
+				maxname = maxresp.response.name;
+				maxkey	= maxresp.response.publickey;
+				
+				loadCompleteMail();
+			});
+			
 		}
 	});
 
