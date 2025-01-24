@@ -20,3 +20,7 @@ function showTitleOnAndroid(){
 function safeDecodeString(str){
 	return DOMPurify.sanitize(decodeStringFromDB(str));
 }
+
+function makeDateString(timemilli){
+	return new Date(+timemilli).toLocaleTimeString()+" "+new Date(+timemilli).toLocaleDateString();
+}

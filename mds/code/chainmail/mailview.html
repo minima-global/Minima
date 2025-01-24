@@ -85,8 +85,15 @@
 			boxtype="outgoing";
 		}
 		
-		view += "<div class="+boxtype+"><b>"+safeDecodeString(msg.FROMNAME)+"</b><br>"+safeDecodeString(msg.MESSAGE)+"</div>";
+		toprow = "<table width=100%><tr> "
+				+"<td> <b>"+safeDecodeString(msg.FROMNAME)+"</b></td>"
+				+"<td style='text-align:right;font-size:12;'>"+makeDateString(msg.DATE)+"</td> </tr>"
+				+"<tr> <td colspan=2>"+safeDecodeString(msg.MESSAGE)+"</td> </tr>"
+				+"</table>";
+				
+		view += "<div class="+boxtype+">"+toprow+"</div>";
 		
+		//view += "<div class="+boxtype+"><b>"+safeDecodeString(msg.FROMNAME)+"</b> @ "+makeDateString(msg.DATE)+"<br>"+safeDecodeString(msg.MESSAGE)+"</div>";
 		view += "</div>";
 		
 		return view;
