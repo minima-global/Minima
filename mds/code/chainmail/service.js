@@ -12,25 +12,34 @@ var logging = false;
 
 //Is this coin mail for us..
 function processNewMessage(coin){
-
-	//Does it have a message..
-	if(coin.address == CHAINMAIL_ADDRESS && coin.state[99]){
-		
-		//Is this message fopr us
-		checkEncryptedData(coin.state[99],function(success, message){
-			if(success){
-				//It for us!
-				if(logging){
-					MDS.log("New Message "+JSON.stringify(message));	
+	
+	try{
+		//Does it have a message..
+		if(coin.address == CHAINMAIL_ADDRESS && coin.state[99]){
+			
+			//Is this message fopr us
+			checkEncryptedData(coin.state[99],function(success, message){
+				if(success){
+					//It for us!
+					if(logging){
+						MDS.log("New Message "+JSON.stringify(message));	
+					}
+					
+					//Add to the database..
+					insertMessage(message, true, function(insresp){
+						
+						//Notify the User
+						MDS.notify(message.fromname+" : "+message.message);
+						
+						//Send a message to the front end..
+						MDS.comms.solo("NEWMESSAGE");
+					});				
 				}
-				
-				//Add to the database..
-				insertMessage(message, true, function(insresp){
-					//Notify the User
-					MDS.notify(message.fromname+" : "+message.message);
-				});				
-			}
-		});
+			});
+		}	
+		
+	}catch(error){
+		MDS.log(error);
 	}
 }
 

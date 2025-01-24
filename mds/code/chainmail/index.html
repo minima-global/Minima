@@ -48,7 +48,7 @@
 	<br>
 	
 	<div class=contacts style="text-align:center;">
-		<br>All messages are signed and end-to-end encrypted so the sender, recipient and message are all hidden<br><br>
+		<br>Messages are signed and end-to-end encrypted so the sender, recipient and content are hidden<br><br>
 	</div>
 	
 </center>
@@ -132,13 +132,12 @@
 					
 					loadMail();
 				});
-				
-				
 			}
-		}else if(msg.event == "NOTIFYCOIN"){
-			if(msg.data.address == CHAINMAIL_ADDRESS){
+		
+		}else if(msg.event == "MDSCOMMS"){
+			if(!msg.data.public && msg.data.message == "NEWMESSAGE"){
 				loadMail();
-			}	
+			}
 		}
 	});
 
