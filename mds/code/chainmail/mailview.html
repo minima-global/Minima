@@ -74,6 +74,10 @@
 	var toname 		= "";
 	var topubkey 	= "";
 	
+	function makeMessageNewLine(msg){
+		return safeDecodeString(msg).replaceAll("\n","<br>");
+	}
+	
 	function createSingleView(msg){
 		
 		//Incoming or outgoing..
@@ -88,7 +92,7 @@
 		toprow = "<table width=100%><tr> "
 				+"<td> <b>"+safeDecodeString(msg.FROMNAME)+"</b></td>"
 				+"<td style='text-align:right;font-size:12;'>"+makeDateString(msg.DATE)+"</td> </tr>"
-				+"<tr> <td colspan=2>"+safeDecodeString(msg.MESSAGE)+"</td> </tr>"
+				+"<tr> <td colspan=2>"+makeMessageNewLine(msg.MESSAGE)+"</td> </tr>"
 				+"</table>";
 				
 		view += "<div class="+boxtype+">"+toprow+"</div>";
