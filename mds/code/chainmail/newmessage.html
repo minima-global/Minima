@@ -1,0 +1,186 @@
+<html>
+
+<head>
+	<title>ChainMail</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/txns.js"></script>
+	<script type="text/javascript" src="./js/purify.min.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table width=100% border=0>
+			<tr>
+				<td><img height=45 src="./images/webmail.png"></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>ChainMail</b></td>
+				<td class='topicdate' nowrap>
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToNewMessage();" height=30 src="./images/newmail.png">&nbsp;&nbsp;
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToContacts();" height=30 src="./images/contacts.png">&nbsp;&nbsp;					
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToHome();" height=30 src="./images/home.png">&nbsp;&nbsp;
+				</td>
+			</tr>
+		</table>
+	</div>
+	
+	<br>
+	<table class=contacts>
+		<tr>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td class=tablerowname>Contact : </td>
+			<td><select class=inputfields id="contacts" onchange="contactChosen();"><option value="">Please select</option></select></td>
+		</tr>
+		<tr>
+			<td class=tablerowname>Address : </td>
+			<td><input class=inputfields type="text" id=sendto></td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td class=tablerowname>Subject : </td>
+			<td><input class=inputfields type="text" id=sendsubject></td>
+		</tr>
+		<tr>
+			<td class=tablerowname>Message : </td>
+			<td><textarea class=inputfields rows=10 cols=50 id=sendmessage></textarea></td>
+		</tr>
+		
+		<tr>
+			<td style="text-align:center" colspan="2">
+				<br><button class=solobutton onclick="send();">Send Message</button>
+				<br><br>
+			</td>
+		</tr>
+		
+	</table>
+	
+	
+</center>
+
+<script type="text/javascript">
+	
+	var maxname = "";
+	var maxkey	= "";
+	
+	function contactChosen(){
+		sendto.value=contacts.value;
+	}
+	
+	//Are we messaging someone in particular
+	var message_contact = MDS.form.getParams("contactkey");
+	
+	function loadContactList(){
+		
+		//Load the contacts
+		loadContacts(function(msg){
+			
+			for(var i=0;i<msg.count;i++){
+				var contact = msg.rows[i];
+				
+				var opt 		= document.createElement('option');
+	            opt.value 		= contact.PUBLICKEY;
+	            opt.innerHTML 	= safeDecodeString(contact.USERNAME);
+	            contacts.appendChild(opt);
+			}
+			
+			if(message_contact != null){
+				
+				//Set the select
+				contacts.value = message_contact;
+				
+				//Set it..
+				sendto.value=message_contact;
+			}
+		});
+	}
+	
+	function send(){
+		
+		//Create a complete message
+		var sendjson  			= {};
+		
+		//MAXIMA DETAILS
+		sendjson.fromname 		= maxname;
+		sendjson.frompublickey 	= maxkey;
+		
+		//TO PUBLIC KEY
+		sendjson.topublickey	= sendto.value.trim();
+		
+		//SUBJECT AND MESSAGE
+		sendjson.subject 		= sendsubject.value.trim();
+		sendjson.message		= sendmessage.value.trim();
+		
+		//Check not blank
+		if(sendjson.message == ""){
+			alert("Cannot send blank messages..");
+			return;
+		}
+		
+		if(sendjson.subject == ""){
+			alert("Cannot send blank subject..");
+			return;
+		}
+		
+		//Encrypt and send..
+		sendMessage(sendjson,function(success, sendresp){
+			if(!success){
+				alert("Error sending mail..\n\n"+sendresp);
+				return;
+			}
+			
+			//Add to the database..
+			insertMessage(sendjson, false, function(insresp){
+				
+				if(sendresp.pending){
+					alert("Transaction Pending..\n\nIt has still been added to your database..");		
+				}else{
+					alert("Message Sent!");	
+				}
+				
+				//Jump home..
+				jumpToHome();
+			});			
+		});
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+				
+			//Get your details
+			MDS.cmd("maxima",function(maxresp){
+				maxname = maxresp.response.name;
+				maxkey	= maxresp.response.mxpublickey;
+				
+				loadContactList();
+			});
+		}
+	});
+
+</script>
+
+</body>
+
+</html>

@@ -17,6 +17,8 @@
 	<!-- Load the local JS lib -->
 	<script type="text/javascript" src="jslib.js"></script>
 	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/txns.js"></script>
+	<script type="text/javascript" src="./js/purify.min.js"></script>
 	
 </head>
 
@@ -31,7 +33,7 @@
 				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>ChainMail</b></td>
 				<td class='topicdate' nowrap>
 					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToNewMessage();" height=30 src="./images/newmail.png">&nbsp;&nbsp;
-					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToConatcts();" height=30 src="./images/contacts.png">&nbsp;&nbsp;					
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToContacts();" height=30 src="./images/contacts.png">&nbsp;&nbsp;					
 					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToHome();" height=30 src="./images/home.png">&nbsp;&nbsp;
 				</td>
 			</tr>
@@ -39,38 +41,73 @@
 	</div>
 	
 	<br>
-	<pre id=tester style="text-align:left;">
+	<table class=maintable id=messagetable></table>
+	<br>
 	
-	</pre>
+	<div id=youraddress class=contacts style="word-wrap:break-word;text-align:center;"></div>
+	<br>
+	
+	<div class=contacts style="text-align:center;">
+		<br>All messages are signed and end to end encrypted so the sender, recipient and message are completely hidden<br><br>
+	</div>
 	
 </center>
 
 <script type="text/javascript">
 	
-	function runtests(){
-		createDB(function(){
+	function createMessageRow(mail){
+		
+		var messagerow = messagetable.insertRow();
+		messagerow.onclick = function(){
+			location.href="mailview.html?uid="+MDS.minidappuid+"&hashref="+mail.HASHREF+"&subject="+mail.SUBJECT;	
+		};
+		messagerow.className+=" mytr";
+		
+		var from 		 = messagerow.insertCell();
+		from.style.width = "150";
+		from.className+=" mylefttd";
+		
+		var subject = messagerow.insertCell();
+		subject.className+=" mylefttd";
+		
+		var date	= messagerow.insertCell();
+		date.className+=" myrighttd";
+		date.style.width = "180";
+		
+		if(mail.READ == 0){
+			from.innerHTML 		= "<b>"+safeDecodeString(mail.FROMNAME)+"</b>";
+			subject.innerHTML 	= "<b>"+safeDecodeString(mail.SUBJECT)+"</b>"
+						+"<br><span style='font-size:14;'><b>"+safeDecodeString(mail.MESSAGE)+"</b></span>";
 			
-			if(false){
-				//Now add some stuff..
-				insertMessage("some Subject","0xDD","Hello Sent! 4 ",0,function(){
-					insertMessage("some Subject","0xDD","Reply 4",1,function(){
-						loadAllMessages("0xDD",function(msg){
-							tester.innerHTML = JSON.stringify(msg,null,2);
-						});		
-					});	
-				});	
-			
-			}else{
+		}else{
+			from.innerHTML 		= safeDecodeString(mail.FROMNAME);
+			subject.innerHTML 	= safeDecodeString(mail.SUBJECT)
+						+"<br><span style='font-size:12;color:#888888'>"+safeDecodeString(mail.MESSAGE)+"</span>";
 				
-				loadTopMessages(function(msg){
-					tester.innerHTML = JSON.stringify(msg,null,2);
-				});
-				
-				/*loadAllMessages("0xFF",function(msg){
-					tester.innerHTML = JSON.stringify(msg,null,2);
-				});*/	
+		}
+		
+					
+		date.innerHTML 		= new Date(+mail.DATE).toLocaleTimeString()+" "+new Date(+mail.DATE).toLocaleDateString();
+		
+	}
+	
+	function loadMail(){
+		
+		//Clear table
+		messagetable.innerHTML = "";
+		
+		//Add the messages
+		loadTopMessages(function(msg){
+			for(var i=0;i<msg.count;i++){
+				createMessageRow(msg.rows[i]);	
 			}
-				
+			
+			//Are we blank
+			if(msg.count == 0){
+				var messagerow 	= messagetable.insertRow();
+				var from 		= messagerow.insertCell();
+				from.innerHTML 	= "No messages yet..";
+			}
 		});
 	}
 	
@@ -83,12 +120,25 @@
 			//Do stuff.. from now..		
 			var wipedb = false;
 			if(wipedb){
-				wipeDB(function(){
-					runtests();
-				});
+				wipeDB(function(){});
 			}else{
-				runtests()
+				
+				//Get your details
+				MDS.cmd("maxima",function(maxresp){
+					
+					youraddress.innerHTML = "<br>Your ChainMail Address : <br><br>"
+								+"<div style='margin:auto;max-width:90%;font-size:10;'>"
+								+maxresp.response.mxpublickey+"</div><br>";
+					
+					loadMail();
+				});
+				
+				
 			}
+		}else if(msg.event == "NOTIFYCOIN"){
+			if(msg.data.address == CHAINMAIL_ADDRESS){
+				loadMail();
+			}	
 		}
 	});
 

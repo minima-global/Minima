@@ -1,95 +1,97 @@
 
 //BASIC ADDRESS
-var MINIWEB_FILE_ADDRESS = "0x4D494E4957454220524F434B5321";
-var MINIWEB_FILE_REQUEST = "0x4D494E4957454220524F434BFFFF";
+var CHAINMAIL_ADDRESS = "0x434841494E4D41494C";
 
-//Send a file packet..
-function sendFilePacket(filepacket, callback){
-	
-	//What are the state variables..
-	var state = {};
-	state[0]  = "["+filepacket.data.name+"]";
-	state[1]  = filepacket.data.owner;
-	state[2]  = filepacket.data.randid;
-	state[3]  = "["+encodeStringForDB(filepacket.data.description)+"]";
-	state[4]  = filepacket.data.version;
-	state[5]  = filepacket.data.file;
-	state[6]  = filepacket.signature;
-	
-	//Now construct a txn
-	var txn = "sendpoll amount:0.000000000001 address:"+MINIWEB_FILE_ADDRESS+" storestate:true state:"+JSON.stringify(state);
-	
-	//Now post..
-	MDS.cmd(txn,function(resp){
-		if(callback){
-			callback(resp);	
-		}
-	});
+function URLencodeString(str){
+	return encodeURIComponent(str).split("'").join("%27");
 }
 
-function checkFilePacketCoin(coin){
-	
-	var coinstate = coin.state;
-	
-	for(var i=0;i<7;i++){
-		if(!coinstate[i]){
-			return false;
-		}	
-	}
-	
-	return  true;	
-}
-
-function convertToFilePacket(coin){
-	
-	var coinstate = coin.state;
-	
-	var filepacket 				= {};
-	filepacket.data 			= {};
-	filepacket.data.name 		= stripBrackets(coinstate[0]); 
-	filepacket.data.owner 		= coinstate[1];
-	filepacket.data.randid 		= coinstate[2];
-	filepacket.data.description = decodeStringFromDB(stripBrackets(coinstate[3])); 
-	filepacket.data.version 	= +coinstate[4];
-	filepacket.data.file 		= coinstate[5]; 
-	filepacket.signature 		= coinstate[6];
-	
-	return filepacket;
+function URLdecodeString(str){
+	return decodeURIComponent(str).split("%27").join("'");
 }
 
 //Send a file packet..
-function sendFileRequest(name, callback){
+function sendMessage(sendjson, callback){
 	
-	//What are the state variables..
-	var state = {};
-	state[0]  = "["+name+"]";
-	
-	//Now construct a txn
-	var txn = "sendpoll amount:0.000000000001 address:"+MINIWEB_FILE_REQUEST+" storestate:true state:"+JSON.stringify(state);
-	
-	//Now post..
-	MDS.cmd(txn,function(resp){
-		if(callback){
-			callback(resp);	
-		}
-	});
+	try{
+		
+		//First convert the JSON - from sql.js
+		var strversion = URLencodeString(JSON.stringify(sendjson));
+		
+		//Now do a maxmessage!
+		MDS.cmd("convert from:string to:hex data:\""+strversion+"\"", function(resp){
+			
+			//The HEX data to encrypt
+			var hexdata = resp.response.conversion;
+			
+			//Now convert to an encrypted max message..
+			MDS.cmd("maxmessage action:encrypt publickey:"+sendjson.topublickey+" data:"+hexdata, function(maxmess){
+				
+				//Did we encrypt it..
+				if(!maxmess.status){
+					callback(false,"Invalid Public Key");
+					return;
+				}
+				
+				//OK - Now send this data on a txn..
+				var state = {};
+				state[99]  = maxmess.response.data;
+				
+				//Now construct a txn
+				var txn = "send amount:0.000000000001 address:"+CHAINMAIL_ADDRESS+" state:"+JSON.stringify(state);
+				
+				//Now post..
+				MDS.cmd(txn,function(resp){	
+					callback(true,resp);
+				});		
+			});
+		});	
+		
+	}catch(error){
+		callback(false,error);
+	}
 }
 
-//Utility function
-function stripBrackets(coinstr){
+function checkEncryptedData(data, callback){
 	
-	if(!coinstr){
-		return "";
+	try{
+		
+		//First try and decode it..
+		MDS.cmd("maxmessage action:decrypt data:"+data,function(decresp){
+			//console.log(JSON.stringify(decresp,null,2));
+			
+			//Is this message for us ?
+			if(!decresp.status){
+				callback(false);
+				return;
+			}
+			
+			//OK - decrypted OK must be for us.. check signature!
+			if(!decresp.response.message.valid){
+				MDS.log("INVALID Signature from message ?");
+				callback(false);
+				return;
+			}
+			
+			//Decode the data into the orginal message
+			var decodeddata = decresp.response.message.data 
+			
+			//Now to convert back into a string...
+			MDS.cmd("convert from:HEX to:string data:"+decodeddata,function(conv){
+				
+				//Now decode back to normal..
+				var normal = URLdecodeString(conv.response.conversion);
+				
+				//And make a JSON..
+				var original = JSON.parse(normal);
+								
+				//And send it back..
+				callback(true,original);		
+			});
+		});	
+		
+	}catch(error){
+		MDS.log("ERROR decoding.. "+error);
+		callback(false);
 	}
-	
-	var str = coinstr.trim();
-	if(str.startsWith("[")){
-		str = str.substring(1);
-	}
-	
-	if(str.endsWith("]")){
-		str = str.substring(0,str.length-1);
-	}
-	
-	return str;
 }

@@ -13,7 +13,7 @@ import org.minima.utils.json.JSONObject;
 public class maxmessage extends Command {
 	
 	public maxmessage() {
-		super("maxmessage","[action:] [data:] (encrypt:) (decrypt:) - Create an encrypted signed message.");
+		super("maxmessage","[action:] [data:] (publickey:) - Create an encrypted signed message.");
 	}
 	
 	/*@Override
@@ -31,7 +31,7 @@ public class maxmessage extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","data","encrypt"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","data","publickey"}));
 	}
 	
 	@Override
@@ -42,7 +42,7 @@ public class maxmessage extends Command {
 		
 		String action = getParam("action");
 		
-		if(action.equals("create")) {
+		if(action.equals("encrypt")) {
 			
 			//Whats the message
 			MiniData data = getDataParam("data");
@@ -61,7 +61,24 @@ public class maxmessage extends Command {
 			resp.put("message", mm.toJSON());
 			
 			//Now create an encrypted version
-			if(existsParam("encrypt")) {
+			MiniData encrypt = new MiniData(getAddressParam("publickey"));
+			
+			//Try and encrypt the message
+			try {
+				CryptoPackage cp = new CryptoPackage();
+				cp.encrypt(mdata.getBytes(), encrypt.getBytes());
+				MiniData encdata = cp.getCompleteEncryptedData();
+				
+				//resp.put("encrypted", true);
+				resp.put("data", encdata.to0xString());
+				
+			}catch(Exception exc) {
+				//Something went wrong - prob invalid key
+				throw new CommandException("Invalid Publickey..cannot encrypt");
+			}
+			
+			//Now create an encrypted version
+			/*if(existsParam("encrypt")) {
 				MiniData encrypt = getDataParam("encrypt");
 				
 				CryptoPackage cp = new CryptoPackage();
@@ -73,14 +90,31 @@ public class maxmessage extends Command {
 			}else {
 				resp.put("encrypted", false);
 				resp.put("data", mdata.to0xString());
-			}
+			}*/
 			
-		}else if(action.equals("check")) {
+		}else if(action.equals("decrypt")) {
 			
 			MiniData data = getDataParam("data");
 			
-			//First see if it is NOT encrypted
+			//Ok - try and decrypt it..
+			MiniData privkey = Main.getInstance().getMaxima().getPrivateKey();
+			
 			try {
+				CryptoPackage cp = new CryptoPackage();
+				cp.ConvertMiniDataVersion(data);
+				
+				byte[] decdata = cp.decrypt(privkey.getBytes());
+				
+				MaximumMessage mm = MaximumMessage.ConvertMiniDataVersion(new MiniData(decdata));
+				//resp.put("encrypted", true);
+				resp.put("message", mm.toJSON());
+				
+			}catch(Exception decexc){
+				throw new CommandException("Invalid message..cannot decrypt");
+			}
+			
+			//First see if it is NOT encrypted
+			/*try {
 				//If this works..
 				MaximumMessage mm = MaximumMessage.ConvertMiniDataVersion(data);
 				
@@ -109,7 +143,7 @@ public class maxmessage extends Command {
 				}catch(Exception decexc){
 					throw new CommandException("Invalid message..cannot decrypt");
 				}
-			}
+			}*/
 			
 		}else {
 			throw new CommandException("Invalid action : "+action);
