@@ -206,3 +206,16 @@ body {
 	font-style: italic;
 }
 
+.unread {
+    background-color: #f0f7ff;
+}
+
+.unread-label {
+    background-color: #007bff;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 12px;
+    margin-left: 8px;
+}
+
