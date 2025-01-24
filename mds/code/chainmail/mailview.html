@@ -158,6 +158,8 @@
 			return;
 		}
 		
+		MDS.log(JSON.stringify(sendjson,null,2));
+		
 		//Encrypt and send..
 		sendMessage(sendjson,function(success, sendresp){
 			if(!success){
