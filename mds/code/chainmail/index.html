@@ -55,44 +55,78 @@
 
 <script type="text/javascript">
 	
+	//Store our public key globally when we get it
+	var MY_PUBLIC_KEY = "";
+	
 	function createMessageRow(mail){
+		//Debug logging
+		console.log("Message From: ", mail.FROMPUBLICKEY);
+		console.log("My Key: ", MY_PUBLIC_KEY);
+		console.log("Is my message?: ", mail.FROMPUBLICKEY === MY_PUBLIC_KEY);
 		
-		var messagerow = messagetable.insertRow();
-		messagerow.onclick = function(){
-			location.href="mailview.html?uid="+MDS.minidappuid+"&hashref="+mail.HASHREF+"&subject="+mail.SUBJECT;	
-		};
-		messagerow.className+=" mytr";
+		// First determine who we want to display
+		var displayName = safeDecodeString(mail.FROMNAME);
 		
-		var from 		 = messagerow.insertCell();
-		from.style.width = "150";
-		from.className+=" mylefttd";
-		
-		var subject = messagerow.insertCell();
-		subject.className+=" mylefttd";
-		
-		var date	= messagerow.insertCell();
-		date.className+=" myrighttd";
-		date.style.width = "180";
-		
-		if(mail.READ == 0){
-			from.innerHTML 		= "<b>"+safeDecodeString(mail.FROMNAME)+"</b>";
-			subject.innerHTML 	= "<b>"+safeDecodeString(mail.SUBJECT)+"</b>"
-						+"<br><span style='font-size:14;'><b>"+safeDecodeString(mail.MESSAGE)+"</b></span>";
-			
-		}else{
-			from.innerHTML 		= safeDecodeString(mail.FROMNAME);
-			subject.innerHTML 	= safeDecodeString(mail.SUBJECT)
-						+"<br><span style='font-size:12;color:#888888'>"+safeDecodeString(mail.MESSAGE)+"</span>";
-				
+		// If it's our message, look up the recipient's name first
+		if(mail.FROMPUBLICKEY === MY_PUBLIC_KEY) {
+			console.log("This is my message, looking up recipient name...");
+			loadContacts(function(contacts) {
+				console.log("Loaded contacts: ", contacts);
+				if(contacts && contacts.rows) {
+					for(var i=0; i<contacts.count; i++) {
+						if(contacts.rows[i].PUBLICKEY === mail.TOPUBLICKEY) {
+							displayName = safeDecodeString(contacts.rows[i].USERNAME);
+							console.log("Found recipient name: ", displayName);
+							createMessageRowHTML(displayName);
+							break;
+						}
+					}
+				}
+			});
+		} else {
+			// Not our message, use the sender's name
+			createMessageRowHTML(displayName);
 		}
 		
-					
-		date.innerHTML 		= new Date(+mail.DATE).toLocaleTimeString()+" "+new Date(+mail.DATE).toLocaleDateString();
-		
+		function createMessageRowHTML(name) {
+			var messagerow = messagetable.insertRow();
+			messagerow.onclick = function(){
+				location.href="mailview.html?uid="+MDS.minidappuid+"&hashref="+mail.HASHREF+"&subject="+mail.SUBJECT;	
+			};
+			messagerow.className+=" mytr";
+			
+			// Add unread indicator class if message is unread
+			if(mail.READ == 0) {
+				messagerow.className += " unread";
+			}
+			
+			var from = messagerow.insertCell();
+			from.style.width = "150";
+			from.className+=" mylefttd";
+			
+			var subject = messagerow.insertCell();
+			subject.className+=" mylefttd";
+			
+			var date = messagerow.insertCell();
+			date.className+=" myrighttd";
+			date.style.width = "180";
+			
+			console.log("Creating row with name: ", name);
+			if(mail.READ == 0){
+				from.innerHTML = "<b>"+name+"</b> <span class='unread-label'>NEW</span>";
+				subject.innerHTML = "<b>"+safeDecodeString(mail.SUBJECT)+"</b>"
+							+"<br><span style='font-size:14;'><b>"+safeDecodeString(mail.MESSAGE)+"</b></span>";
+			}else{
+				from.innerHTML = name;
+				subject.innerHTML = safeDecodeString(mail.SUBJECT)
+							+"<br><span style='font-size:12;color:#888888'>"+safeDecodeString(mail.MESSAGE)+"</span>";
+			}
+			
+			date.innerHTML = new Date(+mail.DATE).toLocaleTimeString()+" "+new Date(+mail.DATE).toLocaleDateString();
+		}
 	}
 	
 	function loadMail(){
-		
 		//Clear table
 		messagetable.innerHTML = "";
 		
@@ -125,6 +159,9 @@
 				
 				//Get your details
 				MDS.cmd("maxima",function(maxresp){
+					
+					//Store our public key globally
+					MY_PUBLIC_KEY = maxresp.response.mxpublickey;
 					
 					youraddress.innerHTML = "<br>Your ChainMail Address : <br><br>"
 								+"<div style='margin:auto;max-width:90%;font-size:10;'>"
