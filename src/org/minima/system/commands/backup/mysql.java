@@ -356,6 +356,7 @@ public class mysql extends Command {
 			}
 			
 			//Load the files from Archive..
+			long lastarch			= arch.loadLastBlock().getTxPoW().getBlockNumber().getAsLong();
 			long firstarch			= arch.loadFirstBlock().getTxPoW().getBlockNumber().getAsLong();
 			long mysqlfirstblock 	= mysql.loadFirstBlock();
 			
@@ -367,6 +368,12 @@ public class mysql extends Command {
 			long startload 	= mysqlfirstblock;
 			if(mysqlfirstblock == -1) {
 				startload = 0;
+				
+				//Does the archive start at 0..
+				if(lastarch != 0 || lastarch != 1) {
+					MinimaLogger.log("Archive NOT starting from 0!.. Load from start of archive @ "+lastarch);
+					startload = lastarch; 
+				}
 			}
 			
 			boolean finished = false;

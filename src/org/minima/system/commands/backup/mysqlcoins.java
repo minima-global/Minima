@@ -141,6 +141,10 @@ public class mysqlcoins extends Command {
 			JSONObject resp = new JSONObject();
 			resp.put("lastblock", lastblock);
 			resp.put("total", total);
+			
+			boolean autobackup = MinimaDB.getDB().getUserDB().getAutoBackupMySQLCoins();
+			resp.put("autobackup", autobackup);
+			
 			ret.put("response", resp);
 		
 		}else if(action.equals("wipe")) {
@@ -151,6 +155,29 @@ public class mysqlcoins extends Command {
 			mysql.wipeCoinsDB();
 			
 			ret.put("respnse", "CoinsDB wiped");
+			
+		}else if(action.equals("autobackup")) {
+			
+			boolean enable = getBooleanParam("enable");
+			udb.setAutoBackupMySQLCoins(enable);
+			
+			if(enable) {
+				udb.setAutoMySQLHost(host);
+				udb.setAutoMySQLDB(db);
+				udb.setAutoMySQLUser(user);
+				udb.setAutoMySQLPassword(password);
+			}else {
+				udb.setAutoMySQLHost("");
+				udb.setAutoMySQLDB("");
+				udb.setAutoMySQLUser("");
+				udb.setAutoMySQLPassword("");
+			}
+			
+			JSONObject resp = new JSONObject();
+			boolean autobackup = MinimaDB.getDB().getUserDB().getAutoBackupMySQLCoins();
+			resp.put("autobackup", autobackup);
+			
+			ret.put("response", resp);
 			
 		}else if(action.equals("update")) {
 			

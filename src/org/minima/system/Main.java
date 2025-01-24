@@ -890,35 +890,64 @@ public class Main extends MessageProcessor {
 			getMaxima().checkPollMessages();
 			
 		}else if(zMessage.getMessageType().equals(MAIN_AUTOBACKUP_MYSQL)) {
+		
+			
+			UserDB udb = MinimaDB.getDB().getUserDB();
+			
+			try {
+				//Are we enabled to back up MySQL..
+				if(udb.getAutoBackupMySQL()) {
+					
+					String backupcommand = "mysql host:"+udb.getAutoMySQLHost()
+									+" database:"+udb.getAutoMySQLDB()
+									+" user:"+udb.getAutoMySQLUser()
+									+" password:"+udb.getAutoMySQLPassword()
+									+" action:update";
+					
+					//Run a mysql Backup of the archive data..
+					JSONArray res 	= CommandRunner.getRunner().runMultiCommand(backupcommand);
+					JSONObject json = (JSONObject) res.get(0); 
+					boolean status  = (boolean) json.get("status");
+					
+					//Output
+					if(!status) {
+						MinimaLogger.log("[ERROR] MYSQL AUTOBACKUP "+json.getString("error"));
+					}else {
+						JSONObject response = (JSONObject) json.get("response");
+						MinimaLogger.log("MYSQL AUTOBACKUP OK "+response.toString());
+					}
+				}
+				
+				//Are we enabled to back up MySQL Coins..
+				if(udb.getAutoBackupMySQLCoins()) {
+					
+					String backupcommand = "mysqlcoins host:"+udb.getAutoMySQLHost()
+									+" database:"+udb.getAutoMySQLDB()
+									+" user:"+udb.getAutoMySQLUser()
+									+" password:"+udb.getAutoMySQLPassword()
+									+" action:update";
+					
+					//Run a mysql Backup of the archive data..
+					JSONArray res 	= CommandRunner.getRunner().runMultiCommand(backupcommand);
+					JSONObject json = (JSONObject) res.get(0); 
+					boolean status  = (boolean) json.get("status");
+					
+					//Output
+					if(!status) {
+						MinimaLogger.log("[ERROR] MYSQLCOINS AUTOBACKUP "+json.getString("error"));
+					}else {
+						JSONObject response = (JSONObject) json.get("response");
+						MinimaLogger.log("MYSQLCOINS AUTOBACKUP OK "+response.toString());
+					}
+				}
+				
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
 			
 			//Do it again..
 			PostTimerMessage(new TimerMessage(MAIN_AUTOBACKUP_MYSQL_TIMER, MAIN_AUTOBACKUP_MYSQL));
 			
-			UserDB udb = MinimaDB.getDB().getUserDB();
-			
-			//Are we enabled..
-			if(udb.getAutoBackupMySQL()) {
-				
-				String backupcommand = "mysql host:"+udb.getAutoMySQLHost()
-								+" database:"+udb.getAutoMySQLDB()
-								+" user:"+udb.getAutoMySQLUser()
-								+" password:"+udb.getAutoMySQLPassword()
-								+" action:update";
-				
-				//Run a mysql Backup of the archive data..
-				JSONArray res 	= CommandRunner.getRunner().runMultiCommand(backupcommand);
-				JSONObject json = (JSONObject) res.get(0); 
-				boolean status  = (boolean) json.get("status");
-				
-				//Output
-				if(!status) {
-					MinimaLogger.log("[ERROR] MYSQL AUTOBACKUP "+json.getString("error"));
-				}else {
-					JSONObject response = (JSONObject) json.get("response");
-					MinimaLogger.log("MYSQL AUTOBACKUP OK "+response.toString());
-				}
-			}
-		
 		}else if(zMessage.getMessageType().equals(MAIN_AUTOBACKUP_TXPOW)) {
 			
 			//Are we storing all the TxPoW
