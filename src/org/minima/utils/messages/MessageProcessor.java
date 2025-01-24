@@ -179,7 +179,7 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
                 }finally {
                 	
                 	//Make sure the write lock is released..
-                	MinimaDB.getDB().safeReleaseWriteLock();
+                	MinimaDB.getDB().safeReleaseReadWriteLock();
 				} 
                 
                 //Are there more messages..

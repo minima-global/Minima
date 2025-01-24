@@ -138,11 +138,19 @@ public class MinimaDB {
 		mCurrentWriteLockState  = zLock;
 	}
 	
-	public void safeReleaseWriteLock() {
+	public void safeReleaseReadWriteLock() {
+		
 		//Release it if held by this thread..
-		if(mRWLock.writeLock().isHeldByCurrentThread()) {
-			mRWLock.writeLock().unlock();
-		}
+		try {
+			if(mRWLock.writeLock().isHeldByCurrentThread()) {
+				mRWLock.writeLock().unlock();
+			}
+		}catch(Exception exc) {}
+		
+		//Release the READ lock.. if you have it..
+		try {
+			mRWLock.readLock().unlock();
+		}catch(Exception exc){}
 	}
 	
 	public String getRWLockInfo() {
