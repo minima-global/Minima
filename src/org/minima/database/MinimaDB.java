@@ -142,14 +142,16 @@ public class MinimaDB {
 		
 		//Release it if held by this thread..
 		try {
-			if(mRWLock.writeLock().isHeldByCurrentThread()) {
+			if(mRWLock.getWriteHoldCount()>0) {
 				mRWLock.writeLock().unlock();
 			}
 		}catch(Exception exc) {}
 		
 		//Release the READ lock.. if you have it..
 		try {
-			mRWLock.readLock().unlock();
+			if(mRWLock.getReadHoldCount()>0) {
+				mRWLock.readLock().unlock();
+			}
 		}catch(Exception exc){}
 	}
 	
