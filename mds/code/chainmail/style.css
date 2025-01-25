@@ -1,11 +1,15 @@
 @font-face {
 	font-family: Manrope;
-	src: url('./Manrope-Regular.ttf');
+	src: url('./miniweb/Manrope-Regular.ttf');
 }
 
 body {
 	font-family: Manrope; 
     margin: 20;   /* Remove body margins */
+}
+
+.ui-icon {
+	zoom:150%;
 }
 
 .mylefttd {
