@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
+import org.minima.system.commands.CommandException;
 import org.minima.system.sendpoll.SendPollManager;
 import org.minima.system.sendpoll.SendPollMessage;
 import org.minima.utils.json.JSONArray;
@@ -67,6 +68,11 @@ public class sendpoll extends Command {
 			
 			//Replace sendpoll with send..
 			String sendcomm = command.replaceFirst("sendpoll", "send");
+			
+			//Check is not just blank
+			if(sendcomm.equals("send")) {
+				throw new CommandException("Must be a valid send command..");
+			}
 			
 			//Add this to the Manager
 			sendpoll.addSendCommand(sendcomm);

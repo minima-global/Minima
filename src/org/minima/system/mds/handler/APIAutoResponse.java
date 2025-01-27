@@ -17,7 +17,7 @@ public class APIAutoResponse implements Runnable {
 	String mToMiniDAPPName;
 	String mToMiniDAPPID;
 	
-	long mDelay = 5000;
+	long mDelay = 10000;
 	
 	public APIAutoResponse(MDSManager zMDS, String zFromMiniDAPP, String zToMiniDAPP, String zToMiniDAPPID, String zRandID) {
 		mMDS				= zMDS;

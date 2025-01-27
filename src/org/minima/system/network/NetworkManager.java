@@ -127,6 +127,10 @@ public class NetworkManager {
 	}
 	
 	public JSONObject getStatus() {
+		return getStatus(false);
+	}
+	
+	public JSONObject getStatus(boolean zAll) {
 		JSONObject stats = new JSONObject();
 		
 		UserDB udb 				= MinimaDB.getDB().getUserDB();
@@ -143,6 +147,10 @@ public class NetworkManager {
 		rpcjson.put("enabled", GeneralParams.RPC_ENABLED);
 		rpcjson.put("port", GeneralParams.RPC_PORT);
 		stats.put("rpc", rpcjson);
+		
+		if(!zAll) {
+			return stats;
+		}
 		
 		//P2P stats
 		if(GeneralParams.P2P_ENABLED) {
@@ -162,7 +170,6 @@ public class NetworkManager {
 			mins = 1;
 		}
 		
-		
 		Date starter = new Date(traffic.getStartTime());
 		readwrite.put("from", starter.toString());
 		readwrite.put("totalread", MiniFormat.formatSize(traffic.getTotalRead()));
@@ -174,9 +181,7 @@ public class NetworkManager {
 		readwrite.put("read",MiniFormat.formatSize(speedread)+"/min");
 		readwrite.put("write",MiniFormat.formatSize(speedwrite)+"/min");
 		
-		
 		stats.put("traffic", readwrite);
-		
 		
 		return stats;
 	}
@@ -242,6 +247,15 @@ public class NetworkManager {
 	
 	public boolean isShutDownComplete() {
 		return 	mNIOManager.isShutdownComplete() &&  mP2PManager.isShutdownComplete();
+	}
+	
+	public void hardShutDown() {
+		try {
+			mNIOManager.hardShutDown();
+		} catch (Exception e) {
+			MinimaLogger.log(e);
+		} 
+		mP2PManager.stopMessageProcessor();
 	}
 	
 	public MessageProcessor getP2PManager() {

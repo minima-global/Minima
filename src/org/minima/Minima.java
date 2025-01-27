@@ -138,7 +138,7 @@ public class Minima {
 		MinimaLogger.log("* (_/\\/\\_)(____)(_)\\_)(____)(_/\\/\\_)(__)(__) *");
 		MinimaLogger.log("*                                            *");
 		MinimaLogger.log("**********************************************");
-		MinimaLogger.log("Welcome to Minima v"+GlobalParams.MINIMA_VERSION+" - for assistance type help. Then press enter.");
+		MinimaLogger.log("Welcome to Minima "+GlobalParams.getFullMicroVersion()+" - for assistance type help. Then press enter.");
 		
 		//Load the required MySQL classes
 		try {
@@ -150,7 +150,7 @@ public class Minima {
 		//Catch ALL Uncaught Exceptions..
 		Thread.setDefaultUncaughtExceptionHandler(new MinimaUncaughtException());
 		
-		//TEST ERRORS
+		//TEST ERRORS - not used for now
 		/*List<byte[]> list = new ArrayList<>();
 		int index = 1;
 		while (index < 100000) {

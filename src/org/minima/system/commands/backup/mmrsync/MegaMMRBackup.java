@@ -7,6 +7,7 @@ import java.io.IOException;
 import org.minima.database.mmr.MegaMMR;
 import org.minima.objects.IBD;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.Streamable;
 
 public class MegaMMRBackup implements Streamable {

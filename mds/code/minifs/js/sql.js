@@ -106,6 +106,17 @@ function getFilePacket(name, callback){
 	});
 }
 
+function getTotalFilePackets(callback){
+	
+	//Find a record
+	var sql = "SELECT COUNT(*) AS tot FROM filepackets";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		callback(msg.rows[0].TOT);
+	});
+}
+
 function getMyFilePackets(userkey, callback){
 	
 	//Find a record
@@ -209,6 +220,21 @@ function updateFilePacket(packetjson, callback){
 			 +", data='"+packetjson.data.file
 			 +"', signature='"+packetjson.signature+"'"
 			 +", published=0 WHERE name='"+packetjson.data.name+"'";
+					
+	MDS.sql(sql,function(msg){
+		callback(true);
+	});
+}
+
+function updateExternalFilePacket(packetjson, callback){
+	
+	//Update the record..
+	var sql = "UPDATE filepackets SET "
+			 +" description='"+encodeStringForDB(packetjson.data.description)+"'"	 
+			 +", version="+packetjson.data.version
+			 +", data='"+packetjson.data.file
+			 +"', signature='"+packetjson.signature+"'"
+			 +", published=1 WHERE name='"+packetjson.data.name+"'";
 					
 	MDS.sql(sql,function(msg){
 		callback(true);

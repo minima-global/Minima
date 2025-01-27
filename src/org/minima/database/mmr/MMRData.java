@@ -22,6 +22,11 @@ public class MMRData implements Streamable{
 	 */
 	private MiniNumber mValue;
 	
+	/**
+	 * Is this coin or BOTH children Unspendable
+	 */
+	public boolean mUnspendable = false;
+	
 	public static MMRData CreateMMRDataLeafNode(Streamable zData, MiniNumber zSumValue) {
 		//Hash it.. USE 0 at start..
 		MiniData hash = Crypto.getInstance().hashAllObjects(MiniNumber.ZERO, zData, zSumValue);
@@ -57,6 +62,14 @@ public class MMRData implements Streamable{
 	
 	public MiniNumber getValue() {
 		return mValue;
+	}
+	
+	public void setUnspendable(boolean zUnspendable) {
+		mUnspendable = zUnspendable;
+	}
+	
+	public boolean isUnspendable(){
+		return mUnspendable;
 	}
 	
 	public boolean isEqual(MMRData zData) {

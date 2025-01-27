@@ -142,7 +142,8 @@ public class mysql extends Command {
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"action","host","database",
 				"user","password","keys","keyuses","phrase","address","txpowid",
-				"enable","file","statecheck","logs","maxexport","readonly"}));
+				"enable","file","statecheck","logs","maxexport",
+				"readonly","startfix","endfix","block"}));
 	}
 	
 	@Override
@@ -310,7 +311,7 @@ public class mysql extends Command {
 			long startload 	= mysqllastblock; 
 			while(true) {
 				if(logs) {
-					MinimaLogger.log("MySQL Verifying from : "+startload);
+					MinimaLogger.log("MySQL Verifying from : "+startload, false);
 				}
 				ArrayList<TxBlock> blocks = mysql.loadBlockRange(new MiniNumber(startload));
 				if(blocks.size()==0) {
@@ -355,6 +356,7 @@ public class mysql extends Command {
 			}
 			
 			//Load the files from Archive..
+			long lastarch			= arch.loadLastBlock().getTxPoW().getBlockNumber().getAsLong();
 			long firstarch			= arch.loadFirstBlock().getTxPoW().getBlockNumber().getAsLong();
 			long mysqlfirstblock 	= mysql.loadFirstBlock();
 			
@@ -366,6 +368,12 @@ public class mysql extends Command {
 			long startload 	= mysqlfirstblock;
 			if(mysqlfirstblock == -1) {
 				startload = 0;
+				
+				//Does the archive start at 0..
+				if(lastarch != 0 || lastarch != 1) {
+					MinimaLogger.log("Archive NOT starting from 0!.. Load from start of archive @ "+lastarch);
+					startload = lastarch; 
+				}
 			}
 			
 			boolean finished = false;
@@ -1132,18 +1140,132 @@ public class mysql extends Command {
 			
 			ret.put("response", resp);
 			
-		}else if(action.equals("findtxpow")) {
+		}else if(action.equals("fixmissing")) {
 			
-			String txpowid = getParam("txpowid");
+			long timestart = System.currentTimeMillis();
+			
+			//Create a temp name
+			String infile 	= getParam("file");
+			File fileinfile = MiniFile.createBaseFile(infile);
+			
+			RawArchiveInput rawin = new RawArchiveInput(fileinfile);
+			rawin.connect();
+			
+			//Start and end blocks
+			long startchecking = 0;
+			if(existsParam("startfix")) {
+				startchecking = getNumberParam("startfix").getAsLong();
+			}
+			
+			//Is there a cascade..
+			/*Cascade casc = rawin.getCascade();
+			if(casc != null) {
+				MinimaLogger.log("Cascade found.. ");
+				mysql.saveCascade(casc);
+			}*/
+			
+			//Load a range..
+			long endblock 	= -1;
+			TxBlock lastblock = null;
+			int counter = 0;
+			
+			boolean savingblocks = false;
+			int totalsaved = 0; 
+			while(true) {
+				//Get the next batch of data..
+				IBD syncibd 				= rawin.getNextIBD();
+				ArrayList<TxBlock> blocks 	= syncibd.getTxBlocks();
+				
+				if(logs) {
+					if(counter % 10 ==0) {
+						if(blocks.size()>0) {
+							MinimaLogger.log("Loading from RAW Block : "+blocks.get(0).getTxPoW().getBlockNumber()+" SAVING:"+savingblocks,false);
+						}
+					}
+				}
+				
+				if(blocks.size()==0) {
+					//All blocks checked
+					break;
+				}
+				
+				//Cycle and add to our DB..
+				for(TxBlock block : blocks) {
+					
+					//Which block is this..
+					long blocknum = block.getTxPoW().getBlockNumber().getAsLong();
+					
+					if(blocknum > startchecking) {
+						savingblocks = true;
+						
+						//Get the block..
+						TxBlock txblk = mysql.loadBlockFromNum(blocknum);
+						
+						if(txblk == null) {
+							mysql.saveBlock(block);
+							totalsaved++;
+							MinimaLogger.log("Save MISSING block : "+blocknum);
+						}
+					}
+				}
+				
+				//Clean up..
+				counter++;
+				if(counter % 10 == 0) {
+					System.gc();
+				}
+			}
+			
+			//Shutdown TEMP DB
+			rawin.stop();
+			
+			long timediff = System.currentTimeMillis() - timestart;
+			
+			JSONObject resp = new JSONObject();
+			resp.put("missing", totalsaved);
+			resp.put("time", MiniFormat.ConvertMilliToTime(timediff));
+			
+			ret.put("response", resp);
+			
+		}else if(action.equals("findtxpow")) {
 			
 			JSONObject resp = new JSONObject();
 			
-			TxPoW txp = mysql.getTxPoW(txpowid);
-			if(txp == null) {
-				resp.put("found", false);
+			if(existsParam("txpowid")) {
+				String txpowid = getParam("txpowid");
+				TxPoW txp = mysql.getTxPoW(txpowid);
+				
+				if(txp == null) {
+					
+					//Could be a block
+					TxBlock txblk = mysql.loadBlockFromID(txpowid);
+					
+					if(txblk == null) {
+						resp.put("found", false);
+					}else {
+						resp.put("found", true);
+						resp.put("txpow", txblk.getTxPoW().toJSON());
+					}
+					
+				}else {
+					resp.put("found", true);
+					resp.put("txpow", txp.toJSON());
+				}
+			}else if(existsParam("block")) {
+				
+				MiniNumber block = getNumberParam("block");
+				
+				TxBlock txp = mysql.loadBlockFromNum(block.getAsLong());
+				
+				if(txp == null) {
+					resp.put("found", false);
+				}else {
+					resp.put("found", true);
+					resp.put("txpow", txp.getTxPoW().toJSON());
+				}
+				
 			}else {
-				resp.put("found", true);
-				resp.put("txpow", txp.toJSON());
+				throw new CommandException("MUST provide either txpowid or block for findtxpow function");
 			}
 			
 			ret.put("response", resp);

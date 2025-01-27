@@ -1,7 +1,7 @@
 <html>
 
 <head>
-	<title>BASIC</title>
+	<title>MiniWEB</title>
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
@@ -15,8 +15,10 @@
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	
 	<!-- Load the local JS lib -->
-	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="./js/jslib.js"></script>
 	<script type="text/javascript" src="./js/purify.min.js"></script>
+	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/gui.js"></script>
 	
 </head>
 
@@ -28,7 +30,11 @@
 		<table width=100% border=0>
 			<tr>
 				<td><img height=45 src="browser.png"></td>
-				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>BrowseFS</b></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>MiniWEB</b></td>
+				<td class='topicdate' nowrap>
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToHelp();" height=30 src="help.png">&nbsp;&nbsp;					
+					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToHome();" height=30 src="home.png">&nbsp;&nbsp;
+				</td>
 				<!--  <td class='topicdate' nowrap>
 					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToMyFiles();" height=30 src="home.png">&nbsp;&nbsp;
 				</td>-->
@@ -37,8 +43,14 @@
 	</div>
 	
 	<br><br>
+	Jump to a bookmark :<br><br>
+	<select id=bookmarkbar class="searchfield" style="width:300" onchange="bookmkchange();"></select>
+	
+	<br><br>
+	Or search through your files..
+	<br><br>
 
-	<input type="text" id="searchfield" size=44> <button onclick="search();">Search</button> 
+	<input class=searchfield type="text" id="searchfield" size=44> <button class=solobutton onclick="search();">Search</button> 
 
 	<br><br><br>
 	
@@ -59,21 +71,77 @@
 		window.open("browse.html?uid="+MDS.minidappuid+"&mxsite="+mxsite);
 	}
 	
+	function loadBookmarks(){
+		
+		//Clear thge bookmarks
+		bookmarkbar.innerHTML = "";
+		
+		//Load from SQL
+		getAllBookmarks(function(rows){
+			
+			var opt 		= document.createElement("option");
+			opt.value		= "";
+		   	opt.innerHTML 	= "Choose : "; // whatever property it has
+		   	
+		   // then append it to the select element
+		   bookmarkbar.appendChild(opt);
+		   	
+			//Now add to the select
+			var len = rows.length;
+			for(var i=0;i<len;i++){
+				var opt 		= document.createElement("option");
+				opt.value		= rows[i].BOOKMARK;
+			   	opt.innerHTML 	= rows[i].NAME; // whatever property it has
+	
+			   // then append it to the select element
+			   bookmarkbar.appendChild(opt);	
+			}
+		});
+	}
+	
+	function bookmkchange(){
+		var id 		= bookmarkbar.selectedIndex;
+		var text 	= bookmarkbar.options[id].text;
+		var value 	= bookmarkbar.options[id].value;
+		if(value != ""){
+			openBrowser(value);	
+		}
+	}
+	
+	function downloadSite(hexdata, filename) {
+
+		if(confirm("This will download "+filename+" ?")){
+			//Convert to base 64..
+			var b64 = MDS.util.hexToBase64(hexdata);
+					
+			//Consrtruct the data URI
+			var datauri = "data:application/zip;base64,"+b64;  
+				
+			var link 		= document.createElement("a");
+			link.download 		= filename;
+			link.href 			= datauri;
+			
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+			delete link;		
+		}
+	}
+	
 	function createSearchPacketView(filepacket){
 		
 		var guidata =
 		"<table class=filepacketview border=0>\n"
 		+ "	<tr>\n"
-		+ "		<td><b>"+filepacket.data.name+"</b></td>\n"
+		+ "		<td><b>"+DOMPurify.sanitize(filepacket.data.name)+"</b></td>\n"
 		+ "		<td style=\"text-align:right\" nowrap>&nbsp</td>\n"
 		+ "	</tr>\n"
 		+ "	<tr>\n"
 		+ "		<td colspan=2><br>"+DOMPurify.sanitize(filepacket.data.description)+"<br><br></td>\n"
 		+ "	</tr>\n"
 		+ "	<tr>\n"
-		+ "		<td>&nbsp;\n"
-		+ "		</td>\n"
-		+ "		<td style=\"text-align:right\">\n"
+		+ "		<td colspan=2 style=\"text-align:right\">\n"
+		+ "			<button class=solobutton onclick=\"downloadSite('"+filepacket.data.file+"','"+filepacket.data.name+".zip')\">Download</button>\n"
 		+ "			<button class=solobutton onclick=\"openBrowser('"+filepacket.data.name+"')\">Browse</button>\n"
 		+ "		</td>\n"
 		+ "	</tr>\n"
@@ -85,12 +153,18 @@
 	function search(){
 		var text = searchfield.value.trim();
 		
+		if(text == ""){
+			return;
+		}
+		
 		if(text.startsWith("Mx")){
 			
 			//Just jump to that page!
 			openBrowser(text);
 			
 		}else{
+			
+			mywebpackets.innerHTML = "Searching..";
 			
 			//Now lets load the file..
 			var api 	= {};
@@ -135,8 +209,18 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			
-			//Do stuff.. from now..		
+			createDB(function(){
+				loadBookmarks();
+			});
 			
+			MDS.cmd("checkmode",function(resp){
+				
+				//Get the restricted  
+				if(resp.response.writemode){
+					alert("This application MUST NEVER be in WRITE mode..\n\nPlease change it to READ mode.");
+					return;
+				}
+			});
 		}
 	});
 

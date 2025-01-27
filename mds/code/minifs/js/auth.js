@@ -11,10 +11,18 @@ function authInit(callback){
 	});
 }  
 
+function encodetext(str){
+	return encodeURIComponent(str).split("'").join("%27");
+}
+
+function decodetext(str){
+	return decodeURIComponent(str).split("%27").join("'");
+}
+
 function signFilepacket(filepacket, callback){
 	
 	//What are we going to sign
-	var encstr = JSON.stringify(filepacket.data);
+	var encstr = encodetext(JSON.stringify(filepacket.data));
 	
 	//Now convert to HEX
 	MDS.cmd("convert from:string to:hex data:"+encstr,function(conv){
@@ -34,17 +42,27 @@ function signFilepacket(filepacket, callback){
 
 function verifyFilepacket(filepacket, callback){
 	
-	//What are we going to sign
-	var encstr = JSON.stringify(filepacket.data);
-	
-	//Now convert to HEX
-	MDS.cmd("convert from:string to:hex data:"+encstr,function(conv){
-		var hexdata = conv.response.conversion;
+	//First check the name is correct given owner and randid
+	checkFilePacket(filepacket,function(validname){
 		
-		//Now sign that data..
-		MDS.cmd("maxverify publickey:"+filepacket.data.owner+" data:"+hexdata+" signature:"+filepacket.signature, function(sig){
-			callback(sig.status);
-		});
+		//If not valid..
+		if(!validname){
+			callback(false);
+			return;
+		}
+		
+		//What are we going to verify
+		var encstr = encodetext(JSON.stringify(filepacket.data));
+		
+		//Now convert to HEX
+		MDS.cmd("convert from:string to:hex data:"+encstr,function(conv){
+			var hexdata = conv.response.conversion;
+			
+			//Now sign that data..
+			MDS.cmd("maxverify publickey:"+filepacket.data.owner+" data:"+hexdata+" signature:"+filepacket.signature, function(sig){
+				callback(sig.status);
+			});
+		});	
 	});
 }
 
@@ -58,14 +76,12 @@ function createNewFilePacket(callback){
 		
 		//Now concat with Pubkey
 		var tot  = rand+USER_PUBKEY.substring(2);
-		//MDS.log("tot:"+tot);
 		
 		//Now HASH that
 		MDS.cmd("hash type:sha3 data:"+tot,function(hashresp){
 			
 			//Shorten it to 16 bytes
 			var shorthash = hashresp.response.hash.substring(0,34);
-			//MDS.log("shorthash:"+shorthash);
 			
 			//Now convert to MX..
 			MDS.cmd("convert from:hex to:mx data:"+shorthash,function(idresp){
@@ -95,7 +111,29 @@ function createNewFilePacket(callback){
 	});
 }
 
-
-function checkFilePacket(filepacket){
-	return true;
+//Check the correct name given the user and randid
+function checkFilePacket(filepacket, callback){
+	
+	//Check the name is correct
+	var fpname	= filepacket.data.name;
+	var owner 	= filepacket.data.owner;
+	var rand  	= filepacket.data.randid;
+	var tot  	= rand+owner.substring(2);
+	
+	//Now HASH that
+	MDS.cmd("hash type:sha3 data:"+tot,function(hashresp){
+		
+		//Shorten it to 16 bytes
+		var shorthash = hashresp.response.hash.substring(0,34);
+		
+		//Now convert to MX..
+		MDS.cmd("convert from:hex to:mx data:"+shorthash,function(idresp){
+			
+			//The Globally unique file ID
+			var name = idresp.response.conversion;
+			
+			//Is it the right name..
+			callback(fpname == name);
+		});
+	});
 }

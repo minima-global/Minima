@@ -9,7 +9,9 @@ import org.minima.database.MinimaDB;
 import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
+import org.minima.system.mds.ServiceJSRunner;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
@@ -43,7 +45,20 @@ public class systemcheck extends Command {
 			resp.put("TxPowMiner", getInfo(Main.getInstance().getTxPoWMiner()));
 			resp.put("NIOManager", getInfo(Main.getInstance().getNIOManager()));
 			resp.put("P2PManager", getInfo(Main.getInstance().getNetworkManager().getP2PManager()));
+			
 			resp.put("MDSManager", getInfo(Main.getInstance().getMDSManager()));
+			
+			//And Print out the servcies details..
+			ArrayList<ServiceJSRunner> services = Main.getInstance().getMDSManager().getAllServices();
+			JSONArray servs = new JSONArray();
+			for(ServiceJSRunner runner : services) {
+				JSONObject dets = new JSONObject();
+				dets.put("service", runner.getMiniDapp().getName());
+				dets.put("processor", getInfo(runner));
+				servs.add(dets);
+			}
+			resp.put("MDSServices", servs);
+			
 			resp.put("SendPollManager", getInfo(Main.getInstance().getSendPoll()));
 			resp.put("NotifyManager", getInfo(Main.getInstance().getNotifyManager()));
 			

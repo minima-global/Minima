@@ -39,6 +39,7 @@ import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
@@ -191,6 +192,50 @@ public class NIOManager extends MessageProcessor {
 		return connections;
 	}
 	
+	public ArrayList<NIOClient> getAllValidOutGoingConnectedClients() {
+		//A list of all the connections
+		ArrayList<NIOClient> connections = new ArrayList<>();
+		
+		//Who are we connected to..
+		ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+		for(NIOClient conn : conns) {
+			if(conn.isValidGreeting() && conn.isOutgoing()) {
+				connections.add(conn);
+			}
+		}
+		
+		return connections;
+	} 
+	
+	public JSONObject getAllConnectedDetails() {
+		//A list of all the connections
+		ArrayList<NIOClient> connections = new ArrayList<>();
+		
+		int incoming = 0;
+		int outgoing = 0;
+		int total 	 = 0;
+		
+		//Who are we connected to..
+		ArrayList<NIOClient> conns = mNIOServer.getAllNIOClients();
+		for(NIOClient conn : conns) {
+			if(conn.isValidGreeting()) {
+				if(conn.isOutgoing()) {
+					outgoing++;
+				}else {
+					incoming++;
+				}
+				total++;
+			}
+		}
+		
+		JSONObject ret = new JSONObject();
+		ret.put("total", total);
+		ret.put("incoming", incoming);
+		ret.put("outgoing", outgoing);
+		
+		return ret;
+	} 
+	
 	public NIOClient checkConnected(String zHost, boolean zOnlyConnected) {
 		
 		if(!zOnlyConnected) {
@@ -249,6 +294,18 @@ public class NIOManager extends MessageProcessor {
 //		}
 //		
 //		return null;
+	}
+	
+	public void hardShutDown() throws InterruptedException {
+		//Stop the Thread pool
+		THREAD_POOL.shutdown();
+		THREAD_POOL.awaitTermination(8000, TimeUnit.MILLISECONDS);
+		
+		//Shut down the NIO
+		mNIOServer.shutdown();
+		
+		//Stop this..
+		stopMessageProcessor();
 	}
 	
 	public NIOTraffic getTrafficListener() {
@@ -583,6 +640,13 @@ public class NIOManager extends MessageProcessor {
 			//We are no  longer attempting to connect
 			mConnectingClients.remove(nioc.getUID());
 			
+			//IS THIS AN INVALID PEER..
+			if(P2PFunctions.isInvalidPeer(nioc.getFullAddress())) {
+				MinimaLogger.log("Disconnecting invalid peer before sending or recieving ANY data..");
+				disconnect(nioc.getUID());
+				return;
+			}
+			
 			//Is this an outgoing connection..
 			if(!nioc.isIncoming()) {
 				
@@ -913,13 +977,23 @@ public class NIOManager extends MessageProcessor {
 		}
 		
 		//For ALL or for ONE
+		String howmany = "single";
 		if(!zUID.equals("")) {
 			//Send it..
 			Main.getInstance().getNIOManager().getNIOServer().sendMessage(zUID,niodata);
 		}else {
 			//Send it..
 			Main.getInstance().getNIOManager().getNIOServer().sendMessageAll(niodata);
+			howmany = "all";
 		}
+		
+		//Log to TRAFFIC monitor
+		try {
+			String strtype 		= NIOMessage.convertMessageType(zType);
+			int size 			= niodata.getLength();
+			NIOTraffic traffic 	= Main.getInstance().getNIOManager().getTrafficListener();
+			traffic.addWriteBytes(strtype+"_"+howmany, size);
+		}catch(Exception exc) {}
 	}
 	
 	public static MiniData createNIOMessage(MiniByte zType, Streamable zObject) throws IOException {

@@ -148,7 +148,7 @@ public class Main extends MessageProcessor {
 	 * Used to check the P2P and MDS systems.. every 20 minutes
 	 */
 	public static final String MAIN_P2PNETMDS_CHECKER 	= "MAIN_P2PNETMDS_CHECKER";
-	long P2PNETMDS_TIMER								= 1000 * 60 * 20;
+	long P2PNETMDS_TIMER								= 1000 * 60 * 30;
 	
 	/**
 	 * Notify Users..
@@ -644,6 +644,7 @@ public class Main extends MessageProcessor {
 			timewaited+=250;
 			if(timewaited>10000) {
 				MinimaLogger.log("Network shutdown took too long..");
+				mNetwork.hardShutDown();
 				break;
 			}
 		}
@@ -715,8 +716,17 @@ public class Main extends MessageProcessor {
 			mNetwork.shutdownNetwork();
 				
 			//Wait for the networking to finish
+			long timewaited = 0;
 			while(!mNetwork.isShutDownComplete()) {
-				try {Thread.sleep(50);} catch (InterruptedException e) {}
+				try {Thread.sleep(250);} catch (InterruptedException e) {}
+				timewaited += 250;
+				
+				//If we have waited 10 secs.. something not right..
+				if(timewaited > 10000) {
+					//Hard shutdown..
+					mNetwork.hardShutDown();
+					break;
+				}
 			}
 					
 			//Wait a second..
@@ -880,35 +890,64 @@ public class Main extends MessageProcessor {
 			getMaxima().checkPollMessages();
 			
 		}else if(zMessage.getMessageType().equals(MAIN_AUTOBACKUP_MYSQL)) {
+		
+			
+			UserDB udb = MinimaDB.getDB().getUserDB();
+			
+			try {
+				//Are we enabled to back up MySQL..
+				if(udb.getAutoBackupMySQL()) {
+					
+					String backupcommand = "mysql host:"+udb.getAutoMySQLHost()
+									+" database:"+udb.getAutoMySQLDB()
+									+" user:"+udb.getAutoMySQLUser()
+									+" password:"+udb.getAutoMySQLPassword()
+									+" action:update";
+					
+					//Run a mysql Backup of the archive data..
+					JSONArray res 	= CommandRunner.getRunner().runMultiCommand(backupcommand);
+					JSONObject json = (JSONObject) res.get(0); 
+					boolean status  = (boolean) json.get("status");
+					
+					//Output
+					if(!status) {
+						MinimaLogger.log("[ERROR] MYSQL AUTOBACKUP "+json.getString("error"));
+					}else {
+						JSONObject response = (JSONObject) json.get("response");
+						MinimaLogger.log("MYSQL AUTOBACKUP OK "+response.toString());
+					}
+				}
+				
+				//Are we enabled to back up MySQL Coins..
+				if(udb.getAutoBackupMySQLCoins()) {
+					
+					String backupcommand = "mysqlcoins host:"+udb.getAutoMySQLHost()
+									+" database:"+udb.getAutoMySQLDB()
+									+" user:"+udb.getAutoMySQLUser()
+									+" password:"+udb.getAutoMySQLPassword()
+									+" action:update";
+					
+					//Run a mysql Backup of the archive data..
+					JSONArray res 	= CommandRunner.getRunner().runMultiCommand(backupcommand);
+					JSONObject json = (JSONObject) res.get(0); 
+					boolean status  = (boolean) json.get("status");
+					
+					//Output
+					if(!status) {
+						MinimaLogger.log("[ERROR] MYSQLCOINS AUTOBACKUP "+json.getString("error"));
+					}else {
+						JSONObject response = (JSONObject) json.get("response");
+						MinimaLogger.log("MYSQLCOINS AUTOBACKUP OK "+response.toString());
+					}
+				}
+				
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
 			
 			//Do it again..
 			PostTimerMessage(new TimerMessage(MAIN_AUTOBACKUP_MYSQL_TIMER, MAIN_AUTOBACKUP_MYSQL));
 			
-			UserDB udb = MinimaDB.getDB().getUserDB();
-			
-			//Are we enabled..
-			if(udb.getAutoBackupMySQL()) {
-				
-				String backupcommand = "mysql host:"+udb.getAutoMySQLHost()
-								+" database:"+udb.getAutoMySQLDB()
-								+" user:"+udb.getAutoMySQLUser()
-								+" password:"+udb.getAutoMySQLPassword()
-								+" action:update";
-				
-				//Run a mysql Backup of the archive data..
-				JSONArray res 	= CommandRunner.getRunner().runMultiCommand(backupcommand);
-				JSONObject json = (JSONObject) res.get(0); 
-				boolean status  = (boolean) json.get("status");
-				
-				//Output
-				if(!status) {
-					MinimaLogger.log("[ERROR] MYSQL AUTOBACKUP "+json.getString("error"));
-				}else {
-					JSONObject response = (JSONObject) json.get("response");
-					MinimaLogger.log("MYSQL AUTOBACKUP OK "+response.toString());
-				}
-			}
-		
 		}else if(zMessage.getMessageType().equals(MAIN_AUTOBACKUP_TXPOW)) {
 			
 			//Are we storing all the TxPoW
@@ -1050,6 +1089,9 @@ public class Main extends MessageProcessor {
 			//Clear the Peer Invalid list
 			P2PFunctions.clearInvalidPeers();
 			
+			//Clear the IBD sent list
+			NIOMessage.mHaveSentIBDRecently.clear();
+			
 			//Restart the Networking..
 			restartNIO();
 
@@ -1067,9 +1109,6 @@ public class Main extends MessageProcessor {
 				//Output
 				MinimaLogger.log("AUTOBACKUP : "+res.toString());
 			}
-			
-			//Clear the Invalid Peers
-			P2PFunctions.clearInvalidPeers();
 			
 			//Recalculate the hash speed..
 			MiniNumber hashcheck 	= new MiniNumber("250000");
@@ -1185,6 +1224,12 @@ public class Main extends MessageProcessor {
 	        		}
 	        	}
 			}
+			
+			//Clear the Invalid peers..
+			P2PFunctions.clearInvalidPeers();
+			
+			//Clear the IBD sent list
+			NIOMessage.mHaveSentIBDRecently.clear();
 			
 		}else if(zMessage.getMessageType().equals(MAIN_CALLCHECKER)) {
 			

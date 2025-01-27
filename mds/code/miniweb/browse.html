@@ -1,7 +1,7 @@
 <html>
 
 <head>
-	<title>BrowseFS</title>
+	<title>MiniWEB</title>
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
@@ -15,14 +15,22 @@
 	<script type="text/javascript" src="./js/jszip.min.js"></script>
 	<script type="text/javascript" src="./js/ziputil.js"></script>
 	<script type="text/javascript" src="./js/jslib.js"></script>
+	<script type="text/javascript" src="./js/mimetypes.js"></script>
+	<script type="text/javascript" src="./js/sql.js"></script>
 	
 	<style type="text/css">
 	
+		@font-face {
+			font-family: Manrope;
+			src: url('./Manrope-Regular.ttf');
+		}
+		
 		body {
 			margin: 0 auto;
 			padding:0;
 			width : 100%;
 			height : 100%;
+			font-family: Manrope;
 		}
 		
 		.mainiframe{
@@ -32,26 +40,159 @@
 			height : 100%;
 		}
 		
+		.webmenushow{
+		    position: fixed;
+		    top: 4;
+		    left: 4;
+		    background-color : ccc;
+		    display : block;
+		    z-index: 10;
+		    border: 0.5px solid #555;
+  			border-radius: 8px;
+  			padding: 4px 4px;
+  			font-family: Manrope;
+  			font-size: 14px;
+		}
+		
+		.addressbar{
+		    font-family: Manrope;
+  			font-size: 10px;
+		}
+		
+		.simplebutton{
+		    min-width:60;
+		}
+
 	</style>
 	
 </head>
 
 <body>
 
-<iframe class="mainiframe" id="webframe" frameborder="0"  sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+<!--  The MAIN address bar and bookmarks view -->
+<div class="webmenushow" id=webfull>
+   <table>
+   		<tr>
+   			<td><button class=simplebutton onclick="hidebar()">HIDE</button></td>
+   			<td><input class=addressbar type=text id=mxaddress size=50></td>
+   			<td><button class=simplebutton onclick="gobar();">GO</button></td>
+   		</tr>
+   	<tr>
+		 <td>
+		 	<button class=simplebutton onclick="addBookmark();">ADD</button>
+		 </td>
+		 <td>
+			<select id=bookmarkbar style="width:100%" onchange="bookmkchange();"></select>
+		 </td>
+		 <td>
+		 	<button class=simplebutton onclick="remBookmark();">REM</button>
+		 </td>
+		</tr>   	
+   </table>
+</div>
+
+<div class="webmenushow" id=webhide>
+	<table>
+   		<tr>
+   			<td><button class=simplebutton onclick="showbar()">MINIWEB</button></td>
+   		</tr>
+   </table>
+</div>
+
+<iframe class="mainiframe" id="webframe" frameborder="0"  
+		sandbox="allow-scripts allow-modals" referrerpolicy="no-referrer"></iframe>
 
 <script type="text/javascript">
 	
-	//Is there apage defined..
+	/**
+	 * Address bar Functionaloity 
+	 */
+	function hidebar(){
+		webfull.style.display = "none";
+		webhide.style.display = "block";
+	}
+	
+	function showbar(){
+		webfull.style.display = "block";
+		webhide.style.display = "none";
+	}
+	
+	function addBookmark(){
+		var bookmk   = mxaddress.value; 
+		var name     = prompt(bookmk+"\n\nBookmark name ?\n","");
+		if(name != null){
+			name = name.trim();
+			if(name != ""){
+				insertBookMark(name,bookmk, function(){
+					loadBookmarks();
+				});	
+			}
+		}
+	}
+	
+	function remBookmark(){
+		//remove the currently selected
+		var id 		= bookmarkbar.selectedIndex;
+		var text 	= bookmarkbar.options[id].text;
+		var value 	= bookmarkbar.options[id].value;
+		
+		deleteBookmark(text,function(){
+			loadBookmarks();
+		});
+	}
+	
+	function gobar(){
+		//Get the address.. and go there
+		go(mxaddress.value);
+	}
+	
+	function loadBookmarks(){
+		
+		//Clear thge bookmarks
+		bookmarkbar.innerHTML = "";
+	
+		var opt 		= document.createElement("option");
+		opt.value		= "";
+	   	opt.innerHTML 	= "Bookmarks : "; // whatever property it has
+	   	
+	    // then append it to the select element
+	    bookmarkbar.appendChild(opt);
+	   	
+		//Load from SQL
+		getAllBookmarks(function(rows){
+			//Now add to the select
+			var len = rows.length;
+			for(var i=0;i<len;i++){
+				var opt 		= document.createElement("option");
+				opt.value		= rows[i].BOOKMARK;
+			   	opt.innerHTML 	= rows[i].NAME; // whatever property it has
+	
+			   // then append it to the select element
+			   bookmarkbar.appendChild(opt);	
+			}
+		});
+	}
+	
+	function bookmkchange(){
+		var id 		= bookmarkbar.selectedIndex;
+		var text 	= bookmarkbar.options[id].text;
+		var value 	= bookmarkbar.options[id].value;
+		if(value != ""){
+			go(value);	
+		}
+	}
+	
+	hidebar();
+
+	/**
+	 * Main Website functionality!
+	 */
 	var MAIN_URL = MDS.form.getParams("mxsite");
 	
 	//Get the current window location
 	var mainstartpage 	= ""+window.location;
 	var index 			= mainstartpage.indexOf("browse.html");
-	BASE_PAGE 			= mainstartpage.substring(0,index-1);
-	
-	//BASE_PAGE = "https://127.0.0.1:10003/0x8877665544332211";
-	MDS.log("BASE PAGE : "+BASE_PAGE);
+	MINWEB_PAGE 		= mainstartpage.substring(0,index-1);
 	
 	//listen for post messages..
 	window.onmessage = function(event){
@@ -64,7 +205,7 @@
 				
 				//Tell the iFrame we got the message
 				var resp 		= {};
-				resp.action 	= "MDS_RESPONSE";
+				resp.action 	= "MINIWEB_RESPONSE";
 				resp.randid 	= msg.randid;
 				resp.data 		= true;
 				
@@ -73,88 +214,62 @@
 				
 				//And now jump to the page..
 				go(msg.data);
-			
-			}else if(action == "MINIWEB_GETMINIWEBURL"){
-				
-				var domain = msg.data;
-				
-				//Get the base domain..
-				extractDomainToWeb(domain,function(extracted){
 					
-					if(extracted){
-	
-						var finalpage = addDomains(BASE_PAGE,convertDomainToURL(domain));
-						
-						//Tell the iFrame we got the message
-						var resp 		= {};
-						resp.action 	= "MDS_RESPONSE";
-						resp.randid 	= msg.randid;
-						resp.data 		= finalpage;
-						
-						//Post to the iFrame
-						document.getElementById('webframe').contentWindow.postMessage(resp,"*");
-						
-					}else{
-						
-						//Need to Load it!..
-						
-					}
-				});
-			
 			}else if(action == "MINIWEB_GETDATAURI"){
 				
-				var webfile = msg.data;
+				//What file
+				var domain = msg.data;
 				
-				//Get the base domain..
-				extractDomain(webfile,function(extracted){
+				//Does site data exists allready..
+				webFolderExists(domain, function(exists){
 					
-					if(extracted){
-						var internalfile = convertDomainToInternal(webfile);
+					//Do we need to load / extract ?
+					if(exists){
 						
-						//Load the file..
-						MDS.file.loadbinary(internalfile, function(loader){
-							
-							//Blank DATA URI
-							var datauri= "data:,";
-							
-							//Create a respoinse JSON
-							var res = {};
-							
-							if(loader.response.exists){
-								res.exists = true;
-								
-								//get the HEX data
-								var hexdata = loader.response.load.data;
-								
-								//Convert to base 64..
-								var b64 = MDS.util.hexToBase64(hexdata);
-								
-								//Consrtruct the data URI
-								datauri= "data:"+getMimeTypeFromExtension(internalfile)+";base64,"+b64;
-							}else{
-								res.exists = false;
-							}
-							
-							//Tell the iFrame we got the message
-							var resp 		= {};
-							resp.action 	= "MDS_RESPONSE";
-							resp.randid 	= msg.randid;
-							resp.data 		= datauri;
-							
-							//Post to the iFrame
-							document.getElementById('webframe').contentWindow.postMessage(resp,"*");
-						});
+						//Send them the Data URI
+						completeDataURI(domain,msg.randid);
 						
 					}else{
 						
-						//Need to Load it!..
-						
+						//Lets load this filepacket
+						loadFilePacket(domain,function(loaded, minifsfound, requested){
+							
+							//Send them the Data URI
+							completeDataURI(domain,msg.randid);
+						});
 					}
-				});
-			
+				});		
 			}
 		}
 	};
+	
+	function completeDataURI(domain, msgid){
+		
+		//Load this previously extracted
+		loadDataURI(domain, function(found, datauri){
+			
+			//Tell the iFrame we got the message
+			var resp 		= {};
+			resp.action 	= "MINIWEB_RESPONSE";
+			resp.randid 	= msgid;
+			
+			var data = {};
+			
+			if(!found){
+				data.found = false;
+				data.data  = "data:,";
+				
+			}else{
+				data.found = true;
+				data.data  = datauri;
+			}
+			
+			resp.data = data;
+			
+			//Post to the iFrame
+			document.getElementById('webframe').contentWindow.postMessage(resp,"*");
+		});
+	}
 	
 	//Listen for when the iFrame has loaded
 	var LOAD_CALLBACK = null;
@@ -164,7 +279,7 @@
 	  	}
 	});
 	
-	//LOad a page in the iFrame
+	//Load a page in the iFrame
 	function loadPage(page, callback){
 		
 		if(callback){
@@ -173,7 +288,11 @@
 			LOAD_CALLBACK = null;
 		}
 		
-		var fullpage = addDomains(BASE_PAGE,page);
+		//First add the base page
+		var fullpage = addDomains(MINWEB_PAGE,page);
+		
+		//Now ADD the MDS UID for the restriced MDS
+		fullpage = addURLParam(fullpage,"uid",MINIWEB_UID); 
 		
 		MDS.log("Load Page : "+fullpage);
 		
@@ -193,80 +312,46 @@
 			domain = domain.substring(10);
 		}
 		
+		if(domain.endsWith("/")){
+			domain = domain.substring(0, domain.length-1);
+		}
+		
 		MDS.log("Browser GO : "+domain);
+		mxaddress.value = domain;
 		
-		//Get the base domain for this page
-		var basedomain  = getBaseDomain(domain);
-		var webfolder 	= addDomains(BASE_WEB,basedomain);
-		
+		//What is the final page
 		var finalpage = addDomains(BASE_WEB,domain);
 		if(!finalpage.includes(".html")){
 			finalpage = addDomains(finalpage,"index.html");
 		}
 		
 		//Does site data exists allready..
-		MDS.file.listweb(webfolder,function(listweb){
+		webFolderExists(domain, function(exists){
 			
-			//Does the repo exists
-			if(listweb.response.exists){
+			//Do we need to load / extract ?
+			if(exists){
+				
+				//Just jump straight to page
 				loadPage(finalpage);
 			}else{
 				
 				//Extract the repo and then load
-				loadPage("loading.html",function(){
+				loadPage("loading.html", function(){
 					
-					//Now lets load the file..
-					var api 	= {};
-					api.action 	= "LOAD";
-					api.data 	= basedomain;
-					
-					//Send it to MiniWEB
-					MDS.api.call("minifs",JSON.stringify(api),function(resp){
+					//Lets load this filepacket
+					loadFilePacket(domain,function(loaded, minifsfound, requested){
 						
-						//Call wqas replied to ?
-						if(resp.status){
-							
-							//Parse the data
-							var data = JSON.parse(resp.data);
-							
-							//Did we fiund it
-							if(data.found){
-								
-								//OK - extract 
-								var fp = data.filepacket;
-								
-								extractFilePacketToWeb(fp, function(resp){
-									MDS.log("Extracted..");
-									loadPage(finalpage);
-									
-								});
-								
-							}else{
-								if(data.requested){
-									alert("The Site was not found.\n\nA request has been sent to re-publish it!.")
-								}else{
-									alert("The Site was not found.\n\nA request was already sent.. waiting..")
-								}
-								
-								loadPage("loading_notfound.html");
-							}
-							
-						}else{
-							alert("Could not conatct MiniFS MiniDAPP ?");
-						}
-					});
-					
-					/*extractDomainToWeb(basedomain, function(extracted){
-						
-						if(extracted){
+						if(loaded){
+							//Load the final page
 							loadPage(finalpage);
 						}else{
-							loadPage("loading_notfound.html");
+							if(!minifsfound){
+								alert("Could not conatct MiniFS MiniDAPP ?");
+							}
 							
-							//Start Shoutout..
-							//..
+							loadPage("loading_notfound.html");
 						}
-					});*/	
+					});	
 				});
 			}
 		});
@@ -276,22 +361,19 @@
 	MDS.init(function(msg){
 		if(msg.event == "inited"){
 			
-			//Try this first.. then do normal if not exists..
+			//Create the DB and load the Bookmarks
+			createDB(function(){
+				loadBookmarks();
+			});
+			
+			//Get the READ ONLY mode uid
 			MDS.cmd("checkmode", function(resp){
 				
-				//This only works on 1.0.43 onwards..
-				if(resp.response.untrustedmdsuid){
-					//Use this as the UID for websites..
-					MINIWEB_UID = resp.response.untrustedmdsuid;
-					
-				}else{
-					
-					//Use Our own UID
-					MINIWEB_UID = MDS.minidappuid;
-				}
+				//Use this as the UID for websites..
+				MINIWEB_UID = resp.response.untrustedmdsuid;
 				
 				var wipeold = true;
-				
+					
 				if(wipeold){
 					//Delete all the old sites on refresh..
 					MDS.file.deletefromweb(BASE_WEB,function(delweb){
@@ -301,14 +383,12 @@
 							
 							//NOW GO..
 							go(MAIN_URL);	
-							
 						});
 					});
 				}else{
 					//NOW GO..
 					go(MAIN_URL);
 				}
-				
 			});
 		}
 	});

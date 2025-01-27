@@ -75,6 +75,11 @@ public class Wallet extends SqlDB {
 	 */
 	boolean mShuttingdown = false;
 	
+	/**
+	 * Are we stopping NEW keys being made..
+	 */
+	boolean STOP_NEWKEYS = false;
+	
 	public Wallet() {
 		super();
 		
@@ -389,6 +394,16 @@ public class Wallet extends SqlDB {
 	/**
 	 * Create an initial set of keys / addresses to use
 	 */
+	public void setStopNewKeys(boolean zStopNewKeys) {
+		STOP_NEWKEYS = zStopNewKeys;
+		
+		if(STOP_NEWKEYS) {
+			MinimaLogger.log("Disallow creation of NEW default keys..");
+		}else {
+			MinimaLogger.log("Re-allow creation of NEW default keys..");
+		}
+	}
+	
 	public int getDefaultKeysNumber() {
 		return getAllDefaultAddresses().size();
 	}
@@ -398,7 +413,12 @@ public class Wallet extends SqlDB {
 	}
 	
 	public boolean initDefaultKeys(int zMaxNum, boolean zLog) {
-		
+
+		//Are we creating new keys
+		if(isShuttingDown() || STOP_NEWKEYS) {
+			return true;
+		}
+
 		//Get all the keys..
 		ArrayList<ScriptRow> allscripts = getAllDefaultAddresses();
 		boolean allcreated = false;
@@ -415,7 +435,7 @@ public class Wallet extends SqlDB {
 			
 			//Create the keys
 			for(int i=0;i<diff;i++) {
-				if(!isShuttingDown()) {
+				if(!isShuttingDown() && !STOP_NEWKEYS) {
 					createNewSimpleAddress(true);
 					
 					if(zLog) {

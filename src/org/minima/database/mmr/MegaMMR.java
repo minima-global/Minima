@@ -11,9 +11,11 @@ import java.util.Random;
 
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
+import org.minima.objects.Token;
 import org.minima.objects.TxBlock;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
@@ -28,7 +30,7 @@ public class MegaMMR implements Streamable {
 	Hashtable<String,Coin> mAllUnspentCoins;
 	
 	public MegaMMR() {
-		
+			
 		//The actual MMR
 		mMMR = new MMR();
 		
@@ -101,13 +103,16 @@ public class MegaMMR implements Streamable {
 			newcoin.setSpent(false);
 			
 			//Create the MMRData
-			MMRData mmrdata = MMRData.CreateMMRDataLeafNode(newcoin, output.getAmount());
-						
+			MMRData mmrdata = MMRData.CreateMMRDataLeafNode(newcoin, newcoin.getAmount());
+			
+			//Is it Unspendable
+			mmrdata.mUnspendable = isPrunable(newcoin);
+			
 			//And add to the MMR
 			mMMR.addEntry(mmrdata);	
 			
 			//Add to the total List of coins for this block
-			mAllUnspentCoins.put(output.getCoinID().to0xString(), newcoin);
+			mAllUnspentCoins.put(newcoin.getCoinID().to0xString(), newcoin);
 		}
 		
 		//Check values are correct..
@@ -117,6 +122,104 @@ public class MegaMMR implements Streamable {
 			MinimaLogger.log("[!] MEGAMMR ROOT AND TXBLOCK ROOT DONT MATCH @ "+zBlock.getTxPoW().getBlockNumber());
 		}
 	}
+	
+	/**
+	 * Can we PRUNE this coin - may even check a custom list.. ?
+	 */
+	private boolean isPrunable(Coin zCoin) {
+		if(GeneralParams.MEGAMMR_MEGAPRUNE) {
+			
+			//Check for spendable coin address
+			if(zCoin.getAddress().getLength() != 32) {
+				return true;
+			}
+			
+			//Does it have a state
+			if(GeneralParams.MEGAMMR_MEGAPRUNE_STATE) {
+				if(zCoin.getState().size() > 0) {
+					return true;
+				}
+			}
+			
+			//Is it a token other than Minima
+			if(GeneralParams.MEGAMMR_MEGAPRUNE_TOKENS) {
+				if(!zCoin.getTokenID().isEqual(Token.TOKENID_MINIMA)){
+					return true;
+				}
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Scan the MMR for UN-spendable coins
+	 */
+	private void scanUnspendable() {
+		
+		Enumeration<Coin> coins = mAllUnspentCoins.elements();
+		while(coins.hasMoreElements()) {
+			Coin cc = coins.nextElement();
+			
+			//get it..
+			MMREntry ment = mMMR.getEntry(0, cc.getMMREntryNumber());
+				
+			//Set the MMRData
+			if(!ment.isEmpty()) {
+				ment.getMMRData().setUnspendable(isPrunable(cc));
+			}else {
+				MinimaLogger.log("[!] Coin with no MMREntry in MegaMMR! @ "+cc.toString());
+			}
+		}
+	}
+	
+	/**
+	 * Scan the WHOLE tree for unspendable coins..
+	 */
+	private static boolean PRUNE_LOGS = false;
+	private void pruneUnspendable(boolean zScanMMR) {
+		
+		//Time how long it takes..
+		long timestart 	= System.currentTimeMillis();
+		if(PRUNE_LOGS) {
+			MinimaLogger.log("Start Prune MegaMMR Coins:"+mAllUnspentCoins.size()+" MMREntries:"+getMMR().getTotalEntries());
+		}
+		 
+		//Do we need to scan
+		if(zScanMMR) {
+			scanUnspendable();
+		}
+		
+		//Scan the MMR..
+		mMMR.scanUnspendableTree();
+		
+		//Create a copy with the correct list
+		Hashtable<String,Coin> newAllCoins = new Hashtable<>();
+				
+		//First scan ALL the coins..
+		Enumeration<Coin> coins = mAllUnspentCoins.elements();
+		while(coins.hasMoreElements()) {
+			Coin cc = coins.nextElement();
+			
+			//What entry is this
+			MMREntryNumber entry = cc.getMMREntryNumber();
+			
+			//Is this PRUNED.. if not add to NEW list
+			if(!mMMR.getPrunedUnspendableCoins().contains(entry.toString())) {
+				newAllCoins.put(cc.getCoinID().to0xString(), cc);
+			}
+		}
+		
+		//And now reset the list..
+		mAllUnspentCoins = newAllCoins;
+		
+		if(PRUNE_LOGS) {
+			long timediff = System.currentTimeMillis() - timestart;
+			MinimaLogger.log("Final Pruned MegaMMR Coins:"+mAllUnspentCoins.size()+" MMREntries:"+getMMR().getTotalEntries()
+							+" time:"+timediff+"ms");
+		}
+	}
+	
 	
 	/**
 	 * Wipe the data
@@ -133,10 +236,19 @@ public class MegaMMR implements Streamable {
 	
 	public void saveMMR(File zFile) {
 		MiniFile.saveObjectDirect(zFile, this);
+		if(PRUNE_LOGS) {
+			MinimaLogger.log("Saving MegaMMR size : "+MiniFormat.formatSize(zFile.length()));
+		}
 	}
 	
 	@Override
 	public void writeDataStream(DataOutputStream zOut) throws IOException {
+		
+		//Are we pruning the unspendable coins
+		if(GeneralParams.MEGAMMR_MEGAPRUNE) {
+			pruneUnspendable(false);
+		}
+		
 		//First write out the VERSION
 		MiniNumber.WriteToStream(zOut, 1);
 		
@@ -168,41 +280,118 @@ public class MegaMMR implements Streamable {
 		int size = MiniNumber.ReadFromStream(zIn).getAsInt();
 		for(int i=0;i<size;i++) {
 			Coin cc = Coin.ReadFromStream(zIn);
+			
+			//Do we prune it..
 			mAllUnspentCoins.put(cc.getCoinID().to0xString(), cc);
+		}
+		
+		//Are we pruning the unspendable coins
+		if(GeneralParams.MEGAMMR_MEGAPRUNE) {
+			pruneUnspendable(true);
+		}else {
+			//Just Scan it..
+			scanUnspendable();
 		}
 	}
 	
 	
 	public static void main(String[] zArgs) {
 		
-//		MMR mmr = new MMR();
-//		
-//		mmr.addEntry(getCoinData(MiniNumber.BILLION.add(MiniNumber.ONE)));
-//		mmr.addEntry(getCoinData(MiniNumber.ONE));
-//		mmr.addEntry(getCoinData(MiniNumber.ONE));
-//		mmr.addEntry(getCoinData(MiniNumber.ONE));
-//		mmr.addEntry(getCoinData(MiniNumber.ONE));
-//		mmr.addEntry(getCoinData(MiniNumber.TWENTY));
-//		mmr.addEntry(getCoinData(MiniNumber.ONE));
-//		mmr.addEntry(getCoinData(MiniNumber.ONE));
-//		
-//		MMR.printmmrtree(mmr);
+		MegaMMR mega 	= new MegaMMR();
+		MMR mmr 		= mega.getMMR();
 		
-		System.out.println("** MMR Tree Prune POC **");
+		int coinnum =10;
 		
-		MMR mmr = new MMR();
-		
-		//First bit of data
-		MMRData zero 	= new MMRData(new MiniData("0x00"), new MiniNumber(0));
-		MMRData one 	= new MMRData(new MiniData("0x01"), new MiniNumber(1));
-		
-		//Add 16 entries..
-		for(int loop=0;loop<16;loop++) {
-			mmr.addEntry(one);
+		for(int i=0;i<coinnum;i++) {
+			
+			//Create a coin..
+			MiniData address = MiniData.getRandomData(32);
+			//if(i>2 && i<6) {
+				address = MiniData.ZERO_TXPOWID;
+			//}
+			MiniNumber amount 	= MiniNumber.ONE;
+			
+			Coin cc = new Coin(MiniData.getRandomData(32), address, amount, Token.TOKENID_MINIMA);
+			cc.setMMREntryNumber(mmr.getEntryNumber());
+			
+			//Create the MMRData
+			MMRData mmrdata = MMRData.CreateMMRDataLeafNode(cc, amount);
+			
+			//HACK Add it 
+			mega.getMMR().addEntry(mmrdata);
+			
+			//And to the COIn List..
+			mega.getAllCoins().put(cc.getCoinID().to0xString(), cc);
 		}
-		MMR.printmmrtree(mmr);
 		
-		//Set random values to Zero..
+		MMR.printmmrtree(mega.getMMR());
+		
+		mega.getMMR().pruneTree();
+		
+		//Now scan
+		mega.pruneUnspendable(true);
+		
+		MMR.printmmrtree(mega.getMMR());
+		
+		if(true) {
+		//	return;
+		}
+		
+		
+		//Now scan
+		mega.pruneUnspendable(true);
+		
+		MMR.printmmrtree(mega.getMMR());
+		
+		if(true) {
+		//	return;
+		}
+		
+		for(int i=0;i<coinnum;i++) {
+			
+			//Create a coin..
+			MiniData address = MiniData.getRandomData(32);
+			if(i>4 && i<9) {
+				address = MiniData.ZERO_TXPOWID;
+			}
+			MiniNumber amount 	= MiniNumber.ONE;
+			if(i<=1) {
+				amount = MiniNumber.ZERO;
+			}
+			
+			if(i==9) {
+				amount = MiniNumber.ZERO;
+			}
+			
+			Coin cc = new Coin(MiniData.getRandomData(32), address, amount, Token.TOKENID_MINIMA);
+			cc.setMMREntryNumber(mmr.getEntryNumber());
+			
+			//Create the MMRData
+			MMRData mmrdata = MMRData.CreateMMRDataLeafNode(cc, amount);
+			
+			//HACK Add it 
+			mega.getMMR().addEntry(mmrdata);
+			
+			//And to the COIn List..
+			mega.getAllCoins().put(cc.getCoinID().to0xString(), cc);
+		}
+		
+		MMR.printmmrtree(mega.getMMR());
+		
+		//Now scan
+		mega.pruneUnspendable(true);
+		
+		mega.getMMR().pruneTree();
+		
+		MMR.printmmrtree(mega.getMMR());
+		
+		//Now scan
+		mega.pruneUnspendable(true);
+		
+		MMR.printmmrtree(mega.getMMR());
+		
+		
+		/*//Set random values to Zero..
 		for(int zz=0;zz<24;zz++) {
 			int rand 				= new Random().nextInt(16);
 			MMREntryNumber entry 	= new MMREntryNumber(rand);
@@ -216,7 +405,7 @@ public class MegaMMR implements Streamable {
 			mmr.updateEntry(entry, proof, zero);
 			mmr.pruneTree();
 			MMR.printmmrtree(mmr);
-		}
+		}*/
 	}
 	
 	public static MMRData getCoinData() {

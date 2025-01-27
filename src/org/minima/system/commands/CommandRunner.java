@@ -62,8 +62,11 @@ import org.minima.system.commands.base.tokenvalidate;
 import org.minima.system.commands.base.trace;
 import org.minima.system.commands.maxima.maxcontacts;
 import org.minima.system.commands.maxima.maxcreate;
+import org.minima.system.commands.maxima.maxdecrypt;
+import org.minima.system.commands.maxima.maxencrypt;
 import org.minima.system.commands.maxima.maxextra;
 import org.minima.system.commands.maxima.maxima;
+import org.minima.system.commands.maxima.maxmessage;
 import org.minima.system.commands.maxima.maxsign;
 import org.minima.system.commands.maxima.maxverify;
 import org.minima.system.commands.mds.checkmode;
@@ -96,6 +99,7 @@ import org.minima.system.commands.send.sendpoll;
 import org.minima.system.commands.send.sendpost;
 import org.minima.system.commands.send.sendsign;
 import org.minima.system.commands.send.sendview;
+import org.minima.system.commands.send.wallet.consolidatefrom;
 import org.minima.system.commands.send.wallet.constructfrom;
 import org.minima.system.commands.send.wallet.createfrom;
 import org.minima.system.commands.send.wallet.postfrom;
@@ -144,7 +148,7 @@ public class CommandRunner {
 			new mds(), new sendpoll(), new healthcheck(), new mempool(), new block(), new reset(),
 			
 			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(), new sendview(),
-			new sendfrom(), new createfrom(), new signfrom(), new postfrom(), new constructfrom(),
+			new sendfrom(), new createfrom(), new signfrom(), new postfrom(), new constructfrom(), new consolidatefrom(),
 			
 			new archive(), new logs(), new history(), new convert(),new maths(),
 			new checkpending(), new checkmode(), new restoresync(), new timemilli(),
@@ -153,10 +157,11 @@ public class CommandRunner {
 			
 			new multisig(), new multisigread(), new checkaddress(),
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
+			new maxencrypt(), new maxdecrypt(),
 			
 			new ping(), new random(), new seedrandom(), new mysql(), new mysqlcoins(), new slavenode(), new checkrestore(),
 			//new file(),
-			new megammr(),
+			new megammr(), new maxmessage(),
 			
 			new vault(), new consolidate(), new coinnotify(),
 			new backup(), new restore(), new test(), 

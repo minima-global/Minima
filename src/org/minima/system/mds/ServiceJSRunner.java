@@ -45,6 +45,11 @@ public class ServiceJSRunner extends MessageProcessor{
 	}
 	
 	public void stopJS() {
+		
+		//Clear the message stack
+		clear();
+		
+		//Send the shutdown message - must be from the processor thread
 		PostMessage(SERVICEJS_STOP);
 	}
 	
@@ -75,30 +80,19 @@ public class ServiceJSRunner extends MessageProcessor{
 				ctx.setLanguageVersion(Context.VERSION_ES6);
 				ctx.setMaximumInterpreterStackDepth(1024);
 				
-				//Stop JAVA classes from being run..
-				try {
-					ctx.setClassShutter(new ClassShutter() {
-						public boolean visibleToScripts(String className) {					
-							
-							//ONLY MDSJS can be called form JS
-							if(className.startsWith("org.minima.system.mds.runnable")) {
-								return true;
-							}
-								
-							//MinimaLogger.log("RHINOJS JAVA CLASS DENIED ACCESS : "+className);
-							
-							return false;
+				//Stop any JAVA classes from being run..
+				ctx.setClassShutter(new ClassShutter() {
+					public boolean visibleToScripts(String className) {					
+						
+						//ONLY MDSJS can be called form JS
+						if(className.startsWith("org.minima.system.mds.runnable")) {
+							return true;
 						}
-					});
-				}catch(SecurityException sec) {
-					MinimaLogger.log(sec.toString());
-					
-					if(sec.getMessage().equals("Cannot overwrite existing ClassShutter object")) {
-						//we already set it..
-					}else {
-						MinimaLogger.log(sec);
+							
+						//MinimaLogger.log("RHINOJS JAVA CLASS DENIED ACCESS : "+className);
+						return false;
 					}
-				}
+				});
 				
 				//Create the Scope
 				Scriptable scope = ctx.initStandardObjects();
@@ -108,7 +102,7 @@ public class ServiceJSRunner extends MessageProcessor{
 				ScriptableObject.putProperty(scope, "MDS", Context.javaToJS(mMDSJS, scope));
 				
 				//Add the main code to the Runnable
-				ctx.evaluateString(scope, code, "<mds_"+mMiniDapp.getUID()+">", 1, null);
+				ctx.evaluateString(scope, code, "<mds_"+mMiniDapp.getName()+"_"+mMiniDapp.getUID()+">", 1, null);
 			
 			}catch(Exception exc) {
 				MinimaLogger.log("ERROR starting service "+mMiniDapp.getName()+" "+exc);
@@ -123,15 +117,20 @@ public class ServiceJSRunner extends MessageProcessor{
 		
 		if(zMessage.getMessageType().equals(SERVICEJS_INIT)) {
 			
-			MinimaLogger.log("Start service.js "+mMiniDapp.getName());
-			
+			//Start the service
 			setupMiniDAPP();
 		
 			MinimaLogger.log("Started service.js "+mMiniDapp.getName());
 			
 		}else if(zMessage.getMessageType().equals(SERVICEJS_STOP)) {
 		
-			mMDSJS.shutdown();
+			//MinimaLogger.log("ServiceJS Stopped : "+mMiniDapp.getName());
+			
+			try {
+				mMDSJS.shutdown();
+			}catch (Exception e) {
+				MinimaLogger.log(e);
+			}
 			
 			stopMessageProcessor();
 			

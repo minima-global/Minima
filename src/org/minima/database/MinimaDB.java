@@ -19,6 +19,7 @@ import org.minima.database.wallet.Wallet;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.network.p2p.P2PDB;
+import org.minima.system.network.p2p2.P2P2DB;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MiniFormat;
@@ -59,6 +60,7 @@ public class MinimaDB {
 	 * For P2P Information
 	 */
 	P2PDB			mP2PDB;
+	P2P2DB			mP2P2DB;
 	
 	/**
 	 * LOCKING the MinimaDB for read write operations..
@@ -90,7 +92,10 @@ public class MinimaDB {
 		mMaximaDB	= new MaximaDB();
 		mMDSDB   	= new MDSDB();
 		mTxBlockDB	= new TxBlockDB();
+		
+		//The P2P
 		mP2PDB		= new P2PDB();
+		mP2P2DB		= new P2P2DB();
 		
 		mRWLock 	= new ReentrantReadWriteLock();
 		
@@ -133,11 +138,21 @@ public class MinimaDB {
 		mCurrentWriteLockState  = zLock;
 	}
 	
-	public void safeReleaseWriteLock() {
+	public void safeReleaseReadWriteLock() {
+		
 		//Release it if held by this thread..
-		if(mRWLock.writeLock().isHeldByCurrentThread()) {
-			mRWLock.writeLock().unlock();
-		}
+		try {
+			if(mRWLock.getWriteHoldCount()>0) {
+				mRWLock.writeLock().unlock();
+			}
+		}catch(Exception exc) {}
+		
+		//Release the READ lock.. if you have it..
+		try {
+			if(mRWLock.getReadHoldCount()>0) {
+				mRWLock.readLock().unlock();
+			}
+		}catch(Exception exc){}
 	}
 	
 	public String getRWLockInfo() {
@@ -248,6 +263,10 @@ public class MinimaDB {
 	
 	public P2PDB getP2PDB() {
 		return mP2PDB;
+	}
+	
+	public P2P2DB getP2P2DB() {
+		return mP2P2DB;
 	}
 	
 	public File getBaseDBFolder() {
@@ -397,6 +416,7 @@ public class MinimaDB {
 			//Load P2P DB
 //			mP2PDB.loadEncryptedDB(GeneralParams.MAIN_DBPASSWORD, new File(basedb,"p2p.db"));
 			mP2PDB.loadDB(new File(basedb,"p2p.db"));
+			mP2P2DB.loadDB(new File(basedb,"p2p2.db"));
 			
 			//Check YOUR cascade..
 			if(!Cascade.checkCascadeCorrect(mCascade)) {
@@ -680,6 +700,7 @@ public class MinimaDB {
 			//MinimaLogger.log("SAVESTATE USERDB:"+mUserDB.getAllData().toString());
 			mUserDB.saveDB(new File(basedb,"userprefs.db"));
 			mP2PDB.saveDB(new File(basedb,"p2p.db"));
+			mP2P2DB.saveDB(new File(basedb,"p2p2.db"));
 			
 			//Cascade
 			mCascade.saveDB(new File(basedb,"cascade.db"));
@@ -744,6 +765,7 @@ public class MinimaDB {
 			
 			//JsonDBs
 			mP2PDB.saveDB(new File(basedb,"p2p.db"));
+			mP2P2DB.saveDB(new File(basedb,"p2p2.db"));
 			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);

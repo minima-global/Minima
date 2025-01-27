@@ -92,6 +92,11 @@
 		//first sign this..
 		signFilepacket(filepacket,function(signed){
 			
+			//Check it's valid..
+			//checkFilePacket(signed,function(valid){
+			//	MDS.log("CHECK VALID!! "+valid);	
+			//});
+			
 			//Now add this to the DB
 			insertFilePacket(false, signed, function(){
 				//Jump Home!

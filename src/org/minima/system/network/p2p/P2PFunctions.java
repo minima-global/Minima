@@ -96,6 +96,10 @@ public class P2PFunctions {
     	mInvalidPeers.clear();
     }
     
+    public static boolean isIPv6(String fullhost) {
+    	return 	fullhost.indexOf(":") != fullhost.lastIndexOf(":");
+    }
+    
     public static boolean isIPLocal(String fullhost) {
     	return 	fullhost.startsWith("127.")  ||
     			fullhost.startsWith("localhost") ||
@@ -143,6 +147,11 @@ public class P2PFunctions {
         //Check if added to naughty list
         if(isInvalidPeer(zHost+":"+zPort)) {
         	MinimaLogger.log("P2P CHECK CONNECT : Trying to connect to Invalid Peer - disallowed @ "+zHost+":"+zPort);
+        	return false;
+        }
+        
+        if(isIPv6(zHost+":"+zPort)) {
+        	MinimaLogger.log("P2P CHECK CONNECT : Trying to connect to Invalid Ipv6 Peer - disallowed @ "+zHost+":"+zPort);
         	return false;
         }
         

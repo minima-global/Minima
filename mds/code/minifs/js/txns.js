@@ -17,7 +17,7 @@ function sendFilePacket(filepacket, callback){
 	state[6]  = filepacket.signature;
 	
 	//Now construct a txn
-	var txn = "sendpoll amount:0.000000000001 address:"+MINIWEB_FILE_ADDRESS+" storestate:false state:"+JSON.stringify(state);
+	var txn = "sendpoll amount:0.000000000001 address:"+MINIWEB_FILE_ADDRESS+" storestate:true state:"+JSON.stringify(state);
 	
 	//Now post..
 	MDS.cmd(txn,function(resp){
@@ -25,6 +25,19 @@ function sendFilePacket(filepacket, callback){
 			callback(resp);	
 		}
 	});
+}
+
+function checkFilePacketCoin(coin){
+	
+	var coinstate = coin.state;
+	
+	for(var i=0;i<7;i++){
+		if(!coinstate[i]){
+			return false;
+		}	
+	}
+	
+	return  true;	
 }
 
 function convertToFilePacket(coin){
@@ -52,7 +65,7 @@ function sendFileRequest(name, callback){
 	state[0]  = "["+name+"]";
 	
 	//Now construct a txn
-	var txn = "sendpoll amount:0.000000000001 address:"+MINIWEB_FILE_REQUEST+" storestate:false state:"+JSON.stringify(state);
+	var txn = "sendpoll amount:0.000000000001 address:"+MINIWEB_FILE_REQUEST+" storestate:true state:"+JSON.stringify(state);
 	
 	//Now post..
 	MDS.cmd(txn,function(resp){

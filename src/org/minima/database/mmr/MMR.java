@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Random;
 
@@ -785,6 +786,95 @@ public class MMR implements Streamable {
 	}
 	
 	/**
+	 * SCAN UNSPENDABLE
+	 * 
+	 * Recursive Scan for unspendable coins
+	 */
+	private HashSet<String> mPrunedCoins = new HashSet<>();
+	public HashSet<String> getPrunedUnspendableCoins() {
+		return mPrunedCoins;
+	}
+	
+	public void scanUnspendableTree() {
+		
+		//Clear the pruned coins for a fresh start
+		mPrunedCoins.clear();
+		
+		//Get the Peaks..
+		ArrayList<MMREntry> peaks = getPeaks();
+		for(MMREntry peak : peaks) {
+			scanUnspendable(peak);
+		}
+	}
+	
+	/**
+	 * You can remove the children if your value is ZERO.
+	 * 
+	 * You may still be needed as a sibling to a valid node.
+	 * 
+	 */
+	private boolean scanUnspendable(MMREntry zStartNode) {
+		
+		//Already pruned..
+		if(zStartNode.isEmpty()) {
+			return true;
+		}
+		
+		//Which row are the children on..
+		int childrow = zStartNode.getChildRow();
+		if(childrow<0) {
+			//We are at the base leaf nodes..
+			return zStartNode.getMMRData().isUnspendable();
+		}
+		
+		//The children..
+		MMREntry leftchild 	= getEntry(childrow, zStartNode.getLeftChildEntry());
+		MMREntry rightchild = getEntry(childrow, zStartNode.getRightChildEntry());
+		
+		//Prune the children if they exist
+		boolean leftunspend  = scanUnspendable(leftchild);
+		boolean rightunspend = scanUnspendable(rightchild);
+		
+		boolean leftzero = true;
+		if(!leftchild.isEmpty()) {
+			leftzero =	leftchild.getMMRData().getValue().isEqual(MiniNumber.ZERO);
+		}
+		
+		boolean rightzero = true;
+		if(!rightchild.isEmpty()) {
+			rightzero =	rightchild.getMMRData().getValue().isEqual(MiniNumber.ZERO);
+		}
+		
+		//Is this a ZERO node.. if so remove the children
+		if((leftunspend || leftzero) && (rightunspend || rightzero)) {
+			
+			//This node is unspendable
+			zStartNode.getMMRData().setUnspendable(true);
+			
+			//Remove the Children
+			removeHashTableEntry(leftchild);
+			removeHashTableEntry(rightchild);
+			
+			//Add to our list.. if these are on row 0
+			if(childrow==0) {
+				if(!leftchild.isEmpty()) {
+					mPrunedCoins.add(leftchild.getEntryNumber().toString());
+				}
+				if(!rightchild.isEmpty()) {
+					mPrunedCoins.add(rightchild.getEntryNumber().toString());
+				}
+			}
+			
+			return true;
+		}
+		
+		//This node is spendable
+		zStartNode.getMMRData().setUnspendable(false);
+		
+		return false;
+	}
+	
+	/**
 	 * TEST STUFF
 	 */
 	public static void main(String[] zArgs) {
@@ -797,7 +887,7 @@ public class MMR implements Streamable {
 		MMRData zero 	= new MMRData(new MiniData("0x00"), new MiniNumber(0));
 		MMRData one 	= new MMRData(new MiniData("0x01"), new MiniNumber(1));
 		
-		int totcoins    = 20;
+		int totcoins    = 10;
 		int rem 		= 5;
 		
 		for(int loop=0;loop<totcoins;loop++) {
@@ -805,7 +895,7 @@ public class MMR implements Streamable {
 		}
 		printmmrtree(mmr);
 		
-		//Set random values to Zero..
+		/*//Set random values to Zero..
 		for(int zz=0;zz<rem;zz++) {
 			int rand 				= new Random().nextInt(totcoins);
 			MMREntryNumber entry 	= new MMREntryNumber(rand);
@@ -822,7 +912,7 @@ public class MMR implements Streamable {
 			mmr.updateEntry(entry, proof, zero);
 			mmr.pruneTree();
 			printmmrtree(mmr);
-		}
+		}*/
 		
 		System.out.println("");
 		
@@ -850,7 +940,7 @@ public class MMR implements Streamable {
 		int toprow = zTree.mMaxRow;
 		for(int i=toprow;i>=0;i--) {
 		
-			int major = 5;
+			int major = 3;
 			
 			//The start gap
 			int startgap 	= (int) (Math.pow(2, i) -1) * major;
@@ -881,6 +971,10 @@ public class MMR implements Streamable {
 				
 				int value    = entry.getMMRData().getValue().getAsInt();
 				String valstr = ""+value;
+				
+				if(entry.getMMRData().isUnspendable()) {
+					valstr = ""+value+"*";
+				}
 				
 //				MiniNumber val = entry.getMMRData().getValue();
 //				String valstr = ""+val.getAsBigDecimal().toEngineeringString();

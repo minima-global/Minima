@@ -85,7 +85,7 @@ public class status extends Command {
 //		}
 
 		JSONObject details = new JSONObject();
-		details.put("version", GlobalParams.MINIMA_VERSION);
+		details.put("version", GlobalParams.getFullMicroVersion());
 
 		//Uptime..
 		details.put("uptime", MiniFormat.ConvertMilliToTime(Main.getInstance().getUptimeMilli()));

@@ -1,7 +1,9 @@
 
 //The Session UID of the restricted MiniDAPPS (READ MODE)
-var RESTRICTED_UID 	= "0x00";
-var WRITE_MODE		= false;
+var WRITE_MODE = false;
+
+//Link to OPEN MiniWEB
+var BROWSER_DAPPLINK = "";
 
 function jumpToMyFiles(){
 	location.href="index.html?uid="+MDS.minidappuid;	
@@ -53,10 +55,35 @@ function openBrowser(mxsite){
 	window.open("browser.html?uid="+RESTRICTED_UID+"&mxsite="+mxsite);	
 }
 
-var BROWSER_DAPPLINK = "";
 function openMinimaBrowser(mxsite){
-	if(confirm("This will open the BrowserFS MiniDAPP ?")){
+	
+	if(BROWSER_DAPPLINK == ""){
+		alert("Could not find the MiniWEB Dapp ?");
+		return;
+	}
+	
+	if(confirm("This will open the MiniWEB  MiniDAPP ?")){
 		window.open(BROWSER_DAPPLINK+"&mxsite="+mxsite);
+	}
+}
+
+function downloadSite(hexdata, filename) {
+
+	if(confirm("This will download "+filename+" ?")){
+		//Convert to base 64..
+		var b64 = MDS.util.hexToBase64(hexdata);
+				
+		//Consrtruct the data URI
+		var datauri = "data:application/zip;base64,"+b64;  
+			
+		var link 		= document.createElement("a");
+		link.download 		= filename;
+		link.href 			= datauri;
+		
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		delete link;		
 	}
 }
 
@@ -98,6 +125,7 @@ function createWebPacketView(filepacket){
 	+ "			<button class=solobutton onclick=\"deleteSite('"+filepacket.data.name+"')\">Delete</button>\n"
 	+ "		</td>\n"
 	+ "		<td style=\"text-align:right\">\n"
+	+ "			<button class=solobutton onclick=\"downloadSite('"+filepacket.data.file+"','"+filepacket.data.name+".zip')\">Download</button>\n"
 	+ "			<button class=solobutton onclick=\"openMinimaBrowser('"+filepacket.data.name+"')\">Browse</button>\n"
 	+ "		</td>\n"
 	+ "	</tr>\n"

@@ -1,0 +1,249 @@
+<html>
+
+<head>
+	<title>ChainMail</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!--  JQUERY CSS + JS -->
+	<link rel="stylesheet" href="./miniweb/libs/jquery/jquery-ui-1.14.1/jquery-ui.css">
+	<link rel="stylesheet" href="./miniweb/libs/jquery/jquery-ui-1.14.1/jquery-ui.icon-font.css">
+	<script type="text/javascript" src="./miniweb/libs/jquery/jquery-3.7.1.min.js"></script>
+	<script type="text/javascript" src="./miniweb/libs/jquery/jquery-ui-1.14.1/jquery-ui.js"></script>
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="./js/jslib.js"></script>
+	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/txns.js"></script>
+	
+	<!-- MinWeb lib -->
+	<script type="text/javascript" src="./miniweb/libs/purify.min.js"></script>
+	<script type="text/javascript" src="./miniweb/libs/mds.js"></script>
+	
+</head>
+
+<body>
+
+<center>
+
+<div class="titlebar" onclick="showTitleOnAndroid();">
+	<table width=100% border=0>
+		<tr>
+			<td><img height=45 src="./images/webmail.svg"></td>
+			<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>ChainMail</b></td>
+			<td class='topicdate' nowrap>
+			
+			<button id="button-newmail">New Message</button>
+			<button id="button-contacts">Contacts</button>
+			<button id="button-home">Home</button>
+			
+			</td>
+		</tr>
+	</table>
+</div>
+
+<script type="text/javascript">
+	
+	$(document).ready(function() {
+	    
+	    //Home button
+	    $( "#button-newmail" ).button({
+			icon: "ui-icon-mail",
+			showLabel: false
+		}).click(function(){jumpToNewMessage();});
+	    
+	    //Home button
+	    $( "#button-contacts" ).button({
+			icon: "ui-icon-contact",
+			showLabel: false
+		}).click(function(){jumpToContacts();});
+	  
+	    //Home button
+	    $( "#button-home" ).button({
+			icon: "ui-icon-home",
+			showLabel: false
+		}).click(function(){jumpToHome();});
+	});
+
+</script>	
+	<br>
+	<div class=subjectrow id=subjectview></div>
+	
+	<div id=messageview></div>
+	<br>
+	
+	<table class=contacts>
+		<tr>
+			<td style="text-align:center">
+				<textarea id=sendmessage class=inputfields rows=10 cols=50></textarea>
+			</td>
+		</tr>
+		<tr>
+			<td style="text-align:center">
+			    <button class=solobutton onclick="addContact();">Add Contact</button>&nbsp;&nbsp;&nbsp;
+				<button class=solobutton onclick="send();">Send Reply</button>
+			</td>
+		</tr>
+	</table>
+	
+</center>
+
+<script type="text/javascript">
+	
+	//Get the HASREF conversation
+	var subject = MDS.form.getParams("subject");
+	var hashref = MDS.form.getParams("hashref");
+	
+	var maxname = "";
+	var maxkey	= "";
+	
+	var toname 		= "";
+	var topubkey 	= "";
+	
+	function makeMessageNewLine(msg){
+		return safeDecodeString(msg).replaceAll("\n","<br>");
+	}
+	
+	function createSingleView(msg){
+		
+		//Incoming or outgoing..
+		var view = "<br><div class=messagebox>";
+		var boxtype = "";
+		if(msg.INCOMING == 1){
+			boxtype="incoming";
+		}else{
+			boxtype="outgoing";
+		}
+		
+		toprow = "<table width=100%><tr> "
+				+"<td> <b>"+safeDecodeString(msg.FROMNAME)+"</b></td>"
+				+"<td style='text-align:right;font-size:12;'>"+makeDateString(msg.DATE)+"</td> </tr>"
+				+"<tr> <td colspan=2>"+makeMessageNewLine(msg.MESSAGE)+"</td> </tr>"
+				+"</table>";
+				
+		view += "<div class="+boxtype+">"+toprow+"</div>";
+		
+		//view += "<div class="+boxtype+"><b>"+safeDecodeString(msg.FROMNAME)+"</b> @ "+makeDateString(msg.DATE)+"<br>"+safeDecodeString(msg.MESSAGE)+"</div>";
+		view += "</div>";
+		
+		return view;
+	}
+	
+	function loadCompleteMail(){
+		loadAllMessages(hashref,function(allmessages){
+			
+			//Set the subject
+			subjectview.innerHTML = safeDecodeString(subject);
+			
+			var fullmsg = "";
+			for(var i=0;i<allmessages.count;i++){
+				
+				var msg = allmessages.rows[i];
+				
+				fullmsg += createSingleView(msg);
+			
+				//Is the Pubkey different from ours..kkep it as that is the recipient..
+				if(msg.FROMPUBLICKEY != maxkey){
+					topubkey = msg.FROMPUBLICKEY;
+					toname	 = safeDecodeString(msg.FROMNAME);
+				}
+				
+				if(topubkey == ""){
+					if(msg.TOPUBLICKEY != maxkey){
+						topubkey = msg.TOPUBLICKEY;
+					}	
+				}	
+			}
+			
+			//If no different pubkey was fund must be a message to yourself
+			if(topubkey == ""){
+				topubkey = maxkey;
+				toname	 = maxname;
+			}
+			
+			//Set it..
+			messageview.innerHTML = fullmsg;
+		});
+	}
+	
+	//Add this user as a contact
+	function addContact(){
+		location.href="contacts.html?uid="+MDS.minidappuid
+				+"&addcontactname="+toname
+				+"&addcontactpublickey="+topubkey;
+	}
+	
+	function send(){
+		
+		//Create a complete message
+		var sendjson  			= {};
+		
+		//MAXIMA DETAILS
+		sendjson.fromname 		= maxname;
+		sendjson.frompublickey 	= maxkey;
+		
+		//TO PUBLIC KEY
+		sendjson.topublickey	= topubkey;
+		
+		//SUBJECT AND MESSAGE
+		sendjson.subject 		= subject;
+		sendjson.message		= sendmessage.value.trim();
+		
+		//Add a random ID..
+		sendjson.randomid		= "0x"+genRandomHexString(32);
+		
+		//Check not blank
+		if(sendjson.message == ""){
+			alert("Cannot send blank messages..");
+			return;
+		}
+		
+		//Encrypt and send..
+		sendMessage(sendjson,function(success, sendresp){
+			if(!success){
+				alert("Error sending mail..\n\n"+sendresp);
+				return;
+			}
+			
+			//Add to the database..
+			insertMessage(sendjson, false, function(insresp){
+				if(sendresp.pending){
+					alert("Transaction Pending..\n\nIt has been added to your database..");		
+				}else{
+					alert("Message Sent!");	
+				}	
+				
+				//refresh..
+				window.location.reload();
+			});
+		});
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//Get your details
+			MDS.cmd("maxima",function(maxresp){
+				maxname = maxresp.response.name;
+				maxkey	= maxresp.response.mxpublickey;
+				
+				//Set all messages to READ
+				readAllMessages(hashref,function(){
+					loadCompleteMail();	
+				});
+			});
+			
+		}
+	});
+
+</script>
+
+</body>
+
+</html>

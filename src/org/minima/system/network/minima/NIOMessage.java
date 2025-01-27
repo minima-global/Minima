@@ -58,6 +58,11 @@ public class NIOMessage implements Runnable {
 	public static ConcurrentHashMap<String, Long> mLastChainSync = new ConcurrentHashMap<>();
 	
 	/**
+	 * Have we sent an IBD in the last 30 mins..  
+	 */
+	public static HashSet<String> mHaveSentIBDRecently = new HashSet<>(); 
+	
+	/**
 	 * Base Message types sent over the network
 	 */
 	public static final MiniByte MSG_GREETING 		= new MiniByte(0);
@@ -113,6 +118,8 @@ public class NIOMessage implements Runnable {
 			return "P2P";
 		}else if(zType.isEqual(MSG_PING)) {
 			return "PING";
+		}else if(zType.isEqual(MSG_SINGLE_PONG)) {
+			return "MSG_SINGLE_PONG";
 		}else if(zType.isEqual(MSG_MAXIMA_CTRL)) {
 			return "MAXIMA_CTRL";
 		}else if(zType.isEqual(MSG_MAXIMA_TXPOW)) {
@@ -122,6 +129,18 @@ public class NIOMessage implements Runnable {
 			return "MSG_IBD_REQ";
 		}else if(zType.isEqual(MSG_IBD_RESP)) {
 			return "MSG_IBD_RESP";
+		
+		}else if(zType.isEqual(MSG_ARCHIVE_DATA)) {
+			return "MSG_ARCHIVE_DATA";
+		}else if(zType.isEqual(MSG_ARCHIVE_REQ)) {
+			return "MSG_ARCHIVE_REQ";
+		}else if(zType.isEqual(MSG_ARCHIVE_SINGLE_REQ)) {
+			return "MSG_ARCHIVE_SINGLE_REQ";
+		
+		}else if(zType.isEqual(MSG_MEGAMMRSYNC_REQ)) {
+			return "MSG_MEGAMMRSYNC_REQ";
+		}else if(zType.isEqual(MSG_MEGAMMRSYNC_RESP)) {
+			return "MSG_MEGAMMRSYNC_RESP";
 		
 		}else if(zType.isEqual(MSG_TXBLOCKID)) {
 			return "TXBLOCKID";
@@ -133,7 +152,7 @@ public class NIOMessage implements Runnable {
 			return "TXBLOCKMINE";
 		}
 		
-		return "UNKNOWN";
+		return "UNKNOWN_"+zType.toString();
 	}
 	
 	/**
@@ -187,6 +206,16 @@ public class NIOMessage implements Runnable {
 			return;
 		}
 		
+		//Is this message from an invalid peer
+		/*if(!mFullAdrress.equals("")) {
+			if(P2PFunctions.isInvalidPeer(mFullAdrress)) {
+				//Just disconnect
+				mData = null;
+				Main.getInstance().getNIOManager().disconnect(mClientUID);
+				return;
+			}
+		}*/
+		
 		//Convert..
 		bais 	= new ByteArrayInputStream(data);
 		dis 	= new DataInputStream(bais);
@@ -235,6 +264,15 @@ public class NIOMessage implements Runnable {
 //			if(true) {
 //				MinimaLogger.log(tracemsg,false);
 //			}
+			
+			//Log to TRAFFIC monitor
+			try {
+				String strtype 		= convertMessageType(type);
+				int size 			= data.length;
+				NIOTraffic traffic 	= Main.getInstance().getNIOManager().getTrafficListener();
+				traffic.addReadBytes(strtype, size);
+			}catch(Exception exc) {}
+			
 			
 			//Now find the right message
 			if(type.isEqual(MSG_GREETING)) {
@@ -355,23 +393,34 @@ public class NIOMessage implements Runnable {
 //					Main.getInstance().getNIOManager().getNIOServer().setWelcome(mClientUID, welcome);
 //				}
 				
-				//Create an IBD response to that Greeting..
-				IBD ibd = new IBD();
-				boolean isvalid = ibd.createIBD(greet);
-				
-				//Was it a vaild IBD - with a crossover..
-				if(!isvalid) {
-					 //Add him to the invalid peers list
-					if(!mFullAdrress.equals("")) {
-						P2PFunctions.addInvalidPeer(mFullAdrress);
+				//Have we sent an IBD message already..
+				String miniaddress = nioclient.getFullMinimaAddress();
+				if(mHaveSentIBDRecently.contains(miniaddress)) {
+					MinimaLogger.log("Allready sent an IBD to "+miniaddress+" in last 30 mins..");
+					
+				}else {
+					
+					//Add to our list
+					mHaveSentIBDRecently.add(miniaddress);
+					
+					//Create an IBD response to that Greeting..
+					IBD ibd = new IBD();
+					boolean isvalid = ibd.createIBD(greet);
+					
+					//Was it a vaild IBD - with a crossover..
+					if(!isvalid) {
+						 //Add him to the invalid peers list
+						if(!mFullAdrress.equals("")) {
+							P2PFunctions.addInvalidPeer(mFullAdrress);
+						}
+						
+						//Still send him OUR IBD so they know they are on the wrong chain  aswell.
+						//..
 					}
 					
-					//Stil send him OUR IBD so they know they are on the wrong chain  aswell.
-					//..
+					//Send it
+					NIOManager.sendNetworkMessage(mClientUID, MSG_IBD, ibd);
 				}
-				
-				//Send it
-				NIOManager.sendNetworkMessage(mClientUID, MSG_IBD, ibd);
 				
 			}else if(type.isEqual(MSG_IBD)) {
 				
@@ -544,7 +593,7 @@ public class NIOMessage implements Runnable {
 				//Interesting info.. check this.. probably a timing issue
 				if(txpow.isBlock() && blockdiffratio < 0.01) {
 					//Block difficulty too low..
-					MinimaLogger.log("Received txpow block with low block difficulty.. "+blockdiffratio+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
+					//MinimaLogger.log("Received txpow block with low block difficulty.. "+blockdiffratio+" "+txpow.getBlockNumber()+" "+txpow.getTxPoWID());
 					fullyvalid = false;
 				}
 				
@@ -1031,8 +1080,16 @@ public class NIOMessage implements Runnable {
 					pinggreet.getExtraData().put("50hash", "0x00");
 				}
 				
-				//Is the P2P Enable..
-				if(GeneralParams.P2P_ENABLED) {
+				//Add the NUMBER of connections..
+				pinggreet.getExtraData().put("connections",Main.getInstance().getNIOManager().getAllConnectedDetails());
+				
+				//Add the Peers List! of P2P2..
+				if(GeneralParams.P2P2_ENABLED) {
+					
+					//Add the Peers List
+					pinggreet.getExtraData().put("peers-list", MinimaDB.getDB().getP2P2DB().getAllKnownPeers());
+					
+				}else if(GeneralParams.P2P_ENABLED) {
 					
 					//Get the peers list
 					P2PManager p2PManager 	= (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();

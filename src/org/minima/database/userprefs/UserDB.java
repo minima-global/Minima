@@ -206,6 +206,14 @@ public class UserDB extends JsonDB{
 		setBoolean("mysql_autobackup", zAuto);
 	}
 	
+	public boolean getAutoBackupMySQLCoins() {
+		return getBoolean("mysqlcoins_autobackup", false);
+	}
+	
+	public void setAutoBackupMySQLCoins(boolean zAuto) {
+		setBoolean("mysqlcoins_autobackup", zAuto);
+	}
+	
 	public void setAutoMySQLHost(String zHost) {
 		setString("mysql_host", zHost);
 	}

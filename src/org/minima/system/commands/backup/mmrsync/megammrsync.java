@@ -141,8 +141,8 @@ public class megammrsync extends Command {
 		
 		}else if(action.equals("resync")) {
 		
-			//Can only do this if all keys created..
-			vault.checkAllKeysCreated();
+			//Stop any new keys..
+			vault.stopAllKeysCreated();
 			
 			//Get the host
 			String fullhost = getParam("host");

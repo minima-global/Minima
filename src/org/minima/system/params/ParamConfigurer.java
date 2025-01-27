@@ -336,6 +336,11 @@ public class ParamConfigurer {
         p2plogleveldebug("p2p-log-level-debug", "Set the P2P log level to debug", (args, configurer) -> {
             P2PParams.LOG_LEVEL = P2PFunctions.Level.DEBUG;
         }),
+        p2p2("p2p2", "Enable the new P2P2 system", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.P2P2_ENABLED = true;
+            }
+        }),
         connect("connect", "Disable the p2p and manually connect to this list of host:port", (args, configurer) -> {
             GeneralParams.P2P_ENABLED = false;
             GeneralParams.CONNECT_LIST = args;
@@ -439,8 +444,25 @@ public class ParamConfigurer {
         }),
     	seed("seed", "Use this seed phrase if starting a new node", (args, configurer) -> {
             GeneralParams.SEED_PHRASE = args;
+        }),
+    	megaprune("megaprune", "Prune unspendable addresses from the megammr", (args, configurer) -> {
+            if ("true".equals(args)) {
+            	GeneralParams.MEGAMMR_MEGAPRUNE = true;
+            }
+        }),
+    	megaprunestate("megaprunestate", "Prune all coins with a state (useful for exchanges)", (args, configurer) -> {
+            if ("true".equals(args)) {
+            	GeneralParams.MEGAMMR_MEGAPRUNE 		= true;
+            	GeneralParams.MEGAMMR_MEGAPRUNE_STATE 	= true;
+            }
+        }),
+    	megaprunetokens("megaprunetokens", "Prune all tokens - only keep Minima coins", (args, configurer) -> {
+            if ("true".equals(args)) {
+            	GeneralParams.MEGAMMR_MEGAPRUNE 		= true;
+            	GeneralParams.MEGAMMR_MEGAPRUNE_TOKENS  = true;
+            }
         });
-    	
+        
         private final String key;
         private String helpMsg;
         private final BiConsumer<String, ParamConfigurer> consumer;
