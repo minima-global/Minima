@@ -125,7 +125,7 @@ function createWebPacketView(filepacket){
 	+ "			<button class=solobutton onclick=\"deleteSite('"+filepacket.data.name+"')\">Delete</button>\n"
 	+ "		</td>\n"
 	+ "		<td style=\"text-align:right\">\n"
-	+ "			<button class=solobutton onclick=\"downloadSite('"+filepacket.data.file+"','"+filepacket.data.name+".zip')\">Download</button>\n"
+	//+ "			<button class=solobutton onclick=\"downloadSite('"+filepacket.data.file+"','"+filepacket.data.name+".zip')\">Download</button>\n"
 	+ "			<button class=solobutton onclick=\"openMinimaBrowser('"+filepacket.data.name+"')\">Browse</button>\n"
 	+ "		</td>\n"
 	+ "	</tr>\n"

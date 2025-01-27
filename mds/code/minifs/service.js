@@ -29,8 +29,8 @@ var RECENT_REQUESTS_TOTAL	= 0;
 
 var RECENT_MAXIMA_REQUESTS	= [];
 
-//Time before we reset RECENTS - 24 hours
-var twentfourhours = 1000 * 60 * 60 * 24;
+//Time before we reset RECENTS - 2 hours
+var resend_wait = 1000 * 60 * 60 * 2;
 
 //Process an incoming coin from cascade or resync
 function processNewSiteCoin(coin){
@@ -232,7 +232,7 @@ MDS.init(function(msg){
 				MDS.cmd("coinnotify action:add address:"+MINIWEB_FILE_REQUEST,function(startup){});
 				
 				//Scan the chain for any coins we may have missed!
-				MDS.cmd("coins simplestate:true address:"+MINIWEB_FILE_ADDRESS,function(resp){
+				/*MDS.cmd("coins simplestate:true address:"+MINIWEB_FILE_ADDRESS,function(resp){
 					var len = resp.response.length;
 					for(var i=0;i<len;i++){
 						processNewSiteCoin(resp.response[i]);
@@ -244,9 +244,7 @@ MDS.init(function(msg){
 					for(var i=0;i<len;i++){
 						processRequestCoin(resp.response[i]);
 					}
-				});
-				
-				MDS.log("MiniFS Inited");
+				});*/
 			});	
 		});
 		
@@ -310,8 +308,7 @@ MDS.init(function(msg){
 	}else if(msg.event == "MDS_TIMER_1HOUR"){
 	
 		//What time is it..
-		if(getTimeMilli() - RECENT_SENDS_TIMER > twentfourhours){
-		//if(getTimeMilli() - RECENT_SENDS_TIMER > 1000 * 60 * 5){
+		if(getTimeMilli() - RECENT_SENDS_TIMER > resend_wait){
 			
 			//Reset the values..
 			resetRecents();	
