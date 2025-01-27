@@ -4,7 +4,7 @@
 */
 
 //Load js libs
-MDS.load("jslib.js");
+MDS.load("./js/jslib.js");
 MDS.load("./js/sql.js");
 MDS.load("./js/txns.js");
 
@@ -26,13 +26,15 @@ function processNewMessage(coin){
 					}
 					
 					//Add to the database..
-					insertMessage(message, true, function(insresp){
+					insertMessage(message, true, function(added){
 						
-						//Notify the User
-						MDS.notify(message.fromname+" : "+message.message);
-						
-						//Send a message to the front end..
-						MDS.comms.solo("NEWMESSAGE");
+						if(added){
+							//Notify the User
+							MDS.notify(message.fromname+" : "+message.message);
+							
+							//Send a message to the front end..
+							MDS.comms.solo("NEWMESSAGE");	
+						}
 					});				
 				}
 			});

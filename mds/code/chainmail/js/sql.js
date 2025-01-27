@@ -1,6 +1,6 @@
 function wipeDB(callback){
 	//Run this..
-	MDS.sql("DROP TABLE `chainmessages`",function(msg){
+	MDS.sql("DROP TABLE `chainmailmessages`",function(msg){
 		MDS.sql("DROP TABLE `contacts`",function(msg){
 			MDS.log("DB Wiped..");
 			if(callback){
@@ -44,7 +44,7 @@ function getHashRef(messagejson, callback){
 function createDB(callback){
 	
 	//Create the DB if not exists
-	var initsql = "CREATE TABLE IF NOT EXISTS `chainmessages` ( "
+	var initsql = "CREATE TABLE IF NOT EXISTS `chainmailmessages` ( "
 				+"  `id` bigint auto_increment, "
 				
 				+"  `hashref` varchar(256) NOT NULL, "
@@ -55,6 +55,8 @@ function createDB(callback){
 								
 				+"  `subject` varchar(1024) NOT NULL, "
 				+"  `message` varchar(8192) NOT NULL, "
+				
+				+"  `randomid` varchar(256) NOT NULL, "
 				
 				+"  `incoming` int NOT NULL, "
 				
@@ -88,6 +90,7 @@ function createDB(callback){
 function insertMessage(messagejson, incoming, callback){
 	
 	try{
+		
 		//First create the HASHREF
 		getHashRef(messagejson,function(hashref){
 			//Boolean is 0 / 1
@@ -98,21 +101,35 @@ function insertMessage(messagejson, incoming, callback){
 				read  = 0;
 			}
 			
-			//Insert this unread message
-			var sql = "INSERT INTO chainmessages(hashref, fromname, frompublickey, topublickey, subject, message, incoming, read, date) "
-					 +"VALUES ('"+hashref
-					 		+"','"+encodeStringForDB(messagejson.fromname)
-							+"','"+encodeStringForDB(messagejson.frompublickey)			   
-							+"','"+encodeStringForDB(messagejson.topublickey)			   
-							+"','"+encodeStringForDB(messagejson.subject)
-					 		+"','"+encodeStringForDB(messagejson.message)
-						    +"',"+incom
-						    +","+read
-							+","+getTimeMilli()+")";
-			
-			MDS.sql(sql,function(msg){
-				if(callback){
-					callback(msg);	
+			//Is it already added
+			checkMessge(hashref, messagejson.randomid,function(found){
+				
+				if(!found){
+					//Insert this unread message
+					var sql = "INSERT INTO chainmailmessages(hashref, fromname, frompublickey, topublickey, subject, "
+							+"message, randomid, incoming, read, date) "
+							 +"VALUES ('"+hashref
+							 		+"','"+encodeStringForDB(messagejson.fromname)
+									+"','"+encodeStringForDB(messagejson.frompublickey)			   
+									+"','"+encodeStringForDB(messagejson.topublickey)			   
+									+"','"+encodeStringForDB(messagejson.subject)
+							 		+"','"+encodeStringForDB(messagejson.message)
+									+"','"+encodeStringForDB(messagejson.randomid)
+								    +"',"+incom
+								    +","+read
+									+","+getTimeMilli()+")";
+					
+					MDS.sql(sql,function(msg){
+						if(callback){
+							callback(true);	
+						}
+					});		
+				}else{
+					
+					//Not added - no notification..
+					if(callback){
+						callback(false);
+					}
 				}
 			});
 		});	
@@ -125,8 +142,8 @@ function insertMessage(messagejson, incoming, callback){
  * Load the latest message from each conversation 
  */
 function loadTopMessages(callback){
-	MDS.sql("SELECT * from chainmessages WHERE ID in "
-		+"( SELECT max(ID) FROM chainmessages GROUP BY hashref ) ORDER BY ID DESC LIMIT 50", function(sqlmsg){
+	MDS.sql("SELECT * from chainmailmessages WHERE ID in "
+		+"( SELECT max(ID) FROM chainmailmessages GROUP BY hashref ) ORDER BY ID DESC LIMIT 50", function(sqlmsg){
 		callback(sqlmsg);	
 	});
 }
@@ -134,7 +151,7 @@ function loadTopMessages(callback){
 function loadAllMessages(hashref, callback){
 	
 	//Find a record
-	var sql = "SELECT * FROM chainmessages WHERE hashref='"+hashref+"' ORDER BY id ASC";
+	var sql = "SELECT * FROM chainmailmessages WHERE hashref='"+hashref+"' ORDER BY id ASC";
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
@@ -142,10 +159,26 @@ function loadAllMessages(hashref, callback){
 	});
 }
 
+function checkMessge(hashref, randomid, callback){
+	
+	//Find a record
+	var sql = "SELECT * FROM chainmailmessages WHERE hashref='"+hashref
+			+"' AND randomid='"+encodeStringForDB(randomid)+"'";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		if(msg.count>0){
+			callback(true);	
+		}else{
+			callback(false);
+		}
+	});
+}
+
 function readAllMessages(hashref, callback){
 	
 	//Find a record
-	var sql = "UPDATE chainmessages SET read=1 WHERE hashref='"+hashref+"'";
+	var sql = "UPDATE chainmailmessages SET read=1 WHERE hashref='"+hashref+"'";
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
@@ -156,7 +189,7 @@ function readAllMessages(hashref, callback){
 function deleteUserMessages(publickey, callback){
 	
 	//Update the record..
-	var sql = "DELETE FROM chainmessages WHERE publickey='"+publickey+"'";
+	var sql = "DELETE FROM chainmailmessages WHERE publickey='"+publickey+"'";
 					
 	MDS.sql(sql,function(msg){
 		callback(true);
@@ -166,7 +199,7 @@ function deleteUserMessages(publickey, callback){
 function deleteMailMessages(hashref, callback){
 	
 	//Update the record..
-	var sql = "DELETE FROM chainmessages WHERE hashref='"+hashref+"'";
+	var sql = "DELETE FROM chainmailmessages WHERE hashref='"+hashref+"'";
 					
 	MDS.sql(sql,function(msg){
 		callback(true);

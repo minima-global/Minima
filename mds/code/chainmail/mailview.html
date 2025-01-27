@@ -5,9 +5,6 @@
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
-	<!-- Load the main MDS JS lib -->
-	<script type="text/javascript" src="mds.js"></script>
-	
 	<!-- Load the CSS Style sheet -->
 	<link rel="stylesheet" href="style.css">
 	
@@ -18,10 +15,13 @@
 	<script type="text/javascript" src="./miniweb/libs/jquery/jquery-ui-1.14.1/jquery-ui.js"></script>
 	
 	<!-- Load the local JS lib -->
-	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="./js/jslib.js"></script>
 	<script type="text/javascript" src="./js/sql.js"></script>
 	<script type="text/javascript" src="./js/txns.js"></script>
-	<script type="text/javascript" src="./js/purify.min.js"></script>
+	
+	<!-- MinWeb lib -->
+	<script type="text/javascript" src="./miniweb/libs/purify.min.js"></script>
+	<script type="text/javascript" src="./miniweb/libs/mds.js"></script>
 	
 </head>
 
@@ -192,13 +192,14 @@
 		sendjson.subject 		= subject;
 		sendjson.message		= sendmessage.value.trim();
 		
+		//Add a random ID..
+		sendjson.randomid		= "0x"+genRandomHexString(32);
+		
 		//Check not blank
 		if(sendjson.message == ""){
 			alert("Cannot send blank messages..");
 			return;
 		}
-		
-		MDS.log(JSON.stringify(sendjson,null,2));
 		
 		//Encrypt and send..
 		sendMessage(sendjson,function(success, sendresp){
