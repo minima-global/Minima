@@ -32,7 +32,7 @@
 <div class="titlebar" onclick="showTitleOnAndroid();">
 	<table width=100% border=0>
 		<tr>
-			<td><img height=45 src="./images/webmail.svg"></td>
+			<td><img height=45 src="./images/chainmail.webp"></td>
 			<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>ChainMail</b></td>
 			<td class='topicdate' nowrap>
 			
@@ -138,17 +138,19 @@
 				
 				var row 	 = contactlist.insertRow();
 				
-				
 				var mess 	 = row.insertCell();
 				var username = row.insertCell();
 				username.style.width="100%";
+				username.style.whiteSpace="nowrap";
 				
 				var pubkey 	 = row.insertCell();
+				pubkey.style.whiteSpace="nowrap";
+				
 				var del		 = row.insertCell();
 				
 				mess.innerHTML		= "<button class=smallbutton onclick='messageContact(\""+contact.PUBLICKEY+"\");'>MESSAGE</button>"
 				username.innerHTML 	= safeDecodeString(contact.USERNAME);
-				pubkey.innerHTML   	= contact.PUBLICKEY.substring(0,20)+"..&nbsp;&nbsp;&nbsp;&nbsp;"; 
+				pubkey.innerHTML   	= safeDecodeString(contact.PUBLICKEY).substring(0,20)+"..&nbsp;&nbsp;&nbsp;&nbsp;"; 
 				del.innerHTML 		= "<button class=smallbutton onclick='delContact("+contact.ID+");'>DELETE</button>"
 			}
 			
