@@ -105,15 +105,17 @@
 		date.className+=" myrighttd";
 		date.style.width = "180";
 		
+		var namemsg = safeDecodeString(mail.FROMNAME+" > "+mail.MESSAGE);
+		
 		if(mail.READ == 0){
-			from.innerHTML 		= "<b>"+safeDecodeString(mail.FROMNAME)+"</b>";
+			from.innerHTML 		= "<b>"+safeDecodeString(mail.INCOMINGNAME)+"</b>";
 			subject.innerHTML 	= "<b>"+safeDecodeString(mail.SUBJECT)+"</b>"
-						+"<br><span style='font-size:14;'><b>"+safeDecodeString(mail.MESSAGE)+"</b></span>";
+						+"<br><span style='font-size:14;'><b>"+namemsg+"</b></span>";
 			
 		}else{
-			from.innerHTML 		= safeDecodeString(mail.FROMNAME);
+			from.innerHTML 		= safeDecodeString(mail.INCOMINGNAME);
 			subject.innerHTML 	= safeDecodeString(mail.SUBJECT)
-						+"<br><span style='font-size:12;color:#888888'>"+safeDecodeString(mail.MESSAGE)+"</span>";
+						+"<br><span style='font-size:12;color:#888888'>"+namemsg+"</span>";
 				
 		}
 		

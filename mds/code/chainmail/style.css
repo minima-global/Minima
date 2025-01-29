@@ -103,6 +103,19 @@ body {
 	max-width:500;
 }
 
+.mailtextarea{
+	width:100%;
+	max-width:800;
+}
+
+.wraptext{
+	width:100%;
+	max-width: 200px;
+    overflow: hidden;
+	text-overflow: ellipsis;
+ 	white-space: nowrap;
+}
+
 .incoming{
 	width:400;
   	text-align: left;

@@ -78,13 +78,23 @@
 	<table class=contacts>
 		<tr>
 			<td style="text-align:center">
-				<textarea id=sendmessage class=inputfields rows=10 cols=50></textarea>
+				<textarea id=sendmessage class=mailtextarea rows=10 cols=50></textarea>
 			</td>
 		</tr>
 		<tr>
 			<td style="text-align:center">
-			    <button class=solobutton onclick="addContact();">Add Contact</button>&nbsp;&nbsp;&nbsp;
-				<button class=solobutton onclick="send();">Send Reply</button>
+			    <table width=100% border=0>
+			    	<tr>
+			    		<td><button class=solobutton onclick="deleteMail();">Delete</button></td>
+			    		
+			    		<td style="text-align:right">
+			    			<button class=solobutton onclick="addContact();">Add Contact</button>&nbsp;&nbsp;&nbsp;
+							<button class=solobutton onclick="send();">Send Reply</button>		
+			    		</td>
+			    	</tr>
+			    </table>
+			    
+			    
 			</td>
 		</tr>
 	</table>
@@ -167,6 +177,14 @@
 			//Set it..
 			messageview.innerHTML = fullmsg;
 		});
+	}
+	
+	function deleteMail(){
+		if(confirm("Are you sure you wish to delete this thread ?")){
+			deleteMailMessages(hashref,function(msg){
+				jumpToHome();
+			});
+		}
 	}
 	
 	//Add this user as a contact

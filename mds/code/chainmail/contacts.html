@@ -143,14 +143,16 @@
 				username.style.width="100%";
 				username.style.whiteSpace="nowrap";
 				
-				var pubkey 	 = row.insertCell();
-				pubkey.style.whiteSpace="nowrap";
+				//var pubkey 	 = row.insertCell();
+				//pubkey.style.width="100%";
+				//pubkey.style.whiteSpace="nowrap";
+				//pubkey.className +="wraptext";
 				
 				var del		 = row.insertCell();
 				
 				mess.innerHTML		= "<button class=smallbutton onclick='messageContact(\""+contact.PUBLICKEY+"\");'>MESSAGE</button>"
 				username.innerHTML 	= safeDecodeString(contact.USERNAME);
-				pubkey.innerHTML   	= safeDecodeString(contact.PUBLICKEY).substring(0,20)+"..&nbsp;&nbsp;&nbsp;&nbsp;"; 
+				//pubkey.innerHTML   	= safeDecodeString(contact.PUBLICKEY).substring(0,80)+"..&nbsp;&nbsp;&nbsp;&nbsp;"; 
 				del.innerHTML 		= "<button class=smallbutton onclick='delContact("+contact.ID+");'>DELETE</button>"
 			}
 			

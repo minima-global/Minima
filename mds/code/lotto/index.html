@@ -308,57 +308,71 @@
 			var totallotto = zero;
 			
 			//Create data
+			var counter = 0;
 			for(var i=0;i<length;i++){
-				var game 			= games[i];
-				
-				var tablerow 		= thetable.insertRow(i+1);
-				var cell1 	 		= tablerow.insertCell(0);
-				var cell2 	 		= tablerow.insertCell(1);
-				var cell3 	 		= tablerow.insertCell(2);
-				var cell4 	 		= tablerow.insertCell(3);
-				var cell5 	 		= tablerow.insertCell(4);
-				var cell6 	 		= tablerow.insertCell(5);
+				var game = games[i];
 				
 				//Work out some values..
-				var famt 		= new Decimal(game.FINALAMOUNT);
-				var initial		= famt.mul(new Decimal(game.ODDS));
-				var feechange 	= new Decimal(1).sub(new Decimal(game.FEE));
-				var bet			= initial.div(feechange);
-				var feeamount	= bet.sub(initial);
+				try{
+					
+					var famt 		= new Decimal(game.FINALAMOUNT);
+					var multiplier 	= new Decimal(1).div(new Decimal(game.ODDS));
+					var initial		= famt.div(multiplier); 
+					var feechange 	= new Decimal(1).sub(new Decimal(game.FEE));
+					var bet			= initial.div(feechange);
+					var feeamount	= bet.sub(initial);
+					
+					//Create the Row
+					var tablerow 		= thetable.insertRow(counter+1);
+					var cell1 	 		= tablerow.insertCell(0);
+					var cell2 	 		= tablerow.insertCell(1);
+					var cell3 	 		= tablerow.insertCell(2);
+					var cell4 	 		= tablerow.insertCell(3);
+					var cell5 	 		= tablerow.insertCell(4);
+					var cell6 	 		= tablerow.insertCell(5);
+					
+					//Next row..
+					counter++;
+					
+					//Fill in the details..
+					cell1.innerHTML	= bet;
+					
+					//Odds and fee..
+					var showfee  	= new Decimal(100).mul(new Decimal(game.FEE))+"%";
+					cell2.innerHTML	= showfee;
+					
+					var showodds 	= new Decimal(100).mul(new Decimal(game.ODDS))+"%";
+					cell3.innerHTML	= showodds;
+					
+					var playerwins,lottowins;
+					if(game.PLAYERWINS == 0){
+						playerwins 	= bet.mul(minusone);
+						lottowins	= bet;
+					}else{
+						playerwins 	= famt.sub(bet);
+						lottowins	= playerwins.mul(minusone);
+					}
+					
+					totalplayer = totalplayer.add(playerwins);
+					totallotto 	= totallotto.add(lottowins);
+					
+					if(game.PLAYERWINS == 0){
+						cell4.innerHTML		= "Lose";
+						cell5.innerHTML		= lottowins;
+					}else{
+						cell4.innerHTML		= "Win";
+						cell5.innerHTML		= playerwins;
+					}
+					
+					//And finally the date..
+					var date = Number(game.CREATED);
+					var startdate = new Date(date);
+					cell6.innerHTML		= startdate.toLocaleString();
 				
-				cell1.innerHTML	= bet;
-				
-				//Odds and fee..
-				var showfee  	= new Decimal(100).mul(new Decimal(game.FEE))+"%";
-				cell2.innerHTML	= showfee;
-				
-				var showodds 	= new Decimal(100).mul(new Decimal(game.ODDS))+"%";
-				cell3.innerHTML	= showodds;
-				
-				var playerwins,lottowins;
-				if(game.PLAYERWINS == 0){
-					playerwins 	= bet.mul(minusone);
-					lottowins	= bet;
-				}else{
-					playerwins 	= famt.sub(bet);
-					lottowins	= playerwins.mul(minusone);
+				}catch(error){
+					MDS.log("ERROR parsing old game : "+JSON.stringify(game));
+					MDS.log(error);
 				}
-				
-				totalplayer = totalplayer.add(playerwins);
-				totallotto 	= totallotto.add(lottowins);
-				
-				if(game.PLAYERWINS == 0){
-					cell4.innerHTML		= "Lose";
-					cell5.innerHTML		= lottowins;
-				}else{
-					cell4.innerHTML		= "Win";
-					cell5.innerHTML		= playerwins;
-				}
-				
-				//And finally the date..
-				var date = Number(game.CREATED);
-				var startdate = new Date(date);
-				cell6.innerHTML		= startdate.toLocaleString();
 			}
 			
 			//Now show the totals
@@ -371,7 +385,6 @@
 			var header 		= thetable.createTHead();
 			var headerrow 	= header.insertRow(0);
 			headerrow.setAttribute("align", "center");
-			//headerrow.insertCell(0).innerHTML="<b>Total</b>";
 			headerrow.insertCell(0).innerHTML="<b>Total Player Winnings</b>";
 			
 			var tablerow 		= thetable.insertRow(1);
