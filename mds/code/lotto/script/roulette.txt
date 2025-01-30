@@ -1,0 +1,132 @@
+/*
+ DETAILS 
+ 
+ 0 - ROUND
+ 
+ 1 - PLAYER PUBKEY
+ 2 - PLAYER PAYOUT
+ 3 - PLAYER RANDOM HASH
+ 
+ 4 - AMOUNT
+ 5 - ROULETTE NUMBER
+         1-36  - A normal Number
+         37    - RED
+         38    - BLACK
+ 
+ 
+ 6 - HOUSE PUBKEY
+ 7 - HOUSE PAYOUT
+ 8 - HOUSE RANDOM HASH
+ 
+ 9 - PLAYER PREIMAGE
+ 
+*/
+
+/* VERSION */
+LET version = 0.1
+
+LET round = STATE(0)
+ASSERT round EQ INC(PREVSTATE(0))
+
+
+/* isOdd function */
+LET isodd = [
+    LET input = $1
+    LET returnvalue = FLOOR(input/2) NEQ (input/2)
+]
+
+/* isEven function */
+LET iseven = [ 
+    LET returnvalue = NOT FUNCTION(isodd $1)
+]
+
+/* Given a random HASH return a number from 0-38 */
+LET roulette = [
+    LET randomhash = $1
+    
+    /* Create a random number within MiniNumber Limits */
+    LET randomnumber = NUMBER(SUBSET(0 8 randomhash))
+    
+    /* What to modulo */
+    LET modulo = 39
+    
+    LET returnvalue = randomnumber - ( FLOOR(randomnumber / modulo) * modulo ) 
+]
+
+/* 
+    Check winning given a ROULETTE ROLL THE BET and CHOSEN NUMBER
+    
+    CHOSEN NUMBER CAN BE 
+    1-36   Is a normal number
+    37     Is RED
+    38     Is BLACK
+ 
+    On a roulette wheel..   
+    The odd numbers in the ranges 1–10 and 19–28 are red while the even numbers in those ranges are black.
+    The odd numbers in the ranges 11–18 and 29–36 are black while the even numbers in those ranges are red.
+*/
+
+LET checker = [ 
+    LET introll = $1
+    LET intnum  = $2
+    LET intbet  = $3
+    
+    /* What are the winnings */
+    LET intwin = 0
+    
+    /* Its a normal bet on a single number */
+    IF intnum GTE 1 AND intnum LTE 36 THEN
+        IF introll EQ intnum THEN
+            LET intwin = intbet * 36
+        ENDIF
+    
+    /* Check for RED */
+    ELSEIF intnum EQ 37 THEN
+        IF FUNCTION( isodd introll ) THEN
+            IF ( introll GTE 1 AND introll LT 10 ) OR ( introll GTE 19 AND introll LT 28 ) THEN
+                /* ITS RED*/
+                LET intwin = intbet * 2
+            ENDIF
+        ELSE
+            IF ( introll GT 11 AND introll LT 19 ) OR ( introll GTE 29 AND introll LTE 36 ) THEN
+                /* ITS RED*/
+                LET intwin = intbet * 2
+            ENDIF
+        ENDIF
+    
+    /* Check for BLACK */
+    ELSEIF intnum EQ 38 THEN
+        IF FUNCTION( isodd introll ) THEN
+            IF ( introll GTE 11 AND introll LT 18 ) OR ( introll GTE 29 AND introll LT 36 ) THEN
+                /* ITS BLACK */
+                LET intwin = intbet * 2
+            ENDIF
+        ELSE
+            IF ( introll GT 1 AND introll LTE 11 ) OR ( introll GTE 19 AND introll LTE 28 ) THEN
+                /* ITS BLACK */
+                LET intwin = intbet * 2
+            ENDIF
+        ENDIF
+    ENDIF
+    
+    LET returnvalue = intwin
+]
+
+/* This would be done via hashing 2 preimages */
+LET somerandom = SHA3(0xFFEEDDDEAD)
+
+/* What number is rolled */
+LET roll = FUNCTION (roulette somerandom )
+
+/* What is the player betting on */
+LET num = 37
+LET bet = 1
+
+/* What have they won */
+LET winnings = FUNCTION( checker roll num bet )
+
+/* CHECK it manulayy here */
+LET winningsmanual = FUNCTION( checker 13 38 1 )
+
+
+
