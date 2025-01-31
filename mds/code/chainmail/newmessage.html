@@ -3,6 +3,8 @@
 <head>
 	<title>ChainMail</title>
 	
+	<meta charset="UTF-8">
+	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
 	<!-- Load the CSS Style sheet -->
@@ -18,6 +20,7 @@
 	<script type="text/javascript" src="./js/jslib.js"></script>
 	<script type="text/javascript" src="./js/sql.js"></script>
 	<script type="text/javascript" src="./js/txns.js"></script>
+	<script type="text/javascript" src="./js/notifications.js"></script>
 	
 	<!-- MinWeb lib -->
 	<script type="text/javascript" src="./miniweb/libs/purify.min.js"></script>
@@ -36,6 +39,7 @@
 			<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>ChainMail</b></td>
 			<td class='topicdate' nowrap>
 			
+			<button id="button-help">Help</button>
 			<button id="button-newmail">New Message</button>
 			<button id="button-contacts">Contacts</button>
 			<button id="button-home">Home</button>
@@ -49,19 +53,21 @@
 	
 	$(document).ready(function() {
 	    
-	    //Home button
+		$( "#button-help" ).button({
+			icon: "ui-icon-help",
+			showLabel: false
+		}).click(function(){jumpToHelp();});
+		
 	    $( "#button-newmail" ).button({
 			icon: "ui-icon-mail",
 			showLabel: false
 		}).click(function(){jumpToNewMessage();});
 	    
-	    //Home button
 	    $( "#button-contacts" ).button({
 			icon: "ui-icon-contact",
 			showLabel: false
 		}).click(function(){jumpToContacts();});
 	  
-	    //Home button
 	    $( "#button-home" ).button({
 			icon: "ui-icon-home",
 			showLabel: false
@@ -209,6 +215,15 @@
 				
 				loadContactList();
 			});
+	
+			askNotificationPermission();
+			
+		}else if(msg.event == "MDSCOMMS"){
+			
+			//Is it from servioce.js
+			if(!msg.data.public){
+				checkMDSCOMMMS(msg);
+			}
 		}
 	});
 

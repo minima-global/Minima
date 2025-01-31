@@ -76,79 +76,46 @@
 
 </script>
 
+<br>
+	<div class=helpdiv>
 	
-	<br>
-	<table class=maintable id=messagetable></table>
-	<br>
+	<div style="padding:8">
 	
-	<div id=youraddress class=contacts style="word-wrap:break-word;text-align:center;"></div>
-	<br>
-	
-	<div class=contacts style="text-align:center;">
-		<br>Messages are signed and end-to-end encrypted so the sender, recipient and content are hidden<br><br>
+<h3>Help</h3>
+
+Every Minima user has a chainmail address, like an email address.<br>
+<br>
+Users of chainmail can add contacts and send on-chain messages to other chainmail users.<br>
+<br>
+All messages are signed and end-to-end encrypted so the sender, recipient and content are hidden.<br>
+<br>
+Each message costs 0.000000000001 Minima - plus the current <b>BURN</b><br>
+<br>
+When using ChainMail in <b>READ</b> mode, you must approve transactions before they will be sent.<br>
+<br>
+
+<h3>Technical Overview</h3>
+
+A user's chain mail address is an RSA public key.<br>
+<br> 
+When sending a 'chainmail' .. a very small Minima transaction is sent to the global chainmail address : 0x434841494E4D41494C<br>
+<br>
+The transaction includes an encrypted data packet that ONLY the recipient can decrypt.. no details about the message, recipient or sender are public.<br>
+<br>
+All chainmail Users try to decrypt the message.. but only the intended recipient succeeds.<br>
+<br>
+The decrypted message includes the sender public key, a message and a signature.<br>
+<br>
+Simple and secure.<br>
+<br>
+
 	</div>
-	
+
+	</div>
+
 </center>
 
 <script type="text/javascript">
-	
-	function createMessageRow(mail){
-		
-		var messagerow = messagetable.insertRow();
-		messagerow.onclick = function(){
-			location.href="mailview.html?uid="+MDS.minidappuid+"&hashref="+mail.HASHREF+"&subject="+mail.SUBJECT;	
-		};
-		messagerow.className+=" mytr";
-		
-		var from 		 = messagerow.insertCell();
-		from.style.width = "150";
-		from.className+=" mylefttd";
-		
-		var subject = messagerow.insertCell();
-		subject.className+=" mylefttd";
-		
-		var date	= messagerow.insertCell();
-		date.className+=" myrighttd";
-		date.style.width = "180";
-		
-		var namemsg = safeDecodeString(mail.FROMNAME+" > "+mail.MESSAGE);
-		
-		if(mail.READ == 0){
-			from.innerHTML 		= "<b>"+safeDecodeString(mail.INCOMINGNAME)+"</b>";
-			subject.innerHTML 	= "<b>"+safeDecodeString(mail.SUBJECT)+"</b>"
-						+"<br><span style='font-size:14;'><b>"+namemsg+"</b></span>";
-			
-		}else{
-			from.innerHTML 		= safeDecodeString(mail.INCOMINGNAME);
-			subject.innerHTML 	= safeDecodeString(mail.SUBJECT)
-						+"<br><span style='font-size:12;color:#888888'>"+namemsg+"</span>";
-				
-		}
-		
-					
-		date.innerHTML = makeDateString(mail.DATE);
-		
-	}
-	
-	function loadMail(){
-		
-		//Clear table
-		messagetable.innerHTML = "";
-		
-		//Add the messages
-		loadTopMessages(function(msg){
-			for(var i=0;i<msg.count;i++){
-				createMessageRow(msg.rows[i]);	
-			}
-			
-			//Are we blank
-			if(msg.count == 0){
-				var messagerow 	= messagetable.insertRow();
-				var from 		= messagerow.insertCell();
-				from.innerHTML 	= "No messages yet..";
-			}
-		});
-	}
 	
 	//Main message handler..
 	MDS.init(function(msg){
@@ -156,43 +123,12 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			
-			//Do stuff.. from now..		
-			var wipedb = false;
-			if(wipedb){
-				wipeDB(function(){});
-			}else{
-				
-				//Get your details
-				MDS.cmd("maxima",function(maxresp){
-					
-					youraddress.innerHTML = "<br>Your ChainMail Address : <br><br>"
-								+"<div style='margin:auto;max-width:90%;font-size:10;'>"
-								+maxresp.response.mxpublickey+"</div><br>";
-					
-					loadMail();
-				});
-				
-				//Check balance is not zero..
-				try{
-					MDS.cmd("balance tokenid:0x00", function(bal){
-						if(bal.response[0].confirmed == "0"){
-							alert("You must have some Minima to send ChainMail messages..");
-						}
-					})	
-				}catch(error){
-					MDS.log(error);
-				}
-			}
-		
 			askNotificationPermission();
 			
 		}else if(msg.event == "MDSCOMMS"){
 			
 			//Is it from servioce.js
 			if(!msg.data.public){
-				
-				//Reload the Main Mail
-				loadMail();
 				
 				checkMDSCOMMMS(msg);
 			}

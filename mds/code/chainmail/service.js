@@ -29,11 +29,23 @@ function processNewMessage(coin){
 					insertMessage(message, true, function(added){
 						
 						if(added){
+							
+							var shorter = message.message;
+							if(message.message.length > 50){
+								shorter = message.message.substr(0,50)+"..";
+							}
+							
 							//Notify the User
-							MDS.notify(message.fromname+" : "+message.message);
+							MDS.notify(message.fromname+" : "+shorter);
+							
+							var notif 		= {};
+							notif.type 		= "NEWMAIL";
+							notif.subject	= message.subject;
+							notif.from 		= message.fromname;
+							notif.message 	= shorter;
 							
 							//Send a message to the front end..
-							MDS.comms.solo("NEWMESSAGE");	
+							MDS.comms.solo(JSON.stringify(notif));	
 						}
 					});				
 				}

@@ -54,6 +54,18 @@ body {
   border-spacing:8;
 }
 
+.helpdiv{
+  width:100%;
+  min-width:460;
+  text-align: left;
+  margin:8;
+  max-width:840;
+  border: 2px solid #0000ff;
+  border-radius: 10px;
+  
+  border-spacing:8;
+}
+
 .maintable{
   width:100%;
   min-width:460;

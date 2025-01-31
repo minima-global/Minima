@@ -11,6 +11,10 @@ function jumpToHome(){
 	location.href="index.html?uid="+MDS.minidappuid;	
 }
 
+function jumpToHelp(){
+	location.href="help.html?uid="+MDS.minidappuid;	
+}
+
 function showTitleOnAndroid(){
 	if (window.navigator.userAgent.includes('Minima Browser')) {
 		Android.showTitleBar();
@@ -32,4 +36,21 @@ function genRandomHexString(len) {
         output += hex.charAt(Math.floor(Math.random() * hex.length));
     }
     return output;
+}
+
+function checkMDSCOMMMS(msg){
+	
+	if(!msg.data.public){	
+		try{
+			//Parse the notification
+			var notif = JSON.parse(msg.data.message);
+			
+			showNotification(notif.subject+"\n\n"
+							+notif.from+" > "
+							+notif.message);
+			
+		}catch(error){
+			MDS.log("MDSCOMMS ERROR :"+error);
+		}
+	}
 }
