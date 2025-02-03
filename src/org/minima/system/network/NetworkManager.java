@@ -79,6 +79,9 @@ public class NetworkManager {
 			};
 		}
 		
+		//The main NIO server manager
+		mNIOManager = new NIOManager(this);
+				
 		//Is the P2P2 enabled..
 		if(GeneralParams.P2P2_ENABLED) {
 			mP2P2Manager = new P2P2Manager();
@@ -93,9 +96,6 @@ public class NetworkManager {
 				}
 			};
 		}
-			
-		//The main NIO server manager
-		mNIOManager = new NIOManager(this);
 		
 		//Do we start the RPC server
 		if(GeneralParams.RPC_ENABLED) {

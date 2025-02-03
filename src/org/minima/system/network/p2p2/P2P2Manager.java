@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import org.minima.database.MinimaDB;
+import org.minima.objects.Greeting;
 import org.minima.system.Main;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.messages.Message;
@@ -75,6 +77,35 @@ public class P2P2Manager extends MessageProcessor{
 		if(zMessage.getMessageType().equals(P2P2_INIT)) {
 			
 			MinimaLogger.log("P2P2 Inited.. ");
+			
+			//Have we specified some peers..
+			
+			//Is this the first time.. FOR NOW.. we use the mega mmr.. 
+			
+			if(MinimaDB.getDB().getP2P2DB().isFirstStartUp()) {
+				
+				//Copy the peers from p2p.. or PING megammr..  
+				//..
+				
+				
+				//Ping MEGA
+				Greeting greet = Main.getInstance().getNIOManager().sendPingMessage("megammr.minima.global", 9001, false);
+				
+				if(greet != null) {
+					MinimaLogger.log("P2P2 greet found : "+greet.getExtraData().toString());
+					
+					//Save the peers list..
+					JSONArray peers = (JSONArray) greet.getExtraData().get("peers-list");
+					
+					for(Object ff : peers) {
+						String peer = (String)ff;
+						
+						MinimaLogger.log("Peer : "+peer);
+					}
+					
+				}
+				
+			}
 			
 		}else if(zMessage.getMessageType().equals(P2P2_FASTLOOP)) {
 			

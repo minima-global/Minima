@@ -9,12 +9,27 @@ public class P2P2DB extends JsonDB {
 		super();
 	}
 	
+	public boolean isFirstStartUp() {
+		return getBoolean("first_startup", true);
+	}
+	
+	public void setFirstStartUp(boolean zSet) {
+		setBoolean("first_startup", zSet);
+	}
+	
+	
+	
+	public void clearAllKnownPeers() {
+		setJSONArray("all_known_peers", new JSONArray());
+	}
+	
 	public JSONArray getAllKnownPeers(){
+		return getJSONArray("all_known_peers");
+	}
+	
+	public JSONArray addPeerToAllKnown(){
 		
-		JSONArray allpeers = new JSONArray();
-		allpeers.add("127.0.0.1:10001");
-		
-		return allpeers;
+		return getJSONArray("all_known_peers");
 	}
 	
 	
