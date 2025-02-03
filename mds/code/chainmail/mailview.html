@@ -52,26 +52,20 @@
 <script type="text/javascript">
 	
 	$(document).ready(function() {
+	    startupButtons();
 	    
-		$( "#button-help" ).button({
-			icon: "ui-icon-help",
-			showLabel: false
-		}).click(function(){jumpToHelp();});
-		
-	    $( "#button-newmail" ).button({
-			icon: "ui-icon-mail",
-			showLabel: false
-		}).click(function(){jumpToNewMessage();});
+	    $( "#button-send" ).button({
+			icon: "ui-icon-mail-send"
+		}).click(function(){send();});
 	    
-	    $( "#button-contacts" ).button({
-			icon: "ui-icon-contact",
-			showLabel: false
-		}).click(function(){jumpToContacts();});
-	  
-	    $( "#button-home" ).button({
-			icon: "ui-icon-home",
-			showLabel: false
-		}).click(function(){jumpToHome();});
+	    $( "#button-delete" ).button({
+			icon: "ui-icon-delete"
+		}).click(function(){deleteMail();});
+	    
+	    $( "#button-add" ).button({
+			icon: "ui-icon-plusthick"
+		}).click(function(){addContact();});
+	    
 	});
 
 </script>
@@ -92,11 +86,11 @@
 			<td style="text-align:center">
 			    <table width=100% border=0>
 			    	<tr>
-			    		<td><button class=solobutton onclick="deleteMail();">Delete</button></td>
+			    		<td><button id="button-delete">Delete</button></td>
 			    		
 			    		<td style="text-align:right">
-			    			<button class=solobutton onclick="addContact();">Add Contact</button>&nbsp;&nbsp;&nbsp;
-							<button class=solobutton onclick="send();">Send Reply</button>		
+			    			<button id="button-add">Add Contact</button>&nbsp;&nbsp;&nbsp;
+							<button id="button-send">Send Reply</button>		
 			    		</td>
 			    	</tr>
 			    </table>

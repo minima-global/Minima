@@ -8,8 +8,19 @@ body {
     margin: 20;   /* Remove body margins */
 }
 
+textarea {
+	font-family: Manrope;
+	font-size:16; 
+}
+
+input {
+	font-family: Manrope;
+	font-size:16; 
+}
+
 .ui-icon {
 	zoom:150%;
+	color : #5555ff
 }
 
 .mylefttd {
@@ -34,7 +45,7 @@ body {
 
 .titlebar{
   width:100%;
-  min-width:460;
+  min-width:360;
   height:50px;
   text-align: left;
   max-width:840;
@@ -44,7 +55,7 @@ body {
 
 .contacts{
   width:100%;
-  min-width:460;
+  min-width:360;
   text-align: left;
   
   max-width:840;
@@ -56,7 +67,7 @@ body {
 
 .helpdiv{
   width:100%;
-  min-width:460;
+  min-width:360;
   text-align: left;
   margin:8;
   max-width:840;
@@ -68,21 +79,38 @@ body {
 
 .maintable{
   width:100%;
-  min-width:460;
-  text-align: left;
   
+  min-width:360;
   max-width:840;
+  
+  text-align: left;
   border: 2px solid #0000ff;
   border-radius: 10px;
-  
   cursor:pointer;
-  
   border-spacing:8;
+}
+
+.maintablefrom{
+  white-space: nowrap;
+  text-align: right;
+}
+
+.maintablesubject{
+	width:100%;
+	max-width: 20px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.maintabledate{
+	text-align: right;
+	white-space: nowrap;
 }
 
 .subjectrow{
   width:100%;
-  min-width:460;
+  min-width:360;
   text-align: center;
   max-width:840;
   border: 2px solid #0000ff;
@@ -96,7 +124,7 @@ body {
 
 .addcontact{
   width:100%;
-  min-width:460;
+  min-width:360;
   text-align: left;
   
   max-width:840;
@@ -108,6 +136,7 @@ body {
   text-align:right;
   font-weight:bold;
   width:150;
+  white-space: nowrap;
 }
 
 .inputfields{
@@ -129,7 +158,8 @@ body {
 }
 
 .incoming{
-	width:400;
+	width:80%;
+	max-width:460;
   	text-align: left;
   	border: 2px solid #0000ff;
     border-radius: 10px;
@@ -140,7 +170,8 @@ body {
 }
 
 .outgoing{
-	width:400;
+	width:80%;
+  	max-width:460;
   	text-align: left;
   	border: 2px solid #0000ff;
     border-radius: 10px;
@@ -152,7 +183,7 @@ body {
 
 .messagebox{
 	width:100%;
-  	min-width:460;
+  	min-width:360;
   	max-width:840;
 }
 
@@ -209,7 +240,7 @@ body {
   	border-radius: 4px;
   	padding: 2px 2px;
   	font-family: Manrope;
-  	font-size: 10px;
+  	font-size: 12px;
 }
 .smallbutton-edit {
 	font-family: Manrope;

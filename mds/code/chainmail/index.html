@@ -37,13 +37,12 @@
 		<tr>
 			<td><img height=45 src="./images/chainmail.webp"></td>
 			<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>ChainMail</b></td>
+			
 			<td class='topicdate' nowrap>
-			
-			<button id="button-help">Help</button>
-			<button id="button-newmail">New Message</button>
-			<button id="button-contacts">Contacts</button>
-			<button id="button-home">Home</button>
-			
+				<button id="button-help">Help</button>
+				<button id="button-newmail">New Message</button>
+				<button id="button-contacts">Contacts</button>
+				<button id="button-home">Home</button>
 			</td>
 		</tr>
 	</table>
@@ -52,41 +51,17 @@
 <script type="text/javascript">
 	
 	$(document).ready(function() {
-	    
-		$( "#button-help" ).button({
-			icon: "ui-icon-help",
-			showLabel: false
-		}).click(function(){jumpToHelp();});
-		
-	    $( "#button-newmail" ).button({
-			icon: "ui-icon-mail",
-			showLabel: false
-		}).click(function(){jumpToNewMessage();});
-	    
-	    $( "#button-contacts" ).button({
-			icon: "ui-icon-contact",
-			showLabel: false
-		}).click(function(){jumpToContacts();});
-	  
-	    $( "#button-home" ).button({
-			icon: "ui-icon-home",
-			showLabel: false
-		}).click(function(){jumpToHome();});
+	    startupButtons();
 	});
 
 </script>
-
 	
 	<br>
-	<table class=maintable id=messagetable></table>
+	<table class="maintable" id=messagetable border=0></table>
 	<br>
 	
 	<div id=youraddress class=contacts style="word-wrap:break-word;text-align:center;"></div>
 	<br>
-	
-	<div class=contacts style="text-align:center;">
-		<br>Messages are signed and end-to-end encrypted so the sender, recipient and content are hidden<br><br>
-	</div>
 	
 </center>
 
@@ -102,13 +77,13 @@
 		
 		var from 		 = messagerow.insertCell();
 		from.style.width = "150";
-		from.className+=" mylefttd";
+		from.className+=" maintablefrom";
 		
 		var subject = messagerow.insertCell();
-		subject.className+=" mylefttd";
+		subject.className+=" maintablesubject";
 		
 		var date	= messagerow.insertCell();
-		date.className+=" myrighttd";
+		date.className+=" maintabledate";
 		date.style.width = "180";
 		
 		var namemsg = safeDecodeString(mail.FROMNAME+" > "+mail.MESSAGE);
@@ -125,9 +100,7 @@
 				
 		}
 		
-					
-		date.innerHTML = makeDateString(mail.DATE);
-		
+		date.innerHTML = "<span style='font-size:12;color:#888888'>"+makeDateStringVertical(mail.DATE)+"</span>";
 	}
 	
 	function loadMail(){

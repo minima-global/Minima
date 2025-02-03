@@ -52,26 +52,11 @@
 <script type="text/javascript">
 	
 	$(document).ready(function() {
+	    startupButtons();
 	    
-		$( "#button-help" ).button({
-			icon: "ui-icon-help",
-			showLabel: false
-		}).click(function(){jumpToHelp();});
-		
-	    $( "#button-newmail" ).button({
-			icon: "ui-icon-mail",
-			showLabel: false
-		}).click(function(){jumpToNewMessage();});
-	    
-	    $( "#button-contacts" ).button({
-			icon: "ui-icon-contact",
-			showLabel: false
-		}).click(function(){jumpToContacts();});
-	  
-	    $( "#button-home" ).button({
-			icon: "ui-icon-home",
-			showLabel: false
-		}).click(function(){jumpToHome();});
+	    $( "#button-add" ).button({
+			icon: "ui-icon-plusthick"
+		}).click(function(){addContact();});
 	});
 
 </script>
@@ -91,7 +76,10 @@
 			<td><input class=inputfields type="text" id=newpubkey></td>			
 		</tr>
 		<tr>
-			<td style="text-align:center" colspan="2"><br><button class=solobutton onclick="addContact();">Add Contact</button><br><br></td>
+			<td style="text-align:center" colspan="2"><br>
+				<button id="button-add">Add Contact</button>
+				<br><br>
+			</td>
 		</tr>
 	</table>
 	
@@ -112,6 +100,12 @@
 	function addContact(){
 		var name   = newname.value.trim();
 		var pubkey = newpubkey.value.trim();
+		
+		if(name == "" || pubkey == ""){
+			alert("Cannot have blank details..");
+			return;
+		}
+		
 		insertContact(name, pubkey, function(){
 			loadContactList();
 			

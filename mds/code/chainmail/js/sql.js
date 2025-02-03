@@ -113,7 +113,7 @@ function insertMessage(messagejson, incoming, callback){
 						//Is there one..
 						var lastname = messagejson.fromname;
 						if(lastincoming.count>0){
-							lastname = lastincoming.rows[0].FROMNAME;
+							lastname = decodeStringFromDB(lastincoming.rows[0].FROMNAME);
 						}
 						
 						//Insert this unread message

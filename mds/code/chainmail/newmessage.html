@@ -52,26 +52,15 @@
 <script type="text/javascript">
 	
 	$(document).ready(function() {
+	    startupButtons();
 	    
-		$( "#button-help" ).button({
-			icon: "ui-icon-help",
-			showLabel: false
-		}).click(function(){jumpToHelp();});
-		
-	    $( "#button-newmail" ).button({
-			icon: "ui-icon-mail",
-			showLabel: false
-		}).click(function(){jumpToNewMessage();});
-	    
-	    $( "#button-contacts" ).button({
-			icon: "ui-icon-contact",
-			showLabel: false
-		}).click(function(){jumpToContacts();});
-	  
-	    $( "#button-home" ).button({
-			icon: "ui-icon-home",
-			showLabel: false
-		}).click(function(){jumpToHome();});
+	    $(document).ready(function() {
+		    startupButtons();
+		    
+		    $( "#button-send" ).button({
+				icon: "ui-icon-mail-send"
+			}).click(function(){send();});
+		});
 	});
 
 </script>
@@ -103,7 +92,7 @@
 		
 		<tr>
 			<td style="text-align:center" colspan="2">
-				<br><button class=solobutton onclick="send();">Send Message</button>
+				<br><button id="button-send">Send Message</button>
 				<br><br>
 			</td>
 		</tr>
@@ -147,6 +136,11 @@
 				//Set it..
 				sendto.value=message_contact;
 			}
+			
+			//Now make it nice..
+			$( "#contacts" ).selectmenu().on('selectmenuchange', function() {
+				contactChosen(); 
+			});;
 		});
 	}
 	

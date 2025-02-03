@@ -52,26 +52,7 @@
 <script type="text/javascript">
 	
 	$(document).ready(function() {
-	    
-		$( "#button-help" ).button({
-			icon: "ui-icon-help",
-			showLabel: false
-		}).click(function(){jumpToHelp();});
-		
-	    $( "#button-newmail" ).button({
-			icon: "ui-icon-mail",
-			showLabel: false
-		}).click(function(){jumpToNewMessage();});
-	    
-	    $( "#button-contacts" ).button({
-			icon: "ui-icon-contact",
-			showLabel: false
-		}).click(function(){jumpToContacts();});
-	  
-	    $( "#button-home" ).button({
-			icon: "ui-icon-home",
-			showLabel: false
-		}).click(function(){jumpToHome();});
+	    startupButtons();
 	});
 
 </script>
@@ -89,7 +70,7 @@ Users of chainmail can add contacts and send on-chain messages to other chainmai
 <br>
 All messages are signed and end-to-end encrypted so the sender, recipient and content are hidden.<br>
 <br>
-Each message costs 0.000000000001 Minima - plus the current <b>BURN</b><br>
+Each message costs 0.000000000001 Minima<br>
 <br>
 When using ChainMail in <b>READ</b> mode, you must approve transactions before they will be sent.<br>
 <br>
@@ -98,7 +79,7 @@ When using ChainMail in <b>READ</b> mode, you must approve transactions before t
 
 A user's chain mail address is an RSA public key.<br>
 <br> 
-When sending a 'chainmail' .. a very small Minima transaction is sent to the global chainmail address : 0x434841494E4D41494C<br>
+A 'chainmail' message is a transaction sent to the chainmail address : 0x434841494E4D41494C<br>
 <br>
 The transaction includes an encrypted data packet that ONLY the recipient can decrypt.. no details about the message, recipient or sender are public.<br>
 <br>

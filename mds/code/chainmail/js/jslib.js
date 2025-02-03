@@ -1,4 +1,27 @@
 
+function startupButtons(){
+	
+	$( "#button-help" ).button({
+		icon: "ui-icon-help",
+		showLabel: false
+	}).click(function(){jumpToHelp();});
+	
+    $( "#button-newmail" ).button({
+		icon: "ui-icon-mail",
+		showLabel: false
+	}).click(function(){jumpToNewMessage();});
+    
+    $( "#button-contacts" ).button({
+		icon: "ui-icon-contact",
+		showLabel: false
+	}).click(function(){jumpToContacts();});
+  
+    $( "#button-home" ).button({
+		icon: "ui-icon-home",
+		showLabel: false
+	}).click(function(){jumpToHome();});
+}
+
 function jumpToNewMessage(){
 	location.href="newmessage.html?uid="+MDS.minidappuid;	
 }
@@ -27,6 +50,10 @@ function safeDecodeString(str){
 
 function makeDateString(timemilli){
 	return new Date(+timemilli).toLocaleTimeString()+" "+new Date(+timemilli).toLocaleDateString();
+}
+
+function makeDateStringVertical(timemilli){
+	return new Date(+timemilli).toLocaleTimeString()+"<br>"+new Date(+timemilli).toLocaleDateString();
 }
 
 function genRandomHexString(len) {
