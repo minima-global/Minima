@@ -1,7 +1,5 @@
 package org.minima.system.network.p2p2;
 
-import java.util.ArrayList;
-
 import org.minima.utils.JsonDB;
 import org.minima.utils.json.JSONArray;
 

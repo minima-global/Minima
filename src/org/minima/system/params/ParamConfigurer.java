@@ -339,6 +339,7 @@ public class ParamConfigurer {
         p2p2("p2p2", "Enable the new P2P2 system", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.P2P2_ENABLED = true;
+                GeneralParams.P2P_ENABLED  = false;
             }
         }),
         connect("connect", "Disable the p2p and manually connect to this list of host:port", (args, configurer) -> {

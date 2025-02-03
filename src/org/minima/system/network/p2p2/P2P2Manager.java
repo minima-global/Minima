@@ -14,7 +14,8 @@ import org.minima.utils.messages.TimerMessage;
 public class P2P2Manager extends MessageProcessor{
 
 	//Initialise the systm
-	public static String P2P2_INIT	= "P2P2_INIT";
+	public static String P2P2_INIT		= "P2P2_INIT";
+	public static String P2P2_SHUTDOWN	= "P2P2_SHUTDOWN";
 	
 	//Loop check connections etc..
 	public static String P2P2_FASTLOOP	= "P2P2_FAST_LOOP";
@@ -28,9 +29,22 @@ public class P2P2Manager extends MessageProcessor{
 	public P2P2Manager() {
 		super("P2P2MANAGER");
 
+		//Do startup..
+		PostMessage(P2P2_INIT);
+		
 		//LOOP Check
 		PostTimerMessage(new TimerMessage(P2P2_LOOP_TIMER, P2P2_FASTLOOP));
 		PostTimerMessage(new TimerMessage(P2P2_LOOP_TIMER_SLOW, P2P2_SLOWLOOP));
+	}
+	
+	public void shutdown() {
+		
+		//Save the peers..
+		//..
+		
+		stopMessageProcessor();
+		
+		MinimaLogger.log("P2P2 shutdown.. ");
 	}
 	
 	public String getRandomPeerFromList() {
@@ -53,6 +67,7 @@ public class P2P2Manager extends MessageProcessor{
 		
 		//
 	}
+	
 	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
