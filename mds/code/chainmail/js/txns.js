@@ -38,7 +38,7 @@ function sendMessage(sendjson, callback){
 				state[99]  = maxmess.response.data;
 				
 				//Now construct a txn
-				var txn = "sendpoll amount:0.000000000001 address:"+CHAINMAIL_ADDRESS+" state:"+JSON.stringify(state);
+				var txn = "sendpoll amount:0.001 address:"+CHAINMAIL_ADDRESS+" state:"+JSON.stringify(state);
 				
 				//Now post..
 				MDS.cmd(txn,function(resp){	
