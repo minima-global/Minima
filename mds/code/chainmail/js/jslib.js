@@ -81,3 +81,9 @@ function checkMDSCOMMMS(msg){
 		}
 	}
 }
+
+function checkValidMx(mxcheck, callback){
+	MDS.cmd("convert from:mx to:hex data:"+mxcheck,function(resp){
+		callback(resp.status);
+	});
+}

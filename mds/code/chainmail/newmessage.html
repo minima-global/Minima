@@ -174,25 +174,34 @@
 			return;
 		}
 		
-		//Encrypt and send..
-		sendMessage(sendjson,function(success, sendresp){
-			if(!success){
-				alert("Error sending mail..\n\n"+sendresp);
+		//Check exp..
+		checkValidMx(sendjson.topublickey,function(valid){
+			
+			if(!valid){
+				alert("Invalid address ( Mx.. ) format.. ?");
 				return;
 			}
 			
-			//Add to the database..
-			insertMessage(sendjson, false, function(insresp){
-				
-				if(sendresp.pending){
-					alert("Transaction Pending..\n\nIt has still been added to your database..");		
-				}else{
-					alert("Message Sent!");	
+			//Encrypt and send..
+			sendMessage(sendjson,function(success, sendresp){
+				if(!success){
+					alert("Error sending mail..\n\n"+sendresp);
+					return;
 				}
 				
-				//Jump home..
-				jumpToHome();
-			});			
+				//Add to the database..
+				insertMessage(sendjson, false, function(insresp){
+					
+					if(sendresp.pending){
+						alert("Transaction Pending..\n\nIt has still been added to your database..");		
+					}else{
+						alert("Message Sent!");	
+					}
+					
+					//Jump home..
+					jumpToHome();
+				});			
+			});
 		});
 	}
 	

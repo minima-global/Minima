@@ -164,7 +164,7 @@ input {
   	border: 2px solid #0000ff;
     border-radius: 10px;
     padding:8;
-    
+    word-wrap: break-word;
     margin-left: 0; 
 	margin-right: auto;
 }
@@ -176,7 +176,7 @@ input {
   	border: 2px solid #0000ff;
     border-radius: 10px;
     padding:8;
-    
+    word-wrap: break-word;
     margin-left: auto; 
 	margin-right: 0; 
 }

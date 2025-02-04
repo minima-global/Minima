@@ -106,11 +106,21 @@
 			return;
 		}
 		
-		insertContact(name, pubkey, function(){
-			loadContactList();
+		//Check exp..
+		checkValidMx(pubkey,function(valid){
 			
-			newname.value   = "";
-			newpubkey.value = "";
+			if(!valid){
+				alert("Invalid address ( Mx.. ) format.. ?");
+				return;
+			}
+			
+			//Add to the database..
+			insertContact(name, pubkey, function(){
+				loadContactList();
+				
+				newname.value   = "";
+				newpubkey.value = "";
+			});	
 		});
 	}
 	
