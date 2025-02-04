@@ -1,6 +1,8 @@
 package org.minima.system.network.p2p2;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import org.minima.database.MinimaDB;
@@ -51,7 +53,7 @@ public class P2P2Manager extends MessageProcessor{
 	
 	public String getRandomPeerFromList() {
 		//Get all the valid P2P addresses..
-		JSONArray allpeers = MinimaDB.getDB().getP2P2DB().getAllKnownPeers();
+		ArrayList<String> allpeers = MinimaDB.getDB().getP2P2DB().getAllKnownPeers();
 		
 		if(allpeers.size() == 0) {
 			return "";
@@ -70,6 +72,21 @@ public class P2P2Manager extends MessageProcessor{
 		//
 	}
 	
+	//Convert the P2P peers list to our own format
+	public void convertOldP2P() {
+		
+		//Get the list
+		List<InetSocketAddress> peers = MinimaDB.getDB().getP2PDB().getPeersList();
+		
+		ArrayList<String> newpeers = new ArrayList<>();
+		for(InetSocketAddress peer : peers) {
+			String host = peer.getHostString();
+			int port 	= peer.getPort();
+			
+			
+		}
+		
+	}
 	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
@@ -82,14 +99,19 @@ public class P2P2Manager extends MessageProcessor{
 			
 			//Is this the first time.. FOR NOW.. we use the mega mmr.. 
 			
+			MinimaDB.getDB().getP2P2DB().addPeerToAllKnown("324.45.45.45:9901");
+			MinimaDB.getDB().getP2P2DB().addPeerToAllKnown("324.45.45.45:9901");
+			MinimaDB.getDB().getP2P2DB().addPeerToAllKnown("324.45.45.45:9902");
+			
 			if(MinimaDB.getDB().getP2P2DB().isFirstStartUp()) {
 				
-				//Copy the peers from p2p.. or PING megammr..  
-				//..
+				
+				//Conert the OLD p2p db peerslist
+				//convertOldP2P();
 				
 				
 				//Ping MEGA
-				Greeting greet = Main.getInstance().getNIOManager().sendPingMessage("megammr.minima.global", 9001, false);
+				/*Greeting greet = Main.getInstance().getNIOManager().sendPingMessage("megammr.minima.global", 9001, false);
 				
 				if(greet != null) {
 					MinimaLogger.log("P2P2 greet found : "+greet.getExtraData().toString());
@@ -103,7 +125,7 @@ public class P2P2Manager extends MessageProcessor{
 						MinimaLogger.log("Peer : "+peer);
 					}
 					
-				}
+				}*/
 				
 			}
 			
