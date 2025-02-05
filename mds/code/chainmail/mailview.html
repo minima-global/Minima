@@ -221,24 +221,37 @@
 			return;
 		}
 		
-		//Encrypt and send..
-		sendMessage(sendjson,function(success, sendresp){
-			if(!success){
-				alert("Error sending mail..\n\n"+sendresp);
-				return;
-			}
+		//Check balance
+		MDS.cmd("balance tokenid:0x00", function(bal){
 			
-			//Add to the database..
-			insertMessage(sendjson, false, function(insresp){
-				if(sendresp.pending){
-					alert("Transaction Pending..\n\nIt has been added to your database..");		
-				}else{
-					alert("Message Sent!");	
-				}	
+			//Do you have any money..
+			if(bal.response[0].confirmed == "0"){
+				alert("You must have some Minima to send ChainMail messages..\n\nYour current confirmed balance is 0");
+			}else{
 				
-				//refresh..
-				window.location.reload();
-			});
+				//Encrypt and send..
+				sendMessage(sendjson,function(success, sendresp){
+					if(!success){
+						alert("Error sending mail..\n\n"+sendresp);
+						return;
+					}
+					
+					//Add to the database..
+					insertMessage(sendjson, false, function(insresp){
+						if(sendresp.pending){
+							alert("Transaction Pending..\n\nPlease confirm it.\n\nIt has been added to your database.");		
+						}else{
+							alert("Message Sent!");	
+						}	
+						
+						//Clear the send message
+						sendmessage.value= "";
+						
+						//refresh..
+						window.location.reload();
+					});
+				});		
+			}
 		});
 	}
 	
@@ -247,6 +260,12 @@
 		
 		//Do initialisation
 		if(msg.event == "inited"){
+			
+			MDS.cmd("balance tokenid:0x00", function(bal){
+				if(bal.response[0].confirmed == "0"){
+					zerobalance = true;
+				}
+			});
 			
 			//Get your details
 			MDS.cmd("maxima",function(maxresp){

@@ -182,25 +182,35 @@
 				return;
 			}
 			
-			//Encrypt and send..
-			sendMessage(sendjson,function(success, sendresp){
-				if(!success){
-					alert("Error sending mail..\n\n"+sendresp);
-					return;
-				}
+			//Check balance
+			MDS.cmd("balance tokenid:0x00", function(bal){
 				
-				//Add to the database..
-				insertMessage(sendjson, false, function(insresp){
+				//Do you have any money..
+				if(bal.response[0].confirmed == "0"){
+					alert("You must have some Minima to send ChainMail messages..\n\nYour current confirmed balance is 0");
+				}else{
 					
-					if(sendresp.pending){
-						alert("Transaction Pending..\n\nIt has still been added to your database..");		
-					}else{
-						alert("Message Sent!");	
-					}
-					
-					//Jump home..
-					jumpToHome();
-				});			
+					//Encrypt and send..
+					sendMessage(sendjson,function(success, sendresp){
+						if(!success){
+							alert("Error sending mail..\n\n"+sendresp);
+							return;
+						}
+						
+						//Add to the database..
+						insertMessage(sendjson, false, function(insresp){
+							
+							if(sendresp.pending){
+								alert("Transaction Pending..\n\nIt has still been added to your database..");		
+							}else{
+								alert("Message Sent!");	
+							}
+							
+							//Jump home..
+							jumpToHome();
+						});			
+					});
+				}
 			});
 		});
 	}

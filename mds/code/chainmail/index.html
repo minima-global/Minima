@@ -138,23 +138,12 @@
 				//Get your details
 				MDS.cmd("maxima",function(maxresp){
 					
-					youraddress.innerHTML = "<br>Your ChainMail Address : <br><br>"
-								+"<div style='margin:auto;max-width:90%;font-size:10;'>"
+					youraddress.innerHTML = "<br>Your ChainMail Address</b><br><br>"
+								+"<div style='margin:auto;max-width:90%;font-size:10;color:#777777'>"
 								+maxresp.response.mxpublickey+"</div><br>";
 					
 					loadMail();
 				});
-				
-				//Check balance is not zero..
-				try{
-					MDS.cmd("balance tokenid:0x00", function(bal){
-						if(bal.response[0].confirmed == "0"){
-							alert("You must have some Minima to send ChainMail messages..");
-						}
-					})	
-				}catch(error){
-					MDS.log(error);
-				}
 			}
 		
 			askNotificationPermission();

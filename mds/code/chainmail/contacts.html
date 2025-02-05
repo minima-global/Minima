@@ -124,8 +124,8 @@
 		});
 	}
 	
-	function delContact(id){
-		if(confirm("Delete this contact ?")){
+	function delContact(id, name){
+		if(confirm("Delete contact "+name+" ?")){
 			deleteContactID(id,function(){
 				loadContactList();
 			});	
@@ -148,6 +148,7 @@
 				var contact = msg.rows[i];
 				
 				var row 	 = contactlist.insertRow();
+				row.className+=" mytr";
 				
 				var mess 	 = row.insertCell();
 				var username = row.insertCell();
@@ -161,10 +162,24 @@
 				
 				var del		 = row.insertCell();
 				
-				mess.innerHTML		= "<button class=smallbutton onclick='messageContact(\""+contact.PUBLICKEY+"\");'>MESSAGE</button>"
+				var sendbuttonid = "sendbutton-"+i;
+				var delbuttonid  = "delbutton-"+i;
+				
+				mess.innerHTML		= "<button id='"+sendbuttonid+"' onclick='messageContact(\""+contact.PUBLICKEY+"\");'>Message User</button>"
 				username.innerHTML 	= safeDecodeString(contact.USERNAME);
 				//pubkey.innerHTML   	= safeDecodeString(contact.PUBLICKEY).substring(0,80)+"..&nbsp;&nbsp;&nbsp;&nbsp;"; 
-				del.innerHTML 		= "<button class=smallbutton onclick='delContact("+contact.ID+");'>DELETE</button>"
+				del.innerHTML 		= "<button id='"+delbuttonid+"' onclick='delContact("+contact.ID+",\""+safeDecodeString(contact.USERNAME)+"\");'>Delete User</button>"
+			
+				//Make a nice button..
+				$( "#"+sendbuttonid ).button({
+					icon: "ui-icon-mail-send",
+					showLabel: false
+				});
+				
+				$( "#"+delbuttonid ).button({
+					icon: "ui-icon-delete",
+					showLabel: false
+				});
 			}
 			
 			if(msg.count==0){
