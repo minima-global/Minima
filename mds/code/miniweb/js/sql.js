@@ -57,7 +57,7 @@ function insertBookMark(name, bookmark, callback){
 function getAllBookmarks(callback){
 	
 	//Find a record
-	var sql = "SELECT * FROM bookmarks";
+	var sql = "SELECT * FROM bookmarks ORDER BY LOWER(name) ASC;";
 				
 	//Run this..
 	MDS.sql(sql,function(msg){

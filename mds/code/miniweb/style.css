@@ -8,6 +8,11 @@ body {
     margin: 20;   /* Remove body margins */
 }
 
+.ui-icon {
+	zoom:200%;
+	color : #5555ff
+}
+
 .titlebar{
   width:100%;
   min-width:460;

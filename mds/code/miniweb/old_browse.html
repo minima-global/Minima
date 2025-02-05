@@ -11,13 +11,6 @@
 	<!-- And the ICON for the page -->
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	
-	<!--  JQUERY CSS + JS -->
-	<link rel="stylesheet" href="./root/miniweb/libs/jquery/jquery-ui-1.14.1/jquery-ui.css">
-	<link rel="stylesheet" href="./root/miniweb/libs/jquery/jquery-ui-1.14.1/jquery-ui.icon-font.css">
-	<script type="text/javascript" src="./root/miniweb/libs/jquery/jquery-3.7.1.min.js"></script>
-	<script type="text/javascript" src="./root/miniweb/libs/jquery/jquery-ui-1.14.1/jquery-ui.js"></script>
-	
-	
 	<!-- JS -->
 	<script type="text/javascript" src="./js/jszip.min.js"></script>
 	<script type="text/javascript" src="./js/ziputil.js"></script>
@@ -47,34 +40,27 @@
 			height : 100%;
 		}
 		
-		.minimenu{
+		.webmenushow{
 		    position: fixed;
-		    bottom: 4px;
-		    left: 4px;
-		    background-color : #ffffff;
+		    top: 4;
+		    left: 4;
+		    background-color : ccc;
 		    display : block;
 		    z-index: 10;
-		    border: 2px solid #0000dd;
-  			border-radius: 4px;
+		    border: 0.5px solid #555;
+  			border-radius: 8px;
+  			padding: 4px 4px;
   			font-family: Manrope;
   			font-size: 14px;
-  			width:95%;
-  			max-width:800;
 		}
 		
 		.addressbar{
-			font-family: Manrope;
-  			font-size: 18px;
-  			width:100%;
+		    font-family: Manrope;
+  			font-size: 10px;
 		}
 		
 		.simplebutton{
 		    min-width:60;
-		}
-		
-		.ui-icon {
-			zoom:150%;
-			color : #5555ff
 		}
 
 	</style>
@@ -84,36 +70,33 @@
 <body>
 
 <!--  The MAIN address bar and bookmarks view -->
-<div class="minimenu" id=webfull>
-   <table border=0 width=100%>
-		<tr>
-			<td width=100%>
-				<table id=mainbuttons width=100% border=0>
-			   		<tr>
-			   			<td><button id=homebutton>HOME</button></td>
-			   			<td  width=100%><input class=addressbar type=text id=mxaddress></td>
-			   			
-			   			<td><button id=gobutton>GO</button></td>
-			   		</tr>
-				   	<tr>
-						 <td>
-						 	<button id=addbookmark>ADD</button>
-						 </td>
-						 <td  width=100%>
-							<select id=bookmarkbar class=addressbar style="width:100%" onchange="bookmkchange();"></select>
-						 </td>
-						 <td>
-						 	<button id=rembook>REM</button>
-						 </td>
-					</tr>   	
-			   </table>		
-			</td>
-			<td>
-				<button style="width:50;height:70" id=toggleview>Toggle Control Panel</button>
-			</td>	
-		</tr>
+<div class="webmenushow" id=webfull>
+   <table>
+   		<tr>
+   			<td><button class=simplebutton onclick="hidebar()">HIDE</button></td>
+   			<td><input class=addressbar type=text id=mxaddress size=50></td>
+   			<td><button class=simplebutton onclick="gobar();">GO</button></td>
+   		</tr>
+   	<tr>
+		 <td>
+		 	<button class=simplebutton onclick="addBookmark();">ADD</button>
+		 </td>
+		 <td>
+			<select id=bookmarkbar style="width:100%" onchange="bookmkchange();"></select>
+		 </td>
+		 <td>
+		 	<button class=simplebutton onclick="remBookmark();">REM</button>
+		 </td>
+		</tr>   	
    </table>
-   
+</div>
+
+<div class="webmenushow" id=webhide>
+	<table>
+   		<tr>
+   			<td><button class=simplebutton onclick="showbar()">MINIWEB</button></td>
+   		</tr>
+   </table>
 </div>
 
 <iframe class="mainiframe" id="webframe" frameborder="0"  
@@ -121,49 +104,17 @@
 
 <script type="text/javascript">
 	
-	$(document).ready(function() {
-	    
-		$( "#toggleview" ).button({
-			icon: "ui-icon-transferthick-e-w",
-			showLabel: false
-		}).click(function(){togglemenu();});
-		
-		$( "#homebutton" ).button({
-			icon: "ui-icon-home",
-			showLabel: false
-		}).click(function(){go("HOME");});
-		
-		
-		$( "#gobutton" ).button({
-			icon: "ui-icon-mail-send",
-			showLabel: false
-		}).click(function(){gobar();});
-		
-		$( "#addbookmark" ).button({
-			icon: "ui-icon-circle-plus",
-			showLabel: false
-		}).click(function(){addBookmark();});
-		
-		$( "#rembook" ).button({
-			icon: "ui-icon-circle-minus",
-			showLabel: false
-		}).click(function(){remBookmark();});
-		
-	});
+	/**
+	 * Address bar Functionaloity 
+	 */
+	function hidebar(){
+		webfull.style.display = "none";
+		webhide.style.display = "block";
+	}
 	
-	var goright = true;
-	function togglemenu(){
-		
-		//Get the width..
-		var ww = $("#mainbuttons").width();
-		
-		if(goright){
-			$("#webfull").animate({left: ww*-1+'px'});	
-		}else{
-			$("#webfull").animate({left: '4px'});
-		}
-		
-		goright = !goright;
+	function showbar(){
+		webfull.style.display = "block";
+		webhide.style.display = "none";
 	}
 	
 	function addBookmark(){
@@ -231,6 +182,8 @@
 		}
 	}
 	
+	hidebar();
+
 	/**
 	 * Main Website functionality!
 	 */
@@ -348,12 +301,6 @@
 	}
 	
 	function go(domainreq){
-		
-		//Arewe jumping home
-		if(domainreq == "HOME"){
-			alert("Jump home!");
-			return;
-		}
 		
 		domain = domainreq.trim();
 		if(domain == ""){
