@@ -17,13 +17,13 @@
 	<script type="text/javascript" src="./root/miniweb/libs/jquery/jquery-3.7.1.min.js"></script>
 	<script type="text/javascript" src="./root/miniweb/libs/jquery/jquery-ui-1.14.1/jquery-ui.js"></script>
 	
-	
 	<!-- JS -->
 	<script type="text/javascript" src="./js/jszip.min.js"></script>
 	<script type="text/javascript" src="./js/ziputil.js"></script>
 	<script type="text/javascript" src="./js/jslib.js"></script>
 	<script type="text/javascript" src="./js/mimetypes.js"></script>
 	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/gui.js"></script>
 	
 	<style type="text/css">
 	
@@ -92,7 +92,6 @@
 			   		<tr>
 			   			<td><button id=homebutton>HOME</button></td>
 			   			<td  width=100%><input class=addressbar type=text id=mxaddress></td>
-			   			
 			   			<td><button id=gobutton>GO</button></td>
 			   		</tr>
 				   	<tr>
@@ -131,8 +130,7 @@
 		$( "#homebutton" ).button({
 			icon: "ui-icon-home",
 			showLabel: false
-		}).click(function(){go("HOME");});
-		
+		}).click(function(){goHome();});
 		
 		$( "#gobutton" ).button({
 			icon: "ui-icon-mail-send",
@@ -148,7 +146,6 @@
 			icon: "ui-icon-circle-minus",
 			showLabel: false
 		}).click(function(){remBookmark();});
-		
 	});
 	
 	var goright = true;
@@ -185,9 +182,15 @@
 		var text 	= bookmarkbar.options[id].text;
 		var value 	= bookmarkbar.options[id].value;
 		
-		deleteBookmark(text,function(){
-			loadBookmarks();
-		});
+		if(value == ""){
+			return;
+		}
+		
+		if(confirm("This will remove the "+text+" bookmark ?")){
+			deleteBookmark(text,function(){
+				loadBookmarks();
+			});	
+		}
 	}
 	
 	function gobar(){
@@ -347,7 +350,13 @@
 		webframe.src=fullpage;
 	}
 	
+	function goHome(){
+		location.href="index.html?uid="+MDS.minidappuid;
+	}
+	
+	var lastgo = "";
 	function go(domainreq){
+		lastgo = domainreq;
 		
 		//Arewe jumping home
 		if(domainreq == "HOME"){
@@ -414,6 +423,8 @@
 	MDS.init(function(msg){
 		if(msg.event == "inited"){
 			
+			askNotificationPermission();
+			
 			//Create the DB and load the Bookmarks
 			createDB(function(){
 				loadBookmarks();
@@ -425,24 +436,60 @@
 				//Use this as the UID for websites..
 				MINIWEB_UID = resp.response.untrustedmdsuid;
 				
-				var wipeold = true;
+				//Are we in DEV mode
+				MDS.keypair.get("developermode",function(details){
+					var wipeold = true;
+					if(details.status){
+						if(details.value == "true"){
+							wipeold = false;
+						}
+					}
 					
-				if(wipeold){
-					//Delete all the old sites on refresh..
-					MDS.file.deletefromweb(BASE_WEB,function(delweb){
-						MDS.file.delete(BASE_INTERNAL,function(del){
-							
-							MDS.log("Cleared web site cache..");
-							
-							//NOW GO..
-							go(MAIN_URL);	
+					if(wipeold){
+						//Delete all the old sites on refresh..
+						MDS.file.deletefromweb(BASE_WEB,function(delweb){
+							MDS.file.delete(BASE_INTERNAL,function(del){
+								
+								MDS.log("Cleared minisite cache..");
+								
+								//NOW GO..
+								go(MAIN_URL);	
+							});
 						});
-					});
-				}else{
-					//NOW GO..
-					go(MAIN_URL);
-				}
+					}else{
+						MDS.log("Developer Mode : do not clear minisite cache..");
+						
+						//NOW GO..
+						go(MAIN_URL);
+					}	
+				});
 			});
+		
+		}else if(msg.event == "MDSCOMMS"){
+			
+			if(msg.data.public && msg.data.minidapp.toLowerCase() == "minifs"){
+				MDS.log(JSON.stringify(msg));
+				
+				try{
+					var comms = JSON.parse(msg.data.message);
+					
+					if(comms.action == "SENDREQ_MAXIMA"){
+						showNotification("Sent request over Maxima for : \n\n"+comms.file);
+					}else if(comms.action == "SENDREQ_MINIMA"){
+						showNotification("Sent request over Minima for : \n\n"+comms.file);
+					}else if(comms.action == "REC_MAXIMA"){
+						
+						//Go to the last requested page..
+						go(lastgo);
+						
+						//Tell them
+						showNotification("Received file over Maxima : \n\n"+comms.file);
+					}
+					
+				}catch(error){
+					MDS.log("MDSCOMMS ERROR : "+error)
+				}
+			}
 		}
 	});
 

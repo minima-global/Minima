@@ -8,9 +8,23 @@ body {
     margin: 20;   /* Remove body margins */
 }
 
+.ui-icon {
+	zoom:150%;
+	color : #5555ff
+}
+
+.blueborder{
+  width:100%;
+  max-width:840;
+  min-width:360;
+  text-align: left;
+  border: 2px solid #0000ff;
+  border-radius: 10px;
+}
+
 .titlebar{
   width:100%;
-  min-width:460;
+  min-width:360;
   height:50px;
   text-align: left;
   
@@ -22,8 +36,8 @@ body {
 .filepacketview {
 	width:100%;
 	max-width:840;
-	min-width:460;
-	padding: 8px 8px;
+	min-width:360;
+    padding: 8px 8px;
 	margin-left: auto;
   	margin-right: auto;
 	border: 2px solid #0000ff;

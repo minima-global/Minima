@@ -205,11 +205,28 @@ function loadMxSite(mxsite, callback){
 	//First send via Maxima.. 
 	MDS.cmd("maxima action:sendall application:minifs data:"+JSON.stringify(filereq), function(maxresp){
 		
+		//Broadcast a Notification
+		postNotification("SENDREQ_MAXIMA",mxsite);
+		
 		//Now you wait..
 		if(callback){
 			callback(true);
 		}	
 	}); 
+}
+
+function postNotification(action, file){
+	//Broadcast a Notification
+	var notif 		= {};
+	notif.action 	= action;
+	notif.file 		= file;
+	
+	if(logging){
+		MDS.log("Notification posted : "+JSON.stringify(notif));
+	}
+	
+	//Broadcast to all..
+	MDS.comms.broadcast(JSON.stringify(notif));
 }
 
 //Main message handler..
@@ -296,6 +313,9 @@ MDS.init(function(msg){
 							if(logging){
 								MDS.log("Filepacket REQUESTED : "+request);
 							}
+							
+							//Broadcast a Notification
+							postNotification("SENDREQ_MINIMA",request);
 						});
 					}	
 				}
@@ -442,7 +462,7 @@ MDS.init(function(msg){
 						if(verify){
 							
 							//DO we have it..
-							getFilePacket(mxsite,function(myfp){						
+							getFilePacket(fp.data.name,function(myfp){						
 								
 								//Do we have it..
 								if(!myfp){
@@ -451,7 +471,10 @@ MDS.init(function(msg){
 									insertFilePacket(true,fp,function(){
 										if(logging){
 											MDS.log("RECEIVED MXSITE over MAXIMA "+fp.data.name);
-										}			
+										}
+										
+										//Broadcast a Notification
+										postNotification("REC_MAXIMA",fp.data.name);			
 									});	
 										
 								}else{
@@ -463,7 +486,10 @@ MDS.init(function(msg){
 										updateExternalFilePacket(fp,function(){
 											if(logging){
 												MDS.log("Updated MXSITE over MAXIMA with newer version "+fp.data.name);
-											}	
+											}
+											
+											//Broadcast a Notification
+											postNotification("REC_MAXIMA",fp.data.name);	
 										});							
 									}
 								}

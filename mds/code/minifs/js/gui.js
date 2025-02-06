@@ -5,6 +5,18 @@ var WRITE_MODE = false;
 //Link to OPEN MiniWEB
 var BROWSER_DAPPLINK = "";
 
+function startupButtons(){
+	$( "#button-help" ).button({
+		icon: "ui-icon-help",
+		showLabel: false
+	}).click(function(){jumpToHelp();});
+	
+    $( "#button-home" ).button({
+		icon: "ui-icon-home",
+		showLabel: false
+	}).click(function(){jumpToMyFiles();});
+}
+
 function jumpToMyFiles(){
 	location.href="index.html?uid="+MDS.minidappuid;	
 }

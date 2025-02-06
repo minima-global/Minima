@@ -8,9 +8,6 @@
 	<!-- Load the main MDS JS lib -->
 	<script type="text/javascript" src="mds.js"></script>
 	
-	<!-- Load the CSS Style sheet -->
-	<link rel="stylesheet" href="style.css">
-	
 	<!-- And the ICON for the page -->
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	
@@ -19,7 +16,16 @@
 	<script type="text/javascript" src="./js/auth.js"></script>
 	<script type="text/javascript" src="./js/gui.js"></script>
 	<script type="text/javascript" src="./js/purify.min.js"></script>
+	<script type="text/javascript" src="./js/txns.js"></script>
+		
+	<!--  JQUERY CSS + JS -->
+	<link rel="stylesheet" href="./js/jquery/jquery-ui-1.14.1/jquery-ui.css">
+	<link rel="stylesheet" href="./js/jquery/jquery-ui-1.14.1/jquery-ui.icon-font.css">
+	<script type="text/javascript" src="./js/jquery/jquery-3.7.1.min.js"></script>
+	<script type="text/javascript" src="./js/jquery/jquery-ui-1.14.1/jquery-ui.js"></script>
 	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
 	
 </head>
 
@@ -32,15 +38,16 @@
 			<tr>
 				<td><img height=45 src="minifs.png"></td>
 				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>MiniFS</b></td>
+				
 				<td class='topicdate' nowrap>
-					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToHelp();" height=30 src="./images/help.png">&nbsp;&nbsp;					
-					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToMyFiles();" height=30 src="./images/home.png">&nbsp;&nbsp;
+					<button id="button-help">Help</button>
+					<button id="button-home">Home</button>
 				</td>
 			</tr>
 		</table>
 	</div>
+	<br>
 
-<br>
 
 <table class=filepacketview>
 	<tr>
@@ -55,23 +62,31 @@
 	<tr><td>&nbsp;</td></tr>
 	<tr>
 		<td class=edittableident>File : </td>
-		<td><button onclick="embedFile();">&nbsp;Load ZIP File&nbsp;</button></td>
+		<td><button id=embedfile onclick="embedFile();">&nbsp;Load ZIP File&nbsp;</button></td>
 	</tr>
 	
 	<tr>
 		<td class=edittableident>Size : </td>
-		<td id=filepacket_size></td>
+		<td id=filepacket_size> - - </td>
 	</tr>
 	
 </table>	
 
 <br>
-<button class=solobutton onclick="updatePacket();">Create File Packet</button>	
+<button id=createpacket onclick="updatePacket();">Create MiniFS File</button>	
 	
 </center>
 
 <script type="text/javascript">
 	
+	//Set up the buttons..
+	$(document).ready(function() {
+		startupButtons();
+		
+		$( "#embedfile" ).button({icon: "ui-icon-file-zip"});
+		$( "#createpacket" ).button({icon: "ui-icon-globe"});
+	});
+
 	var filepacket 	= {};
 	
 	function updatePacket(){
