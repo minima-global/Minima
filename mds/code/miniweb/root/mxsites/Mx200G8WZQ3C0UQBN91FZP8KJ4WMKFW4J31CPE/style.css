@@ -1,0 +1,65 @@
+@font-face {
+	font-family: Manrope;
+	src: url('../../miniweb/fonts/Manrope-Regular.ttf');
+}
+
+body {
+	font-family: Manrope; 
+    margin: 20;   /* Remove body margins */
+}
+
+.maindiv {
+	max-width:800;
+	text-align:left;
+	background-color: #F8F8F8;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+	border-color: #16181C;
+	margin:20px;
+}
+
+.ui-icon {
+	zoom:150%;
+}
+
+.solobutton {
+    background-color: #eee;
+    border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	font-family: Manrope;
+  	font-size: 14px;
+}
+.solobutton-edit {
+	font-family: Manrope;
+	background: #fff;
+}
+.solobutton-edit:focus {
+	font-family: Manrope;
+	border: 0.5px solid #EDEDED;
+}
+
+.solobutton:hover {
+	font-family: Manrope;
+	cursor: pointer;
+    color: #fff;
+	background-color: #0000ff;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+	border-color: #16181C;
+}
+
+.solobutton[disabled]:hover {
+	cursor: default;
+    color: #fff;
+    background-color: #eee;
+    border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	font-size: 14px;
+}
+
+.solobutton:active {
+  	opacity: 0.8;
+	font-style: italic;
+}

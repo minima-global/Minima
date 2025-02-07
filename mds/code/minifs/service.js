@@ -300,6 +300,7 @@ MDS.init(function(msg){
 					if(RECENT_REQUESTS.includes(request)){
 						if(logging){
 							MDS.log("Filepacket REQUESTED recently : "+request);
+							postNotification("SENDREQ_FAIL_RECENT",request);
 						}
 					}else{
 						RECENT_REQUESTS.push(request)
@@ -319,6 +320,7 @@ MDS.init(function(msg){
 							
 							if(res.pending){
 								MDS.log("Cannot Request file as in READ MODE : "+request);
+								postNotification("SENDREQ_FAIL_READMODE",request);
 								return;
 							}
 						

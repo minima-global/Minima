@@ -544,6 +544,10 @@
 						showNotification("Sent request over Maxima for : \n\n"+comms.file);
 					}else if(comms.action == "SENDREQ_MINIMA"){
 						showNotification("Sent request over Minima for : \n\n"+comms.file);
+					}else if(comms.action == "SENDREQ_FAIL_READMODE"){
+						showNotification("MiniFS cannot request file in READ mode : \n\n"+comms.file);
+					}else if(comms.action == "SENDREQ_FAIL_RECENT"){
+						showNotification("File already requested recently.. : \n\n"+comms.file);
 					}else if(comms.action == "REC_MAXIMA"){
 						
 						//Go to the last requested page..
