@@ -1,6 +1,7 @@
 package org.minima.system.mds.handler;
 
 import org.minima.system.mds.MDSManager;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 
@@ -27,6 +28,10 @@ public class APIAutoResponse implements Runnable {
 		mRandID				= zRandID;
 	}
 	
+	public void setImmediate() {
+		mDelay = 0;
+	}
+	
 	public void runauto() {
 		Thread tt = new Thread(this);
 		tt.start();
@@ -51,6 +56,8 @@ public class APIAutoResponse implements Runnable {
 		JSONObject notify = new JSONObject();
 		notify.put("event", "MDSAPI");
 		notify.put("data", apijson);
+		
+		MinimaLogger.log("POST "+notify.toJSONString());
 		
 		//Tell the MDS..
 		Message poll = new Message(MDSManager.MDS_POLLMESSAGE);

@@ -246,7 +246,16 @@ public class MDSCommandHandler {
 			//Get the Name of the MiniDAPP..
 			MiniDAPP md = mMDS.getMiniDAPPFromName(mininame);
 			
-			if(type.equals("request")){
+			//Do we have that MiniDAPP..
+			if(md == null) {
+				
+				//No MiniDAPP.. send auto response..
+				APIAutoResponse auto = new APIAutoResponse(mMDS, mininame, 
+						thismd.getName(), thismd.getUID(),  randid);
+				auto.setImmediate();
+				auto.runauto();
+				
+			}else if(type.equals("request")){
 				APICommand comms = new APICommand(mMDS, thismd.getName(), 
 						md.getName(), md.getUID(),  msg, randid, true);
 				result = comms.runCommand();
