@@ -120,10 +120,10 @@ The <b>MiniWEB</b> functions that you have access to are..<br>
 <br>
 <code>
 
-/* Initialise the miniweb system */<br>
+/* Initialise the miniweb system - do this on EVERY page so your site functions correctly */<br>
 <b>miniweb_Init();</b><br>
 <br>
-/* Allows you to jump to a miniweb site */<br>
+/* Allows you to jump to a miniweb site  - the MiniDAPP UID is automagically added */<br>
 <b>miniweb_JumpToURL(minifile,callback);</b><br>
 <br>
 /* Get the raw Byte data of the file as a Data URI */<br>
@@ -193,7 +193,7 @@ testscript.innerHTML =
 	+ " <br>"
 	+ "&ltscript type=\"text/javascript\"&gt<br>"
 	+ "<br>"
-	+ "&nbsp;&nbsp;&nbsp;&nbsp;//MUST initialise the MiniWEB system..<br>"
+	+ "&nbsp;&nbsp;&nbsp;&nbsp;//MUST ALWAYS initialise the MiniWEB system..<br>"
 	+ "&nbsp;&nbsp;&nbsp;&nbsp;miniweb_Init();<br>"
 	+ "<br>"
 	+ "&nbsp;&nbsp;&nbsp;&nbsp;//Load an image from a different site.. can use this to load ANY type of data..<br>"

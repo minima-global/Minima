@@ -55,13 +55,16 @@
 	<select id=bookmarkbar class="searchfield" style="width:300" onchange="bookmkchange();"></select>
 	
 	<br><br>
-	Or search through your files..
+	Search through your files..
 	<br><br>
 
 	<input class=searchfield type="text" id="searchfield" size=44><br>
 	<br>
-	<button class=solobutton onclick="search();">Search</button><br>
+	<button id=searchweb onclick="search();">Search</button><br>
 	<br>
+	Or type in an Mx.. address to go straight there<br>
+	<br>
+	
 	</div>
 	<br>
 	
@@ -74,6 +77,12 @@
 	//Set up the buttons..
 	$(document).ready(function() {
 		startupButtons();
+		
+		$( "#searchweb" ).button({
+			icon: "ui-icon-search",
+			showLabel: true
+		});
+		
 	});
 	
 	function openBrowser(mxsite){

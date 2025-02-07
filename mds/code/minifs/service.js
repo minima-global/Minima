@@ -17,6 +17,9 @@ var logging = true;
  */
 var MAX_SENDS_PER_DAY = 100;
 
+//Time before we reset RECENTS - 2 hours
+var RESEND_RESET_TIMER = 1000 * 60 * 60 * 2;
+
 /**
  * Which addresses have you sent out recently - clear list every 24 hours
  */
@@ -29,8 +32,6 @@ var RECENT_REQUESTS_TOTAL	= 0;
 
 var RECENT_MAXIMA_REQUESTS	= [];
 
-//Time before we reset RECENTS - 2 hours
-var resend_wait = 1000 * 60 * 60 * 2;
 
 //Process an incoming coin from cascade or resync
 function processNewSiteCoin(coin){
@@ -131,6 +132,7 @@ function processRequestCoin(coin){
 						if(logging){
 							MDS.log("SENT MAX already : "+request+" total:"+RECENT_SENDS_TOTAL);	
 						}
+						
 						return;
 					}
 										
@@ -303,6 +305,16 @@ MDS.init(function(msg){
 						RECENT_REQUESTS.push(request)
 						RECENT_REQUESTS_TOTAL++;
 						
+						//Hmnm.. this could be the User..
+						/*if(RECENT_REQUESTS_TOTAL > MAX_SENDS_PER_DAY){
+							if(logging){
+								MDS.log("Cannot request File as Max reached : "+RECENT_REQUESTS_TOTAL);
+							}
+							
+							//Broadcast a Notification
+							postNotification("SENDREQ_MINIMA_MAXREACH",request);	
+						}*/
+						
 						sendFileRequest(request,function(res){
 							
 							if(res.pending){
@@ -328,7 +340,7 @@ MDS.init(function(msg){
 	}else if(msg.event == "MDS_TIMER_1HOUR"){
 	
 		//What time is it..
-		if(getTimeMilli() - RECENT_SENDS_TIMER > resend_wait){
+		if(getTimeMilli() - RECENT_SENDS_TIMER > RESEND_RESET_TIMER){
 			
 			//Reset the values..
 			resetRecents();	

@@ -29,7 +29,7 @@
 	
 		@font-face {
 			font-family: Manrope;
-			src: url('./Manrope-Regular.ttf');
+			src: url('./root/miniweb/fonts/Manrope-Regular.ttf');
 		}
 		
 		body {
@@ -90,19 +90,21 @@
 			<td width=100%>
 				<table id=mainbuttons width=100% border=0>
 			   		<tr>
-			   			<td><button id=homebutton>HOME</button></td>
+			   			<td><button id=homebutton>Home</button></td>
+			   			<td><button id=backbutton>Back</button></td>
 			   			<td  width=100%><input class=addressbar type=text id=mxaddress></td>
-			   			<td><button id=gobutton>GO</button></td>
+			   			<td><button id=gobutton>Go</button></td>
+			   			<td><button id=refreshbutton>Refresh</button></td>
 			   		</tr>
 				   	<tr>
 						 <td>
-						 	<button id=addbookmark>ADD</button>
+						 	<button id=addbookmark>Add Bookmark</button>
 						 </td>
-						 <td  width=100%>
+						 <td  width=100% colspan=3>
 							<select id=bookmarkbar class=addressbar style="width:100%" onchange="bookmkchange();"></select>
 						 </td>
 						 <td>
-						 	<button id=rembook>REM</button>
+						 	<button id=rembook>Remove Bookmark</button>
 						 </td>
 					</tr>   	
 			   </table>		
@@ -116,10 +118,18 @@
 </div>
 
 <iframe class="mainiframe" id="webframe" frameborder="0"  
-		sandbox="allow-scripts allow-modals" referrerpolicy="no-referrer"></iframe>
+		sandbox="allow-scripts allow-modals allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer"></iframe>
 
 <script type="text/javascript">
 	
+	//Are we in developer mode
+	var developermode = false;
+	
+	//The Current iFrame page
+	var IFRAME_PAGE = "";
+	var IFRAME_HISTORY = [];
+	
+	//Set up the JQuery Buttons..
 	$(document).ready(function() {
 	    
 		$( "#toggleview" ).button({
@@ -136,6 +146,16 @@
 			icon: "ui-icon-mail-send",
 			showLabel: false
 		}).click(function(){gobar();});
+		
+		$( "#backbutton" ).button({
+			icon: "ui-icon-arrowthick-1-w",
+			showLabel: false
+		}).click(function(){goBackIFramePage();});
+		
+		$( "#refreshbutton" ).button({
+			icon: "ui-icon-refresh",
+			showLabel: false
+		}).click(function(){refreshIFramePage();});
 		
 		$( "#addbookmark" ).button({
 			icon: "ui-icon-circle-plus",
@@ -234,6 +254,48 @@
 		}
 	}
 	
+	//Add a page to our simple history mechanic..
+	function newIFramePage(page){
+		
+		//Store for later
+		IFRAME_PAGE = page;
+		
+		//Keep a total History..
+		var histlen = IFRAME_HISTORY.length;
+		if(histlen == 0){
+			IFRAME_HISTORY.push(page);
+		}else{
+			var lastelem = IFRAME_HISTORY[histlen-1];
+			if(lastelem != page){
+				IFRAME_HISTORY.push(page);
+			}
+		}
+	}
+	
+	function refreshIFramePage(){
+		var histlen = IFRAME_HISTORY.length;
+		if(histlen == 0){
+			go(lastgo);
+		}else{
+			//Load the last valid page..
+			webframe.src = IFRAME_PAGE;
+		}
+	}
+	
+	function goBackIFramePage(){
+		var histlen = IFRAME_HISTORY.length;
+		if(histlen <= 1){
+			return;
+		}
+		
+		//Jump back one page..
+		var backelem = IFRAME_HISTORY[histlen-2];
+		webframe.src = backelem;
+		
+		//Remove the LAST element
+		IFRAME_HISTORY.pop();
+	}
+	
 	/**
 	 * Main Website functionality!
 	 */
@@ -289,7 +351,11 @@
 						});
 					}
 				});		
-			}
+			
+			}else if(action == "MINIWEB_LOCATION"){
+				//The current iFrame location
+				newIFramePage(msg.data);
+			}		
 		}
 	};
 	
@@ -324,7 +390,7 @@
 	//Listen for when the iFrame has loaded
 	var LOAD_CALLBACK = null;
 	webframe.addEventListener("load", function() {
-	  	if(LOAD_CALLBACK){
+		if(LOAD_CALLBACK){
 	  		LOAD_CALLBACK();
 	  	}
 	});
@@ -344,9 +410,11 @@
 		//Now ADD the MDS UID for the restriced MDS
 		fullpage = addURLParam(fullpage,"uid",MINIWEB_UID); 
 		
-		MDS.log("Load Page : "+fullpage);
+		//MDS.log("Load Page : "+fullpage);
 		
 		//Set the page
+		newIFramePage(fullpage);
+		
 		webframe.src=fullpage;
 	}
 	
@@ -357,12 +425,6 @@
 	var lastgo = "";
 	function go(domainreq){
 		lastgo = domainreq;
-		
-		//Arewe jumping home
-		if(domainreq == "HOME"){
-			alert("Jump home!");
-			return;
-		}
 		
 		domain = domainreq.trim();
 		if(domain == ""){
@@ -378,8 +440,12 @@
 			domain = domain.substring(0, domain.length-1);
 		}
 		
-		MDS.log("Browser GO : "+domain);
-		mxaddress.value = domain;
+		//MDS.log("Browser GO : "+domain);
+		var baraddr = domain+"";
+		if(!baraddr.startsWith("miniweb://")){
+			baraddr = "miniweb://"+baraddr;
+		}
+		mxaddress.value = baraddr;
 		
 		//What is the final page
 		var finalpage = addDomains(BASE_WEB,domain);
@@ -408,7 +474,7 @@
 							loadPage(finalpage);
 						}else{
 							if(!minifsfound){
-								alert("Could not conatct MiniFS MiniDAPP ?");
+								alert("Could not contact MiniFS MiniDAPP..\n\Is it installed ?");
 							}
 							
 							loadPage("loading_notfound.html");
@@ -438,14 +504,15 @@
 				
 				//Are we in DEV mode
 				MDS.keypair.get("developermode",function(details){
-					var wipeold = true;
+					
+					developermode 	= false;
 					if(details.status){
 						if(details.value == "true"){
-							wipeold = false;
+							developermode 	= true;
 						}
 					}
 					
-					if(wipeold){
+					if(!developermode){
 						//Delete all the old sites on refresh..
 						MDS.file.deletefromweb(BASE_WEB,function(delweb){
 							MDS.file.delete(BASE_INTERNAL,function(del){
@@ -468,7 +535,7 @@
 		}else if(msg.event == "MDSCOMMS"){
 			
 			if(msg.data.public && msg.data.minidapp.toLowerCase() == "minifs"){
-				MDS.log(JSON.stringify(msg));
+				//MDS.log(JSON.stringify(msg));
 				
 				try{
 					var comms = JSON.parse(msg.data.message);
