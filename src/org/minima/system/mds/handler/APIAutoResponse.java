@@ -57,8 +57,6 @@ public class APIAutoResponse implements Runnable {
 		notify.put("event", "MDSAPI");
 		notify.put("data", apijson);
 		
-		MinimaLogger.log("POST "+notify.toJSONString());
-		
 		//Tell the MDS..
 		Message poll = new Message(MDSManager.MDS_POLLMESSAGE);
 		poll.addObject("poll", notify);
