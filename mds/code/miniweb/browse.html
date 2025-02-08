@@ -413,8 +413,11 @@
 		//MDS.log("Load Page : "+fullpage);
 		
 		//Set the page
-		newIFramePage(fullpage);
+		if(page != "loading.html"){
+			newIFramePage(fullpage);	
+		}
 		
+		//Set the IFrame src
 		webframe.src=fullpage;
 	}
 	

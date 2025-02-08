@@ -179,7 +179,7 @@
 			return;
 		}
 		
-		if(text.startsWith("Mx")){
+		if(text.startsWith("miniweb://")){
 			
 			//Just jump to that page!
 			openBrowser(text);
@@ -221,7 +221,7 @@
 					
 					//Now make the button nice..
 					for(var i=0;i<len;i++){
-						$( "#downbutton-"+i ).button({icon: "ui-icon-download"});
+						$( "#downbutton-"+i ).button({icon: "ui-icon-download", showLabel:false});
 						$( "#browsebutton-"+i ).button({icon: "ui-icon-globe"});
 					}
 					
