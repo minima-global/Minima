@@ -54,7 +54,10 @@
 		
 		<td style="text-align:center;"><div id=fpcount>Scanning..</div></td>
 		
-		<td style="text-align:right;"><button id=publish onclick="jumpToPublish();">Publish</button></td>
+		<td style="text-align:right;">
+			<button id=refresh onclick="refreshview();">Refresh</button>
+			<button id=publish onclick="jumpToPublish();">Publish</button>
+		</td>
 	</tr>
 </table>
 <br>
@@ -72,9 +75,27 @@
 		startupButtons();
 		
 		$( "#newpacket").button({icon: "ui-icon-file",showLabel: true});
-		$( "#publish").button({icon: "ui-icon-mail-send",showLabel: true});
+		$( "#publish").button({icon: "ui-icon-shuttle",showLabel: true});
+		$( "#refresh").button({icon: "ui-icon-refresh",showLabel: false});
 	});
 
+	function refreshview(){
+		location.reload();
+	}
+
+	function copySite(filename) {
+
+		if(confirm("This will create an unpublished copy of\n\n "+filename+"\n\nContinue ?")){
+			
+			//Copy it..
+			copyFilePacket(filename,function(newfp){
+				alert("A copy has been made!\n\n"+newfp.data.name);
+				
+				refreshview();
+			});	
+		}
+	}
+	
 	function createPacketView(filepacket,i){
 		
 		var pub = ""
@@ -106,6 +127,7 @@
 		+ "		</td>\n"
 		+ "		<td style=\"text-align:right\">\n"
 		+ "			<button id='download-"+distinctname+"' onclick=\"downloadSite('"+filepacket.data.file+"','"+filepacket.data.name+".zip')\">Download</button>\n"
+		+ "			<button id='copy-"+distinctname+"' onclick=\"copySite('"+filepacket.data.name+"')\">Copy</button>\n"
 		+ "			<button id='browse-"+distinctname+"' onclick=\"openMinimaBrowser('"+filepacket.data.name+"')\">Browse</button>\n"
 		+ "		</td>\n"
 		+ "	</tr>\n"
@@ -136,6 +158,7 @@
 					var distinctname = "button-"+i;
 					$( "#edit-"+distinctname ).button({icon: "ui-icon-edit",showLabel: true});
 					$( "#delete-"+distinctname ).button({icon: "ui-icon-delete",showLabel: false});
+					$( "#copy-"+distinctname ).button({icon: "ui-icon-copy",showLabel: false});
 					$( "#download-"+distinctname ).button({icon: "ui-icon-download",showLabel: false});
 					$( "#browse-"+distinctname ).button({icon: "ui-icon-globe",showLabel: true});
 				}

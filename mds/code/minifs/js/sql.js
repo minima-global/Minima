@@ -264,3 +264,31 @@ function deleteFilePacket(name, callback){
 		callback(true);
 	});
 }
+
+function copyFilePacket(name, callback){
+	
+	//Load it..
+	getFilePacket(name,function(oldfp){
+				
+		//Now insert it as a new fp..
+		createNewFilePacket(function(newfp){
+			
+			//Now copy the details..
+			newfp.data.description 	= oldfp.data.description;
+			newfp.data.file 		= oldfp.data.file;
+			
+			//sign this..
+			signFilepacket(newfp,function(signed){
+				
+				//Now insert this..
+				insertFilePacket(false,newfp,function(){
+					
+					//And callback..
+					callback(newfp);		
+				});	
+			});
+		});
+	});	
+
+}
+

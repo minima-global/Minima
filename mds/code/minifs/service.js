@@ -409,6 +409,24 @@ MDS.init(function(msg){
 				MDS.api.reply(msg.data.from,msg.data.id,JSON.stringify(resp));
 			});
 			
+		}else if(apicall.action == "COPY"){
+			
+			//DOMAIN is specified as the data
+			var request = apicall.data.trim();
+			
+			//Copy it..
+			copyFilePacket(request,function(newfp){
+				
+				//Create a resp object
+				var resp 		= {};
+				resp.status 	= true;
+				resp.term 		= request;
+				resp.results 	= newfp;
+				
+				//Send it
+				MDS.api.reply(msg.data.from,msg.data.id,JSON.stringify(resp));
+			});
+			
 		}else{
 			
 			var resp 	= {};

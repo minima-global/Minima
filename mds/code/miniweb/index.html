@@ -54,15 +54,13 @@
 	Jump to a bookmark :<br><br>
 	<select id=bookmarkbar class="searchfield" style="width:300" onchange="bookmkchange();"></select>
 	
-	<br><br>
+	<br><br><br><br>
 	Search through your files..
 	<br><br>
 
 	<input class=searchfield type="text" id="searchfield" size=44><br>
 	<br>
 	<button id=searchweb onclick="search();">Search</button><br>
-	<br>
-	Or type in an Mx.. address to go straight there<br>
 	<br>
 	
 	</div>
@@ -147,8 +145,33 @@
 		}
 	}
 	
+	function copySite(filename) {
+
+		if(confirm("This will create an unpublished copy of\n\n "+filename+"\n\n in MiniFS ?")){
+			
+				//Now lets load the file..
+				var api 	= {};
+				api.action 	= "COPY";
+				api.data 	= filename;
+				
+				//Send it to MiniWEB
+				MDS.api.call("minifs",JSON.stringify(api),function(resp){
+					if(resp.status){
+						
+						//What was sent..
+						var data = JSON.parse(resp.data);
+						
+						alert("A copy has been made!\n\n"+data.results.data.name);
+					}else{
+						alert("Something went wrong - check console logs..");
+					}
+				});		
+		}
+	}
+	
 	function createSearchPacketView(filepacket, num){
 		
+		var copybuttname 	= "copybutton-"+num;
 		var downbuttname 	= "downbutton-"+num;
 		var browsebuttname 	= "browsebutton-"+num;
 		
@@ -164,6 +187,7 @@
 		+ "	<tr>\n"
 		+ "		<td colspan=2 style=\"text-align:right\">\n"
 		+ "			<button id='"+downbuttname+"' onclick=\"downloadSite('"+filepacket.data.file+"','"+filepacket.data.name+".zip')\">Download</button>\n"
+		+ "			<button id='"+copybuttname+"' onclick=\"copySite('"+filepacket.data.name+"')\">Copy</button>\n"
 		+ "			<button id='"+browsebuttname+"' onclick=\"openBrowser('"+filepacket.data.name+"')\">Browse</button>\n"
 		+ "		</td>\n"
 		+ "	</tr>\n"
@@ -221,6 +245,7 @@
 					
 					//Now make the button nice..
 					for(var i=0;i<len;i++){
+						$( "#copybutton-"+i ).button({icon: "ui-icon-copy", showLabel:false});
 						$( "#downbutton-"+i ).button({icon: "ui-icon-download", showLabel:false});
 						$( "#browsebutton-"+i ).button({icon: "ui-icon-globe"});
 					}
