@@ -127,6 +127,8 @@
 	
 	//The Current iFrame page
 	var IFRAME_PAGE = "";
+	var IFRAME_BAR  = "";
+	
 	var IFRAME_HISTORY = [];
 	
 	//Set up the JQuery Buttons..
@@ -259,15 +261,20 @@
 		
 		//Store for later
 		IFRAME_PAGE = page;
+		IFRAME_BAR	= mxaddress.value.trim();
+		
+		var bkunit 	= {};
+		bkunit.page = IFRAME_PAGE;
+		bkunit.bar  = IFRAME_BAR
 		
 		//Keep a total History..
 		var histlen = IFRAME_HISTORY.length;
 		if(histlen == 0){
-			IFRAME_HISTORY.push(page);
+			IFRAME_HISTORY.push(bkunit);
 		}else{
 			var lastelem = IFRAME_HISTORY[histlen-1];
-			if(lastelem != page){
-				IFRAME_HISTORY.push(page);
+			if(lastelem.page != page){
+				IFRAME_HISTORY.push(bkunit);
 			}
 		}
 	}
@@ -278,7 +285,8 @@
 			go(lastgo);
 		}else{
 			//Load the last valid page..
-			webframe.src = IFRAME_PAGE;
+			webframe.src 	= IFRAME_PAGE;
+			mxaddress.value = IFRAME_BAR;
 		}
 	}
 	
@@ -290,7 +298,10 @@
 		
 		//Jump back one page..
 		var backelem = IFRAME_HISTORY[histlen-2];
-		webframe.src = backelem;
+		
+		//Set the page AND ther bar
+		webframe.src 	= backelem.page;
+		mxaddress.value = backelem.bar;
 		
 		//Remove the LAST element
 		IFRAME_HISTORY.pop();
@@ -410,10 +421,8 @@
 		//Now ADD the MDS UID for the restriced MDS
 		fullpage = addURLParam(fullpage,"uid",MINIWEB_UID); 
 		
-		//MDS.log("Load Page : "+fullpage);
-		
 		//Set the page
-		if((page!="loading.html") && (page!="loading_notfound.html")){
+		if(page != "loading.html" && page != "loading_notfound.html"){
 			newIFramePage(fullpage);	
 		}
 		
@@ -444,11 +453,11 @@
 		}
 		
 		//MDS.log("Browser GO : "+domain);
-		var baraddr = domain+"";
+		/*var baraddr = domain+"";
 		if(!baraddr.startsWith("miniweb://")){
 			baraddr = "miniweb://"+baraddr;
-		}
-		mxaddress.value = baraddr;
+		}*/
+		mxaddress.value = domain;
 		
 		//What is the final page
 		var finalpage = addDomains(BASE_WEB,domain);
@@ -480,6 +489,7 @@
 								alert("Could not contact MiniFS MiniDAPP..\n\Is it installed ?");
 							}
 							
+							//Now show the not found load page
 							loadPage("loading_notfound.html");
 						}
 					});	

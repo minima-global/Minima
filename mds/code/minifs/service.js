@@ -10,15 +10,15 @@ MDS.load("./js/auth.js");
 MDS.load("./js/sql.js");
 MDS.load("./js/txns.js");
 
-var logging = true;
+var logging = false;
 
 /**
  * Some Variable maximums.. 
  */
 var MAX_SENDS_PER_DAY = 100;
 
-//Time before we reset RECENTS - 2 hours
-var RESEND_RESET_TIMER = 1000 * 60 * 60 * 2;
+//Time before we reset RECENTS - 12 hours
+var RESEND_RESET_TIMER = 1000 * 60 * 60 * 12;
 
 /**
  * Which addresses have you sent out recently - clear list every 24 hours
@@ -251,7 +251,7 @@ MDS.init(function(msg){
 				MDS.cmd("coinnotify action:add address:"+MINIWEB_FILE_REQUEST,function(startup){});
 				
 				//Scan the chain for any coins we may have missed!
-				/*MDS.cmd("coins simplestate:true address:"+MINIWEB_FILE_ADDRESS,function(resp){
+				MDS.cmd("coins simplestate:true address:"+MINIWEB_FILE_ADDRESS,function(resp){
 					var len = resp.response.length;
 					for(var i=0;i<len;i++){
 						processNewSiteCoin(resp.response[i]);
@@ -263,7 +263,7 @@ MDS.init(function(msg){
 					for(var i=0;i<len;i++){
 						processRequestCoin(resp.response[i]);
 					}
-				});*/
+				});
 			});	
 		});
 		
