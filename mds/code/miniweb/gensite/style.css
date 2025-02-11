@@ -1,0 +1,91 @@
+@font-face {
+	font-family: Manrope;
+	src: url('../../miniweb/fonts/Manrope-Regular.ttf');
+}
+
+body {
+	font-family: Manrope; 
+    margin: 0;  
+    background-image: url('#BACKDROP');
+    background-size:  cover;           
+    background-repeat: no-repeat;
+    background-position: center center;   
+}
+
+.maindiv{
+	width : 80%;
+	max-width:800;
+	min-width:100;
+	min-height:100;
+	background-color: #fff;
+    border: 4px solid #0000ff;
+  	border-radius: 16px;
+  	padding: 8px 8px;
+}
+
+.titlebox{
+	display: inline-block;
+	font-size: 32;
+	white-space:nowrap;
+	background-color: #fff;
+    border: 4px solid #0000ff;
+  	border-radius: 16px;
+  	padding: 16px 16px;
+}
+
+.ui-icon {
+	zoom:150%;
+	color : #5555ff
+}
+
+.contactbox{
+	margin:10;
+	word-wrap:break-word;
+	text-align:center;
+	font-size:10;
+	color:#777777;
+}
+
+/*Simple Button!!*/
+.solobutton {
+    min-width:100;
+    background-color: #eee;
+    border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	font-family: Manrope;
+  	font-size: 14px;
+}
+.solobutton-edit {
+	font-family: Manrope;
+	background: #fff;
+}
+.solobutton-edit:focus {
+	font-family: Manrope;
+	border: 0.5px solid #EDEDED;
+}
+
+.solobutton:hover {
+	font-family: Manrope;
+	cursor: pointer;
+    color: #fff;
+	background-color: #0000ff;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+	border-color: #16181C;
+}
+
+.solobutton[disabled]:hover {
+	cursor: default;
+    color: #fff;
+    background-color: #eee;
+    border: 0.5px solid #EDEDED;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	font-size: 14px;
+}
+
+.solobutton:active {
+  	opacity: 0.8;
+	font-style: italic;
+}

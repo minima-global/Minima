@@ -1,0 +1,376 @@
+<html>
+
+<head>
+	<title>MiniWEB</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="./js/jslib.js"></script>
+	<script type="text/javascript" src="./js/purify.min.js"></script>
+	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/gui.js"></script>
+	<script type="text/javascript" src="./js/jszip.min.js"></script>
+	<script type="text/javascript" src="./js/generate.js"></script>
+	
+	<!--  JQUERY CSS + JS -->
+	<link rel="stylesheet" href="./root/miniweb/libs/jquery/jquery-ui-1.14.1/jquery-ui.css">
+	<link rel="stylesheet" href="./root/miniweb/libs/jquery/jquery-ui-1.14.1/jquery-ui.icon-font.css">
+	<script type="text/javascript" src="./root/miniweb/libs/jquery/jquery-3.7.1.min.js"></script>
+	<script type="text/javascript" src="./root/miniweb/libs/jquery/jquery-ui-1.14.1/jquery-ui.js"></script>
+			
+</head>
+
+<body>
+
+<center>
+
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table width=100% border=0>
+			<tr>
+				<td><img height=45 src="browser.png"></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>MiniWEB</b></td>
+				
+				<td class='topicdate' nowrap>
+					<button id="button-help">Help</button>
+					<button id="button-mysite">My Site</button>
+					<button id="button-dev">Developer Mode</button>
+					<button id="button-home">Home</button>
+				</td>
+			</tr>
+		</table>
+	</div>
+	
+<br>
+		
+<div class=blueborder>
+
+	<div style="padding:8">
+		<h2>Personal Site Generator</h2>
+		
+		Create your own simple site and publish it to MiniWEB<br>
+		<br>
+		
+		<h3>Name</h3>
+		<i class=gensite_desc>The title for your site.. can be your online Persona / Organisation / Business </i><br>
+		<input class=gensitefield type=text id=profile_name placeholder="Your Name.."><br>
+		<br>
+		
+		<h3>Description</h3>
+		<i class=gensite_desc>A description about who you are and what you do.. again - only say what you want to!</i><br>
+		<textarea class=gensitefield rows="8" id=profile_description></textarea><br>
+		<br>
+		
+		<h3>Blog</h3>
+		<i class=gensite_desc>Here you can add / remove blog posts as and when you see fit..</i><br>
+		<input class=gensitefield type=text id=profile_blogtitle placeholder="Blog Title.."><br>
+		<br>
+		<textarea class=gensitefield rows="8" id=profile_blogtext></textarea><br>
+		<br>
+		<div style="text-align:right">
+			<button id=addblog onclick="addBlog();">Add Blog</button>
+		</div>
+		
+		<br>
+		
+		<table id=blogtable class=gensite_desc width=100%></table>
+		
+		<h3>Extra Page</h3>
+		<i class=gensite_desc>Add an extra page with with anything you like - text or HTML!</i><br>
+		<input class=gensitefield type=text id=profile_extraname placeholder="Page Name.."><br><br>
+		<textarea class=gensitefield rows="8" id=profile_extrapage></textarea><br>
+		<br>
+		
+		
+		<h3>Contact</h3>
+		<i class=gensite_desc>Use a ChainMail address (or email) if you would like people to contact you</i><br>
+		<input class=gensitefield type=text id=profile_contact placeholder="Your ChainMail Address.."><br>
+		<br>
+		
+		<h3>Links</h3>
+		<i class=gensite_desc>If you know other People on MiniWEB then LINK to their Sites!</i><br>
+		<table width="100%">
+			<tr>
+				<td>1</td>
+				<td><input class=gensitelink type=text id=link1name placeholder="Title"><br>
+				 	<input class=gensitelink type=text id=link1value placeholder="Mx.. Address"></td>
+			</tr>
+			
+			<tr>
+				<td>2</td>
+				<td><input class=gensitelink type=text id=link2name placeholder="Title"><br>
+				 	<input class=gensitelink type=text id=link2value placeholder="Mx.. Address"></td>
+			</tr>
+			
+			<tr>
+				<td>3</td>
+				<td><input class=gensitelink type=text id=link3name placeholder="Title"><br>
+				 	<input class=gensitelink type=text id=link3value placeholder="Mx.. Address"></td>
+			</tr>
+			
+			<tr>
+				<td>4</td>
+				<td><input class=gensitelink type=text id=link4name placeholder="Title"><br>
+				 	<input class=gensitelink type=text id=link4value placeholder="Mx.. Address"></td>
+			</tr>
+			
+			<tr>
+				<td>5</td>
+				<td><input class=gensitelink type=text id=link5name placeholder="Title"><br>
+				 	<input class=gensitelink type=text id=link5value placeholder="Mx.. Address"></td>
+			</tr>
+			
+		</table>
+		<br><br>
+		
+		
+		<br>
+		
+		<center>
+		Your site will be created and zipped. Once downloaded go to <b>MiniFS</b> and upload your Site!
+		<br><br>
+		<button id=gensite onclick="generateSite();">Create Your MiniSite</button><br>
+		</center> 
+		
+		<br>
+		
+		
+	</div>
+
+</div>
+	
+</center>
+
+<script type="text/javascript">
+	
+	//The current site as JSON
+	var CURRENT_SITE = {};
+	
+	//Set up the buttons..
+	$(document).ready(function() {
+		startupButtons();
+		
+		$( "#gensite" ).button({
+			icon: "ui-icon-shuttle",
+			showLabel: true
+		});
+		
+		$( "#addblog" ).button({
+			icon: "ui-icon-circle-plus",
+			showLabel: true
+		});
+	});
+	
+	function addBlog(){
+		
+		var newblog 	= {};
+		newblog.date	= new Date().getTime();
+		newblog.title	= encodeStringForDB(id=profile_blogtitle.value.trim());
+		newblog.text	= encodeStringForDB(id=profile_blogtext.value.trim());
+		
+		if(newblog.title == "" || newblog.text==""){
+			alert("Cannot have blank details in Blog..");
+			return;
+		}
+		
+		//And add to the current site
+		CURRENT_SITE.blog.push(newblog);
+		
+		//Clear the old..
+		profile_blogtitle.value = "";
+		profile_blogtext.value  = "";
+		
+		//And reset..
+		setUpBlog();
+	}
+	
+	function removeBlog(index){
+		var blog = CURRENT_SITE.blog[index];
+		
+		if(confirm("Remove Blog post "+decodeStringFromDB(blog.title)+" ?")){
+			CURRENT_SITE.blog.splice(index,1);
+			setUpBlog();	
+		}
+	}
+	
+	function setUpBlog(){
+	
+		//Clear thge table
+		blogtable.innerHTML = "";
+		var bloglen = CURRENT_SITE.blog.length;
+		
+		if(bloglen == 0){
+			return;
+		}
+		
+		//Now add thje blogs..
+		for(var i=0;i<bloglen;i++){
+			var blog = CURRENT_SITE.blog[i];
+			
+			var newrow 	= blogtable.insertRow();
+			
+			var date	= newrow.insertCell();
+			date.innerHTML = makeDateString(blog.date);
+			date.className += " gensite_nowrap";
+			
+			var title		= newrow.insertCell();
+			title.innerHTML = decodeStringFromDB(blog.title);
+			title.style.width = "100%"
+			
+			var action	= newrow.insertCell();
+			action.innerHTML = "<button onclick='removeBlog("+i+");' style='white-space:nowrap;' id=removeblog_"+i+" >Remove</button>";
+			
+			$( "#removeblog_"+i ).button({
+				icon: "ui-icon-delete",
+				showLabel: true
+			});
+		}
+	}
+	
+	function setCurrentSite(){
+		profile_name.value 			= decodeStringFromDB(CURRENT_SITE.name.trim());
+		profile_description.value 	= decodeStringFromDB(CURRENT_SITE.description.trim());
+		
+		profile_extraname.value		= decodeStringFromDB(CURRENT_SITE.extra.name.trim());
+		profile_extrapage.value		= decodeStringFromDB(CURRENT_SITE.extra.page.trim());
+		
+		profile_contact.value 		= decodeStringFromDB(CURRENT_SITE.contact.trim());
+		
+		setUpBlog();
+		
+		//Now the links..
+		link1name.value 	= CURRENT_SITE.links[0].name;
+		link1value.value 	= CURRENT_SITE.links[0].address;
+		link2name.value 	= CURRENT_SITE.links[1].name;
+		link2value.value 	= CURRENT_SITE.links[1].address;
+		link3name.value 	= CURRENT_SITE.links[2].name;
+		link3value.value 	= CURRENT_SITE.links[2].address;
+		link4name.value 	= CURRENT_SITE.links[3].name;
+		link4value.value 	= CURRENT_SITE.links[3].address;
+		link5name.value 	= CURRENT_SITE.links[4].name;
+		link5value.value 	= CURRENT_SITE.links[4].address;
+	}
+	
+	function convertToJSON(callback){
+		
+		//Set the new CURRENT_SITE details
+		CURRENT_SITE.name 			= encodeStringForDB(profile_name.value.trim());
+		CURRENT_SITE.description 	= encodeStringForDB(profile_description.value.trim());
+		CURRENT_SITE.contact 		= encodeStringForDB(profile_contact.value.trim());
+		
+		//The Extra Page
+		CURRENT_SITE.extra.name 	= encodeStringForDB(profile_extraname.value.trim());
+		CURRENT_SITE.extra.page 	= encodeStringForDB(profile_extrapage.value.trim());
+		
+		//The Blog.. is added automatically..
+		//..
+		
+		//Links..
+		CURRENT_SITE.links = [];
+		
+		//Add each link
+		var link 		= {};
+		link.name 		= link1name.value.trim();
+		link.address 	= link1value.value.trim();
+		CURRENT_SITE.links.push(link);
+		
+		link 		= {};
+		link.name 		= link2name.value.trim();
+		link.address 	= link2value.value.trim();
+		CURRENT_SITE.links.push(link);
+		
+		link 		= {};
+		link.name 		= link3name.value.trim();
+		link.address 	= link3value.value.trim();
+		CURRENT_SITE.links.push(link);
+		
+		link 		= {};
+		link.name 		= link4name.value.trim();
+		link.address 	= link4value.value.trim();
+		CURRENT_SITE.links.push(link);
+		
+		link 		= {};
+		link.name 		= link5name.value.trim();
+		link.address 	= link5value.value.trim();
+		CURRENT_SITE.links.push(link);
+		
+		//Sore this..
+		MDS.keypair.set("gensite_simple",JSON.stringify(CURRENT_SITE),function(resp){
+			if(callback){
+				callback();
+			}
+		});
+	}
+	
+	
+	function generateSite(){
+		
+		//First store all the details..
+		convertToJSON(function(){
+			
+			//Now GENERATE the site..
+			generateSiteAsZip(CURRENT_SITE);	
+		});
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		if(msg.event == "inited"){
+			
+			MDS.keypair.get("gensite_simple",function(dets){
+				MDS.log(JSON.stringify(dets));
+				
+				if(dets.status){
+					
+					//Convert to JSON
+					CURRENT_SITE = JSON.parse(dets.value);
+					
+					if(!CURRENT_SITE.blog){
+						CURRENT_SITE.blog		= [];
+					}
+	
+				}else{
+					
+					//It's blank..
+					CURRENT_SITE.name			= "";
+					CURRENT_SITE.description	= "";
+					CURRENT_SITE.contact		= "";
+					
+					CURRENT_SITE.extra			= {};
+					CURRENT_SITE.extra.name		= "";
+					CURRENT_SITE.extra.page		= "";
+					
+					CURRENT_SITE.blog			= [];
+					
+					CURRENT_SITE.links			= [];
+					var emptylink 	  = {};
+					emptylink.name 	  = "";
+					emptylink.address = "";
+					CURRENT_SITE.links.push(emptylink);
+					CURRENT_SITE.links.push(emptylink);
+					CURRENT_SITE.links.push(emptylink);
+					CURRENT_SITE.links.push(emptylink);
+					CURRENT_SITE.links.push(emptylink);
+				}
+				
+				//Set the current site
+				setCurrentSite();
+			});
+		}
+	});
+	
+</script>
+
+</body>
+
+</html>

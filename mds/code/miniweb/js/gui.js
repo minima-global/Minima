@@ -17,6 +17,10 @@ function jumpToDev(){
 	location.href="devmode.html?uid="+MDS.minidappuid;	
 }
 
+function jumpToMySite(){
+	location.href="gensite.html?uid="+MDS.minidappuid;	
+}
+
 function startupButtons(){
 	$( "#button-help" ).button({
 		icon: "ui-icon-help",
@@ -32,6 +36,11 @@ function startupButtons(){
 		icon: "ui-icon-edit",
 		showLabel: false
 	}).click(function(){jumpToDev();});
+	
+	$( "#button-mysite" ).button({
+		icon: "ui-icon-vcard",
+		showLabel: false
+	}).click(function(){jumpToMySite();});
 }
 
 var NOTIFICATION_ENABLED = false;
