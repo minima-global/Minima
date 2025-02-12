@@ -272,7 +272,8 @@
 		}
 		
 		//Now add thje blogs..
-		for(var i=0;i<bloglen;i++){
+		var pos = bloglen-1;
+		for(var i=pos;i>=0;i--){
 			var blog = CURRENT_SITE.blog[i];
 			
 			var newrow 	= blogtable.insertRow();
@@ -387,9 +388,11 @@
 	
 	
 	function generateSite(){
-		convertToJSON(function(){
-			generateSiteAsZip(CURRENT_SITE);
-		});
+		if(confirm("This will generate a ZIP file of your MiniSite\n\nUpload this to MiniFS and Publish it!")){
+			convertToJSON(function(){
+				generateSiteAsZip(CURRENT_SITE);
+			});	
+		}
 	}
 	
 	function testSite(){
@@ -427,6 +430,12 @@
 					CURRENT_SITE.extrapage		= "";
 					
 					CURRENT_SITE.blog			= [];
+					
+					CURRENT_SITE.select_background	= "Beach.jpg";
+					CURRENT_SITE.background			= "../../miniweb/images/surface/Beach.jpg";
+					
+					CURRENT_SITE.border_color	= "#0000FF";
+					CURRENT_SITE.icon_color		= "#5555ff";
 					
 					CURRENT_SITE.links			= [];
 					var emptylink 	  = {};
