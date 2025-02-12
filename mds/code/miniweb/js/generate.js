@@ -1,8 +1,10 @@
 
-//All the random backdrops in miniweb
-var BASE_ADDRESS = "../../miniweb/images/surface/";
-var RANDOM_BACKDROPS = ["Beach.jpg","Black.jpg","BlackHills.jpg","Blue Sky.jpg","Blue.jpg","Burgundy.jpg","Cobalt.jpg","Explode.jpg","Ice Blue.jpg",
-"Matte Black.jpg","Mountains.jpg","Night Sky.jpg","Platinum.jpg","Rainbow.jpg","Red.jpg","RedBlack.jpg","Sandstone.jpg","Surf.jpg","Wave.jpg","Yellow.jpg"];
+//GLOBAL version of the Gen Site Files..
+var INDEX_HTML = "";
+var BLOG_HTML = "";
+var EXTRA_HTML = "";
+var LINKS_HTML = "";
+var JSLIB_JS = "";
 
 function makeDateString(timemilli){
 	return new Date(+timemilli).toLocaleTimeString()+" "+new Date(+timemilli).toLocaleDateString();
@@ -50,62 +52,144 @@ function replaceBasics(temp, jsonsite){
 	
 	return newtemp;
 }
+
+/**
+ * Create the ALL Base pages
+ */
+function createBasePages(jsonsite, testsite, callback){
+	//Load the Template..
+	loadWebFile("./gensite/template.html",function(template){
+		
+		//Load backdrop..
+		template 		= template.replaceAll("#BACKDROP",jsonsite.background);
+		
+		//And set the colors..
+		template 		= template.replaceAll("#BORDERCOLOR",jsonsite.border_color);
+		template 		= template.replaceAll("#ICONCOLOR",jsonsite.icon_color);
+		
+		loadWebFile("./gensite/jslib.js",function(jslib){
+	
+			//INDEX
+			INDEX_HTML 	= replaceBasics(template,jsonsite);
+			INDEX_HTML = INDEX_HTML.replaceAll("#TEMPLATE_PAGE",decodeStringFromDB(jsonsite.description));
+			
+			//BLOG
+			BLOG_HTML 	= replaceBasics(template,jsonsite);
+			
+			//EXTRAS
+			EXTRA_HTML 	= replaceBasics(template,jsonsite);
+			
+			//LINKS
+			LINKS_HTML 	= replaceBasics(template,jsonsite);
+			LINKS_HTML  = LINKS_HTML.replaceAll("#TEMPLATE_PAGE",createLinks(jsonsite,testsite));
+			
+			//JSLIB
+			JSLIB_JS	= jslib;
+			
+			if(callback){
+				callback();
+			}
+		});
+	});	
+}
 	
 /**
  * Generate a ZIP site from the json site details..!
  */
 function generateSiteAsZip(jsonsite){
 	
-	//Load the Template..
-	loadWebFile("./gensite/template.html",function(template){
-		loadWebFile("./gensite/style.css",function(style){
-			
-			//Load a random backdrop..
-			var rand 		= Math.floor(Math.random() * RANDOM_BACKDROPS.length);
-			var randback 	= BASE_ADDRESS+RANDOM_BACKDROPS[rand];
-			style = style.replaceAll("#BACKDROP",randback);
-			
-			loadWebFile("./gensite/jslib.js",function(jslib){
+	createBasePages(jsonsite,false,function(){
 		
-				//Now.. lets make the main pages
-				var index 	= replaceBasics(template,jsonsite);
-				var blog 	= replaceBasics(template,jsonsite);
-				var extra 	= replaceBasics(template,jsonsite);
-				var links 	= replaceBasics(template,jsonsite);
-				
-				//FIX Index..
-				index = index.replaceAll("#TEMPLATE_PAGE",decodeStringFromDB(jsonsite.description));
-				
-				//FIX LINKS..
-				links = links.replaceAll("#TEMPLATE_PAGE",createLinks(jsonsite));
-				
-				//Now lets put it all in a ZIP file..
-				var zip = new JSZip();
-				zip.file("index.html", index);
-				zip.file("blog.html", blog);
-				zip.file("extra.html", extra);
-				zip.file("links.html", links);
-				zip.file("style.css", style);
-				zip.file("jslib.js", jslib);
-				
-				zip.generateAsync({type:"base64"}).then(function(content) {
-					downloadGenSite(content,"gensite_"+makeDateStringNow()+".zip");
-				});
-			});
+		//Now lets put it all in a ZIP file..
+		var zip = new JSZip();
+		zip.file("index.html", INDEX_HTML);
+		zip.file("blog.html", BLOG_HTML);
+		zip.file("extra.html", EXTRA_HTML);
+		zip.file("links.html", LINKS_HTML);
+		zip.file("jslib.js", JSLIB_JS);
+		
+		zip.generateAsync({
+				type:"base64",
+				compression: "DEFLATE",
+    			compressionOptions: {
+        			level: 9
+    			}}).then(function(content) {
+			downloadGenSite(content,"minisite_"+makeDateStringNow()+".zip");
 		});
-	});
+	});			
 }
 
-function createLinks(jsonsite){
+function createLinks(jsonsite, testsite){
 	
-	var html = ""
+	var html = "<br>";
 	for(var i=0;i<5;i++){
 		if(jsonsite.links[i].name != ""){
-			html += "<a href=# onclick='miniweb_JumpToURL(\""+jsonsite.links[i].address
-						+"\");return false;'>"+jsonsite.links[i].name+"</a> <b>"+jsonsite.links[i].address+"</b><br><br>"
+			if(testsite){
+				html += jsonsite.links[i].name+"<br><a href=# onclick='alert(\"Links will work once you push this site Live!\")'>"+jsonsite.links[i].address+"</a><br><br>"
+			}else{
+				html += jsonsite.links[i].name+"<br><a href=# onclick='miniweb_JumpToURL(\""+jsonsite.links[i].address
+						+"\");return false;'>"+jsonsite.links[i].address+"</a><br><br>"	
+			}
 		}
 	}
 	
 	return html;
 }
 
+
+/** 
+ * The DEFAULT locations of the test gensite folder
+ */
+var DEFAULT_WEB_GENSITE = "/root/gensite/usersite";
+var DEFAULT_MDS_GENSITE = "/gensite";
+
+function wipeGenSite(callback){
+	MDS.file.delete(DEFAULT_MDS_GENSITE, function(delresp){
+		MDS.file.deletefromweb(DEFAULT_WEB_GENSITE, function(delwebresp){
+			if(callback){
+				callback();
+			}
+		});
+	});
+}
+
+function writeToWeb(webfile, data, callback){
+	//Now create thefile..
+	var mdsfile = DEFAULT_MDS_GENSITE+"/"+webfile;
+	MDS.file.save(mdsfile, data, function(indsave){
+		MDS.file.copytoweb(mdsfile,webfile,function(copyresp){
+			if(callback){
+				callback();
+			}
+		});
+	});
+}
+	
+/**
+ * Create the site for testing and viewing..
+ */
+function createGenSite(jsonsite, callback){
+	
+	createBasePages(jsonsite,true,function(){
+		
+		//Main index page
+		var indexpage = DEFAULT_WEB_GENSITE+"/"+"index.html";
+		
+		//Now save these files in the gensite test folder..
+		wipeGenSite(function(){
+			writeToWeb(indexpage, INDEX_HTML, function(){
+				writeToWeb(DEFAULT_WEB_GENSITE+"/"+"jslib.js", JSLIB_JS, function(){
+					writeToWeb(DEFAULT_WEB_GENSITE+"/"+"blog.html", BLOG_HTML, function(){
+						writeToWeb(DEFAULT_WEB_GENSITE+"/"+"links.html", LINKS_HTML, function(){
+							writeToWeb(DEFAULT_WEB_GENSITE+"/"+"extra.html", EXTRA_HTML, function(){
+								if(callback){
+									callback(indexpage);	
+								}			
+							});	
+						});
+					});
+				});	
+			});
+		});	
+	});
+}

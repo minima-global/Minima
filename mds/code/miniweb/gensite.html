@@ -10,6 +10,7 @@
 	
 	<!-- Load the CSS Style sheet -->
 	<link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="image-picker.css">
 	
 	<!-- And the ICON for the page -->
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -27,7 +28,17 @@
 	<link rel="stylesheet" href="./root/miniweb/libs/jquery/jquery-ui-1.14.1/jquery-ui.icon-font.css">
 	<script type="text/javascript" src="./root/miniweb/libs/jquery/jquery-3.7.1.min.js"></script>
 	<script type="text/javascript" src="./root/miniweb/libs/jquery/jquery-ui-1.14.1/jquery-ui.js"></script>
-			
+	
+	<script type="text/javascript" src="./js/image-picker.js"></script>
+
+<style type="text/css">
+	
+.small_image{
+	width:115;
+	height:76;
+}
+
+</style>			
 </head>
 
 <body>
@@ -57,16 +68,16 @@
 	<div style="padding:8">
 		<h2>Personal Site Generator</h2>
 		
-		Create your own simple site and publish it to MiniWEB<br>
+		Create your own simple site and publish it via <b>MiniFS</b> onto <b>MiniWEB</b><br>
 		<br>
 		
-		<h3>Name</h3>
+		<h3>Title</h3>
 		<i class=gensite_desc>The title for your site.. can be your online Persona / Organisation / Business </i><br>
 		<input class=gensitefield type=text id=profile_name placeholder="Your Name.."><br>
 		<br>
 		
-		<h3>Description</h3>
-		<i class=gensite_desc>A description about who you are and what you do.. again - only say what you want to!</i><br>
+		<h3>Home Page</h3>
+		<i class=gensite_desc>The first and main page of your site</i><br>
 		<textarea class=gensitefield rows="8" id=profile_description></textarea><br>
 		<br>
 		
@@ -85,14 +96,13 @@
 		<table id=blogtable class=gensite_desc width=100%></table>
 		
 		<h3>Extra Page</h3>
-		<i class=gensite_desc>Add an extra page with with anything you like - text or HTML!</i><br>
-		<input class=gensitefield type=text id=profile_extraname placeholder="Page Name.."><br><br>
+		<i class=gensite_desc>Add an extra page with anything you like - text or HTML!</i><br>
 		<textarea class=gensitefield rows="8" id=profile_extrapage></textarea><br>
 		<br>
 		
 		
 		<h3>Contact</h3>
-		<i class=gensite_desc>Use a ChainMail address (or email) if you would like people to contact you</i><br>
+		<i class=gensite_desc>Use a <b>ChainMail</b> address if you would like people to contact you</i><br>
 		<input class=gensitefield type=text id=profile_contact placeholder="Your ChainMail Address.."><br>
 		<br>
 		
@@ -101,48 +111,92 @@
 		<table width="100%">
 			<tr>
 				<td>1</td>
-				<td><input class=gensitelink type=text id=link1name placeholder="Title"><br>
+				<td><input class=gensitelink type=text id=link1name placeholder="Title / Description"><br>
 				 	<input class=gensitelink type=text id=link1value placeholder="Mx.. Address"></td>
 			</tr>
 			
 			<tr>
 				<td>2</td>
-				<td><input class=gensitelink type=text id=link2name placeholder="Title"><br>
+				<td><input class=gensitelink type=text id=link2name placeholder="Title / Description"><br>
 				 	<input class=gensitelink type=text id=link2value placeholder="Mx.. Address"></td>
 			</tr>
 			
 			<tr>
 				<td>3</td>
-				<td><input class=gensitelink type=text id=link3name placeholder="Title"><br>
+				<td><input class=gensitelink type=text id=link3name placeholder="Title / Description"><br>
 				 	<input class=gensitelink type=text id=link3value placeholder="Mx.. Address"></td>
 			</tr>
 			
 			<tr>
 				<td>4</td>
-				<td><input class=gensitelink type=text id=link4name placeholder="Title"><br>
+				<td><input class=gensitelink type=text id=link4name placeholder="Title / Description"><br>
 				 	<input class=gensitelink type=text id=link4value placeholder="Mx.. Address"></td>
 			</tr>
 			
 			<tr>
 				<td>5</td>
-				<td><input class=gensitelink type=text id=link5name placeholder="Title"><br>
+				<td><input class=gensitelink type=text id=link5name placeholder="Title / Description"><br>
 				 	<input class=gensitelink type=text id=link5value placeholder="Mx.. Address"></td>
 			</tr>
 			
 		</table>
 		<br><br>
 		
+		<h3>Colors</h3>
+		<i class=gensite_desc>Choose some colors for your site</i><br><br>
 		
+		<div>
+		  <input type="color" id="border_colors" name="borders" value="#0000FF" />
+		  <label for="borders">Border Color</label>
+		</div>
+		<br>
+		<div>
+		  <input type="color" id="icon_colors" name="icons" value="#5555ff" />
+		  <label for="icons">Menu Icon Colors</label>
+		</div>
 		<br>
 		
-		<center>
-		Your site will be created and zipped. Once downloaded go to <b>MiniFS</b> and upload your Site!
-		<br><br>
-		<button id=gensite onclick="generateSite();">Create Your MiniSite</button><br>
-		</center> 
+		<h3>Background</h3>
+		<i class=gensite_desc>Pick a background for your site</i><br><br>
 		
+		<select class="image-picker" id="background_chooser" >
+		  
+		  <option data-img-class="small_image" data-img-src="./root/miniweb/images/surface/Beach.jpg" value="Beach.jpg">Beach</option>
+		  <option data-img-class="small_image" data-img-src="./root/miniweb/images/surface/Black.jpg" value="Black.jpg">Black</option>
+		  <option data-img-class="small_image" data-img-src="./root/miniweb/images/surface/BlackHills.jpg" value="BlackHills.jpg">BlackHills</option>
+		  <option data-img-class="small_image" data-img-src="./root/miniweb/images/surface/BlueSky.jpg" value="BlueSky.jpg">BlueSky</option>
+		  <option data-img-class="small_image" data-img-src="./root/miniweb/images/surface/Blue.jpg" value="Blue.jpg">Blue</option>
+		  
+		  <option data-img-class="small_image" data-img-src="./root/miniweb/images/surface/Burgundy.jpg" value=".jpg">Burgundy</option>
+		  <option data-img-class="small_image" data-img-src="./root/miniweb/images/surface/Cobalt.jpg" value="Cobalt.jpg">Cobalt</option>
+		  <option data-img-class="small_image" data-img-src="./root/miniweb/images/surface/Explode.jpg" value="Explode.jpg">Explode</option>
+		  <option data-img-class="small_image" data-img-src="./root/miniweb/images/surface/IceBlue.jpg" value="IceBlue.jpg">IceBlue</option>
+		  <option data-img-class="small_image" data-img-src="./root/miniweb/images/surface/MatteBlack.jpg" value="MatteBlack.jpg">MatteBlack</option>
+		  
+		  <option data-img-class="small_image" data-img-src="./root/miniweb/images/surface/Mountains.jpg" value="Mountains.jpg">Mountains</option>
+		  <option data-img-class="small_image" data-img-src="./root/miniweb/images/surface/NightSky.jpg" value="NightSky.jpg">NightSky</option>
+		  <option data-img-class="small_image" data-img-src="./root/miniweb/images/surface/Platinum.jpg" value="Platinum.jpg">Platinum</option>
+		  <option data-img-class="small_image" data-img-src="./root/miniweb/images/surface/Rainbow.jpg" value="Rainbow.jpg">Rainbow</option>
+		  <option data-img-class="small_image" data-img-src="./root/miniweb/images/surface/Red.jpg" value="Red.jpg">Red</option>
+		  
+		  <option data-img-class="small_image" data-img-src="./root/miniweb/images/surface/RedBlack.jpg" value="RedBlack.jpg">RedBlack</option>
+		  <option data-img-class="small_image" data-img-src="./root/miniweb/images/surface/Sandstone.jpg" value="Sandstone.jpg">Sandstone</option>
+		  <option data-img-class="small_image" data-img-src="./root/miniweb/images/surface/Surf.jpg" value="Surf.jpg">Surf</option>
+		  <option data-img-class="small_image" data-img-src="./root/miniweb/images/surface/Wave.jpg" value="Wave.jpg">Wave</option>
+		  <option data-img-class="small_image" data-img-src="./root/miniweb/images/surface/Yellow.jpg" value="Yellow.jpg">Yellow</option>
+		  
+		</select>
+		<br>
+		<br>
+		Once you have Generated your site upload it to MiniFS and your site is live!<br>
 		<br>
 		
+		<table width=100%>
+			<tr>
+				<td><button id=gensite onclick="generateSite();">Generate</button></td>
+				<td style="text-align:right;"><button id=testsite onclick="testSite();">Save & Test Site</button></td>
+			</tr>
+		</table>
 		
 	</div>
 
@@ -161,6 +215,11 @@
 		
 		$( "#gensite" ).button({
 			icon: "ui-icon-shuttle",
+			showLabel: true
+		});
+		
+		$( "#testsite" ).button({
+			icon: "ui-icon-globe",
 			showLabel: true
 		});
 		
@@ -237,12 +296,11 @@
 	}
 	
 	function setCurrentSite(){
+		
+		//Set the basic values
 		profile_name.value 			= decodeStringFromDB(CURRENT_SITE.name.trim());
 		profile_description.value 	= decodeStringFromDB(CURRENT_SITE.description.trim());
-		
-		profile_extraname.value		= decodeStringFromDB(CURRENT_SITE.extra.name.trim());
-		profile_extrapage.value		= decodeStringFromDB(CURRENT_SITE.extra.page.trim());
-		
+		profile_extrapage.value		= decodeStringFromDB(CURRENT_SITE.extrapage.trim());
 		profile_contact.value 		= decodeStringFromDB(CURRENT_SITE.contact.trim());
 		
 		setUpBlog();
@@ -258,6 +316,17 @@
 		link4value.value 	= CURRENT_SITE.links[3].address;
 		link5name.value 	= CURRENT_SITE.links[4].name;
 		link5value.value 	= CURRENT_SITE.links[4].address;
+		
+		//The Colors
+		border_colors.value = CURRENT_SITE.border_color;
+		icon_colors.value 	= CURRENT_SITE.icon_color;
+		
+		//The Backdrop
+		background_chooser.value = CURRENT_SITE.select_background;
+		$("#background_chooser").imagepicker({
+			 hide_select : true,
+	         show_label  : false
+		});
 	}
 	
 	function convertToJSON(callback){
@@ -266,10 +335,7 @@
 		CURRENT_SITE.name 			= encodeStringForDB(profile_name.value.trim());
 		CURRENT_SITE.description 	= encodeStringForDB(profile_description.value.trim());
 		CURRENT_SITE.contact 		= encodeStringForDB(profile_contact.value.trim());
-		
-		//The Extra Page
-		CURRENT_SITE.extra.name 	= encodeStringForDB(profile_extraname.value.trim());
-		CURRENT_SITE.extra.page 	= encodeStringForDB(profile_extrapage.value.trim());
+		CURRENT_SITE.extrapage 		= encodeStringForDB(profile_extrapage.value.trim());
 		
 		//The Blog.. is added automatically..
 		//..
@@ -303,6 +369,14 @@
 		link.address 	= link5value.value.trim();
 		CURRENT_SITE.links.push(link);
 		
+		//The Colors..
+		CURRENT_SITE.border_color 	= border_colors.value;
+		CURRENT_SITE.icon_color		= icon_colors.value;
+	
+		//The Backdrop
+		CURRENT_SITE.select_background	= background_chooser.value;
+		CURRENT_SITE.background			= "../../miniweb/images/surface/"+background_chooser.value;
+		
 		//Sore this..
 		MDS.keypair.set("gensite_simple",JSON.stringify(CURRENT_SITE),function(resp){
 			if(callback){
@@ -313,12 +387,17 @@
 	
 	
 	function generateSite(){
-		
-		//First store all the details..
 		convertToJSON(function(){
-			
-			//Now GENERATE the site..
-			generateSiteAsZip(CURRENT_SITE);	
+			generateSiteAsZip(CURRENT_SITE);
+		});
+	}
+	
+	function testSite(){
+		convertToJSON(function(){
+			createGenSite(CURRENT_SITE,function(testindex){
+				//Now browse tha page
+				window.open("."+testindex+"?uid="+MDS.minidappuid);
+			});
 		});
 	}
 	
@@ -345,10 +424,7 @@
 					CURRENT_SITE.name			= "";
 					CURRENT_SITE.description	= "";
 					CURRENT_SITE.contact		= "";
-					
-					CURRENT_SITE.extra			= {};
-					CURRENT_SITE.extra.name		= "";
-					CURRENT_SITE.extra.page		= "";
+					CURRENT_SITE.extrapage		= "";
 					
 					CURRENT_SITE.blog			= [];
 					

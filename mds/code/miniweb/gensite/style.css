@@ -6,10 +6,6 @@
 body {
 	font-family: Manrope; 
     margin: 0;  
-    background-image: url('#BACKDROP');
-    background-size:  cover;           
-    background-repeat: no-repeat;
-    background-position: center center;   
 }
 
 .maindiv{
@@ -44,48 +40,4 @@ body {
 	text-align:center;
 	font-size:10;
 	color:#777777;
-}
-
-/*Simple Button!!*/
-.solobutton {
-    min-width:100;
-    background-color: #eee;
-    border: 0.5px solid #EDEDED;
-  	border-radius: 8px;
-  	padding: 8px 8px;
-  	font-family: Manrope;
-  	font-size: 14px;
-}
-.solobutton-edit {
-	font-family: Manrope;
-	background: #fff;
-}
-.solobutton-edit:focus {
-	font-family: Manrope;
-	border: 0.5px solid #EDEDED;
-}
-
-.solobutton:hover {
-	font-family: Manrope;
-	cursor: pointer;
-    color: #fff;
-	background-color: #0000ff;
-  	border-radius: 8px;
-  	padding: 8px 8px;
-	border-color: #16181C;
-}
-
-.solobutton[disabled]:hover {
-	cursor: default;
-    color: #fff;
-    background-color: #eee;
-    border: 0.5px solid #EDEDED;
-  	border-radius: 8px;
-  	padding: 8px 8px;
-  	font-size: 14px;
-}
-
-.solobutton:active {
-  	opacity: 0.8;
-	font-style: italic;
 }
