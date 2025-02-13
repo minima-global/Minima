@@ -82,6 +82,11 @@
 			showLabel: true
 		});
 		
+		$(".searchfield").on('keyup', function (e) {
+		    if (e.key === 'Enter' || e.keyCode === 13) {
+		    	search();
+		    }
+		});
 	});
 	
 	function openBrowser(mxsite){

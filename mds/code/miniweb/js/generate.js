@@ -51,7 +51,7 @@ function replaceBasics(temp, jsonsite){
 	//First the Title.
 	var newtemp = temp.replaceAll("#TEMPLATE_TITLE",decodeStringFromDB(jsonsite.name));
 	
-	//And the COntact info
+	//And the Contact info
 	newtemp = newtemp.replaceAll("#CONTACT_INFO",decodeStringFromDB(jsonsite.contact));
 	
 	//Load backdrop..
@@ -59,7 +59,21 @@ function replaceBasics(temp, jsonsite){
 	
 	//And set the colors..
 	newtemp = newtemp.replaceAll("#BORDERCOLOR",jsonsite.border_color);
+	
+	//Button
+	newtemp = newtemp.replaceAll("#BUTTONTEXT",jsonsite.button_color);
+	newtemp = newtemp.replaceAll("#BUTTONCOLOR",jsonsite.button_background);
 	newtemp = newtemp.replaceAll("#ICONCOLOR",jsonsite.icon_color);
+	
+	//The Font
+	newtemp = newtemp.replaceAll("#TITLEFONT",jsonsite.title_font);
+	newtemp = newtemp.replaceAll("#TITLECOLOR",jsonsite.title_color);
+	newtemp = newtemp.replaceAll("#TITLEBACKGROUND",jsonsite.title_background);
+	newtemp = newtemp.replaceAll("#TITLEBORDER",jsonsite.title_border);
+	
+	newtemp = newtemp.replaceAll("#MAINFONT",jsonsite.main_font);
+	newtemp = newtemp.replaceAll("#MAINCOLOR",jsonsite.main_color);
+	newtemp = newtemp.replaceAll("#MAINBACKGROUND",jsonsite.main_background);
 		
 	return newtemp;
 }
@@ -212,7 +226,8 @@ function createBlog(jsonsite){
 function createLinksPage(jsonsite, testsite){
 	
 	var html = "<br>";
-	for(var i=0;i<5;i++){
+	var size = jsonsite.links.length;
+	for(var i=0;i<size;i++){
 		if(jsonsite.links[i].name != ""){
 			
 			var title = lineDecode(jsonsite.links[i].name);

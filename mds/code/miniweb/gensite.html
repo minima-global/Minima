@@ -11,6 +11,7 @@
 	<!-- Load the CSS Style sheet -->
 	<link rel="stylesheet" href="style.css">
 	<link rel="stylesheet" href="image-picker.css">
+	<link rel="stylesheet" href="./root/miniweb/fonts/fonts.css">
 	
 	<!-- And the ICON for the page -->
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -72,12 +73,54 @@
 		<br>
 		
 		<h3>Title</h3>
-		<i class=gensite_desc>The title for your site.. can be your online Persona / Organisation / Business </i><br>
-		<input class=gensitefield type=text id=profile_name placeholder="Your Name.."><br>
+		<i class=gensite_desc>The <b>Title</b> for your site.. can be your online Persona / Organisation / Business </i><br>
+		<input class=gensitefield type=text id=profile_name placeholder="The Title of your Site.."><br>
 		<br>
+		<i class=gensite_desc>Choose a font for the <b>Title</b></i><br>
+		<select onchange="onFontChange(this);" id=fontchoosetitle style="font-size:24;width:300;height:45;">
+			<option name=shortbaby value="Comic Sans MS" style="font-family:Comic Sans MS">Comic Sans MS</option>
+			<option name=shortbaby value="Helvetica" style="font-family:Helvetica">Helvetica</option>
+			<option name=shortbaby value="Impact" style="font-family:Impact";>Impact</option>
+			<option name=shortbaby value="Palatino" style="font-family:Palatino;">Palatino</option>
+			<option name=shortbaby value="Trebuchet MS" style="font-family:Trebuchet MS;">Trebuchet MS</option>
+			<option name=shortbaby value="Verdana" style="font-family:Verdana;">Verdana</option>
+			<option disabled>_________</option>
+			<option value="ArianaVioleta" style="font-family:ArianaVioleta;">Ariana Violeta</option>
+			<option value="BabyPlums" style="font-family:BabyPlums;">Baby Plums</option>
+			<option value="BeckyTahlia" style="font-family:BeckyTahlia;">Becky Tahlia</option>
+			<option value="BelieveIt" style="font-family:BelieveIt;">Believe It</option>
+			<option value="BerlynaDemo" style="font-family:BerlynaDemo;">Berlyna</option>
+			<option value="BrownieStencil" style="font-family:BrownieStencil;">Brownie Stencil</option>
+			<option value="ChrustyRock" style="font-family:ChrustyRock;">Chrusty Rock</option>
+			<option value="CookieCrisp" style="font-family:CookieCrisp;">Cookie Crisp</option>
+			<option value="Debrosee" style="font-family:Debrosee;">Debrosee</option>
+			<option value="Freedom" style="font-family:Freedom;">Freedom</option>
+			<option value="HappyFestive" style="font-family:HappyFestive;">Happy Festive</option>
+			<option value="HappySwirly" style="font-family:HappySwirly;">Happy Swirly</option>
+			<option value="LoveDays" style="font-family:LoveDays;">Love Days</option>
+			<option value="Manrope" style="font-family:Manrope;">Manrope</option>
+			<option value="Pixellettersful" style="font-family:Pixellettersful;">Pixel Letters</option>
+			<option value="PlayfulTime" style="font-family:PlayfulTime;">Playful Time</option>
+			<option value="ShinyCrystal" style="font-family:ShinyCrystal;">Shiny Crystal</option>
+			<option value="ShortBaby" style="font-family:ShortBaby;">Short Baby</option>
+		</select><br>		
+		<br>
+		<i class=gensite_desc>Choose colors for your <b>Title</b></i><br>
+		<div>
+		  <input type="color" id="title_color" name="title_color" value="#0000FF" />
+		  <label for="title_color">Title Color</label>
+		</div><br>
+		<div>
+		  <input type="color" id="title_background" name="title_background" value="#0000FF" />
+		  <label for="title_background">Title Background Color</label>
+		</div><br>
+		<div>
+		  <input type="color" id="title_border" name="title_border" value="#0000FF" />
+		  <label for="title_border">Title Border Color</label>
+		</div><br>
 		
 		<h3>Home Page</h3>
-		<i class=gensite_desc>The first and main page of your site</i><br>
+		<i class=gensite_desc>The <b>Main Page</b> of your site - you can use text and HTML</i><br>
 		<textarea class=gensitefield rows="8" id=profile_description></textarea><br>
 		<br>
 		
@@ -96,7 +139,7 @@
 		<table id=blogtable class=gensite_desc width=100%></table>
 		
 		<h3>Extra Page</h3>
-		<i class=gensite_desc>Add an extra page with anything you like - text or HTML!</i><br>
+		<i class=gensite_desc>Add an extra page with anything you like</i><br>
 		<textarea class=gensitefield rows="8" id=profile_extrapage></textarea><br>
 		<br>
 		
@@ -139,20 +182,93 @@
 				 	<input class=gensitelink type=text id=link5value placeholder="Mx.. Address"></td>
 			</tr>
 			
+			<tr>
+				<td>6</td>
+				<td><input class=gensitelink type=text id=link6name placeholder="Title / Description"><br>
+				 	<input class=gensitelink type=text id=link6value placeholder="Mx.. Address"></td>
+			</tr>
+			
+			<tr>
+				<td>7</td>
+				<td><input class=gensitelink type=text id=link7name placeholder="Title / Description"><br>
+				 	<input class=gensitelink type=text id=link7value placeholder="Mx.. Address"></td>
+			</tr>
+			
+			<tr>
+				<td>8</td>
+				<td><input class=gensitelink type=text id=link8name placeholder="Title / Description"><br>
+				 	<input class=gensitelink type=text id=link8value placeholder="Mx.. Address"></td>
+			</tr>
+			
 		</table>
 		<br><br>
+		
+		<h3>Fonts</h3>
+		
+		<i class=gensite_desc>Choose the main font for your site</i><br>
+		<select onchange="onFontChange(this);" id=fontchoose style="font-size:24;width:300;height:45;">
+			<option name=shortbaby value="Comic Sans MS" style="font-family:Comic Sans MS">Comic Sans MS</option>
+			<option name=shortbaby value="Helvetica" style="font-family:Helvetica">Helvetica</option>
+			<option name=shortbaby value="Impact" style="font-family:Impact";>Impact</option>
+			<option name=shortbaby value="Palatino" style="font-family:Palatino;">Palatino</option>
+			<option name=shortbaby value="Trebuchet MS" style="font-family:Trebuchet MS;">Trebuchet MS</option>
+			<option name=shortbaby value="Verdana" style="font-family:Verdana;">Verdana</option>
+			<option disabled>_________</option>
+			<option value="ArianaVioleta" style="font-family:ArianaVioleta;">Ariana Violeta</option>
+			<option value="BabyPlums" style="font-family:BabyPlums;">Baby Plums</option>
+			<option value="BeckyTahlia" style="font-family:BeckyTahlia;">Becky Tahlia</option>
+			<option value="BelieveIt" style="font-family:BelieveIt;">Believe It</option>
+			<option value="BerlynaDemo" style="font-family:BerlynaDemo;">Berlyna</option>
+			<option value="BrownieStencil" style="font-family:BrownieStencil;">Brownie Stencil</option>
+			<option value="ChrustyRock" style="font-family:ChrustyRock;">Chrusty Rock</option>
+			<option value="CookieCrisp" style="font-family:CookieCrisp;">Cookie Crisp</option>
+			<option value="Debrosee" style="font-family:Debrosee;">Debrosee</option>
+			<option value="Freedom" style="font-family:Freedom;">Freedom</option>
+			<option value="HappyFestive" style="font-family:HappyFestive;">Happy Festive</option>
+			<option value="HappySwirly" style="font-family:HappySwirly;">Happy Swirly</option>
+			<option value="LoveDays" style="font-family:LoveDays;">Love Days</option>
+			<option value="Manrope" style="font-family:Manrope;">Manrope</option>
+			<option value="Pixellettersful" style="font-family:Pixellettersful;">Pixel Letters</option>
+			<option value="PlayfulTime" style="font-family:PlayfulTime;">Playful Time</option>
+			<option value="ShinyCrystal" style="font-family:ShinyCrystal;">Shiny Crystal</option>
+			<option value="ShortBaby" style="font-family:ShortBaby;">Short Baby</option>
+		</select><br>		
+		<br>		
 		
 		<h3>Colors</h3>
 		<i class=gensite_desc>Choose some colors for your site</i><br><br>
 		
 		<div>
+		  <input type="color" id="main_colors" name="main_colors" value="#0000FF" />
+		  <label for="main_colors">Text Color</label>
+		</div>
+		<br>
+		<div>
+		  <input type="color" id="main_background" name="main_background" value="#5555ff" />
+		  <label for="main_background">Text Frame Background Color</label>
+		</div>
+		<br>
+		<div>
 		  <input type="color" id="border_colors" name="borders" value="#0000FF" />
-		  <label for="borders">Border Color</label>
+		  <label for="borders">Text Frame Border Color</label>
+		</div>
+		<br>
+		
+		<h3>Buttons</h3>
+		<i class=gensite_desc>Choose some colors for your Menu Buttons</i><br><br>
+		<div>
+		  <input type="color" id="button_colors" name="button_colors" value="#5555ff" />
+		  <label for="button_colors">Button Text Color</label>
+		</div>
+		<br>
+		<div>
+		  <input type="color" id="button_background" name="button_background" value="#5555ff" />
+		  <label for="button_background">Button Background Color</label>
 		</div>
 		<br>
 		<div>
 		  <input type="color" id="icon_colors" name="icons" value="#5555ff" />
-		  <label for="icons">Menu Icon Colors</label>
+		  <label for="icons">Button Icon Color</label>
 		</div>
 		<br>
 		
@@ -188,13 +304,15 @@
 		</select>
 		<br>
 		<br>
-		Once you have Generated your site upload it to MiniFS and your site is live!<br>
-		<br>
 		
 		<table width=100%>
 			<tr>
-				<td><button id=gensite onclick="generateSite();">Generate</button></td>
-				<td style="text-align:right;"><button id=testsite onclick="testSite();">Save & Test Site</button></td>
+				<td>
+					<button id=gensite onclick="generateSite();">Download</button>
+					<button id=resetsite onclick="checkResetSite();">Reset</button>
+					<button id=savesite onclick="saveSite();">Save</button>
+				</td>
+				<td style="text-align:right;"><button id=testsite onclick="testSite();">Test Site</button></td>
 			</tr>
 		</table>
 		
@@ -214,7 +332,7 @@
 		startupButtons();
 		
 		$( "#gensite" ).button({
-			icon: "ui-icon-shuttle",
+			icon: "ui-icon-download",
 			showLabel: true
 		});
 		
@@ -227,7 +345,22 @@
 			icon: "ui-icon-circle-plus",
 			showLabel: true
 		});
+		
+		$( "#resetsite" ).button({
+			icon: "ui-icon-delete",
+			showLabel: false
+		});
+		
+		$( "#savesite" ).button({
+			icon: "ui-icon-save",
+			showLabel: false
+		});
 	});
+	
+	function onFontChange(theselect){
+		var chosen = theselect.value;
+		theselect.style.fontFamily=chosen;
+	}
 	
 	function addBlog(){
 		
@@ -298,36 +431,64 @@
 	
 	function setCurrentSite(){
 		
-		//Set the basic values
-		profile_name.value 			= decodeStringFromDB(CURRENT_SITE.name.trim());
-		profile_description.value 	= decodeStringFromDB(CURRENT_SITE.description.trim());
-		profile_extrapage.value		= decodeStringFromDB(CURRENT_SITE.extrapage.trim());
-		profile_contact.value 		= decodeStringFromDB(CURRENT_SITE.contact.trim());
-		
-		setUpBlog();
-		
-		//Now the links..
-		link1name.value 	= CURRENT_SITE.links[0].name;
-		link1value.value 	= CURRENT_SITE.links[0].address;
-		link2name.value 	= CURRENT_SITE.links[1].name;
-		link2value.value 	= CURRENT_SITE.links[1].address;
-		link3name.value 	= CURRENT_SITE.links[2].name;
-		link3value.value 	= CURRENT_SITE.links[2].address;
-		link4name.value 	= CURRENT_SITE.links[3].name;
-		link4value.value 	= CURRENT_SITE.links[3].address;
-		link5name.value 	= CURRENT_SITE.links[4].name;
-		link5value.value 	= CURRENT_SITE.links[4].address;
-		
-		//The Colors
-		border_colors.value = CURRENT_SITE.border_color;
-		icon_colors.value 	= CURRENT_SITE.icon_color;
-		
-		//The Backdrop
-		background_chooser.value = CURRENT_SITE.select_background;
-		$("#background_chooser").imagepicker({
-			 hide_select : true,
-	         show_label  : false
-		});
+		try{
+			//Set the basic values
+			profile_name.value 			= decodeStringFromDB(CURRENT_SITE.name.trim());
+			profile_description.value 	= decodeStringFromDB(CURRENT_SITE.description.trim());
+			profile_extrapage.value		= decodeStringFromDB(CURRENT_SITE.extrapage.trim());
+			profile_contact.value 		= decodeStringFromDB(CURRENT_SITE.contact.trim());
+			
+			setUpBlog();
+			
+			//The Font
+			fontchoosetitle.value 				= CURRENT_SITE.title_font;
+			fontchoosetitle.style.fontFamily	= CURRENT_SITE.title_font;
+			
+			fontchoose.value 					= CURRENT_SITE.main_font;
+			fontchoose.style.fontFamily			= CURRENT_SITE.main_font;
+			
+			//The Colors
+			title_color.value		= CURRENT_SITE.title_color;
+			title_background.value	= CURRENT_SITE.title_background;
+			title_border.value		= CURRENT_SITE.title_border;
+			
+			main_colors.value		= CURRENT_SITE.main_color;
+			main_background.value	= CURRENT_SITE.main_background;
+			
+			border_colors.value 	= CURRENT_SITE.border_color;
+			
+			button_colors.value		= CURRENT_SITE.button_color;
+			button_background.value	= CURRENT_SITE.button_background;
+			icon_colors.value 		= CURRENT_SITE.icon_color;
+			
+			//The Backdrop
+			background_chooser.value = CURRENT_SITE.select_background;
+			$("#background_chooser").imagepicker({
+				 hide_select : true,
+		         show_label  : false
+			});
+			
+			//Now the links..
+			link1name.value 	= CURRENT_SITE.links[0].name;
+			link1value.value 	= CURRENT_SITE.links[0].address;
+			link2name.value 	= CURRENT_SITE.links[1].name;
+			link2value.value 	= CURRENT_SITE.links[1].address;
+			link3name.value 	= CURRENT_SITE.links[2].name;
+			link3value.value 	= CURRENT_SITE.links[2].address;
+			link4name.value 	= CURRENT_SITE.links[3].name;
+			link4value.value 	= CURRENT_SITE.links[3].address;
+			link5name.value 	= CURRENT_SITE.links[4].name;
+			link5value.value 	= CURRENT_SITE.links[4].address;
+			link6name.value 	= CURRENT_SITE.links[5].name;
+			link6value.value 	= CURRENT_SITE.links[5].address;
+			link7name.value 	= CURRENT_SITE.links[6].name;
+			link7value.value 	= CURRENT_SITE.links[6].address;
+			link8name.value 	= CURRENT_SITE.links[7].name;
+			link8value.value 	= CURRENT_SITE.links[7].address;
+			
+		}catch(Error){
+			MDS.log("There wqas an error setting up your old site : "+error);
+		}
 	}
 	
 	function convertToJSON(callback){
@@ -370,9 +531,37 @@
 		link.address 	= link5value.value.trim();
 		CURRENT_SITE.links.push(link);
 		
+		link 		= {};
+		link.name 		= link6name.value.trim();
+		link.address 	= link6value.value.trim();
+		CURRENT_SITE.links.push(link);
+		
+		link 		= {};
+		link.name 		= link7name.value.trim();
+		link.address 	= link7value.value.trim();
+		CURRENT_SITE.links.push(link);
+		
+		link 		= {};
+		link.name 		= link8name.value.trim();
+		link.address 	= link8value.value.trim();
+		CURRENT_SITE.links.push(link);
+		
+		//The Font
+		CURRENT_SITE.title_font			= fontchoosetitle.value;
+		CURRENT_SITE.title_color		= title_color.value;
+		CURRENT_SITE.title_background	= title_background.value;
+		CURRENT_SITE.title_border		= title_border.value;
+		
+		CURRENT_SITE.main_font			= fontchoose.value;
+		CURRENT_SITE.main_color			= main_colors.value;
+		CURRENT_SITE.main_background	= main_background.value;
+		
 		//The Colors..
-		CURRENT_SITE.border_color 	= border_colors.value;
-		CURRENT_SITE.icon_color		= icon_colors.value;
+		CURRENT_SITE.border_color 		= border_colors.value;
+		
+		CURRENT_SITE.button_color		= button_colors.value;
+		CURRENT_SITE.button_background	= button_background.value;
+		CURRENT_SITE.icon_color			= icon_colors.value;
 	
 		//The Backdrop
 		CURRENT_SITE.select_background	= background_chooser.value;
@@ -388,7 +577,7 @@
 	
 	
 	function generateSite(){
-		if(confirm("This will generate a ZIP file of your MiniSite\n\nUpload this to MiniFS and Publish it!")){
+		if(confirm("This will download a ZIP file of your MiniSite\n\nUpload this to MiniFS and Publish it!")){
 			convertToJSON(function(){
 				generateSiteAsZip(CURRENT_SITE);
 			});	
@@ -399,8 +588,73 @@
 		convertToJSON(function(){
 			createGenSite(CURRENT_SITE,function(testindex){
 				//Now browse tha page
-				window.open("."+testindex+"?uid="+MDS.minidappuid);
+				window.open("."+testindex+"?uid="+MDS.minidappuid,"_gensite");
 			});
+		});
+	}
+	
+	function saveSite(){
+		convertToJSON(function(){
+			alert("Site Saved");
+		});
+	}
+	
+	function checkResetSite(){
+		if(confirm("This will wipe and reset the site..\n\nDeleting all data!\n\nAre you sure ?")){
+			resetSite(function(){
+				//Set the current site
+				setCurrentSite();
+			});
+		}
+	}
+	
+	function resetSite(callback){
+		//It's blank..
+		CURRENT_SITE.name			= "";
+		CURRENT_SITE.description	= "";
+		CURRENT_SITE.contact		= "";
+		CURRENT_SITE.extrapage		= "";
+		
+		CURRENT_SITE.blog			= [];
+		
+		CURRENT_SITE.select_background	= "Beach.jpg";
+		CURRENT_SITE.background			= "../../miniweb/images/surface/Beach.jpg";
+		
+		CURRENT_SITE.title_font 		= "Manrope";
+		CURRENT_SITE.title_color 		= "#000000";
+		CURRENT_SITE.title_background 	= "#FFFFFF";
+		CURRENT_SITE.title_border 		= "#0000FF";
+		
+		CURRENT_SITE.main_font 			= "Manrope";
+		CURRENT_SITE.main_color 		= "#000000";
+		CURRENT_SITE.main_background	= "#FFFFFF";
+		
+		CURRENT_SITE.button_color 		= "#000000";
+		CURRENT_SITE.button_background	= "#e7e7e7";
+		CURRENT_SITE.icon_color			= "#5555ff";
+		
+		CURRENT_SITE.border_color		= "#0000FF";
+		
+		CURRENT_SITE.links				= [];
+		var emptylink 	  = {};
+		emptylink.name 	  = "";
+		emptylink.address = "";
+		CURRENT_SITE.links.push(emptylink);
+		CURRENT_SITE.links.push(emptylink);
+		CURRENT_SITE.links.push(emptylink);
+		CURRENT_SITE.links.push(emptylink);
+		CURRENT_SITE.links.push(emptylink);
+		CURRENT_SITE.links.push(emptylink);
+		CURRENT_SITE.links.push(emptylink);
+		CURRENT_SITE.links.push(emptylink);
+		CURRENT_SITE.links.push(emptylink);
+		CURRENT_SITE.links.push(emptylink);
+		
+		//Sore this..
+		MDS.keypair.set("gensite_simple",JSON.stringify(CURRENT_SITE),function(resp){
+			if(callback){
+				callback();
+			}
 		});
 	}
 	
@@ -417,39 +671,15 @@
 					//Convert to JSON
 					CURRENT_SITE = JSON.parse(dets.value);
 					
-					if(!CURRENT_SITE.blog){
-						CURRENT_SITE.blog		= [];
-					}
-	
+					//Set the current site
+					setCurrentSite();
+					
 				}else{
-					
-					//It's blank..
-					CURRENT_SITE.name			= "";
-					CURRENT_SITE.description	= "";
-					CURRENT_SITE.contact		= "";
-					CURRENT_SITE.extrapage		= "";
-					
-					CURRENT_SITE.blog			= [];
-					
-					CURRENT_SITE.select_background	= "Beach.jpg";
-					CURRENT_SITE.background			= "../../miniweb/images/surface/Beach.jpg";
-					
-					CURRENT_SITE.border_color	= "#0000FF";
-					CURRENT_SITE.icon_color		= "#5555ff";
-					
-					CURRENT_SITE.links			= [];
-					var emptylink 	  = {};
-					emptylink.name 	  = "";
-					emptylink.address = "";
-					CURRENT_SITE.links.push(emptylink);
-					CURRENT_SITE.links.push(emptylink);
-					CURRENT_SITE.links.push(emptylink);
-					CURRENT_SITE.links.push(emptylink);
-					CURRENT_SITE.links.push(emptylink);
+					resetSite(function(){
+						//Set the current site
+						setCurrentSite();		
+					});
 				}
-				
-				//Set the current site
-				setCurrentSite();
 			});
 		}
 	});
