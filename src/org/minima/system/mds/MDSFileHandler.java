@@ -95,7 +95,7 @@ public class MDSFileHandler implements Runnable {
 	         
 	        bufferedReader 	= new BufferedReader(new InputStreamReader(inputStream, MiniString.MINIMA_CHARSET));
 	        dos 			= new DataOutputStream(outputStream);
-	        
+
 	        // get first line of the request from the client
 	     	String input = bufferedReader.readLine();
  			
@@ -185,29 +185,12 @@ public class MDSFileHandler implements Runnable {
 				}
 				
 				//Are we resyncing..
-				if(Main.getInstance().isShuttongDownOrRestoring() && !command.equals("poll")) {
+				if(Main.getInstance().isShuttongDownOrRestoring() 
+						&& !command.equals("poll")
+						&& !command.equals("megapoll")) {
 					throw new MDSInvalidIDException("Attempt to access MDS during resync.. blocked");
 				}
 
-				/*if(Main.getInstance().isShuttongDownOrRestoring()) {
-					
-					//Check DB Open..
-					if(!MinimaDB.getDB().getMDSDB().isOpen()) {
-						throw new MDSInvalidIDException("Attempt to access MDS after shutdown");
-					}
-					
-					//Only allow the security MiniDAPP..
-					MiniDAPP mdcheck 	= mMDS.getMiniDAPP(minidappid);
-					String namev 		= mdcheck.getName();
-					
-					//MinimaLogger.log("MDS DURING SHUTDOWN : command:"+command+" name:"+namev);
-					
-					if(namev.equalsIgnoreCase("minihub") || !command.equals("poll")) {
-						MinimaLogger.log("Attempt to access MDS during resync from "+namev+" ..blocked", false);
-						throw new MDSInvalidIDException("Attempt to access MDS during resync.. blocked");
-					}
-				}*/
-				
 				//get the POST data
 				int contentlength = Integer.parseInt(allheaders.get("Content-Length"));
 				
@@ -593,7 +576,10 @@ public class MDSFileHandler implements Runnable {
 						dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
 						
 						//Only cache Images ?
-						if(contenttype.startsWith("image") || contenttype.endsWith("css")) {
+						/*if(contenttype.startsWith("image") || contenttype.endsWith("css")) {
+							dos.writeBytes("Cache-Control: max-age=604800: *\r\n");
+						}*/
+						if(contenttype.startsWith("image")) {
 							dos.writeBytes("Cache-Control: max-age=604800: *\r\n");
 						}
 								

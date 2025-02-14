@@ -9,6 +9,7 @@ import org.minima.system.mds.handler.CMDcommand;
 import org.minima.system.mds.handler.COMMSCommand;
 import org.minima.system.mds.handler.FILEcommand;
 import org.minima.system.mds.handler.KEYPAIRcommand;
+import org.minima.system.mds.handler.MEGAPOLLcommand;
 import org.minima.system.mds.handler.NETcommand;
 import org.minima.system.mds.handler.NOTIFYcommand;
 import org.minima.system.mds.handler.POLLcommand;
@@ -302,6 +303,8 @@ public class MDSCommandHandler {
 					}
 				}
 				
+				MinimaLogger.log("DAPP LINK : "+data.trim()+" "+reqmini.getName());
+				
 				//Ok to send link.. ?
 				if(allow) {
 					
@@ -332,7 +335,12 @@ public class MDSCommandHandler {
 			
 			POLLcommand poll = new POLLcommand(mPollStack);
 			result = poll.runCommand(minidappid, data);
+		
+		}else if(command.equals("megapoll")) {
 			
+			MEGAPOLLcommand poll = new MEGAPOLLcommand(mPollStack);
+			result = poll.runCommand(minidappid, data);
+		
 		}else{
 			
 			//Is it a CMD / SQL / FILE / FUNC ..

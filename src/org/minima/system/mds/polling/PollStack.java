@@ -8,7 +8,7 @@ import org.minima.utils.json.JSONObject;
 
 public class PollStack {
 
-	public static final int MAX_MESSAGES = 512;
+	public static final int MAX_MESSAGES = 128;
 	
 	String mSeries;
 	
@@ -95,6 +95,45 @@ public class PollStack {
 		}
 	
 		return null;
+	}
+	
+	public synchronized ArrayList<PollMessage> getAllMessages(int zMessageCounter, String zMiniDAPPID){		
+		
+		ArrayList<PollMessage> msgs = new ArrayList<>();
+		
+		//Are there any messages
+		if(mCounter>zMessageCounter) {
+			
+			//Are we in shutdown mode..
+			if(mOnlyShutDown) {
+				MinimaLogger.log("SHUTDOWN ONLY PollMessage sent to :"+zMiniDAPPID);
+				
+				JSONObject notify = new JSONObject();
+				notify.put("event", "MDS_SHUTDOWN");
+				notify.put("data", new JSONObject());
+				
+				PollMessage shutmsg = new PollMessage(mCounter, notify, "*");
+				
+				msgs.add(shutmsg);
+				
+			}else {
+				
+				//Cycle through and add them..
+				for(PollMessage pmsg : mMessages) {
+					
+					//Who is it for..
+					String zTo	= pmsg.getTo();
+					
+					//Check the counter
+					if(pmsg.getCounter()>=zMessageCounter && (zTo.equals("*") || zTo.equals(zMiniDAPPID))) {
+						//Add this message
+						msgs.add(pmsg);
+					}
+				}
+			}
+		}
+	
+		return msgs;
 	}
 	
 }
