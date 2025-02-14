@@ -22,6 +22,15 @@ body {
   border-radius: 10px;
 }
 
+.searchfield {
+    min-width:100;
+    border: 0.5px solid #999;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	font-family: Manrope;
+  	font-size: 14px;
+}
+
 .titlebar{
   width:100%;
   min-width:360;

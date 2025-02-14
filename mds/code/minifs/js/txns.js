@@ -6,6 +6,30 @@ var MINIWEB_FILE_REQUEST = "0x4D494E4957454220524F434BFFFF";
 //Are we stroing the state.. 
 var STORE_STATE = true;
 
+//Publish a filepacket given the name
+function publishFilePacket(name,callback){
+	
+	//Load it..
+	getFilePacket(name,function(fp){
+		if(fp){
+			sendFilePacket(fp,function(resp){
+				if(callback){
+					callback(resp)
+				}
+			});
+		}else{
+			var errormsg = {};
+			errormsg.pending 	= false;
+			errormsg.status 	= false;
+			errormsg.error 		= "Filepacket "+name+" not found ?";
+			
+			if(callback){
+				callback(errormsg)
+			}
+		}
+	});
+}
+
 //Send a file packet..
 function sendFilePacket(filepacket, callback){
 	

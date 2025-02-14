@@ -15,6 +15,11 @@ function startupButtons(){
 		icon: "ui-icon-home",
 		showLabel: false
 	}).click(function(){jumpToMyFiles();});
+	
+	$( "#button-search" ).button({
+		icon: "ui-icon-search",
+		showLabel: false
+	}).click(function(){jumpToSearch();});
 }
 
 function jumpToMyFiles(){
@@ -27,6 +32,10 @@ function jumpToSurf(){
 
 function jumpToHelp(){
 	location.href="help.html?uid="+MDS.minidappuid;	
+}
+
+function jumpToSearch(){
+	location.href="search.html?uid="+MDS.minidappuid;	
 }
 
 function jumpToNewFile(){
@@ -79,23 +88,20 @@ function openMinimaBrowser(mxsite){
 	}
 }
 
-function downloadSite(hexdata, filename) {
+function publishSite(filename, callback) {
 
-	if(confirm("This will download "+filename+" ?")){
-		//Convert to base 64..
-		var b64 = MDS.util.hexToBase64(hexdata);
-				
-		//Consrtruct the data URI
-		var datauri = "data:application/zip;base64,"+b64;  
-			
-		var link 		= document.createElement("a");
-		link.download 		= filename;
-		link.href 			= datauri;
+	if(confirm("This will republish\n\n"+filename+" ?")){
 		
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
-		delete link;		
+		publishFilePacket(filename,function(resp){
+			if(resp.pending){
+				alert("Publish txn is pending..");
+			}else if(resp.status){
+				alert("Publish txn sent successully!");
+			}else{
+				MDS.log(JSON.stringify(resp));
+				alert("Something went wrong..\n\nPlease check console logs..");
+			}
+		});		
 	}
 }
 

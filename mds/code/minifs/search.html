@@ -49,46 +49,39 @@
 	</div>
 	<br>
 
-<table width=80% class=filepacketview style="text-align:center;">
-	<tr>
-		<td style="text-align:left;"><button id=newpacket onclick="jumpToNewFile();">New MiniFS File</button></td>
-		
-		<td style="text-align:center;"><div id=fpcount>Scanning..</div></td>
-		
-		<td style="text-align:right;">
-			<button id=refresh onclick="refreshview();">Refresh</button>
-			<button id=publish onclick="publishall();">Publish All</button>
-		</td>
-	</tr>
-</table>
+
+<div class=blueborder>
+
+<div style="padding:8;text-align:center;">
+
+<br><br>
+
+Search for any file in your database<br><br>
+<input class=searchfield type="text" id="searchtext" size=44><br>
+<br>
+<button  id="searchbutton">Search Files</button><br>
+<br>
+
+</div>
+</div>
 <br>
 
 <div id=mywebpackets></div>
 
-<br>
-	
 </center>
 
 <script type="text/javascript">
-	
+
 	//Set up the buttons..
 	$(document).ready(function() {
 		startupButtons();
 		
-		$( "#newpacket").button({icon: "ui-icon-file",showLabel: true});
-		$( "#publish").button({icon: "ui-icon-shuttle",showLabel: true});
-		$( "#refresh").button({icon: "ui-icon-refresh",showLabel: false});
+		$( "#searchbutton" ).button({
+			icon: "ui-icon-search",
+			showLabel: true
+		}).click(function(){searchFiles();});
+		
 	});
-
-	function refreshview(){
-		location.reload();
-	}
-
-	function publishall(){
-		if(confirm("This will publish all your unpublished file ? ")){
-			jumpToPublish();
-		}
-	}
 	
 	function copySite(filename) {
 
@@ -129,7 +122,6 @@
 		
 		+ "	<tr>\n"
 		+ "		<td>\n"
-		+ "			<button id='edit-"+distinctname+"' onclick=\"editSite('"+filepacket.data.name+"')\">Edit</button>\n"
 		+ "			<button id='republish-"+distinctname+"' onclick=\"publishSite('"+filepacket.data.name+"')\">Publish</button>\n"
 		+ "			<button id='delete-"+distinctname+"' onclick=\"deleteSite('"+filepacket.data.name+"')\">Delete</button>\n"
 		+ "		</td>\n"
@@ -143,10 +135,15 @@
 		
 		return guidata;
 	}
-
-	function showYourWebPackets(){
-		//Load my Packets..
-		getMyFilePackets(USER_PUBKEY,function(found){
+	
+	function searchFiles(){
+		
+		var search = searchtext.value.trim();
+		if(search == ""){
+			return;
+		}
+		
+		searchFilePackets(search,function(found){
 			
 			if(found.length == 0){
 				mywebpackets.innerHTML = 
@@ -164,8 +161,7 @@
 				//Make them all into nice buttons..
 				for(var i=0;i<len;i++){
 					var distinctname = "button-"+i;
-					$( "#edit-"+distinctname ).button({icon: "ui-icon-edit",showLabel: true});
-					$( "#republish-"+distinctname ).button({icon: "ui-icon-shuttle",showLabel: false});
+					$( "#republish-"+distinctname ).button({icon: "ui-icon-shuttle",showLabel: true});
 					$( "#delete-"+distinctname ).button({icon: "ui-icon-delete",showLabel: false});
 					$( "#copy-"+distinctname ).button({icon: "ui-icon-copy",showLabel: false});
 					$( "#download-"+distinctname ).button({icon: "ui-icon-download",showLabel: false});
@@ -173,10 +169,6 @@
 				}
 			}
 			
-			//How many total..
-			getTotalFilePackets(function(total){
-				fpcount.innerHTML = "<b>"+total+"</b> total files.."
-			});
 		});
 	}
 	
@@ -186,46 +178,17 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			
-			//Reset 
-			if(false){
-				wipeDB();
-				MDS.log("DB Wiped!")
-				return;
-			}
-			
-			//Get started	
-			createDB(function(){
+			//Get the dapplink..
+			MDS.dapplink("miniweb",function(dappresp){
 				
-				//Start up the auth
-				authInit(function(userpubkey){
-					
-					//What mode are we in
-					MDS.cmd("checkmode",function(resp){
-						
-						//Get the restricted  
-						if(resp.response.mode=="WRITE"){
-							WRITE_MODE = true;
-						}else{
-							alert("This application requires WRITE MODE..\n\n"
-								+"To send and request files in the background.");
-						}
-						
-						//Get the dapplink..
-						MDS.dapplink("miniweb",function(dappresp){
-							
-							//Get link to the Browser MiniDAPP
-							BROWSER_DAPPLINK = "";
-							if(dappresp.status){
-								//Store this to open 
-								BROWSER_DAPPLINK = dappresp.base.replace("index.html","browse.html");	
-							}
-							
-							//Now load your webpackets
-							showYourWebPackets();	
-						});
-					});
-				});	
+				//Get link to the Browser MiniDAPP
+				BROWSER_DAPPLINK = "";
+				if(dappresp.status){
+					//Store this to open 
+					BROWSER_DAPPLINK = dappresp.base.replace("index.html","browse.html");	
+				}
 			});
+			
 		}
 	});
 
