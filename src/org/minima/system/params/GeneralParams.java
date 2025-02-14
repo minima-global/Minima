@@ -321,6 +321,11 @@ public class GeneralParams {
 	public static boolean MEGAMMR_MEGAPRUNE_TOKENS = false;
 	
 	/**
+	 * Do we show the network requests
+	 */
+	public static boolean SHOW_NETWORK_CALLS = false;
+	
+	/**
 	 * Reset all params to their default settings.. ANDROID keeps them after shutdown
 	 */
 	public static void resetDefaults() {
@@ -391,7 +396,8 @@ public class GeneralParams {
 		MEGAMMR_MEGAPRUNE_STATE 	= false;
 		MEGAMMR_MEGAPRUNE_TOKENS	= false;
 		
-		P2P2_ENABLED 		  = false;
+		P2P2_ENABLED 		  	= false;
+		SHOW_NETWORK_CALLS 		= false;
 	}
 	
 }

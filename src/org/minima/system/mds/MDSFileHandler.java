@@ -142,7 +142,9 @@ public class MDSFileHandler implements Runnable {
 				input = bufferedReader.readLine();
 			}
 			
-			//MinimaLogger.log("File Requested : "+fileRequested,false);
+			if(GeneralParams.SHOW_NETWORK_CALLS) {
+				MinimaLogger.log("Network Call : "+fileRequested,false);
+			}
 			
 			//Is it the minihub..
 			if(fileRequested.equals("")) {

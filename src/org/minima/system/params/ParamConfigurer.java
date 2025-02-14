@@ -223,6 +223,13 @@ public class ParamConfigurer {
             	GeneralParams.RPC_CRLF = false;
             }
         }),
+        shownetcalls("shownetcalls", "Show all the network calls", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.SHOW_NETWORK_CALLS = true;
+            }else {
+            	GeneralParams.SHOW_NETWORK_CALLS = false;
+            }
+        }),
         allowallip("allowallip", "Allow all IP for Maxima / Networking", (args, configurer) -> {
             if ("true".equals(args)) {
             	GeneralParams.ALLOW_ALL_IP = true;
