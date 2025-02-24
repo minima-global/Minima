@@ -18,6 +18,7 @@ public class APIAutoResponse implements Runnable {
 	String mToMiniDAPPName;
 	String mToMiniDAPPID;
 	
+	//Wait MAX 10 seconds for a response..
 	long mDelay = 10000;
 	
 	public APIAutoResponse(MDSManager zMDS, String zFromMiniDAPP, String zToMiniDAPP, String zToMiniDAPPID, String zRandID) {

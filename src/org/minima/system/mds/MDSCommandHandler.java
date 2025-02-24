@@ -303,7 +303,7 @@ public class MDSCommandHandler {
 					}
 				}
 				
-				MinimaLogger.log("DAPP LINK : "+data.trim()+" "+reqmini.getName());
+				//MinimaLogger.log("DAPP LINK : "+data.trim()+" "+reqmini.getName());
 				
 				//Ok to send link.. ?
 				if(allow) {
