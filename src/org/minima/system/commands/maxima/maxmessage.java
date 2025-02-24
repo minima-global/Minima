@@ -98,11 +98,12 @@ public class maxmessage extends Command {
 			
 			try {
 				
-				//Is it unencrypted..
-				if(data.to0xString().startsWith("0xFFFFFFFF")) {
+				//Is it un-encrypted..
+				String datstr = data.to0xString();
+				if(datstr.startsWith("0xFFFFFFFF")) {
 					
 					//Get the actual DATA - remove the 0xFFFFFFFF
-					MiniData subdata = new MiniData(data.to0xString().substring(10));
+					MiniData subdata = new MiniData(datstr.substring(10));
 				
 					//If this works..
 					MaximumMessage mm = MaximumMessage.ConvertMiniDataVersion(subdata);
