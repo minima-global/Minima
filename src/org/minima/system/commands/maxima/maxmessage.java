@@ -17,18 +17,23 @@ public class maxmessage extends Command {
 		super("maxmessage","[action:] [data:] (publickey:) (privatekey:) - Create an encrypted signed message.");
 	}
 	
-	/*@Override
+	@Override
 	public String getFullHelp() {
 		return "\nmaxmessage\n"
 				+ "\n"
-				+ "Create a 128 bit RSA public and private key. You can use them with maxsign and maxverify.\n"
+				+ "Create a signed encrypted (or unencrypted) message.\n"
 				+ "\n"
-				+ "Returns the public amd private key HEX data.\n"
+				+ "Use Your Maxima public / private keys by default or create new keys with maxcreate.\n"
 				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
-				+ "maxcreate\n";
-	}*/
+				+ "maxmessage action:encrypt data:0xFFEEDD publickey:0x/Mx..30819F300D0..\n"
+				+ "\n"
+				+ "maxmessage action:decrypt data:0xTHE_DATA\n"
+				+ "\n"
+				+ "maxmessage action:decrypt data:0xTHE_DATA privatekey:0x..PrivateKey\n"
+				+ "";
+	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
