@@ -72,6 +72,26 @@ function deleteSite(mxsite){
 	}	
 }
 
+function downloadSite(hexdata, filename) {
+
+	if(confirm("This will download "+filename+" ?")){
+		//Convert to base 64..
+		var b64 = MDS.util.hexToBase64(hexdata);
+				
+		//Consrtruct the data URI
+		var datauri = "data:application/zip;base64,"+b64;  
+			
+		var link 		= document.createElement("a");
+		link.download 		= filename;
+		link.href 			= datauri;
+		
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		delete link;		
+	}
+}
+
 function openBrowser(mxsite){
 	window.open("browser.html?uid="+RESTRICTED_UID+"&mxsite="+mxsite);	
 }
