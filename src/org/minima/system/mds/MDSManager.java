@@ -561,11 +561,11 @@ public class MDSManager extends MessageProcessor {
 		return res;
 	}
 	
-	public void addAPICall(APICallback zAPICallback) {
+	public synchronized void addAPICall(APICallback zAPICallback) {
 		mAPICalls.add(zAPICallback);
 	}
 	
-	public APICallback getAPICallback(String zRandID) {
+	public synchronized APICallback getAPICallback(String zRandID) {
 		APICallback foundapicall = null;
 		for(APICallback api : mAPICalls) {
 			if(api.getRandID().equals(zRandID)) {
@@ -771,84 +771,29 @@ public class MDSManager extends MessageProcessor {
 				MinimaLogger.log("JS RUNNABLES received all POLL messages.. SHUTDOWN started..");
 			}
 			
-			boolean sendtoall = true;
-			if(poll.getString("event").equals("MDSAPI")) {
+			//Send message to the JS Runnables first..
+			for(ServiceJSRunner mds : mServices) {
 				
-				//Get the data
-				JSONObject dataobj = (JSONObject) poll.get("data");
-				
-				//Is it  a response..
-				if(!(boolean)dataobj.get("request")) {
+				try {
 					
-					//RESPONSE messages are not forwarded
-					sendtoall = false;
-					
-					//Send to the API Call..
-					APICallback api = getAPICallback(dataobj.getString("id"));
-					if(api != null) {
+					if(to.equals("*")) {
 						
-						//Construct a reply..
-						JSONObject reply = new JSONObject();
-						reply.put("status", dataobj.get("status"));
-						reply.put("data", dataobj.get("message"));
-						
-						//Call it..
-						Object[] args = { NativeJSON.parse(api.getContext(), 
-									api.getScope(),reply.toString(), new NullCallable()) };
-						
-						//Call the main MDS Function in JS
-						api.getFunction().call(api.getContext(), api.getScope(), api.getScope(), args);
-						
+						//Send to the runnable
+						mds.sendPollMessage(poll);
 					}else {
-						//MinimaLogger.log("RUNNABLE NOT FOUND API CALL : "+dataobj.toString());
-					}
-				}
-			}
-			
-			//Send message to the runnables first..
-			if(sendtoall) {
-//				for(MDSJS mds : mRunnables) {
-//					try {
-//						
-//						if(to.equals("*")) {
-//							//Send to the runnable
-//							mds.callMainCallback(poll);
-//						}else {
-//							
-//							//Check the MiniDAPPID
-//							if(mds.getMiniDAPPID().equals(to)) {
-//								//Send to the runnable
-//								mds.callMainCallback(poll);
-//							}
-//						}
-//						
-//					}catch(Exception exc) {
-//						MinimaLogger.log(exc, false);
-//					}
-//				}
-				
-				for(ServiceJSRunner mds : mServices) {
-					try {
 						
-						if(to.equals("*")) {
-							//Send to the runnable
+						//Check the MiniDAPPID
+						if(mds.getMiniDappID().equals(to)) {
 							mds.sendPollMessage(poll);
-						}else {
-							
-							//Check the MiniDAPPID
-							if(mds.getMiniDappID().equals(to)) {
-								//Send to the runnable
-								mds.sendPollMessage(poll);
-							}
 						}
-						
-					}catch(Exception exc) {
-						MinimaLogger.log(exc, false);
 					}
+					
+				}catch(Exception exc) {
+					MinimaLogger.log(exc, false);
 				}
 			}
-			
-			//Add then to the Poll Stack - web minidapps
+		
+			//Add then to the Poll Stack - all the web minidapps
 			mPollStack.addMessage(poll,to);
 		
 		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_RESETSESSIONS)) {
