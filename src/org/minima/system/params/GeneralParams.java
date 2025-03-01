@@ -326,6 +326,11 @@ public class GeneralParams {
 	public static boolean SHOW_NETWORK_CALLS = false;
 	
 	/**
+	 * IF dhownet calls do we show POLL
+	 */
+	public static boolean SHOW_NETWORK_POLLS = true;
+	
+	/**
 	 * Reset all params to their default settings.. ANDROID keeps them after shutdown
 	 */
 	public static void resetDefaults() {

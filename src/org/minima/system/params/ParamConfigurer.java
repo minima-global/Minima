@@ -226,6 +226,15 @@ public class ParamConfigurer {
         shownetcalls("shownetcalls", "Show all the network calls", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.SHOW_NETWORK_CALLS = true;
+                GeneralParams.SHOW_NETWORK_POLLS = true;
+            }else {
+            	GeneralParams.SHOW_NETWORK_CALLS = false;
+            }
+        }),
+        shownetcallsnopoll("shownetcallsnopoll", "Show all the network calls except poll messages", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.SHOW_NETWORK_CALLS = true;
+                GeneralParams.SHOW_NETWORK_POLLS = false;
             }else {
             	GeneralParams.SHOW_NETWORK_CALLS = false;
             }

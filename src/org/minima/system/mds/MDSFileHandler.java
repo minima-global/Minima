@@ -143,7 +143,14 @@ public class MDSFileHandler implements Runnable {
 			}
 			
 			if(GeneralParams.SHOW_NETWORK_CALLS) {
-				MinimaLogger.log("Network Call : "+fileRequested,false);
+				if(GeneralParams.SHOW_NETWORK_POLLS) {
+					MinimaLogger.log("Network Call : "+fileRequested,false);
+				}else {
+					//Check is not a POLL message
+					if(!fileRequested.contains("poll?")) {
+						MinimaLogger.log("Network Call : "+fileRequested,false);
+					}
+				}	
 			}
 			
 			//Is it the minihub..
