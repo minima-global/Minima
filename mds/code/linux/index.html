@@ -5,6 +5,8 @@
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
+	<meta charset="utf8">
+	
 	<!-- Load the main MDS JS lib -->
 	<script type="text/javascript" src="mds.js"></script>
 	
@@ -37,12 +39,11 @@
 </head>
 
 <body>
-<!--  
+
 <div id="screen_container" style="display:none;">
-    <div style="white-space: pre; font: 18px monospace; line-height: 18px"></div>
+    <div style="white-space: pre; font: 18px monospace; line-height: 20px"></div>
     <canvas id="vga" width="1024" height="768" style="display: block; image-rendering: pixelated; width: 819.2px; height: 614.4px;"></canvas>
 </div>
--->
 
 <table width=100% height=100% border=0>
 	<tr>
@@ -85,6 +86,21 @@
 	var emulator;
 	var startupstage = 0;
 	
+	//Create the preloaded terminal bytes - faster
+	var TERM_BYTES = [];
+	for(var i=0;i<256;i++){
+		var uint = new Uint8Array(1);
+		uint[0]  = i;
+		TERM_BYTES.push(uint); 
+	}
+	
+	function postByteToTerm(thebyte){
+		/*var uint = new Uint8Array(1);
+		uint[0]  = thebyte;
+		term.write(uint);*/
+		term.write(TERM_BYTES[thebyte]);
+	}
+	
 	function showTitleOnAndroid(){
 		if (window.navigator.userAgent.includes('Minima Browser')) {
 			Android.showTitleBar();
@@ -123,13 +139,8 @@
 		      
 			var content = readerEvent.target.result; // this is the content!
 			var uint8View = new Uint8Array(content);
-			   
-			  console.log("Filename : "+file.name);
-		      
 			  //Create the file..
 			  emulator.create_file(file.name, uint8View);
-			  
-		      console.log("File uploaded! ");
 		   }
 		}
 
@@ -180,12 +191,6 @@
 		emulator.serial0_send("stty rows "+term.rows+" cols "+term.cols+" \n");
 	}
 	
-	function postByteToTerm(thebyte){
-		var uint = new Uint8Array(1);
-		uint[0]  = thebyte;
-		term.write(uint);
-	}
-	
 	function introFunction(){
 		MDS.log("Rows:"+term.rows+" Cols:"+term.cols);
 		
@@ -226,8 +231,20 @@
 		    	
 		        memory_size: 64 * 1024 * 1024,
 		        
-		        //vga_memory_size: 8 * 1024 * 1024,
-		        //screen_container: document.getElementById("screen_container"),
+		        /*net_device: {
+		            type: "virtio",
+		            relay_url: "fetch",
+		            //cors_proxy: "https://127.0.0.1:10003/corsproxy?url="
+		            cors_proxy: "https://127.0.0.1:10003/0xC447CE1B560BD0C9F6E3923BD4135C84546FE98DDE2CBD05197F37DA1318F39D/proxy.html?url="
+		        },*/
+		        
+		        /*net_device: {
+		        	type: "virtio",
+		            relay_url: "wss://relay.widgetry.org/"
+		        },
+		        
+		        vga_memory_size: 8 * 1024 * 1024,
+		        screen_container: document.getElementById("screen_container"),*/
 		        //serial_container_xtermjs: document.getElementById("terminal"),
 		        
 		        bios: {
