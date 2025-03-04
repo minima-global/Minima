@@ -18,13 +18,13 @@ services:
         #You can access the MySQL db if you want by opening the port
         #ports:
         #    - 3306:3306
-    db_seeder:
-        image: mysql:latest
-        volumes:
-            - ./archivedb.sql:/archivedb.sql    
-        entrypoint: [ "bash", "-c", "sleep 20 && mysql --user=root --password=rootpassword --host=mysql --port=3306 archivedb < /archivedb.sql && exit"] 
-        depends_on:
-            - mysql
+    #db_seeder:
+    #    image: mysql:latest
+    #    volumes:
+    #        - ./archivedb.sql:/archivedb.sql    
+    #    entrypoint: [ "bash", "-c", "sleep 20 && mysql --user=root --password=rootpassword --host=mysql --port=3306 archivedb < /archivedb.sql && exit"] 
+    #    depends_on:
+    #        - mysql
     minima:
         image: minimaglobal/minima:dev
         stop_grace_period: 60s
@@ -34,6 +34,7 @@ services:
             #minima_desktop: true
             #You must have rpc enabled so the database backups can be run - do NOT open port 9005
             minima_rpcenable: "true"
+            minima_solo: "true"
             #MDS is ENABLED by default in the container so you MUST set your MDS password to something good..
             minima_mdspassword: "123"
         #Opening the Minima ports.. You can change these if you are running multiple version on the same host
@@ -45,16 +46,33 @@ services:
         #The main Minima data folder will be in ./minima
         #The Minima Archive backups will be put in the folder ./backups 
         # You can set these to somewhere else if you want
-        volumes:
-            - ./minima:/home/minima/data
-            - ./backups:/home/minima/backups
+        #volumes:
+            #- ./minima:/home/minima/data
+            #- ./backups:/home/minima/backups
         depends_on:
             - mysql
-    cron:
-        build:
-            context: .
-            dockerfile: CRON.Dockerfile
-        entrypoint: [ "bash", "-c", "cron -f"]
-        restart: unless-stopped 
+    meg:
+        image: minimaglobal/meg:dev
+        stop_grace_period: 60s
+        restart: unless-stopped
+        #environment:
+        #Opening the Minima ports.. You can change these if you are running multiple version on the same host
+        ports:
+        #Main Minima port - you can remove this if you don't have an external IP
+        - 8080:8080
+#The main Minima data folder will be in ./minima
+#The Minima Archive backups will be put in the folder ./backups 
+# You can set these to somewhere else if you want
+        #volumes:
+        #- ./minima:/home/minima/data
+        #- ./backups:/home/minima/backups
         depends_on:
-            - minima        
+            - minima
+    #cron:
+    #    build:
+    #        context: .
+    #        dockerfile: CRON.Dockerfile
+    #    entrypoint: [ "bash", "-c", "cron -f"]
+    #    restart: unless-stopped 
+    #    depends_on:
+    #        - minima        
