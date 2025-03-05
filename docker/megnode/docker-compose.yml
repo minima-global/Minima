@@ -8,16 +8,16 @@
 version: '3'
 services:
     mysql:
-        image: mysql:latest
+        image: mysql:8.4
         environment:
             MYSQL_ROOT_PASSWORD: 'rootpassword'
-            MYSQL_USER: 'archiveuser'
-            MYSQL_PASSWORD: 'archivepassword'
-            MYSQL_DATABASE: 'archivedb'
+            MYSQL_USER: 'minimauser'
+            MYSQL_PASSWORD: 'minimapassword'
+            MYSQL_DATABASE: 'minimadb'
         restart: unless-stopped
         #You can access the MySQL db if you want by opening the port
-        #ports:
-        #    - 3306:3306
+        ports:
+            - 3306:3306
     #db_seeder:
     #    image: mysql:latest
     #    volumes:
@@ -37,6 +37,9 @@ services:
             minima_solo: "true"
             #MDS is ENABLED by default in the container so you MUST set your MDS password to something good..
             minima_mdspassword: "123"
+            #MySQL login profiles:
+            minima_mysqldb: "minimauser:minimapassword@mysql:3306/minimadb"
+            minima_mysqldbdelay: "10000"
         #Opening the Minima ports.. You can change these if you are running multiple version on the same host
         ports:
             #Main Minima port - you can remove this if you don't have an external IP
