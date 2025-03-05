@@ -33,6 +33,7 @@ services:
             minima_solo: "true"
             #MDS is ENABLED by default in the container so you MUST set your MDS password to something good..
             minima_mdspassword: "123"
+            minima_megammr: "true"
             #MySQL login profiles:
             minima_mysqldb: "minimauser:minimapassword@mysql:3306/minimadb"
             minima_mysqldbdelay: "10000"
@@ -68,11 +69,13 @@ services:
            meg_startupdelay: "20000"
         depends_on:
             - minima
-    #cron:
-    #    build:
-    #        context: .
-    #        dockerfile: CRON.Dockerfile
-    #    entrypoint: [ "bash", "-c", "cron -f"]
-    #    restart: unless-stopped 
-    #    depends_on:
-    #        - minima        
+    
+    #The CRON job that runs a backup of MEG and Mysql every 24 hours..
+    cron:
+        build:
+            context: .
+            dockerfile: CRON.Dockerfile
+        entrypoint: [ "bash", "-c", "cron -f"]
+        restart: unless-stopped 
+        depends_on:
+            - minima        
