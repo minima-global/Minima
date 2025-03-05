@@ -12,4 +12,4 @@ ADD archivedata.sh /root/archivedata.sh
 RUN chmod +x /root/archivedata.sh
 
 # Add the cron job
-RUN crontab -l | { cat; echo "*/5 * * * * /root/archivedata.sh"; } | crontab -
+RUN crontab -l | { cat; echo "0 1 * * * /root/archivedata.sh"; } | crontab -
