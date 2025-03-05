@@ -1,8 +1,7 @@
 ################################################################################
-# Minima MySQL Archive Docker setup..                                          #
-# This file cannot use TABS.. only spaces.. and they must be correctly aligned #
-# Look for other comments in this file to see what you need to change          #
-# You MUST set a good MDS password!                                            #
+# Minima MySQL MEG..                                                           #
+#                                                                              #
+# Full Minima node backed by a MySQL database with MEG..                       #
 ################################################################################
 
 version: '3'
@@ -29,7 +28,7 @@ services:
         environment:
             #If you are running on Desktop / no external IP enable this setting
             #minima_desktop: true
-            #You must have rpc enabled so the database backups can be run - do NOT open port 9005
+            #You must have rpc enabled so MEG can communicate - do NOT open port 9005
             minima_rpcenable: "true"
             minima_solo: "true"
             #MDS is ENABLED by default in the container so you MUST set your MDS password to something good..
