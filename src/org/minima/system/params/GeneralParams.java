@@ -296,6 +296,16 @@ public class GeneralParams {
 	public static boolean MDS_NOSSL = false;
 	
 	/**
+	 * Setup MySQL DB from command line
+	 */
+	public static String MYSQL_DB_DETAILS = "";
+	
+	/**
+	 * Is there a delay before attempting a MySQL connection (docker can take 30 seconds to start mysql container)
+	 */
+	public static int MYSQL_DB_DELAY = 0;
+	
+	/**
 	 * Do we store all txpow with MySQL Autobackup
 	 */
 	public static boolean MYSQL_STORE_ALLTXPOW = false;

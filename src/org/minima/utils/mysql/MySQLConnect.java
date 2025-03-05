@@ -55,6 +55,8 @@ public class MySQLConnect {
 	
 	boolean mReadOnly;
 	
+	boolean DEBUG = false;
+	
 	public MySQLConnect(String zHost, String zDatabase, String zUsername, String zPassword) {
 		this(zHost, zDatabase, zUsername, zPassword, false);
 	}
@@ -70,7 +72,12 @@ public class MySQLConnect {
 	public void init() throws SQLException {
 		//MYSQL JDBC connection
 		String mysqldb = "jdbc:mysql://"+mMySQLHost+"/"+mDatabase+"?autoReconnect=true";
-				
+		
+		if(DEBUG) {
+			MinimaLogger.log("JDBC - "+mysqldb);
+			MinimaLogger.log("Username:"+mUsername+" Password:"+mPassword);
+		}
+		
 		mConnection = DriverManager.getConnection(mysqldb,mUsername,mPassword);
 	
 		//Read only mode doesn't create the DB

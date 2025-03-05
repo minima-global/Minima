@@ -20,6 +20,7 @@ import java.util.StringTokenizer;
 import java.util.function.BiConsumer;
 
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.commands.backup.mysql;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.utils.MinimaLogger;
@@ -434,6 +435,12 @@ public class ParamConfigurer {
             if ("true".equals(args)) {
                 GeneralParams.MDS_NOSSL = true;
             }
+        }),
+        mysqldb("mysqldb", "Set the full MySQL DB details as username:password@host:port", (args, configurer) -> {
+        	GeneralParams.MYSQL_DB_DETAILS = args;
+        }),
+        mysqldbdelay("mysqldbdelay", "When running in Docker.. Delay in milli-seconds before attempting first MySQL Connection", (args, configurer) -> {
+        	GeneralParams.MYSQL_DB_DELAY = Integer.parseInt(args);
         }),
         mysqlalltxpow("mysqlalltxpow", "Store all TxPoW in MySQL when autobackup enabled.", (args, configurer) -> {
             if ("true".equals(args)) {

@@ -15,6 +15,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWProcessor;
 import org.minima.system.commands.CommandRunner;
+import org.minima.system.commands.backup.mysql;
 import org.minima.system.genesis.GenesisMMR;
 import org.minima.system.genesis.GenesisTxPoW;
 import org.minima.system.mds.MDSManager;
@@ -288,6 +289,13 @@ public class Main extends MessageProcessor {
 		MinimaDB.getDB().loadAllDB();
 		if(STARTUP_DEBUG_LOGS) {
 			MinimaLogger.log("Load all DB.. finish");
+		}
+		
+		//Are we connecting to a MySQL DB automatically
+		if(!GeneralParams.MYSQL_DB_DETAILS.equals("")) {
+				
+			//Set the details.. and start AUTO backup..
+			mysql.convertMySQLParams(GeneralParams.MYSQL_DB_DETAILS);
 		}
 		
 		//Are we in Slave node mode

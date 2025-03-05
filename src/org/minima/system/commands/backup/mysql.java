@@ -4,6 +4,7 @@ import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -1280,9 +1281,87 @@ public class mysql extends Command {
 		return ret;
 	}
 	
+	/**
+	 * Convert the mysql param from command line
+	 */
+	public static void convertMySQLParams(String zMySQLDB) {
+		
+		try {
+			
+			int breaker = zMySQLDB.indexOf("@");
+			
+			String user = zMySQLDB.substring(0,breaker);
+			String db 	= zMySQLDB.substring(breaker+1,zMySQLDB.length());
+			
+			//Now chop up the User
+			int userbreak   = user.indexOf(":");
+			String username = user.substring(0,userbreak);
+			String password = user.substring(userbreak+1,user.length());
+			
+			//And the DB
+			int dbslash   = db.indexOf("/");
+			String dbhost = db.substring(0,dbslash);
+			String dbname = db.substring(dbslash+1,db.length());
+			
+			MinimaLogger.log("MYSQL Database Setup : "+username+":***@"+dbhost+" / "+dbname);
+			
+			UserDB udb = MinimaDB.getDB().getUserDB();
+			
+			udb.setAutoMySQLHost(dbhost);
+			udb.setAutoMySQLDB(dbname);
+			
+			udb.setAutoMySQLUser(username);
+			udb.setAutoMySQLPassword(password);
+			
+			udb.setAutoLoginDetailsMySQL(true);
+			
+			//Try and Connect to the DB..
+			if(GeneralParams.MYSQL_DB_DELAY != 0) {
+				MinimaLogger.log("Waiting "+GeneralParams.MYSQL_DB_DELAY+" ms before attempting first MySQL connection..");
+				Thread.sleep(GeneralParams.MYSQL_DB_DELAY);
+			}
+			
+			//NOW attempt a connection
+			MySQLConnect mysql 	= new MySQLConnect(dbhost, dbname, username, password, true);
+			mysql.init();
+			mysql.shutdown();
+			
+		}catch(Exception exc) {
+			
+			//Failed..
+			MinimaLogger.log("Failed to connect to MySQL DB - MUST be username:password@host:port/database "+exc.toString());
+		}
+	}
+	
 	
 	@Override
 	public Command getFunction() {
 		return new mysql();
 	}	
+	
+	public static void main(String[] zArgs) {
+		
+		MySQLConnect conn = new MySQLConnect("127.0.0.1:3306", "minimadb", "minimauser", "minimapassword");
+		try {
+			System.out.println("Attemp Connect!");
+			conn .init();
+			
+			System.out.println("Connected!");
+			
+			int count = conn.getCount();
+			System.out.println("Rows : "+count);
+			
+			
+			conn.shutdown();
+			
+			System.out.println("Shutdown!");
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		
+	}
 }
