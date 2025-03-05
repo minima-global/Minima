@@ -228,10 +228,13 @@ public class mysql extends Command {
 			
 			boolean logindetails = MinimaDB.getDB().getUserDB().getAutoLoginDetailsMySQL();
 			resp.put("logindetails", logindetails);
+			
 			resp.put("user", user);
 			resp.put("password", "***");
 			resp.put("host", host);
 			resp.put("database", db);
+			
+			resp.put("storealltxpow", GeneralParams.MYSQL_STORE_ALLTXPOW);
 			
 			ret.put("response", resp);
 		
