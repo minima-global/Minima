@@ -7,6 +7,8 @@
 
 version: '3'
 services:
+
+    #MySQL Database to store all Minima Data.. all TxPoW etc..
     mysql:
         image: mysql:8.4
         environment:
@@ -18,13 +20,8 @@ services:
         #You can access the MySQL db if you want by opening the port
         ports:
             - 3306:3306
-    #db_seeder:
-    #    image: mysql:latest
-    #    volumes:
-    #        - ./archivedb.sql:/archivedb.sql    
-    #    entrypoint: [ "bash", "-c", "sleep 20 && mysql --user=root --password=rootpassword --host=mysql --port=3306 archivedb < /archivedb.sql && exit"] 
-    #    depends_on:
-    #        - mysql
+
+    #Minima Node
     minima:
         image: minimaglobal/minima:dev
         stop_grace_period: 60s
@@ -46,36 +43,29 @@ services:
             - 9001:9001
             #MDS port..
             - 9003:9003
-        #The main Minima data folder will be in ./minima
-        #The Minima Archive backups will be put in the folder ./backups 
-        # You can set these to somewhere else if you want
-        #volumes:
-            #- ./minima:/home/minima/data
-            #- ./backups:/home/minima/backups
+        #The main Minima data folder where you can load mysql archive files
+        volumes:
+            - ./data:/home/minima/data
+            - ./backups:/home/minima/backups
         depends_on:
             - mysql
+
+    #The MEG node.. waits for Minima to start    
     meg:
         image: minimaglobal/meg:dev
         stop_grace_period: 60s
         restart: unless-stopped
-        #environment:
-        #Opening the Minima ports.. You can change these if you are running multiple version on the same host
         ports:
-        #Main Minima port - you can remove this if you don't have an external IP
-        - 8080:8080
-#The main Minima data folder will be in ./minima
-#The Minima Archive backups will be put in the folder ./backups 
-# You can set these to somewhere else if you want
-        #volumes:
-        #- ./minima:/home/minima/data
-        #- ./backups:/home/minima/backups
+            - 8080:8080
         environment:
-           #The MAIN admin password 
-           meg_adminpassword: "root"
+           #The MAIN admin password - CHANGE this 
+           meg_adminpassword: "mypassword"
 
            #Do NOT change these..
            meg_minimarpc: "http://minima:9005/"
            meg_meghost: "http://meg:8080"
+
+           #NEED this as minima waits for mysql
            meg_startupdelay: "20000"
         depends_on:
             - minima

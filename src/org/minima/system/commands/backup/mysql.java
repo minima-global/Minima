@@ -137,7 +137,7 @@ public class mysql extends Command {
 				+ "\n"
 				+ "mysql action:resync phrase:\"24 WORDS HERE\" keys:90 keyuses:2000\n"
 				+ "\n"
-				+ "mysql action:h2export file:archivexport-DDMMYY.gzip\n";
+				+ "mysql action:rawexport file:archivexport-DDMMYY.gzip\n";
 	}
 	
 	@Override
