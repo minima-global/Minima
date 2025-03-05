@@ -69,6 +69,14 @@ services:
         #volumes:
         #- ./minima:/home/minima/data
         #- ./backups:/home/minima/backups
+        environment:
+           #The MAIN admin password 
+           meg_adminpassword: "root"
+
+           #Do NOT change these..
+           meg_minimarpc: "http://minima:9005/"
+           meg_meghost: "http://meg:8080"
+           meg_startupdelay: "20000"
         depends_on:
             - minima
     #cron:

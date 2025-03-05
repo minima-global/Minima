@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
 import org.minima.database.MinimaDB;
@@ -1307,6 +1308,9 @@ public class mysql extends Command {
 			
 			UserDB udb = MinimaDB.getDB().getUserDB();
 			
+			//Store everything..
+			GeneralParams.MYSQL_STORE_ALLTXPOW = true;
+			
 			udb.setAutoMySQLHost(dbhost);
 			udb.setAutoMySQLDB(dbname);
 			
@@ -1314,6 +1318,9 @@ public class mysql extends Command {
 			udb.setAutoMySQLPassword(password);
 			
 			udb.setAutoLoginDetailsMySQL(true);
+			
+			//And Auto Backup everything..
+			udb.setAutoBackupMySQL(true);
 			
 			//Try and Connect to the DB..
 			if(GeneralParams.MYSQL_DB_DELAY != 0) {
@@ -1332,7 +1339,6 @@ public class mysql extends Command {
 			MinimaLogger.log("Failed to connect to MySQL DB - MUST be username:password@host:port/database "+exc.toString());
 		}
 	}
-	
 	
 	@Override
 	public Command getFunction() {
