@@ -1175,10 +1175,10 @@ public class mysql extends Command {
 					System.gc();
 				}
 				
-				if(counter>=10) {
+				/*if(counter>=10) {
 					MinimaLogger.log("HACK FINISH!!");
 					break;
-				}
+				}*/
 			}
 			
 			//Shutdown TEMP DB
