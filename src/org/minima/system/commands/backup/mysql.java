@@ -780,6 +780,11 @@ public class mysql extends Command {
 			//Wipe the old data
 			mysql.wipeAll();
 			
+			//Are we MEGA MMR
+			if(GeneralParams.IS_MEGAMMR) {
+				MinimaDB.getDB().getMegaMMR().clear();
+			}
+			
 			//Is there a cascade..
 			Cascade casc = archtemp.loadCascade();
 			if(casc != null) {
@@ -1090,6 +1095,11 @@ public class mysql extends Command {
 			
 			//Wipe the old data
 			mysql.wipeAll();
+			
+			//Are we MEGA MMR
+			if(GeneralParams.IS_MEGAMMR) {
+				MinimaDB.getDB().getMegaMMR().clear();
+			}
 			
 			//Is there a cascade..
 			Cascade casc = rawin.getCascade();
