@@ -46,9 +46,12 @@ public class MiniFile {
 			retfile = new File(GeneralParams.BASE_FILE_FOLDER,zFilename);
 		}
 		
-		//Make sure the parent exist.. 
-		File pp = new File(retfile.getParent());
-		pp.mkdirs();
+		//Make sure the parent exist..
+		String parent = retfile.getParent();
+		if(parent!=null) {
+			File pp = new File(parent);
+			pp.mkdirs();
+		}
 		
 		return retfile;
 	}
