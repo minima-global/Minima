@@ -1081,12 +1081,13 @@ public class MDSManager extends MessageProcessor {
 			
 			//The rest are normal
 			checkInstalled("block", "default/block-3.3.4.mds.zip", allminis, false);
+			checkInstalled("chainmail", "default/chainmail-1.12.5.mds.zip", allminis, false);
 			checkInstalled("chatter", "default/chatter-1.12.0.mds.zip", allminis, false);
 			checkInstalled("docs", "default/docs-2.1.0.mds.zip", allminis, false);
 			checkInstalled("ethwallet", "default/ethwallet-1.11.0.mds.zip", allminis, false);
 			checkInstalled("filez", "default/filez-1.9.4.mds.zip", allminis, false);
 			checkInstalled("future cash", "default/futurecash-2.7.1.mds.zip", allminis, false);
-			checkInstalled("health", "default/health-1.2.2.mds.zip", allminis, false);
+			checkInstalled("health", "default/health-1.3.2.mds.zip", allminis, false);
 			checkInstalled("logs", "default/logs-1.0.4.mds.zip", allminis, false);
 			checkInstalled("maxcontacts", "default/maxcontacts-1.14.0.mds.zip", allminis, false);
 			checkInstalled("maximize", "default/maximize-1.3.0.mds.zip", allminis, false);
@@ -1094,13 +1095,15 @@ public class MDSManager extends MessageProcessor {
 			//checkInstalled("megawallet", "default/megawallet-1.5.0.mds.zip", allminis, false);
 			checkInstalled("miniswap", "default/miniswap-2.19.2.mds.zip", allminis, false);
 			checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
-			checkInstalled("script ide", "default/scriptide-2.1.1.mds.zip", allminis, false);
+			checkInstalled("script ide", "default/scriptide-3.0.4.mds.zip", allminis, false);
 			checkInstalled("shout out", "default/shoutout-1.4.0.mds.zip", allminis, false);
+			checkInstalled("soko", "default/soko-1.0.0.mds.zip", allminis, false);
 			checkInstalled("sql bench", "default/sqlbench-0.6.mds.zip", allminis, false);
-			checkInstalled("terminal", "default/terminal-2.3.2.mds.zip", allminis, false);
+			checkInstalled("terminal", "default/terminal-3.1.6.mds.zip", allminis, false);
+			checkInstalled("token studio", "default/tokenstudio-1.5.0.mds.zip", allminis, false);
 			checkInstalled("the safe", "default/thesafe-1.7.0.mds.zip", allminis, false);
 			checkInstalled("vestr", "default/vestr-1.8.1.mds.zip", allminis, false);
-			checkInstalled("wallet", "default/wallet-2.47.2.mds.zip", allminis, false);
+			checkInstalled("wallet", "default/wallet-3.0.17.mds.zip", allminis, false);
 		}
 	}
 	
@@ -1180,7 +1183,8 @@ public class MDSManager extends MessageProcessor {
 			installDefaultMiniDAPP(zResource,zWrite,zIsMiniHUB);
 			
 		}catch(Exception exc) {
-			MinimaLogger.log("[!] Failed install of "+zName+" @ "+zResource);			
+			MinimaLogger.log("[!] Failed install of "+zName+" @ "+zResource);
+			MinimaLogger.log(exc);
 		}
 		
 		return false;
