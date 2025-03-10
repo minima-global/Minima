@@ -30,6 +30,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.CommandRunner;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.BIP39;
 import org.minima.utils.MiniFile;
@@ -510,6 +511,11 @@ public class mysql extends Command {
 				Main.getInstance().archiveResetReady(false);
 			}
 			
+			//Are we MEGA MMR
+			if(GeneralParams.IS_MEGAMMR) {
+				MinimaDB.getDB().getMegaMMR().clear();
+			}
+			
 			//Now cycle through the chain..
 			MiniNumber startblock 	= MiniNumber.ZERO;
 			MiniNumber endblock 	= MiniNumber.ZERO;
@@ -779,11 +785,6 @@ public class mysql extends Command {
 			
 			//Wipe the old data
 			mysql.wipeAll();
-			
-			//Are we MEGA MMR
-			if(GeneralParams.IS_MEGAMMR) {
-				MinimaDB.getDB().getMegaMMR().clear();
-			}
 			
 			//Is there a cascade..
 			Cascade casc = archtemp.loadCascade();
@@ -1082,6 +1083,41 @@ public class mysql extends Command {
 			
 			ret.put("response", resp);
 				
+		}else if(action.equals("reset")) {
+			
+			JSONObject resp = new JSONObject();
+			
+			//First import the file..
+			String infile = getParam("file"); 
+			
+			//First import the file..
+			String rawimport = "mysql action:rawimport file:"+infile;
+			
+			//Run it..
+			JSONObject resimport = CommandRunner.getRunner().runSingleCommand(rawimport);
+			
+			//Check worked..
+			if(!(boolean)resimport.get("status")) {
+				throw new CommandException("Error importing data.. "+resimport.get("error"));
+			}
+			
+			resp.put("import", resimport);
+			
+			//And now total resync..
+			String resync = "mysql action:resync";
+			
+			//Run it..
+			JSONObject resresync = CommandRunner.getRunner().runSingleCommand(resync);
+			
+			//Check worked..
+			if(!(boolean)resresync.get("status")) {
+				throw new CommandException("Error resyncing.. "+resresync.get("error"));
+			}
+			
+			resp.put("resync", resresync);
+			
+			ret.put("response", resp);
+			
 		}else if(action.equals("rawimport")) {
 			
 			long timestart = System.currentTimeMillis();
@@ -1095,11 +1131,6 @@ public class mysql extends Command {
 			
 			//Wipe the old data
 			mysql.wipeAll();
-			
-			//Are we MEGA MMR
-			if(GeneralParams.IS_MEGAMMR) {
-				MinimaDB.getDB().getMegaMMR().clear();
-			}
 			
 			//Is there a cascade..
 			Cascade casc = rawin.getCascade();
@@ -1142,6 +1173,11 @@ public class mysql extends Command {
 				counter++;
 				if(counter % 10 == 0) {
 					System.gc();
+				}
+				
+				if(counter>=10) {
+					MinimaLogger.log("HACK FINISH!!");
+					break;
 				}
 			}
 			
