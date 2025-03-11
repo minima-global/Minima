@@ -48,6 +48,20 @@ public abstract class SqlDB {
 	 * Specify the location of the DB
 	 * @throws SQLException 
 	 */
+	public void loadDBCompact(File zFile) throws SQLException {
+		
+		MinimaLogger.log("Load and Compact DB : "+zFile.getName());
+		
+		//First load the SQL DB
+		loadDB(zFile);
+		
+		//Now close and compact the DB
+		saveDB(true);
+		
+		//And now RE_OPEN the DB
+		loadDB(zFile);
+	}
+	
 	public void loadDB(File zFile) throws SQLException {
 		
 		//Store this for open checks

@@ -57,11 +57,11 @@ public class TxPoWDB {
 	
 	public void loadSQLDB(File zFile) throws SQLException {
 		//Set the SQL DB base file
-		mSqlDB.loadDB(zFile);
+		mSqlDB.loadDBCompact(zFile);
 		
 		//Create a subfolder for the onchain data
 		File onchainfile = new File(zFile.getParentFile(),"onchain");
-		mOnChainDB.loadDB(onchainfile);
+		mOnChainDB.loadDBCompact(onchainfile);
 	}
 	
 	public void hardCloseSQLDB() {

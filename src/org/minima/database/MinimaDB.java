@@ -289,7 +289,7 @@ public class MinimaDB {
 			}
 			File walletsqlfolder = new File(basedb,"walletsql");
 			if(!GeneralParams.IS_MAIN_DBPASSWORD_SET) {
-				mWallet.loadDB(new File(walletsqlfolder,"wallet"));
+				mWallet.loadDBCompact(new File(walletsqlfolder,"wallet"));
 			}else {
 				MinimaLogger.log("Using Encrypted SQL DB");
 				mWallet.loadEncryptedSQLDB(new File(walletsqlfolder,"wallet"),GeneralParams.MAIN_DBPASSWORD);
@@ -303,7 +303,7 @@ public class MinimaDB {
 			try {
 				
 				//Try and load the Archive DB
-				mArchive.loadDB(new File(archsqlfolder,"archive"));
+				mArchive.loadDBCompact(new File(archsqlfolder,"archive"));
 				
 			}catch(Exception exc) {
 				
@@ -321,7 +321,7 @@ public class MinimaDB {
 				
 				//And reload..
 				mArchive = new ArchiveManager();
-				mArchive.loadDB(new File(archsqlfolder,"archive"));
+				mArchive.loadDBCompact(new File(archsqlfolder,"archive"));
 			}
 			
 			//Load the SQL DB
@@ -361,7 +361,7 @@ public class MinimaDB {
 			try {
 				
 				if(!GeneralParams.IS_MAIN_DBPASSWORD_SET) {
-					mMaximaDB.loadDB(new File(maxsqlfolder,"maxima"));
+					mMaximaDB.loadDBCompact(new File(maxsqlfolder,"maxima"));
 				}else {
 					mMaximaDB.loadEncryptedSQLDB(new File(maxsqlfolder,"maxima"),GeneralParams.MAIN_DBPASSWORD);
 				}
@@ -383,7 +383,7 @@ public class MinimaDB {
 				//And reload..
 				mMaximaDB	= new MaximaDB();
 				if(!GeneralParams.IS_MAIN_DBPASSWORD_SET) {
-					mMaximaDB.loadDB(new File(maxsqlfolder,"maxima"));
+					mMaximaDB.loadDBCompact(new File(maxsqlfolder,"maxima"));
 				}else {
 					mMaximaDB.loadEncryptedSQLDB(new File(maxsqlfolder,"maxima"),GeneralParams.MAIN_DBPASSWORD);
 				}
@@ -392,7 +392,7 @@ public class MinimaDB {
 			//Load the MDS DB
 			File mdssqlfolder = new File(basedb,"mdssql");
 			if(!GeneralParams.IS_MAIN_DBPASSWORD_SET) {
-				mMDSDB.loadDB(new File(mdssqlfolder,"mds"));
+				mMDSDB.loadDBCompact(new File(mdssqlfolder,"mds"));
 			}else {
 				mMDSDB.loadEncryptedSQLDB(new File(mdssqlfolder,"mds"),GeneralParams.MAIN_DBPASSWORD);
 			}
