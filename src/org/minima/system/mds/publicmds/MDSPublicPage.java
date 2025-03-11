@@ -24,7 +24,7 @@ public class MDSPublicPage {
 		PUBLIC_MINIDAPPS.add("docs");
 		PUBLIC_MINIDAPPS.add("news feed");
 		PUBLIC_MINIDAPPS.add("block");
-		PUBLIC_MINIDAPPS.add("megawallet");
+		PUBLIC_MINIDAPPS.add("web wallet");
 	}
 	
 	public String getIndexPage() throws IOException {
@@ -49,6 +49,9 @@ public class MDSPublicPage {
 		//Get the base file..
 		String fileRequested = loadResouceFile("publicmds/index_gen.html");
 		
+		//Set the Public MDS UID
+		fileRequested = fileRequested.replace("###PUBLICMDSUID###",mMDS.getPublicMiniDAPPSessionID());
+				
 		//Now write out the list of public MiniDAPPs..
 		fileRequested = fileRequested.replace("###DIVLIST###",getPublicDIVList(publicmini));
 		

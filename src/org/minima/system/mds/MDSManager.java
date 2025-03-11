@@ -1104,6 +1104,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("the safe", "default/thesafe-1.7.0.mds.zip", allminis, false);
 			checkInstalled("vestr", "default/vestr-1.8.1.mds.zip", allminis, false);
 			checkInstalled("wallet", "default/wallet-3.0.17.mds.zip", allminis, false);
+			checkInstalled("web wallet", "default/webWallet-2.5.2.mds.zip", allminis, false);
 		}
 	}
 	

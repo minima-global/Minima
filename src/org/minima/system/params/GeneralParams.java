@@ -311,6 +311,11 @@ public class GeneralParams {
 	public static boolean MYSQL_STORE_ALLTXPOW = false;
 	
 	/**
+	 * Enable the Public MDS from command line
+	 */
+	public static boolean PUBLICMDS_ENABLE = false;
+	
+	/**
 	 * Hard set the Public MDS UID
 	 */
 	public static String PUBLICMDS_SESSION_UID = "";
@@ -405,7 +410,9 @@ public class GeneralParams {
 		RESCUE_MEGAMMR_NODE	  = "";
 		MDS_NOSSL 			  = false;
 		MYSQL_STORE_ALLTXPOW  = false;
-		PUBLICMDS_SESSION_UID = "";
+		
+		PUBLICMDS_ENABLE 		= false;
+		PUBLICMDS_SESSION_UID 	= "";
 		
 		MEGAMMR_MEGAPRUNE 	  		= false;
 		MEGAMMR_MEGAPRUNE_STATE 	= false;

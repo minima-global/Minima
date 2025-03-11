@@ -388,7 +388,7 @@ public class mysql extends Command {
 			
 				long ender = startload+100;
 				if(logs) {
-					MinimaLogger.log("Transfer from "+startload+" to "+(ender-1));
+					MinimaLogger.log("MySQL block transfer from "+startload+" to "+(ender-1));
 				}
 				
 				//Load blocks from the archive
@@ -1091,29 +1091,17 @@ public class mysql extends Command {
 			String infile = getParam("file"); 
 			
 			//First import the file..
-			String rawimport = "mysql action:rawimport file:"+infile;
-			
-			//Run it..
-			JSONObject resimport = CommandRunner.getRunner().runSingleCommand(rawimport);
-			
-			//Check worked..
+			JSONObject resimport = CommandRunner.getRunner().runSingleCommand("mysql action:rawimport file:"+infile);
 			if(!(boolean)resimport.get("status")) {
 				throw new CommandException("Error importing data.. "+resimport.get("error"));
 			}
-			
 			resp.put("import", resimport);
 			
 			//And now total resync..
-			String resync = "mysql action:resync";
-			
-			//Run it..
-			JSONObject resresync = CommandRunner.getRunner().runSingleCommand(resync);
-			
-			//Check worked..
+			JSONObject resresync = CommandRunner.getRunner().runSingleCommand("mysql action:resync");
 			if(!(boolean)resresync.get("status")) {
 				throw new CommandException("Error resyncing.. "+resresync.get("error"));
 			}
-			
 			resp.put("resync", resresync);
 			
 			ret.put("response", resp);
@@ -1175,6 +1163,7 @@ public class mysql extends Command {
 					System.gc();
 				}
 				
+				//FOR TESTING
 				/*if(counter>=10) {
 					MinimaLogger.log("HACK FINISH!!");
 					break;

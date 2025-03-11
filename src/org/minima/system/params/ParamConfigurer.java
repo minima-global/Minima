@@ -454,7 +454,11 @@ public class ParamConfigurer {
         		MinimaLogger.log("Invalid txpowdbstore.. MUST be >= 3.. setting to 3");
         	}
         }),
-        publicmdsuid("publicmdsuid", "Set your own Session ID for the Public MDS", (arg, configurer) -> {
+        publicmds("publicmds", "Enable the Public MDS system from the CLI", (arg, configurer) -> {
+        	GeneralParams.PUBLICMDS_ENABLE = true;	
+        }),
+        publicmdsuid("publicmdsuid", "Set your own Session ID for the Public MDS and enable Public MDS", (arg, configurer) -> {
+        	GeneralParams.PUBLICMDS_ENABLE 		= true;
         	GeneralParams.PUBLICMDS_SESSION_UID = arg.trim();	
         }),
         rescuenode("rescuenode", "If you connect to a heavier chain use this MegaMMR node to resync", (arg, configurer) -> {

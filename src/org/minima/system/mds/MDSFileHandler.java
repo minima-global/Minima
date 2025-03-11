@@ -457,7 +457,7 @@ public class MDSFileHandler implements Runnable {
 				dos.writeBytes("\r\n");
 				dos.flush();
 				
-			}else if( fileRequested.startsWith("publicmds") ) {
+			}else if( fileRequested.startsWith("public") ) {
 				
 				//Is the public site enabled..
 				if(!MinimaDB.getDB().getUserDB().getPublicMDS()) {
@@ -471,10 +471,9 @@ public class MDSFileHandler implements Runnable {
 				//Is it the minihub..
 				if(fileRequested.equals("publicmds")) {
 					fileRequested = "publicmds/index.html";
-				}
 				
-				if(fileRequested.equals("publicmdsgen")) {
-					fileRequested = "publicmdsgen/index.html";
+				}else if(fileRequested.equals("public")) {
+					fileRequested = "public/index.html";
 				}
 				
 				//Remove the params..
@@ -503,7 +502,7 @@ public class MDSFileHandler implements Runnable {
 					//And write that out..
 					writeHTMLPage(dos, success);
 				
-				}else if(fileRequested.equals("publicmdsgen/index.html")) {
+				}else if(fileRequested.equals("public/index.html")) {
 					
 					//Use the PublicMDS generator..
 					String publicindex = mPublicMDS.getIndexPage();
