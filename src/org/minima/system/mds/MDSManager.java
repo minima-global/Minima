@@ -1080,6 +1080,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("dapp store", "default/dappStore-1.2.3.mds.zip", allminis, true);
 			
 			//The rest are normal
+			checkInstalled("axe s3", "default/axes3-1.0.0.mds.zip", allminis, false);
 			checkInstalled("block", "default/block-3.3.4.mds.zip", allminis, false);
 			checkInstalled("chainmail", "default/chainmail-1.12.5.mds.zip", allminis, false);
 			checkInstalled("chatter", "default/chatter-1.12.0.mds.zip", allminis, false);
@@ -1097,7 +1098,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("news feed", "default/news-2.0.1.mds.zip", allminis, false);
 			checkInstalled("script ide", "default/scriptide-3.1.0.mds.zip", allminis, false);
 			checkInstalled("shout out", "default/shoutout-1.4.1.mds.zip", allminis, false);
-			checkInstalled("soko", "default/soko-1.0.0.mds.zip", allminis, false);
+			checkInstalled("soko", "default/soko-1.0.1.mds.zip", allminis, false);
 			checkInstalled("sql bench", "default/sqlbench-0.6.1.mds.zip", allminis, false);
 			checkInstalled("terminal", "default/terminal-3.1.6.mds.zip", allminis, false);
 			checkInstalled("token studio", "default/tokenstudio-1.5.0.mds.zip", allminis, false);
