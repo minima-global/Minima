@@ -537,6 +537,11 @@ public class mysql extends Command {
 					Main.getInstance().resetMemFull();
 				}
 				
+				boolean showlogs = false;
+				if(counter % 10 == 0) {
+					showlogs = true;
+				}
+				
 				//Create an IBD for the mysql data
 				ArrayList<TxBlock> mysqlblocks = mysql.loadBlockRange(startblock);
 				
@@ -568,8 +573,10 @@ public class mysql extends Command {
 					endblock		= last.getTxPoW().getBlockNumber();
 					startblock 		= endblock.increment();
 					
-					MinimaLogger.log("Archive IBD received start : "+start.getTxPoW().getBlockNumber()+" end : "+endblock);
-				
+					if(showlogs) {
+						MinimaLogger.log("Archive IBD received start : "+start.getTxPoW().getBlockNumber()+" end : "+endblock);
+					}
+					
 //					//Notify the Android Listener
 //					NotifyListener(minimalistener,"Loading "+start.getTxPoW().getBlockNumber()+" @ "+new Date(start.getTxPoW().getTimeMilli().getAsLong()).toString());
 				}else {
@@ -599,7 +606,10 @@ public class mysql extends Command {
 				}
 				
 				//Now wait to catch up..
-				MinimaLogger.log("Waiting for chain to catch up.. please wait");
+				if(showlogs) {
+					MinimaLogger.log("Waiting for chain to catch up.. please wait");
+				}
+				
 				attempts = 0;
 				while(foundsome) {
 					if(!tip.getBlockNumber().isEqual(endblock)) {
