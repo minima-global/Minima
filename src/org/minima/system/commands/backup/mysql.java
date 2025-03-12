@@ -169,8 +169,14 @@ public class mysql extends Command {
 		String user 		= "";
 		String password 	= "";
 		
+		//Is he entering details..
+		boolean freshdetails = false;
+		if(existsParam("host") && existsParam("database")) {
+			freshdetails = true;
+		}
+		
 		boolean autologindetail = MinimaDB.getDB().getUserDB().getAutoLoginDetailsMySQL();
-		if(autologindetail) {
+		if(autologindetail && !freshdetails) {
 			host 		= udb.getAutoMySQLHost();
 			db 			= udb.getAutoMySQLDB();
 			user 		= udb.getAutoMySQLUser();
@@ -532,7 +538,6 @@ public class mysql extends Command {
 				MinimaDB.getDB().getTxPoWDB().wipeDBRAM();
 				
 				//Clean system counter
-				counter++;
 				if(counter % 20 == 0) {
 					Main.getInstance().resetMemFull();
 				}
@@ -541,6 +546,8 @@ public class mysql extends Command {
 				if(counter % 10 == 0) {
 					showlogs = true;
 				}
+				
+				counter++;
 				
 				//Create an IBD for the mysql data
 				ArrayList<TxBlock> mysqlblocks = mysql.loadBlockRange(startblock);
