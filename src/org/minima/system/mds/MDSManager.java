@@ -1095,7 +1095,7 @@ public class MDSManager extends MessageProcessor {
 			//checkInstalled("megawallet", "default/megawallet-1.5.0.mds.zip", allminis, false);
 			checkInstalled("miniswap", "default/miniswap-2.19.2.mds.zip", allminis, false);
 			checkInstalled("news feed", "default/news-2.0.1.mds.zip", allminis, false);
-			checkInstalled("script ide", "default/scriptide-3.0.4.mds.zip", allminis, false);
+			checkInstalled("script ide", "default/scriptide-3.1.0.mds.zip", allminis, false);
 			checkInstalled("shout out", "default/shoutout-1.4.1.mds.zip", allminis, false);
 			checkInstalled("soko", "default/soko-1.0.0.mds.zip", allminis, false);
 			checkInstalled("sql bench", "default/sqlbench-0.6.1.mds.zip", allminis, false);
