@@ -322,4 +322,15 @@ public class UserDB extends JsonDB{
 		//Otherwise just check the normal user setting
 		return getBoolean("mds_publicsite", false);
 	}
+	
+	/**
+	 * RPC Users
+	 */
+	public JSONArray getRPCUsers() {
+		return getJSONArray("rpcusers_allusers");
+	}
+	
+	public void setRPCUsers(JSONArray zNewUsers) {
+		setJSONArray("rpcusers_allusers", zNewUsers);
+	}
 }

@@ -9,7 +9,9 @@ import java.net.URLDecoder;
 import java.util.Date;
 import java.util.StringTokenizer;
 
+import org.minima.database.MinimaDB;
 import org.minima.objects.base.MiniString;
+import org.minima.system.Main;
 import org.minima.system.commands.CommandRunner;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
@@ -81,9 +83,13 @@ public class CMDHandler implements Runnable {
 			fileRequested = URLDecoder.decode(fileRequested,"UTF-8").trim();
 			
 			//Are we Authorizing
-			boolean auth = true;
-			if(GeneralParams.RPC_AUTHENTICATE) {
-				auth = false;
+			JSONObject authuser = new JSONObject();
+			authuser.put("valid", true);
+			authuser.put("mode", "write");
+			
+			//MUST have correct details..
+			if(GeneralParams.RPC_AUTHENTICATE || MinimaDB.getDB().getUserDB().getRPCUsers().size()>0) {
+				authuser.put("valid", false);
 			}
 			
 			//Get the Headers..
@@ -96,7 +102,7 @@ public class CMDHandler implements Runnable {
 				if(authref != -1) {
 					
 					//Check it..
-					auth = Authorizer.checkAuchCredentials(input);
+					authuser = Authorizer.checkAuchCredentials(input);
 				}
 				
 				int ref = input.indexOf("Content-Length:"); 
@@ -109,7 +115,7 @@ public class CMDHandler implements Runnable {
 			}
 			
 			//Are we Authorised
-			if(!auth) {
+			if(!authuser.getBoolean("valid")) {
 				
 				//Not allowed..
 				out.println("HTTP/1.1 401 Unauthorized");
@@ -119,7 +125,6 @@ public class CMDHandler implements Runnable {
 				
 				throw new IllegalArgumentException("Invalid Authentication at RPC");
 			}
-			
 			
 			//Is it a POST request
 			if(method.equals("POST")) {
@@ -151,11 +156,18 @@ public class CMDHandler implements Runnable {
 					quit=true;
 				}
 				
-//				MinimaLogger.log("RPC : "+fileRequested);
+				MinimaLogger.log("RPC:"+fileRequested+" User:"+authuser.toString());
 				
 				//Now run this function..
-				JSONArray res = CommandRunner.getRunner().runMultiCommand(fileRequested);
-		    	
+				JSONArray res = null;
+				if(authuser.getString("mode").equals("read")) {
+					res = CommandRunner.getRunner().runMultiCommand(Main.getInstance().getMDSManager().getUntrustedMiniDAPPID(), fileRequested);
+				}else if(authuser.getString("mode").equals("write")) {
+					res = CommandRunner.getRunner().runMultiCommand(fileRequested);
+				}else {
+					throw new IllegalArgumentException("Invalid mode for RPC user : "+authuser.getString("mode"));
+				}
+				
 				//Get the result.. is it a multi command or single.. 
 				if(res.size() == 1) {
 					result = res.get(0).toString();

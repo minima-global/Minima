@@ -2,18 +2,26 @@ package org.minima.system.network.rpc;
 
 import java.util.Base64;
 
+import org.minima.database.MinimaDB;
+import org.minima.database.userprefs.UserDB;
 import org.minima.objects.base.MiniString;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
+import org.minima.utils.json.JSONArray;
+import org.minima.utils.json.JSONObject;
 
 public class Authorizer {
 
-	public static boolean checkAuchCredentials(String zAuthHeader) {
+	public static JSONObject checkAuchCredentials(String zAuthHeader) {
 		
-		//Are we even checking 
-		if(!GeneralParams.RPC_AUTHENTICATE) {
-			return true;
-		}
+		JSONObject falseret = new JSONObject();
+		falseret.put("valid",false);
+		
+		JSONObject ret = new JSONObject();
+		ret.put("valid",false);
+				
+		UserDB userdb = MinimaDB.getDB().getUserDB();
+		int rpcusers  = userdb.getRPCUsers().size();		
 		
 		//Are we BASIC checking
 		if(GeneralParams.RPC_AUTHSTYLE.equals("basic")) {
@@ -32,18 +40,43 @@ public class Authorizer {
 					String user 	= decstr.substring(0,col);
 					String password = decstr.substring(col+1, decstr.length());
 					
+					ret.put("username",user);
+					
 					//Now check
-					if(password.equals(GeneralParams.RPC_PASSWORD)) {
-						return true;
+					if(user.equals("minima")) {
+						if(!GeneralParams.RPC_AUTHENTICATE || password.equals(GeneralParams.RPC_PASSWORD)) {
+							
+							ret.put("valid",true);
+							ret.put("mode","write");
+							
+							return ret;
+						}
+					
+					}else {
+						
+						JSONArray users = userdb.getRPCUsers();
+						for(Object userobj : users) {
+							JSONObject rpcuser = (JSONObject)userobj;
+							
+							//Is it the one to be removed..
+							if( rpcuser.getString("username").equals(user) && 
+								rpcuser.getString("password").equals(password)) {
+								
+								ret.put("valid",true);
+								ret.put("mode",rpcuser.getString("mode"));
+							}
+						}
+						
+						return ret;
 					}
 				}
 				
 			}catch(Exception exc) {
 				MinimaLogger.log(exc);
-				return false;
+				return falseret;
 			}
 		}
 				
-		return false;
+		return falseret;
 	}
 }

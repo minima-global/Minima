@@ -22,6 +22,8 @@ public class MinimaRPCClient {
 		String host 	 = "http://127.0.0.1:9005";
 		
 		boolean bpass = false;
+		
+		String username  = "minima";
 		String password  = "password";
 		String sslpubkey = "";
 		
@@ -39,6 +41,9 @@ public class MinimaRPCClient {
 				if(arg.equals("-host")) {
 					host = zArgs[counter++];
 					
+				}else if(arg.equals("-username")) {
+					username = zArgs[counter++];
+				
 				}else if(arg.equals("-password")) {
 					password = zArgs[counter++];
 					bpass = true;
@@ -54,6 +59,7 @@ public class MinimaRPCClient {
 					System.out.println("MinimaRPCClient Help");
 					System.out.println(" -host       : Specify the host IP:PORT");
 					System.out.println(" -password   : Specify the RPC Basic AUTH password (use with SSL)");
+					System.out.println(" -username   : Specify the RPC Basic AUTH Username (defaults to minima)");
 					System.out.println(" -command    : Specify a single command to run");
 					System.out.println(" -sslpubkey  : The SSL public key from Minima rpc command ( if using SSL )");
 					System.out.println(" -help       : Print this help");
@@ -124,9 +130,9 @@ public class MinimaRPCClient {
 	    	
 	    	//Now run this function..
         	if(ssl) {
-        		result = RPCClient.sendGETBasicAuthSSL(host+command, "minima", password, sslcontext);
+        		result = RPCClient.sendGETBasicAuthSSL(host+command, username, password, sslcontext);
         	}else{
-        		result = RPCClient.sendGETBasicAuth(host+command,"minima",password);
+        		result = RPCClient.sendGETBasicAuth(host+command, username, password);
         	}
 			
 			//Create a JSON
@@ -164,9 +170,9 @@ public class MinimaRPCClient {
 		            	
 		            	//Now run this function..
 		            	if(ssl) {
-		            		result = RPCClient.sendGETBasicAuthSSL(host+input, "minima", password, sslcontext);
+		            		result = RPCClient.sendGETBasicAuthSSL(host+input, username, password, sslcontext);
 		            	}else{
-		            		result = RPCClient.sendGETBasicAuth(host+input,"minima",password);
+		            		result = RPCClient.sendGETBasicAuth(host+input,username,password);
 		            	}
 		    			
 		    			//Create a JSON
