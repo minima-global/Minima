@@ -156,7 +156,7 @@ public class CMDHandler implements Runnable {
 					quit=true;
 				}
 				
-				MinimaLogger.log("RPC:"+fileRequested+" User:"+authuser.toString());
+				//MinimaLogger.log("RPC:"+fileRequested+" User:"+authuser.toString());
 				
 				//Now run this function..
 				JSONArray res = null;
