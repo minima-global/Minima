@@ -11,6 +11,7 @@ import org.minima.objects.Coin;
 import org.minima.objects.Token;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.base.MiniString;
 import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
@@ -19,6 +20,7 @@ import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
+import org.minima.utils.json.parser.JSONParser;
 
 public class balance extends Command {
 
@@ -47,9 +49,14 @@ public class balance extends Command {
 				+ "megammr: (optional)\n"
 				+ "    Search the MegaMMR for coins too.\n"
 				+ "\n"
+				+ "simple: (optional)\n"
+				+ "    true or flase - show a much simpler view.. just the name and confirmed amount.\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "balance\n"
+				+ "\n"
+				+ "balance simple:true\n"
 				+ "\n"
 				+ "balance tokenid:0xFED5.. confirmations:10\n"
 				+ "\n"
@@ -58,7 +65,8 @@ public class balance extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"address","tokenid","confirmations","tokendetails","megammr"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"address","tokenid","confirmations",
+				"tokendetails","megammr","simple"}));
 	}
 	
 	@Override
@@ -70,7 +78,8 @@ public class balance extends Command {
 		MiniNumber confirmations 	= getNumberParam("confirmations", GlobalParams.MINIMA_CONFIRM_DEPTH);
 		
 		//Are we in debug mode
-		boolean debug = getBooleanParam("debug", false);
+		boolean debug  		= getBooleanParam("debug", false);
+		boolean simpleview 	= getBooleanParam("simple", false);
 		
 		String onlytokenid = getParam("tokenid", "");
 		
@@ -300,8 +309,37 @@ public class balance extends Command {
 			}
 		}
 		
-		//Add balance..
-		ret.put("response", balance);
+		//Make it simple..
+		if(simpleview) {
+			
+			JSONArray simplebalance = new JSONArray();
+			for(Object bal : balance) {
+				JSONObject oldbal = (JSONObject)bal;
+				JSONObject newbal = new JSONObject();
+				
+				//What is the tokenid
+				if(oldbal.getString("tokenid").equals("0x00")) {
+					newbal.put("name","Minima");
+				}else {
+					MiniString tok 		= (MiniString) oldbal.get("token");
+					JSONObject tokobj 	= (JSONObject) new JSONParser().parse(tok.toString());
+					newbal.put("name",tokobj.get("name"));
+				}
+				
+				//Only add the Confirmed amount
+				newbal.put("amount",oldbal.getString("confirmed"));
+				
+				//Add to the Simple balance..
+				simplebalance.add(newbal);
+			}
+			
+			//Add balance..
+			ret.put("response", simplebalance);
+			
+		}else {
+			//Add balance..
+			ret.put("response", balance);
+		}
 		
 		return ret;
 	}
