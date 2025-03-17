@@ -118,7 +118,7 @@ public class rpc extends Command {
 			if(action.equals("adduser")) {
 			
 				if(!GeneralParams.RPC_AUTHENTICATE) {
-					throw new CommandException("You must set a default RPC password via -rpcpassword to add extra users");
+					throw new CommandException("You must set a default RPC password (for user minima) via -rpcpassword to add extra users");
 				}
 				
 				String username = getParam("username");
