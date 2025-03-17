@@ -306,6 +306,11 @@ public class GeneralParams {
 	public static int MYSQL_DB_DELAY = 0;
 	
 	/**
+	 * Is there a delay before attempting a MySQL connection (docker can take 30 seconds to start mysql container)
+	 */
+	public static boolean MYSQL_DB_COINS = false;
+	
+	/**
 	 * Do we store all txpow with MySQL Autobackup
 	 */
 	public static boolean MYSQL_STORE_ALLTXPOW = false;
@@ -409,7 +414,11 @@ public class GeneralParams {
 		NOTIFY_ALL_TXPOW 	  = false;
 		RESCUE_MEGAMMR_NODE	  = "";
 		MDS_NOSSL 			  = false;
-		MYSQL_STORE_ALLTXPOW  = false;
+		
+		MYSQL_STORE_ALLTXPOW  	= false;
+		MYSQL_DB_DETAILS 		= "";
+		MYSQL_DB_DELAY 			= 0;
+		MYSQL_DB_COINS 			= false;
 		
 		PUBLICMDS_ENABLE 		= false;
 		PUBLICMDS_SESSION_UID 	= "";

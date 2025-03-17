@@ -439,6 +439,11 @@ public class ParamConfigurer {
         mysqldb("mysqldb", "Set the full MySQL DB details as username:password@host:port", (args, configurer) -> {
         	GeneralParams.MYSQL_DB_DETAILS = args;
         }),
+        mysqldbcoins("mysqldbcoins", "Enable the MySQL coins db backup from CLI", (args, configurer) -> {
+        	if ("true".equals(args)) {
+                GeneralParams.MYSQL_DB_COINS = true;
+            }
+        }),
         mysqldbdelay("mysqldbdelay", "When running in Docker.. Delay in milli-seconds before attempting first MySQL Connection", (args, configurer) -> {
         	GeneralParams.MYSQL_DB_DELAY = Integer.parseInt(args);
         }),

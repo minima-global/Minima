@@ -1391,6 +1391,11 @@ public class mysql extends Command {
 			//And Auto Backup everything..
 			udb.setAutoBackupMySQL(true);
 			
+			//Are we ALSO activating the MySQL Coins DB
+			if(GeneralParams.MYSQL_DB_COINS) {
+				udb.setAutoBackupMySQLCoins(true);
+			}
+			
 			//Try and Connect to the DB..
 			if(GeneralParams.MYSQL_DB_DELAY != 0) {
 				MinimaLogger.log("Waiting "+GeneralParams.MYSQL_DB_DELAY+" ms before attempting first MySQL connection..");
