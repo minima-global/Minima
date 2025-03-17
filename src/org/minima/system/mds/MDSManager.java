@@ -1099,7 +1099,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("minifs", "default/minifs-1.4.4.mds.zip", allminis, false);
 			checkInstalled("miniweb", "default/miniweb-1.6.1.mds.zip", allminis, false);
 			checkInstalled("news feed", "default/news-2.0.1.mds.zip", allminis, false);
-			checkInstalled("script ide", "default/scriptide-3.1.0.mds.zip", allminis, false);
+			checkInstalled("script ide", "default/scriptide-3.1.4.mds.zip", allminis, false);
 			checkInstalled("shout out", "default/shoutout-1.4.1.mds.zip", allminis, false);
 			checkInstalled("soko", "default/soko-1.0.1.mds.zip", allminis, false);
 			checkInstalled("sql bench", "default/sqlbench-0.6.1.mds.zip", allminis, false);
