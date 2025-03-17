@@ -1074,7 +1074,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("pending", "default/pending-1.2.0.mds.zip", allminis, true);
 			
 			//Security MiniDAPP - backups / restore
-			checkInstalled("security", "default/security-1.14.1.mds.zip", allminis, true);
+			checkInstalled("security", "default/security-1.14.3.mds.zip", allminis, true);
 			
 			//Dappstore gets write permissions
 			checkInstalled("dapp store", "default/dappStore-1.2.3.mds.zip", allminis, true);
