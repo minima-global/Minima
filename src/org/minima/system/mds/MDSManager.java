@@ -1080,7 +1080,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("dapp store", "default/dappStore-1.2.3.mds.zip", allminis, true);
 			
 			//The rest are normal
-			//checkInstalled("axe s3", "default/axes3-1.0.0.mds.zip", allminis, false);
+			checkInstalled("axe s3", "default/axes3-1.0.0.mds.zip", allminis, false);
 			checkInstalled("block", "default/block-3.3.4.mds.zip", allminis, false);
 			checkInstalled("chainmail", "default/chainmail-1.12.5.mds.zip", allminis, false);
 			checkInstalled("chatter", "default/chatter-1.12.0.mds.zip", allminis, false);
