@@ -54,20 +54,27 @@ public class Authorizer {
 					
 					}else {
 						
-						JSONArray users = userdb.getRPCUsers();
-						for(Object userobj : users) {
-							JSONObject rpcuser = (JSONObject)userobj;
-							
-							//Is it the one to be removed..
-							if( rpcuser.getString("username").equals(user) && 
-								rpcuser.getString("password").equals(password)) {
-								
-								ret.put("valid",true);
-								ret.put("mode",rpcuser.getString("mode"));
-							}
-						}
+						if(GeneralParams.RPC_AUTHENTICATE) {
 						
-						return ret;
+							JSONArray users = userdb.getRPCUsers();
+							for(Object userobj : users) {
+								JSONObject rpcuser = (JSONObject)userobj;
+								
+								//Is it the one to be removed..
+								if( rpcuser.getString("username").equals(user) && 
+									rpcuser.getString("password").equals(password)) {
+									
+									ret.put("valid",true);
+									ret.put("mode",rpcuser.getString("mode"));
+								}
+							}
+							
+							return ret;
+						
+						}else {
+							//Cannot access extra users if no Auth for main minima user
+							MinimaLogger.log("[!] Cannot access extra rpc user ("+user+") as no default password (for user minima) set via -rpcpassword..");
+						}
 					}
 				}
 				
