@@ -1065,7 +1065,7 @@ public class MDSManager extends MessageProcessor {
 		ArrayList<MiniDAPP> allminis = mdb.getAllMiniDAPPs();
 				
 		//Check for HUB
-		checkInstalled("minihub", "minihub/minihub-0.24.1.mds.zip", allminis, true, true);
+		checkInstalled("minihub", "minihub/minihub-0.24.2.mds.zip", allminis, true, true);
 		
 		//Do we Install the Default MiniDAPPs
 		if(GeneralParams.DEFAULT_MINIDAPPS) {
@@ -1103,7 +1103,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("shout out", "default/shoutout-1.4.1.mds.zip", allminis, false);
 			checkInstalled("soko", "default/soko-1.0.1.mds.zip", allminis, false);
 			checkInstalled("sql bench", "default/sqlbench-0.6.1.mds.zip", allminis, false);
-			checkInstalled("terminal", "default/terminal-3.1.6.mds.zip", allminis, false);
+			checkInstalled("terminal", "default/terminal-3.1.8.mds.zip", allminis, false);
 			checkInstalled("token studio", "default/tokenstudio-1.5.0.mds.zip", allminis, false);
 			checkInstalled("the safe", "default/thesafe-1.7.0.mds.zip", allminis, false);
 			checkInstalled("vestr", "default/vestr-1.8.1.mds.zip", allminis, false);
