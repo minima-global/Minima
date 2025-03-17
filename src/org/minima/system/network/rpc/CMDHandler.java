@@ -121,7 +121,8 @@ public class CMDHandler implements Runnable {
 				out.println("HTTP/1.1 401 Unauthorized");
 				out.println("Server: HTTP RPC Server from Minima 1.3");
 				out.println();
-				out.flush(); // flush character output stream buffer
+				out.println("{\"error\":\"Authentication failure..\"}");
+				out.flush(); // flush character output stream bufferout.flush(); // flush character output stream buffer
 				
 				throw new IllegalArgumentException("Invalid Authentication at RPC");
 			}

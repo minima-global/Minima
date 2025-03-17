@@ -73,7 +73,7 @@ public class Authorizer {
 						
 						}else {
 							//Cannot access extra users if no Auth for main minima user
-							MinimaLogger.log("[!] Cannot access extra rpc user ("+user+") as no default password (for user minima) set via -rpcpassword..");
+							MinimaLogger.log("[!] Cannot access rpc user ("+user+") as no default password (for user minima) set via -rpcpassword..");
 						}
 					}
 				}
