@@ -217,6 +217,12 @@ public class Minima {
 	            	//trim it..
 	            	input = input.trim();
 	            	
+	            	//Is Main NUll
+	            	if(Main.getInstance() == null) {
+	            		//Already shutdown..
+	            		break;
+	            	}
+	            	
 	            	//Run it..
 	            	JSONArray res = CommandRunner.getRunner().runMultiCommand(input);
 	            	
