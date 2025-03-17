@@ -896,6 +896,9 @@ public class Main extends MessageProcessor {
 			//Now save the state - in case system crashed..
 			MinimaDB.getDB().saveState();
 			
+			//Now close and Re-open the SQL db..
+			MinimaDB.getDB().refreshSQLDB();
+			
 			//Clear the Maxima Poll Stack
 			getMaxima().checkPollMessages();
 			

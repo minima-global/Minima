@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.archive.ArchiveManager;
 import org.minima.database.txpowtree.TxPowTree;
 import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
@@ -28,14 +29,12 @@ public class test extends Command {
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 	
-		//Wanna check the chaintree
-		TxPowTree tree = MinimaDB.getDB().getTxPoWTree();
+		MinimaLogger.log("About to close and reopen DBs");
 		
-		MinimaLogger.log("Length : "+tree.getSize());
+		MinimaDB.getDB().refreshSQLDB();
+		
+		MinimaLogger.log("DBs reopened..");
 				
-		
-		
-		
 		
 		return ret;
 	}
