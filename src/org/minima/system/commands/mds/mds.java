@@ -126,16 +126,21 @@ public class mds extends Command {
 				JSONObject jmds = md.toJSON(); 
 				
 				//Only add the web wallet if running a MEGAMMR..
-				JSONObject conf = (JSONObject) jmds.get("conf");
-				if(conf.getString("name").equalsIgnoreCase("web wallet") && !GeneralParams.IS_MEGAMMR) {
-					continue;
-				}
-				
-				//Get the Session ID
-				String sessionid = mdsman.convertMiniDAPPID(md.getUID());
-				jmds.put("sessionid", sessionid);
-				
-				arr.add(jmds);
+				try {
+					JSONObject conf = (JSONObject) jmds.get("conf");
+					if(conf.getString("name").equalsIgnoreCase("web wallet") && !GeneralParams.IS_MEGAMMR) {
+						continue;
+					}
+					
+					//Get the Session ID
+					String sessionid = mdsman.convertMiniDAPPID(md.getUID());
+					jmds.put("sessionid", sessionid);
+					
+					arr.add(jmds);
+					
+				}catch(Exception exc) {
+					MinimaLogger.log(exc);
+				}	
 			}
 
 			JSONObject mds = new JSONObject();
