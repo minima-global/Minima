@@ -104,8 +104,8 @@ var MDS = {
 		//Run the POll Listener ONCE - to get the latest Poll Counter..
 		PollListener();
 		
-		//Now call it every ~2 secs..
-		setInterval(function(){PollListener();},2500);
+		//Now call it every ~3 secs..
+		setInterval(function(){PollListener();},3000);
 		
 		//And Post a message
 		MDSPostMessage({ "event": "inited" });
