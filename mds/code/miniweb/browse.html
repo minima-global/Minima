@@ -11,18 +11,25 @@
 	<!-- And the ICON for the page -->
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	
+	<!--  JQUERY CSS + JS -->
+	<link rel="stylesheet" href="./root/miniweb/libs/jquery/jquery-ui-1.14.1/jquery-ui.css">
+	<link rel="stylesheet" href="./root/miniweb/libs/jquery/jquery-ui-1.14.1/jquery-ui.icon-font.css">
+	<script type="text/javascript" src="./root/miniweb/libs/jquery/jquery-3.7.1.min.js"></script>
+	<script type="text/javascript" src="./root/miniweb/libs/jquery/jquery-ui-1.14.1/jquery-ui.js"></script>
+	
 	<!-- JS -->
 	<script type="text/javascript" src="./js/jszip.min.js"></script>
 	<script type="text/javascript" src="./js/ziputil.js"></script>
 	<script type="text/javascript" src="./js/jslib.js"></script>
 	<script type="text/javascript" src="./js/mimetypes.js"></script>
 	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/gui.js"></script>
 	
 	<style type="text/css">
 	
 		@font-face {
 			font-family: Manrope;
-			src: url('./Manrope-Regular.ttf');
+			src: url('./root/miniweb/fonts/Manrope-Regular.ttf');
 		}
 		
 		body {
@@ -40,27 +47,34 @@
 			height : 100%;
 		}
 		
-		.webmenushow{
+		.minimenu{
 		    position: fixed;
-		    top: 4;
-		    left: 4;
-		    background-color : ccc;
+		    bottom: 4px;
+		    left: 4px;
+		    background-color : #ffffff;
 		    display : block;
 		    z-index: 10;
-		    border: 0.5px solid #555;
-  			border-radius: 8px;
-  			padding: 4px 4px;
+		    border: 2px solid #0000dd;
+  			border-radius: 4px;
   			font-family: Manrope;
   			font-size: 14px;
+  			width:95%;
+  			max-width:800;
 		}
 		
 		.addressbar{
-		    font-family: Manrope;
-  			font-size: 10px;
+			font-family: Manrope;
+  			font-size: 18px;
+  			width:100%;
 		}
 		
 		.simplebutton{
 		    min-width:60;
+		}
+		
+		.ui-icon {
+			zoom:150%;
+			color : #5555ff
 		}
 
 	</style>
@@ -70,51 +84,105 @@
 <body>
 
 <!--  The MAIN address bar and bookmarks view -->
-<div class="webmenushow" id=webfull>
-   <table>
-   		<tr>
-   			<td><button class=simplebutton onclick="hidebar()">HIDE</button></td>
-   			<td><input class=addressbar type=text id=mxaddress size=50></td>
-   			<td><button class=simplebutton onclick="gobar();">GO</button></td>
-   		</tr>
-   	<tr>
-		 <td>
-		 	<button class=simplebutton onclick="addBookmark();">ADD</button>
-		 </td>
-		 <td>
-			<select id=bookmarkbar style="width:100%" onchange="bookmkchange();"></select>
-		 </td>
-		 <td>
-		 	<button class=simplebutton onclick="remBookmark();">REM</button>
-		 </td>
-		</tr>   	
+<div class="minimenu" id=webfull>
+   <table border=0 width=100%>
+		<tr>
+			<td width=100%>
+				<table id=mainbuttons width=100% border=0>
+			   		<tr>
+			   			<td><button id=homebutton>Home</button></td>
+			   			<td><button id=backbutton>Back</button></td>
+			   			<td  width=100%><input class=addressbar type=text id=mxaddress></td>
+			   			<td><button id=gobutton>Go</button></td>
+			   			<td><button id=refreshbutton>Refresh</button></td>
+			   		</tr>
+				   	<tr>
+						 <td>
+						 	<button id=addbookmark>Add Bookmark</button>
+						 </td>
+						 <td  width=100% colspan=3>
+							<select id=bookmarkbar class=addressbar style="width:100%" onchange="bookmkchange();"></select>
+						 </td>
+						 <td>
+						 	<button id=rembook>Remove Bookmark</button>
+						 </td>
+					</tr>   	
+			   </table>		
+			</td>
+			<td>
+				<button style="width:50;height:70" id=toggleview>Toggle Control Panel</button>
+			</td>	
+		</tr>
    </table>
-</div>
-
-<div class="webmenushow" id=webhide>
-	<table>
-   		<tr>
-   			<td><button class=simplebutton onclick="showbar()">MINIWEB</button></td>
-   		</tr>
-   </table>
+   
 </div>
 
 <iframe class="mainiframe" id="webframe" frameborder="0"  
-		sandbox="allow-scripts allow-modals" referrerpolicy="no-referrer"></iframe>
+		sandbox="allow-scripts allow-modals allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer"></iframe>
 
 <script type="text/javascript">
 	
-	/**
-	 * Address bar Functionaloity 
-	 */
-	function hidebar(){
-		webfull.style.display = "none";
-		webhide.style.display = "block";
-	}
+	//Are we in developer mode
+	var developermode = false;
 	
-	function showbar(){
-		webfull.style.display = "block";
-		webhide.style.display = "none";
+	//The Current iFrame page
+	var IFRAME_PAGE = "";
+	var IFRAME_BAR  = "";
+	
+	var IFRAME_HISTORY = [];
+	
+	//Set up the JQuery Buttons..
+	$(document).ready(function() {
+	    
+		$( "#toggleview" ).button({
+			icon: "ui-icon-transferthick-e-w",
+			showLabel: false
+		}).click(function(){togglemenu();});
+		
+		$( "#homebutton" ).button({
+			icon: "ui-icon-home",
+			showLabel: false
+		}).click(function(){goHome();});
+		
+		$( "#gobutton" ).button({
+			icon: "ui-icon-mail-send",
+			showLabel: false
+		}).click(function(){gobar();});
+		
+		$( "#backbutton" ).button({
+			icon: "ui-icon-arrowthick-1-w",
+			showLabel: false
+		}).click(function(){goBackIFramePage();});
+		
+		$( "#refreshbutton" ).button({
+			icon: "ui-icon-refresh",
+			showLabel: false
+		}).click(function(){refreshIFramePage();});
+		
+		$( "#addbookmark" ).button({
+			icon: "ui-icon-circle-plus",
+			showLabel: false
+		}).click(function(){addBookmark();});
+		
+		$( "#rembook" ).button({
+			icon: "ui-icon-circle-minus",
+			showLabel: false
+		}).click(function(){remBookmark();});
+	});
+	
+	var goright = true;
+	function togglemenu(){
+		
+		//Get the width..
+		var ww = $("#mainbuttons").width();
+		
+		if(goright){
+			$("#webfull").animate({left: ww*-1+'px'});	
+		}else{
+			$("#webfull").animate({left: '4px'});
+		}
+		
+		goright = !goright;
 	}
 	
 	function addBookmark(){
@@ -136,9 +204,15 @@
 		var text 	= bookmarkbar.options[id].text;
 		var value 	= bookmarkbar.options[id].value;
 		
-		deleteBookmark(text,function(){
-			loadBookmarks();
-		});
+		if(value == ""){
+			return;
+		}
+		
+		if(confirm("This will remove the "+text+" bookmark ?")){
+			deleteBookmark(text,function(){
+				loadBookmarks();
+			});	
+		}
 	}
 	
 	function gobar(){
@@ -182,8 +256,57 @@
 		}
 	}
 	
-	hidebar();
-
+	//Add a page to our simple history mechanic..
+	function newIFramePage(page){
+		
+		//Store for later
+		IFRAME_PAGE = page;
+		IFRAME_BAR	= mxaddress.value.trim();
+		
+		var bkunit 	= {};
+		bkunit.page = IFRAME_PAGE;
+		bkunit.bar  = IFRAME_BAR
+		
+		//Keep a total History..
+		var histlen = IFRAME_HISTORY.length;
+		if(histlen == 0){
+			IFRAME_HISTORY.push(bkunit);
+		}else{
+			var lastelem = IFRAME_HISTORY[histlen-1];
+			if(lastelem.page != page){
+				IFRAME_HISTORY.push(bkunit);
+			}
+		}
+	}
+	
+	function refreshIFramePage(){
+		var histlen = IFRAME_HISTORY.length;
+		if(histlen == 0){
+			go(lastgo);
+		}else{
+			//Load the last valid page..
+			webframe.src 	= IFRAME_PAGE;
+			mxaddress.value = IFRAME_BAR;
+		}
+	}
+	
+	function goBackIFramePage(){
+		var histlen = IFRAME_HISTORY.length;
+		if(histlen <= 1){
+			return;
+		}
+		
+		//Jump back one page..
+		var backelem = IFRAME_HISTORY[histlen-2];
+		
+		//Set the page AND ther bar
+		webframe.src 	= backelem.page;
+		mxaddress.value = backelem.bar;
+		
+		//Remove the LAST element
+		IFRAME_HISTORY.pop();
+	}
+	
 	/**
 	 * Main Website functionality!
 	 */
@@ -239,7 +362,11 @@
 						});
 					}
 				});		
-			}
+			
+			}else if(action == "MINIWEB_LOCATION"){
+				//The current iFrame location
+				newIFramePage(msg.data);
+			}		
 		}
 	};
 	
@@ -274,7 +401,7 @@
 	//Listen for when the iFrame has loaded
 	var LOAD_CALLBACK = null;
 	webframe.addEventListener("load", function() {
-	  	if(LOAD_CALLBACK){
+		if(LOAD_CALLBACK){
 	  		LOAD_CALLBACK();
 	  	}
 	});
@@ -294,13 +421,22 @@
 		//Now ADD the MDS UID for the restriced MDS
 		fullpage = addURLParam(fullpage,"uid",MINIWEB_UID); 
 		
-		MDS.log("Load Page : "+fullpage);
-		
 		//Set the page
+		if(page != "loading.html" && page != "loading_notfound.html"){
+			newIFramePage(fullpage);	
+		}
+		
+		//Set the IFrame src
 		webframe.src=fullpage;
 	}
 	
+	function goHome(){
+		location.href="index.html?uid="+MDS.minidappuid;
+	}
+	
+	var lastgo = "";
 	function go(domainreq){
+		lastgo = domainreq;
 		
 		domain = domainreq.trim();
 		if(domain == ""){
@@ -316,7 +452,11 @@
 			domain = domain.substring(0, domain.length-1);
 		}
 		
-		MDS.log("Browser GO : "+domain);
+		//MDS.log("Browser GO : "+domain);
+		/*var baraddr = domain+"";
+		if(!baraddr.startsWith("miniweb://")){
+			baraddr = "miniweb://"+baraddr;
+		}*/
 		mxaddress.value = domain;
 		
 		//What is the final page
@@ -346,9 +486,10 @@
 							loadPage(finalpage);
 						}else{
 							if(!minifsfound){
-								alert("Could not conatct MiniFS MiniDAPP ?");
+								alert("Could not contact MiniFS MiniDAPP..\n\Is it installed ?");
 							}
 							
+							//Now show the not found load page
 							loadPage("loading_notfound.html");
 						}
 					});	
@@ -361,6 +502,8 @@
 	MDS.init(function(msg){
 		if(msg.event == "inited"){
 			
+			askNotificationPermission();
+			
 			//Create the DB and load the Bookmarks
 			createDB(function(){
 				loadBookmarks();
@@ -372,24 +515,65 @@
 				//Use this as the UID for websites..
 				MINIWEB_UID = resp.response.untrustedmdsuid;
 				
-				var wipeold = true;
+				//Are we in DEV mode
+				MDS.keypair.get("developermode",function(details){
 					
-				if(wipeold){
-					//Delete all the old sites on refresh..
-					MDS.file.deletefromweb(BASE_WEB,function(delweb){
-						MDS.file.delete(BASE_INTERNAL,function(del){
-							
-							MDS.log("Cleared web site cache..");
-							
-							//NOW GO..
-							go(MAIN_URL);	
+					developermode 	= false;
+					if(details.status){
+						if(details.value == "true"){
+							developermode 	= true;
+						}
+					}
+					
+					if(!developermode){
+						//Delete all the old sites on refresh..
+						MDS.file.deletefromweb(BASE_WEB,function(delweb){
+							MDS.file.delete(BASE_INTERNAL,function(del){
+								
+								MDS.log("Cleared minisite cache..");
+								
+								//NOW GO..
+								go(MAIN_URL);	
+							});
 						});
-					});
-				}else{
-					//NOW GO..
-					go(MAIN_URL);
-				}
+					}else{
+						MDS.log("Developer Mode : do not clear minisite cache..");
+						
+						//NOW GO..
+						go(MAIN_URL);
+					}	
+				});
 			});
+		
+		}else if(msg.event == "MDSCOMMS"){
+			
+			if(msg.data.public && msg.data.minidapp.toLowerCase() == "minifs"){
+				//MDS.log(JSON.stringify(msg));
+				
+				try{
+					var comms = JSON.parse(msg.data.message);
+					
+					if(comms.action == "SENDREQ_MAXIMA"){
+						showNotification("Sent request over Maxima for : \n\n"+comms.file);
+					}else if(comms.action == "SENDREQ_MINIMA"){
+						showNotification("Sent request over Minima for : \n\n"+comms.file);
+					}else if(comms.action == "SENDREQ_FAIL_READMODE"){
+						showNotification("MiniFS cannot request file in READ mode : \n\n"+comms.file);
+					}else if(comms.action == "SENDREQ_FAIL_RECENT"){
+						showNotification("File already requested recently.. : \n\n"+comms.file);
+					}else if(comms.action == "REC_MAXIMA"){
+						
+						//Go to the last requested page..
+						go(lastgo);
+						
+						//Tell them
+						showNotification("Received file over Maxima : \n\n"+comms.file);
+					}
+					
+				}catch(error){
+					MDS.log("MDSCOMMS ERROR : "+error)
+				}
+			}
 		}
 	});
 

@@ -8,9 +8,6 @@
 	<!-- Load the main MDS JS lib -->
 	<script type="text/javascript" src="mds.js"></script>
 	
-	<!-- Load the CSS Style sheet -->
-	<link rel="stylesheet" href="style.css">
-	
 	<!-- And the ICON for the page -->
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	
@@ -19,28 +16,43 @@
 	<script type="text/javascript" src="./js/auth.js"></script>
 	<script type="text/javascript" src="./js/gui.js"></script>
 	<script type="text/javascript" src="./js/purify.min.js"></script>
+	<script type="text/javascript" src="./js/txns.js"></script>
+		
+	<!--  JQUERY CSS + JS -->
+	<link rel="stylesheet" href="./js/jquery/jquery-ui-1.14.1/jquery-ui.css">
+	<link rel="stylesheet" href="./js/jquery/jquery-ui-1.14.1/jquery-ui.icon-font.css">
+	<script type="text/javascript" src="./js/jquery/jquery-3.7.1.min.js"></script>
+	<script type="text/javascript" src="./js/jquery/jquery-ui-1.14.1/jquery-ui.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
 	
 </head>
 
 <body>
 
 <center>
+	
 	<div class="titlebar" onclick="showTitleOnAndroid();">
 		<table width=100% border=0>
 			<tr>
 				<td><img height=45 src="minifs.png"></td>
 				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>MiniFS</b></td>
+				
 				<td class='topicdate' nowrap>
-					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToHelp();" height=30 src="./images/help.png">&nbsp;&nbsp;					
-					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToMyFiles();" height=30 src="./images/home.png">&nbsp;&nbsp;
+					<button id="button-help">Help</button>
+					<button id="button-search">Search</button>
+					<button id="button-home">Home</button>
 				</td>
 			</tr>
 		</table>
 	</div>
-	
 	<br>
 
-<div style="text-align:left; max-width:800;">
+
+<div class=blueborder>
+
+<div style="padding:8">
 
 <b>MiniFS</b> allows you to publish small zip files across the Minima network in a normal transaction.<br>
 <br>
@@ -70,7 +82,7 @@ If you try and Load a file you don't have a request is made over Maxima ( import
 to see if they have it. If not - then an onchain request is made for the user to re-publish it.<br>
 <br>
 
-<textarea readonly id="jumpscript" spellcheck="false" style="resize:none;width:800;height:500;"></textarea><br>
+<textarea readonly id="jumpscript" spellcheck="false" style="resize:none;width:100%;height:500;"></textarea><br>
 <br>
 The JS files required to extract the ZIP data are provided in this MiniDAPP.<br>
 <br>
@@ -87,11 +99,18 @@ Include both and away you go!<br>
 
 </div>
 
+</div>
+
 
 </center>
 
 <script type="text/javascript">
-	
+
+	//Set up the buttons..
+	$(document).ready(function() {
+		startupButtons();
+	});
+
 jumpscript.value="\n//Example script to run an MDS API call on MiniFS"+
 "\n<script type=\"text/javascript\">\n"+
 "\n"+

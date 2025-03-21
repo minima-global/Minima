@@ -561,11 +561,11 @@ public class MDSManager extends MessageProcessor {
 		return res;
 	}
 	
-	public void addAPICall(APICallback zAPICallback) {
+	public synchronized void addAPICall(APICallback zAPICallback) {
 		mAPICalls.add(zAPICallback);
 	}
 	
-	public APICallback getAPICallback(String zRandID) {
+	public synchronized APICallback getAPICallback(String zRandID) {
 		APICallback foundapicall = null;
 		for(APICallback api : mAPICalls) {
 			if(api.getRandID().equals(zRandID)) {
@@ -771,84 +771,29 @@ public class MDSManager extends MessageProcessor {
 				MinimaLogger.log("JS RUNNABLES received all POLL messages.. SHUTDOWN started..");
 			}
 			
-			boolean sendtoall = true;
-			if(poll.getString("event").equals("MDSAPI")) {
+			//Send message to the JS Runnables first..
+			for(ServiceJSRunner mds : mServices) {
 				
-				//Get the data
-				JSONObject dataobj = (JSONObject) poll.get("data");
-				
-				//Is it  a response..
-				if(!(boolean)dataobj.get("request")) {
+				try {
 					
-					//RESPONSE messages are not forwarded
-					sendtoall = false;
-					
-					//Send to the API Call..
-					APICallback api = getAPICallback(dataobj.getString("id"));
-					if(api != null) {
+					if(to.equals("*")) {
 						
-						//Construct a reply..
-						JSONObject reply = new JSONObject();
-						reply.put("status", dataobj.get("status"));
-						reply.put("data", dataobj.get("message"));
-						
-						//Call it..
-						Object[] args = { NativeJSON.parse(api.getContext(), 
-									api.getScope(),reply.toString(), new NullCallable()) };
-						
-						//Call the main MDS Function in JS
-						api.getFunction().call(api.getContext(), api.getScope(), api.getScope(), args);
-						
+						//Send to the runnable
+						mds.sendPollMessage(poll);
 					}else {
-						//MinimaLogger.log("RUNNABLE NOT FOUND API CALL : "+dataobj.toString());
-					}
-				}
-			}
-			
-			//Send message to the runnables first..
-			if(sendtoall) {
-//				for(MDSJS mds : mRunnables) {
-//					try {
-//						
-//						if(to.equals("*")) {
-//							//Send to the runnable
-//							mds.callMainCallback(poll);
-//						}else {
-//							
-//							//Check the MiniDAPPID
-//							if(mds.getMiniDAPPID().equals(to)) {
-//								//Send to the runnable
-//								mds.callMainCallback(poll);
-//							}
-//						}
-//						
-//					}catch(Exception exc) {
-//						MinimaLogger.log(exc, false);
-//					}
-//				}
-				
-				for(ServiceJSRunner mds : mServices) {
-					try {
 						
-						if(to.equals("*")) {
-							//Send to the runnable
+						//Check the MiniDAPPID
+						if(mds.getMiniDappID().equals(to)) {
 							mds.sendPollMessage(poll);
-						}else {
-							
-							//Check the MiniDAPPID
-							if(mds.getMiniDappID().equals(to)) {
-								//Send to the runnable
-								mds.sendPollMessage(poll);
-							}
 						}
-						
-					}catch(Exception exc) {
-						MinimaLogger.log(exc, false);
 					}
+					
+				}catch(Exception exc) {
+					MinimaLogger.log(exc, false);
 				}
 			}
-			
-			//Add then to the Poll Stack - web minidapps
+		
+			//Add then to the Poll Stack - all the web minidapps
 			mPollStack.addMessage(poll,to);
 		
 		}else if(zMessage.getMessageType().equals(MDS_MINIDAPPS_RESETSESSIONS)) {
@@ -1120,7 +1065,7 @@ public class MDSManager extends MessageProcessor {
 		ArrayList<MiniDAPP> allminis = mdb.getAllMiniDAPPs();
 				
 		//Check for HUB
-		checkInstalled("minihub", "minihub/minihub-0.22.1.mds.zip", allminis, true, true);
+		checkInstalled("minihub", "minihub/minihub-0.24.2.mds.zip", allminis, true, true);
 		
 		//Do we Install the Default MiniDAPPs
 		if(GeneralParams.DEFAULT_MINIDAPPS) {
@@ -1129,33 +1074,41 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("pending", "default/pending-1.2.0.mds.zip", allminis, true);
 			
 			//Security MiniDAPP - backups / restore
-			checkInstalled("security", "default/security-1.12.0.mds.zip", allminis, true);
+			checkInstalled("security", "default/security-1.14.3.mds.zip", allminis, true);
 			
 			//Dappstore gets write permissions
-			checkInstalled("dapp store", "default/dappStore-1.2.3.mds.zip", allminis, true);
+			checkInstalled("dapp store", "default/dappStore-1.5.1.mds.zip", allminis, true);
 			
 			//The rest are normal
+			checkInstalled("axe s3", "default/axes3-1.0.0.mds.zip", allminis, false);
 			checkInstalled("block", "default/block-3.3.4.mds.zip", allminis, false);
+			checkInstalled("chainmail", "default/chainmail-1.12.5.mds.zip", allminis, false);
 			checkInstalled("chatter", "default/chatter-1.12.0.mds.zip", allminis, false);
 			checkInstalled("docs", "default/docs-2.1.0.mds.zip", allminis, false);
 			checkInstalled("ethwallet", "default/ethwallet-1.11.0.mds.zip", allminis, false);
 			checkInstalled("filez", "default/filez-1.9.4.mds.zip", allminis, false);
 			checkInstalled("future cash", "default/futurecash-2.7.1.mds.zip", allminis, false);
-			checkInstalled("health", "default/health-1.2.2.mds.zip", allminis, false);
+			checkInstalled("health", "default/health-1.3.2.mds.zip", allminis, false);
 			checkInstalled("logs", "default/logs-1.0.4.mds.zip", allminis, false);
+			checkInstalled("lotto", "default/lotto-1.0.0.mds.zip", allminis, false);
+			checkInstalled("linux", "default/linux-0.9.5.mds.zip", allminis, false);
 			checkInstalled("maxcontacts", "default/maxcontacts-1.14.0.mds.zip", allminis, false);
 			checkInstalled("maximize", "default/maximize-1.3.0.mds.zip", allminis, false);
 			checkInstalled("maxsolo", "default/maxsolo-2.7.2.mds.zip", allminis, false);
-			//checkInstalled("megawallet", "default/megawallet-1.5.0.mds.zip", allminis, false);
-			checkInstalled("miniswap", "default/miniswap-2.19.2.mds.zip", allminis, false);
-			checkInstalled("news feed", "default/news-2.0.mds.zip", allminis, false);
-			checkInstalled("script ide", "default/scriptide-2.1.1.mds.zip", allminis, false);
-			checkInstalled("shout out", "default/shoutout-1.4.0.mds.zip", allminis, false);
-			checkInstalled("sql bench", "default/sqlbench-0.6.mds.zip", allminis, false);
-			checkInstalled("terminal", "default/terminal-2.3.2.mds.zip", allminis, false);
+			checkInstalled("miniswap", "default/miniswap-2.20.0.mds.zip", allminis, false);
+			checkInstalled("minifs", "default/minifs-1.4.4.mds.zip", allminis, false);
+			checkInstalled("miniweb", "default/miniweb-1.6.1.mds.zip", allminis, false);
+			checkInstalled("news feed", "default/news-2.0.1.mds.zip", allminis, false);
+			checkInstalled("script ide", "default/scriptide-3.1.4.mds.zip", allminis, false);
+			checkInstalled("shout out", "default/shoutout-1.4.1.mds.zip", allminis, false);
+			checkInstalled("soko", "default/soko-1.0.1.mds.zip", allminis, false);
+			checkInstalled("sql bench", "default/sqlbench-0.6.1.mds.zip", allminis, false);
+			checkInstalled("terminal", "default/terminal-3.1.8.mds.zip", allminis, false);
+			checkInstalled("token studio", "default/tokenstudio-1.5.0.mds.zip", allminis, false);
 			checkInstalled("the safe", "default/thesafe-1.7.0.mds.zip", allminis, false);
 			checkInstalled("vestr", "default/vestr-1.8.1.mds.zip", allminis, false);
-			checkInstalled("wallet", "default/wallet-2.47.2.mds.zip", allminis, false);
+			checkInstalled("wallet", "default/wallet-3.0.17.mds.zip", allminis, false);
+			checkInstalled("web wallet", "default/webWallet-2.5.2.mds.zip", allminis, false);
 		}
 	}
 	
@@ -1235,7 +1188,8 @@ public class MDSManager extends MessageProcessor {
 			installDefaultMiniDAPP(zResource,zWrite,zIsMiniHUB);
 			
 		}catch(Exception exc) {
-			MinimaLogger.log("[!] Failed install of "+zName+" @ "+zResource);			
+			MinimaLogger.log("[!] Failed install of "+zName+" @ "+zResource);
+			MinimaLogger.log(exc);
 		}
 		
 		return false;

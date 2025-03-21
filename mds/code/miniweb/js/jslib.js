@@ -135,6 +135,7 @@ function loadFilePacket(domain, callback){
 	
 	//Send it to MiniWEB
 	MDS.api.call("minifs",JSON.stringify(api),function(resp){
+		//MDS.log("MiniFS response "+JSON.stringify(resp));
 		
 		//Call wqas replied to ?
 		if(resp.status){

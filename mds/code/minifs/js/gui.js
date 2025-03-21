@@ -5,6 +5,23 @@ var WRITE_MODE = false;
 //Link to OPEN MiniWEB
 var BROWSER_DAPPLINK = "";
 
+function startupButtons(){
+	$( "#button-help" ).button({
+		icon: "ui-icon-help",
+		showLabel: false
+	}).click(function(){jumpToHelp();});
+	
+    $( "#button-home" ).button({
+		icon: "ui-icon-home",
+		showLabel: false
+	}).click(function(){jumpToMyFiles();});
+	
+	$( "#button-search" ).button({
+		icon: "ui-icon-search",
+		showLabel: false
+	}).click(function(){jumpToSearch();});
+}
+
 function jumpToMyFiles(){
 	location.href="index.html?uid="+MDS.minidappuid;	
 }
@@ -15,6 +32,10 @@ function jumpToSurf(){
 
 function jumpToHelp(){
 	location.href="help.html?uid="+MDS.minidappuid;	
+}
+
+function jumpToSearch(){
+	location.href="search.html?uid="+MDS.minidappuid;	
 }
 
 function jumpToNewFile(){
@@ -51,22 +72,6 @@ function deleteSite(mxsite){
 	}	
 }
 
-function openBrowser(mxsite){
-	window.open("browser.html?uid="+RESTRICTED_UID+"&mxsite="+mxsite);	
-}
-
-function openMinimaBrowser(mxsite){
-	
-	if(BROWSER_DAPPLINK == ""){
-		alert("Could not find the MiniWEB Dapp ?");
-		return;
-	}
-	
-	if(confirm("This will open the MiniWEB  MiniDAPP ?")){
-		window.open(BROWSER_DAPPLINK+"&mxsite="+mxsite);
-	}
-}
-
 function downloadSite(hexdata, filename) {
 
 	if(confirm("This will download "+filename+" ?")){
@@ -84,6 +89,39 @@ function downloadSite(hexdata, filename) {
 		link.click();
 		document.body.removeChild(link);
 		delete link;		
+	}
+}
+
+function openBrowser(mxsite){
+	window.open("browser.html?uid="+RESTRICTED_UID+"&mxsite="+mxsite);	
+}
+
+function openMinimaBrowser(mxsite){
+	
+	if(BROWSER_DAPPLINK == ""){
+		alert("Could not find the MiniWEB Dapp ?");
+		return;
+	}
+	
+	if(confirm("This will open the MiniWEB  MiniDAPP ?")){
+		window.open(BROWSER_DAPPLINK+"&mxsite="+mxsite);
+	}
+}
+
+function publishSite(filename, callback) {
+
+	if(confirm("This will republish\n\n"+filename+" ?")){
+		
+		publishFilePacket(filename,function(resp){
+			if(resp.pending){
+				alert("Publish txn is pending..");
+			}else if(resp.status){
+				alert("Publish txn sent successully!");
+			}else{
+				MDS.log(JSON.stringify(resp));
+				alert("Something went wrong..\n\nPlease check console logs..");
+			}
+		});		
 	}
 }
 

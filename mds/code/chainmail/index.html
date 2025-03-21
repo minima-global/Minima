@@ -3,6 +3,8 @@
 <head>
 	<title>ChainMail</title>
 	
+	<meta charset="UTF-8">
+	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
 	<!-- Load the CSS Style sheet -->
@@ -18,6 +20,7 @@
 	<script type="text/javascript" src="./js/jslib.js"></script>
 	<script type="text/javascript" src="./js/sql.js"></script>
 	<script type="text/javascript" src="./js/txns.js"></script>
+	<script type="text/javascript" src="./js/notifications.js"></script>
 	
 	<!-- MinWeb lib -->
 	<script type="text/javascript" src="./miniweb/libs/purify.min.js"></script>
@@ -32,14 +35,14 @@
 <div class="titlebar" onclick="showTitleOnAndroid();">
 	<table width=100% border=0>
 		<tr>
-			<td><img height=45 src="./images/webmail.svg"></td>
+			<td><img height=45 src="./images/chainmail.webp"></td>
 			<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>ChainMail</b></td>
+			
 			<td class='topicdate' nowrap>
-			
-			<button id="button-newmail">New Message</button>
-			<button id="button-contacts">Contacts</button>
-			<button id="button-home">Home</button>
-			
+				<button id="button-help">Help</button>
+				<button id="button-newmail">New Message</button>
+				<button id="button-contacts">Contacts</button>
+				<button id="button-home">Home</button>
 			</td>
 		</tr>
 	</table>
@@ -48,39 +51,17 @@
 <script type="text/javascript">
 	
 	$(document).ready(function() {
-	    
-	    //Home button
-	    $( "#button-newmail" ).button({
-			icon: "ui-icon-mail",
-			showLabel: false
-		}).click(function(){jumpToNewMessage();});
-	    
-	    //Home button
-	    $( "#button-contacts" ).button({
-			icon: "ui-icon-contact",
-			showLabel: false
-		}).click(function(){jumpToContacts();});
-	  
-	    //Home button
-	    $( "#button-home" ).button({
-			icon: "ui-icon-home",
-			showLabel: false
-		}).click(function(){jumpToHome();});
+	    startupButtons();
 	});
 
 </script>
-
 	
 	<br>
-	<table class=maintable id=messagetable></table>
+	<table class="maintable" id=messagetable border=0></table>
 	<br>
 	
 	<div id=youraddress class=contacts style="word-wrap:break-word;text-align:center;"></div>
 	<br>
-	
-	<div class=contacts style="text-align:center;">
-		<br>Messages are signed and end-to-end encrypted so the sender, recipient and content are hidden<br><br>
-	</div>
 	
 </center>
 
@@ -96,30 +77,30 @@
 		
 		var from 		 = messagerow.insertCell();
 		from.style.width = "150";
-		from.className+=" mylefttd";
+		from.className+=" maintablefrom";
 		
 		var subject = messagerow.insertCell();
-		subject.className+=" mylefttd";
+		subject.className+=" maintablesubject";
 		
 		var date	= messagerow.insertCell();
-		date.className+=" myrighttd";
+		date.className+=" maintabledate";
 		date.style.width = "180";
 		
+		var namemsg = safeDecodeString(mail.FROMNAME+" > "+mail.MESSAGE);
+		
 		if(mail.READ == 0){
-			from.innerHTML 		= "<b>"+safeDecodeString(mail.FROMNAME)+"</b>";
+			from.innerHTML 		= "<b>"+safeDecodeString(mail.INCOMINGNAME)+"</b>";
 			subject.innerHTML 	= "<b>"+safeDecodeString(mail.SUBJECT)+"</b>"
-						+"<br><span style='font-size:14;'><b>"+safeDecodeString(mail.MESSAGE)+"</b></span>";
+						+"<br><span style='font-size:14;'><b>"+namemsg+"</b></span>";
 			
 		}else{
-			from.innerHTML 		= safeDecodeString(mail.FROMNAME);
+			from.innerHTML 		= safeDecodeString(mail.INCOMINGNAME);
 			subject.innerHTML 	= safeDecodeString(mail.SUBJECT)
-						+"<br><span style='font-size:12;color:#888888'>"+safeDecodeString(mail.MESSAGE)+"</span>";
+						+"<br><span style='font-size:12;color:#888888'>"+namemsg+"</span>";
 				
 		}
 		
-					
-		date.innerHTML = makeDateString(mail.DATE);
-		
+		date.innerHTML = "<span style='font-size:12;color:#888888'>"+makeDateStringVertical(mail.DATE)+"</span>";
 	}
 	
 	function loadMail(){
@@ -157,17 +138,25 @@
 				//Get your details
 				MDS.cmd("maxima",function(maxresp){
 					
-					youraddress.innerHTML = "<br>Your ChainMail Address : <br><br>"
-								+"<div style='margin:auto;max-width:90%;font-size:10;'>"
+					youraddress.innerHTML = "<br>Your ChainMail Address</b><br><br>"
+								+"<div style='margin:auto;max-width:90%;font-size:10;color:#777777'>"
 								+maxresp.response.mxpublickey+"</div><br>";
 					
 					loadMail();
 				});
 			}
 		
+			askNotificationPermission();
+			
 		}else if(msg.event == "MDSCOMMS"){
-			if(!msg.data.public && msg.data.message == "NEWMESSAGE"){
+			
+			//Is it from servioce.js
+			if(!msg.data.public){
+				
+				//Reload the Main Mail
 				loadMail();
+				
+				checkMDSCOMMMS(msg);
 			}
 		}
 	});

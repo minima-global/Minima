@@ -20,6 +20,7 @@ import java.util.StringTokenizer;
 import java.util.function.BiConsumer;
 
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.commands.backup.mysql;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.utils.MinimaLogger;
@@ -223,6 +224,22 @@ public class ParamConfigurer {
             	GeneralParams.RPC_CRLF = false;
             }
         }),
+        shownetcalls("shownetcalls", "Show all the network calls", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.SHOW_NETWORK_CALLS = true;
+                GeneralParams.SHOW_NETWORK_POLLS = true;
+            }else {
+            	GeneralParams.SHOW_NETWORK_CALLS = false;
+            }
+        }),
+        shownetcallsnopoll("shownetcallsnopoll", "Show all the network calls except poll messages", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.SHOW_NETWORK_CALLS = true;
+                GeneralParams.SHOW_NETWORK_POLLS = false;
+            }else {
+            	GeneralParams.SHOW_NETWORK_CALLS = false;
+            }
+        }),
         allowallip("allowallip", "Allow all IP for Maxima / Networking", (args, configurer) -> {
             if ("true".equals(args)) {
             	GeneralParams.ALLOW_ALL_IP = true;
@@ -339,6 +356,7 @@ public class ParamConfigurer {
         p2p2("p2p2", "Enable the new P2P2 system", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.P2P2_ENABLED = true;
+                GeneralParams.P2P_ENABLED  = false;
             }
         }),
         connect("connect", "Disable the p2p and manually connect to this list of host:port", (args, configurer) -> {
@@ -418,6 +436,17 @@ public class ParamConfigurer {
                 GeneralParams.MDS_NOSSL = true;
             }
         }),
+        mysqldb("mysqldb", "Set the full MySQL DB details as username:password@host:port", (args, configurer) -> {
+        	GeneralParams.MYSQL_DB_DETAILS = args;
+        }),
+        mysqldbcoins("mysqldbcoins", "Enable the MySQL coins db backup from CLI", (args, configurer) -> {
+        	if ("true".equals(args)) {
+                GeneralParams.MYSQL_DB_COINS = true;
+            }
+        }),
+        mysqldbdelay("mysqldbdelay", "When running in Docker.. Delay in milli-seconds before attempting first MySQL Connection", (args, configurer) -> {
+        	GeneralParams.MYSQL_DB_DELAY = Integer.parseInt(args);
+        }),
         mysqlalltxpow("mysqlalltxpow", "Store all TxPoW in MySQL when autobackup enabled.", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.MYSQL_STORE_ALLTXPOW = true;
@@ -430,7 +459,11 @@ public class ParamConfigurer {
         		MinimaLogger.log("Invalid txpowdbstore.. MUST be >= 3.. setting to 3");
         	}
         }),
-        publicmdsuid("publicmdsuid", "Set your own Session ID for the Public MDS", (arg, configurer) -> {
+        publicmds("publicmds", "Enable the Public MDS system from the CLI", (arg, configurer) -> {
+        	GeneralParams.PUBLICMDS_ENABLE = true;	
+        }),
+        publicmdsuid("publicmdsuid", "Set your own Session ID for the Public MDS and enable Public MDS", (arg, configurer) -> {
+        	GeneralParams.PUBLICMDS_ENABLE 		= true;
         	GeneralParams.PUBLICMDS_SESSION_UID = arg.trim();	
         }),
         rescuenode("rescuenode", "If you connect to a heavier chain use this MegaMMR node to resync", (arg, configurer) -> {

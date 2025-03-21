@@ -1,6 +1,7 @@
 package org.minima.system.mds.handler;
 
 import org.minima.system.mds.MDSManager;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 
@@ -17,6 +18,7 @@ public class APIAutoResponse implements Runnable {
 	String mToMiniDAPPName;
 	String mToMiniDAPPID;
 	
+	//Wait MAX 10 seconds for a response..
 	long mDelay = 10000;
 	
 	public APIAutoResponse(MDSManager zMDS, String zFromMiniDAPP, String zToMiniDAPP, String zToMiniDAPPID, String zRandID) {
@@ -25,6 +27,10 @@ public class APIAutoResponse implements Runnable {
 		mToMiniDAPPName		= zToMiniDAPP;
 		mToMiniDAPPID		= zToMiniDAPPID;
 		mRandID				= zRandID;
+	}
+	
+	public void setImmediate() {
+		mDelay = 0;
 	}
 	
 	public void runauto() {

@@ -1,10 +1,14 @@
 package org.minima.system.network.p2p2;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import org.minima.database.MinimaDB;
+import org.minima.objects.Greeting;
 import org.minima.system.Main;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.messages.Message;
@@ -14,7 +18,8 @@ import org.minima.utils.messages.TimerMessage;
 public class P2P2Manager extends MessageProcessor{
 
 	//Initialise the systm
-	public static String P2P2_INIT	= "P2P2_INIT";
+	public static String P2P2_INIT		= "P2P2_INIT";
+	public static String P2P2_SHUTDOWN	= "P2P2_SHUTDOWN";
 	
 	//Loop check connections etc..
 	public static String P2P2_FASTLOOP	= "P2P2_FAST_LOOP";
@@ -28,14 +33,27 @@ public class P2P2Manager extends MessageProcessor{
 	public P2P2Manager() {
 		super("P2P2MANAGER");
 
+		//Do startup..
+		PostMessage(P2P2_INIT);
+		
 		//LOOP Check
 		PostTimerMessage(new TimerMessage(P2P2_LOOP_TIMER, P2P2_FASTLOOP));
 		PostTimerMessage(new TimerMessage(P2P2_LOOP_TIMER_SLOW, P2P2_SLOWLOOP));
 	}
 	
+	public void shutdown() {
+		
+		//Save the peers..
+		//..
+		
+		stopMessageProcessor();
+		
+		MinimaLogger.log("P2P2 shutdown.. ");
+	}
+	
 	public String getRandomPeerFromList() {
 		//Get all the valid P2P addresses..
-		JSONArray allpeers = MinimaDB.getDB().getP2P2DB().getAllKnownPeers();
+		ArrayList<String> allpeers = MinimaDB.getDB().getP2P2DB().getAllKnownPeers();
 		
 		if(allpeers.size() == 0) {
 			return "";
@@ -54,12 +72,62 @@ public class P2P2Manager extends MessageProcessor{
 		//
 	}
 	
+	//Convert the P2P peers list to our own format
+	public void convertOldP2P() {
+		
+		//Get the list
+		List<InetSocketAddress> peers = MinimaDB.getDB().getP2PDB().getPeersList();
+		
+		ArrayList<String> newpeers = new ArrayList<>();
+		for(InetSocketAddress peer : peers) {
+			String host = peer.getHostString();
+			int port 	= peer.getPort();
+			
+			
+		}
+		
+	}
+	
 	@Override
 	protected void processMessage(Message zMessage) throws Exception {
 		
 		if(zMessage.getMessageType().equals(P2P2_INIT)) {
 			
 			MinimaLogger.log("P2P2 Inited.. ");
+			
+			//Have we specified some peers..
+			
+			//Is this the first time.. FOR NOW.. we use the mega mmr.. 
+			
+			MinimaDB.getDB().getP2P2DB().addPeerToAllKnown("324.45.45.45:9901");
+			MinimaDB.getDB().getP2P2DB().addPeerToAllKnown("324.45.45.45:9901");
+			MinimaDB.getDB().getP2P2DB().addPeerToAllKnown("324.45.45.45:9902");
+			
+			if(MinimaDB.getDB().getP2P2DB().isFirstStartUp()) {
+				
+				
+				//Conert the OLD p2p db peerslist
+				//convertOldP2P();
+				
+				
+				//Ping MEGA
+				/*Greeting greet = Main.getInstance().getNIOManager().sendPingMessage("megammr.minima.global", 9001, false);
+				
+				if(greet != null) {
+					MinimaLogger.log("P2P2 greet found : "+greet.getExtraData().toString());
+					
+					//Save the peers list..
+					JSONArray peers = (JSONArray) greet.getExtraData().get("peers-list");
+					
+					for(Object ff : peers) {
+						String peer = (String)ff;
+						
+						MinimaLogger.log("Peer : "+peer);
+					}
+					
+				}*/
+				
+			}
 			
 		}else if(zMessage.getMessageType().equals(P2P2_FASTLOOP)) {
 			

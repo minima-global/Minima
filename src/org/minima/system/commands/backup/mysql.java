@@ -4,9 +4,11 @@ import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
 import org.minima.database.MinimaDB;
@@ -28,6 +30,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.CommandRunner;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.BIP39;
 import org.minima.utils.MiniFile;
@@ -135,7 +138,7 @@ public class mysql extends Command {
 				+ "\n"
 				+ "mysql action:resync phrase:\"24 WORDS HERE\" keys:90 keyuses:2000\n"
 				+ "\n"
-				+ "mysql action:h2export file:archivexport-DDMMYY.gzip\n";
+				+ "mysql action:rawexport file:archivexport-DDMMYY.gzip\n";
 	}
 	
 	@Override
@@ -166,8 +169,14 @@ public class mysql extends Command {
 		String user 		= "";
 		String password 	= "";
 		
+		//Is he entering details..
+		boolean freshdetails = false;
+		if(existsParam("host") && existsParam("database")) {
+			freshdetails = true;
+		}
+		
 		boolean autologindetail = MinimaDB.getDB().getUserDB().getAutoLoginDetailsMySQL();
-		if(autologindetail) {
+		if(autologindetail && !freshdetails) {
 			host 		= udb.getAutoMySQLHost();
 			db 			= udb.getAutoMySQLDB();
 			user 		= udb.getAutoMySQLUser();
@@ -226,10 +235,13 @@ public class mysql extends Command {
 			
 			boolean logindetails = MinimaDB.getDB().getUserDB().getAutoLoginDetailsMySQL();
 			resp.put("logindetails", logindetails);
+			
 			resp.put("user", user);
 			resp.put("password", "***");
 			resp.put("host", host);
 			resp.put("database", db);
+			
+			resp.put("storealltxpow", GeneralParams.MYSQL_STORE_ALLTXPOW);
 			
 			ret.put("response", resp);
 		
@@ -382,7 +394,7 @@ public class mysql extends Command {
 			
 				long ender = startload+100;
 				if(logs) {
-					MinimaLogger.log("Transfer from "+startload+" to "+(ender-1));
+					MinimaLogger.log("MySQL block transfer from "+startload+" to "+(ender-1));
 				}
 				
 				//Load blocks from the archive
@@ -505,6 +517,11 @@ public class mysql extends Command {
 				Main.getInstance().archiveResetReady(false);
 			}
 			
+			//Are we MEGA MMR
+			if(GeneralParams.IS_MEGAMMR) {
+				MinimaDB.getDB().getMegaMMR().clear();
+			}
+			
 			//Now cycle through the chain..
 			MiniNumber startblock 	= MiniNumber.ZERO;
 			MiniNumber endblock 	= MiniNumber.ZERO;
@@ -521,10 +538,16 @@ public class mysql extends Command {
 				MinimaDB.getDB().getTxPoWDB().wipeDBRAM();
 				
 				//Clean system counter
-				counter++;
 				if(counter % 20 == 0) {
 					Main.getInstance().resetMemFull();
 				}
+				
+				boolean showlogs = false;
+				if(counter % 10 == 0) {
+					showlogs = true;
+				}
+				
+				counter++;
 				
 				//Create an IBD for the mysql data
 				ArrayList<TxBlock> mysqlblocks = mysql.loadBlockRange(startblock);
@@ -557,8 +580,10 @@ public class mysql extends Command {
 					endblock		= last.getTxPoW().getBlockNumber();
 					startblock 		= endblock.increment();
 					
-					MinimaLogger.log("Archive IBD received start : "+start.getTxPoW().getBlockNumber()+" end : "+endblock);
-				
+					if(showlogs) {
+						MinimaLogger.log("Archive IBD received start : "+start.getTxPoW().getBlockNumber()+" end : "+endblock);
+					}
+					
 //					//Notify the Android Listener
 //					NotifyListener(minimalistener,"Loading "+start.getTxPoW().getBlockNumber()+" @ "+new Date(start.getTxPoW().getTimeMilli().getAsLong()).toString());
 				}else {
@@ -588,7 +613,10 @@ public class mysql extends Command {
 				}
 				
 				//Now wait to catch up..
-				MinimaLogger.log("Waiting for chain to catch up.. please wait");
+				if(showlogs) {
+					MinimaLogger.log("Waiting for chain to catch up.. please wait");
+				}
+				
 				attempts = 0;
 				while(foundsome) {
 					if(!tip.getBlockNumber().isEqual(endblock)) {
@@ -1072,73 +1100,116 @@ public class mysql extends Command {
 			
 			ret.put("response", resp);
 				
-		}else if(action.equals("rawimport")) {
-			
-			long timestart = System.currentTimeMillis();
-			
-			//Create a temp name
-			String infile 	= getParam("file");
-			File fileinfile = MiniFile.createBaseFile(infile);
-			
-			RawArchiveInput rawin = new RawArchiveInput(fileinfile);
-			rawin.connect();
-			
-			//Wipe the old data
-			mysql.wipeAll();
-			
-			//Is there a cascade..
-			Cascade casc = rawin.getCascade();
-			if(casc != null) {
-				MinimaLogger.log("Cascade found.. ");
-				mysql.saveCascade(casc);
-			}
-			
-			//Load a range..
-			long endblock 	= -1;
-			TxBlock lastblock = null;
-			int counter = 0;
-			while(true) {
-				//Get the next batch of data..
-				IBD syncibd 				= rawin.getNextIBD();
-				ArrayList<TxBlock> blocks 	= syncibd.getTxBlocks();
-				
-				if(logs) {
-					if(counter % 10 ==0) {
-						if(blocks.size()>0) {
-							MinimaLogger.log("Loading from RAW Block : "+blocks.get(0).getTxPoW().getBlockNumber());
-						}
-					}
-				}
-				
-				if(blocks.size()==0) {
-					//All blocks checked
-					break;
-				}
-				
-				//Cycle and add to our DB..
-				for(TxBlock block : blocks) {
-					
-					//Send to MySQL
-					mysql.saveBlock(block);
-					//MinimaLogger.log("Save block : "+block.getTxPoW().getBlockNumber());
-				}
-				
-				//Clean up..
-				counter++;
-				if(counter % 10 == 0) {
-					System.gc();
-				}
-			}
-			
-			//Shutdown TEMP DB
-			rawin.stop();
-			
-			long timediff = System.currentTimeMillis() - timestart;
+		}else if(action.equals("reset")) {
 			
 			JSONObject resp = new JSONObject();
-			resp.put("time", MiniFormat.ConvertMilliToTime(timediff));
+			
+			//First import the file..
+			String infile = getParam("file"); 
+			
+			//First import the file..
+			JSONObject resimport = CommandRunner.getRunner().runSingleCommand("mysql action:rawimport file:"+infile);
+			if(!(boolean)resimport.get("status")) {
+				throw new CommandException("Error importing data.. "+resimport.get("error"));
+			}
+			resp.put("import", resimport);
+			
+			//And now total resync..
+			JSONObject resresync = CommandRunner.getRunner().runSingleCommand("mysql action:resync");
+			if(!(boolean)resresync.get("status")) {
+				throw new CommandException("Error resyncing.. "+resresync.get("error"));
+			}
+			resp.put("resync", resresync);
 			
 			ret.put("response", resp);
+			
+		}else if(action.equals("rawimport")) {
+			
+			//Stop any other imports..
+			Main.getInstance().MYSQL_IMPORTING_NO_ACTION = true;
+			
+			try {
+				
+				long timestart = System.currentTimeMillis();
+				
+				//Create a temp name
+				String infile 	= getParam("file");
+				File fileinfile = MiniFile.createBaseFile(infile);
+				
+				RawArchiveInput rawin = new RawArchiveInput(fileinfile);
+				rawin.connect();
+				
+				//Wipe the old data
+				mysql.wipeAll();
+				
+				//Is there a cascade..
+				Cascade casc = rawin.getCascade();
+				if(casc != null) {
+					MinimaLogger.log("Cascade found.. ");
+					mysql.saveCascade(casc);
+				}
+				
+				//Load a range..
+				long endblock 	= -1;
+				TxBlock lastblock = null;
+				int counter = 0;
+				while(true) {
+					//Get the next batch of data..
+					IBD syncibd 				= rawin.getNextIBD();
+					ArrayList<TxBlock> blocks 	= syncibd.getTxBlocks();
+					
+					if(logs) {
+						if(counter % 10 ==0) {
+							if(blocks.size()>0) {
+								MinimaLogger.log("Loading from RAW Block : "+blocks.get(0).getTxPoW().getBlockNumber());
+							}
+						}
+					}
+					
+					if(blocks.size()==0) {
+						//All blocks checked
+						break;
+					}
+					
+					//Cycle and add to our DB..
+					for(TxBlock block : blocks) {
+						mysql.saveBlock(block);
+					}
+					
+					//Clean up..
+					counter++;
+					if(counter % 10 == 0) {
+						System.gc();
+					}
+					
+					//FOR TESTING
+					/*if(counter>=10) {
+						MinimaLogger.log("HACK FINISH!!");
+						break;
+					}*/
+				}
+				
+				//Shutdown TEMP DB
+				rawin.stop();
+				
+				long timediff = System.currentTimeMillis() - timestart;
+				
+				JSONObject resp = new JSONObject();
+				resp.put("time", MiniFormat.ConvertMilliToTime(timediff));
+				
+				ret.put("response", resp);
+				
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+				
+				//Start any other imports..
+				Main.getInstance().MYSQL_IMPORTING_NO_ACTION = false;
+				
+				throw new CommandException(exc.toString());
+			}
+			
+			//Start any other imports..
+			Main.getInstance().MYSQL_IMPORTING_NO_ACTION = false;
 			
 		}else if(action.equals("fixmissing")) {
 			
@@ -1280,9 +1351,97 @@ public class mysql extends Command {
 		return ret;
 	}
 	
+	/**
+	 * Convert the mysql param from command line
+	 */
+	public static void convertMySQLParams(String zMySQLDB) {
+		
+		try {
+			
+			int breaker = zMySQLDB.indexOf("@");
+			
+			String user = zMySQLDB.substring(0,breaker);
+			String db 	= zMySQLDB.substring(breaker+1,zMySQLDB.length());
+			
+			//Now chop up the User
+			int userbreak   = user.indexOf(":");
+			String username = user.substring(0,userbreak);
+			String password = user.substring(userbreak+1,user.length());
+			
+			//And the DB
+			int dbslash   = db.indexOf("/");
+			String dbhost = db.substring(0,dbslash);
+			String dbname = db.substring(dbslash+1,db.length());
+			
+			MinimaLogger.log("MYSQL Database Setup : "+username+":***@"+dbhost+" / "+dbname);
+			
+			UserDB udb = MinimaDB.getDB().getUserDB();
+			
+			//Store everything..
+			GeneralParams.MYSQL_STORE_ALLTXPOW = true;
+			
+			udb.setAutoMySQLHost(dbhost);
+			udb.setAutoMySQLDB(dbname);
+			
+			udb.setAutoMySQLUser(username);
+			udb.setAutoMySQLPassword(password);
+			
+			udb.setAutoLoginDetailsMySQL(true);
+			
+			//And Auto Backup everything..
+			udb.setAutoBackupMySQL(true);
+			
+			//Are we ALSO activating the MySQL Coins DB
+			if(GeneralParams.MYSQL_DB_COINS) {
+				udb.setAutoBackupMySQLCoins(true);
+			}
+			
+			//Try and Connect to the DB..
+			if(GeneralParams.MYSQL_DB_DELAY != 0) {
+				MinimaLogger.log("Waiting "+GeneralParams.MYSQL_DB_DELAY+" ms before attempting first MySQL connection..");
+				Thread.sleep(GeneralParams.MYSQL_DB_DELAY);
+			}
+			
+			//NOW attempt a connection
+			MySQLConnect mysql 	= new MySQLConnect(dbhost, dbname, username, password, true);
+			mysql.init();
+			mysql.shutdown();
+			
+		}catch(Exception exc) {
+			
+			//Failed..
+			MinimaLogger.log("Failed to connect to MySQL DB - MUST be username:password@host:port/database "+exc.toString());
+		}
+	}
 	
 	@Override
 	public Command getFunction() {
 		return new mysql();
 	}	
+	
+	public static void main(String[] zArgs) {
+		
+		MySQLConnect conn = new MySQLConnect("127.0.0.1:3306", "minimadb", "minimauser", "minimapassword");
+		try {
+			System.out.println("Attemp Connect!");
+			conn .init();
+			
+			System.out.println("Connected!");
+			
+			int count = conn.getCount();
+			System.out.println("Rows : "+count);
+			
+			
+			conn.shutdown();
+			
+			System.out.println("Shutdown!");
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		
+	}
 }

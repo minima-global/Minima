@@ -1,0 +1,81 @@
+################################################################################
+# Minima MySQL MEG..                                                           #
+#                                                                              #
+# Full Minima node backed by a MySQL database with MEG..                       #
+################################################################################
+
+version: '3'
+services:
+
+    #MySQL Database to store all Minima Data.. all TxPoW etc..
+    mysql:
+        image: mysql:8.4
+        environment:
+            MYSQL_ROOT_PASSWORD: 'rootpassword'
+            MYSQL_USER: 'minimauser'
+            MYSQL_PASSWORD: 'minimapassword'
+            MYSQL_DATABASE: 'minimadb'
+        restart: unless-stopped
+        #You can access the MySQL db if you want by opening the port
+        ports:
+            - 3306:3306
+
+    #Minima Node
+    minima:
+        image: minimaglobal/minima:dev
+        stop_grace_period: 60s
+        restart: unless-stopped
+        environment:
+            #If you are running on Desktop / no external IP enable this setting
+            #minima_desktop: true
+            #You must have rpc enabled so MEG can communicate - do NOT open port 9005
+            minima_rpcenable: "true"
+            minima_solo: "true"
+            #MDS is ENABLED by default in the container so you MUST set your MDS password to something good..
+            minima_mdspassword: "123"
+            minima_megammr: "true"
+            #MySQL login profiles:
+            minima_mysqldb: "minimauser:minimapassword@mysql:3306/minimadb"
+            minima_mysqldbdelay: "10000"
+        #Opening the Minima ports.. You can change these if you are running multiple version on the same host
+        ports:
+            #Main Minima port - you can remove this if you don't have an external IP
+            - 9001:9001
+            #MDS port..
+            - 9003:9003
+        #The main Minima data folder where you can load mysql archive files
+        volumes:
+            - ./data:/home/minima/data
+            - ./backups:/home/minima/backups
+        depends_on:
+            - mysql
+
+    #The MEG node.. waits for Minima to start    
+    meg:
+        image: minimaglobal/meg:dev
+        stop_grace_period: 60s
+        restart: unless-stopped
+        ports:
+            - 8080:8080
+        environment:
+           #The MAIN admin password - CHANGE this 
+           meg_adminpassword: "mypassword"
+
+           #Do NOT change these..
+           meg_minimarpc: "http://minima:9005/"
+           meg_meghost: "http://meg:8080"
+
+           #NEED this as minima waits for mysql
+           meg_startupdelay: "20000"
+        depends_on:
+            - minima
+    
+    #The CRON job that runs a backup of MEG and Mysql every 24 hours..
+    cron:
+        build:
+            context: .
+            dockerfile: CRON.Dockerfile
+        entrypoint: [ "bash", "-c", "cron -f"]
+        restart: unless-stopped 
+        depends_on:
+            - minima        

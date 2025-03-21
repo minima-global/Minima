@@ -1,0 +1,199 @@
+<html>
+
+<head>
+	<title>MiniFS</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="mds.js"></script>
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- JS -->
+	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/auth.js"></script>
+	<script type="text/javascript" src="./js/gui.js"></script>
+	<script type="text/javascript" src="./js/purify.min.js"></script>
+	<script type="text/javascript" src="./js/txns.js"></script>
+		
+	<!--  JQUERY CSS + JS -->
+	<link rel="stylesheet" href="./js/jquery/jquery-ui-1.14.1/jquery-ui.css">
+	<link rel="stylesheet" href="./js/jquery/jquery-ui-1.14.1/jquery-ui.icon-font.css">
+	<script type="text/javascript" src="./js/jquery/jquery-3.7.1.min.js"></script>
+	<script type="text/javascript" src="./js/jquery/jquery-ui-1.14.1/jquery-ui.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+</head>
+
+<body>
+
+<center>
+	
+	<div class="titlebar" onclick="showTitleOnAndroid();">
+		<table width=100% border=0>
+			<tr>
+				<td><img height=45 src="minifs.png"></td>
+				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>MiniFS</b></td>
+				
+				<td class='topicdate' nowrap>
+					<button id="button-help">Help</button>
+					<button id="button-search">Search</button>
+					<button id="button-home">Home</button>
+				</td>
+			</tr>
+		</table>
+	</div>
+	<br>
+
+
+<div class=blueborder>
+
+<div style="padding:8;text-align:center;">
+
+<br><br>
+
+Search for any file in your database<br><br>
+<input class=searchfield type="text" id="searchtext" size=44><br>
+<br>
+<button  id="searchbutton">Search Files</button><br>
+<br>
+
+</div>
+</div>
+<br>
+
+<div id=mywebpackets></div>
+
+</center>
+
+<script type="text/javascript">
+
+	//Set up the buttons..
+	$(document).ready(function() {
+		startupButtons();
+		
+		$( "#searchbutton" ).button({
+			icon: "ui-icon-search",
+			showLabel: true
+		}).click(function(){searchFiles();});
+		
+	});
+	
+	function copySite(filename) {
+
+		if(confirm("This will create an unpublished copy of\n\n "+filename+"\n\nContinue ?")){
+			
+			//Copy it..
+			copyFilePacket(filename,function(newfp){
+				alert("A copy has been made!\n\n"+newfp.data.name);
+				
+				refreshview();
+			});	
+		}
+	}
+	
+	function createPacketView(filepacket,i){
+		
+		var pub = ""
+		if(filepacket.published == 0){
+			pub = "( NOT published )";
+		}
+		
+		var distinctname = "button-"+i;
+		
+		var guidata =
+		"<table class=filepacketview border=0>\n"
+		+ "	<tr>\n"
+		+ "		<td colspan=2><b>"+filepacket.data.name+"</b></td>\n"
+		+ "	</tr>\n"
+		+ "	<tr>\n"
+		+ "		<td colspan=2>Version : "+filepacket.data.version+" ( "+(filepacket.data.file.length-2)/2+" bytes )<br></td>\n"
+		+ "	</tr>\n"
+		+ "	<tr>\n"
+		+ "		<td colspan=2><br>"+DOMPurify.sanitize(filepacket.data.description)+"<br><br></td>\n"
+		+ "	</tr>\n"
+		+ "	<tr>\n"
+		+ "		<td colspan=2 style=\"text-align:right\">"+pub+"&nbsp;</td>\n"
+		+ "	</tr>\n"
+		
+		+ "	<tr>\n"
+		+ "		<td>\n"
+		+ "			<button id='republish-"+distinctname+"' onclick=\"publishSite('"+filepacket.data.name+"')\">Publish</button>\n"
+		+ "			<button id='delete-"+distinctname+"' onclick=\"deleteSite('"+filepacket.data.name+"')\">Delete</button>\n"
+		+ "		</td>\n"
+		+ "		<td style=\"text-align:right\">\n"
+		+ "			<button id='download-"+distinctname+"' onclick=\"downloadSite('"+filepacket.data.file+"','"+filepacket.data.name+".zip')\">Download</button>\n"
+		+ "			<button id='copy-"+distinctname+"' onclick=\"copySite('"+filepacket.data.name+"')\">Copy</button>\n"
+		+ "			<button id='browse-"+distinctname+"' onclick=\"openMinimaBrowser('"+filepacket.data.name+"')\">Browse</button>\n"
+		+ "		</td>\n"
+		+ "	</tr>\n"
+		+ "</table><br>"
+		
+		return guidata;
+	}
+	
+	function searchFiles(){
+		
+		var search = searchtext.value.trim();
+		if(search == ""){
+			return;
+		}
+		
+		searchFilePackets(search,function(found){
+			
+			if(found.length == 0){
+				mywebpackets.innerHTML = 
+					"<table class=filepacketview border=0><tr><td>"+
+					"<b>0</b> Files found..</td></tr></table>";
+			}else{
+				var html = "";
+				var len = found.length;
+				for(var i=0;i<len;i++){
+					html += createPacketView(found[i],i);	
+				}
+				
+				mywebpackets.innerHTML = html;
+				
+				//Make them all into nice buttons..
+				for(var i=0;i<len;i++){
+					var distinctname = "button-"+i;
+					$( "#republish-"+distinctname ).button({icon: "ui-icon-shuttle",showLabel: true});
+					$( "#delete-"+distinctname ).button({icon: "ui-icon-delete",showLabel: false});
+					$( "#copy-"+distinctname ).button({icon: "ui-icon-copy",showLabel: false});
+					$( "#download-"+distinctname ).button({icon: "ui-icon-download",showLabel: false});
+					$( "#browse-"+distinctname ).button({icon: "ui-icon-globe",showLabel: true});
+				}
+			}
+			
+		});
+	}
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			//Get the dapplink..
+			MDS.dapplink("miniweb",function(dappresp){
+				
+				//Get link to the Browser MiniDAPP
+				BROWSER_DAPPLINK = "";
+				if(dappresp.status){
+					//Store this to open 
+					BROWSER_DAPPLINK = dappresp.base.replace("index.html","browse.html");	
+				}
+			});
+			
+		}
+	});
+
+</script>
+
+</body>
+
+</html>

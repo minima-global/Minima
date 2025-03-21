@@ -296,9 +296,29 @@ public class GeneralParams {
 	public static boolean MDS_NOSSL = false;
 	
 	/**
+	 * Setup MySQL DB from command line
+	 */
+	public static String MYSQL_DB_DETAILS = "";
+	
+	/**
+	 * Is there a delay before attempting a MySQL connection (docker can take 30 seconds to start mysql container)
+	 */
+	public static int MYSQL_DB_DELAY = 0;
+	
+	/**
+	 * Is there a delay before attempting a MySQL connection (docker can take 30 seconds to start mysql container)
+	 */
+	public static boolean MYSQL_DB_COINS = false;
+	
+	/**
 	 * Do we store all txpow with MySQL Autobackup
 	 */
 	public static boolean MYSQL_STORE_ALLTXPOW = false;
+	
+	/**
+	 * Enable the Public MDS from command line
+	 */
+	public static boolean PUBLICMDS_ENABLE = false;
 	
 	/**
 	 * Hard set the Public MDS UID
@@ -319,6 +339,16 @@ public class GeneralParams {
 	 * Do we prune all tokens - only Minima allowed
 	 */
 	public static boolean MEGAMMR_MEGAPRUNE_TOKENS = false;
+	
+	/**
+	 * Do we show the network requests
+	 */
+	public static boolean SHOW_NETWORK_CALLS = false;
+	
+	/**
+	 * IF dhownet calls do we show POLL
+	 */
+	public static boolean SHOW_NETWORK_POLLS = true;
 	
 	/**
 	 * Reset all params to their default settings.. ANDROID keeps them after shutdown
@@ -384,14 +414,21 @@ public class GeneralParams {
 		NOTIFY_ALL_TXPOW 	  = false;
 		RESCUE_MEGAMMR_NODE	  = "";
 		MDS_NOSSL 			  = false;
-		MYSQL_STORE_ALLTXPOW  = false;
-		PUBLICMDS_SESSION_UID = "";
+		
+		MYSQL_STORE_ALLTXPOW  	= false;
+		MYSQL_DB_DETAILS 		= "";
+		MYSQL_DB_DELAY 			= 0;
+		MYSQL_DB_COINS 			= false;
+		
+		PUBLICMDS_ENABLE 		= false;
+		PUBLICMDS_SESSION_UID 	= "";
 		
 		MEGAMMR_MEGAPRUNE 	  		= false;
 		MEGAMMR_MEGAPRUNE_STATE 	= false;
 		MEGAMMR_MEGAPRUNE_TOKENS	= false;
 		
-		P2P2_ENABLED 		  = false;
+		P2P2_ENABLED 		  	= false;
+		SHOW_NETWORK_CALLS 		= false;
 	}
 	
 }

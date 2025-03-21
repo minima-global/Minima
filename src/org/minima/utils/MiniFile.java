@@ -27,21 +27,33 @@ public class MiniFile {
 	
 	public static File createBaseFile(String zFilename) {
 		
+		File retfile = null; 
+		
 		//Does the name have any slashes in it..
 		if(zFilename.contains(File.separator) || zFilename.contains("\\") || zFilename.contains("/")) {
 			
 			//It's trying to be an absolute path
-			return new File(zFilename);
-		}
+			retfile = new File(zFilename);
 		
-		//HAve we specified a base folder
-		if(GeneralParams.BASE_FILE_FOLDER.equals("")) {
+		}else if(GeneralParams.BASE_FILE_FOLDER.equals("")) {
 			
 			//Use the default location
-			return  new File(zFilename);
+			retfile = new File(zFilename);
+		
+		}else {
+			
+			//Use the base folder as the base
+			retfile = new File(GeneralParams.BASE_FILE_FOLDER,zFilename);
 		}
 		
-		return new File(GeneralParams.BASE_FILE_FOLDER,zFilename);
+		//Make sure the parent exist..
+		String parent = retfile.getParent();
+		if(parent!=null) {
+			File pp = new File(parent);
+			pp.mkdirs();
+		}
+		
+		return retfile;
 	}
 	
 	

@@ -3,6 +3,33 @@
 var MINIWEB_FILE_ADDRESS = "0x4D494E4957454220524F434B5321";
 var MINIWEB_FILE_REQUEST = "0x4D494E4957454220524F434BFFFF";
 
+//Are we stroing the state.. 
+var STORE_STATE = true;
+
+//Publish a filepacket given the name
+function publishFilePacket(name,callback){
+	
+	//Load it..
+	getFilePacket(name,function(fp){
+		if(fp){
+			sendFilePacket(fp,function(resp){
+				if(callback){
+					callback(resp)
+				}
+			});
+		}else{
+			var errormsg = {};
+			errormsg.pending 	= false;
+			errormsg.status 	= false;
+			errormsg.error 		= "Filepacket "+name+" not found ?";
+			
+			if(callback){
+				callback(errormsg)
+			}
+		}
+	});
+}
+
 //Send a file packet..
 function sendFilePacket(filepacket, callback){
 	
@@ -17,7 +44,7 @@ function sendFilePacket(filepacket, callback){
 	state[6]  = filepacket.signature;
 	
 	//Now construct a txn
-	var txn = "sendpoll amount:0.000000000001 address:"+MINIWEB_FILE_ADDRESS+" storestate:true state:"+JSON.stringify(state);
+	var txn = "sendpoll amount:0.000000000001 address:"+MINIWEB_FILE_ADDRESS+" storestate:"+STORE_STATE+" state:"+JSON.stringify(state);
 	
 	//Now post..
 	MDS.cmd(txn,function(resp){
@@ -65,7 +92,7 @@ function sendFileRequest(name, callback){
 	state[0]  = "["+name+"]";
 	
 	//Now construct a txn
-	var txn = "sendpoll amount:0.000000000001 address:"+MINIWEB_FILE_REQUEST+" storestate:true state:"+JSON.stringify(state);
+	var txn = "sendpoll amount:0.000000000001 address:"+MINIWEB_FILE_REQUEST+" storestate:"+STORE_STATE+" state:"+JSON.stringify(state);
 	
 	//Now post..
 	MDS.cmd(txn,function(resp){

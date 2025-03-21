@@ -573,6 +573,19 @@ public class MinimaDB {
 		writeLock(false);
 	}
 	
+	/**
+	 * Close and reopen the DB.. make closing later much quicker..
+	 */
+	public void refreshSQLDB() {
+		
+		//First the Archive
+		mArchive.closeAndReopen();
+		
+		//Now the TXPOWDB
+		mTxPoWDB.getSQLDB().closeAndReopen();
+		
+	}
+	
 	public void saveAllDB() {
 		saveAllDB(false);
 	}

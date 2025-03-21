@@ -64,33 +64,43 @@ public class convert extends Command {
 			data = getParam("data");
 		}
 		
-		JSONObject resp = new JSONObject();
+		JSONObject resp 	= new JSONObject();
+		MiniData fromdata 	= null;
+		String todata 		= null;
 		
-		//First get the initial..
-		MiniData fromdata = null; 
-		if(from.equals("hex")) {
-			fromdata = new MiniData(data);
-		}else if(from.equals("mx")) {
-			fromdata = Address.convertMinimaAddress(data);
-		}else if(from.equals("string")) {
-			fromdata = new MiniData(new MiniString(data).getData());
-		}else if(from.equals("base64")) {
-			fromdata = new MiniData(Base64.getDecoder().decode(data));
-		}else {
-			throw new CommandException("Invalid FROM type : "+from);
-		}
-		
-		String todata = null;
-		if(to.equals("hex")) {
-			todata = fromdata.to0xString();
-		}else if(to.equals("mx")) {
-			todata = Address.makeMinimaAddress(fromdata);
-		}else if(to.equals("string")) {
-			todata = new MiniString(fromdata.getBytes()).toString();
-		}else if(to.equals("base64")) {
-			todata = Base64.getEncoder().encodeToString(fromdata.getBytes());
-		}else {
-			throw new CommandException("Invalid TO type : "+to);
+		try {
+			
+			//First get the initial..
+			 
+			if(from.equals("hex")) {
+				fromdata = new MiniData(data);
+			}else if(from.equals("mx")) {
+				fromdata = Address.convertMinimaAddress(data);
+			}else if(from.equals("string")) {
+				fromdata = new MiniData(new MiniString(data).getData());
+			}else if(from.equals("base64")) {
+				fromdata = new MiniData(Base64.getDecoder().decode(data));
+			}else {
+				throw new CommandException("Invalid FROM type : "+from);
+			}
+			
+			if(to.equals("hex")) {
+				todata = fromdata.to0xString();
+			}else if(to.equals("mx")) {
+				todata = Address.makeMinimaAddress(fromdata);
+			}else if(to.equals("string")) {
+				todata = new MiniString(fromdata.getBytes()).toString();
+			}else if(to.equals("base64")) {
+				todata = Base64.getEncoder().encodeToString(fromdata.getBytes());
+			}else {
+				throw new CommandException("Invalid TO type : "+to);
+			}
+			
+		}catch(CommandException cexc) {
+			throw cexc;
+			
+		}catch(Exception exc) {
+			throw new CommandException(exc.toString());
 		}
 		
 		//Add to response

@@ -14,7 +14,7 @@ RUN mkdir -p $HOME/data
 
 #Install some apps
 RUN apt-get update
-RUN apt-get -y install curl jq vim nano
+RUN apt-get -y install curl vim nano jq
 RUN apt-get clean
 RUN rm -rf /var/lib/apt/lists/*
 

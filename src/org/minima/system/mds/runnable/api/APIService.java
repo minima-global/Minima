@@ -6,6 +6,7 @@ import org.minima.system.mds.MDSManager;
 import org.minima.system.mds.handler.APIAutoResponse;
 import org.minima.system.mds.handler.APICommand;
 import org.minima.system.mds.runnable.NullCallable;
+import org.minima.utils.MinimaLogger;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.NativeJSON;
@@ -50,16 +51,26 @@ public class APIService {
 		//Come up with a random ID
 		String rand = MiniData.getRandomData(16).to0xString();
 		
+		//Create a new Call Object
+		mMDS.addAPICall(new APICallback(mContext, mScope, rand, zCallback));
+				
 		//Get the MiniDAPP we are trying to talk to
 		MiniDAPP md = mMDS.getMiniDAPPFromName(zDappName);
 		
-		//Create a new Call Object
-		mMDS.addAPICall(new APICallback(mContext, mScope, rand, zCallback));
+		//Is it a Valid MiniDAPP 
+		if(md == null) {
+			
+			//Create a Timed auto response..
+			APIAutoResponse auto = new APIAutoResponse(mMDS, zDappName, mMiniDAPPName, mMiniDAPPID,  rand);
+			auto.setImmediate();
+			auto.runauto();
+			
+			return;
+		}
 		
 		//Create a Command and run it..
-		APICommand comms = new APICommand(mMDS, mMiniDAPPName, 
-				zDappName, md.getUID(), zData, rand, true);
-		String result = comms.runCommand();
+		APICommand comms = new APICommand(mMDS, mMiniDAPPName, zDappName, md.getUID(), zData, rand, true);
+		String result 	 = comms.runCommand();
 		
 		//Create a Timed auto response..
 		APIAutoResponse auto = new APIAutoResponse(mMDS, zDappName, mMiniDAPPName, mMiniDAPPID,  rand);

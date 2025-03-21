@@ -129,7 +129,7 @@ public class JsonDB implements Streamable{
 	
 	public JSONArray getJSONArray(String zName ) {
 		if(mParams.get(zName) == null) {
-			return new JSONArray();
+			mParams.put(zName, new JSONArray());
 		}
 		
 		return (JSONArray)mParams.get(zName);

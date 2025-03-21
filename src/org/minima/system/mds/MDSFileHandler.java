@@ -95,7 +95,7 @@ public class MDSFileHandler implements Runnable {
 	         
 	        bufferedReader 	= new BufferedReader(new InputStreamReader(inputStream, MiniString.MINIMA_CHARSET));
 	        dos 			= new DataOutputStream(outputStream);
-	        
+
 	        // get first line of the request from the client
 	     	String input = bufferedReader.readLine();
  			
@@ -142,7 +142,16 @@ public class MDSFileHandler implements Runnable {
 				input = bufferedReader.readLine();
 			}
 			
-			//MinimaLogger.log("File Requested : "+fileRequested,false);
+			if(GeneralParams.SHOW_NETWORK_CALLS) {
+				if(GeneralParams.SHOW_NETWORK_POLLS) {
+					MinimaLogger.log("Network Call : "+fileRequested,false);
+				}else {
+					//Check is not a POLL message
+					if(!fileRequested.contains("poll?")) {
+						MinimaLogger.log("Network Call : "+fileRequested,false);
+					}
+				}	
+			}
 			
 			//Is it the minihub..
 			if(fileRequested.equals("")) {
@@ -183,29 +192,12 @@ public class MDSFileHandler implements Runnable {
 				}
 				
 				//Are we resyncing..
-				if(Main.getInstance().isShuttongDownOrRestoring() && !command.equals("poll")) {
+				if(Main.getInstance().isShuttongDownOrRestoring() 
+						&& !command.equals("poll")
+						&& !command.equals("megapoll")) {
 					throw new MDSInvalidIDException("Attempt to access MDS during resync.. blocked");
 				}
 
-				/*if(Main.getInstance().isShuttongDownOrRestoring()) {
-					
-					//Check DB Open..
-					if(!MinimaDB.getDB().getMDSDB().isOpen()) {
-						throw new MDSInvalidIDException("Attempt to access MDS after shutdown");
-					}
-					
-					//Only allow the security MiniDAPP..
-					MiniDAPP mdcheck 	= mMDS.getMiniDAPP(minidappid);
-					String namev 		= mdcheck.getName();
-					
-					//MinimaLogger.log("MDS DURING SHUTDOWN : command:"+command+" name:"+namev);
-					
-					if(namev.equalsIgnoreCase("minihub") || !command.equals("poll")) {
-						MinimaLogger.log("Attempt to access MDS during resync from "+namev+" ..blocked", false);
-						throw new MDSInvalidIDException("Attempt to access MDS during resync.. blocked");
-					}
-				}*/
-				
 				//get the POST data
 				int contentlength = Integer.parseInt(allheaders.get("Content-Length"));
 				
@@ -465,7 +457,7 @@ public class MDSFileHandler implements Runnable {
 				dos.writeBytes("\r\n");
 				dos.flush();
 				
-			}else if( fileRequested.startsWith("publicmds") ) {
+			}else if( fileRequested.startsWith("public") ) {
 				
 				//Is the public site enabled..
 				if(!MinimaDB.getDB().getUserDB().getPublicMDS()) {
@@ -479,10 +471,9 @@ public class MDSFileHandler implements Runnable {
 				//Is it the minihub..
 				if(fileRequested.equals("publicmds")) {
 					fileRequested = "publicmds/index.html";
-				}
 				
-				if(fileRequested.equals("publicmdsgen")) {
-					fileRequested = "publicmdsgen/index.html";
+				}else if(fileRequested.equals("public")) {
+					fileRequested = "public/index.html";
 				}
 				
 				//Remove the params..
@@ -511,7 +502,7 @@ public class MDSFileHandler implements Runnable {
 					//And write that out..
 					writeHTMLPage(dos, success);
 				
-				}else if(fileRequested.equals("publicmdsgen/index.html")) {
+				}else if(fileRequested.equals("public/index.html")) {
 					
 					//Use the PublicMDS generator..
 					String publicindex = mPublicMDS.getIndexPage();
@@ -591,7 +582,10 @@ public class MDSFileHandler implements Runnable {
 						dos.writeBytes("Access-Control-Allow-Origin: *\r\n");
 						
 						//Only cache Images ?
-						if(contenttype.startsWith("image") || contenttype.endsWith("css")) {
+						/*if(contenttype.startsWith("image") || contenttype.endsWith("css")) {
+							dos.writeBytes("Cache-Control: max-age=604800: *\r\n");
+						}*/
+						if(contenttype.startsWith("image")) {
 							dos.writeBytes("Cache-Control: max-age=604800: *\r\n");
 						}
 								

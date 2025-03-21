@@ -113,6 +113,11 @@ public class JSONObject extends LinkedHashMap implements JSONAware, JSONStreamAw
 		return (String)get(zKey);
 	}
 	
+	//Return the boolean value
+	public boolean getBoolean(String zKey) {
+		return (boolean)get(zKey);
+	}
+	
 	public String getString(String zKey, String zDefault) {
 		if(containsKey(zKey)) {
 			return getString(zKey);

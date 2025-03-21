@@ -1,6 +1,6 @@
 @font-face {
 	font-family: Manrope;
-	src: url('./Manrope-Regular.ttf');
+	src: url('./root/miniweb/fonts/Manrope-Regular.ttf');
 }
 
 body {
@@ -8,9 +8,14 @@ body {
     margin: 20;   /* Remove body margins */
 }
 
+.ui-icon {
+	zoom:150%;
+	color : #5555ff
+}
+
 .titlebar{
   width:100%;
-  min-width:460;
+  min-width:360;
   height:50px;
   text-align: left;
   
@@ -19,10 +24,19 @@ body {
   border-radius: 10px;
 }
 
+.blueborder{
+  width:100%;
+  max-width:840;
+  min-width:360;
+  text-align: left;
+  border: 2px solid #0000ff;
+  border-radius: 10px;
+}
+
 .filepacketview {
 	width:100%;
 	max-width:840;
-	min-width:460;
+	min-width:360;
 	padding: 8px 8px;
 	margin-left: auto;
   	margin-right: auto;
@@ -45,6 +59,42 @@ body {
   	padding: 8px 8px;
   	font-family: Manrope;
   	font-size: 14px;
+}
+
+.gensitefield {
+    width:100%;
+	max-width:840px;
+	min-width:300px;
+	
+	resize: vertical;
+		
+	border: 0.5px solid #999;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	font-family: Manrope;
+  	font-size: 14px;
+}
+
+.gensitelink{
+    width:100%;
+	max-width:400px;
+	margin-top:4;
+	
+	border: 0.5px solid #999;
+  	border-radius: 8px;
+  	padding: 8px 8px;
+  	font-family: Manrope;
+  	font-size: 14px;
+}
+
+.gensite_desc {
+    font-family: Manrope;
+  	font-size: 12px;
+  	color:#777777;
+}
+
+.gensite_nowrap {
+    white-space: nowrap;
 }
 
 /*Simple Button!!*/

@@ -16,6 +16,7 @@ import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOTraffic;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.P2PManager;
+import org.minima.system.network.p2p2.P2P2Manager;
 import org.minima.system.network.rpc.CMDHandler;
 import org.minima.system.network.rpc.HTTPSServer;
 import org.minima.system.network.rpc.HTTPServer;
@@ -43,6 +44,11 @@ public class NetworkManager {
 	 * P2P Manager..
 	 */
 	MessageProcessor mP2PManager;
+	
+	/**
+	 * P2P2 Manager..
+	 */
+	MessageProcessor mP2P2Manager;
 	
 	/**
 	 * The RPC server
@@ -75,6 +81,21 @@ public class NetworkManager {
 		
 		//The main NIO server manager
 		mNIOManager = new NIOManager(this);
+				
+		//Is the P2P2 enabled..
+		if(GeneralParams.P2P2_ENABLED) {
+			mP2P2Manager = new P2P2Manager();
+		}else {
+			//Create a Dummy listener.. 
+			mP2P2Manager = new MessageProcessor("P2P2_DUMMY") {
+				@Override
+				protected void processMessage(Message zMessage) throws Exception {
+					if(zMessage.isMessageType(P2PFunctions.P2P_SHUTDOWN)) {
+						stopMessageProcessor();
+					}
+				}
+			};
+		}
 		
 		//Do we start the RPC server
 		if(GeneralParams.RPC_ENABLED) {
@@ -159,6 +180,13 @@ public class NetworkManager {
 			stats.put("p2p", "disabled");
 		}
 		
+		//P2P2 stats
+		if(GeneralParams.P2P2_ENABLED) {
+			stats.put("p2p2", "enabled");
+		}else {
+			stats.put("p2p2", "disabled");
+		}
+		
 		//Read / Write stats..
 		NIOTraffic traffic = mNIOManager.getTrafficListener();
 		
@@ -239,14 +267,19 @@ public class NetworkManager {
 		}else {
 			mP2PManager.stopMessageProcessor();
 		}
-	}
-	
-	public boolean isShuttingDowen() {
-		return mShuttingDown;
+		
+		//Send a message to the P2P
+		if(GeneralParams.P2P2_ENABLED) {
+			((P2P2Manager)mP2P2Manager).shutdown();
+		}else {
+			mP2P2Manager.stopMessageProcessor();
+		}
 	}
 	
 	public boolean isShutDownComplete() {
-		return 	mNIOManager.isShutdownComplete() &&  mP2PManager.isShutdownComplete();
+		return 	mNIOManager.isShutdownComplete() &&  
+				mP2PManager.isShutdownComplete() && 
+				mP2P2Manager.isShutdownComplete();
 	}
 	
 	public void hardShutDown() {
@@ -256,10 +289,15 @@ public class NetworkManager {
 			MinimaLogger.log(e);
 		} 
 		mP2PManager.stopMessageProcessor();
+		mP2P2Manager.stopMessageProcessor();
 	}
 	
 	public MessageProcessor getP2PManager() {
 		return mP2PManager;
+	}
+	
+	public MessageProcessor getP2P2Manager() {
+		return mP2P2Manager;
 	}
 	
 	public NIOManager getNIOManager() {

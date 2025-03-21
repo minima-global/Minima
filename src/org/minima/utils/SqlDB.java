@@ -128,6 +128,10 @@ public abstract class SqlDB {
 	}
 	
 	public boolean checkOpen() throws SQLException {
+		return checkOpen(true);
+	}
+	
+	public boolean checkOpen(boolean zLogs) throws SQLException {
 		
 		//Check not NULL
 		boolean reopen = false;
@@ -142,7 +146,9 @@ public abstract class SqlDB {
 		if(reopen) {
 			
 			//Notify User
-			MinimaLogger.log("SQLDB RE-OPEN : "+mSQLDBNoMV.getName());
+			if(zLogs) {
+				MinimaLogger.log("SqlDB requires re-open : "+mSQLDBNoMV.getName());
+			}
 			
 			//Clean memory
 			System.gc();

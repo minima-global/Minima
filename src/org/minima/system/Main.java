@@ -15,6 +15,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWProcessor;
 import org.minima.system.commands.CommandRunner;
+import org.minima.system.commands.backup.mysql;
 import org.minima.system.genesis.GenesisMMR;
 import org.minima.system.genesis.GenesisTxPoW;
 import org.minima.system.mds.MDSManager;
@@ -98,6 +99,8 @@ public class Main extends MessageProcessor {
 	
 	public static final String MAIN_AUTOBACKUP_MYSQL 	= "MAIN_AUTOBACKUP_MYSQL";
 	long MAIN_AUTOBACKUP_MYSQL_TIMER					= 1000 * 60 * 60 * 2;
+	
+	public boolean MYSQL_IMPORTING_NO_ACTION  			= false;
 	
 	public static final String MAIN_AUTOBACKUP_TXPOW 	= "MAIN_AUTOBACKUP_TXPOW";
 	
@@ -290,6 +293,13 @@ public class Main extends MessageProcessor {
 			MinimaLogger.log("Load all DB.. finish");
 		}
 		
+		//Are we connecting to a MySQL DB automatically
+		if(!GeneralParams.MYSQL_DB_DETAILS.equals("")) {
+				
+			//Set the details.. and start AUTO backup..
+			mysql.convertMySQLParams(GeneralParams.MYSQL_DB_DETAILS);
+		}
+		
 		//Are we in Slave node mode
 		boolean slavemode = MinimaDB.getDB().getUserDB().isSlaveNode();
 		if(slavemode) {
@@ -324,7 +334,7 @@ public class Main extends MessageProcessor {
 		
 		//Create the Initial Key Set
 		try {
-			mInitKeysCreated = MinimaDB.getDB().getWallet().initDefaultKeys(2);
+			mInitKeysCreated = MinimaDB.getDB().getWallet().initDefaultKeys(3);
 		}catch(Exception exc) {
 			MinimaLogger.log(exc.toString());
 		}
@@ -406,8 +416,8 @@ public class Main extends MessageProcessor {
 		//AutoBackup - do one in 5 minutes then every 24 hours
 		PostTimerMessage(new TimerMessage(1000 * 60 * 5, MAIN_AUTOBACKUP));
 		
-		//MYSQL AutoBackup - do one in 5 minutes then every 2 hours
-		PostTimerMessage(new TimerMessage(1000 * 60 * 5, MAIN_AUTOBACKUP_MYSQL));
+		//MYSQL AutoBackup - do one every 2 hours
+		PostTimerMessage(new TimerMessage(MAIN_AUTOBACKUP_MYSQL_TIMER, MAIN_AUTOBACKUP_MYSQL));
 		
 		//P2P MDS NET checker
 		PostTimerMessage(new TimerMessage(P2PNETMDS_TIMER, MAIN_P2PNETMDS_CHECKER));
@@ -886,14 +896,31 @@ public class Main extends MessageProcessor {
 			//Now save the state - in case system crashed..
 			MinimaDB.getDB().saveState();
 			
+			//Now close and Re-open the SQL db..
+			MinimaDB.getDB().refreshSQLDB();
+			
 			//Clear the Maxima Poll Stack
 			getMaxima().checkPollMessages();
 			
 		}else if(zMessage.getMessageType().equals(MAIN_AUTOBACKUP_MYSQL)) {
 		
-			
 			UserDB udb = MinimaDB.getDB().getUserDB();
 			
+			//Are we importing somewhere else..
+			if(MYSQL_IMPORTING_NO_ACTION) {
+				
+				if(udb.getAutoBackupMySQL()) {
+					MinimaLogger.log("Skipping MySQL Backup as importing data already..");
+				}
+				
+				//Don't do this until we are finished importing..
+				PostTimerMessage(new TimerMessage(MAIN_AUTOBACKUP_MYSQL_TIMER, MAIN_AUTOBACKUP_MYSQL));
+			
+				return;
+			}
+			
+			
+			//Lets see if we need to import data
 			try {
 				//Are we enabled to back up MySQL..
 				if(udb.getAutoBackupMySQL()) {
@@ -949,6 +976,11 @@ public class Main extends MessageProcessor {
 			PostTimerMessage(new TimerMessage(MAIN_AUTOBACKUP_MYSQL_TIMER, MAIN_AUTOBACKUP_MYSQL));
 			
 		}else if(zMessage.getMessageType().equals(MAIN_AUTOBACKUP_TXPOW)) {
+			
+			//Are we importing somewhere else..
+			if(MYSQL_IMPORTING_NO_ACTION) {
+				return;
+			}
 			
 			//Are we storing all the TxPoW
 			if(GeneralParams.MYSQL_STORE_ALLTXPOW) {

@@ -125,11 +125,22 @@ public class mds extends Command {
 				//Get the MiniDAPP JSON
 				JSONObject jmds = md.toJSON(); 
 				
-				//Get the Session ID
-				String sessionid = mdsman.convertMiniDAPPID(md.getUID());
-				jmds.put("sessionid", sessionid);
-				
-				arr.add(jmds);
+				//Only add the web wallet if running a MEGAMMR..
+				try {
+					JSONObject conf = (JSONObject) jmds.get("conf");
+					if(conf.getString("name").equalsIgnoreCase("web wallet") && !GeneralParams.IS_MEGAMMR) {
+						continue;
+					}
+					
+					//Get the Session ID
+					String sessionid = mdsman.convertMiniDAPPID(md.getUID());
+					jmds.put("sessionid", sessionid);
+					
+					arr.add(jmds);
+					
+				}catch(Exception exc) {
+					MinimaLogger.log(exc);
+				}	
 			}
 
 			JSONObject mds = new JSONObject();

@@ -9,6 +9,7 @@ import org.minima.system.mds.handler.CMDcommand;
 import org.minima.system.mds.handler.COMMSCommand;
 import org.minima.system.mds.handler.FILEcommand;
 import org.minima.system.mds.handler.KEYPAIRcommand;
+import org.minima.system.mds.handler.MEGAPOLLcommand;
 import org.minima.system.mds.handler.NETcommand;
 import org.minima.system.mds.handler.NOTIFYcommand;
 import org.minima.system.mds.handler.POLLcommand;
@@ -246,7 +247,16 @@ public class MDSCommandHandler {
 			//Get the Name of the MiniDAPP..
 			MiniDAPP md = mMDS.getMiniDAPPFromName(mininame);
 			
-			if(type.equals("request")){
+			//Do we have that MiniDAPP..
+			if(md == null) {
+				
+				//No MiniDAPP.. send auto response..
+				APIAutoResponse auto = new APIAutoResponse(mMDS, mininame, 
+						thismd.getName(), thismd.getUID(),  randid);
+				auto.setImmediate();
+				auto.runauto();
+				
+			}else if(type.equals("request")){
 				APICommand comms = new APICommand(mMDS, thismd.getName(), 
 						md.getName(), md.getUID(),  msg, randid, true);
 				result = comms.runCommand();
@@ -293,6 +303,8 @@ public class MDSCommandHandler {
 					}
 				}
 				
+				//MinimaLogger.log("DAPP LINK : "+data.trim()+" "+reqmini.getName());
+				
 				//Ok to send link.. ?
 				if(allow) {
 					
@@ -323,7 +335,12 @@ public class MDSCommandHandler {
 			
 			POLLcommand poll = new POLLcommand(mPollStack);
 			result = poll.runCommand(minidappid, data);
+		
+		}else if(command.equals("megapoll")) {
 			
+			MEGAPOLLcommand poll = new MEGAPOLLcommand(mPollStack);
+			result = poll.runCommand(minidappid, data);
+		
 		}else{
 			
 			//Is it a CMD / SQL / FILE / FUNC ..

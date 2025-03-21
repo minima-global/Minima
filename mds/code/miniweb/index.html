@@ -20,6 +20,12 @@
 	<script type="text/javascript" src="./js/sql.js"></script>
 	<script type="text/javascript" src="./js/gui.js"></script>
 	
+	<!--  JQUERY CSS + JS -->
+	<link rel="stylesheet" href="./root/miniweb/libs/jquery/jquery-ui-1.14.1/jquery-ui.css">
+	<link rel="stylesheet" href="./root/miniweb/libs/jquery/jquery-ui-1.14.1/jquery-ui.icon-font.css">
+	<script type="text/javascript" src="./root/miniweb/libs/jquery/jquery-3.7.1.min.js"></script>
+	<script type="text/javascript" src="./root/miniweb/libs/jquery/jquery-ui-1.14.1/jquery-ui.js"></script>
+	
 </head>
 
 <body>
@@ -31,44 +37,61 @@
 			<tr>
 				<td><img height=45 src="browser.png"></td>
 				<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>MiniWEB</b></td>
+				
 				<td class='topicdate' nowrap>
-					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToHelp();" height=30 src="help.png">&nbsp;&nbsp;					
-					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToHome();" height=30 src="home.png">&nbsp;&nbsp;
+					<button id="button-help">Help</button>
+					<button id="button-mysite">My Site</button>
+					<button id="button-dev">Developer Mode</button>
+					<button id="button-home">Home</button>
 				</td>
-				<!--  <td class='topicdate' nowrap>
-					<img style="cursor:pointer;" onclick="event.stopPropagation(); jumpToMyFiles();" height=30 src="home.png">&nbsp;&nbsp;
-				</td>-->
 			</tr>
 		</table>
 	</div>
+	<br>
+	
+	<div class=blueborder style="text-align:center;">
 	
 	<br><br>
 	Jump to a bookmark :<br><br>
 	<select id=bookmarkbar class="searchfield" style="width:300" onchange="bookmkchange();"></select>
 	
-	<br><br>
-	Or search through your files..
+	<br><br><br><br>
+	Search through your files..
 	<br><br>
 
-	<input class=searchfield type="text" id="searchfield" size=44> <button class=solobutton onclick="search();">Search</button> 
-
-	<br><br><br>
+	<input class=searchfield type="text" id="searchfield" size=44><br>
+	<br>
+	<button id=searchweb onclick="search();">Search</button><br>
+	<br>
+	
+	</div>
+	<br>
 	
 	<div id=mywebpackets></div>
-	
 	
 </center>
 
 <script type="text/javascript">
 	
-	function showTitleOnAndroid(){
-		if (window.navigator.userAgent.includes('Minima Browser')) {
-			Android.showTitleBar();
-		}
-	}
-
+	//Set up the buttons..
+	$(document).ready(function() {
+		startupButtons();
+		
+		$( "#searchweb" ).button({
+			icon: "ui-icon-search",
+			showLabel: true
+		});
+		
+		$(".searchfield").on('keyup', function (e) {
+		    if (e.key === 'Enter' || e.keyCode === 13) {
+		    	search();
+		    }
+		});
+	});
+	
 	function openBrowser(mxsite){
-		window.open("browse.html?uid="+MDS.minidappuid+"&mxsite="+mxsite);
+		//window.open("browse.html?uid="+MDS.minidappuid+"&mxsite="+mxsite);
+		location.href="browse.html?uid="+MDS.minidappuid+"&mxsite="+mxsite;
 	}
 	
 	function loadBookmarks(){
@@ -128,7 +151,35 @@
 		}
 	}
 	
-	function createSearchPacketView(filepacket){
+	function copySite(filename) {
+
+		if(confirm("This will create an unpublished copy of\n\n "+filename+"\n\n in MiniFS ?")){
+			
+				//Now lets load the file..
+				var api 	= {};
+				api.action 	= "COPY";
+				api.data 	= filename;
+				
+				//Send it to MiniWEB
+				MDS.api.call("minifs",JSON.stringify(api),function(resp){
+					if(resp.status){
+						
+						//What was sent..
+						var data = JSON.parse(resp.data);
+						
+						alert("A copy has been made!\n\n"+data.results.data.name);
+					}else{
+						alert("Something went wrong - check console logs..");
+					}
+				});		
+		}
+	}
+	
+	function createSearchPacketView(filepacket, num){
+		
+		var copybuttname 	= "copybutton-"+num;
+		var downbuttname 	= "downbutton-"+num;
+		var browsebuttname 	= "browsebutton-"+num;
 		
 		var guidata =
 		"<table class=filepacketview border=0>\n"
@@ -141,8 +192,9 @@
 		+ "	</tr>\n"
 		+ "	<tr>\n"
 		+ "		<td colspan=2 style=\"text-align:right\">\n"
-		+ "			<button class=solobutton onclick=\"downloadSite('"+filepacket.data.file+"','"+filepacket.data.name+".zip')\">Download</button>\n"
-		+ "			<button class=solobutton onclick=\"openBrowser('"+filepacket.data.name+"')\">Browse</button>\n"
+		+ "			<button id='"+downbuttname+"' onclick=\"downloadSite('"+filepacket.data.file+"','"+filepacket.data.name+".zip')\">Download</button>\n"
+		+ "			<button id='"+copybuttname+"' onclick=\"copySite('"+filepacket.data.name+"')\">Copy</button>\n"
+		+ "			<button id='"+browsebuttname+"' onclick=\"openBrowser('"+filepacket.data.name+"')\">Browse</button>\n"
 		+ "		</td>\n"
 		+ "	</tr>\n"
 		+ "</table><br>"
@@ -157,7 +209,7 @@
 			return;
 		}
 		
-		if(text.startsWith("Mx")){
+		if(text.startsWith("miniweb://")){
 			
 			//Just jump to that page!
 			openBrowser(text);
@@ -191,10 +243,18 @@
 					var html = "";
 					var len = found.length;
 					for(var i=0;i<len;i++){
-						html += createSearchPacketView(found[i]);	
+						html += createSearchPacketView(found[i],i);	
 					}
 					
+					//Set the page
 					mywebpackets.innerHTML = html;
+					
+					//Now make the button nice..
+					for(var i=0;i<len;i++){
+						$( "#copybutton-"+i ).button({icon: "ui-icon-copy", showLabel:false});
+						$( "#downbutton-"+i ).button({icon: "ui-icon-download", showLabel:false});
+						$( "#browsebutton-"+i ).button({icon: "ui-icon-globe"});
+					}
 					
 				}else{
 					alert("MiniFS MinDAPP not found..");
@@ -209,6 +269,8 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			
+			askNotificationPermission();
+			
 			createDB(function(){
 				loadBookmarks();
 			});
@@ -221,6 +283,32 @@
 					return;
 				}
 			});
+		
+		}else if(msg.event == "MDSCOMMS"){
+			
+			if(msg.data.public && msg.data.minidapp.toLowerCase() == "minifs"){
+				MDS.log(JSON.stringify(msg));
+				
+				try{
+					var comms = JSON.parse(msg.data.message);
+					
+					if(comms.action == "SENDREQ_MAXIMA"){
+						showNotification("Sent request over Maxima for : \n\n"+comms.file);
+					}else if(comms.action == "SENDREQ_MINIMA"){
+						showNotification("Sent request over Minima for : \n\n"+comms.file);
+					}else if(comms.action == "SENDREQ_FAIL_READMODE"){
+						showNotification("MiniFS cannot request file in READ mode : \n\n"+comms.file);
+					}else if(comms.action == "SENDREQ_FAIL_RECENT"){
+						showNotification("File already requested recently.. : \n\n"+comms.file);
+					}else if(comms.action == "REC_MAXIMA"){
+						showNotification("Received file over Maxima : \n\n"+comms.file);
+					}
+					
+				}catch(error){
+					MDS.log("MDSCOMMS ERROR : "+error)
+				}
+			}
+			
 		}
 	});
 

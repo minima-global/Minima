@@ -142,12 +142,28 @@ public abstract class Command {
 		return zDefault;
 	}
 	
+	
+	public MiniData getDataParam(String zParamName, MiniData zDefault) throws CommandException {
+		if(existsParam(zParamName)){
+			return getDataParam(zParamName);
+		}
+		
+		return zDefault;
+	}
+	
 	public MiniData getDataParam(String zParamName) throws CommandException {
 		String hex = getParam(zParamName);
 		
 		try {
-			MiniData datahex = new MiniData(hex);
-			return datahex;
+			if(hex.toLowerCase().startsWith("mx")) {
+				//Convert back to normal hex..
+				String datahex = Address.convertMinimaAddress(hex).to0xString();
+				return new MiniData(datahex);
+			}
+			
+			//Else it's normal HEX
+			return new MiniData(hex);
+			
 		}catch(Exception exc) {
 			throw new CommandException("Invalid Data param specified : "+zParamName+" "+hex);
 		}

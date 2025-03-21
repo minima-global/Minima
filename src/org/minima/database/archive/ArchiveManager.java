@@ -221,7 +221,7 @@ public class ArchiveManager extends SqlDB {
 	}
 	
 	
-	public Cascade loadCascade() throws SQLException {
+	public synchronized Cascade loadCascade() throws SQLException {
 		
 		LOAD_CASCADE.clearParameters();
 		
@@ -733,6 +733,27 @@ public class ArchiveManager extends SqlDB {
 	
 	public void hackShut() throws SQLException {
 		mSQLConnection.close();
+	}
+	
+	/**
+	 * This cleans the JDBC Connection.. so it can start and shutdown quicker
+	 */
+	public synchronized void closeAndReopen() {
+		
+		try {
+			
+			//First close the COnnection and save DB.. no comapct
+			saveDB(false);
+			
+			//And now reopen the DB..
+			mSQLConnection = null;
+			
+			//And now re-open..
+			checkOpen(false);
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
 	}
 	
 	public static void main(String[] zArgs) throws SQLException {

@@ -111,7 +111,7 @@ public class TxPoWSqlDB extends SqlDB {
 			SQL_SELECT_TOPTXPOW_SIZE = mSQLConnection.prepareStatement("SELECT Count(*) AS tot FROM txpow WHERE timemilli > ?");
 	}
 	
-	public void wipeDB() throws SQLException {
+	public synchronized void wipeDB() throws SQLException {
 		
 		//Make sure..
 		checkOpen();
@@ -523,6 +523,27 @@ public class TxPoWSqlDB extends SqlDB {
 		}
 		
 		return 0;
+	}
+	
+	/**
+	 * This cleans the JDBC Connection.. so it can start and shutdown quicker
+	 */
+	public synchronized void closeAndReopen() {
+		
+		try {
+			
+			//First close the COnnection and save DB.. no comapct
+			saveDB(false);
+			
+			//And now reopen the DB..
+			mSQLConnection = null;
+			
+			//And now re-open..
+			checkOpen(false);
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
 	}
 	
 	public static void main(String[] zArgs) throws IOException, SQLException {

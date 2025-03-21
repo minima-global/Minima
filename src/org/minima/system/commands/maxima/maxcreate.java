@@ -2,6 +2,7 @@ package org.minima.system.commands.maxima;
 
 import java.security.KeyPair;
 
+import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;
 import org.minima.utils.encrypt.GenerateKey;
@@ -41,7 +42,9 @@ public class maxcreate extends Command {
 		
 		JSONObject resp = new JSONObject();
 		resp.put("publickey", pubk.to0xString());
+		resp.put("mxpublickey", Address.makeMinimaAddress(pubk));
 		resp.put("privatekey", privk.to0xString());
+		resp.put("mxprivatekey", Address.makeMinimaAddress(privk));
 		
 		ret.put("response", resp);
 		

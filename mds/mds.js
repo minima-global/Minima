@@ -1,7 +1,7 @@
 /**
 * MDS JS lib for MiniDAPPs..
 * 
-* VERSION : 2.0.0
+* VERSION : 2.1.0
 *
 * @spartacusrex
 */
@@ -45,7 +45,7 @@ var MDS = {
 	 */
 	init : function(callback){
 		//Log a little..
-		MDS.log("Initialising MDS..");
+		MDS.log("Initialising Internal MDS..");
 		
 		//Is logging enabled.. via the URL
 		if(MDS.form.getParams("MDS_LOGGING") != null){
@@ -101,8 +101,11 @@ var MDS = {
 		//Store this for poll messages
 		MDS_MAIN_CALLBACK = callback;
 		
-		//Start the Long Poll listener
+		//Run the POll Listener ONCE - to get the latest Poll Counter..
 		PollListener();
+		
+		//Now call it every ~2 secs..
+		setInterval(function(){PollListener();},2500);
 		
 		//And Post a message
 		MDSPostMessage({ "event": "inited" });
@@ -621,7 +624,7 @@ var PollSeries  = 0;
 function PollListener(){
 	
 	//The POLL host
-	var pollhost = MDS.mainhost+"poll?"+"uid="+MDS.minidappuid;
+	var pollhost = MDS.mainhost+"megapoll?"+"uid="+MDS.minidappuid;
 	var polldata = "series="+PollSeries+"&counter="+PollCounter;
 	
 	httpPostAsyncPoll(pollhost,polldata,function(msg){
@@ -638,16 +641,21 @@ function PollListener(){
 			//Is there a message ?
 			if(msg.status == true){
 				
-				//Get the current counter..
-				PollCounter = msg.response.counter+1;
-				
-				//And Post the message..
-				MDSPostMessage(msg.response.message);	
+				//Get all the messgaes
+				var num = msg.response.length;
+				for(var i=0;i<num;i++){
+					
+					//Get the message
+					var mdsmsg = msg.response[i];
+						
+					//Get the current counter..
+					PollCounter = mdsmsg.counter+1;
+					
+					//And Post the message..
+					MDSPostMessage(mdsmsg.message);		
+				}	
 			}	
 		}
-		
-		//And around we go again..
-		PollListener();
 	});
 }
 
@@ -751,7 +759,7 @@ function httpPostAsyncPoll(theUrl, params, callback){
     }
     xmlHttp.addEventListener('error', function(ev){
 		MDS.log("Error Polling - reconnect in 10s");
-		setTimeout(function(){PollListener();},10000);
+		//setTimeout(function(){PollListener();},10000);
 	});
     xmlHttp.open("POST", theUrl, true); // true for asynchronous 
 	xmlHttp.overrideMimeType('text/plain; charset=UTF-8');

@@ -5,6 +5,8 @@ import java.io.File;
 import org.minima.database.minidapps.MiniDAPP;
 import org.minima.objects.base.MiniString;
 import org.minima.system.mds.runnable.MDSJS;
+import org.minima.system.mds.runnable.NullCallable;
+import org.minima.system.mds.runnable.api.APICallback;
 import org.minima.utils.MiniFile;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
@@ -12,6 +14,7 @@ import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.mozilla.javascript.ClassShutter;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.NativeJSON;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
@@ -138,12 +141,46 @@ public class ServiceJSRunner extends MessageProcessor{
 			
 			JSONObject pollobj = (JSONObject) zMessage.getObject("poll_object");
 			
-			if(pollobj == null) {
-				MinimaLogger.log("NULL POLL");
-				return;
+			boolean processed = false;
+			if(pollobj.getString("event").equals("MDSAPI")) {
+				
+				//MinimaLogger.log("JSRUNNER REC MDSAPI "+pollobj.toString());
+				
+				//Get the data
+				JSONObject dataobj = (JSONObject) pollobj.get("data");
+				
+				//Is it  a response..
+				if(!(boolean)dataobj.get("request")) {
+					
+					processed = true;
+					
+					//Send to the API Call..
+					APICallback api = mMDS.getAPICallback(dataobj.getString("id"));
+					if(api != null) {
+						
+						//Construct a reply..
+						JSONObject reply = new JSONObject();
+						reply.put("status", dataobj.get("status"));
+						reply.put("data", dataobj.get("message"));
+						
+						//Call it..
+						Object[] args = { NativeJSON.parse(api.getContext(), 
+									api.getScope(),reply.toString(), new NullCallable()) };
+						
+						//Call the main MDS Function in JS
+						api.getFunction().call(api.getContext(), api.getScope(), api.getScope(), args);
+						
+					}else {
+						//Has already been digested - this is probably the AUTOResponse.. 
+						//MinimaLogger.log("MDS API callback not found / already digested  : "+dataobj.toString());
+					}
+				}
 			}
-			
-			mMDSJS.callMainCallback(pollobj);
+
+			//Forward it.. 
+			if(!processed) {
+				mMDSJS.callMainCallback(pollobj);
+			}
 		}
 	}
 	

@@ -8,6 +8,7 @@ var MINIWEB_REQUESTS = [];
  * Initialise the MiniWEB library
  */
 function miniweb_Init(){
+	
 	//listen for post messages..
 	window.onmessage = function(event){
 		
@@ -43,6 +44,14 @@ function miniweb_Init(){
 			});
 		}
 	};
+	
+	//Post the current location to MiniWEB Parent
+	var msg 	= {};
+	msg.action 	= "MINIWEB_LOCATION";
+	msg.data 	= window.location.href;
+	
+	//Send this to the parent window..
+	window.top.postMessage(msg, '*');
 }
 
 /**

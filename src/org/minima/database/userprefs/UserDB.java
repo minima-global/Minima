@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.minima.objects.Magic;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.JsonDB;
 import org.minima.utils.MiniUtil;
@@ -313,6 +314,23 @@ public class UserDB extends JsonDB{
 	}
 	
 	public boolean  getPublicMDS() {
+		//Check the CLI param as well..
+		if(GeneralParams.PUBLICMDS_ENABLE) {
+			return true;
+		}
+		
+		//Otherwise just check the normal user setting
 		return getBoolean("mds_publicsite", false);
+	}
+	
+	/**
+	 * RPC Users
+	 */
+	public JSONArray getRPCUsers() {
+		return getJSONArray("rpcusers_allusers");
+	}
+	
+	public void setRPCUsers(JSONArray zNewUsers) {
+		setJSONArray("rpcusers_allusers", zNewUsers);
 	}
 }

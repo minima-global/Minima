@@ -10,12 +10,15 @@ MDS.load("./js/auth.js");
 MDS.load("./js/sql.js");
 MDS.load("./js/txns.js");
 
-var logging = true;
+var logging = false;
 
 /**
  * Some Variable maximums.. 
  */
 var MAX_SENDS_PER_DAY = 100;
+
+//Time before we reset RECENTS - 12 hours
+var RESEND_RESET_TIMER = 1000 * 60 * 60 * 12;
 
 /**
  * Which addresses have you sent out recently - clear list every 24 hours
@@ -29,8 +32,6 @@ var RECENT_REQUESTS_TOTAL	= 0;
 
 var RECENT_MAXIMA_REQUESTS	= [];
 
-//Time before we reset RECENTS - 24 hours
-var twentfourhours = 1000 * 60 * 60 * 24;
 
 //Process an incoming coin from cascade or resync
 function processNewSiteCoin(coin){
@@ -131,6 +132,7 @@ function processRequestCoin(coin){
 						if(logging){
 							MDS.log("SENT MAX already : "+request+" total:"+RECENT_SENDS_TOTAL);	
 						}
+						
 						return;
 					}
 										
@@ -205,11 +207,28 @@ function loadMxSite(mxsite, callback){
 	//First send via Maxima.. 
 	MDS.cmd("maxima action:sendall application:minifs data:"+JSON.stringify(filereq), function(maxresp){
 		
+		//Broadcast a Notification
+		postNotification("SENDREQ_MAXIMA",mxsite);
+		
 		//Now you wait..
 		if(callback){
 			callback(true);
 		}	
 	}); 
+}
+
+function postNotification(action, file){
+	//Broadcast a Notification
+	var notif 		= {};
+	notif.action 	= action;
+	notif.file 		= file;
+	
+	if(logging){
+		MDS.log("Notification posted : "+JSON.stringify(notif));
+	}
+	
+	//Broadcast to all..
+	MDS.comms.broadcast(JSON.stringify(notif));
 }
 
 //Main message handler..
@@ -245,8 +264,6 @@ MDS.init(function(msg){
 						processRequestCoin(resp.response[i]);
 					}
 				});
-				
-				MDS.log("MiniFS Inited");
 			});	
 		});
 		
@@ -283,21 +300,36 @@ MDS.init(function(msg){
 					if(RECENT_REQUESTS.includes(request)){
 						if(logging){
 							MDS.log("Filepacket REQUESTED recently : "+request);
+							postNotification("SENDREQ_FAIL_RECENT",request);
 						}
 					}else{
 						RECENT_REQUESTS.push(request)
 						RECENT_REQUESTS_TOTAL++;
 						
+						//Hmnm.. this could be the User..
+						/*if(RECENT_REQUESTS_TOTAL > MAX_SENDS_PER_DAY){
+							if(logging){
+								MDS.log("Cannot request File as Max reached : "+RECENT_REQUESTS_TOTAL);
+							}
+							
+							//Broadcast a Notification
+							postNotification("SENDREQ_MINIMA_MAXREACH",request);	
+						}*/
+						
 						sendFileRequest(request,function(res){
 							
 							if(res.pending){
 								MDS.log("Cannot Request file as in READ MODE : "+request);
+								postNotification("SENDREQ_FAIL_READMODE",request);
 								return;
 							}
 						
 							if(logging){
 								MDS.log("Filepacket REQUESTED : "+request);
 							}
+							
+							//Broadcast a Notification
+							postNotification("SENDREQ_MINIMA",request);
 						});
 					}	
 				}
@@ -310,8 +342,7 @@ MDS.init(function(msg){
 	}else if(msg.event == "MDS_TIMER_1HOUR"){
 	
 		//What time is it..
-		if(getTimeMilli() - RECENT_SENDS_TIMER > twentfourhours){
-		//if(getTimeMilli() - RECENT_SENDS_TIMER > 1000 * 60 * 5){
+		if(getTimeMilli() - RECENT_SENDS_TIMER > RESEND_RESET_TIMER){
 			
 			//Reset the values..
 			resetRecents();	
@@ -373,6 +404,24 @@ MDS.init(function(msg){
 				resp.status 	= true;
 				resp.term 		= request;
 				resp.results 	= allfound;
+				
+				//Send it
+				MDS.api.reply(msg.data.from,msg.data.id,JSON.stringify(resp));
+			});
+			
+		}else if(apicall.action == "COPY"){
+			
+			//DOMAIN is specified as the data
+			var request = apicall.data.trim();
+			
+			//Copy it..
+			copyFilePacket(request,function(newfp){
+				
+				//Create a resp object
+				var resp 		= {};
+				resp.status 	= true;
+				resp.term 		= request;
+				resp.results 	= newfp;
 				
 				//Send it
 				MDS.api.reply(msg.data.from,msg.data.id,JSON.stringify(resp));
@@ -445,7 +494,7 @@ MDS.init(function(msg){
 						if(verify){
 							
 							//DO we have it..
-							getFilePacket(mxsite,function(myfp){						
+							getFilePacket(fp.data.name,function(myfp){						
 								
 								//Do we have it..
 								if(!myfp){
@@ -454,7 +503,10 @@ MDS.init(function(msg){
 									insertFilePacket(true,fp,function(){
 										if(logging){
 											MDS.log("RECEIVED MXSITE over MAXIMA "+fp.data.name);
-										}			
+										}
+										
+										//Broadcast a Notification
+										postNotification("REC_MAXIMA",fp.data.name);			
 									});	
 										
 								}else{
@@ -466,7 +518,10 @@ MDS.init(function(msg){
 										updateExternalFilePacket(fp,function(){
 											if(logging){
 												MDS.log("Updated MXSITE over MAXIMA with newer version "+fp.data.name);
-											}	
+											}
+											
+											//Broadcast a Notification
+											postNotification("REC_MAXIMA",fp.data.name);	
 										});							
 									}
 								}
