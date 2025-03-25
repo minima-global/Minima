@@ -475,6 +475,8 @@ public class MiniFile {
 			return "audio/mp3";
 		}else if(ending.equals("wav")) {
 			return "audio/wav";
+		}else if(ending.equals("wasm")) {
+			return "application/wasm";
 		}
 		
 		return "text/plain";
