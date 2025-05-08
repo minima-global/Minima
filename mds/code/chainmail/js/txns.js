@@ -45,7 +45,7 @@ function sendMessage(sendjson, callback){
 					var readmode 	= !statusresp.response.writemode;
 					
 					var sendfunc = "sendpoll";
-					if(locked || readmode){
+					if(locked){
 						//sendpoll doesn't work through pending if node locked..
 						sendfunc = "send";
 					}
@@ -56,7 +56,7 @@ function sendMessage(sendjson, callback){
 					//Now post..
 					MDS.cmd(txn,function(resp){
 						if(!resp.status && !resp.pending){
-							if(locked){
+							if(locked && !readmode){
 								callback(false,"Your DB is locked.\n\nEither Unlock your node..\n\nOR put this Minidapp into READ mode so you can unlock and send via the Pending MiniDAPP.");	
 							}else{
 								callback(false,resp.error);	
