@@ -1082,7 +1082,7 @@ public class MDSManager extends MessageProcessor {
 			//The rest are normal
 			checkInstalled("axe s3", "default/axes3-1.0.0.mds.zip", allminis, false);
 			checkInstalled("block", "default/block-3.3.4.mds.zip", allminis, false);
-			checkInstalled("chainmail", "default/chainmail-1.12.5.mds.zip", allminis, false);
+			checkInstalled("chainmail", "default/chainmail-1.13.0.mds.zip", allminis, false);
 			checkInstalled("chatter", "default/chatter-1.12.0.mds.zip", allminis, false);
 			checkInstalled("docs", "default/docs-2.1.0.mds.zip", allminis, false);
 			checkInstalled("ethwallet", "default/ethwallet-1.11.0.mds.zip", allminis, false);
