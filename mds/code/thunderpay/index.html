@@ -28,26 +28,22 @@
 
 	<h2>Thunder Cats</h2>
 	
-	Stage 1 : Create funding - no post <button onclick="createFund();">CREATE FUNDING</button><br>
-	<br>
-	Stage 2 : Create trigger - no post <button onclick="createTrigger();">CREATE TRIGGER</button><br>
-	<br>
-	Stage 3 : Create settlement - no post <button onclick="createSettle(0,10,10);">CREATE SETTLE</button><br>
-	<br>
-	Stage 4 : Sign Trigger - no post <button onclick="signTrigger();">SIGN TRIGGER</button><br>
-	<br>
-	Stage 5 : Sign Settle - no post <button onclick="signSettle();">SIGN SETTLE</button><br>
-	<br>
+	<table>
+		<tr><td>Stage 1 : </td> <td>Create Funding Txn - do not post</td> <td>&nbsp;&nbsp;<button onclick="createFund();">CREATE FUNDING</button></td></tr>
+		<tr><td>Stage 2 : </td> <td>Create Trigger (Update 0) Txn - do not post</td> <td>&nbsp;&nbsp;<button onclick="createTrigger();">CREATE TRIGGER</button></td></tr>
+		<tr><td>Stage 3 : </td> <td>Create Settlement (Settle 0) Txn - do not post</td> <td>&nbsp;&nbsp;<button onclick="createSettle(0,10,10);">CREATE SETTLE</button></td></tr>
+		<tr><td>Stage 4 : </td> <td>Sign Settlement Txn - do not post</td> <td>&nbsp;&nbsp;<button onclick="signSettle();">SIGN SETTLE</button></td></tr>
+		<tr><td>Stage 5 : </td> <td>Sign Trigger Txn - do not post</td> <td>&nbsp;&nbsp;<button onclick="signTrigger();">SIGN TRIGGER</button></td></tr>
+	</table>
+	
 	<hr>
-	Stage 6 : NOW Sign Funding - AND post <button onclick="signAndPostFunding();">SIGN AND POST FUNDING</button><br>
+	Stage 6 : NOW Sign Funding txn AND Post it <button onclick="signAndPostFunding();">SIGN AND POST FUNDING</button><br>
 	<hr>
+	
+	NOW - you can create NEW Update and Settlement Txns with different amounts.. <br>
 	<br>
 	
-	NOW - you can create NEW Updates and Settlements with different amounts.. <br>
-	The amounts MUST addup to 20..<br>
-	<br>
-	
-	<div id=showseq>Seqence : 0</div>
+	<div id=showseq>Sequence Number : 0</div>
 	<br>
 	User 1 : <input type=text id="user1amount" value=10><br>
 	<br>
@@ -59,23 +55,25 @@
 	<hr>
 	Stage 7 : POST Trigger <button onclick="postTrigger();">POST TRIGGER</button><br>
 	<hr>
-	Stage 8 : POST Settle 0 <button onclick="postSettle();">POST SETTLE</button><br>
-	
+	And now to close..<br>
+	<div id="updatediv" style="display: none;">
+		POST Update <button onclick="postUpdate();">POST UPDATE</button><br>
+	</div>
 	<br>
-	Stage 9 : OR POST UPDATE <button onclick="postUpdate();">POST UPDATE</button><br>
-	And then post settle..
+	POST Settle <button onclick="postSettle();">POST SETTLE</button><br>
 	
-	<br><br><br><br>
-	<button onclick="wipeTxnList()">WIPE ALL TXNLIST</button><br>
-	<br> 
+	
+	<hr><br>
+	<button onclick="wipeTxnList()">WIPE ALL TXNLIST</button>&nbsp;&nbsp;&nbsp;
 	<button onclick="wipeFunding()">WIPE FUNDING</button>
 	<button onclick="wipeTrigger()">WIPE TRIGGER</button>
 	<button onclick="wipeSettle()">WIPE SETTLE</button>
+	<button onclick="wipeUpdate()">WIPE UPDATE</button>
 	<br>
 	<br>
-	<button onclick="txnlist()">TXNLIST</button>
-	<button onclick="listFunding()">LIST FUNDING</button>
-	<button onclick="listTrigger()">LIST ELTOO</button>
+	<button onclick="txnlist()">CUSTOM TXN LIST</button>&nbsp;&nbsp;&nbsp;
+	<button onclick="listFunding()">LIST FUNDING COINS</button>
+	<button onclick="listTrigger()">LIST ELTOO COINS</button>
 	
 </center>
 
@@ -119,7 +117,9 @@
 		var user2 = user2amount.value;
 		
 		MDS.log("Update OMNIA Channel\nSequence : "+SEQUENCE_NUMBER+"\nUser1 : "+user1+"\nUser2 : "+user2);
-		showseq.innerHTML = "Sequence : "+ SEQUENCE_NUMBER;
+		showseq.innerHTML = "Sequence Number : "+ SEQUENCE_NUMBER;
+		
+		updatediv.style.display = "block";
 		
 		//We need a NEW 
 		createUpdate(SEQUENCE_NUMBER, function(){

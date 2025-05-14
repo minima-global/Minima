@@ -25,6 +25,7 @@ function wipeTxnList(){wipeTxn("all");}
 function wipeTrigger(){wipeTxn("trigger");}
 function wipeFunding(){wipeTxn("funding");}
 function wipeSettle(){wipeTxn("settle");}
+function wipeUpdate(){wipeTxn("update");}
 
 /**
  * Create the Funding, Trigger (First ELTOO Update), Settle and Update transactions
