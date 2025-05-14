@@ -1,7 +1,7 @@
 <html>
 
 <head>
-	<title>Thunder Pay</title>
+	<title>Thunder Cats</title>
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
@@ -16,6 +16,7 @@
 	
 	<!-- Load the local JS lib -->
 	<script type="text/javascript" src="./js/jslib.js"></script>
+	<script type="text/javascript" src="./js/txns.js"></script>
 	
 </head>
 
@@ -25,25 +26,44 @@
 
 	<br>
 
-	<h2>Thunder</h2>
+	<h2>Thunder Cats</h2>
 	
 	Stage 1 : Create funding - no post <button onclick="createFund();">CREATE FUNDING</button><br>
 	<br>
 	Stage 2 : Create trigger - no post <button onclick="createTrigger();">CREATE TRIGGER</button><br>
 	<br>
-	Stage 3 : Create settlement - no post <button onclick="createSettle();">CREATE SETTLE</button><br>
+	Stage 3 : Create settlement - no post <button onclick="createSettle(0,10,10);">CREATE SETTLE</button><br>
 	<br>
 	Stage 4 : Sign Trigger - no post <button onclick="signTrigger();">SIGN TRIGGER</button><br>
 	<br>
 	Stage 5 : Sign Settle - no post <button onclick="signSettle();">SIGN SETTLE</button><br>
 	<br>
 	<hr>
-	Stage 6 : NOW Sign Funding - AND post <button onclick="signFunding();">SIGN AND POST FUNDING</button><br>
+	Stage 6 : NOW Sign Funding - AND post <button onclick="signAndPostFunding();">SIGN AND POST FUNDING</button><br>
 	<hr>
 	<br>
-	Stage 7 : POST Trigger <button onclick="postTrigger();">POST TRIGGER</button><br>
+	
+	NOW - you can create NEW Updates and Settlements with different amounts.. <br>
+	The amounts MUST addup to 20..<br>
 	<br>
+	
+	<div id=showseq>Seqence : 0</div>
+	<br>
+	User 1 : <input type=text id="user1amount" value=10><br>
+	<br>
+	User 2 : <input type=text id="user2amount" value=10><br>
+	<br>
+	<button onclick="update();">UPDATE OMNIA CHANNEL</button>
+	
+	<br>
+	<hr>
+	Stage 7 : POST Trigger <button onclick="postTrigger();">POST TRIGGER</button><br>
+	<hr>
 	Stage 8 : POST Settle 0 <button onclick="postSettle();">POST SETTLE</button><br>
+	
+	<br>
+	Stage 9 : OR POST UPDATE <button onclick="postUpdate();">POST UPDATE</button><br>
+	And then post settle..
 	
 	<br><br><br><br>
 	<button onclick="wipeTxnList()">WIPE ALL TXNLIST</button><br>
@@ -61,27 +81,8 @@
 
 <script type="text/javascript">
 	
-	//Contract addresses
-	var FUNDING = "MxG0831AK3EZ9JVQ6DPBKVBN5YRR7R7FFWKAQ21FQBE4SRQEBAY6E43TD9RQY42";
-	var ELTOO   = "MxG080YN6F20K1PR59UHP0PKT8MZ0GFJFHMADRPTA2NN4VQCKZNR98CMYN008D3";
-	
-	function log(resp){
-		MDS.log(JSON.stringify(resp,null,2));
-	}
-	
-	/**
-	 * WIPE FUNCTIONS
-	 */
-	function wipeTxn(name){
-		MDS.cmd("txndelete id:"+name,function(fundresp){
-			log(fundresp);
-		});
-	}
-	
-	function wipeTxnList(){wipeTxn("all");}
-	function wipeTrigger(){wipeTxn("trigger");}
-	function wipeFunding(){wipeTxn("funding");}
-	function wipeSettle(){wipeTxn("settle");}
+	//What sequence number are we on
+	var SEQUENCE_NUMBER = 0;
 	
 	/**
 	 * List All txns
@@ -91,84 +92,7 @@
 			log(fundresp);
 		});
 	}
-	 
-	// CREATE TXNS
-	function createFund(){
-		var create = "txncreate id:funding;"+
-		"txnaddamount id:funding amount:20 address:"+FUNDING+";"+
-		"";
-		MDS.cmd(create,function(fundresp){
-			log(fundresp);
-		});
-	}
 	
-	function createTrigger(){
-		var create = "txncreate id:trigger;"+
-		//Input the Funding txn address - floating
-		"txninput id:trigger amount:20  address:"+FUNDING+" floating:true;"+
-		//Output BACK to the ELTOO
-		"txnoutput id:trigger amount:20 address:"+ELTOO+";"+
-		//Set the state var - sequence number
-		"txnstate id:trigger port:99 value:0;"+
-		"";
-		MDS.cmd(create,function(fundresp){
-			log(fundresp);
-		});
-	}
-	
-	function createSettle(){
-		
-		var create = "txncreate id:settle;"+
-		//Input the Trigger txn address ELTOO - floating
-		"txninput id:settle amount:20  address:"+ELTOO+" floating:true;"+
-		//Output Funds BACK to User 1
-		"txnoutput id:settle amount:10 address:MxG08428EB9MGTB6AT2ESKZ3YETSJ5N0HSAH2G9EM2CKRQVYC09PS701YGMMK92;"+
-		//Output Funds BACK to User 2
-		"txnoutput id:settle amount:10 address:MxG085BP3PBJN6SHG41ZJ83VZE834B0WJQNDPGV5ERVT5Y81803NDG130NCSRJP;"+
-		//Set the state var - sequence number
-		"txnstate id:settle port:99 value:0;"+
-		"";
-		
-		MDS.cmd(create,function(fundresp){
-			log(fundresp);
-		});
-	}
-	
-	//SIGN TRANSACTIONS
-	function signTrigger(){
-		//Need to sign with both user Keys as spending the FUNDING coin
-		var sign = 
-			"txnsign id:trigger publickey:0x93B2DBF348A8E5AB20FF418CF328257C6F2AE8A9510F0E2816BA7021FC66E1D9;"+
-			"txnsign id:trigger publickey:0xF94E98C54E6A3F1E29F00FB6A7A4379BBEB0F040FBD69E70332D33F5F592D5DE;"+
-		"";
-			
-		MDS.cmd(sign,function(fundresp){
-			log(fundresp);
-		});
-	}
-	
-	function signSettle(){
-		//Need to sign with both user Keys as spending the FUNDING coin
-		var sign = 
-			"txnsign id:settle publickey:0x93B2DBF348A8E5AB20FF418CF328257C6F2AE8A9510F0E2816BA7021FC66E1D9;"+
-			"txnsign id:settle publickey:0xF94E98C54E6A3F1E29F00FB6A7A4379BBEB0F040FBD69E70332D33F5F592D5DE;"+
-		"";
-			
-		MDS.cmd(sign,function(fundresp){
-			log(fundresp);
-		});
-	}
-	
-	function signFunding(){
-		//Need to sign with both user Keys as spending the FUNDING coin
-		var sign = "txnsign id:funding publickey:auto txnpostauto:true;";
-		
-		MDS.cmd(sign,function(fundresp){
-			log(fundresp);
-		});
-	}
-	
-	//LIST COINS
 	function listFunding(){
 		//Need to sign with both user Keys as spending the FUNDING coin
 		var post = "coins address:"+FUNDING;
@@ -185,20 +109,31 @@
 		});
 	}
 	
-	//Post Trigger
-	function postTrigger(){
-		//Need to sign with both user Keys as spending the FUNDING coin
-		var post = "txnpost id:trigger auto:true;";
-		MDS.cmd(post,function(fundresp){
-			log(fundresp);
-		});
-	}
-	
-	function postSettle(){
-		//Need to sign with both user Keys as spending the FUNDING coin
-		var post = "txnpost id:settle auto:true;";
-		MDS.cmd(post,function(fundresp){
-			log(fundresp);
+	function update(){
+		
+		//Increment the Sequence number
+		SEQUENCE_NUMBER++;
+			
+		//Now lets get the values..
+		var user1 = user1amount.value;
+		var user2 = user2amount.value;
+		
+		MDS.log("Update OMNIA Channel\nSequence : "+SEQUENCE_NUMBER+"\nUser1 : "+user1+"\nUser2 : "+user2);
+		showseq.innerHTML = "Sequence : "+ SEQUENCE_NUMBER;
+		
+		//We need a NEW 
+		createUpdate(SEQUENCE_NUMBER, function(){
+			
+			//Now create the NEW Settle..
+			createSettle(SEQUENCE_NUMBER, user1, user2, function(){
+				
+				//Now Sign - Settlement first!
+				signSettle(function(){
+					
+					//Now sign Update - so all good to go..
+					signUpdate();
+				});
+			});
 		});
 	}
 	
