@@ -41,6 +41,10 @@ public class Witness implements Streamable {
 	/**
 	 * Signature functions
 	 */
+	public void clearSignatures() {
+		mSignatureProofs.clear();
+	}
+	
 	public void addSignature(Signature zSigProof) {
 		if(zSigProof == null) {
 			throw new IllegalArgumentException("Cannot add a NULL Signature");
@@ -97,6 +101,10 @@ public class Witness implements Streamable {
 	 * Scripts and their merkle paths to addresses or MAST used in the transaction
 	 * 
 	 */
+	public void clearScriptProofs() {
+		mScriptProofs.clear();
+	}
+	
 	public void addScript(ScriptProof zScriptProof) {
 		if(!scriptExists(zScriptProof.getAddress().getAddressData())) {
 			mScriptProofs.add(zScriptProof);
