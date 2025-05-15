@@ -1,0 +1,36 @@
+@font-face {
+	font-family: Manrope;
+	src: url('./Manrope-Regular.ttf');
+}
+
+body {
+	font-family: Manrope; 
+    margin: 20;   /* Remove body margins */
+}
+
+.ui-icon {
+	zoom:150%;
+	color : #5555ff
+}
+
+.titlebar{
+  width:100%;
+  min-width:360;
+  height:50px;
+  text-align: left;
+  max-width:840;
+  border: 2px solid #0000ff;
+  border-radius: 10px;
+}
+
+.helpdiv{
+  width:100%;
+  min-width:360;
+  text-align: left;
+  margin:8;
+  max-width:840;
+  border: 2px solid #0000ff;
+  border-radius: 10px;
+  
+  border-spacing:8;
+}
