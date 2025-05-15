@@ -34,3 +34,20 @@ body {
   
   border-spacing:8;
 }
+
+.blueborder{
+  width:100%;
+  min-width:360;
+  text-align: left;
+  
+  max-width:840;
+  border: 2px solid #0000ff;
+  border-radius: 10px;
+  
+  border-spacing:8;
+}
+
+.alignright{
+	text-align: right;
+	white-space: nowrap;
+}

@@ -37,19 +37,71 @@
 			<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>Thunder Pay</b></td>
 			
 			<td class='topicdate' nowrap>
-				<button id="button-help">Help</button>
 				<button id="button-newchannel">New Channel</button>
+				<button id="button-help">Help</button>
 				<button id="button-home">Home</button>
 			</td>
 		</tr>
 	</table>
 </div>
 
+<br>
+
+<div id=youraddress class=blueborder style="word-wrap:break-word;text-align:center;">
+	<br>
+	
+	<h3>Start a NEW Omnia Channel</h3>
+
+	Channels can be started with any of your Maxima contacts<br>
+	<br>
+	Choose how much Minima each of you adds to the channel<br>
+	<br>
+	Obviously the contact must accept - for the Channel to be created<br>
+	<br>
+	<br>
+	<table border=0 style="margin: 0 auto;">
+		<tr>
+			<td class=alignright>Maxima Contact :</td>
+			<td>
+			<select>
+				<option value="popo"> POPO </option>
+				<option value="popo"> Paddy </option>
+				<option value="popo"> Bazza </option>
+			</select>
+			</td>
+		</tr>
+		
+		<tr>
+			<td class=alignright> You will add : </td>
+			<td> <input type="number" value=0> </td>
+		</tr>
+		
+		<tr>
+			<td class=alignright> They will add : </td>
+			<td> <input type="number" value=0> </td>
+		</tr>
+	
+	</table>
+	
+	<br> 
+	<button id="button-startchannel">Start Channel</button>
+	
+
+	<br>
+	<br>
+</div>
+<br>
+
 <script type="text/javascript">
 	
 	//Load the default jquery buttons
 	$(document).ready(function() {
 	    startupButtons();
+	    
+	    $( "#button-startchannel" ).button({
+			icon: "ui-icon-mail-send",
+			showLabel: true
+		}).click(function(){jumpToHelp();});
 	});
 	
 	//Main message handler..
@@ -64,6 +116,8 @@
 	});
 
 </script>
+
+</center>
 
 </body>
 
