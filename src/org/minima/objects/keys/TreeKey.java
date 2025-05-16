@@ -255,36 +255,35 @@ public class TreeKey {
 	
 	public static void main(String[] zArgs) {
 		
+	
+	/*	long timestart = System.currentTimeMillis();
 		
 		MiniData priv 	= new MiniData("0x51D9F403271E267229B6C2A95C5EAED527846A1AF89F8B1CF5574B0E79A49CF1");
-		
 		MiniData pub 	= new MiniData("0x61B23ACB575490ACEAC2C4F24A78B1E28AF10D9E209EAA49F2CC75292089551F");
 		
-		TreeKey tester 	= new TreeKey(priv, 64, 3);
-		
+		TreeKey tester 	= new TreeKey(priv, 64, 4);
 		MiniData pktest = tester.getPublicKey();
 		
-		System.out.println(pktest);
+		long timefinish  = System.currentTimeMillis();
 		
-		
-		
-		
-		
-		
+		System.out.println("time:"+(timefinish-timestart));
+		System.out.println("Root:"+pktest);
 		
 		if(true) {
 			return;
 		}
+		*/
 		
 		MiniData seed = new MiniData("0x000102");
 		
 		int maxsigs = 5;
 		
 		long timenow = System.currentTimeMillis();
-		TreeKey kt 	 = new TreeKey(seed, 4, 3);
+		
+		TreeKey kt 	 = new TreeKey(seed, 64, 4);
 //		TreeKey kt 	 = TreeKey.createDefault(seed);
 		long timediff = System.currentTimeMillis() - timenow;
-		System.out.println("time "+timediff);
+		System.out.println("Create Key Time "+timediff);
 		
 		//Set the pub key
 		MiniData pk = kt.getPublicKey();
@@ -315,7 +314,6 @@ public class TreeKey {
 		}
 		
 //		MinimaLogger.log(convertBase(10, 16).toString());
-		
 //		MinimaLogger.log(baseConversion(new MiniNumber(27), 29, 4).toString());
 		
 		
