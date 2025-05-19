@@ -29,21 +29,23 @@
 	<h2>Thunder Cats</h2>
 	
 	<table>
-		<tr><td>Stage 1 : </td> <td>Create Funding Txn - do not post</td> <td>&nbsp;&nbsp;<button onclick="createFund();">CREATE FUNDING</button></td></tr>
+		<tr><td>Stage 1 : </td> <td>Create Funding Txn (20 Minima) - do not post</td> <td>&nbsp;&nbsp;<button onclick="createFund();">CREATE FUNDING</button></td></tr>
 		<tr><td>Stage 2 : </td> <td>Create Trigger (Update 0) Txn - do not post</td> <td>&nbsp;&nbsp;<button onclick="createTrigger();">CREATE TRIGGER</button></td></tr>
 		<tr><td>Stage 3 : </td> <td>Create Settlement (Settle 0) Txn - do not post</td> <td>&nbsp;&nbsp;<button onclick="createSettle(0,10,10);">CREATE SETTLE</button></td></tr>
-		<tr><td>Stage 4 : </td> <td>Sign Settlement Txn - do not post</td> <td>&nbsp;&nbsp;<button onclick="signSettle();">SIGN SETTLE</button></td></tr>
-		<tr><td>Stage 5 : </td> <td>Sign Trigger Txn - do not post</td> <td>&nbsp;&nbsp;<button onclick="signTrigger();">SIGN TRIGGER</button></td></tr>
+		<tr><td>Stage 4 : </td> <td>Sign Settlement Txn - do not post</td> <td>&nbsp;&nbsp;<button onclick="signTheSettle();">SIGN SETTLE</button></td></tr>
+		<tr><td>Stage 5 : </td> <td>Sign Trigger Txn - do not post</td> <td>&nbsp;&nbsp;<button onclick="signTheTrigger();">SIGN TRIGGER</button></td></tr>
 	</table>
 	
 	<hr>
-	Stage 6 : NOW Sign Funding txn AND Post it <button onclick="signAndPostFunding();">SIGN AND POST FUNDING</button><br>
+	Stage 6 : NOW Sign Funding txn AND Post it <button onclick="signAndPostTheFunding();">SIGN AND POST FUNDING</button><br>
 	<hr>
 	
 	NOW - you can create NEW Update and Settlement Txns with different amounts.. <br>
 	<br>
 	
 	<div id=showseq>Sequence Number : 0</div>
+	<br>
+	Sequence : <input type=text id="sequencenumber" value=1><br>
 	<br>
 	User 1 : <input type=text id="user1amount" value=10><br>
 	<br>
@@ -53,15 +55,14 @@
 	
 	<br>
 	<hr>
-	Stage 7 : POST Trigger <button onclick="postTrigger();">POST TRIGGER</button><br>
+	Stage 7 : POST Trigger (Funding -> ELTOO)<button onclick="postTrigger();">POST TRIGGER</button><br>
 	<hr>
 	And now to close..<br>
 	<div id="updatediv" style="display: none;">
 		POST Update <button onclick="postUpdate();">POST UPDATE</button><br>
 	</div>
 	<br>
-	POST Settle <button onclick="postSettle();">POST SETTLE</button><br>
-	
+	POST Settle ( Coin MUST be 10 blocks OLD ) <button onclick="postSettle();">POST SETTLE</button><br>
 	
 	<hr><br>
 	<button onclick="wipeTxnList()">WIPE ALL TXNLIST</button>&nbsp;&nbsp;&nbsp;
@@ -80,7 +81,7 @@
 <script type="text/javascript">
 	
 	//What sequence number are we on
-	var SEQUENCE_NUMBER = 0;
+	//var SEQUENCE_NUMBER = 0;
 	
 	/**
 	 * List All txns
@@ -93,7 +94,7 @@
 	
 	function listFunding(){
 		//Need to sign with both user Keys as spending the FUNDING coin
-		var post = "coins address:"+FUNDING;
+		var post = "coins address:"+FUNDING_ADDRESS;
 		MDS.cmd(post,function(fundresp){
 			log(fundresp);
 		});
@@ -101,7 +102,7 @@
 	
 	function listTrigger(){
 		//Need to sign with both user Keys as spending the FUNDING coin
-		var post = "coins address:"+ELTOO;
+		var post = "coins address:"+ELTOO_ADDRESS;
 		MDS.cmd(post,function(fundresp){
 			log(fundresp);
 		});
@@ -110,30 +111,52 @@
 	function update(){
 		
 		//Increment the Sequence number
-		SEQUENCE_NUMBER++;
-			
+		var seqnumber = sequencenumber.value;
+		sequencenumber.value++;
+		
 		//Now lets get the values..
 		var user1 = user1amount.value;
 		var user2 = user2amount.value;
 		
-		MDS.log("Update OMNIA Channel\nSequence : "+SEQUENCE_NUMBER+"\nUser1 : "+user1+"\nUser2 : "+user2);
-		showseq.innerHTML = "Sequence Number : "+ SEQUENCE_NUMBER;
+		var txt = "Update OMNIA Channel\nSequence : "+seqnumber+"\nUser1 : "+user1+"\nUser2 : "+user2;
+		MDS.log(txt);
+		showseq.innerHTML = "Current Latest Sequence Number : "+ seqnumber;
 		
 		updatediv.style.display = "block";
 		
 		//We need a NEW 
-		createUpdate(SEQUENCE_NUMBER, function(){
+		createUpdate(seqnumber, function(){
 			
 			//Now create the NEW Settle..
-			createSettle(SEQUENCE_NUMBER, user1, user2, function(){
+			createSettle(seqnumber, user1, user2, function(){
 				
 				//Now Sign - Settlement first!
 				signSettle(function(){
 					
 					//Now sign Update - so all good to go..
-					signUpdate();
+					signUpdate(function(){
+						alert(txt);
+					});
 				});
 			});
+		});
+	}
+	
+	function signTheSettle(){
+		signSettle(function(){
+			alert("Settlement 0 Txn Signed");
+		});
+	}
+	
+	function signTheTrigger(){
+		signTrigger(function(){
+			alert("Trigger Txn Signed");
+		});
+	}
+	
+	function signAndPostTheFunding(){
+		signAndPostFunding(function(){
+			alert("Funding Txn Signed and Posted!");
 		});
 	}
 	
@@ -144,7 +167,9 @@
 		if(msg.event == "inited"){
 			
 			//Do stuff.. from now..		
-			
+			initContractScripts(function(dets){
+				MDS.log("ALL KEYS / ADDRESSES Created");
+			});
 		}
 	});
 
