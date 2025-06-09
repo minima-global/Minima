@@ -184,7 +184,7 @@ public class P2PPeersChecker extends MessageProcessor {
                     } 
                     
                     //Is it correct
-                    if(testcheck && greetstr.startsWith(GlobalParams.MINIMA_BASE_VERSION)) {
+                    if(testcheck) {
                     	validversion = true;
                     }
                     
