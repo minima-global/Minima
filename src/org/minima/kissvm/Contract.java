@@ -152,13 +152,7 @@ public class Contract {
 		
 		mNumInstructions = 0;
 		
-		//Check if a block value used - will also check later
 		mMonotonic = true;
-		if(	zRamScript.contains("@BLOCK") ||
-			zRamScript.contains("@BLOCKMILLI") ||
-			zRamScript.contains("@COINAGE")) {
-			mMonotonic = false;
-		}
 		
 		//Begin..
 		traceLog("Contract   : "+mRamScript);
