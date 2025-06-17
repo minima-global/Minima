@@ -35,6 +35,10 @@ function showTitleOnAndroid(){
 	}
 }
 
+function logJSON(resp){
+	MDS.log(JSON.stringify(resp,null,2));
+}
+
 function genRandomHexString(len) {
     const hex = '0123456789ABCDEF';
     let output = '';

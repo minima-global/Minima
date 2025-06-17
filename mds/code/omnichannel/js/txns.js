@@ -1,192 +1,263 @@
+/**
+ * BASIC Scripts
+ */
+var FUNDING_SCRIPT = "LET randid=[#HASHID] RETURN MULTISIG(2 #USER1 #USER2)";
 
-//Contract addresses
-var FUNDING = "MxG0831AK3EZ9JVQ6DPBKVBN5YRR7R7FFWKAQ21FQBE4SRQEBAY6E43TD9RQY42";
-var ELTOO   = "MxG080YN6F20K1PR59UHP0PKT8MZ0GFJFHMADRPTA2NN4VQCKZNR98CMYN008D3";
+var ELTOO_SCRIPT = "LET randid=[#HASHID] "
+				  +"LET settlement=STATE(100) LET sequence=STATE(101) LET prevsequence=PREVSTATE(101) "
+				  +"ASSERT MULTISIG(2 #USER #USER2) "
+				  +"IF settlement THEN IF sequence EQ prevsequence AND @COINAGE GTE #SETTLETIMEOUT THEN RETURN TRUE ENDIF "
+				  +"ELSE IF sequence GT prevsequence THEN RETURN TRUE ENDIF ENDIF";
+
+//Create a randomg txnid.. when creating transactions..
+function randomString() {
+    const hex = '0123456789ABCDEF';
+    let output = '';
+    for (let i = 0; i < 16; ++i) {
+        output += hex.charAt(Math.floor(Math.random() * hex.length));
+    }
+    return output;
+}
+
+//Check this is a safe and valid hashid
+function checkSafeHashID(hashid, callback){
+	var regex = new RegExp("^[A-Za-z0-9]*$");
+	return regex.test(hashid); 
+}
 
 /**
- * Create the ELTOO transactions
+ * Create the funding address for a channel..
+ * 
+ * This starts the channel as both (sometimes 1) parties send funds
+ * to a multisig.
+ * 
+ * Different for EVERY Channel
  */
-
-function log(resp){
-	MDS.log(JSON.stringify(resp,null,2));
-}
-
-
-/**
- * WIPE Custom Transactions
- */
-function wipeTxn(name){
-	MDS.cmd("txndelete id:"+name,function(fundresp){
-		log(fundresp);
-	});
-}
-
-function wipeTxnList(){wipeTxn("all");}
-function wipeTrigger(){wipeTxn("trigger");}
-function wipeFunding(){wipeTxn("funding");}
-function wipeSettle(){wipeTxn("settle");}
-function wipeUpdate(){wipeTxn("update");}
-
-/**
- * Create the Funding, Trigger (First ELTOO Update), Settle and Update transactions
- */
-function createFund(){
-	var create = 
-	"txncreate id:funding;"+
-	"txnaddamount id:funding amount:20 address:"+FUNDING+";"+
-	"";
-	MDS.cmd(create,function(fundresp){
-		log(fundresp);
-	});
-}
-
-function createTrigger(){
-	var create = "txncreate id:trigger;"+
-	//Input the Funding txn address - floating
-	"txninput id:trigger amount:20  address:"+FUNDING+" floating:true;"+
-	//Output BACK to the ELTOO
-	"txnoutput id:trigger amount:20 address:"+ELTOO+";"+
-	//Set the state var - sequence number
-	"txnstate id:trigger port:99 value:0;"+
-	"";
-	MDS.cmd(create,function(fundresp){
-		log(fundresp);
-	});
-}
-
-function createSettle(sequence, user1payout, user2payout, callback){
+function createFundingAddress(hashid, user1pubkey, user2pubkey, callback){
 	
+	//Each script is unique even for the same 2 keys
+	var script = FUNDING_SCRIPT.replace("#HASHID",hashid).replace("#USER1",user1pubkey).replace("#USER2",user2pubkey);
+	
+	//Now create the script
+	MDS.cmd("runscript script:\""+script+"\"", function(scriptresp){
+		
+		//Get the details
+		var ret = {};
+		ret.script 	= scriptresp.response.clean.script;
+		ret.address = scriptresp.response.clean.mxaddress;
+		
+		//Send the details back
+		callback(ret);
+	});
+}
+
+/**
+ * Create the ELTOO address that will be used in this channel
+ * 
+ * Different for EVERY Channel
+ */
+function createELTOOAddress(hashid, user1pubkey, user2pubkey, callback){
+	
+	//Each script is unique even for the same 2 keys
+	var script = ELTOO_SCRIPT.replace("#HASHID",hashid).replace("#USER1",user1pubkey).replace("#USER2",user2pubkey);
+	
+	//Now create the script
+	MDS.cmd("runscript script:\""+script+"\"", function(scriptresp){
+		
+		//Get the details
+		var ret = {};
+		ret.script 	= scriptresp.response.clean.script;
+		ret.address = scriptresp.response.clean.mxaddress;
+		
+		//Send the details back
+		callback(ret);
+	});
+}
+
+/**
+ * Track Script - once Channel started you MUST follow the unique script per channel / MMR 
+ */
+function trackScript(script, callback){
+	
+	//Add and track the script
+	MDS.cmd("newscript trackall:true script:\""+script+"\"", function(scriptresp){
+		
+		//Send the details back
+		if(callback){
+			callback(scriptresp);	
+		}
+	});
+}
+
+/**
+ * Create the FUNDING TXN to start the channel
+ */
+function createFundingTxn(fundingaddress, addamount, total, callback){
+	
+	var txid = randomString();
+	
+	var create = "txncreate id:"+txid+";"+
+				 "txnoutput id:"+txid+" amount:"+total+" address:"+fundingaddress+";"+
+				 "txnaddamount id:"+txid+" onlychange:true amount:"+addamount+";"+
+				 "txnexport id:"+txid+";"+
+				 "txndelete id:"+txid+";"+
+				 "";
+	
+	MDS.cmd(create,function(fundresp){
+		callback(fundresp[3]);
+	}); 	
+}
+
+function addToFundingTxn(txndata, addamount, callback){
+	
+	var txid = randomString();
+	
+	var create = "txnimport id:"+txid+" data:"+txndata+";"+
+				 "txnaddamount id:"+txid+" onlychange:true amount:"+addamount+";"+
+				 "txnexport id:"+txid+";"+
+				 "txndelete id:"+txid+";"+
+				 "";
+	
+	MDS.cmd(create,function(fundresp){
+		callback(fundresp[2]);
+	}); 	
+}
+
+/**
+ * Create ther TRIGGER TXN that spends the funding and sets up the ELTOO sequence value 0
+ */
+function createTriggerTxn(amount, fundingaddress, eltooaddress, callback){
+	
+	var txid = randomString();
+	
+	var create = "txncreate id:"+txid+";"+
+	
+	//Input the Funding txn address - floating
+	"txninput id:"+txid+" amount:"+amount+"  address:"+fundingaddress+" floating:true;"+
+	
+	//Output BACK to the ELTOO
+	"txnoutput id:"+txid+" amount:"+amount+" address:"+eltooaddress+";"+
+	
+	//Set the state var - sequence number
+	"txnstate id:"+txid+" port:101 value:0;"+
+	
+	//Export the txn
+	"txnexport id:"+txid+";"+
+	
+	//Delete
+	"txndelete id:"+txid+";"+
+	
+	"";
+	
+	MDS.cmd(create,function(fundresp){
+		callback(fundresp[4]);
+	});
+}
+
+/**
+ * Create a Settlement Txn
+ */
+function createSettlementTxn(sequence, eltooaddress, eltooamount, user1amount, user1address, user2amount, user1address, callback){
+	
+	var txid = randomString();
+		
 	var create = 
-	//Wipe the OLD if exists (SHOULD STORE THIS!)
-	"txndelete id:settle;"+
 	//Now create a new Settlement
-	"txncreate id:settle;"+
-	//Input the Trigger txn address ELTOO - floating
-	"txninput id:settle amount:20  address:"+ELTOO+" floating:true;"+
+	"txncreate id:"+txid+";"+
+	
+	//Input the ELTOO coin
+	"txninput id:"+txid+" amount:"+eltooamount+"  address:"+eltooaddress+" floating:true;"+
+	
 	//Output Funds BACK to User 1
-	"txnoutput id:settle amount:"+user1payout+" address:MxG08428EB9MGTB6AT2ESKZ3YETSJ5N0HSAH2G9EM2CKRQVYC09PS701YGMMK92;"+
+	"txnoutput id:"+txid+" amount:"+user1payout+" address:"+user1address+";"+
+	
 	//Output Funds BACK to User 2
-	"txnoutput id:settle amount:"+user2payout+" address:MxG085BP3PBJN6SHG41ZJ83VZE834B0WJQNDPGV5ERVT5Y81803NDG130NCSRJP;"+
-	//Set the state var - sequence number
-	"txnstate id:settle port:99 value:"+sequence+";"+
+	"txnoutput id:"+txid+" amount:"+user2payout+" address:"+user2address+";"+
+	
+	//Set the state var - settlement / sequence number
+	"txnstate id:"+txid+" port:100 value:TRUE;"+
+	"txnstate id:"+txid+" port:101 value:"+sequence+";"+
+	
+	//Export the txn
+	"txnexport id:"+txid+";"+
+	
+	//Delete
+	"txndelete id:"+txid+";"+
+ 
 	"";
 	
 	MDS.cmd(create,function(fundresp){
-		log("Settlement Transaction Created : "+sequence);
-		//log(fundresp);
-		if(callback){
-			callback();
-		}
+		callback(fundresp[6]);
 	});
 }
 
-function createUpdate(sequence, callback){
+/**
+ * Create an Update TXN
+ */
+function createUpdateTxn(sequence, eltooaddress, eltooamount, callback){
+	
+	var txid = randomString();
+		
 	var create = 
-	//Wipe the OLD if exists (SHOULD STORE THIS!)
-	"txndelete id:update;"+
+	
 	//Now create a new UPDATE
-	"txncreate id:update;"+
+	"txncreate id:"+txid+";"+
+	
 	//Input the Funding txn address - floating
-	"txninput id:update amount:20  address:"+ELTOO+" floating:true;"+
+	"txninput id:"+txid+" amount:"+eltooamount+" address:"+eltooaddress+" floating:true;"+
+	
 	//Output BACK to the ELTOO
-	"txnoutput id:update amount:20 address:"+ELTOO+";"+
-	//Set the state var - sequence number
-	"txnstate id:update port:99 value:"+sequence+";"+
+	"txnoutput id:"+txid+" amount:"+eltooamount+" address:"+eltooaddress+";"+
+	
+	//Set the state var - update / sequence number
+	"txnstate id:"+txid+" port:100 value:FALSE;"+
+	"txnstate id:"+txid+" port:101 value:"+sequence+";"+
+	
+	//Export the txn
+	"txnexport id:"+txid+";"+
+	
+	//Delete
+	"txndelete id:"+txid+";"+
+ 
 	"";
 	
 	MDS.cmd(create,function(fundresp){
-		log("Update Transaction Created : "+sequence);
-		
-		if(callback){
-			callback();
-		}
+		callback(fundresp[5]);
 	});
 }
 
 /**
- * SIGN the variousd transactions
+ * SIGN a TXN
  */
-function signTrigger(callback){
-	//Need to sign with both user Keys as spending the FUNDING coin
-	var sign = 
-		"txnsign id:trigger publickey:0x93B2DBF348A8E5AB20FF418CF328257C6F2AE8A9510F0E2816BA7021FC66E1D9;"+
-		"txnsign id:trigger publickey:0xF94E98C54E6A3F1E29F00FB6A7A4379BBEB0F040FBD69E70332D33F5F592D5DE;"+
-	"";
-		
-	MDS.cmd(sign,function(fundresp){
-		log("Trigger Signed");
-		if(callback){
-			callback();
-		}
-	});
-}
-
-function signSettle(callback){
-	//Need to sign with both user Keys as spending the FUNDING coin
-	var sign = 
-		"txnsign id:settle publickey:0x93B2DBF348A8E5AB20FF418CF328257C6F2AE8A9510F0E2816BA7021FC66E1D9;"+
-		"txnsign id:settle publickey:0xF94E98C54E6A3F1E29F00FB6A7A4379BBEB0F040FBD69E70332D33F5F592D5DE;"+
-	"";
-		
-	MDS.cmd(sign,function(fundresp){
-		log("Settlement Signed");
-		if(callback){
-			callback();
-		}
-	});
-}
-
-function signUpdate(callback){
-	//Need to sign with both user Keys as spending the FUNDING coin
-	var sign = 
-		"txnsign id:update publickey:0xBAC30167A352C57076C6C73403D31EEE3768F6030F57226F86A32D31131843CD;"+
-		"txnsign id:update publickey:0x319E1529FBB2A103EF53AD81B93EFF90BDA0C4E933F85430E1F877A405BF1767;"+
-	"";
-		
-	MDS.cmd(sign,function(fundresp){
-		log("Update Signed");
-		if(callback){
-			callback();
-		}
-	});
-}
-
-function signAndPostFunding(){
-	//Need to sign with both user Keys as spending the FUNDING coin
-	var sign = "txnsign id:funding publickey:auto txnpostauto:true;";
+function signTxn(txndata, publickey, callback){
 	
-	MDS.cmd(sign,function(fundresp){
-		log("Signed and Posted Funding!");
-	});
+	var txid = randomString();
+		
+	var create = "txnimport id:"+txid+" data:"+txndata+";"+
+				 "txnsign id:"+txid+" publickey:"+publickey+";"+
+				 "txnexport id:"+txid+";"+
+				 "txndelete id:"+txid+";"+
+				 "";
+	
+	MDS.cmd(create,function(fundresp){
+		callback(fundresp[2]);
+	}); 
 }
 
 /**
- * POST Transactions
+ * POST a TXN - you will have the MMR data as the coin is one you follow..
  */
-function postTxn(name, callback){
-	//Need to sign with both user Keys as spending the FUNDING coin
-	var post = "txnpost id:"+name+" auto:true;";
-	MDS.cmd(post,function(fundresp){
-		if(fundresp.status){
-			log("POSTED : "+name);
-		}else{
-			log(fundresp);	
-		}
+function postTxn(txndata, callback){
+	
+	var txid = randomString();
 		
-		if(callback){
-			callback();
-		}
-	});
+	var create = "txnimport id:"+txid+" data:"+txndata+";"+
+				 "txnpost id:"+txid+" auto:true;"+
+				 "txndelete id:"+txid+";"+
+				 "";
+	
+	MDS.cmd(create,function(fundresp){
+		callback(fundresp);
+	}); 
 }
-
-function postTrigger(){
-	postTxn("trigger");
-}
-
-function postSettle(){
-	postTxn("settle");
-}
-
-function postUpdate(){
-	postTxn("update");
-}	
+	

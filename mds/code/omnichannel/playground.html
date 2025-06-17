@@ -23,7 +23,8 @@
 	<!-- Load the local JS lib -->
 	<script type="text/javascript" src="./js/jslib.js"></script>
 	<script type="text/javascript" src="./js/txns.js"></script>
-	
+	<script type="text/javascript" src="./js/sql.js"></script>
+		
 </head>
 
 <body>
@@ -92,7 +93,19 @@
 </div>
 <br>
 
+<button onclick="logAllData();">LOG DATA</button><br>
+<br>
+<button onclick="cycleStart();">START</button><br>
+<br>
+<button onclick="replyStart();">REPLY_START</button><br>
+
+
 <script type="text/javascript">
+	
+	//var regex = new RegExp("^([a-z0-9]{5,})$");
+	var regex = new RegExp("^[A-Fa-f0-9x]*$");
+	var res = regex.test("0x237467263ABCDE");
+	MDS.log("CHECK : "+res);
 	
 	//Load the default jquery buttons
 	$(document).ready(function() {
@@ -109,6 +122,74 @@
 			
 		});
 	});
+	
+	/**
+	 * HACK VERSION to PLAY WITH
+	 */
+	 var PUBKEY_USER1 		= "0xA3D634988454A6A5BEF0EC2A47A95FE29A7CC320757E0F8FCC171BF3886DAC4B";
+	 var LASTMESSAGE_USER1 	= {};
+	 var DB_USER1 		   	= {};
+	 
+	 
+	 var PUBKEY_USER2 		= "0x6981F60B23BB9C221603385150B286D2CDC18232BC341E6A713966781B9B1B70";
+	 var LASTMESSAGE_USER2 	= {};
+	 var DB_USER2 		   	= {};
+	 	
+	 
+	function logAllData(){
+		MDS.log("ALL DATA : ");
+		MDS.log("DB1 : "+JSON.stringify(DB_USER1,null,2));
+		MDS.log("DB2 : "+JSON.stringify(DB_USER2,null,2));	
+	}  
+	
+	function cycleStart(){
+		
+		var req = {};
+		
+		req.MAXIMA_PUBKEY 			= "0xEE";
+		req.USER1_AMOUNT 			= "10";
+		req.USER1_MINIMA_PUBKEY 	= PUBKEY_USER1;
+		
+		req.USER2_REQAMOUNT 		= "20";
+		
+		
+		//Put the data in the DB..
+		DB_USER1.hashid 		= "0xFFEEDD";
+		DB_USER1.type 			= "START_CHANNEL";
+		DB_USER1.state 			= "INIT_SENT";
+		DB_USER1.topublickey 	= "0xFF";
+		DB_USER1.data 			= "0xFF";
+		DB_USER1.date			= getTimeMilli();
+	}
+	
+	//Been asked to start a channel.. if accept..
+	function replyStart(){
+		
+		//Check you want to start the channel.. if so..
+		createFundingAddress("0xFF",PUBKEY_USER1,PUBKEY_USER2, function(createresp){
+			
+			logJSON(createresp);	
+			
+			createFundingTxn(createresp.address, 10, 20, function(txndata){
+				logJSON(txndata);
+				
+				//The txn data
+				var txndata = txndata.response.data;
+				
+				//Now add some money
+				addToFundingTxn(txndata, 20, function(finaltxn){
+					logJSON(finaltxn);
+					
+				});
+				
+			});
+			
+		});
+		
+	}
+	
+	
+	
 	
 	
 	//Main message handler..
