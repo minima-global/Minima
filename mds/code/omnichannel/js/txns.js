@@ -5,7 +5,7 @@ var FUNDING_SCRIPT = "LET randid=[#HASHID] RETURN MULTISIG(2 #USER1 #USER2)";
 
 var ELTOO_SCRIPT = "LET randid=[#HASHID] "
 				  +"LET settlement=STATE(100) LET sequence=STATE(101) LET prevsequence=PREVSTATE(101) "
-				  +"ASSERT MULTISIG(2 #USER #USER2) "
+				  +"ASSERT MULTISIG(2 #USER1 #USER2) "
 				  +"IF settlement THEN IF sequence EQ prevsequence AND @COINAGE GTE #SETTLETIMEOUT THEN RETURN TRUE ENDIF "
 				  +"ELSE IF sequence GT prevsequence THEN RETURN TRUE ENDIF ENDIF";
 
@@ -56,10 +56,13 @@ function createFundingAddress(hashid, user1pubkey, user2pubkey, callback){
  * 
  * Different for EVERY Channel
  */
-function createELTOOAddress(hashid, user1pubkey, user2pubkey, callback){
+function createELTOOAddress(hashid, user1pubkey, user2pubkey, timeout, callback){
 	
 	//Each script is unique even for the same 2 keys
-	var script = ELTOO_SCRIPT.replace("#HASHID",hashid).replace("#USER1",user1pubkey).replace("#USER2",user2pubkey);
+	var script = ELTOO_SCRIPT.replace("#HASHID",hashid)
+							 .replace("#USER1",user1pubkey)
+							 .replace("#USER2",user2pubkey)
+							 .replace("#SETTLETIMEOUT",timeout);
 	
 	//Now create the script
 	MDS.cmd("runscript script:\""+script+"\"", function(scriptresp){
@@ -133,7 +136,7 @@ function createTriggerTxn(amount, fundingaddress, eltooaddress, callback){
 	var create = "txncreate id:"+txid+";"+
 	
 	//Input the Funding txn address - floating
-	"txninput id:"+txid+" amount:"+amount+"  address:"+fundingaddress+" floating:true;"+
+	"txninput id:"+txid+" amount:"+amount+" address:"+fundingaddress+" floating:true;"+
 	
 	//Output BACK to the ELTOO
 	"txnoutput id:"+txid+" amount:"+amount+" address:"+eltooaddress+";"+
@@ -157,7 +160,7 @@ function createTriggerTxn(amount, fundingaddress, eltooaddress, callback){
 /**
  * Create a Settlement Txn
  */
-function createSettlementTxn(sequence, eltooaddress, eltooamount, user1amount, user1address, user2amount, user1address, callback){
+function createSettlementTxn(sequence, eltooaddress, eltooamount, user1amount, user1address, user2amount, user2address, callback){
 	
 	var txid = randomString();
 		
@@ -169,10 +172,10 @@ function createSettlementTxn(sequence, eltooaddress, eltooamount, user1amount, u
 	"txninput id:"+txid+" amount:"+eltooamount+"  address:"+eltooaddress+" floating:true;"+
 	
 	//Output Funds BACK to User 1
-	"txnoutput id:"+txid+" amount:"+user1payout+" address:"+user1address+";"+
+	"txnoutput id:"+txid+" amount:"+user1amount+" address:"+user1address+";"+
 	
 	//Output Funds BACK to User 2
-	"txnoutput id:"+txid+" amount:"+user2payout+" address:"+user2address+";"+
+	"txnoutput id:"+txid+" amount:"+user2amount+" address:"+user2address+";"+
 	
 	//Set the state var - settlement / sequence number
 	"txnstate id:"+txid+" port:100 value:TRUE;"+
@@ -240,6 +243,8 @@ function signTxn(txndata, publickey, callback){
 				 "";
 	
 	MDS.cmd(create,function(fundresp){
+		//MDS.log("SIGN : ");
+		//logJSON(fundresp);
 		callback(fundresp[2]);
 	}); 
 }
@@ -252,7 +257,7 @@ function postTxn(txndata, callback){
 	var txid = randomString();
 		
 	var create = "txnimport id:"+txid+" data:"+txndata+";"+
-				 "txnpost id:"+txid+" auto:true;"+
+				 "txnpost id:"+txid+" auto:false;"+
 				 "txndelete id:"+txid+";"+
 				 "";
 	

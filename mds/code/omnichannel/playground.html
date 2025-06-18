@@ -95,17 +95,16 @@
 
 <button onclick="logAllData();">LOG DATA</button><br>
 <br>
-<button onclick="cycleStart();">START</button><br>
+<button onclick="cycleStart();">START CHANNEL</button><br>
 <br>
-<button onclick="replyStart();">REPLY_START</button><br>
+<button onclick="replyStartYES();">REPLY_START_ACCEPT</button> <button onclick="replyStartNO();">REPLY_START_DENY</button> <br>
+<br>
+<button onclick="User1Accept();">USER1_ACCEPT</button> <br>
+<br>
+
 
 
 <script type="text/javascript">
-	
-	//var regex = new RegExp("^([a-z0-9]{5,})$");
-	var regex = new RegExp("^[A-Fa-f0-9x]*$");
-	var res = regex.test("0x237467263ABCDE");
-	MDS.log("CHECK : "+res);
 	
 	//Load the default jquery buttons
 	$(document).ready(function() {
@@ -126,66 +125,111 @@
 	/**
 	 * HACK VERSION to PLAY WITH
 	 */
-	 var PUBKEY_USER1 		= "0xA3D634988454A6A5BEF0EC2A47A95FE29A7CC320757E0F8FCC171BF3886DAC4B";
-	 var LASTMESSAGE_USER1 	= {};
-	 var DB_USER1 		   	= {};
+	 var HASHID						= "0xDEADDEAD"
+	 
+	 var PUBKEY_USER1 				= "0xA3D634988454A6A5BEF0EC2A47A95FE29A7CC320757E0F8FCC171BF3886DAC4B";
+	 var ADDRESS_USER1 				= "0xFFEEDD";
+	 var MESSAGE_SENT_USER1 		= {};
+	 var DB_USER1 		   			= {};
 	 
 	 
-	 var PUBKEY_USER2 		= "0x6981F60B23BB9C221603385150B286D2CDC18232BC341E6A713966781B9B1B70";
-	 var LASTMESSAGE_USER2 	= {};
-	 var DB_USER2 		   	= {};
+	 var PUBKEY_USER2 				= "0x6981F60B23BB9C221603385150B286D2CDC18232BC341E6A713966781B9B1B70";
+	 var ADDRESS_USER2 				= "0xDDEEFF";
+	 var MESSAGE_SENT_USER2 		= {};
+	 var DB_USER2 		   			= {};
 	 	
 	 
 	function logAllData(){
 		MDS.log("ALL DATA : ");
-		MDS.log("DB1 : "+JSON.stringify(DB_USER1,null,2));
-		MDS.log("DB2 : "+JSON.stringify(DB_USER2,null,2));	
+		MDS.log("DB1  : "+JSON.stringify(DB_USER1,null,2));
+		MDS.log("MSG1 : "+JSON.stringify(MESSAGE_SENT_USER1,null,2));
+		MDS.log(" ")
+		MDS.log("DB2  : "+JSON.stringify(DB_USER2,null,2));
+		MDS.log("MSG2 : "+JSON.stringify(MESSAGE_SENT_USER2,null,2));
+					
 	}  
 	
 	function cycleStart(){
 		
-		var req = {};
+		//Reset
+		MESSAGE_SENT_USER2 = {};
 		
-		req.MAXIMA_PUBKEY 			= "0xEE";
-		req.USER1_AMOUNT 			= "10";
-		req.USER1_MINIMA_PUBKEY 	= PUBKEY_USER1;
+		//Create a message and send it to player 2
+		MESSAGE_SENT_USER2.type 			= "START_CHANNEL_REQUEST";
+		MESSAGE_SENT_USER2.hashid 			= "0xDEAD";
+		MESSAGE_SENT_USER2.totalamount 		= 20;
 		
-		req.USER2_REQAMOUNT 		= "20";
+		MESSAGE_SENT_USER2.useraddress 		= ADDRESS_USER1;
+		MESSAGE_SENT_USER2.userpublickey 	= PUBKEY_USER1;
+		MESSAGE_SENT_USER2.useramount 		= 10;
 		
+		MESSAGE_SENT_USER2.reqamount 		= 10;
 		
-		//Put the data in the DB..
-		DB_USER1.hashid 		= "0xFFEEDD";
-		DB_USER1.type 			= "START_CHANNEL";
-		DB_USER1.state 			= "INIT_SENT";
-		DB_USER1.topublickey 	= "0xFF";
-		DB_USER1.data 			= "0xFF";
-		DB_USER1.date			= getTimeMilli();
+		//AND SEND..
 	}
 	
 	//Been asked to start a channel.. if accept..
-	function replyStart(){
+	function replyStartYES(){
 		
-		//Check you want to start the channel.. if so..
-		createFundingAddress("0xFF",PUBKEY_USER1,PUBKEY_USER2, function(createresp){
+		//CHECK DETAILS
+		//..
+		
+		//Reset
+		MESSAGE_SENT_USER1 = {};
+		MESSAGE_SENT_USER1.type 		= "START_CHANNEL_ACCEPT";
+		MESSAGE_SENT_USER1.hashid 		= MESSAGE_SENT_USER2.hashid;
+		
+		//Now create the funding txn..
+		createFundingAddress(HASHID, PUBKEY_USER1, PUBKEY_USER2, function(fundingaddress){
+			logJSON(fundingaddress);
 			
-			logJSON(createresp);	
-			
-			createFundingTxn(createresp.address, 10, 20, function(txndata){
-				logJSON(txndata);
+			//And create the ELTOO address
+			createELTOOAddress(HASHID, PUBKEY_USER1, PUBKEY_USER2, 20, function(eltooaddress){
+				logJSON(eltooaddress);
 				
-				//The txn data
-				var txndata = txndata.response.data;
-				
-				//Now add some money
-				addToFundingTxn(txndata, 20, function(finaltxn){
-					logJSON(finaltxn);
+				//Now create a FUNDING TXN.. add only your amount..
+				createFundingTxn(fundingaddress.address, 10, 20, function(fundingtxn){
+					logJSON(fundingtxn);
 					
-				});
-				
+					//Now create the trigger..
+					createTriggerTxn(20, fundingaddress.address, eltooaddress.address, function(triggertxn){
+						logJSON(triggertxn);
+						
+						//And create the settlement..
+						createSettlementTxn(0, eltooaddress.address, 20, 10, ADDRESS_USER1, 10, ADDRESS_USER2, function(settletxn){
+							logJSON(settletxn);
+							
+							//SIGN settle and trigger (NOT FUNDING..)
+							signTxn(settletxn.response.data, PUBKEY_USER2, function(signsettle){
+								logJSON(signsettle);
+								
+								//And SIGN the trigger
+								signTxn(triggertxn.response.data, PUBKEY_USER2, function(signtrigger){
+									logJSON(signsettle);
+									
+									//OK - NOW we have the pieces tyo send back,, SIGN funding AFTER recieved valid signed txns
+									//..
+									
+									
+									
+								});
+							});			
+						});	
+					});
+				});	
 			});
-			
 		});
+	}
+	
+	function 
+	
+	function replyStartNO(){
+		//Reset
+		MESSAGE_SENT_USER1 = {};
 		
+		//Create a message and send it to player 2
+		MESSAGE_SENT_USER1.type 		= "START_CHANNEL_DENY";
+		MESSAGE_SENT_USER1.hashid 		= MESSAGE_SENT_USER2.hashid;
 	}
 	
 	
