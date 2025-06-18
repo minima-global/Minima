@@ -13,7 +13,7 @@ import org.minima.utils.json.JSONObject;
 public class txnclear extends Command {
 
 	public txnclear() {
-		super("txnclear","[id:] (scriptmmr:) (signatures:) - Clear ALL the Witness data");
+		super("txnclear","[id:] (scripts:) (mmr:) (signatures:) - Clear the Witness data");
 	}
 	
 	@Override
@@ -25,8 +25,11 @@ public class txnclear extends Command {
 				+ "id:\n"
 				+ "    The id of the transaction to clear.\n"
 				+ "\n"
-				+ "scriptmmr:\n"
-				+ "    Clear the scripts and mmr (default : true).\n"
+				+ "scripts:\n"
+				+ "    Clear the scripts (default : true).\n"
+				+ "\n"
+				+ "mmr:\n"
+				+ "    Clear the MMR proofs (default : true).\n"
 				+ "\n"
 				+ "signatures:\n"
 				+ "    Clear the signatures (default : true).\n"
@@ -38,7 +41,7 @@ public class txnclear extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id", "scriptmmr", "signatures"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id", "scripts", "mmr", "signatures"}));
 	}
 	
 	@Override
@@ -48,7 +51,8 @@ public class txnclear extends Command {
 		TxnDB db = MinimaDB.getDB().getCustomTxnDB();
 		
 		String id 			= getParam("id");
-		boolean scriptmmr 	= getBooleanParam("scriptmmr", true);
+		boolean script 		= getBooleanParam("scripts", true);
+		boolean mmr 		= getBooleanParam("mmr", true);
 		boolean sigs 		= getBooleanParam("signatures", true);
 		
 		//Get the Transaction..
@@ -58,9 +62,13 @@ public class txnclear extends Command {
 		}
 		
 		txnrow.getTransaction().clearIsMonotonic();
-		if(scriptmmr) {
-			txnrow.getWitness().clearCoinProofs();
+		
+		if(script) {
 			txnrow.getWitness().clearScriptProofs();
+		}
+		
+		if(mmr) {
+			txnrow.getWitness().clearCoinProofs();
 		}
 		
 		if(sigs) {

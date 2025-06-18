@@ -7,7 +7,12 @@ import org.minima.database.MinimaDB;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
+import org.minima.database.wallet.ScriptRow;
+import org.minima.database.wallet.Wallet;
+import org.minima.objects.Coin;
+import org.minima.objects.CoinProof;
 import org.minima.objects.ScriptProof;
+import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;
@@ -17,7 +22,7 @@ import org.minima.utils.json.JSONObject;
 public class txnscript extends Command {
 
 	public txnscript() {
-		super("txnscript","[id:] [scripts:{}] - Add scripts to a txn");
+		super("txnscript","[id:] (auto:false) (scripts:{}) - Add scripts to a txn");
 	}
 	
 	@Override
@@ -28,6 +33,9 @@ public class txnscript extends Command {
 				+ "\n"
 				+ "id:\n"
 				+ "    The id of the transaction.\n"
+				+ "\n"
+				+ "auto:\n"
+				+ "    Automatically add scripts you know. Useful for multi user transactions.\n"
 				+ "\n"
 				+ "scripts:\n"
 				+ "    JSON holds the script and the proof in the format {script:proof}\n"
@@ -43,7 +51,7 @@ public class txnscript extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id","scripts"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","scripts","auto"}));
 	}
 	
 	@Override
@@ -54,41 +62,74 @@ public class txnscript extends Command {
 		
 		//The transaction
 		String id 			= getParam("id");
-		JSONObject scripts  = getJSONObjectParam("scripts");
+		JSONObject scripts  = getJSONObjectParam("scripts", new JSONObject());
+		boolean auto 		= getBooleanParam("auto", false);
 		
 		//Get the Transaction
 		TxnRow txnrow 	= db.getTransactionRow(getParam("id"));
 		if(txnrow == null) {
 			throw new CommandException("Transaction not found : "+id);
 		}
-		Witness witness = txnrow.getWitness();
+		Witness witness 	= txnrow.getWitness();
+		
+		ArrayList<String> addedscripts = new ArrayList<String>(); 
 		
 		//Any extra scripts
-		for(Object key : scripts.keySet()) {
+		if(auto) {
 			
-			//Get the script
-			String exscript = (String)key;
+			//Need the transaction
+			Transaction trans 	= txnrow.getTransaction();
 			
-			//The Key is a String
-			String proof 		=  (String) scripts.get(key);
-			ScriptProof scprf 	= null;
-			if(proof.equals("")) {
-				//Create a ScriptProof..
-				scprf = new ScriptProof(exscript);
+			//Get the main Wallet
+			Wallet walletdb = MinimaDB.getDB().getWallet();
+			
+			//Get all the inputs
+			ArrayList<Coin> inputs = trans.getAllInputs();
+			for(Coin input : inputs) {
 				
-			}else {
-				MiniData proofdata 	= new MiniData(proof); 
-				
-				//Make it into an MMRProof..
-				MMRProof scproof = MMRProof.convertMiniDataVersion(proofdata);
-				
-				//Create a ScriptProof..
-				scprf = new ScriptProof(exscript, scproof);
+				//Is the script missing
+				if(witness.getScript(input.getAddress()) == null){
+					String scraddress 	= input.getAddress().to0xString();
+					ScriptRow srow 		= walletdb.getScriptFromAddress(scraddress);
+					if(srow != null) {
+						ScriptProof pscr = new ScriptProof(srow.getScript());
+						witness.addScript(pscr);
+						
+						addedscripts.add(pscr.getScript().toString());
+					}
+				}
 			}
 			
-			//Add to the Witness..
-			witness.addScript(scprf);
+		}else {
+			for(Object key : scripts.keySet()) {
+				
+				//Get the script
+				String exscript = (String)key;
+				
+				//The Key is a String
+				String proof 		=  (String) scripts.get(key);
+				ScriptProof scprf 	= null;
+				if(proof.equals("")) {
+					//Create a ScriptProof..
+					scprf = new ScriptProof(exscript);
+					
+				}else {
+					MiniData proofdata 	= new MiniData(proof); 
+					
+					//Make it into an MMRProof..
+					MMRProof scproof = MMRProof.convertMiniDataVersion(proofdata);
+					
+					//Create a ScriptProof..
+					scprf = new ScriptProof(exscript, scproof);
+				}
+				
+				//Add to the Witness..
+				witness.addScript(scprf);
+				
+				addedscripts.add(scprf.getScript().toString());
+			}
 		}
+		
 		
 		//Output the current trans..
 		ret.put("response", db.getTransactionRow(id).toJSON());
