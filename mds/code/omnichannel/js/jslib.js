@@ -22,7 +22,7 @@ function jumpToHome(){
 }
 
 function jumpToNewChannel(){
-	location.href="newchannel.html?uid="+MDS.minidappuid;	
+	location.href="playground.html?uid="+MDS.minidappuid;	
 }
 
 function jumpToHelp(){
@@ -35,15 +35,26 @@ function showTitleOnAndroid(){
 	}
 }
 
-function logJSON(resp){
-	MDS.log(JSON.stringify(resp,null,2));
+function logJSON(json, title){
+	if(title){
+		MDS.log(title+" : "+JSON.stringify(json,null,2));
+	}else{
+		MDS.log(JSON.stringify(json,null,2));	
+	}
+	
 }
 
-function genRandomHexString(len) {
+function genRandomHexString() {
     const hex = '0123456789ABCDEF';
     let output = '';
-    for (let i = 0; i < len; ++i) {
+    for (let i = 0; i < 16; ++i) {
         output += hex.charAt(Math.floor(Math.random() * hex.length));
     }
     return output;
+}
+
+function getTimeMilli(){
+	//Date as of NOW
+	var recdate = new Date();
+	return recdate.getTime();	
 }

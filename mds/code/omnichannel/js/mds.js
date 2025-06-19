@@ -1,7 +1,13 @@
 /**
 * MDS JS lib for MiniDAPPs..
 * 
-* @spartacusrex
+* The messages that are sent : 
+*
+* inited : Sent when the Minidapp has started up correctly. You can do nothing until this happens
+*
+* ..
+*
+* 
 */
 
 /**

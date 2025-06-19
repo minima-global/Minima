@@ -10,12 +10,6 @@ function decodeStringFromDB(str){
 	return decodeURIComponent(str).split("%27").join("'");
 }
 
-function getTimeMilli(){
-	//Date as of NOW
-	var recdate = new Date();
-	return recdate.getTime();	
-}
-
 /**
  * Create a destroy the DB
  */
@@ -23,7 +17,7 @@ function getTimeMilli(){
 function wipeDB(callback){
 	//Run this..
 	MDS.sql("DROP TABLE `channels`",function(msg){
-		MDS.sql("DROP TABLE `messages`",function(msg){
+		MDS.sql("DROP TABLE `logs`",function(msg){
 			MDS.log("DB Wiped..");
 			if(callback){
 				callback();
@@ -38,21 +32,29 @@ function createDB(callback){
 	var initsql = "CREATE TABLE IF NOT EXISTS `channels` ( "
 				+"  `id` bigint auto_increment, "
 				
-				+"  `hashref` varchar(256) NOT NULL, "
+				+"  `hashid` varchar(256) NOT NULL, "
+				+"  `state` varchar(256) NOT NULL, "
 				
-				+"  `fromname` varchar(1024) NOT NULL, "
-				+"  `frompublickey` varchar(1024) NOT NULL, "
-				+"  `topublickey` varchar(1024) NOT NULL, "
-								
-				+"  `subject` varchar(1024) NOT NULL, "
-				+"  `message` varchar(8192) NOT NULL, "
+				+"  `user1name` varchar(1024), "	
+				+"  `user1maximaid` varchar(1024), "	
+				+"  `user1publickey` varchar(1024), "
+				+"  `user1address` varchar(1024), "
+				+"  `user1amount` varchar(1024), "
 				
-				+"  `randomid` varchar(256) NOT NULL, "
+				+"  `user2name` varchar(1024), "	
+				+"  `user2maximaid` varchar(1024),"	
+				+"  `user2publickey` varchar(1024),"
+				+"  `user2address` varchar(1024),"
+				+"  `user2amount` varchar(1024),"
+												
+				+"  `fundingaddress` varchar(256),"
+				+"  `eltooaddress` varchar(256),"
 				
-				+"  `incoming` int NOT NULL, "
-				+"  `incomingname` varchar(1024) NOT NULL, "
-				
-				+"  `read` int NOT NULL, "
+				+"  `sequence` bigint,"
+				+"  `triggertxn` varchar(256000),"
+				+"  `settletxn` varchar(256000),"								
+				+"  `updatetxn` varchar(256000),"
+												
 				+"  `date` bigint NOT NULL "
 				+" )";
 				
@@ -60,19 +62,12 @@ function createDB(callback){
 	MDS.sql(initsql,function(msg){
 		
 		//Create the DB if not exists
-		var messages = "CREATE TABLE IF NOT EXISTS `messages` ( "
+		var messages = "CREATE TABLE IF NOT EXISTS `logs` ( "
 					+"  `id` bigint auto_increment, "
-					
 					+"  `hashid` varchar(256) NOT NULL, "
-					
 					+"  `type` varchar(256) NOT NULL, "
-					+"  `state` varchar(256) NOT NULL, "
-					
-					+"  `topublickey` varchar(1024) NOT NULL, "
-					+"  `data` varchar(256000) NOT NULL, "
-					
+					+"  `message` varchar(1024) NOT NULL, "
 					+"  `date` bigint NOT NULL "
-																				
 					+" )";
 					
 		//Run this..
@@ -87,18 +82,22 @@ function createDB(callback){
 
 
 /**
- * Add remove data form ther DB
+ * Add a log
 */
-function insertMessage(username, publickey, callback){
+function insertLog(hashid, type, message, callback){
 	
 	//Insert this unread message
-	var sql = "INSERT INTO messages(type, state, topublickey, data, date) "
-			 +"VALUES ('"+encodeStringForDB(username)+"','"+publickey+"')";
+	var sql = "INSERT INTO logs(hashid, type, message, date) "
+			 +"VALUES ('"+hashid+"','"+type+"','"+encodeStringForDB(message)+"',"+getTimeMilli()+")";
 	
 	MDS.sql(sql,function(msg){
 		if(callback){
 			callback(msg);	
 		}
 	});
+}
+
+function getLogs(hashid){
+	
 }
 

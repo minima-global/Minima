@@ -5,10 +5,9 @@
  */
 
 
+function startChannelMessage(){
 
-function startChannel(){
-
-	//Add a record the the DB..
+	
 			
 		
 }

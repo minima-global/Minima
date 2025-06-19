@@ -243,8 +243,6 @@ function signTxn(txndata, publickey, callback){
 				 "";
 	
 	MDS.cmd(create,function(fundresp){
-		//MDS.log("SIGN : ");
-		//logJSON(fundresp);
 		callback(fundresp[2]);
 	}); 
 }
@@ -252,12 +250,12 @@ function signTxn(txndata, publickey, callback){
 /**
  * POST a TXN - you will have the MMR data as the coin is one you follow..
  */
-function postTxn(txndata, callback){
+function postTxn(txndata, auto, callback){
 	
 	var txid = randomString();
 		
 	var create = "txnimport id:"+txid+" data:"+txndata+";"+
-				 "txnpost id:"+txid+" auto:false;"+
+				 "txnpost id:"+txid+" auto:"+auto+";"+
 				 "txndelete id:"+txid+";"+
 				 "";
 	
