@@ -50,7 +50,7 @@ function genRandomHexString() {
     for (let i = 0; i < 16; ++i) {
         output += hex.charAt(Math.floor(Math.random() * hex.length));
     }
-    return output;
+    return "0x"+output;
 }
 
 function getTimeMilli(){

@@ -22,7 +22,7 @@ function convertHEXtoJSON(hex, callback){
  */
 function sendMaximaMessage(publickey, msg, callback){
 	
-	logJSON(msg,"MAXIMA SEND : ");
+	logJSON(msg,"MAXIMA SEND TO "+publickey+" : ");
 	
 	//Fisrt convert the msg to HEX
 	convertJSONtoHEX(msg, function(hexdata){

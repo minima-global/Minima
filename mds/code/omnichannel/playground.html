@@ -100,13 +100,9 @@
 
 <button onclick="logAllData();">LOG DATA</button><br>
 <br>
-<button onclick="cycleStart();">START CHANNEL</button><br>
-<br>
-<button onclick="replyStartYES();">REPLY_START_ACCEPT</button> <button onclick="replyStartNO();">REPLY_START_DENY</button> <br>
-<br>
-<button onclick="User1Accept();">USER1_ACCEPT</button> <br>
-<br><br>
 <button onclick="sendack();">SEND_ACK</button> <br>
+<br>
+<button onclick="requestChannel();">CREATE CHANNEL</button> <br>
 <br>
 
 
@@ -136,14 +132,14 @@
 	 
 	 var MAXIMA_USER1 				= "0x30819F300D06092A864886F70D010101050003818D0030818902818100826686DA551C7AF8D0EF133D87E47D00630ED181D2CD2C3C3CB668C8CD2E24E3B06493F54009367C710470F05552DAD0643D136D832E8DAD29744718231B66E15C1AF87E0E6BC66484FAFFA14235A815ECF06C20D14D40292412128F670448FC2C86A7DA93BDE67FE309829A3E75484EFF730B941C8F22091BA85F24241907330203010001";
 	 var PUBKEY_USER1 				= "0xA3D634988454A6A5BEF0EC2A47A95FE29A7CC320757E0F8FCC171BF3886DAC4B";
-	 var ADDRESS_USER1 				= "0xFFEEDD";
+	 var ADDRESS_USER1 				= "MxG083N1WJKYQ16BBE4BT4UE6JM2ZGG9CB752NQMCQGZ5651E60SSH9HTEM77W1";
 	 var MESSAGE_SENT_USER1 		= {};
 	 var DB_USER1 		   			= {};
 	 
 	 
 	 var MAXIMA_USER2 				= "0x30819F300D06092A864886F70D010101050003818D00308189028181008494D460B183563CCE456CAE7A241D234AE7C000126F47EF07F2D9BA0B4964DEA3F4ED3EEFC197100AB7C1D4BEB64A923EB3E2FD0423B9FD8C4B5CA62B35DFCA72F277B550AE15A809BEE1829070A72B203C54A58F07B785A7BFF9AE6AE600E36EF71F2DA174054BE4A3DE79C1397D894428CD47119DB541BEC38CFA0A4428F90203010001";
 	 var PUBKEY_USER2 				= "0x440CDCAC43361D33CD81A1322D41D4F12101AFA3B5B3A6C6355098E98742909C";
-	 var ADDRESS_USER2 				= "0xDDEEFF";
+	 var ADDRESS_USER2 				= "MxG0843EANWEDE6UC6UJ035CE7K7ESE05VRPVPU8C8A3KZ4TTZUTK91Y3S0FQEU";
 	 var MESSAGE_SENT_USER2 		= {};
 	 var DB_USER2 		   			= {};
 	 	
@@ -157,25 +153,6 @@
 		MDS.log("MSG2 : "+JSON.stringify(MESSAGE_SENT_USER2,null,2));
 					
 	}  
-	
-	function cycleStart(){
-		
-		//Reset
-		MESSAGE_SENT_USER2 = {};
-		
-		//Create a message and send it to player 2
-		MESSAGE_SENT_USER2.type 			= "START_CHANNEL_REQUEST";
-		MESSAGE_SENT_USER2.hashid 			= "0xDEAD";
-		MESSAGE_SENT_USER2.totalamount 		= 20;
-		
-		MESSAGE_SENT_USER2.useraddress 		= ADDRESS_USER1;
-		MESSAGE_SENT_USER2.userpublickey 	= PUBKEY_USER1;
-		MESSAGE_SENT_USER2.useramount 		= 10;
-		
-		MESSAGE_SENT_USER2.reqamount 		= 10;
-		
-		//AND SEND..
-	}
 	
 	//Been asked to start a channel.. if accept..
 	function replyStartYES(){
@@ -247,6 +224,20 @@
 		ackFunctionCall(MAXIMA_USER2, printHello, {"hello":"you"} );
 	}
 	
+	function sendRequestChannel(details){
+		MDS.log("SEND REQ "+JSON.stringify(details,null,2));
+	
+		sendMaximaMessage(details.tomaximapublickey, details);
+	}
+	
+	function requestChannel(){
+		
+		var hashid  = genRandomHexString();
+		
+		var details = startChannelMessage(hashid, 10, ADDRESS_USER1, PUBKEY_USER1, MAXIMA_USER2, 20);
+		
+		ackFunctionCall(MAXIMA_USER2, sendRequestChannel, details );
+	}
 	
 	//Main message handler..
 	MDS.init(function(msg){
@@ -284,7 +275,7 @@
 				
 				//Convert back to JSON
 				convertHEXtoJSON(datahex,function(maxmsg){
-					logJSON(maxmsg,"MAXIMA REC : ");
+					logJSON(maxmsg,"MAXIMA FROM "+pubkey+" : ");
 				
 					//What type of Message is it..?
 					if(maxmsg.type == "ACK_MESSAGE"){
@@ -296,8 +287,15 @@
 						
 						//OK! - we can proceed.. call the function this message represents 
 						synackMessageReceived(maxmsg);	
-					}
+					
+					}else if(maxmsg.type == "REQUEST_NEW_CHANNEL"){
 						
+						//New channel requested..
+						
+						sendMaximaMessage(pubkey, replyDenyMessage(maxmsg.hashid));
+						
+											
+					}
 				});
 			}
 		}
