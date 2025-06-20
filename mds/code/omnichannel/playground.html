@@ -169,11 +169,14 @@
 				
 				var row = i+") "+channel.HASHID+" "+channel.STATE;
 				
-				if(channel.STATE == "SENT_START_WAITING"){
-					
+				if(channel.STATE == "SENT_START_CHANNEL"){
+					//Add buttons..
+					row += "&nbsp;&nbsp;&nbsp; <button onclick='cancelRequest(\""+channel.HASHID+"\", \""+channel.USER1MAXIMAID+"\");'>CANCEL</button>"
+										
 				}else if(channel.STATE == "REQUEST_START_CHANNEL"){
 					//Add buttons..
-					row += "&nbsp;&nbsp;&nbsp; <button onclick='deny(\""+channel.HASHID+"\");'>DENY</button> <button>ACCEPT</button>"				
+					row += "&nbsp;&nbsp;&nbsp; <button onclick='deny(\""+channel.HASHID+"\", \""+channel.USER1MAXIMAID+"\");'>DENY</button> <button>ACCEPT</button>"				
+				
 				}
 				
 				output += row+"<br><br>"
@@ -183,14 +186,15 @@
 		});		
 	}
 	
-	function deny(hashid){
-		sqlSelectChannel(hashid, function(dets){
-			
-			denyStartChannel(dets.rows[0].USER1MAXIMAID, hashid, function(){
-				
-			});
-			
-				
+	function deny(hashid, maximaid){
+		denyStartChannel(maximaid, hashid, function(delivered){
+			showChannels();
+		});
+	}
+	
+	function cancelRequest(hashid, maximaid){
+		updateChannelState(hashid, "REQUEST_CANCELLED", function(){
+			showChannels();
 		});
 	}
 	
@@ -206,7 +210,9 @@
 			if(!delivered){
 				//Could not contact user.. show an immediate message
 				alert("Could not contact User..");
-			}	
+			}
+			
+			showChannels();	
 		});
 	}
 	
@@ -267,13 +273,22 @@
 					}else if(maxmsg.type == "REQUEST_NEW_CHANNEL"){
 						
 						//Add to the database..
-						receivedChannelRequest(maxmsg);
+						sqlInsertNewChannel(maxmsg, "REQUEST_START_CHANNEL", function(){
+							showChannels();
+						});
 											
 					}else if(maxmsg.type == "REQUEST_DENIED"){
 						
-						//DENIED this request
-						updateChannelState(maxmsg.hashid, "REQUEST_DENIED")										
-					
+						//Check state and user
+						checkValidMaximaUserState(pubkey,maxmsg.hashid, "SENT_START_CHANNEL", function(valid){
+							if(valid){
+								//DENIED this request
+								updateChannelState(maxmsg.hashid, "REQUEST_DENIED", function(upd){
+									showChannels();
+								});			
+							}
+						});
+									
 					}else if(maxmsg.type == "REQUEST_ACCEPTED"){
 										
 						//Lets go..

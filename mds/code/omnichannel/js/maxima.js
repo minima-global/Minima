@@ -105,3 +105,28 @@ function synackMessageReceived(synackmsg){
 	
 	//MDS.log("SYNACK_REC:"+JSON.stringify(ACK_FUNCTIONS));
 }
+
+/**
+ * Check a message received over Maxima is from the right User
+ */
+function checkValidMaximaUserState(maximaid, hashid, state, callback){
+	
+	sqlSelectChannel(hashid, function(res){
+		
+		if(res.count == 0){
+			callback(false);
+		}else{
+			//Must be one of us..
+			var correctuser  = res.rows[0].USER1MAXIMAID == maximaid || res.rows[0].USER2MAXIMAID == maximaid;
+			var correctstate = res.rows[0].STATE == state;
+			var valid 		 = correctuser && correctstate;
+			
+			if(!valid){
+				MDS.log("INVALID MAXIMA USER / STATE !! DB:"+JSON.stringify(res.rows[0])+" REQSTATE:"+state+" REQMAXID:"+maximaid);
+			}
+			
+			//Send back
+			callback(valid);	
+		}
+	});
+}

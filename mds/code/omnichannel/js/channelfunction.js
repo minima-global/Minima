@@ -38,19 +38,6 @@ function _requestNewChannel(details){
 }
 
 /**
- * When you receive a channel request
- */
-function receivedChannelRequest(details, callback){
-	
-	//Put it in the DB
-	sqlInsertNewChannel(details, "REQUEST_START_CHANNEL", function(){
-		if(callback){
-			callback();
-		}
-	});
-}
-
-/**
  * DENY starting a new Channel - ACK START.. as could be done some time later
  */
 function denyStartChannel(maximaid, hashid, callback){
@@ -80,7 +67,16 @@ function denyStartChannel(maximaid, hashid, callback){
 	});
 }
 
+//ONLY called after the SYNACK message received
 function _denyStartChannel(details){
-	//NOW send a message to the user. - AFTER the SYNACK message received
+	//NOW send a message to the user
 	sendMaximaMessage(details.maximaid, replyDenyMessage(details.hashid));
+}
+
+
+/**
+ * ACCEPT the opening of a new Channel
+ */
+function acceptStartChannel(hashid){
+	
 }
