@@ -19,6 +19,8 @@ function wipeDB(callback){
 	MDS.sql("DROP TABLE `channels`",function(msg){
 		MDS.sql("DROP TABLE `logs`",function(msg){
 			MDS.log("DB Wiped..");
+			
+			
 			if(callback){
 				callback();
 			}
@@ -51,6 +53,7 @@ function createDB(callback){
 				+"  `eltooaddress` varchar(256),"
 				
 				+"  `sequence` bigint,"
+				
 				+"  `triggertxn` varchar(256000),"
 				+"  `settletxn` varchar(256000),"								
 				+"  `updatetxn` varchar(256000),"
@@ -80,6 +83,77 @@ function createDB(callback){
 	});
 }
 
+
+/**
+ * Add channel details
+ */
+function sqlInsertNewChannel(details, state,  callback){
+	
+	MDS.log("SQL NEWCHANNEL : "+state+" INSERTED");
+	
+	//Insert this unread message
+	var sql = "INSERT INTO channels(hashid, state, user1maximaid, user1publickey, user1address, user1amount, user2maximaid, date) "
+			 +"VALUES ('"+details.hashid+"','"+state+"','"
+				//User details
+				+details.user.maximaid+"','"+details.user.publickey+"','"+details.user.address+"','"+details.useramount
+				
+				//Counterpary User
+				+"','"+details.tomaximapublickey
+				
+				//Date
+				+"',"+getTimeMilli()+")";
+	
+	MDS.sql(sql,function(msg){
+		if(callback){
+			callback(msg);	
+		}
+	});
+}
+
+/**
+ * Get ALL channels
+ */
+function sqlSelectAllChannels(callback){
+	//Find a record
+	var sql = "SELECT * FROM channels";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		if(callback){
+			callback(msg);
+		}
+	});
+}
+
+/**
+ * Get the details of a channel
+ */
+function sqlSelectChannel(hashid, callback){
+	//Find a record
+	var sql = "SELECT * FROM channels WHERE hashid='"+hashid+"'";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		if(callback){
+			callback(msg);
+		}	
+	});
+}
+
+/**
+ * Get the details of a channel
+ */
+function updateChannelState(hashid, state, callback){
+	//Find a record
+	var sql = "UPDATE channels SET state='"+state+"' WHERE hashid='"+hashid+"'";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		if(callback){
+			callback(msg);	
+		}
+	});
+}
 
 /**
  * Add a log

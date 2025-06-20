@@ -22,7 +22,7 @@ function synackMessage(ackmessage){
 /**
  * Sent to request a Channel
  */
-function startChannelMessage(hashid, myamount, myaddress, mypublickey, tomaximapublickey, requestamount){
+function startChannelMessage(hashid, myamount, tomaximapublickey, requestamount){
 
 	var msg 	={};
 	
@@ -31,15 +31,13 @@ function startChannelMessage(hashid, myamount, myaddress, mypublickey, tomaximap
 	msg.hashid			= hashid;
 	
 	//MY details
-	msg.user			= {};
-	msg.user.amount	= myamount;
-	msg.user.address	= myaddress;
-	msg.user.publickey	= mypublickey;
+	msg.user			= getUserDetails();
 		
 	//Who to ?
 	msg.tomaximapublickey = tomaximapublickey;
 	
-	//Channel Request - How much do they put in
+	//Channel Request - How much do we / they put in
+	msg.useramount		= myamount;
 	msg.requestamount	= requestamount;
 	
 	return msg;	

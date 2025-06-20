@@ -20,12 +20,15 @@
 	<!-- And the ICON for the page -->
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	
-	<!-- Load the local JS lib -->
+	<!-- Load the local JS libs -->
+	<script type="text/javascript" src="./js/decimal.js"></script>
 	<script type="text/javascript" src="./js/jslib.js"></script>
+	<script type="text/javascript" src="./js/auth.js"></script>
 	<script type="text/javascript" src="./js/txns.js"></script>
 	<script type="text/javascript" src="./js/sql.js"></script>
 	<script type="text/javascript" src="./js/messages.js"></script>
 	<script type="text/javascript" src="./js/maxima.js"></script>
+	<script type="text/javascript" src="./js/channelfunction.js"></script>
 		
 </head>
 
@@ -50,55 +53,14 @@
 
 <br>
 
-<!--
-<div id=youraddress class=blueborder style="word-wrap:break-word;text-align:center;">
-	<br>
+<div id="channelview">
 	
-	<h3>Start a NEW Omnia Channel</h3>
-
-	Channels can be started with any of your Maxima contacts<br>
-	<br>
-	Choose how much Minima each of you adds to the channel<br>
-	<br>
-	The contact must accept for the Channel to be created<br>
-	<br>
-	<br>
-	<table border=0 style="margin: 0 auto;">
-		<tr>
-			<td class=alignright>Maxima Contact :</td>
-			<td>
-			<select>
-				<option value="popo"> POPO </option>
-				<option value="popo"> Paddy </option>
-				<option value="popo"> Bazza </option>
-			</select>
-			</td>
-		</tr>
-		
-		<tr>
-			<td class=alignright> You will add : </td>
-			<td> <input type="number" value=0> </td>
-		</tr>
-		
-		<tr>
-			<td class=alignright> They will add : </td>
-			<td> <input type="number" value=0> </td>
-		</tr>
 	
-	</table>
-	
-	<br> 
-	<button id="button-startchannel">Start Channel</button>
-	
-
-	<br>
-	<br>
 </div>
-<br>
+	
+	
 
--->
-
-<button onclick="logAllData();">LOG DATA</button><br>
+<button onclick="logAllData();">LOG DATA</button> <button onclick="wipedb();">WIPEDB</button><br><br>
 <br>
 <button onclick="sendack();">SEND_ACK</button> <br>
 <br>
@@ -125,33 +87,21 @@
 		});
 	});
 	
-	/**
-	 * HACK VERSION to PLAY WITH
-	 */
-	 var HASHID						= "0xDEADDEAD"
-	 
-	 var MAXIMA_USER1 				= "0x30819F300D06092A864886F70D010101050003818D0030818902818100826686DA551C7AF8D0EF133D87E47D00630ED181D2CD2C3C3CB668C8CD2E24E3B06493F54009367C710470F05552DAD0643D136D832E8DAD29744718231B66E15C1AF87E0E6BC66484FAFFA14235A815ECF06C20D14D40292412128F670448FC2C86A7DA93BDE67FE309829A3E75484EFF730B941C8F22091BA85F24241907330203010001";
-	 var PUBKEY_USER1 				= "0xA3D634988454A6A5BEF0EC2A47A95FE29A7CC320757E0F8FCC171BF3886DAC4B";
-	 var ADDRESS_USER1 				= "MxG083N1WJKYQ16BBE4BT4UE6JM2ZGG9CB752NQMCQGZ5651E60SSH9HTEM77W1";
-	 var MESSAGE_SENT_USER1 		= {};
-	 var DB_USER1 		   			= {};
-	 
-	 
-	 var MAXIMA_USER2 				= "0x30819F300D06092A864886F70D010101050003818D00308189028181008494D460B183563CCE456CAE7A241D234AE7C000126F47EF07F2D9BA0B4964DEA3F4ED3EEFC197100AB7C1D4BEB64A923EB3E2FD0423B9FD8C4B5CA62B35DFCA72F277B550AE15A809BEE1829070A72B203C54A58F07B785A7BFF9AE6AE600E36EF71F2DA174054BE4A3DE79C1397D894428CD47119DB541BEC38CFA0A4428F90203010001";
-	 var PUBKEY_USER2 				= "0x440CDCAC43361D33CD81A1322D41D4F12101AFA3B5B3A6C6355098E98742909C";
-	 var ADDRESS_USER2 				= "MxG0843EANWEDE6UC6UJ035CE7K7ESE05VRPVPU8C8A3KZ4TTZUTK91Y3S0FQEU";
-	 var MESSAGE_SENT_USER2 		= {};
-	 var DB_USER2 		   			= {};
-	 	
-	 
+	function wipedb(){
+		wipeDB(function(){
+			MDS.log("DB WIPED!");
+			//Do stuff.. from now..	
+			createDB(function(){
+				MDS.log("DB CREATED!");
+			});
+		});
+	}
+	
 	function logAllData(){
-		MDS.log("ALL DATA : ");
-		MDS.log("DB1  : "+JSON.stringify(DB_USER1,null,2));
-		MDS.log("MSG1 : "+JSON.stringify(MESSAGE_SENT_USER1,null,2));
-		MDS.log(" ")
-		MDS.log("DB2  : "+JSON.stringify(DB_USER2,null,2));
-		MDS.log("MSG2 : "+JSON.stringify(MESSAGE_SENT_USER2,null,2));
-					
+		//Get the DB
+		sqlSelectAllChannels(function(allchannels){
+			logJSON(allchannels,"CHANNEL DB");	
+		});		
 	}  
 	
 	//Been asked to start a channel.. if accept..
@@ -207,36 +157,57 @@
 		});
 	}
 	
-	function replyStartNO(){
-		//Reset
-		MESSAGE_SENT_USER1 = {};
-		
-		//Create a message and send it to player 2
-		MESSAGE_SENT_USER1.type 		= "START_CHANNEL_DENY";
-		MESSAGE_SENT_USER1.hashid 		= MESSAGE_SENT_USER2.hashid;
-	}
-
-	function printHello(params){
-		MDS.log("PRINT HELLO "+JSON.stringify(params));
+	function showChannels(){
+		sqlSelectAllChannels(function(allchannels){
+			
+			var output = "";
+			
+			var length = allchannels.rows.length;
+			for(var i=0;i<length;i++){
+				
+				var channel = allchannels.rows[i];
+				
+				var row = i+") "+channel.HASHID+" "+channel.STATE;
+				
+				if(channel.STATE == "SENT_START_WAITING"){
+					
+				}else if(channel.STATE == "REQUEST_START_CHANNEL"){
+					//Add buttons..
+					row += "&nbsp;&nbsp;&nbsp; <button onclick='deny(\""+channel.HASHID+"\");'>DENY</button> <button>ACCEPT</button>"				
+				}
+				
+				output += row+"<br><br>"
+			}
+				
+			channelview.innerHTML = output;
+		});		
 	}
 	
-	function sendack(){
-		ackFunctionCall(MAXIMA_USER2, printHello, {"hello":"you"} );
+	function deny(hashid){
+		sqlSelectChannel(hashid, function(dets){
+			
+			denyStartChannel(dets.rows[0].USER1MAXIMAID, hashid, function(){
+				
+			});
+			
+				
+		});
 	}
 	
-	function sendRequestChannel(details){
-		MDS.log("SEND REQ "+JSON.stringify(details,null,2));
+	//TESTER
+	function printHello(params){MDS.log("PRINT HELLO "+JSON.stringify(params));}
+	function sendack(){ackFunctionCall(MAXIMA_USER2, printHello, {"hello":"you"} );}
 	
-		sendMaximaMessage(details.tomaximapublickey, details);
-	}
+	var MAXIMA_USER1 = "0x30819F300D06092A864886F70D010101050003818D0030818902818100826686DA551C7AF8D0EF133D87E47D00630ED181D2CD2C3C3CB668C8CD2E24E3B06493F54009367C710470F05552DAD0643D136D832E8DAD29744718231B66E15C1AF87E0E6BC66484FAFFA14235A815ECF06C20D14D40292412128F670448FC2C86A7DA93BDE67FE309829A3E75484EFF730B941C8F22091BA85F24241907330203010001";
+	var MAXIMA_USER2 = "0x30819F300D06092A864886F70D010101050003818D00308189028181008494D460B183563CCE456CAE7A241D234AE7C000126F47EF07F2D9BA0B4964DEA3F4ED3EEFC197100AB7C1D4BEB64A923EB3E2FD0423B9FD8C4B5CA62B35DFCA72F277B550AE15A809BEE1829070A72B203C54A58F07B785A7BFF9AE6AE600E36EF71F2DA174054BE4A3DE79C1397D894428CD47119DB541BEC38CFA0A4428F90203010001";
 	
 	function requestChannel(){
-		
-		var hashid  = genRandomHexString();
-		
-		var details = startChannelMessage(hashid, 10, ADDRESS_USER1, PUBKEY_USER1, MAXIMA_USER2, 20);
-		
-		ackFunctionCall(MAXIMA_USER2, sendRequestChannel, details );
+		requestNewChannel(MAXIMA_USER2, 10, 11,  function(delivered){
+			if(!delivered){
+				//Could not contact user.. show an immediate message
+				alert("Could not contact User..");
+			}	
+		});
 	}
 	
 	//Main message handler..
@@ -257,8 +228,11 @@
 				createDB(function(){
 					
 					//DB created..
-					
-					
+					initAuthDetails(function(){
+						
+						showChannels();
+							
+					});
 				});		
 			}
 			
@@ -275,8 +249,10 @@
 				
 				//Convert back to JSON
 				convertHEXtoJSON(datahex,function(maxmsg){
-					logJSON(maxmsg,"MAXIMA FROM "+pubkey+" : ");
-				
+					if(MAXIMA_LOGS){
+						logJSON(maxmsg,"MAXIMA RECEIVED FROM "+pubkey+" : ");
+					}
+					
 					//What type of Message is it..?
 					if(maxmsg.type == "ACK_MESSAGE"){
 						
@@ -290,11 +266,20 @@
 					
 					}else if(maxmsg.type == "REQUEST_NEW_CHANNEL"){
 						
-						//New channel requested..
-						
-						sendMaximaMessage(pubkey, replyDenyMessage(maxmsg.hashid));
-						
+						//Add to the database..
+						receivedChannelRequest(maxmsg);
 											
+					}else if(maxmsg.type == "REQUEST_DENIED"){
+						
+						//DENIED this request
+						updateChannelState(maxmsg.hashid, "REQUEST_DENIED")										
+					
+					}else if(maxmsg.type == "REQUEST_ACCEPTED"){
+										
+						//Lets go..
+					
+						
+						
 					}
 				});
 			}

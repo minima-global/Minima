@@ -2,6 +2,8 @@
  * MAXIMA message handling
  */
 
+var MAXIMA_LOGS = true;
+
 /**
  * Utility functions
  */
@@ -22,7 +24,9 @@ function convertHEXtoJSON(hex, callback){
  */
 function sendMaximaMessage(publickey, msg, callback){
 	
-	logJSON(msg,"MAXIMA SEND TO "+publickey+" : ");
+	if(MAXIMA_LOGS){
+		logJSON(msg,"MAXIMA SEND TO "+publickey+" : ");	
+	}
 	
 	//Fisrt convert the msg to HEX
 	convertJSONtoHEX(msg, function(hexdata){
@@ -60,7 +64,6 @@ function ackFunctionCall(publickey, callfunction, paramsjson, callback){
 		if(maxresp.response.delivered){
 			//Push it on the stack
 			ACK_FUNCTIONS.push(request);
-			
 			//MDS.log("ACK_FUNCTIONS SENT:"+JSON.stringify(ACK_FUNCTIONS));
 		}
 		
