@@ -44,6 +44,23 @@ function startChannelMessage(hashid, myamount, tomaximapublickey, requestamount)
 }
 
 /**
+ * Cancel to request a Channel
+ */
+function cancelChannelMessage(hashid, tomaximapublickey ){
+
+	var msg 	={};
+	
+	//Message type
+	msg.type 			= "CANCEL_NEW_CHANNEL";
+	msg.hashid			= hashid;
+		
+	//Who to ?
+	msg.tomaximapublickey = tomaximapublickey;
+	
+	return msg;	
+}
+
+/**
  * DENY the channel request
  */
 function replyDenyMessage(hashid){

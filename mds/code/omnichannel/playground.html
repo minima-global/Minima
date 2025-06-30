@@ -93,6 +93,9 @@
 			//Do stuff.. from now..	
 			createDB(function(){
 				MDS.log("DB CREATED!");
+				
+				showChannels();
+				
 			});
 		});
 	}
@@ -171,11 +174,11 @@
 				
 				if(channel.STATE == "SENT_START_CHANNEL"){
 					//Add buttons..
-					row += "&nbsp;&nbsp;&nbsp; <button onclick='cancelRequest(\""+channel.HASHID+"\", \""+channel.USER1MAXIMAID+"\");'>CANCEL</button>"
+					row += "&nbsp;&nbsp;&nbsp; <button onclick='cancelRequest(\""+channel.HASHID+"\", \""+channel.USER2MAXIMAID+"\");'>CANCEL</button>"
 										
 				}else if(channel.STATE == "REQUEST_START_CHANNEL"){
 					//Add buttons..
-					row += "&nbsp;&nbsp;&nbsp; <button onclick='deny(\""+channel.HASHID+"\", \""+channel.USER1MAXIMAID+"\");'>DENY</button> <button>ACCEPT</button>"				
+					row += "&nbsp;&nbsp;&nbsp; <button onclick='deny(\""+channel.HASHID+"\", \""+channel.USER1MAXIMAID+"\");'>DENY</button> <button onclick='accept(\""+channel.HASHID+"\", \""+channel.USER1MAXIMAID+"\");'>ACCEPT</button>"				
 				
 				}
 				
@@ -192,8 +195,14 @@
 		});
 	}
 	
+	function accept(hashid, maximaid){
+		acceptStartChannel(maximaid, hashid, function(delivered){
+			showChannels();
+		});
+	}
+	
 	function cancelRequest(hashid, maximaid){
-		updateChannelState(hashid, "REQUEST_CANCELLED", function(){
+		cancelNewChannel(hashid, maximaid, function(ackdelivered){
 			showChannels();
 		});
 	}
@@ -277,6 +286,18 @@
 							showChannels();
 						});
 											
+					}else if(maxmsg.type == "CANCEL_NEW_CHANNEL"){
+											
+						//Check state and user
+						checkValidMaximaUserState(pubkey,maxmsg.hashid, "REQUEST_START_CHANNEL", function(valid){
+							if(valid){
+								//CANCEL this request
+								updateChannelState(maxmsg.hashid, "REQUEST_CANCELLED", function(upd){
+									showChannels();
+								});			
+							}
+						});
+									
 					}else if(maxmsg.type == "REQUEST_DENIED"){
 						
 						//Check state and user
