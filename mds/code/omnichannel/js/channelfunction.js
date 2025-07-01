@@ -120,3 +120,15 @@ function acceptStartChannel(maximaid, hashid, callback){
 function _acceptStartChannel(details){
 	sendMaximaMessage(details.maximaid, replyAcceptMessage(details.hashid));
 }
+
+/**
+ * Send the Initial TXNS / Address 
+ */
+function sendCreateChannel1(maximaid, hashid, txndata, callback){
+	sendMaximaMessage(maximaid, replyCreate1Message(hashid, txndata), function(maxresp){
+		if(callback){
+			callback();
+		}
+	});
+}
+

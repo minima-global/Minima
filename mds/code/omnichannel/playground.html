@@ -336,16 +336,24 @@
 											logJSON(txns);
 											
 											//Send back to the OTHER user
-											//..
-											
-											updateChannelState(maxmsg.hashid, "CREATE_CHANNEL_1", function(upd){
-												showChannels();
-											});			
+											sendCreateChannel1(pubkey, maxmsg.hashid, txns, function(){
+												updateChannelState(maxmsg.hashid, "CREATE_CHANNEL_1", function(upd){
+													showChannels();
+												});	
+											})
 										});
 									});
 								});
 							}
 						});
+					
+					}else if(maxmsg.type == "CHANNEL_CREATE_1"){
+						checkValidMaximaUserState(pubkey,maxmsg.hashid, "REQUEST_ACCEPTED", function(valid){
+							if(valid){
+								
+								
+							}
+						});	
 					}
 				});
 			}

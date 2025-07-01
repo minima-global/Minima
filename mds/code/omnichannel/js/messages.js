@@ -91,10 +91,17 @@ function replyAcceptMessage(hashid, myamount, myaddress, mypublickey, fundingtxn
 	//MY details
 	msg.user		= getUserDetails();
 	
-	//Txns
-	//msg.fundingtxn	= fundingtxn;
-	//msg.triggertxn	= triggertxn;
-	//msg.settletxn	= settletxn;
+	return msg;	
+}
+
+function replyCreate1Message(hashid, txndata){
+	
+	var msg = {};
+	
+	msg.type 		= "CHANNEL_CREATE_1";
+	msg.hashid		= hashid;
+	
+	msg.txndata		= txndata;
 	
 	return msg;	
 }
