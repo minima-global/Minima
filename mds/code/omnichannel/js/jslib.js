@@ -58,3 +58,17 @@ function getTimeMilli(){
 	var recdate = new Date();
 	return recdate.getTime();	
 }
+
+function trimToSize(str, len){
+	
+	//Is it undefined..
+	if(!str){
+		return "undefined..";
+	}
+	
+	if(len){
+		return str.substring(0,len)+"..";	
+	}else{
+		return str.substring(0,10)+"..";
+	}
+}

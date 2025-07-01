@@ -89,15 +89,12 @@ function replyAcceptMessage(hashid, myamount, myaddress, mypublickey, fundingtxn
 	msg.hashid		= hashid;
 	
 	//MY details
-	msg.user2			= {};
-	msg.user2.amount	= myamount;
-	msg.user2.address	= myaddress;
-	msg.user2.amount	= mypublickey;
+	msg.user		= getUserDetails();
 	
 	//Txns
-	msg.fundingtxn	= fundingtxn;
-	msg.triggertxn	= triggertxn;
-	msg.settletxn	= settletxn;
+	//msg.fundingtxn	= fundingtxn;
+	//msg.triggertxn	= triggertxn;
+	//msg.settletxn	= settletxn;
 	
 	return msg;	
 }

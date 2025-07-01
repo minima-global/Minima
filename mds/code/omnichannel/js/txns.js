@@ -263,4 +263,34 @@ function postTxn(txndata, auto, callback){
 		callback(fundresp);
 	}); 
 }
+
+/**
+ * Create the startup multiple txns!
+ */
+function createStartupTxns(sqlrow, callback){
+
+	createFundingAddress(sqlrow.HASHID, sqlrow.USER1PUBLICKEY, sqlrow.USER2PUBLICKEY, function(fundingaddress){
+		
+		createELTOOAddress(sqlrow.HASHID, sqlrow.USER1PUBLICKEY, sqlrow.USER2PUBLICKEY, 20, function(eltooaddress){
+			
+			createFundingTxn(fundingaddress.address, 10, 20, function(fundingtxn){
+				
+				var txndata = {};
+				txndata.fundingaddress 	= fundingaddress;
+				txndata.eltooaddress 	= eltooaddress;
+				
+				txndata.user1fundingtxn = fundingtxn;
+				
+				//Send this info back
+				callback(txndata);	
+			});
+		});
+	});
+}
+
+
+
+
+
+
 	

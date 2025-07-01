@@ -53,7 +53,7 @@
 
 <br>
 
-<div id="channelview">
+<div id="channelview" style="font-size:12;text-align:left;">
 	
 	
 </div>
@@ -170,7 +170,10 @@
 				
 				var channel = allchannels.rows[i];
 				
-				var row = i+") "+channel.HASHID+" "+channel.STATE;
+				var row = i+") ID:"+channel.HASHID+"<br>STATE:"+channel.STATE
+				+"<br>AMT1:"+channel.USER1AMOUNT +" U1PUBK:"+trimToSize(channel.USER1PUBLICKEY)+" U1ADDRES:"+trimToSize(channel.USER1ADDRESS)
+				+"<br>AMT2:"+channel.USER2AMOUNT +" U2PUBK:"+trimToSize(channel.USER2PUBLICKEY)+" U2ADDRES:"+trimToSize(channel.USER2ADDRESS)
+				+"<br>";
 				
 				if(channel.STATE == "SENT_START_CHANNEL"){
 					//Add buttons..
@@ -189,24 +192,6 @@
 		});		
 	}
 	
-	function deny(hashid, maximaid){
-		denyStartChannel(maximaid, hashid, function(delivered){
-			showChannels();
-		});
-	}
-	
-	function accept(hashid, maximaid){
-		acceptStartChannel(maximaid, hashid, function(delivered){
-			showChannels();
-		});
-	}
-	
-	function cancelRequest(hashid, maximaid){
-		cancelNewChannel(hashid, maximaid, function(ackdelivered){
-			showChannels();
-		});
-	}
-	
 	//TESTER
 	function printHello(params){MDS.log("PRINT HELLO "+JSON.stringify(params));}
 	function sendack(){ackFunctionCall(MAXIMA_USER2, printHello, {"hello":"you"} );}
@@ -222,6 +207,32 @@
 			}
 			
 			showChannels();	
+		});
+	}
+	
+	function cancelRequest(hashid, maximaid){
+		cancelNewChannel(hashid, maximaid, function(ackdelivered){
+			showChannels();
+		});
+	}
+	
+	function deny(hashid, maximaid){
+		denyStartChannel(maximaid, hashid, function(delivered){
+			showChannels();
+		});
+	}
+	
+	function accept(hashid, maximaid){
+		
+		//Update user details..
+		updateChannelUser2(hashid, getUserDetails(), function(){
+			acceptStartChannel(maximaid, hashid, function(delivered){
+				if(delivered){
+					updateChannelState(hashid, "REQUEST_ACCEPTED", function(upd){
+						showChannels();		
+					});	
+				}
+			});	
 		});
 	}
 	
@@ -313,9 +324,28 @@
 					}else if(maxmsg.type == "REQUEST_ACCEPTED"){
 										
 						//Lets go..
-					
-						
-						
+						checkValidMaximaUserState(pubkey,maxmsg.hashid, "SENT_START_CHANNEL", function(valid){
+							if(valid){
+								updateChannelUser2(maxmsg.hashid, maxmsg.user, function(){
+									
+									//Get all the details
+									sqlSelectChannel(maxmsg.hashid, function(sql){
+										
+										//Create the startup txns
+										createStartupTxns(sql.rows[0], function(txns){
+											logJSON(txns);
+											
+											//Send back to the OTHER user
+											//..
+											
+											updateChannelState(maxmsg.hashid, "CREATE_CHANNEL_1", function(upd){
+												showChannels();
+											});			
+										});
+									});
+								});
+							}
+						});
 					}
 				});
 			}

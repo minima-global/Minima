@@ -33,7 +33,6 @@ function requestNewChannel(maximaid, myamount, requestamount,  callback){
 
 //ONLY Called once the SYNACK message received
 function _requestNewChannel(details){
-	//OK - now we can ASK to start the channel proper..
 	sendMaximaMessage(details.tomaximapublickey, details);		
 }
 
@@ -60,7 +59,6 @@ function cancelNewChannel(hashid, maximaid, callback){
 
 //ONLY Called once the SYNACK message received
 function _cancelNewChannel(details){
-	//OK - now we can ASK to start the channel proper..
 	sendMaximaMessage(details.tomaximapublickey, details);		
 }
 
@@ -104,7 +102,7 @@ function _denyStartChannel(details){
 /**
  * ACCEPT the opening of a new Channel
  */
-function acceptStartChannel(hashid){
+function acceptStartChannel(maximaid, hashid, callback){
 	
 	//Now create the initial params.. which are called AFTER the ACK / SYNACK messages
 	var details 		= {};
@@ -113,20 +111,12 @@ function acceptStartChannel(hashid){
 		
 	//Now try and start a conmnection
 	ackFunctionCall(maximaid, _acceptStartChannel, details, function(ackdelivered){
-		
-		if(ackdelivered){
-			
-			//Remove the channel..
-			updateChannelState(hashid, "USER_DENIED", function(){
-				if(callback){
-					callback(true);
-				}
-			});
-			
-		}else{
-			if(callback){
-				callback(false);
-			}	
+		if(callback){
+			callback(ackdelivered);
 		}
 	});
+}
+
+function _acceptStartChannel(details){
+	sendMaximaMessage(details.maximaid, replyAcceptMessage(details.hashid));
 }
