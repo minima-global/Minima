@@ -27,8 +27,6 @@ import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
-import com.mysql.cj.x.protobuf.MysqlxDatatypes.Array;
-
 public class TxPoWTreeNode implements Streamable {
 
 	/**

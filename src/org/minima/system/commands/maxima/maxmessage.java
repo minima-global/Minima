@@ -7,7 +7,6 @@ import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
-import org.minima.system.commands.base.newaddress;
 import org.minima.utils.encrypt.CryptoPackage;
 import org.minima.utils.json.JSONObject;
 

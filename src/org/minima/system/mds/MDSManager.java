@@ -20,8 +20,6 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.mds.pending.PendingCommand;
 import org.minima.system.mds.polling.PollStack;
-import org.minima.system.mds.runnable.MDSJS;
-import org.minima.system.mds.runnable.NullCallable;
 import org.minima.system.mds.runnable.api.APICallback;
 import org.minima.system.mds.runnable.shutter.SandboxContextFactory;
 import org.minima.system.mds.sql.MiniDAPPDB;
@@ -40,12 +38,7 @@ import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
-import org.mozilla.javascript.ClassShutter;
-import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
-import org.mozilla.javascript.NativeJSON;
-import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.ScriptableObject;
 
 public class MDSManager extends MessageProcessor {
 

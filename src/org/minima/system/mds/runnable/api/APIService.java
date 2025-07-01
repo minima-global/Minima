@@ -6,7 +6,6 @@ import org.minima.system.mds.MDSManager;
 import org.minima.system.mds.handler.APIAutoResponse;
 import org.minima.system.mds.handler.APICommand;
 import org.minima.system.mds.runnable.NullCallable;
-import org.minima.utils.MinimaLogger;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.NativeJSON;

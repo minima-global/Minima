@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Random;
 
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;

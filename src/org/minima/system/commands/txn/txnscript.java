@@ -10,7 +10,6 @@ import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.database.wallet.ScriptRow;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
-import org.minima.objects.CoinProof;
 import org.minima.objects.ScriptProof;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;

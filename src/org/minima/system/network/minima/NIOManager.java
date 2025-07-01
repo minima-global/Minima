@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.archive.ArchiveManager;
-import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Greeting;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;

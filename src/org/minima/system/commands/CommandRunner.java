@@ -7,7 +7,6 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.minima.database.MinimaDB;
 import org.minima.database.minidapps.MiniDAPP;
 import org.minima.system.Main;
 import org.minima.system.commands.backup.archive;
