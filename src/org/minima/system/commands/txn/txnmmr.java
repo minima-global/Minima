@@ -73,7 +73,6 @@ public class txnmmr extends Command {
 		TxPoWTreeNode mmrnode = tip.getPastNode(minblock);
 		
 		//Cycle through the inputs..
-		MinimaLogger.log("Proofs : "+proofs+" Coins:"+coins.size());
 		int counter=0;
 		for(Coin input : coins) {
 			
@@ -82,8 +81,6 @@ public class txnmmr extends Command {
 			if(counter<=proofs) {
 				continue;
 			}
-			
-			MinimaLogger.log("Get MMR proof for coin : "+input.toJSON());
 			
 			//Get the proof..
 			MMRProof proof = mmrnode.getMMR().getProofToPeak(input.getMMREntryNumber());
