@@ -336,10 +336,16 @@
 										//Create the startup addresses
 										createDefaultAddresses(sql.rows[0], function(addressdata){
 											
+											//Add these addresses to our Defauilt scripts
+											//..
+											
 											//Create the default txns
 											createDefaultTransactions(sql.rows[0], addressdata.fundingaddress.address, addressdata.eltooaddress.address, function(txndata){
 												
-												//Sort Scripts and MMR
+												//Sort Scripts and MMR for FUNDING
+												//..
+												
+												//SIGN the TRIGGER and SETTLEMENT
 												//..
 												
 												//Create a data package
@@ -347,7 +353,7 @@
 												alldata.addresses 		= addressdata;
 												alldata.transactions 	= txndata;
 												
-												logJSON(alldata,"ALL TXN DATA")
+												//logJSON(alldata,"ALL TXN DATA")
 												
 												//Send back to the OTHER user
 												sendCreateChannel("CHANNEL_CREATE_1", pubkey, maxmsg.hashid, alldata, function(){

@@ -190,8 +190,6 @@ function createSettlementTxn(sequence, eltooaddress, eltooamount, user1amount, u
 	"";
 	
 	MDS.cmd(create,function(fundresp){
-		//logJSON(fundresp,"SETTLEMENT");
-		
 		callback(fundresp[6].response.data);
 	});
 }
