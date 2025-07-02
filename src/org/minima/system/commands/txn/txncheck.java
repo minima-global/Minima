@@ -205,6 +205,8 @@ public class txncheck extends Command {
 		
 		details.put("valid", valid);
 		
+		//One final 
+		details.put("validtransaction", validbasic && validmmr && validscripts);
 		
 		JSONObject resp = new JSONObject();
 		ret.put("response", details);
