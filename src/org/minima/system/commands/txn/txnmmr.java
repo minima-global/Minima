@@ -16,6 +16,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.params.GlobalParams;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class txnmmr extends Command {
@@ -72,14 +73,17 @@ public class txnmmr extends Command {
 		TxPoWTreeNode mmrnode = tip.getPastNode(minblock);
 		
 		//Cycle through the inputs..
+		MinimaLogger.log("Proofs : "+proofs+" Coins:"+coins.size());
 		int counter=0;
 		for(Coin input : coins) {
 			
 			//Only add coins AFTER the current proofs
-			if(counter<proofs) {
+			counter++;
+			if(counter<=proofs) {
 				continue;
 			}
-			counter++;
+			
+			MinimaLogger.log("Get MMR proof for coin : "+input.toJSON());
 			
 			//Get the proof..
 			MMRProof proof = mmrnode.getMMR().getProofToPeak(input.getMMREntryNumber());
