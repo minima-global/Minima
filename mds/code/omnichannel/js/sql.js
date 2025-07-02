@@ -1,19 +1,7 @@
-/**
- * Utility Functions
- */
-
-function encodeStringForDB(str){
-	return encodeURIComponent(str).split("'").join("%27");
-}
-
-function decodeStringFromDB(str){
-	return decodeURIComponent(str).split("%27").join("'");
-}
 
 /**
  * Create a destroy the DB
  */
-
 function wipeDB(callback){
 	//Run this..
 	MDS.sql("DROP TABLE `channels`",function(msg){
@@ -39,15 +27,17 @@ function createDB(callback){
 				
 				+"  `user1name` varchar(1024), "	
 				+"  `user1maximaid` varchar(1024), "	
-				+"  `user1publickey` varchar(1024), "
-				+"  `user1address` varchar(1024), "
-				+"  `user1amount` varchar(1024), "
+				+"  `user1publickey` varchar(256), "
+				+"  `user1address` varchar(256), "
+				+"  `user1amount` varchar(256), "
 				
 				+"  `user2name` varchar(1024), "	
 				+"  `user2maximaid` varchar(1024),"	
-				+"  `user2publickey` varchar(1024),"
-				+"  `user2address` varchar(1024),"
-				+"  `user2amount` varchar(1024),"
+				+"  `user2publickey` varchar(256),"
+				+"  `user2address` varchar(256),"
+				+"  `user2amount` varchar(256),"
+				
+				+"  `totalamount` varchar(256),"
 												
 				+"  `fundingaddress` varchar(256),"
 				+"  `eltooaddress` varchar(256),"
@@ -93,7 +83,7 @@ function sqlInsertNewChannel(details, state,  callback){
 	
 	//Insert this unread message
 	var sql = "INSERT INTO channels(hashid, state, user1maximaid, user1publickey, user1address, user1amount, "
-									+"user2maximaid, user2amount, date) "
+									+"user2maximaid, user2amount, totalamount, date) "
 			 +"VALUES ('"+details.hashid+"','"+state+"','"
 				//User details
 				+details.user.maximaid+"','"+details.user.publickey+"','"+details.user.address+"','"+details.useramount
@@ -101,6 +91,9 @@ function sqlInsertNewChannel(details, state,  callback){
 				//Counterpary User
 				+"','"+details.tomaximapublickey
 				+"','"+details.requestamount
+				
+				//Total amount in channel
+				+"','"+details.totalamount
 				
 				//Date
 				+"',"+getTimeMilli()+")";
@@ -163,6 +156,21 @@ function updateChannelState(hashid, state, callback){
 function updateChannelUser2(hashid, user, callback){
 	//Find a record
 	var sql = "UPDATE channels SET user2publickey='"+user.publickey+"', user2address='"+user.address+"' WHERE hashid='"+hashid+"'";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		if(callback){
+			callback(msg);	
+		}
+	});
+}
+
+/**
+ * Update the special address
+ */
+function updateChannelAddresses(hashid, addressdata, callback){
+	//Find a record
+	var sql = "UPDATE channels SET fundingaddress='"+addressdata.fundingaddress+"', eltooaddress='"+addressdata.eltooaddress+"', sequence=0 WHERE hashid='"+hashid+"'";
 				
 	//Run this..
 	MDS.sql(sql,function(msg){

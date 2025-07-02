@@ -18,7 +18,7 @@ function requestNewChannel(maximaid, myamount, requestamount,  callback){
 		
 		if(ackdelivered){
 			//Put these details in the DB
-			sqlInsertNewChannel(details,"SENT_START_CHANNEL", function(ins){
+			sqlInsertNewChannel(details,"STATE_SENT_START_CHANNEL", function(ins){
 				if(callback){
 					callback(true);
 				}	
@@ -47,7 +47,7 @@ function cancelNewChannel(hashid, maximaid, callback){
 	//Now try and start a conmnection
 	ackFunctionCall(maximaid, _cancelNewChannel, details, function(ackdelivered){
 		
-		updateChannelState(hashid, "REQUEST_CANCELLED", function(){
+		updateChannelState(hashid, "STATE_REQUEST_CANCELLED", function(){
 			
 			//Did we get the message
 			if(callback){
@@ -78,7 +78,7 @@ function denyStartChannel(maximaid, hashid, callback){
 		if(ackdelivered){
 			
 			//Remove the channel..
-			updateChannelState(hashid, "USER_DENIED", function(){
+			updateChannelState(hashid, "STATE_USER_DENIED", function(){
 				if(callback){
 					callback(true);
 				}
@@ -124,11 +124,13 @@ function _acceptStartChannel(details){
 /**
  * Send the Initial TXNS / Address 
  */
-function sendCreateChannel1(maximaid, hashid, txndata, callback){
-	sendMaximaMessage(maximaid, replyCreate1Message(hashid, txndata), function(maxresp){
-		if(callback){
-			callback();
-		}
+function sendCreateChannel(msgtype, maximaid, hashid, txndata, callback){
+	updateChannelState(hashid, "STATE_"+msgtype, function(upd){
+		sendMaximaMessage(maximaid, replyCreateChannelMessage(hashid, msgtype, txndata), function(maxresp){
+			if(callback){
+				callback();
+			}
+		});	
 	});
 }
 

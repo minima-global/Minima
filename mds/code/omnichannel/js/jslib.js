@@ -72,3 +72,11 @@ function trimToSize(str, len){
 		return str.substring(0,10)+"..";
 	}
 }
+
+function encodeStringForDB(str){
+	return encodeURIComponent(str).split("'").join("%27");
+}
+
+function decodeStringFromDB(str){
+	return decodeURIComponent(str).split("%27").join("'");
+}

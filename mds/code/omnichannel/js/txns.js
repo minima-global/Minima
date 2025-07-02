@@ -107,7 +107,7 @@ function createFundingTxn(fundingaddress, addamount, total, callback){
 				 "";
 	
 	MDS.cmd(create,function(fundresp){
-		callback(fundresp[3]);
+		callback(fundresp[3].response.data);
 	}); 	
 }
 
@@ -122,7 +122,7 @@ function addToFundingTxn(txndata, addamount, callback){
 				 "";
 	
 	MDS.cmd(create,function(fundresp){
-		callback(fundresp[2]);
+		callback(fundresp[2].response.data);
 	}); 	
 }
 
@@ -153,7 +153,7 @@ function createTriggerTxn(amount, fundingaddress, eltooaddress, callback){
 	"";
 	
 	MDS.cmd(create,function(fundresp){
-		callback(fundresp[4]);
+		callback(fundresp[4].response.data);
 	});
 }
 
@@ -190,7 +190,9 @@ function createSettlementTxn(sequence, eltooaddress, eltooamount, user1amount, u
 	"";
 	
 	MDS.cmd(create,function(fundresp){
-		callback(fundresp[6]);
+		//logJSON(fundresp,"SETTLEMENT");
+		
+		callback(fundresp[6].response.data);
 	});
 }
 
@@ -243,7 +245,49 @@ function signTxn(txndata, publickey, callback){
 				 "";
 	
 	MDS.cmd(create,function(fundresp){
-		callback(fundresp[2]);
+		logJSON(fundresp,"SIGNTXN");
+		
+		callback(fundresp[2].response.data);
+	}); 
+}
+
+/**
+ * Set scripts and MMR
+ */
+function scriptsMMRTxn(txndata, callback){
+	
+	var txid = randomString();
+		
+	var create = "txnimport id:"+txid+" data:"+txndata+";"+
+				 
+				 "txnscript id:"+txid+" auto:true;"+
+				 "txnmmr id:"+txid+";"+
+				 
+				 "txnexport id:"+txid+";"+
+				 "txndelete id:"+txid+";"+
+				 "";
+	
+	MDS.cmd(create,function(fundresp){
+		logJSON(fundresp,"SCRIPTMMR");
+		
+		callback(fundresp[3].response.data);
+	}); 
+}
+
+/**
+ * CHECK a TXN - see if it all there
+ */
+function checkTxn(txndata, callback){
+	
+	var txid = randomString();
+		
+	var create = "txnimport id:"+txid+" data:"+txndata+";"+
+				 "txncheck id:"+txid+";"+
+				 "txndelete id:"+txid+";"+
+				 "";
+	
+	MDS.cmd(create,function(fundresp){
+		callback(fundresp[1]);
 	}); 
 }
 
@@ -265,26 +309,51 @@ function postTxn(txndata, auto, callback){
 }
 
 /**
- * Create the startup multiple txns!
+ * Create the startup multiple addresses!
  */
-function createStartupTxns(sqlrow, callback){
-
+function createDefaultAddresses(sqlrow, callback){
+	
+	//The Timeout in blocks..
+	var timeout = 20;
+	
 	createFundingAddress(sqlrow.HASHID, sqlrow.USER1PUBLICKEY, sqlrow.USER2PUBLICKEY, function(fundingaddress){
 		
-		createELTOOAddress(sqlrow.HASHID, sqlrow.USER1PUBLICKEY, sqlrow.USER2PUBLICKEY, 20, function(eltooaddress){
+		createELTOOAddress(sqlrow.HASHID, sqlrow.USER1PUBLICKEY, sqlrow.USER2PUBLICKEY, timeout, function(eltooaddress){
 			
-			createFundingTxn(fundingaddress.address, 10, 20, function(fundingtxn){
-				
-				var txndata = {};
-				txndata.fundingaddress 	= fundingaddress;
-				txndata.eltooaddress 	= eltooaddress;
-				
-				txndata.user1fundingtxn = fundingtxn;
-				
-				//Send this info back
-				callback(txndata);	
-			});
+			var addressdata = {};
+			addressdata.fundingaddress 	= fundingaddress;
+			addressdata.eltooaddress 	= eltooaddress;
+			
+			//Send this info back
+			callback(addressdata);	
 		});
+	});
+}
+
+/**
+ * Create the startup multiple txns!
+ */
+function createDefaultTransactions(sqlrow, fundingaddress, eltooaddress, callback){
+	
+	//The funding txn
+	createFundingTxn(fundingaddress, sqlrow.USER1AMOUNT, sqlrow.TOTALAMOUNT, function(fundingtxn){
+		
+		//Create the Trigger
+		createTriggerTxn(sqlrow.TOTALAMOUNT, fundingaddress, eltooaddress, function(triggertxn){
+			
+			//Create the FIRST Settlement
+			createSettlementTxn(0, eltooaddress, sqlrow.TOTALAMOUNT, sqlrow.USER1AMOUNT, sqlrow.USER1ADDRESS, sqlrow.USER2AMOUNT, sqlrow.USER2ADDRESS, function(settletxn){
+				
+				//And send it all back
+				var txndata = {};
+				
+				txndata.fundingtxn = fundingtxn;
+				txndata.triggertxn = triggertxn;
+				txndata.settletxn  = settletxn;
+				
+				callback(txndata);		
+			});
+		});	
 	});
 }
 

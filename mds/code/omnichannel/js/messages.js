@@ -37,8 +37,11 @@ function startChannelMessage(hashid, myamount, tomaximapublickey, requestamount)
 	msg.tomaximapublickey = tomaximapublickey;
 	
 	//Channel Request - How much do we / they put in
-	msg.useramount		= myamount;
-	msg.requestamount	= requestamount;
+	msg.useramount		= new Decimal(myamount).toString();
+	msg.requestamount	= new Decimal(requestamount).toString();
+	
+	//Use HIGH precision maths
+	msg.totalamount		= new Decimal(requestamount).add(new Decimal(myamount)).toString();
 	
 	return msg;	
 }
@@ -94,13 +97,12 @@ function replyAcceptMessage(hashid, myamount, myaddress, mypublickey, fundingtxn
 	return msg;	
 }
 
-function replyCreate1Message(hashid, txndata){
+function replyCreateChannelMessage(hashid, msgtype, txndata){
 	
 	var msg = {};
 	
-	msg.type 		= "CHANNEL_CREATE_1";
+	msg.type 		= msgtype;
 	msg.hashid		= hashid;
-	
 	msg.txndata		= txndata;
 	
 	return msg;	

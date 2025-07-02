@@ -8,31 +8,39 @@ var MAXIMA_LOGS = true;
  * Utility functions
  */
 function convertJSONtoHEX(json, callback){
-	MDS.cmd("convert from:string to:hex data:"+JSON.stringify(json),function(conv){
+	
+	//Create a safe string.. no ; etc..
+	var safestring = encodeStringForDB(JSON.stringify(json));
+	
+	MDS.cmd("convert from:string to:hex data:"+safestring,function(conv){
 		callback(conv.response.conversion);
 	});
 }
 
 function convertHEXtoJSON(hex, callback){
 	MDS.cmd("convert from:hex to:string data:"+hex,function(conv){
-		callback(JSON.parse(conv.response.conversion));
+		
+		//Convert back
+		var json = JSON.parse(decodeStringFromDB(conv.response.conversion));
+		
+		callback(json);
 	});
 }
 
 /**
  * Send a JSON message to a MAXIMA contact
  */
-function sendMaximaMessage(publickey, msg, callback){
+function sendMaximaMessage(maximapublickey, jsonmsg, callback){
 	
 	if(MAXIMA_LOGS){
-		logJSON(msg,"MAXIMA SEND TO "+publickey+" : ");	
+		logJSON(jsonmsg,"MAXIMA SEND TO "+maximapublickey+" : ");	
 	}
 	
 	//Fisrt convert the msg to HEX
-	convertJSONtoHEX(msg, function(hexdata){
+	convertJSONtoHEX(jsonmsg, function(hexdata){
 		
 		//Now send this over Maxima
-		var cmd = "maxima action:send publickey:"+publickey+" application:thunderpay data:"+hexdata;
+		var cmd = "maxima action:send publickey:"+maximapublickey+" application:thunderpay data:"+hexdata;
 		MDS.cmd(cmd, function(maxresp){
 			if(callback){
 				callback(maxresp);

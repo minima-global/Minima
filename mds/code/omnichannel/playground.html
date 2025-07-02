@@ -138,7 +138,7 @@
 						createSettlementTxn(0, eltooaddress.address, 20, 10, ADDRESS_USER1, 10, ADDRESS_USER2, function(settletxn){
 							logJSON(settletxn);
 							
-							//SIGN settle and trigger (NOT FUNDING..)
+							//SIGN settle and trigger (NOT FUNDING..)20
 							signTxn(settletxn.response.data, PUBKEY_USER2, function(signsettle){
 								logJSON(signsettle);
 								
@@ -170,16 +170,16 @@
 				
 				var channel = allchannels.rows[i];
 				
-				var row = i+") ID:"+channel.HASHID+"<br>STATE:"+channel.STATE
+				var row = i+") ID:"+channel.HASHID+" TOTAL:"+channel.TOTALAMOUNT+"<br>STATE:"+channel.STATE
 				+"<br>AMT1:"+channel.USER1AMOUNT +" U1PUBK:"+trimToSize(channel.USER1PUBLICKEY)+" U1ADDRES:"+trimToSize(channel.USER1ADDRESS)
 				+"<br>AMT2:"+channel.USER2AMOUNT +" U2PUBK:"+trimToSize(channel.USER2PUBLICKEY)+" U2ADDRES:"+trimToSize(channel.USER2ADDRESS)
 				+"<br>";
 				
-				if(channel.STATE == "SENT_START_CHANNEL"){
+				if(channel.STATE == "STATE_SENT_START_CHANNEL"){
 					//Add buttons..
 					row += "&nbsp;&nbsp;&nbsp; <button onclick='cancelRequest(\""+channel.HASHID+"\", \""+channel.USER2MAXIMAID+"\");'>CANCEL</button>"
 										
-				}else if(channel.STATE == "REQUEST_START_CHANNEL"){
+				}else if(channel.STATE == "STATE_REQUEST_START_CHANNEL"){
 					//Add buttons..
 					row += "&nbsp;&nbsp;&nbsp; <button onclick='deny(\""+channel.HASHID+"\", \""+channel.USER1MAXIMAID+"\");'>DENY</button> <button onclick='accept(\""+channel.HASHID+"\", \""+channel.USER1MAXIMAID+"\");'>ACCEPT</button>"				
 				
@@ -200,7 +200,7 @@
 	var MAXIMA_USER2 = "0x30819F300D06092A864886F70D010101050003818D00308189028181008494D460B183563CCE456CAE7A241D234AE7C000126F47EF07F2D9BA0B4964DEA3F4ED3EEFC197100AB7C1D4BEB64A923EB3E2FD0423B9FD8C4B5CA62B35DFCA72F277B550AE15A809BEE1829070A72B203C54A58F07B785A7BFF9AE6AE600E36EF71F2DA174054BE4A3DE79C1397D894428CD47119DB541BEC38CFA0A4428F90203010001";
 	
 	function requestChannel(){
-		requestNewChannel(MAXIMA_USER2, 10, 11,  function(delivered){
+		requestNewChannel(MAXIMA_USER2, 1, 1.1,  function(delivered){
 			if(!delivered){
 				//Could not contact user.. show an immediate message
 				alert("Could not contact User..");
@@ -228,7 +228,7 @@
 		updateChannelUser2(hashid, getUserDetails(), function(){
 			acceptStartChannel(maximaid, hashid, function(delivered){
 				if(delivered){
-					updateChannelState(hashid, "REQUEST_ACCEPTED", function(upd){
+					updateChannelState(hashid, "STATE_REQUEST_ACCEPTED", function(upd){
 						showChannels();		
 					});	
 				}
@@ -293,17 +293,17 @@
 					}else if(maxmsg.type == "REQUEST_NEW_CHANNEL"){
 						
 						//Add to the database..
-						sqlInsertNewChannel(maxmsg, "REQUEST_START_CHANNEL", function(){
+						sqlInsertNewChannel(maxmsg, "STATE_REQUEST_START_CHANNEL", function(){
 							showChannels();
 						});
 											
 					}else if(maxmsg.type == "CANCEL_NEW_CHANNEL"){
 											
 						//Check state and user
-						checkValidMaximaUserState(pubkey,maxmsg.hashid, "REQUEST_START_CHANNEL", function(valid){
+						checkValidMaximaUserState(pubkey,maxmsg.hashid, "STATE_REQUEST_START_CHANNEL", function(valid){
 							if(valid){
 								//CANCEL this request
-								updateChannelState(maxmsg.hashid, "REQUEST_CANCELLED", function(upd){
+								updateChannelState(maxmsg.hashid, "STATE_REQUEST_CANCELLED", function(upd){
 									showChannels();
 								});			
 							}
@@ -312,10 +312,10 @@
 					}else if(maxmsg.type == "REQUEST_DENIED"){
 						
 						//Check state and user
-						checkValidMaximaUserState(pubkey,maxmsg.hashid, "SENT_START_CHANNEL", function(valid){
+						checkValidMaximaUserState(pubkey,maxmsg.hashid, "STATE_SENT_START_CHANNEL", function(valid){
 							if(valid){
 								//DENIED this request
-								updateChannelState(maxmsg.hashid, "REQUEST_DENIED", function(upd){
+								updateChannelState(maxmsg.hashid, "STATE_REQUEST_DENIED", function(upd){
 									showChannels();
 								});			
 							}
@@ -324,23 +324,36 @@
 					}else if(maxmsg.type == "REQUEST_ACCEPTED"){
 										
 						//Lets go..
-						checkValidMaximaUserState(pubkey,maxmsg.hashid, "SENT_START_CHANNEL", function(valid){
+						checkValidMaximaUserState(pubkey,maxmsg.hashid, "STATE_SENT_START_CHANNEL", function(valid){
 							if(valid){
+								
+								//Update user details
 								updateChannelUser2(maxmsg.hashid, maxmsg.user, function(){
 									
-									//Get all the details
+									//Get all the channel details
 									sqlSelectChannel(maxmsg.hashid, function(sql){
 										
-										//Create the startup txns
-										createStartupTxns(sql.rows[0], function(txns){
-											logJSON(txns);
+										//Create the startup addresses
+										createDefaultAddresses(sql.rows[0], function(addressdata){
 											
-											//Send back to the OTHER user
-											sendCreateChannel1(pubkey, maxmsg.hashid, txns, function(){
-												updateChannelState(maxmsg.hashid, "CREATE_CHANNEL_1", function(upd){
+											//Create the default txns
+											createDefaultTransactions(sql.rows[0], addressdata.fundingaddress.address, addressdata.eltooaddress.address, function(txndata){
+												
+												//Sort Scripts and MMR
+												//..
+												
+												//Create a data package
+												var alldata 			= {};
+												alldata.addresses 		= addressdata;
+												alldata.transactions 	= txndata;
+												
+												logJSON(alldata,"ALL TXN DATA")
+												
+												//Send back to the OTHER user
+												sendCreateChannel("CHANNEL_CREATE_1", pubkey, maxmsg.hashid, alldata, function(){
 													showChannels();
-												});	
-											})
+												});
+											});
 										});
 									});
 								});
@@ -348,12 +361,78 @@
 						});
 					
 					}else if(maxmsg.type == "CHANNEL_CREATE_1"){
-						checkValidMaximaUserState(pubkey,maxmsg.hashid, "REQUEST_ACCEPTED", function(valid){
+						checkValidMaximaUserState(pubkey,maxmsg.hashid, "STATE_REQUEST_ACCEPTED", function(valid){
 							if(valid){
 								
+								return;
 								
+								//Check the FUNDING and ELTOO address..
+								sqlSelectChannel(maxmsg.hashid, function(sql){
+																		
+									//Create the startup txns
+									createDefaultAddresses(sql.rows[0], function(txns){
+										//logJSON(txns);
+										
+										//Check them..
+										//..
+										//checkTxn(maxmsg.txndata.fundingtxn,function(resp){
+									//		logJSON(resp,"CHECK TXN");
+									//	});
+										
+										//Now add your amount to the funding..
+										addToFundingTxn(maxmsg.txndata.fundingtxn, sql.rows[0].USER2AMOUNT, function(newfundingtxn){
+											//logJSON(newfundingtxn,"NEW FUNDING");	
+											
+											//Set the Scripts and MMR
+											scriptsMMRTxn(newfundingtxn,function(mmrtxn){
+												
+												//Now sign it..
+												signTxn(mmrtxn, "auto", function(signtxn){
+													
+													var newtxndata = {};
+													newtxndata.fundingtxn = signtxn;
+													
+													//Now SEND THAT BACK
+													sendCreateChannel("CHANNEL_CREATE_2", pubkey, maxmsg.hashid, newtxndata, function(){
+														showChannels();
+													});	
+												});	
+											});
+										});
+										
+									});
+								});
 							}
 						});	
+						
+					}else if(maxmsg.type == "CHANNEL_CREATE_2"){
+						
+						checkValidMaximaUserState(pubkey,maxmsg.hashid, "STATE_CHANNEL_CREATE_1", function(valid){
+							if(!valid){
+								MDS.log("INVALID MESSAGE FOR STATE.. check logs");
+								return;	
+							}
+							
+							//Now get the partially signed txn..
+							var fundingtxn = maxmsg.txndata.fundingtxn;
+							
+							sqlSelectChannel(maxmsg.hashid, function(sql){
+								
+								//Sign that
+								signTxn(fundingtxn, "auto", function(signtxn){
+									
+									checkTxn(signtxn,function(resp){
+										logJSON(resp,"CHECK TXN");
+										
+										
+										//POST IT!
+										postTxn(signtxn,false, function(postresp){
+											logJSON(postresp,"POST TXN");
+										});
+									});
+								});	
+							});
+						});
 					}
 				});
 			}
