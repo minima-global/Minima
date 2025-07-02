@@ -127,6 +127,8 @@ public class txncheck extends Command {
 		
 		details.put("inputs", inputs.size());
 		details.put("mmrproofs", wit.getAllCoinProofs().size());
+		details.put("scripts", wit.getAllScripts().size());
+		
 		boolean correctmmrnum = (inputs.size() == wit.getAllCoinProofs().size());
 		
 		MiniNumber totminimain = MiniNumber.ZERO;

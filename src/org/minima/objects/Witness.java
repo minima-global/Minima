@@ -121,6 +121,10 @@ public class Witness implements Streamable {
 		return null;
 	}
 	
+	public ArrayList<ScriptProof> getAllScripts(){
+		return mScriptProofs;
+	}
+	
 	private boolean scriptExists(MiniData zAddress) {
 		return getScript(zAddress) != null;
 	}
