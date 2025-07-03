@@ -131,6 +131,15 @@
 					//Add buttons..
 					row += "&nbsp;&nbsp;&nbsp; <button onclick='deny(\""+channel.HASHID+"\", \""+channel.USER1MAXIMAID+"\");'>DENY</button> <button onclick='accept(\""+channel.HASHID+"\", \""+channel.USER1MAXIMAID+"\");'>ACCEPT</button>"				
 				
+				
+				}else if(channel.STATE == "STATE_CHANNEL_OPEN_1"){
+					//Add buttons..
+					row += "&nbsp;&nbsp;&nbsp; <button onclick='close(\""+channel.HASHID+"\", \""+channel.USER2MAXIMAID+"\");'>CLOSE</button>"				
+				
+				}else if(channel.STATE == "STATE_CHANNEL_OPEN_2"){
+					//Add buttons..
+					row += "&nbsp;&nbsp;&nbsp; <button onclick='close(\""+channel.HASHID+"\", \""+channel.USER1MAXIMAID+"\");'>CLOSE</button>"				
+				
 				}
 				
 				output += row+"<br><br>"
@@ -317,6 +326,9 @@
 										//check those against the ones sent in the message.. transactionid + addresses MUST be the same / SIGNATURES etc
 										//..
 										
+										//Now - add these addresses to our script database
+										//..
+																				
 										//Add YOUR amount to the FUNDING
 										addToFundingTxn(maxmsg.txndata.transactions.fundingtxn, sql.rows[0].USER2AMOUNT, function(newfundingtxn){
 											
@@ -353,14 +365,42 @@
 							signTxn(maxmsg.txndata.transactions.fundingtxn, "auto", function(signtxn){
 								
 								checkTxn(signtxn,function(resp){
-									logJSON(resp,"CHECK TXN");
+									if(!resp.response.validtransaction){
+										MDS.log("INVALID Funding transaction..!");
+										logJSON(resp,"CHECK TXN RESPONSE");
+										return;	
+									}
 									
 									//POST IT!
-									//postTxn(signtxn,false, function(postresp){
-									//	logJSON(postresp,"POST TXN");
-									//});
+									postTxn(signtxn,false, function(postresp){
+										logJSON(postresp,"POST TXN");
+										
+										//IT's DONE! Channel now Open!
+										updateChannelState(maxmsg.hashid,"STATE_CHANNEL_OPEN_1",function(){
+											
+											//And send to other party
+											//var fmsg = replySimpleMessage(maxmsg.hashid, "CHANNEL_CREATE_3");
+											//logJSON(fmsg);
+											sendMaximaMessage(maximapubkey, replySimpleMessage(maxmsg.hashid, "CHANNEL_CREATE_3"), function(maxresp){
+												showChannels();
+											});
+										});
+									});
 								});
 							});	
+						});
+					
+					}else if(maxmsg.type == "CHANNEL_CREATE_3"){
+						checkValidMaximaUserState(maximapubkey,maxmsg.hashid, "STATE_CHANNEL_CREATE_2", function(valid){
+							if(!valid){
+								MDS.log("INVALID MESSAGE FOR STATE.. check logs");
+								return;	
+							}
+						
+							//The FUNDING has been SENT!!
+							updateChannelState(maxmsg.hashid,"STATE_CHANNEL_OPEN_2",function(){
+								showChannels();
+							});
 						});
 					}
 				});

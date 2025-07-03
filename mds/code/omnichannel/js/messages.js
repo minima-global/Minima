@@ -20,6 +20,19 @@ function synackMessage(ackmessage){
 }
 
 /**
+ * A simple message
+ */
+function replySimpleMessage(hashid, msgtype){
+	
+	var msg = {};
+	
+	msg.type 		= msgtype;
+	msg.hashid		= hashid;
+	
+	return msg;	
+}
+
+/**
  * Sent to request a Channel
  */
 function startChannelMessage(hashid, myamount, tomaximapublickey, requestamount){
@@ -67,13 +80,7 @@ function cancelChannelMessage(hashid, tomaximapublickey ){
  * DENY the channel request
  */
 function replyDenyMessage(hashid){
-	
-	var msg = {};
-	
-	msg.type 		= "REQUEST_DENIED";
-	msg.hashid		= hashid;
-	
-	return msg;	
+	return replySimpleMessage(hashid,"REQUEST_DENIED");	
 }
 
 /**
@@ -127,6 +134,3 @@ function finishChannelMessage(hashid, fundingtxn, triggertxn, settletxn){
 	return msg;
 }
 
-/**
- * Create an UPDATE to the channel..
- */
