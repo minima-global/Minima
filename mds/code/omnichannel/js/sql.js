@@ -144,9 +144,13 @@ function updateChannelState(hashid, state, callback){
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
-		if(callback){
-			callback(msg);	
-		}
+		
+		//Now select the NEW details
+		sqlSelectChannel(hashid, function(select){
+			if(callback){
+				callback(select.rows[0]);	
+			}	
+		});
 	});
 }
 
@@ -159,9 +163,13 @@ function updateChannelUser2(hashid, user, callback){
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
-		if(callback){
-			callback(msg);	
-		}
+		
+		//Now select the NEW details
+		sqlSelectChannel(hashid, function(select){
+			if(callback){
+				callback(select.rows[0]);	
+			}	
+		});
 	});
 }
 
@@ -174,9 +182,13 @@ function updateChannelAddresses(hashid, addressdata, callback){
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
-		if(callback){
-			callback(msg);	
-		}
+		
+		//Now select the NEW details
+		sqlSelectChannel(hashid, function(select){
+			if(callback){
+				callback(select.rows[0]);	
+			}	
+		});
 	});
 }
 

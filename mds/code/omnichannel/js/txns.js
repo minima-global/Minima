@@ -243,10 +243,49 @@ function signTxn(txndata, publickey, callback){
 				 "";
 	
 	MDS.cmd(create,function(fundresp){
-		logJSON(fundresp,"SIGNTXN");
+		//logJSON(fundresp,"SIGNTXN");
 		
 		callback(fundresp[2].response.data);
 	}); 
+}
+
+function signTriggerAndSettlement(alldata, publickey, callback){
+	
+	//First sign the trigger..
+	signTxn(alldata.transactions.triggertxn, publickey,function(signedtrigger){
+		
+		//Now sign the settlement
+		signTxn(alldata.transactions.settletxn, publickey,function(signedsettle){
+			
+			//Set the signed data
+			alldata.transactions.triggertxn = signedtrigger;
+			alldata.transactions.settletxn = signedsettle;
+			
+			callback(alldata);
+		});	
+	});
+}
+
+function signAllTxn(alldata, publickey, callback){
+	
+	//First sign the Funding.. This uses AUTO as is NOT the ELTOO key
+	signTxn(alldata.transactions.fundingtxn, "auto", function(signedfunding){
+	
+		//sign the trigger..
+		signTxn(alldata.transactions.triggertxn,publickey,function(signedtrigger){
+			
+			//sign the settlement
+			signTxn(alldata.transactions.settletxn,publickey,function(signedsettle){
+				
+				//Set the signed data
+				alldata.transactions.fundingtxn = signedfunding;
+				alldata.transactions.triggertxn = signedtrigger;
+				alldata.transactions.settletxn = signedsettle;
+				
+				callback(alldata);
+			});	
+		});	
+	});
 }
 
 /**
@@ -266,7 +305,7 @@ function scriptsMMRTxn(txndata, callback){
 				 "";
 	
 	MDS.cmd(create,function(fundresp){
-		logJSON(fundresp,"SCRIPTMMR");
+		//logJSON(fundresp,"SCRIPTMMR");
 		
 		callback(fundresp[3].response.data);
 	}); 
@@ -285,6 +324,8 @@ function checkTxn(txndata, callback){
 				 "";
 	
 	MDS.cmd(create,function(fundresp){
+		//logJSON(fundresp,"TXNCHECK");
+		
 		callback(fundresp[1]);
 	}); 
 }
@@ -355,7 +396,42 @@ function createDefaultTransactions(sqlrow, fundingaddress, eltooaddress, callbac
 	});
 }
 
+/**
+ * Create the startup addresses and txns..
+ */
+function createDefaultTxnAndAddresses(hashid, callback){
+	
+	//Get all the channel details
+	sqlSelectChannel(hashid, function(sql){
+		
+		//Create the startup addresses
+		createDefaultAddresses(sql.rows[0], function(addressdata){
+			
+			//Create the default txns
+			createDefaultTransactions(sql.rows[0], addressdata.fundingaddress.address, addressdata.eltooaddress.address, function(txndata){
+				
+				//Create a data package
+				var alldata 			= {};
+				alldata.addresses 		= addressdata;
+				alldata.transactions 	= txndata;
+				
+				//Send it back
+				callback(alldata);
+			});
+		});
+	});
+}
 
+
+/**
+ * Add scripts
+ */
+function addDefaultScripts(alldata, callback){
+	
+	//Add the funding address
+	
+	
+}
 
 
 

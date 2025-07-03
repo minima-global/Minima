@@ -7,7 +7,7 @@
  */
 function requestNewChannel(maximaid, myamount, requestamount,  callback){
 	
-	//First create a new HashID..
+	//First create a new Random HashID.. so EVERY Funding and ELTOO address is unique
 	var hashid = genRandomHexString();
 	
 	//Now create the initial params.. which are called AFTER the ACK / SYNACK messages

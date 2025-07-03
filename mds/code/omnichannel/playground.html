@@ -94,7 +94,8 @@
 			createDB(function(){
 				MDS.log("DB CREATED!");
 				
-				showChannels();
+				location.reload()
+				//showChannels();
 				
 			});
 		});
@@ -106,59 +107,6 @@
 			logJSON(allchannels,"CHANNEL DB");	
 		});		
 	}  
-	
-	//Been asked to start a channel.. if accept..
-	function replyStartYES(){
-		
-		//CHECK DETAILS
-		//..
-		
-		//Reset
-		MESSAGE_SENT_USER1 = {};
-		MESSAGE_SENT_USER1.type 		= "START_CHANNEL_ACCEPT";
-		MESSAGE_SENT_USER1.hashid 		= MESSAGE_SENT_USER2.hashid;
-		
-		//Now create the funding txn..
-		createFundingAddress(HASHID, PUBKEY_USER1, PUBKEY_USER2, function(fundingaddress){
-			logJSON(fundingaddress);
-			
-			//And create the ELTOO address
-			createELTOOAddress(HASHID, PUBKEY_USER1, PUBKEY_USER2, 20, function(eltooaddress){
-				logJSON(eltooaddress);
-				
-				//Now create a FUNDING TXN.. add only your amount..
-				createFundingTxn(fundingaddress.address, 10, 20, function(fundingtxn){
-					logJSON(fundingtxn);
-					
-					//Now create the trigger..
-					createTriggerTxn(20, fundingaddress.address, eltooaddress.address, function(triggertxn){
-						logJSON(triggertxn);
-						
-						//And create the settlement..
-						createSettlementTxn(0, eltooaddress.address, 20, 10, ADDRESS_USER1, 10, ADDRESS_USER2, function(settletxn){
-							logJSON(settletxn);
-							
-							//SIGN settle and trigger (NOT FUNDING..)20
-							signTxn(settletxn.response.data, PUBKEY_USER2, function(signsettle){
-								logJSON(signsettle);
-								
-								//And SIGN the trigger
-								signTxn(triggertxn.response.data, PUBKEY_USER2, function(signtrigger){
-									logJSON(signsettle);
-									
-									//OK - NOW we have the pieces tyo send back,, SIGN funding AFTER recieved valid signed txns
-									//..
-									
-									
-									
-								});
-							});			
-						});	
-					});
-				});	
-			});
-		});
-	}
 	
 	function showChannels(){
 		sqlSelectAllChannels(function(allchannels){
@@ -268,7 +216,7 @@
 			if(msg.data.application == "thunderpay"){
 				
 				//Relevant data
-				var pubkey 	= msg.data.from;
+				var maximapubkey 	= msg.data.from;
 				
 				//Get the data
 				var datahex	= msg.data.data;
@@ -276,14 +224,14 @@
 				//Convert back to JSON
 				convertHEXtoJSON(datahex,function(maxmsg){
 					if(MAXIMA_LOGS){
-						logJSON(maxmsg,"MAXIMA RECEIVED FROM "+pubkey+" : ");
+						logJSON(maxmsg,"MAXIMA RECEIVED FROM "+maximapubkey+" : ");
 					}
 					
 					//What type of Message is it..?
 					if(maxmsg.type == "ACK_MESSAGE"){
 						
 						//Send a SYN_ACKMESSAGE -  to show we received the ACK message
-						sendMaximaMessage(pubkey, synackMessage(maxmsg));
+						sendMaximaMessage(maximapubkey, synackMessage(maxmsg));
 						
 					}else if(maxmsg.type == "SYNACK_MESSAGE"){
 						
@@ -300,7 +248,7 @@
 					}else if(maxmsg.type == "CANCEL_NEW_CHANNEL"){
 											
 						//Check state and user
-						checkValidMaximaUserState(pubkey,maxmsg.hashid, "STATE_REQUEST_START_CHANNEL", function(valid){
+						checkValidMaximaUserState(maximapubkey,maxmsg.hashid, "STATE_REQUEST_START_CHANNEL", function(valid){
 							if(valid){
 								//CANCEL this request
 								updateChannelState(maxmsg.hashid, "STATE_REQUEST_CANCELLED", function(upd){
@@ -312,7 +260,7 @@
 					}else if(maxmsg.type == "REQUEST_DENIED"){
 						
 						//Check state and user
-						checkValidMaximaUserState(pubkey,maxmsg.hashid, "STATE_SENT_START_CHANNEL", function(valid){
+						checkValidMaximaUserState(maximapubkey,maxmsg.hashid, "STATE_SENT_START_CHANNEL", function(valid){
 							if(valid){
 								//DENIED this request
 								updateChannelState(maxmsg.hashid, "STATE_REQUEST_DENIED", function(upd){
@@ -324,39 +272,29 @@
 					}else if(maxmsg.type == "REQUEST_ACCEPTED"){
 										
 						//Lets go..
-						checkValidMaximaUserState(pubkey,maxmsg.hashid, "STATE_SENT_START_CHANNEL", function(valid){
+						checkValidMaximaUserState(maximapubkey,maxmsg.hashid, "STATE_SENT_START_CHANNEL", function(valid){
 							if(valid){
 								
 								//Update user details
-								updateChannelUser2(maxmsg.hashid, maxmsg.user, function(){
+								updateChannelUser2(maxmsg.hashid, maxmsg.user, function(sqlrow){
 									
-									//Get all the channel details
-									sqlSelectChannel(maxmsg.hashid, function(sql){
+									//Create the default txns and addresses
+									createDefaultTxnAndAddresses(maxmsg.hashid, function(alldata){
 										
-										//Create the startup addresses
-										createDefaultAddresses(sql.rows[0], function(addressdata){
+										//Now - add these addresses to our script database
+										//..
+										
+										//Sort the SCRIPTS and MMR for the FUNDING
+										scriptsMMRTxn(alldata.transactions.fundingtxn,function(mmrtxn){
 											
-											//Add these addresses to our Defauilt scripts
-											//..
+											//Set This
+											alldata.transactions.fundingtxn = mmrtxn;
 											
-											//Create the default txns
-											createDefaultTransactions(sql.rows[0], addressdata.fundingaddress.address, addressdata.eltooaddress.address, function(txndata){
-												
-												//Sort Scripts and MMR for FUNDING
-												//..
-												
-												//SIGN the TRIGGER and SETTLEMENT
-												//..
-												
-												//Create a data package
-												var alldata 			= {};
-												alldata.addresses 		= addressdata;
-												alldata.transactions 	= txndata;
-												
-												//logJSON(alldata,"ALL TXN DATA")
+											//Sign the TRIGGER and SETTLEMENT.. NOT the FUNDING 
+											signTriggerAndSettlement(alldata, sqlrow.USER1PUBLICKEY, function(signeddata){
 												
 												//Send back to the OTHER user
-												sendCreateChannel("CHANNEL_CREATE_1", pubkey, maxmsg.hashid, alldata, function(){
+												sendCreateChannel("CHANNEL_CREATE_1", maximapubkey, maxmsg.hashid, signeddata, function(){
 													showChannels();
 												});
 											});
@@ -367,77 +305,62 @@
 						});
 					
 					}else if(maxmsg.type == "CHANNEL_CREATE_1"){
-						checkValidMaximaUserState(pubkey,maxmsg.hashid, "STATE_REQUEST_ACCEPTED", function(valid){
+						checkValidMaximaUserState(maximapubkey,maxmsg.hashid, "STATE_REQUEST_ACCEPTED", function(valid){
 							if(valid){
 								
-								return;
-								
-								//Check the FUNDING and ELTOO address..
+								//Get the details for this channel
 								sqlSelectChannel(maxmsg.hashid, function(sql){
-																		
-									//Create the startup txns
-									createDefaultAddresses(sql.rows[0], function(txns){
-										//logJSON(txns);
+									
+									//ok - Lets create the default transactions and addresses OURSELVES - so we can check
+									createDefaultTxnAndAddresses(maxmsg.hashid, function(alldata){
 										
-										//Check them..
+										//check those against the ones sent in the message.. transactionid + addresses MUST be the same / SIGNATURES etc
 										//..
-										//checkTxn(maxmsg.txndata.fundingtxn,function(resp){
-									//		logJSON(resp,"CHECK TXN");
-									//	});
 										
-										//Now add your amount to the funding..
-										addToFundingTxn(maxmsg.txndata.fundingtxn, sql.rows[0].USER2AMOUNT, function(newfundingtxn){
-											//logJSON(newfundingtxn,"NEW FUNDING");	
+										//Add YOUR amount to the FUNDING
+										addToFundingTxn(maxmsg.txndata.transactions.fundingtxn, sql.rows[0].USER2AMOUNT, function(newfundingtxn){
 											
-											//Set the Scripts and MMR
+											//Set the Scripts and MMR for the FUNDING
 											scriptsMMRTxn(newfundingtxn,function(mmrtxn){
 												
-												//Now sign it..
-												signTxn(mmrtxn, "auto", function(signtxn){
+												//SET this..
+												maxmsg.txndata.transactions.fundingtxn = mmrtxn;
+												
+												//Now - SIGN ALL THREE.. 
+												signAllTxn(maxmsg.txndata, sql.rows[0].USER2PUBLICKEY, function(signeddata){
 													
-													var newtxndata = {};
-													newtxndata.fundingtxn = signtxn;
-													
-													//Now SEND THAT BACK
-													sendCreateChannel("CHANNEL_CREATE_2", pubkey, maxmsg.hashid, newtxndata, function(){
+													//You now have a half-signed FUNDING.. FULL SIGNED Trigger and Settle
+													sendCreateChannel("CHANNEL_CREATE_2", maximapubkey, maxmsg.hashid, signeddata, function(){
 														showChannels();
 													});	
-												});	
+												});		
 											});
 										});
-										
-									});
+									});	
 								});
 							}
 						});	
 						
 					}else if(maxmsg.type == "CHANNEL_CREATE_2"){
 						
-						checkValidMaximaUserState(pubkey,maxmsg.hashid, "STATE_CHANNEL_CREATE_1", function(valid){
+						checkValidMaximaUserState(maximapubkey,maxmsg.hashid, "STATE_CHANNEL_CREATE_1", function(valid){
 							if(!valid){
 								MDS.log("INVALID MESSAGE FOR STATE.. check logs");
 								return;	
 							}
 							
-							//Now get the partially signed txn..
-							var fundingtxn = maxmsg.txndata.fundingtxn;
-							
-							sqlSelectChannel(maxmsg.hashid, function(sql){
+							//Sign the FUNDING!
+							signTxn(maxmsg.txndata.transactions.fundingtxn, "auto", function(signtxn){
 								
-								//Sign that
-								signTxn(fundingtxn, "auto", function(signtxn){
+								checkTxn(signtxn,function(resp){
+									logJSON(resp,"CHECK TXN");
 									
-									checkTxn(signtxn,function(resp){
-										logJSON(resp,"CHECK TXN");
-										
-										
-										//POST IT!
-										postTxn(signtxn,false, function(postresp){
-											logJSON(postresp,"POST TXN");
-										});
-									});
-								});	
-							});
+									//POST IT!
+									//postTxn(signtxn,false, function(postresp){
+									//	logJSON(postresp,"POST TXN");
+									//});
+								});
+							});	
 						});
 					}
 				});
