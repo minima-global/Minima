@@ -536,9 +536,14 @@ public class TxPoWChecker {
 			CoinProof cproof = mmrproofs.get(i);
 			
 			//Check the Script Proof
-			ScriptProof prfs =  zWitness.getScript(cproof.getCoin().getAddress());
+			ScriptProof prfs = zWitness.getScript(cproof.getCoin().getAddress());
 			
 			//Check the Script
+			if(prfs == null) {
+				MinimaLogger.log("Script NOT found for address : "+cproof.getCoin().getAddress().to0xString());
+				return false;
+			}
+			
 			String script = prfs.getScript().toString();
 			Contract contract = new Contract(script, 
 											zWitness.getAllSignatureKeys(), 
