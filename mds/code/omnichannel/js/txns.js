@@ -353,7 +353,7 @@ function postTxn(txndata, auto, callback){
 function createDefaultAddresses(sqlrow, callback){
 	
 	//The Timeout in blocks..
-	var timeout = 20;
+	var timeout = 5;
 	
 	createFundingAddress(sqlrow.HASHID, sqlrow.USER1PUBLICKEY, sqlrow.USER2PUBLICKEY, function(fundingaddress){
 		
@@ -429,8 +429,17 @@ function createDefaultTxnAndAddresses(hashid, callback){
 function addDefaultScripts(alldata, callback){
 	
 	//Add the funding address
-	
-	
+	MDS.cmd("newscript trackall:true script:\""+alldata.addresses.fundingaddress.script+"\"",function(sc1){
+		//logJSON(sc1,"ADDSCRIPT1");
+		
+		MDS.cmd("newscript trackall:true script:\""+alldata.addresses.eltooaddress.script+"\"",function(sc2){
+			//logJSON(sc2,"ADDSCRIPT2");
+			
+			if(callback){
+				callback();
+			}
+		});	
+	});
 }
 
 

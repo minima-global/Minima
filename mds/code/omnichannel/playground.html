@@ -121,6 +121,12 @@
 				var row = i+") ID:"+channel.HASHID+" TOTAL:"+channel.TOTALAMOUNT+"<br>STATE:"+channel.STATE
 				+"<br>AMT1:"+channel.USER1AMOUNT +" U1PUBK:"+trimToSize(channel.USER1PUBLICKEY)+" U1ADDRES:"+trimToSize(channel.USER1ADDRESS)
 				+"<br>AMT2:"+channel.USER2AMOUNT +" U2PUBK:"+trimToSize(channel.USER2PUBLICKEY)+" U2ADDRES:"+trimToSize(channel.USER2ADDRESS)
+				
+				+"<br>SEQUENCE:"+channel.SEQUENCE
+				+"<br>FND:"+channel.FUNDINGADDRESS+" ELTOO:"+channel.ELTOOADDRESS
+				
+				+"<br>TRIGGERTXN:"+trimToSize(channel.TRIGGERTXN)+" SETTLETXN:"+trimToSize(channel.SETTLETXN)+" UPDATETXN:"+trimToSize(channel.UPDATETXN)
+								
 				+"<br>";
 				
 				if(channel.STATE == "STATE_SENT_START_CHANNEL"){
@@ -134,12 +140,16 @@
 				
 				}else if(channel.STATE == "STATE_CHANNEL_OPEN_1"){
 					//Add buttons..
-					row += "&nbsp;&nbsp;&nbsp; <button onclick='close(\""+channel.HASHID+"\", \""+channel.USER2MAXIMAID+"\");'>CLOSE</button>"				
-				
+					row += "&nbsp;&nbsp;&nbsp; <button onclick='close(\""+channel.HASHID+"\", \""+channel.USER2MAXIMAID+"\");'>CLOSE</button>"
+						  +"&nbsp;&nbsp;&nbsp; <button onclick='trigger(\""+channel.HASHID+"\");'>TRIGGER</button>"				
+						  +"&nbsp;&nbsp;&nbsp; <button onclick='settle(\""+channel.HASHID+"\");'>SETTLE</button>";
+						  
 				}else if(channel.STATE == "STATE_CHANNEL_OPEN_2"){
 					//Add buttons..
 					row += "&nbsp;&nbsp;&nbsp; <button onclick='close(\""+channel.HASHID+"\", \""+channel.USER1MAXIMAID+"\");'>CLOSE</button>"				
-				
+							+"&nbsp;&nbsp;&nbsp; <button onclick='trigger(\""+channel.HASHID+"\");'>TRIGGER</button>"				
+							+"&nbsp;&nbsp;&nbsp; <button onclick='settle(\""+channel.HASHID+"\");'>SETTLE</button>";
+											  
 				}
 				
 				output += row+"<br><br>"
@@ -193,6 +203,28 @@
 		});
 	}
 	
+	function trigger(hashid){
+		
+		//Publish the Trigger..
+		sqlSelectChannel(hashid, function(sql){
+			
+			postTxn(sql.rows[0].TRIGGERTXN, true, function(postresp){
+				logJSON(postresp,"POST TRIGGER");
+			});
+		});
+	}
+	
+	function settle(hashid){
+			
+		//Publish the Trigger..
+		sqlSelectChannel(hashid, function(sql){
+			
+			postTxn(sql.rows[0].SETTLETXN, true, function(postresp){
+				logJSON(postresp,"POST SETTLE");
+			});
+		});
+	}
+	
 	//Main message handler..
 	MDS.init(function(msg){
 		
@@ -218,6 +250,30 @@
 					});
 				});		
 			}
+		
+		}else if(msg.event == "NEWCOIN"){
+			
+			MDS.log("NEW COIN:"+JSON.stringify(msg.data));	
+			
+			//Is it a FUNDING coin
+			sqlSelectRelevantFundingCoin(msg.data.coin.miniaddress, function(res){
+				if(res.count>0){
+					MDS.log("FUNDING COIN!! ADDRESS:"+msg.data.coin.miniaddress+" SPENT:"+msg.data.coin.spent);
+					
+					//AND Update the State..
+					 
+				}
+			});
+			
+			//Is it an ELTOO coin
+			sqlSelectRelevantEltooCoin(msg.data.coin.miniaddress, function(res){
+				if(res.count>0){
+					MDS.log("ELTOO COIN!! ADDRESS:"+msg.data.coin.miniaddress+" SPENT:"+msg.data.coin.spent);
+					
+					//AND Update the State..
+					 
+				}
+			});
 			
 		}else if(msg.event == "MAXIMA"){
 				
@@ -290,22 +346,27 @@
 									//Create the default txns and addresses
 									createDefaultTxnAndAddresses(maxmsg.hashid, function(alldata){
 										
-										//Now - add these addresses to our script database
-										//..
-										
-										//Sort the SCRIPTS and MMR for the FUNDING
-										scriptsMMRTxn(alldata.transactions.fundingtxn,function(mmrtxn){
+										//Now - add these addresses to our script database - so we listen for txns
+										addDefaultScripts(alldata, function(){
 											
-											//Set This
-											alldata.transactions.fundingtxn = mmrtxn;
-											
-											//Sign the TRIGGER and SETTLEMENT.. NOT the FUNDING 
-											signTriggerAndSettlement(alldata, sqlrow.USER1PUBLICKEY, function(signeddata){
+											//And update the SQL
+											updateChannelAddresses(maxmsg.hashid, alldata, function(){
 												
-												//Send back to the OTHER user
-												sendCreateChannel("CHANNEL_CREATE_1", maximapubkey, maxmsg.hashid, signeddata, function(){
-													showChannels();
-												});
+												//Sort the SCRIPTS and MMR for the FUNDING
+												scriptsMMRTxn(alldata.transactions.fundingtxn,function(mmrtxn){
+													
+													//Set This
+													alldata.transactions.fundingtxn = mmrtxn;
+													
+													//Sign the TRIGGER and SETTLEMENT.. NOT the FUNDING 
+													signTriggerAndSettlement(alldata, sqlrow.USER1PUBLICKEY, function(signeddata){
+														
+														//Send back to the OTHER user
+														sendCreateChannel("CHANNEL_CREATE_1", maximapubkey, maxmsg.hashid, signeddata, function(){
+															showChannels();
+														});
+													});
+												});		
 											});
 										});
 									});
@@ -327,26 +388,35 @@
 										//..
 										
 										//Now - add these addresses to our script database
-										//..
-																				
-										//Add YOUR amount to the FUNDING
-										addToFundingTxn(maxmsg.txndata.transactions.fundingtxn, sql.rows[0].USER2AMOUNT, function(newfundingtxn){
+										addDefaultScripts(alldata, function(){
 											
-											//Set the Scripts and MMR for the FUNDING
-											scriptsMMRTxn(newfundingtxn,function(mmrtxn){
+											//And update the SQL
+											updateChannelAddresses(maxmsg.hashid, alldata, function(){
 												
-												//SET this..
-												maxmsg.txndata.transactions.fundingtxn = mmrtxn;
-												
-												//Now - SIGN ALL THREE.. 
-												signAllTxn(maxmsg.txndata, sql.rows[0].USER2PUBLICKEY, function(signeddata){
+												//Add YOUR amount to the FUNDING
+												addToFundingTxn(maxmsg.txndata.transactions.fundingtxn, sql.rows[0].USER2AMOUNT, function(newfundingtxn){
 													
-													//You now have a half-signed FUNDING.. FULL SIGNED Trigger and Settle
-													sendCreateChannel("CHANNEL_CREATE_2", maximapubkey, maxmsg.hashid, signeddata, function(){
-														showChannels();
-													});	
-												});		
-											});
+													//Set the Scripts and MMR for the FUNDING
+													scriptsMMRTxn(newfundingtxn,function(mmrtxn){
+														
+														//SET this..
+														maxmsg.txndata.transactions.fundingtxn = mmrtxn;
+														
+														//Now - SIGN ALL THREE.. 
+														signAllTxn(maxmsg.txndata, sql.rows[0].USER2PUBLICKEY, function(signeddata){
+															
+															//STORE the TRIGGER and CURRENT Settlement
+															updateDefaultChannelTransactions(maxmsg.hashid, signeddata, function(){
+																
+																//You now have a half-signed FUNDING.. FULL SIGNED Trigger and Settle
+																sendCreateChannel("CHANNEL_CREATE_2", maximapubkey, maxmsg.hashid, signeddata, function(){
+																	showChannels();
+																});	
+															});
+														});		
+													});
+												});	
+											});	
 										});
 									});	
 								});
@@ -361,33 +431,38 @@
 								return;	
 							}
 							
-							//Sign the FUNDING!
-							signTxn(maxmsg.txndata.transactions.fundingtxn, "auto", function(signtxn){
+							//CHECK ALL THE TXNS!!
+							//..
+							
+							//STORE the TRIGGER and CURRENT Settlement
+							updateDefaultChannelTransactions(maxmsg.hashid, maxmsg.txndata, function(){
 								
-								checkTxn(signtxn,function(resp){
-									if(!resp.response.validtransaction){
-										MDS.log("INVALID Funding transaction..!");
-										logJSON(resp,"CHECK TXN RESPONSE");
-										return;	
-									}
+								//Sign the FUNDING!
+								signTxn(maxmsg.txndata.transactions.fundingtxn, "auto", function(signtxn){
 									
-									//POST IT!
-									postTxn(signtxn,false, function(postresp){
-										logJSON(postresp,"POST TXN");
+									checkTxn(signtxn,function(resp){
+										if(!resp.response.validtransaction){
+											MDS.log("INVALID Funding transaction..!");
+											logJSON(resp,"CHECK TXN FAIL");
+											return;	
+										}
 										
-										//IT's DONE! Channel now Open!
-										updateChannelState(maxmsg.hashid,"STATE_CHANNEL_OPEN_1",function(){
+										//POST IT!
+										postTxn(signtxn, false, function(postresp){
+											logJSON(postresp,"POST TXN");
 											
-											//And send to other party
-											//var fmsg = replySimpleMessage(maxmsg.hashid, "CHANNEL_CREATE_3");
-											//logJSON(fmsg);
-											sendMaximaMessage(maximapubkey, replySimpleMessage(maxmsg.hashid, "CHANNEL_CREATE_3"), function(maxresp){
-												showChannels();
+											//IT's DONE! Channel now Open!
+											updateChannelState(maxmsg.hashid,"STATE_CHANNEL_OPEN_1",function(){
+												
+												//And send to other party
+												sendMaximaMessage(maximapubkey, replySimpleMessage(maxmsg.hashid, "CHANNEL_CREATE_3"), function(maxresp){
+													showChannels();
+												});
 											});
 										});
 									});
-								});
-							});	
+								});	
+							});
 						});
 					
 					}else if(maxmsg.type == "CHANNEL_CREATE_3"){

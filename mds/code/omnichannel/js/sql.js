@@ -136,6 +136,36 @@ function sqlSelectChannel(hashid, callback){
 }
 
 /**
+ * Check for FUNDING coin
+ */
+function sqlSelectRelevantFundingCoin(address, callback){
+	//Find a record
+	var sql = "SELECT * FROM channels WHERE fundingaddress='"+address+"'";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		if(callback){
+			callback(msg);
+		}	
+	});
+}
+
+/**
+ * Check for ELTOO coin
+ */
+function sqlSelectRelevantEltooCoin(address, callback){
+	//Find a record
+	var sql = "SELECT * FROM channels WHERE eltooaddress='"+address+"'";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		if(callback){
+			callback(msg);
+		}	
+	});
+}
+
+/**
  * Update Channel State
  */
 function updateChannelState(hashid, state, callback){
@@ -176,12 +206,35 @@ function updateChannelUser2(hashid, user, callback){
 /**
  * Update the special address
  */
-function updateChannelAddresses(hashid, addressdata, callback){
+function updateChannelAddresses(hashid, alldata, callback){
 	//Find a record
-	var sql = "UPDATE channels SET fundingaddress='"+addressdata.fundingaddress+"', eltooaddress='"+addressdata.eltooaddress+"', sequence=0 WHERE hashid='"+hashid+"'";
+	var sql = "UPDATE channels SET fundingaddress='"+alldata.addresses.fundingaddress.address
+				+"', eltooaddress='"+alldata.addresses.eltooaddress.address+"', sequence=0 WHERE hashid='"+hashid+"'";
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
+		//logJSON(msg, "UPDATEADDRESS");
+		
+		//Now select the NEW details
+		sqlSelectChannel(hashid, function(select){
+			if(callback){
+				callback(select.rows[0]);	
+			}	
+		});
+	});
+}
+
+/**
+ * Update the special address
+ */
+function updateDefaultChannelTransactions(hashid, alldata, callback){
+	//Find a record
+	var sql = "UPDATE channels SET triggertxn='"+alldata.transactions.triggertxn
+				+"', settletxn='"+alldata.transactions.settletxn+"', sequence=0 WHERE hashid='"+hashid+"'";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		logJSON(msg, "UPDATEADDRESS");
 		
 		//Now select the NEW details
 		sqlSelectChannel(hashid, function(select){
