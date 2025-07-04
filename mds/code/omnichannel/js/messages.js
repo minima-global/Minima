@@ -134,3 +134,19 @@ function finishChannelMessage(hashid, fundingtxn, triggertxn, settletxn){
 	return msg;
 }
 
+/**
+ * Spend a channel cleanly
+ */
+function spendChannelMessage(hashid, spendfungingtxn ){
+
+	var msg 	={};
+	
+	//Message type
+	msg.type 			= "SPEND_CHANNEL";
+	msg.hashid			= hashid;
+	
+	//The HALF-Signed txn
+	msg.spendfundingtxn = spendfungingtxn;
+	
+	return msg;	
+}

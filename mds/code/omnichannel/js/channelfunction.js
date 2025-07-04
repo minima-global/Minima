@@ -134,3 +134,29 @@ function sendCreateChannel(msgtype, maximaid, hashid, txndata, callback){
 	});
 }
 
+/**
+ * Close the Channel Cleanly..
+ */
+function sendSpendFunding(hashid, maximaid, spendfundingtxn, callback){
+
+	//Now create the initial params.. which are called AFTER the ACK / SYNACK messages
+	var details 					= {};
+	details.hashid 					= hashid;
+	details.maximaid 				= maximaid;
+	details.spendfundingtxn 		= spendfundingtxn;
+			
+	//Now try and start a conmnection
+	ackFunctionCall(maximaid, _sendSpendFunding, details, function(ackdelivered){
+		if(callback){
+			callback(ackdelivered);
+		}
+	});	
+}
+
+function _sendSpendFunding(details){
+	sendMaximaMessage(details.maximaid, spendChannelMessage(details.hashid, details.spendfundingtxn));
+}
+
+
+
+

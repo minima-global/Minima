@@ -120,6 +120,35 @@ function addToFundingTxn(txndata, addamount, callback){
 	}); 	
 }
 
+function spendFundingTxn(sqlrow, callback){
+	
+	var txid = randomString();
+	
+	var create = "txncreate id:"+txid+";"+
+		
+	//Input the Funding txn address - floating
+	"txninput id:"+txid+" amount:"+sqlrow.TOTALAMOUNT+" address:"+sqlrow.FUNDINGADDRESS+" floating:true;"+
+	
+	//Output the correct amount to EACH User
+	"txnoutput id:"+txid+" amount:"+sqlrow.USER1AMOUNT+" address:"+sqlrow.USER1ADDRESS+";"+
+	"txnoutput id:"+txid+" amount:"+sqlrow.USER2AMOUNT+" address:"+sqlrow.USER2ADDRESS+";"+
+		
+	//SIGN IT.. only half signed at this point
+	"txnsign id:"+txid+" publickey:"+sqlrow.USER1PUBLICKEY+";"+
+	
+	//Export the txn
+	"txnexport id:"+txid+";"+
+	
+	//Delete
+	"txndelete id:"+txid+";"+
+	
+	"";
+	
+	MDS.cmd(create,function(fundresp){
+		callback(fundresp[5].response.data);
+	}); 	
+}
+
 /**
  * Create ther TRIGGER TXN that spends the funding and sets up the ELTOO sequence value 0
  */

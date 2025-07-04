@@ -140,7 +140,7 @@
 				
 				}else if(channel.STATE == "STATE_CHANNEL_OPEN_1"){
 					//Add buttons..
-					row += "&nbsp;&nbsp;&nbsp; <button onclick='close(\""+channel.HASHID+"\", \""+channel.USER2MAXIMAID+"\");'>CLOSE COOP</button>"
+					row += "&nbsp;&nbsp;&nbsp; <button onclick='closeChannel(\""+channel.HASHID+"\", \""+channel.USER2MAXIMAID+"\");'>CLOSE COOP</button>"
 						  +"&nbsp;&nbsp;&nbsp; <button onclick='trigger(\""+channel.HASHID+"\");'>TRIGGER CLOSE</button>";
 						  
 				}else if(channel.STATE == "STATE_CHANNEL_OPEN_2"){
@@ -198,6 +198,26 @@
 					});	
 				}
 			});	
+		});
+	}
+	
+	//Send a message asking for a NEW txn to spend the FUNDING and send the correct amounts back..
+	function closeChannel(hashid, maximaid){
+		
+		MDS.log("START COOP Close.. "+hashid);
+		
+		//Get this channel
+		sqlSelectChannel(hashid, function(sql){
+			
+			//Create a SPEND txn..
+			spendFundingTxn(sql.rows[0],function(spendtxn){
+				
+				sendSpendFunding(hashid, maximaid, spendtxn, function(delivered){
+					
+					MDS.log("SPEND FUNDING REQUEST SENT!");
+					
+				});	
+			});
 		});
 	}
 	
@@ -314,13 +334,13 @@
 			
 		}else if(msg.event == "NEWCOIN"){
 			
-			//MDS.log("NEW COIN:"+JSON.stringify(msg.data));	
+			//MDS.log("NEW COIN:"+JSON.striclosengify(msg.data));	
 			
 			//Is it a FUNDING coin
 			sqlSelectRelevantFundingCoin(msg.data.coin.miniaddress, function(res){
 				if(res.count>0){
 					if(msg.data.coin.spent){
-						MDS.log("FUNDING COIN SPENT!! ADDRESS:"+msg.data.coin.miniaddress+" SPENT:"+msg.data.coin.spent);
+						MDS.log("FUNDING COIN SPENT!! ADDRESS:"+msg.data.coin.miniaddress+" SPENT:"+msg.data.coin.spent);						
 					}else{
 						MDS.log("NEW FUNDING COIN!! ADDRESS:"+msg.data.coin.miniaddress+" SPENT:"+msg.data.coin.spent);	
 					}					 
@@ -341,6 +361,21 @@
 						
 					}else{
 						MDS.log("NEW ELTOO COIN!! ADDRESS:"+msg.data.coin.miniaddress+" SPENT:"+msg.data.coin.spent);	
+					}
+				}
+			});
+			
+			//Is it one of our Addresses!
+			sqlSelectPayoutCoin(msg.data.coin.miniaddress, function(res){
+				if(res.count>0){
+					
+					//Update the Database!!
+					if(!msg.data.coin.spent){
+						MDS.log("CHANNEL CLOSED ADDRESS:"+msg.data.coin.miniaddress+" SPENT:"+msg.data.coin.spent+" AMOUNT:"+msg.data.coin.amount);
+											
+						updateChannelState(res.rows[0].HASHID, "CHANNEL_CLOSED", function(sqlrow){
+							showChannels();
+						});	
 					}
 				}
 			});
@@ -558,6 +593,38 @@
 							//The FUNDING has been SENT!!
 							updateChannelState(maxmsg.hashid,"STATE_CHANNEL_OPEN_2",function(){
 								showChannels();
+							});
+						});
+						
+					}else if(maxmsg.type == "SPEND_CHANNEL"){
+						
+						MDS.log("SPEND CHANNEL REC!!");
+						
+						//DO CHECKS!!
+						//..
+						
+						//Sign it..
+						sqlSelectChannel(maxmsg.hashid,function(sql){
+							
+							var pubkey = "";
+							if(sql.rows[0].STATE == "STATE_CHANNEL_OPEN_1"){
+								
+								//USER 1
+								pubkey = sql.rows[0].USER1PUBLICKEY;
+								
+							}else if(sql.rows[0].STATE == "STATE_CHANNEL_OPEN_2"){
+							
+								//USER 2
+								pubkey = sql.rows[0].USER2PUBLICKEY;
+							}
+
+							//Now SIGN it
+							signTxn(maxmsg.spendfundingtxn, pubkey, function(fulltxn){
+								
+								//POST IT..
+								postTxn(fulltxn, "true", function(poastreq){
+									MDS.log("CHANNEL CLOSE POSTED");	
+								});
 							});
 						});
 					}

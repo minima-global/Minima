@@ -181,6 +181,21 @@ function sqlSelectRelevantEltooCoin(address, callback){
 }
 
 /**
+ * Check for PAYOUT coins
+ */
+function sqlSelectPayoutCoin(address, callback){
+	//Find a record
+	var sql = "SELECT * FROM channels WHERE user1address='"+address+"' OR user2address='"+address+"'";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		if(callback){
+			callback(msg);
+		}	
+	});
+}
+
+/**
  * Update Channel State
  */
 function updateChannelState(hashid, state, callback){
