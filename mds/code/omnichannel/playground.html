@@ -326,6 +326,13 @@
 										settle(eltoohashid);
 									}	
 								}
+								
+								//Update state - if not already done..
+								if(eltoorow.STATE != "STATE_CHANNEL_START_CLOSE"){
+									updateChannelState(eltoohashid, "STATE_CHANNEL_START_CLOSE", function(upd){
+										showChannels();
+									});
+								}
 							}
 						}
 					}
@@ -355,9 +362,9 @@
 					if(msg.data.coin.spent){
 						MDS.log("ELTOO COIN SPENT!! ADDRESS:"+msg.data.coin.miniaddress+" SPENT:"+msg.data.coin.spent);
 						
-						updateChannelState(res.rows[0].HASHID, "CHANNEL_TRIGGER_CLOSED", function(sqlrow){
-							showChannels();
-						});	
+						//updateChannelState(res.rows[0].HASHID, "STATE_CHANNEL_TRIGGER_CLOSED", function(sqlrow){
+						//	showChannels();
+						//});	
 						
 					}else{
 						MDS.log("NEW ELTOO COIN!! ADDRESS:"+msg.data.coin.miniaddress+" SPENT:"+msg.data.coin.spent);	
@@ -371,11 +378,19 @@
 					
 					//Update the Database!!
 					if(!msg.data.coin.spent){
-						MDS.log("CHANNEL CLOSED ADDRESS:"+msg.data.coin.miniaddress+" SPENT:"+msg.data.coin.spent+" AMOUNT:"+msg.data.coin.amount);
-											
-						updateChannelState(res.rows[0].HASHID, "CHANNEL_CLOSED", function(sqlrow){
-							showChannels();
-						});	
+						
+						//CHECK THIS IS A PAYOUT - state vars..
+						var payout = msg.data.coin.state["200"];
+						MDS.log("PAYOUT STATE VAR : "+payout+" "+JSON.stringify(msg.data.coin));
+						
+						if(payout == "1"){
+							MDS.log("CHANNEL CLOSED ADDRESS:"+msg.data.coin.miniaddress+" SPENT:"+msg.data.coin.spent+" AMOUNT:"+msg.data.coin.amount);
+							
+							//YOU CANT be SURE this is a payout as could be faked..					
+							//updateChannelState(res.rows[0].HASHID, "STATE_CHANNEL_CLOSED", function(sqlrow){
+							//	showChannels();
+							//});	
+						}
 					}
 				}
 			});

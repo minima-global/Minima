@@ -125,7 +125,7 @@ function sqlSelectAllChannels(callback){
  */
 function sqlSelectEltooChannels(callback){
 	//Find a record
-	var sql = "SELECT hashid, eltooaddress, sequence FROM channels";
+	var sql = "SELECT hashid, state, eltooaddress, sequence FROM channels";
 				
 	//Run this..
 	MDS.sql(sql,function(msg){

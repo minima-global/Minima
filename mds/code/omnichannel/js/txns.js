@@ -133,6 +133,9 @@ function spendFundingTxn(sqlrow, callback){
 	"txnoutput id:"+txid+" amount:"+sqlrow.USER1AMOUNT+" address:"+sqlrow.USER1ADDRESS+";"+
 	"txnoutput id:"+txid+" amount:"+sqlrow.USER2AMOUNT+" address:"+sqlrow.USER2ADDRESS+";"+
 		
+	//Set the state var - its a payout
+	"txnstate id:"+txid+" port:200 value:1;"+
+		
 	//SIGN IT.. only half signed at this point
 	"txnsign id:"+txid+" publickey:"+sqlrow.USER1PUBLICKEY+";"+
 	
@@ -145,7 +148,7 @@ function spendFundingTxn(sqlrow, callback){
 	"";
 	
 	MDS.cmd(create,function(fundresp){
-		callback(fundresp[5].response.data);
+		callback(fundresp[6].response.data);
 	}); 	
 }
 
