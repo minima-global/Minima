@@ -80,3 +80,9 @@ function encodeStringForDB(str){
 function decodeStringFromDB(str){
 	return decodeURIComponent(str).split("%27").join("'");
 }
+
+//Check this is a safe and valid hashid
+function checkSafeHashID(hashid, callback){
+	var regex = new RegExp("^[A-Za-z0-9]*$");
+	return regex.test(hashid); 
+}

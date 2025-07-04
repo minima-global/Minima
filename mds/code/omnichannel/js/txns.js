@@ -19,12 +19,6 @@ function randomString() {
     return output;
 }
 
-//Check this is a safe and valid hashid
-function checkSafeHashID(hashid, callback){
-	var regex = new RegExp("^[A-Za-z0-9]*$");
-	return regex.test(hashid); 
-}
-
 /**
  * Create the funding address for a channel..
  * 

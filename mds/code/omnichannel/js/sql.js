@@ -106,11 +106,26 @@ function sqlInsertNewChannel(details, state,  callback){
 }
 
 /**
- * Get ALL channels
+ * Get ALL details for ALL channels
  */
 function sqlSelectAllChannels(callback){
 	//Find a record
 	var sql = "SELECT * FROM channels";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		if(callback){
+			callback(msg);
+		}
+	});
+}
+
+/**
+ * Get ELTOO check details for ALL channels
+ */
+function sqlSelectEltooChannels(callback){
+	//Find a record
+	var sql = "SELECT hashid, eltooaddress, sequence FROM channels";
 				
 	//Run this..
 	MDS.sql(sql,function(msg){

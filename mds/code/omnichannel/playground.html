@@ -140,15 +140,13 @@
 				
 				}else if(channel.STATE == "STATE_CHANNEL_OPEN_1"){
 					//Add buttons..
-					row += "&nbsp;&nbsp;&nbsp; <button onclick='close(\""+channel.HASHID+"\", \""+channel.USER2MAXIMAID+"\");'>CLOSE</button>"
-						  +"&nbsp;&nbsp;&nbsp; <button onclick='trigger(\""+channel.HASHID+"\");'>TRIGGER</button>"				
-						  +"&nbsp;&nbsp;&nbsp; <button onclick='settle(\""+channel.HASHID+"\");'>SETTLE</button>";
+					row += "&nbsp;&nbsp;&nbsp; <button onclick='close(\""+channel.HASHID+"\", \""+channel.USER2MAXIMAID+"\");'>CLOSE COOP</button>"
+						  +"&nbsp;&nbsp;&nbsp; <button onclick='trigger(\""+channel.HASHID+"\");'>TRIGGER CLOSE</button>";
 						  
 				}else if(channel.STATE == "STATE_CHANNEL_OPEN_2"){
 					//Add buttons..
-					row += "&nbsp;&nbsp;&nbsp; <button onclick='close(\""+channel.HASHID+"\", \""+channel.USER1MAXIMAID+"\");'>CLOSE</button>"				
-							+"&nbsp;&nbsp;&nbsp; <button onclick='trigger(\""+channel.HASHID+"\");'>TRIGGER</button>"				
-							+"&nbsp;&nbsp;&nbsp; <button onclick='settle(\""+channel.HASHID+"\");'>SETTLE</button>";
+					row += "&nbsp;&nbsp;&nbsp; <button onclick='close(\""+channel.HASHID+"\", \""+channel.USER1MAXIMAID+"\");'>CLOSE COOP</button>"				
+							+"&nbsp;&nbsp;&nbsp; <button onclick='trigger(\""+channel.HASHID+"\");'>TRIGGER CLOSE</button>";
 											  
 				}
 				
@@ -251,27 +249,99 @@
 				});		
 			}
 		
+		}else if(msg.event == "NEWBLOCK"){
+					
+			MDS.log("NEW BLOCK "+JSON.stringify(msg.data.txpow.header.block));
+			//return;
+			
+			//RUN CHECKS.. Are there ANY ELTOO COINS..relevant to us..
+			MDS.cmd("coins relevant:true",function(allcoins){
+				var coincount = allcoins.response.length;
+				
+				//Now get all my eltoo coins..
+				sqlSelectEltooChannels(function(eltoocoins){
+						
+					//Are there any ELTOO coins.. 
+					for(var i=0;i<coincount;i++){
+						var coinrow 	= allcoins.response[i];
+						var coinaddress = coinrow.miniaddress;
+						
+						for(var j=0;j<eltoocoins.count;j++){
+							var eltoorow 	  = eltoocoins.rows[j];
+							
+							var eltoohashid   = eltoorow.HASHID;
+							var eltooaddress  = eltoorow.ELTOOADDRESS;
+							var eltoosequence = eltoorow.SEQUENCE;
+							
+							//Are they the same address
+							if(eltooaddress == coinaddress){
+								
+								//Get the Sequence value..
+								var age	= coinrow.age;
+								var seq = MDS.util.getStateVariable(coinrow,101);
+								
+								//IS the SEQUENCE Correct ?
+								if(eltoosequence > seq){
+									
+									//Is it the trigger..
+									if(seq == 0){
+										MDS.log("TRIGGER ELTOO COIN FOUND .. posting latest updatetxn : "+eltoosequence);	
+									}else{
+										MDS.log("INVALID!! ELTOO COIN SEQUENCE "+seq+" should be : "+eltoosequence);	
+										
+									}
+									
+									//If coin old enough (3 blocks) POST the latest UPDATE
+									if(age > 10){
+										//MDS.log("UPDATING!!");
+										//update(eltoohashid);
+									} 	
+								}else{
+									
+									//Collect
+									MDS.log("VALID ELTOO COIN FOUND : "+eltoorow.HASHID+" age:"+age+" sequence:"+seq+" coin:"+JSON.stringify(coinrow));	
+								
+									if(age>10){
+										MDS.log("COLLECTING!!");
+										settle(eltoohashid);
+									}	
+								}
+							}
+						}
+					}
+				});
+			});
+			
 		}else if(msg.event == "NEWCOIN"){
 			
-			MDS.log("NEW COIN:"+JSON.stringify(msg.data));	
+			//MDS.log("NEW COIN:"+JSON.stringify(msg.data));	
 			
 			//Is it a FUNDING coin
 			sqlSelectRelevantFundingCoin(msg.data.coin.miniaddress, function(res){
 				if(res.count>0){
-					MDS.log("FUNDING COIN!! ADDRESS:"+msg.data.coin.miniaddress+" SPENT:"+msg.data.coin.spent);
-					
-					//AND Update the State..
-					 
+					if(msg.data.coin.spent){
+						MDS.log("FUNDING COIN SPENT!! ADDRESS:"+msg.data.coin.miniaddress+" SPENT:"+msg.data.coin.spent);
+					}else{
+						MDS.log("NEW FUNDING COIN!! ADDRESS:"+msg.data.coin.miniaddress+" SPENT:"+msg.data.coin.spent);	
+					}					 
 				}
 			});
 			
 			//Is it an ELTOO coin
 			sqlSelectRelevantEltooCoin(msg.data.coin.miniaddress, function(res){
 				if(res.count>0){
-					MDS.log("ELTOO COIN!! ADDRESS:"+msg.data.coin.miniaddress+" SPENT:"+msg.data.coin.spent);
 					
-					//AND Update the State..
-					 
+					//Update the Database!!
+					if(msg.data.coin.spent){
+						MDS.log("ELTOO COIN SPENT!! ADDRESS:"+msg.data.coin.miniaddress+" SPENT:"+msg.data.coin.spent);
+						
+						updateChannelState(res.rows[0].HASHID, "CHANNEL_TRIGGER_CLOSED", function(sqlrow){
+							showChannels();
+						});	
+						
+					}else{
+						MDS.log("NEW ELTOO COIN!! ADDRESS:"+msg.data.coin.miniaddress+" SPENT:"+msg.data.coin.spent);	
+					}
 				}
 			});
 			
@@ -305,9 +375,25 @@
 					
 					}else if(maxmsg.type == "REQUEST_NEW_CHANNEL"){
 						
-						//Add to the database..
-						sqlInsertNewChannel(maxmsg, "STATE_REQUEST_START_CHANNEL", function(){
-							showChannels();
+						//First check hash
+						if(!checkSafeHashID(maxmsg.hashid)){
+							MDS.log("INVALID unsafe HashID : "+maxmsg.hashid);
+							return;
+						}
+						
+						//CHECK the hashid is UNIQUE - and VALID
+						sqlSelectChannel(maxmsg.hashid,function(sql){
+						
+							//Do we already have this ID
+							if(sql.count > 0){
+								MDS.log("INVALID non-unique HashID : "+maxmsg.hashid);
+								return;
+							}
+							
+							//Add to the database..
+							sqlInsertNewChannel(maxmsg, "STATE_REQUEST_START_CHANNEL", function(){
+								showChannels();
+							});	
 						});
 											
 					}else if(maxmsg.type == "CANCEL_NEW_CHANNEL"){
@@ -378,48 +464,45 @@
 						checkValidMaximaUserState(maximapubkey,maxmsg.hashid, "STATE_REQUEST_ACCEPTED", function(valid){
 							if(valid){
 								
-								//Get the details for this channel
-								sqlSelectChannel(maxmsg.hashid, function(sql){
+								//ok - Lets create the default transactions and addresses OURSELVES - so we can check
+								createDefaultTxnAndAddresses(maxmsg.hashid, function(alldata){
 									
-									//ok - Lets create the default transactions and addresses OURSELVES - so we can check
-									createDefaultTxnAndAddresses(maxmsg.hashid, function(alldata){
+									//check those against the ones sent in the message.. transactionid + addresses MUST be the same / SIGNATURES etc
+									//..
+									
+									//Now - add these addresses to our script database
+									addDefaultScripts(alldata, function(){
 										
-										//check those against the ones sent in the message.. transactionid + addresses MUST be the same / SIGNATURES etc
-										//..
-										
-										//Now - add these addresses to our script database
-										addDefaultScripts(alldata, function(){
+										//And update the SQL
+										updateChannelAddresses(maxmsg.hashid, alldata, function(sqlrow){
 											
-											//And update the SQL
-											updateChannelAddresses(maxmsg.hashid, alldata, function(){
+											//Add YOUR amount to the FUNDING
+											addToFundingTxn(maxmsg.txndata.transactions.fundingtxn, sqlrow.USER2AMOUNT, function(newfundingtxn){
 												
-												//Add YOUR amount to the FUNDING
-												addToFundingTxn(maxmsg.txndata.transactions.fundingtxn, sql.rows[0].USER2AMOUNT, function(newfundingtxn){
+												//Set the Scripts and MMR for the FUNDING
+												scriptsMMRTxn(newfundingtxn,function(mmrtxn){
 													
-													//Set the Scripts and MMR for the FUNDING
-													scriptsMMRTxn(newfundingtxn,function(mmrtxn){
+													//SET this..
+													maxmsg.txndata.transactions.fundingtxn = mmrtxn;
+													
+													//Now - SIGN ALL THREE.. 
+													signAllTxn(maxmsg.txndata, sqlrow.USER2PUBLICKEY, function(signeddata){
 														
-														//SET this..
-														maxmsg.txndata.transactions.fundingtxn = mmrtxn;
-														
-														//Now - SIGN ALL THREE.. 
-														signAllTxn(maxmsg.txndata, sql.rows[0].USER2PUBLICKEY, function(signeddata){
+														//STORE the TRIGGER and CURRENT Settlement
+														updateDefaultChannelTransactions(maxmsg.hashid, signeddata, function(){
 															
-															//STORE the TRIGGER and CURRENT Settlement
-															updateDefaultChannelTransactions(maxmsg.hashid, signeddata, function(){
-																
-																//You now have a half-signed FUNDING.. FULL SIGNED Trigger and Settle
-																sendCreateChannel("CHANNEL_CREATE_2", maximapubkey, maxmsg.hashid, signeddata, function(){
-																	showChannels();
-																});	
-															});
-														});		
-													});
-												});	
+															//You now have a half-signed FUNDING.. FULL SIGNED Trigger and Settle
+															sendCreateChannel("CHANNEL_CREATE_2", maximapubkey, maxmsg.hashid, signeddata, function(){
+																showChannels();
+															});	
+														});
+													});		
+												});
 											});	
-										});
-									});	
-								});
+										});	
+									});
+								});	
+							
 							}
 						});	
 						
