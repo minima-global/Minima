@@ -386,7 +386,7 @@
 						if(payout == "1"){
 							MDS.log("CHANNEL CLOSED ADDRESS:"+msg.data.coin.miniaddress+" SPENT:"+msg.data.coin.spent+" AMOUNT:"+msg.data.coin.amount);
 							
-							//YOU CANT be SURE this is a payout as could be faked..					
+							//MUST still elave the CLOSE channel option.. just in case.. 
 							//updateChannelState(res.rows[0].HASHID, "STATE_CHANNEL_CLOSED", function(sqlrow){
 							//	showChannels();
 							//});	
