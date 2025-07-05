@@ -134,7 +134,7 @@ function spendFundingTxn(sqlrow, callback){
 	"txnoutput id:"+txid+" amount:"+sqlrow.USER2AMOUNT+" address:"+sqlrow.USER2ADDRESS+";"+
 		
 	//Set the state var - its a payout
-	"txnstate id:"+txid+" port:200 value:1;"+
+	"txnstate id:"+txid+" port:200 value:"+sqlrow.HASHID+";"+
 		
 	//SIGN IT.. only half signed at this point
 	"txnsign id:"+txid+" publickey:"+sqlrow.USER1PUBLICKEY+";"+

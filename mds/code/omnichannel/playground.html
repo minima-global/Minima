@@ -374,6 +374,10 @@
 			
 			//Is it one of our Addresses!
 			sqlSelectPayoutCoin(msg.data.coin.miniaddress, function(res){
+				
+				//CYCLE through all the Channels found.. 
+				//.. STATE VAR 200 is the HASHID..
+				
 				if(res.count>0){
 					
 					//Update the Database!!
