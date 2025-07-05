@@ -344,8 +344,8 @@
 			//MDS.log("NEW COIN:"+JSON.striclosengify(msg.data));	
 			
 			//Is it a FUNDING coin
-			sqlSelectRelevantFundingCoin(msg.data.coin.miniaddress, function(res){
-				if(res.count>0){
+			sqlSelectRelevantFundingCoin(msg.data.coin.miniaddress, function(resfund){
+				if(resfund.count>0){
 					if(msg.data.coin.spent){
 						MDS.log("FUNDING COIN SPENT!! ADDRESS:"+msg.data.coin.miniaddress+" SPENT:"+msg.data.coin.spent);						
 					}else{
@@ -355,8 +355,8 @@
 			});
 			
 			//Is it an ELTOO coin
-			sqlSelectRelevantEltooCoin(msg.data.coin.miniaddress, function(res){
-				if(res.count>0){
+			sqlSelectRelevantEltooCoin(msg.data.coin.miniaddress, function(reseltoo){
+				if(reseltoo.count>0){
 					
 					//Update the Database!!
 					if(msg.data.coin.spent){
@@ -372,32 +372,33 @@
 				}
 			});
 			
-			//Is it one of our Addresses!
-			sqlSelectPayoutCoin(msg.data.coin.miniaddress, function(res){
+			//Is it one of our Omnia Addresses
+			if(!msg.data.coin.spent){
 				
-				//CYCLE through all the Channels found.. 
-				//.. STATE VAR 200 is the HASHID..
-				
-				if(res.count>0){
-					
-					//Update the Database!!
-					if(!msg.data.coin.spent){
-						
-						//CHECK THIS IS A PAYOUT - state vars..
-						var payout = msg.data.coin.state["200"];
-						MDS.log("PAYOUT STATE VAR : "+payout+" "+JSON.stringify(msg.data.coin));
-						
-						if(payout == "1"){
-							MDS.log("CHANNEL CLOSED ADDRESS:"+msg.data.coin.miniaddress+" SPENT:"+msg.data.coin.spent+" AMOUNT:"+msg.data.coin.amount);
-							
-							//MUST still elave the CLOSE channel option.. just in case.. 
-							//updateChannelState(res.rows[0].HASHID, "STATE_CHANNEL_CLOSED", function(sqlrow){
-							//	showChannels();
-							//});	
-						}
-					}
+				//Is there a Payout HashID
+				var payout = msg.data.coin.state["200"];
+				if(payout === undefined){
+					//Not a payout channel..
+					return;
 				}
-			});
+				
+				//Get all channels with that coin
+				sqlSelectPayoutCoin(msg.data.coin.miniaddress, function(respayout){
+					
+					//CYCLE through all the Channels found.. 
+					for(var i=0;i<respayout.count;i++){
+						var hashid = respayout.rows[i].HASHID;
+						
+						if(payout == hashid){
+							MDS.log("CHANNEL CLOSED "+hashid+" ADDRESS:"+msg.data.coin.miniaddress+" AMOUNT:"+msg.data.coin.amount);
+															
+							updateChannelState(hashid, "STATE_CHANNEL_CLOSED", function(sqlrow){
+								showChannels();
+							});	
+						}	
+					}
+				});
+			}
 			
 		}else if(msg.event == "MAXIMA"){
 				
