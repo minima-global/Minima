@@ -119,8 +119,8 @@
 				var channel = allchannels.rows[i];
 				
 				var row = i+") ID:"+channel.HASHID+" TOTAL:"+channel.TOTALAMOUNT+" USERNUM:"+channel.USERNUM+"<br>STATE:"+channel.STATE
-				+"<br>AMT1:"+channel.USER1AMOUNT +" U1PUBK:"+trimToSize(channel.USER1PUBLICKEY)+" U1ADDRES:"+trimToSize(channel.USER1ADDRESS)
-				+"<br>AMT2:"+channel.USER2AMOUNT +" U2PUBK:"+trimToSize(channel.USER2PUBLICKEY)+" U2ADDRES:"+trimToSize(channel.USER2ADDRESS)
+				+"<br>AMT1:<b>"+channel.USER1AMOUNT +"</b> U1PUBK:"+trimToSize(channel.USER1PUBLICKEY)+" U1ADDRES:"+trimToSize(channel.USER1ADDRESS)
+				+"<br>AMT2:<b>"+channel.USER2AMOUNT +"</b> U2PUBK:"+trimToSize(channel.USER2PUBLICKEY)+" U2ADDRES:"+trimToSize(channel.USER2ADDRESS)
 				
 				+"<br>SEQUENCE:"+channel.SEQUENCE
 				+"<br>FND:"+channel.FUNDINGADDRESS+" ELTOO:"+channel.ELTOOADDRESS
@@ -140,7 +140,7 @@
 				}else if(channel.STATE == "STATE_CHANNEL_OPEN_1" || channel.STATE == "STATE_CHANNEL_OPEN_2"){
 					//Add buttons..
 					row += "&nbsp;&nbsp;&nbsp; <button onclick='closeChannel(\""+channel.HASHID+"\");'>CLOSE COOP</button>"
-						  +"&nbsp;&nbsp;&nbsp; <button onclick='trigger(\""+channel.HASHID+"\");'>TRIGGER CLOSE</button>"
+						  +"&nbsp;&nbsp;&nbsp; <button onclick='closeTrigger(\""+channel.HASHID+"\");'>TRIGGER CLOSE</button>"
 						  +"&nbsp;&nbsp;&nbsp; <button onclick='sendFunds(\""+channel.HASHID+"\");'>SEND 0.01</button>";
 				}
 				
@@ -252,11 +252,10 @@
 		});
 	}
 	
-	function trigger(hashid){
+	function closeTrigger(hashid){
 		
 		//Publish the Trigger..
 		sqlSelectChannel(hashid, function(sql){
-			
 			postTxn(sql.rows[0].TRIGGERTXN, true, function(postresp){
 				logJSON(postresp,"POST TRIGGER");
 			});
@@ -274,6 +273,16 @@
 		});
 	}
 	
+	function update(hashid){
+				
+		//Publish the Trigger..
+		sqlSelectChannel(hashid, function(sql){
+			postTxn(sql.rows[0].UPDATETXN, true, function(postresp){
+				logJSON(postresp,"POST UPDATE");
+			});
+		});
+	}
+
 	//Main message handler..
 	MDS.init(function(msg){
 		
@@ -301,8 +310,9 @@
 			}
 		
 		}else if(msg.event == "NEWBLOCK"){
-					
-			MDS.log("NEW BLOCK "+JSON.stringify(msg.data.txpow.header.block));
+			
+			var block = +msg.data.txpow.header.block;		
+			MDS.log("NEW BLOCK "+block);
 			//return;
 			
 			//RUN CHECKS.. Are there ANY ELTOO COINS..relevant to us..
@@ -336,17 +346,17 @@
 									
 									//Is it the trigger..
 									if(seq == 0){
-										MDS.log("TRIGGER ELTOO COIN FOUND .. posting latest updatetxn : "+eltoosequence);	
+										MDS.log("TRIGGER ELTOO COIN FOUND .. will post latest updatetxn : "+eltoosequence);	
 									}else{
-										MDS.log("INVALID!! ELTOO COIN SEQUENCE "+seq+" should be : "+eltoosequence);	
-										
+										MDS.log("INVALID!! ELTOO COIN SEQUENCE "+seq+" should be : "+eltoosequence+" ..will post latest update txn");	
 									}
 									
 									//If coin old enough (3 blocks) POST the latest UPDATE
-									if(age > 10){
-										//MDS.log("UPDATING!!");
-										//update(eltoohashid);
-									} 	
+									if(age > 5){
+										MDS.log("POSTING LATEST UPDATE TXN!!");
+										update(eltoohashid);
+									} 
+										
 								}else{
 									
 									//Collect
@@ -657,16 +667,10 @@
 						//Sign it..
 						sqlSelectChannel(maxmsg.hashid,function(sql){
 							
-							var pubkey = "";
-							if(sql.rows[0].STATE == "STATE_CHANNEL_OPEN_1"){
-								
-								//USER 1
-								pubkey = sql.rows[0].USER1PUBLICKEY;
-								
-							}else if(sql.rows[0].STATE == "STATE_CHANNEL_OPEN_2"){
-							
-								//USER 2
-								pubkey = sql.rows[0].USER2PUBLICKEY;
+							var sqlrow = sql.rows[0];
+							var pubkey = sqlrow.USER1PUBLICKEY;
+							if(sqlrow.USERNUM != 1){
+								pubkey = sqlrow.USER2PUBLICKEY;
 							}
 
 							//Now SIGN it
@@ -719,11 +723,13 @@
 								signTxn(maxmsg.updatetxn, pubkey, function(newupdatetxn){
 									
 									//Now store these..
-									updateNewSeqeunceTxn(maxmsg.hashid, maxmsg.sequence, newsettletxn, newupdatetxn, function(newsqlrow){
+									updateNewSeqeunceTxn(maxmsg.hashid, maxmsg.sequence, useramount1, useramount2, newsettletxn, newupdatetxn, function(newsqlrow){
+										
+										//Create the reply message
+										var replymsg = replySendChannelMessage(maxmsg.hashid, maxmsg.sequence, maxmsg.amount, newsettletxn, newupdatetxn);
 										
 										//AND  - send these back to the USER
-										sendMaximaMessage(maximapubkey,
-											replySendChannelMessage(maxmsg.hashid, maxmsg.sequence, maxmsg.amount, newsettletxn, newupdatetxn, function(maxresp){
+										sendMaximaMessage(maximapubkey, replymsg, function(maxresp){
 											
 											showChannels();
 										});
@@ -732,6 +738,37 @@
 							});
 						});
 						
+					}else if(maxmsg.type == "REPLY_SEND_FUNDS"){
+						
+						MDS.log("REPLY SEND FUNDS REC!!");
+																		
+						//DO CHECKS!!
+						//..
+						
+						//Sign it..
+						sqlSelectChannel(maxmsg.hashid,function(sql){
+							
+							var sqlrow = sql.rows[0];
+							
+							var useramount1 = 0;
+							var useramount2 = 0;
+							var amount 		= maxmsg.amount;
+							
+							var pubkey = "";
+							if(sqlrow.USERNUM == 1){
+								useramount1	= +sqlrow.USER1AMOUNT - amount;
+								useramount2	= +sqlrow.USER2AMOUNT + amount;
+								
+							}else{
+								useramount1	= +sqlrow.USER1AMOUNT + amount;
+								useramount2	= +sqlrow.USER2AMOUNT - amount;
+							}
+						
+							//Now store these..
+							updateNewSeqeunceTxn(maxmsg.hashid, maxmsg.sequence, useramount1, useramount2, maxmsg.settletxn, maxmsg.updatetxn, function(newsqlrow){
+								showChannels();
+							});
+						});															
 					}
 				});
 			}
