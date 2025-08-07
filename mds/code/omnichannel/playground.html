@@ -118,7 +118,7 @@
 				
 				var channel = allchannels.rows[i];
 				
-				var row = i+") ID:"+channel.HASHID+" TOTAL:"+channel.TOTALAMOUNT+"<br>STATE:"+channel.STATE
+				var row = i+") ID:"+channel.HASHID+" TOTAL:"+channel.TOTALAMOUNT+" USERNUM:"+channel.USERNUM+"<br>STATE:"+channel.STATE
 				+"<br>AMT1:"+channel.USER1AMOUNT +" U1PUBK:"+trimToSize(channel.USER1PUBLICKEY)+" U1ADDRES:"+trimToSize(channel.USER1ADDRESS)
 				+"<br>AMT2:"+channel.USER2AMOUNT +" U2PUBK:"+trimToSize(channel.USER2PUBLICKEY)+" U2ADDRES:"+trimToSize(channel.USER2ADDRESS)
 				
@@ -137,17 +137,11 @@
 					//Add buttons..
 					row += "&nbsp;&nbsp;&nbsp; <button onclick='deny(\""+channel.HASHID+"\", \""+channel.USER1MAXIMAID+"\");'>DENY</button> <button onclick='accept(\""+channel.HASHID+"\", \""+channel.USER1MAXIMAID+"\");'>ACCEPT</button>"				
 				
-				
-				}else if(channel.STATE == "STATE_CHANNEL_OPEN_1"){
+				}else if(channel.STATE == "STATE_CHANNEL_OPEN_1" || channel.STATE == "STATE_CHANNEL_OPEN_2"){
 					//Add buttons..
-					row += "&nbsp;&nbsp;&nbsp; <button onclick='closeChannel(\""+channel.HASHID+"\", \""+channel.USER2MAXIMAID+"\");'>CLOSE COOP</button>"
-						  +"&nbsp;&nbsp;&nbsp; <button onclick='trigger(\""+channel.HASHID+"\");'>TRIGGER CLOSE</button>";
-						  
-				}else if(channel.STATE == "STATE_CHANNEL_OPEN_2"){
-					//Add buttons..
-					row += "&nbsp;&nbsp;&nbsp; <button onclick='close(\""+channel.HASHID+"\", \""+channel.USER1MAXIMAID+"\");'>CLOSE COOP</button>"				
-							+"&nbsp;&nbsp;&nbsp; <button onclick='trigger(\""+channel.HASHID+"\");'>TRIGGER CLOSE</button>";
-											  
+					row += "&nbsp;&nbsp;&nbsp; <button onclick='closeChannel(\""+channel.HASHID+"\");'>CLOSE COOP</button>"
+						  +"&nbsp;&nbsp;&nbsp; <button onclick='trigger(\""+channel.HASHID+"\");'>TRIGGER CLOSE</button>"
+						  +"&nbsp;&nbsp;&nbsp; <button onclick='sendFunds(\""+channel.HASHID+"\");'>SEND 0.01</button>";
 				}
 				
 				output += row+"<br><br>"
@@ -202,22 +196,59 @@
 	}
 	
 	//Send a message asking for a NEW txn to spend the FUNDING and send the correct amounts back..
-	function closeChannel(hashid, maximaid){
+	function closeChannel(hashid){
 		
 		MDS.log("START COOP Close.. "+hashid);
 		
 		//Get this channel
 		sqlSelectChannel(hashid, function(sql){
 			
+			var sqlrow = sql.rows[0];
+			
+			//Are we USER1 or USER2
+			var othermaximaid = sqlrow.USER2MAXIMAID; 
+			if(sqlrow.USERNUM != 1){
+				othermaximaid = sqlrow.USER1MAXIMAID;
+			}
+			
 			//Create a SPEND txn..
-			spendFundingTxn(sql.rows[0],function(spendtxn){
+			spendFundingTxn(sqlrow, function(spendtxn){
 				
-				sendSpendFunding(hashid, maximaid, spendtxn, function(delivered){
+				sendSpendFunding(hashid, othermaximaid, spendtxn, function(delivered){
 					
 					MDS.log("SPEND FUNDING REQUEST SENT!");
 					
 				});	
 			});
+		});
+	}
+	
+	//SEND 0.01
+	function sendFunds(hashid){
+		
+		var amount = 0.01;
+		
+		//Get this channel
+		sqlSelectChannel(hashid, function(sql){
+			
+			var sqlrow = sql.rows[0];
+			
+			//Are we USER1 or USER2
+			var othermaximaid 	= ""; 
+			
+			if(sqlrow.USERNUM == 1){
+				othermaximaid = sqlrow.USER2MAXIMAID;
+			}else{
+				othermaximaid = sqlrow.USER1MAXIMAID;
+			}
+			
+			//The NEW sequence number
+			var newsequence = +sqlrow.SEQUENCE+1;
+				
+			//Send this message to the USER
+			sendFundsChannel(hashid, othermaximaid, newsequence, amount, function(ackdelivered){
+				MDS.log("Send funds message sent! ");
+			});	
 		});
 	}
 	
@@ -341,7 +372,7 @@
 			
 		}else if(msg.event == "NEWCOIN"){
 			
-			//MDS.log("NEW COIN:"+JSON.striclosengify(msg.data));	
+			MDS.log("NEW COIN:"+JSON.stringify(msg.data));	
 			
 			//Is it a FUNDING coin
 			sqlSelectRelevantFundingCoin(msg.data.coin.miniaddress, function(resfund){
@@ -446,7 +477,7 @@
 							}
 							
 							//Add to the database..
-							sqlInsertNewChannel(maxmsg, "STATE_REQUEST_START_CHANNEL", function(){
+							sqlInsertNewChannel(maxmsg, "STATE_REQUEST_START_CHANNEL", 2, function(){
 								showChannels();
 							});	
 						});
@@ -647,6 +678,60 @@
 								});
 							});
 						});
+					
+					}else if(maxmsg.type == "SEND_FUNDS"){
+						
+						MDS.log("SEND FUNDS REC!!");
+						
+						//DO CHECKS!!
+						//..
+						
+						//Sign it..
+						sqlSelectChannel(maxmsg.hashid,function(sql){
+							
+							var sqlrow = sql.rows[0];
+							
+							var useramount1 = 0;
+							var useramount2 = 0;
+							var amount 		= maxmsg.amount;
+							
+							var pubkey = "";
+							if(sqlrow.USERNUM == 1){
+								
+								//The pubkey to saign with
+								pubkey = sqlrow.USER1PUBLICKEY
+										
+								//Amounts
+								useramount1	= +sqlrow.USER1AMOUNT + amount;
+								useramount2	= +sqlrow.USER2AMOUNT - amount;
+								
+							}else{
+								
+								//The pubkey to saign with
+								pubkey = sqlrow.USER2PUBLICKEY
+																
+								//Amounts
+								useramount1	= +sqlrow.USER1AMOUNT - amount;
+								useramount2	= +sqlrow.USER2AMOUNT + amount;
+							}
+							
+							signTxn(maxmsg.settletxn, pubkey, function(newsettletxn){
+								signTxn(maxmsg.updatetxn, pubkey, function(newupdatetxn){
+									
+									//Now store these..
+									updateNewSeqeunceTxn(maxmsg.hashid, maxmsg.sequence, newsettletxn, newupdatetxn, function(newsqlrow){
+										
+										//AND  - send these back to the USER
+										sendMaximaMessage(maximapubkey,
+											replySendChannelMessage(maxmsg.hashid, maxmsg.sequence, maxmsg.amount, newsettletxn, newupdatetxn, function(maxresp){
+											
+											showChannels();
+										});
+									});													
+								});	
+							});
+						});
+						
 					}
 				});
 			}

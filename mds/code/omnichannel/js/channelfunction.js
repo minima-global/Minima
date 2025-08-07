@@ -18,7 +18,7 @@ function requestNewChannel(maximaid, myamount, requestamount,  callback){
 		
 		if(ackdelivered){
 			//Put these details in the DB
-			sqlInsertNewChannel(details,"STATE_SENT_START_CHANNEL", function(ins){
+			sqlInsertNewChannel(details,"STATE_SENT_START_CHANNEL", 1, function(ins){
 				if(callback){
 					callback(true);
 				}	
@@ -119,6 +119,37 @@ function acceptStartChannel(maximaid, hashid, callback){
 
 function _acceptStartChannel(details){
 	sendMaximaMessage(details.maximaid, replyAcceptMessage(details.hashid));
+}
+
+/**
+ * SEND funds
+ */
+function sendFundsChannel(hashid, maximaid, sequence, amount, callback){
+	
+	//Now create the initial params.. which are called AFTER the ACK / SYNACK messages
+	var details 		= {};
+	details.hashid 		= hashid;
+	details.maximaid 	= maximaid;
+	
+	details.sequence 	= sequence;
+	details.amount 		= amount;
+			
+	//Now try and start a conmnection
+	ackFunctionCall(maximaid, _sendFundsChannel, details, function(ackdelivered){
+		if(callback){
+			callback(ackdelivered);
+		}
+	});
+}
+
+function _sendFundsChannel(details){
+	
+	//Create the NEW txns..
+	newSettleUpdateTxn(details, function(settletxn, updatetxn){
+		
+		//And send this back to them
+		sendMaximaMessage(details.maximaid, sendChannelMessage(details.hashid, details.sequence, details.amount, settletxn, updatetxn));	
+	});
 }
 
 /**

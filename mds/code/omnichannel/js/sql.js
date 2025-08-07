@@ -24,7 +24,8 @@ function createDB(callback){
 				
 				+"  `hashid` varchar(256) NOT NULL, "
 				+"  `state` varchar(256) NOT NULL, "
-				
+				+"  `usernum` int NOT NULL, "
+								
 				+"  `user1name` varchar(1024), "	
 				+"  `user1maximaid` varchar(1024), "	
 				+"  `user1publickey` varchar(256), "
@@ -77,14 +78,14 @@ function createDB(callback){
 /**
  * Add channel details
  */
-function sqlInsertNewChannel(details, state,  callback){
+function sqlInsertNewChannel(details, state, usernum, callback){
 	
 	MDS.log("SQL NEWCHANNEL : "+state+" INSERTED");
 	
 	//Insert this unread message
-	var sql = "INSERT INTO channels(hashid, state, user1maximaid, user1publickey, user1address, user1amount, "
+	var sql = "INSERT INTO channels(hashid, state, usernum, user1maximaid, user1publickey, user1address, user1amount, "
 									+"user2maximaid, user2amount, totalamount, date) "
-			 +"VALUES ('"+details.hashid+"','"+state+"','"
+			 +"VALUES ('"+details.hashid+"','"+state+"',"+usernum+",'"
 				//User details
 				+details.user.maximaid+"','"+details.user.publickey+"','"+details.user.address+"','"+details.useramount
 				
@@ -265,6 +266,29 @@ function updateDefaultChannelTransactions(hashid, alldata, callback){
 	//Run this..
 	MDS.sql(sql,function(msg){
 		logJSON(msg, "UPDATEADDRESS");
+		
+		//Now select the NEW details
+		sqlSelectChannel(hashid, function(select){
+			if(callback){
+				callback(select.rows[0]);	
+			}	
+		});
+	});
+}
+
+/**
+ * Update to a NEW Sequence, Settlement and Update txn
+ */
+function updateNewSeqeunceTxn(hashid, sequence, user1amount, user2amount, settletxn, updatetxn, callback){
+	//Find a record
+	var sql = "UPDATE channels SET settletxn='"+settletxn
+				+"', updatetxn='"+updatetxn+"',"
+				+"user1amount='"+user1amount+"', user2amount='"+user2amount+"',"
+				+" sequence="+sequence+" WHERE hashid='"+hashid+"'";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		logJSON(msg, "UPDATE_SEQUENCE");
 		
 		//Now select the NEW details
 		sqlSelectChannel(hashid, function(select){

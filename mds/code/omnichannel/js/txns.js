@@ -124,6 +124,12 @@ function spendFundingTxn(sqlrow, callback){
 	
 	var txid = randomString();
 	
+	//Which public key do we sign with
+	var signkey = sqlrow.USER1PUBLICKEY;
+	if(sqlrow.USERNUM != 1){
+		signkey = sqlrow.USER2PUBLICKEY;	
+	}
+	
 	var create = "txncreate id:"+txid+";"+
 		
 	//Input the Funding txn address - floating
@@ -137,7 +143,7 @@ function spendFundingTxn(sqlrow, callback){
 	"txnstate id:"+txid+" port:200 value:"+sqlrow.HASHID+";"+
 		
 	//SIGN IT.. only half signed at this point
-	"txnsign id:"+txid+" publickey:"+sqlrow.USER1PUBLICKEY+";"+
+	"txnsign id:"+txid+" publickey:"+signkey+";"+	
 	
 	//Export the txn
 	"txnexport id:"+txid+";"+
@@ -216,6 +222,8 @@ function createSettlementTxn(sequence, eltooaddress, eltooamount, user1amount, u
 	"";
 	
 	MDS.cmd(create,function(fundresp){
+		logJSON(fundresp);
+		
 		callback(fundresp[6].response.data);
 	});
 }
@@ -251,7 +259,64 @@ function createUpdateTxn(sequence, eltooaddress, eltooamount, callback){
 	"";
 	
 	MDS.cmd(create,function(fundresp){
-		callback(fundresp[5]);
+		callback(fundresp[5].response.data);
+	});
+}
+
+/**
+ * Create a new signed settlement and updatetxn
+ */
+function newSettleUpdateTxn(details, callback){
+	
+	//How much are we sending
+	var amount = details.amount;
+	
+	//Get this channel
+	sqlSelectChannel(details.hashid, function(sql){
+		
+		var sqlrow = sql.rows[0];
+		
+		//Are we USER1 or USER2
+		var useramount1 	= 0;
+		var useramount2 	= 0;
+		var pubkey 			= "";
+		
+		if(sqlrow.USERNUM == 1){
+			
+			//Amounts
+			useramount1	= +sqlrow.USER1AMOUNT - amount;
+			useramount2	= +sqlrow.USER2AMOUNT + amount;
+			pubkey		= sqlrow.USER1PUBLICKEY;
+		}else{
+			
+			//Amounts
+			useramount1	= +sqlrow.USER1AMOUNT + amount;
+			useramount2	= +sqlrow.USER2AMOUNT - amount;
+			pubkey		= sqlrow.USER2PUBLICKEY;
+		
+		}
+		
+		//The NEW sequence number
+		var newsequence = sqlrow.SEQUENCE+1;
+		
+		//Create a NEW SETTLEMENT txn..
+		createSettlementTxn(newsequence, sqlrow.ELTOOADDRESS, sqlrow.TOTALAMOUNT, 
+							useramount1, sqlrow.USER1ADDRESS, 
+							useramount2, sqlrow.USER2ADDRESS, function(settletxn){
+			
+			//Create a NEW UPDATE txn..
+			createUpdateTxn(newsequence, sqlrow.ELTOOADDRESS, sqlrow.TOTALAMOUNT, function(updatetxn){
+				
+				//Sign them..
+				signTxn(settletxn, pubkey, function(newsettletxn){
+					signTxn(updatetxn, pubkey, function(newupdatetxn){
+						
+						//Send it all back..
+						callback(newsettletxn, newupdatetxn);		
+					});
+				});
+			});					
+		});
 	});
 }
 

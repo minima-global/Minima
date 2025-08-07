@@ -150,3 +150,39 @@ function spendChannelMessage(hashid, spendfungingtxn ){
 	
 	return msg;	
 }
+
+/**
+ * SEND Funds down a channel
+ */
+function sendChannelMessage(hashid, sequence, amount, settletxn, updatetxn){
+
+	var msg 	={};
+	
+	//Message type
+	msg.type 			= "SEND_FUNDS";
+	msg.hashid			= hashid;
+	msg.sequence		= sequence;
+	msg.amount			= amount;
+	msg.settletxn		= settletxn;
+	msg.updatetxn		= updatetxn;
+	
+	return msg;	
+}
+
+/**
+ * Reply to the SEND Funds message
+ */
+function replySendChannelMessage(hashid, sequence, amount, settletxn, updatetxn){
+
+	var msg 	={};
+	
+	//Message type
+	msg.type 			= "REPLY_SEND_FUNDS";
+	msg.hashid			= hashid;
+	msg.sequence		= sequence;
+	msg.amount			= amount;
+	msg.settletxn		= settletxn;
+	msg.updatetxn		= updatetxn;
+	
+	return msg;	
+}
