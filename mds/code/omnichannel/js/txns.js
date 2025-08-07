@@ -269,7 +269,7 @@ function createUpdateTxn(sequence, eltooaddress, eltooamount, callback){
 function newSettleUpdateTxn(details, callback){
 	
 	//How much are we sending
-	var amount = details.amount;
+	var amount = new Decimal(details.amount);
 	
 	//Get this channel
 	sqlSelectChannel(details.hashid, function(sql){
@@ -277,21 +277,21 @@ function newSettleUpdateTxn(details, callback){
 		var sqlrow = sql.rows[0];
 		
 		//Are we USER1 or USER2
-		var useramount1 	= 0;
-		var useramount2 	= 0;
+		var useramount1 	= new Decimal(0);
+		var useramount2 	= new Decimal(0);
 		var pubkey 			= "";
 		
 		if(sqlrow.USERNUM == 1){
 			
 			//Amounts
-			useramount1	= +sqlrow.USER1AMOUNT - amount;
-			useramount2	= +sqlrow.USER2AMOUNT + amount;
+			useramount1	= new Decimal(sqlrow.USER1AMOUNT).sub(amount);
+			useramount2	= new Decimal(sqlrow.USER2AMOUNT).plus(amount);
 			pubkey		= sqlrow.USER1PUBLICKEY;
 		}else{
 			
 			//Amounts
-			useramount1	= +sqlrow.USER1AMOUNT + amount;
-			useramount2	= +sqlrow.USER2AMOUNT - amount;
+			useramount1	= new Decimal(sqlrow.USER1AMOUNT).plus(amount);
+			useramount2	= new Decimal(sqlrow.USER2AMOUNT).sub(amount);
 			pubkey		= sqlrow.USER2PUBLICKEY;
 		
 		}
@@ -301,8 +301,8 @@ function newSettleUpdateTxn(details, callback){
 		
 		//Create a NEW SETTLEMENT txn..
 		createSettlementTxn(newsequence, sqlrow.ELTOOADDRESS, sqlrow.TOTALAMOUNT, 
-							useramount1, sqlrow.USER1ADDRESS, 
-							useramount2, sqlrow.USER2ADDRESS, function(settletxn){
+							useramount1.toString(), sqlrow.USER1ADDRESS, 
+							useramount2.toString(), sqlrow.USER2ADDRESS, function(settletxn){
 			
 			//Create a NEW UPDATE txn..
 			createUpdateTxn(newsequence, sqlrow.ELTOOADDRESS, sqlrow.TOTALAMOUNT, function(updatetxn){

@@ -226,7 +226,7 @@
 	//SEND 0.01
 	function sendFunds(hashid){
 		
-		var amount = 0.01;
+		var amount = new Decimal(0.01);
 		
 		//Get this channel
 		sqlSelectChannel(hashid, function(sql){
@@ -246,7 +246,7 @@
 			var newsequence = +sqlrow.SEQUENCE+1;
 				
 			//Send this message to the USER
-			sendFundsChannel(hashid, othermaximaid, newsequence, amount, function(ackdelivered){
+			sendFundsChannel(hashid, othermaximaid, newsequence, amount.toString(), function(ackdelivered){
 				MDS.log("Send funds message sent! ");
 			});	
 		});
@@ -706,8 +706,10 @@
 								pubkey = sqlrow.USER1PUBLICKEY
 										
 								//Amounts
-								useramount1	= +sqlrow.USER1AMOUNT + amount;
-								useramount2	= +sqlrow.USER2AMOUNT - amount;
+								useramount1	= new Decimal(sqlrow.USER1AMOUNT).plus(amount);
+								useramount2	= new Decimal(sqlrow.USER2AMOUNT).sub(amount);
+								//useramount1	= +sqlrow.USER1AMOUNT + amount;
+								//useramount2	= +sqlrow.USER2AMOUNT - amount;
 								
 							}else{
 								
@@ -715,15 +717,17 @@
 								pubkey = sqlrow.USER2PUBLICKEY
 																
 								//Amounts
-								useramount1	= +sqlrow.USER1AMOUNT - amount;
-								useramount2	= +sqlrow.USER2AMOUNT + amount;
+								useramount1	= new Decimal(sqlrow.USER1AMOUNT).sub(amount);
+								useramount2	= new Decimal(sqlrow.USER2AMOUNT).plus(amount);
+								//useramount1	= +sqlrow.USER1AMOUNT - amount;
+								//useramount2	= +sqlrow.USER2AMOUNT + amount;
 							}
 							
 							signTxn(maxmsg.settletxn, pubkey, function(newsettletxn){
 								signTxn(maxmsg.updatetxn, pubkey, function(newupdatetxn){
 									
 									//Now store these..
-									updateNewSeqeunceTxn(maxmsg.hashid, maxmsg.sequence, useramount1, useramount2, newsettletxn, newupdatetxn, function(newsqlrow){
+									updateNewSeqeunceTxn(maxmsg.hashid, maxmsg.sequence, useramount1.toString(), useramount2.toString(), newsettletxn, newupdatetxn, function(newsqlrow){
 										
 										//Create the reply message
 										var replymsg = replySendChannelMessage(maxmsg.hashid, maxmsg.sequence, maxmsg.amount, newsettletxn, newupdatetxn);
@@ -756,16 +760,20 @@
 							
 							var pubkey = "";
 							if(sqlrow.USERNUM == 1){
-								useramount1	= +sqlrow.USER1AMOUNT - amount;
-								useramount2	= +sqlrow.USER2AMOUNT + amount;
+								useramount1	= new Decimal(sqlrow.USER1AMOUNT).sub(amount);
+								useramount2	= new Decimal(sqlrow.USER2AMOUNT).plus(amount);
+								//useramount1	= +sqlrow.USER1AMOUNT - amount;
+								//useramount2	= +sqlrow.USER2AMOUNT + amount;
 								
 							}else{
-								useramount1	= +sqlrow.USER1AMOUNT + amount;
-								useramount2	= +sqlrow.USER2AMOUNT - amount;
+								useramount1	= new Decimal(sqlrow.USER1AMOUNT).plus(amount);
+								useramount2	= new Decimal(sqlrow.USER2AMOUNT).sub(amount);
+								//useramount1	= +sqlrow.USER1AMOUNT + amount;
+								//useramount2	= +sqlrow.USER2AMOUNT - amount;
 							}
 						
 							//Now store these..
-							updateNewSeqeunceTxn(maxmsg.hashid, maxmsg.sequence, useramount1, useramount2, maxmsg.settletxn, maxmsg.updatetxn, function(newsqlrow){
+							updateNewSeqeunceTxn(maxmsg.hashid, maxmsg.sequence, useramount1.toString(), useramount2.toString(), maxmsg.settletxn, maxmsg.updatetxn, function(newsqlrow){
 								showChannels();
 							});
 						});															
