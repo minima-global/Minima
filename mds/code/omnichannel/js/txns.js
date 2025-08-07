@@ -297,7 +297,7 @@ function newSettleUpdateTxn(details, callback){
 		}
 		
 		//The NEW sequence number
-		var newsequence = sqlrow.SEQUENCE+1;
+		var newsequence = new Decimal(sqlrow.SEQUENCE).plus(1);
 		
 		//Create a NEW SETTLEMENT txn..
 		createSettlementTxn(newsequence, sqlrow.ELTOOADDRESS, sqlrow.TOTALAMOUNT, 
