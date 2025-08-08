@@ -23,6 +23,7 @@
 	<!-- Load the local JS libs -->
 	<script type="text/javascript" src="./js/decimal.js"></script>
 	<script type="text/javascript" src="./js/jslib.js"></script>
+	<script type="text/javascript" src="./js/utils.js"></script>
 	<script type="text/javascript" src="./js/auth.js"></script>
 	<script type="text/javascript" src="./js/txns.js"></script>
 	<script type="text/javascript" src="./js/sql.js"></script>
@@ -119,6 +120,7 @@
 				var channel = allchannels.rows[i];
 				
 				var row = i+") ID:"+channel.HASHID+" TOTAL:"+channel.TOTALAMOUNT+" USERNUM:"+channel.USERNUM+"<br>STATE:"+channel.STATE
+				+"<br>MYKEY:"+trimToSize(channel.USERPUBLICKEY)
 				+"<br>AMT1:<b>"+channel.USER1AMOUNT +"</b> U1PUBK:"+trimToSize(channel.USER1PUBLICKEY)+" U1ADDRES:"+trimToSize(channel.USER1ADDRESS)
 				+"<br>AMT2:<b>"+channel.USER2AMOUNT +"</b> U2PUBK:"+trimToSize(channel.USER2PUBLICKEY)+" U2ADDRES:"+trimToSize(channel.USER2ADDRESS)
 				
@@ -183,14 +185,21 @@
 	
 	function accept(hashid, maximaid){
 		
+		var userdets = getUserDetails();
+		
 		//Update user details..
-		updateChannelUser2(hashid, getUserDetails(), function(){
-			acceptStartChannel(maximaid, hashid, function(delivered){
-				if(delivered){
-					updateChannelState(hashid, "STATE_REQUEST_ACCEPTED", function(upd){
-						showChannels();		
-					});	
-				}
+		updateChannelUser2(hashid, userdets, function(){
+			
+			//Set YOUR public key
+			updateMyPublicKey(hashid, userdets.publickey, function(){
+				
+				acceptStartChannel(maximaid, hashid, function(delivered){
+					if(delivered){
+						updateChannelState(hashid, "STATE_REQUEST_ACCEPTED", function(upd){
+							showChannels();		
+						});	
+					}
+				});	
 			});	
 		});
 	}
@@ -230,16 +239,24 @@
 		
 		//Get this channel
 		sqlSelectChannel(hashid, function(sql){
-			
 			var sqlrow = sql.rows[0];
 			
 			//Are we USER1 or USER2
 			var othermaximaid 	= ""; 
+			var touser 			= 1;
 			
 			if(sqlrow.USERNUM == 1){
 				othermaximaid = sqlrow.USER2MAXIMAID;
+				touser 			= 2;
 			}else{
 				othermaximaid = sqlrow.USER1MAXIMAID;
+				touser 			= 1;
+			}
+			
+			var newvalues = calculateNewValues(sqlrow, amount, touser);
+			if(!newvalues.valid){
+				MDS.log("TRYING TO SEND INVALID AMOUNT!! "+amount);
+				return;
 			}
 			
 			//The NEW sequence number
@@ -543,7 +560,7 @@
 													alldata.transactions.fundingtxn = mmrtxn;
 													
 													//Sign the TRIGGER and SETTLEMENT.. NOT the FUNDING 
-													signTriggerAndSettlement(alldata, sqlrow.USER1PUBLICKEY, function(signeddata){
+													signTriggerAndSettlement(alldata, sqlrow.USERPUBLICKEY, function(signeddata){
 														
 														//Send back to the OTHER user
 														sendCreateChannel("CHANNEL_CREATE_1", maximapubkey, maxmsg.hashid, signeddata, function(){
@@ -584,7 +601,7 @@
 													maxmsg.txndata.transactions.fundingtxn = mmrtxn;
 													
 													//Now - SIGN ALL THREE.. 
-													signAllTxn(maxmsg.txndata, sqlrow.USER2PUBLICKEY, function(signeddata){
+													signAllTxn(maxmsg.txndata, sqlrow.USERPUBLICKEY, function(signeddata){
 														
 														//STORE the TRIGGER and CURRENT Settlement
 														updateDefaultChannelTransactions(maxmsg.hashid, signeddata, function(){
@@ -669,14 +686,8 @@
 						//Sign it..
 						sqlSelectChannel(maxmsg.hashid,function(sql){
 							
-							var sqlrow = sql.rows[0];
-							var pubkey = sqlrow.USER1PUBLICKEY;
-							if(sqlrow.USERNUM != 1){
-								pubkey = sqlrow.USER2PUBLICKEY;
-							}
-
 							//Now SIGN it
-							signTxn(maxmsg.spendfundingtxn, pubkey, function(fulltxn){
+							signTxn(maxmsg.spendfundingtxn, sqlrow.USERPUBLICKEY, function(fulltxn){
 								
 								//POST IT..
 								postTxn(fulltxn, "true", function(poastreq){
@@ -694,49 +705,28 @@
 						
 						//Sign it..
 						sqlSelectChannel(maxmsg.hashid,function(sql){
-							
 							var sqlrow = sql.rows[0];
 							
-							var useramount1 = 0;
-							var useramount2 = 0;
-							var amount 		= maxmsg.amount;
-							
-							var pubkey = "";
-							if(sqlrow.USERNUM == 1){
-								
-								//The pubkey to saign with
-								pubkey = sqlrow.USER1PUBLICKEY
-										
-								//Amounts
-								useramount1	= new Decimal(sqlrow.USER1AMOUNT).plus(amount);
-								useramount2	= new Decimal(sqlrow.USER2AMOUNT).sub(amount);
-								//useramount1	= +sqlrow.USER1AMOUNT + amount;
-								//useramount2	= +sqlrow.USER2AMOUNT - amount;
-								
-							}else{
-								
-								//The pubkey to saign with
-								pubkey = sqlrow.USER2PUBLICKEY
-																
-								//Amounts
-								useramount1	= new Decimal(sqlrow.USER1AMOUNT).sub(amount);
-								useramount2	= new Decimal(sqlrow.USER2AMOUNT).plus(amount);
-								//useramount1	= +sqlrow.USER1AMOUNT - amount;
-								//useramount2	= +sqlrow.USER2AMOUNT + amount;
+							//Add amounto this user and subtrsct from the other user
+							var newvalues = calculateNewValues(sqlrow, maxmsg.amount, sqlrow.USERNUM);
+							if(!newvalues.valid){
+								MDS.log("INVALID AMOUNT SENT! "+maxmsg.amount);
+								return;
 							}
 							
-							signTxn(maxmsg.settletxn, pubkey, function(newsettletxn){
-								signTxn(maxmsg.updatetxn, pubkey, function(newupdatetxn){
+							signTxn(maxmsg.settletxn, sqlrow.USERPUBLICKEY, function(newsettletxn){
+								signTxn(maxmsg.updatetxn, sqlrow.USERPUBLICKEY, function(newupdatetxn){
 									
 									//Now store these..
-									updateNewSeqeunceTxn(maxmsg.hashid, maxmsg.sequence, useramount1.toString(), useramount2.toString(), newsettletxn, newupdatetxn, function(newsqlrow){
+									updateNewSeqeunceTxn(maxmsg.hashid, maxmsg.sequence, 
+														 newvalues.useramount1.toString(), newvalues.useramount2.toString(), 
+														 newsettletxn, newupdatetxn, function(newsqlrow){
 										
 										//Create the reply message
 										var replymsg = replySendChannelMessage(maxmsg.hashid, maxmsg.sequence, maxmsg.amount, newsettletxn, newupdatetxn);
 										
 										//AND  - send these back to the USER
 										sendMaximaMessage(maximapubkey, replymsg, function(maxresp){
-											
 											showChannels();
 										});
 									});													
@@ -753,29 +743,19 @@
 						
 						//Sign it..
 						sqlSelectChannel(maxmsg.hashid,function(sql){
-							
 							var sqlrow = sql.rows[0];
 							
-							var useramount1 = 0;
-							var useramount2 = 0;
-							var amount 		= maxmsg.amount;
-							
-							var pubkey = "";
+							var newvalues 	= {};
 							if(sqlrow.USERNUM == 1){
-								useramount1	= new Decimal(sqlrow.USER1AMOUNT).sub(amount);
-								useramount2	= new Decimal(sqlrow.USER2AMOUNT).plus(amount);
-								//useramount1	= +sqlrow.USER1AMOUNT - amount;
-								//useramount2	= +sqlrow.USER2AMOUNT + amount;
-								
+								newvalues = calculateNewValues(sqlrow, maxmsg.amount, 2);
 							}else{
-								useramount1	= new Decimal(sqlrow.USER1AMOUNT).plus(amount);
-								useramount2	= new Decimal(sqlrow.USER2AMOUNT).sub(amount);
-								//useramount1	= +sqlrow.USER1AMOUNT + amount;
-								//useramount2	= +sqlrow.USER2AMOUNT - amount;
+								newvalues = calculateNewValues(sqlrow, maxmsg.amount, 1);
 							}
 						
 							//Now store these..
-							updateNewSeqeunceTxn(maxmsg.hashid, maxmsg.sequence, useramount1.toString(), useramount2.toString(), maxmsg.settletxn, maxmsg.updatetxn, function(newsqlrow){
+							updateNewSeqeunceTxn(maxmsg.hashid, maxmsg.sequence, 
+												 newvalues.useramount1.toString(), newvalues.useramount2.toString(), 
+												 maxmsg.settletxn, maxmsg.updatetxn, function(newsqlrow){
 								showChannels();
 							});
 						});															

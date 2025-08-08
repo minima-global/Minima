@@ -19,9 +19,13 @@ function requestNewChannel(maximaid, myamount, requestamount,  callback){
 		if(ackdelivered){
 			//Put these details in the DB
 			sqlInsertNewChannel(details,"STATE_SENT_START_CHANNEL", 1, function(ins){
-				if(callback){
-					callback(true);
-				}	
+				
+				//And set YOUR public key
+				updateMyPublicKey(details.hashid, details.user.publickey, function(){
+					if(callback){
+						callback(true);
+					}	
+				});	
 			});
 		}else{
 			if(callback){

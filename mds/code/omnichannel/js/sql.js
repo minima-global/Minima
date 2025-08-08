@@ -24,7 +24,9 @@ function createDB(callback){
 				
 				+"  `hashid` varchar(256) NOT NULL, "
 				+"  `state` varchar(256) NOT NULL, "
+				
 				+"  `usernum` int NOT NULL, "
+				+"  `userpublickey` varchar(256), "
 								
 				+"  `user1name` varchar(1024), "	
 				+"  `user1maximaid` varchar(1024), "	
@@ -193,6 +195,25 @@ function sqlSelectPayoutCoin(address, callback){
 		if(callback){
 			callback(msg);
 		}	
+	});
+}
+
+/**
+ * Update MY PUBLIC KEY
+ */
+function updateMyPublicKey(hashid, publickey, callback){
+	//Find a record
+	var sql = "UPDATE channels SET userpublickey='"+publickey+"' WHERE hashid='"+hashid+"'";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		
+		//Now select the NEW details
+		sqlSelectChannel(hashid, function(select){
+			if(callback){
+				callback(select.rows[0]);	
+			}	
+		});
 	});
 }
 
