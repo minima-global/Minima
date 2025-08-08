@@ -127,6 +127,7 @@ import org.minima.system.commands.txn.txnpost;
 import org.minima.system.commands.txn.txnscript;
 import org.minima.system.commands.txn.txnsign;
 import org.minima.system.commands.txn.txnstate;
+import org.minima.system.commands.txn.txnview;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -168,7 +169,7 @@ public class CommandRunner {
 			new scripts(), new newscript(), new removescript(),
 			new burn(),
 			
-			new txnbasics(),new txncreate(), new txninput(),new txnlist(), new txnclear(),
+			new txnbasics(),new txncreate(), new txninput(),new txnlist(), new txnclear(), new txnview(),
 			new txnoutput(),new txnstate(),new txnsign(),new txnpost(),new txndelete(),
 			new txnexport(),new txnimport(),new txncheck(), new txnscript(), new txnauto(),
 			new txnaddamount(),new txnlock(), new txnmmr(), new txnmine(), new txnminepost(), new txncoinlock(),

@@ -99,6 +99,7 @@ import org.minima.system.commands.txn.txnpost;
 import org.minima.system.commands.txn.txnscript;
 import org.minima.system.commands.txn.txnsign;
 import org.minima.system.commands.txn.txnstate;
+import org.minima.system.commands.txn.txnview;
 import org.minima.utils.json.JSONObject;
 
 public class help extends Command {
@@ -217,6 +218,7 @@ public class help extends Command {
 			addCommand(details, new txnpost());
 			addCommand(details, new txnimport());
 			addCommand(details, new txnexport());
+			addCommand(details, new txnview());
 			addCommand(details, new txnmine());
 			addCommand(details, new txnminepost());
 			
