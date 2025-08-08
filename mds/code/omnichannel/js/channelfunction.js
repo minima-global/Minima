@@ -128,7 +128,7 @@ function _acceptStartChannel(details){
 /**
  * SEND funds
  */
-function sendFundsChannel(hashid, maximaid, sequence, amount, callback){
+function sendFundsChannel(hashid, maximaid, sequence, amount, touser, callback){
 	
 	//Now create the initial params.. which are called AFTER the ACK / SYNACK messages
 	var details 		= {};
@@ -137,6 +137,7 @@ function sendFundsChannel(hashid, maximaid, sequence, amount, callback){
 	
 	details.sequence 	= sequence;
 	details.amount 		= amount;
+	details.touser 		= touser;
 			
 	//Now try and start a conmnection
 	ackFunctionCall(maximaid, _sendFundsChannel, details, function(ackdelivered){

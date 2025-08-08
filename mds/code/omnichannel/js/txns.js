@@ -273,10 +273,10 @@ function newSettleUpdateTxn(details, callback){
 		var sqlrow = sql.rows[0];
 		
 		var newvalues = {};
-		if(sqlrow.USERNUM == 1){
-			newvalues = calculateNewValues(sqlrow, details.amount, 2);
-		}else{
+		if(details.touser == 1){
 			newvalues = calculateNewValues(sqlrow, details.amount, 1);
+		}else{
+			newvalues = calculateNewValues(sqlrow, details.amount, 2);
 		}
 		
 		//The NEW sequence number

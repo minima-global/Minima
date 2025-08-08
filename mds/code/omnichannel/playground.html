@@ -263,7 +263,7 @@
 			var newsequence = new Decimal(sqlrow.SEQUENCE).plus(1);
 				
 			//Send this message to the USER
-			sendFundsChannel(hashid, othermaximaid, newsequence, amount.toString(), function(ackdelivered){
+			sendFundsChannel(hashid, othermaximaid, newsequence, amount.toString(), touser, function(ackdelivered){
 				MDS.log("Send funds message sent! ");
 			});	
 		});
@@ -701,7 +701,8 @@
 						MDS.log("SEND FUNDS REC!!");
 						
 						//DO CHECKS!!
-						//..
+						//1)create a Transaction and check the transaction id
+						
 						
 						//Sign it..
 						sqlSelectChannel(maxmsg.hashid,function(sql){
