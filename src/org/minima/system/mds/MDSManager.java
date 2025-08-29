@@ -1094,7 +1094,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("news feed", "default/news-2.0.1.mds.zip", allminis, false);
 			checkInstalled("script ide", "default/scriptide-3.1.4.mds.zip", allminis, false);
 			checkInstalled("shout out", "default/shoutout-1.4.1.mds.zip", allminis, false);
-			checkInstalled("soko", "default/soko-1.0.1.mds.zip", allminis, false);
+			checkInstalled("soko", "default/soko-1.1.1.mds.zip", allminis, false);
 			checkInstalled("sql bench", "default/sqlbench-0.6.1.mds.zip", allminis, false);
 			checkInstalled("terminal", "default/terminal-3.1.8.mds.zip", allminis, false);
 			checkInstalled("token studio", "default/tokenstudio-1.5.0.mds.zip", allminis, false);
