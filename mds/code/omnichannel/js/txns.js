@@ -122,7 +122,8 @@ function addToFundingTxn(txndata, addamount, callback){
 
 function spendFundingTxn(sqlrow, callback){
 	
-	var txid = randomString();
+	var txid 	= randomString();
+	var cmdnum 	= 6;
 	
 	//Which public key do we sign with
 	var signkey = sqlrow.USER1PUBLICKEY;
@@ -133,14 +134,23 @@ function spendFundingTxn(sqlrow, callback){
 	var create = "txncreate id:"+txid+";"+
 		
 	//Input the Funding txn address - floating
-	"txninput id:"+txid+" amount:"+sqlrow.TOTALAMOUNT+" address:"+sqlrow.FUNDINGADDRESS+" floating:true;"+
+	"txninput id:"+txid+" amount:"+sqlrow.TOTALAMOUNT+" address:"+sqlrow.FUNDINGADDRESS+" floating:true;";
 	
 	//Output the correct amount to EACH User
-	"txnoutput id:"+txid+" amount:"+sqlrow.USER1AMOUNT+" address:"+sqlrow.USER1ADDRESS+";"+
-	"txnoutput id:"+txid+" amount:"+sqlrow.USER2AMOUNT+" address:"+sqlrow.USER2ADDRESS+";"+
+	if(!new Decimal(sqlrow.USER1AMOUNT).lessThanOrEqualTo(DECIMAL_ZERO)){
+		create +="txnoutput id:"+txid+" amount:"+sqlrow.USER1AMOUNT+" address:"+sqlrow.USER1ADDRESS+";";	
+	}else{
+		cmdnum--;
+	}
+	
+	if(!new Decimal(sqlrow.USER2AMOUNT).lessThanOrEqualTo(DECIMAL_ZERO)){
+		create +="txnoutput id:"+txid+" amount:"+sqlrow.USER2AMOUNT+" address:"+sqlrow.USER2ADDRESS+";";
+	}else{
+		cmdnum--;
+	}
 		
 	//Set the state var - its a payout
-	"txnstate id:"+txid+" port:200 value:"+sqlrow.HASHID+";"+
+	create +="txnstate id:"+txid+" port:200 value:"+sqlrow.HASHID+";"+
 		
 	//SIGN IT.. only half signed at this point
 	"txnsign id:"+txid+" publickey:"+signkey+";"+	
@@ -154,7 +164,7 @@ function spendFundingTxn(sqlrow, callback){
 	"";
 	
 	MDS.cmd(create,function(fundresp){
-		callback(fundresp[6].response.data);
+		callback(fundresp[cmdnum].response.data);
 	}); 	
 }
 
@@ -194,23 +204,32 @@ function createTriggerTxn(amount, fundingaddress, eltooaddress, callback){
  */
 function createSettlementTxn(sequence, eltooaddress, eltooamount, user1amount, user1address, user2amount, user2address, callback){
 	
-	var txid = randomString();
+	var txid 	= randomString();
+	var cmdnum 	= 6;
 		
 	var create = 
 	//Now create a new Settlement
 	"txncreate id:"+txid+";"+
 	
 	//Input the ELTOO coin
-	"txninput id:"+txid+" amount:"+eltooamount+"  address:"+eltooaddress+" floating:true;"+
+	"txninput id:"+txid+" amount:"+eltooamount+"  address:"+eltooaddress+" floating:true;";
 	
-	//Output Funds BACK to User 1
-	"txnoutput id:"+txid+" amount:"+user1amount+" address:"+user1address+";"+
+	//Output Funds BACK to User 1 - if POSITIVE
+	if(!new Decimal(user1amount).lessThanOrEqualTo(DECIMAL_ZERO)){
+		create +="txnoutput id:"+txid+" amount:"+user1amount+" address:"+user1address+";";	
+	}else{
+		cmdnum--;
+	}
 	
-	//Output Funds BACK to User 2
-	"txnoutput id:"+txid+" amount:"+user2amount+" address:"+user2address+";"+
+	//Output Funds BACK to User 2 - if POSITIVE
+	if(!new Decimal(user2amount).lessThanOrEqualTo(DECIMAL_ZERO)){
+		create +="txnoutput id:"+txid+" amount:"+user2amount+" address:"+user2address+";";
+	}else{
+		cmdnum--;
+	}
 	
 	//Set the state var - settlement / sequence number
-	"txnstate id:"+txid+" port:100 value:TRUE;"+
+	create +="txnstate id:"+txid+" port:100 value:TRUE;"+
 	"txnstate id:"+txid+" port:101 value:"+sequence+";"+
 	
 	//Export the txn
@@ -224,7 +243,7 @@ function createSettlementTxn(sequence, eltooaddress, eltooamount, user1amount, u
 	MDS.cmd(create,function(fundresp){
 		//logJSON(fundresp);
 		
-		callback(fundresp[6].response.data);
+		callback(fundresp[cmdnum].response.data);
 	});
 }
 
@@ -317,7 +336,7 @@ function signTxn(txndata, publickey, callback){
 				 "";
 	
 	MDS.cmd(create,function(fundresp){
-		//logJSON(fundresp,"SIGNTXN");
+		logJSON(fundresp,"SIGNTXN");
 		
 		callback(fundresp[2].response.data);
 	}); 
