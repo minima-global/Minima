@@ -448,14 +448,15 @@
 					
 					//Update the Database!!
 					if(msg.data.coin.spent){
-						MDS.log("ELTOO COIN SPENT!! ADDRESS:"+msg.data.coin.miniaddress+" SPENT:"+msg.data.coin.spent);
+						MDS.log("ELTOO COIN SPENT!! ADDRESS:"+msg.data.coin.miniaddress+" STATE:"+JSON.stringify(msg.data.coin.state));
 						
+						//Is it a settlement.. ?
 						//updateChannelState(res.rows[0].HASHID, "STATE_CHANNEL_TRIGGER_CLOSED", function(sqlrow){
 						//	showChannels();
 						//});	
 						
 					}else{
-						MDS.log("NEW ELTOO COIN!! ADDRESS:"+msg.data.coin.miniaddress+" SPENT:"+msg.data.coin.spent);	
+						MDS.log("NEW ELTOO COIN!! ADDRESS:"+msg.data.coin.miniaddress+" STATE:"+JSON.stringify(msg.data.coin.state));	
 					}
 				}
 			});

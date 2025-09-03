@@ -181,7 +181,7 @@ function createTriggerTxn(amount, fundingaddress, eltooaddress, callback){
 	"txninput id:"+txid+" amount:"+amount+" address:"+fundingaddress+" floating:true;"+
 	
 	//Output BACK to the ELTOO
-	"txnoutput id:"+txid+" amount:"+amount+" address:"+eltooaddress+";"+
+	"txnoutput id:"+txid+" storestate:true amount:"+amount+" address:"+eltooaddress+";"+
 	
 	//Set the state var - sequence number
 	"txnstate id:"+txid+" port:101 value:0;"+
@@ -216,14 +216,14 @@ function createSettlementTxn(sequence, eltooaddress, eltooamount, user1amount, u
 	
 	//Output Funds BACK to User 1 - if POSITIVE
 	if(!new Decimal(user1amount).lessThanOrEqualTo(DECIMAL_ZERO)){
-		create +="txnoutput id:"+txid+" amount:"+user1amount+" address:"+user1address+";";	
+		create +="txnoutput id:"+txid+" storestate:true amount:"+user1amount+" address:"+user1address+";";	
 	}else{
 		cmdnum--;
 	}
 	
 	//Output Funds BACK to User 2 - if POSITIVE
 	if(!new Decimal(user2amount).lessThanOrEqualTo(DECIMAL_ZERO)){
-		create +="txnoutput id:"+txid+" amount:"+user2amount+" address:"+user2address+";";
+		create +="txnoutput id:"+txid+" storestate:true amount:"+user2amount+" address:"+user2address+";";
 	}else{
 		cmdnum--;
 	}
@@ -263,7 +263,7 @@ function createUpdateTxn(sequence, eltooaddress, eltooamount, callback){
 	"txninput id:"+txid+" amount:"+eltooamount+" address:"+eltooaddress+" floating:true;"+
 	
 	//Output BACK to the ELTOO
-	"txnoutput id:"+txid+" amount:"+eltooamount+" address:"+eltooaddress+";"+
+	"txnoutput id:"+txid+" amount:"+eltooamount+" storestate:true address:"+eltooaddress+";"+
 	
 	//Set the state var - update / sequence number
 	"txnstate id:"+txid+" port:100 value:FALSE;"+
