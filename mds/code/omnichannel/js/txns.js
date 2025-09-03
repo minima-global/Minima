@@ -149,7 +149,7 @@ function spendFundingTxn(sqlrow, callback){
 		cmdnum--;
 	}
 		
-	//Set the state var - its a payout
+	//Set the HASHID state var - its a payout
 	create +="txnstate id:"+txid+" port:200 value:"+sqlrow.HASHID+";"+
 		
 	//SIGN IT.. only half signed at this point
@@ -202,10 +202,10 @@ function createTriggerTxn(amount, fundingaddress, eltooaddress, callback){
 /**
  * Create a Settlement Txn
  */
-function createSettlementTxn(sequence, eltooaddress, eltooamount, user1amount, user1address, user2amount, user2address, callback){
+function createSettlementTxn(hashid, sequence, eltooaddress, eltooamount, user1amount, user1address, user2amount, user2address, callback){
 	
 	var txid 	= randomString();
-	var cmdnum 	= 6;
+	var cmdnum 	= 7;
 		
 	var create = 
 	//Now create a new Settlement
@@ -231,7 +231,8 @@ function createSettlementTxn(sequence, eltooaddress, eltooamount, user1amount, u
 	//Set the state var - settlement / sequence number
 	create +="txnstate id:"+txid+" port:100 value:TRUE;"+
 	"txnstate id:"+txid+" port:101 value:"+sequence+";"+
-	
+	"txnstate id:"+txid+" port:200 value:"+hashid+";"+
+		
 	//Export the txn
 	"txnexport id:"+txid+";"+
 	
@@ -302,7 +303,7 @@ function newSettleUpdateTxn(details, callback){
 		var newsequence = new Decimal(sqlrow.SEQUENCE).plus(1);
 		
 		//Create a NEW SETTLEMENT txn..
-		createSettlementTxn(newsequence, sqlrow.ELTOOADDRESS, sqlrow.TOTALAMOUNT, 
+		createSettlementTxn(sqlrow.HASHID,newsequence, sqlrow.ELTOOADDRESS, sqlrow.TOTALAMOUNT, 
 							newvalues.useramount1.toString(), sqlrow.USER1ADDRESS, 
 							newvalues.useramount2.toString(), sqlrow.USER2ADDRESS, function(settletxn){
 			
@@ -474,7 +475,7 @@ function createDefaultTransactions(sqlrow, fundingaddress, eltooaddress, callbac
 		createTriggerTxn(sqlrow.TOTALAMOUNT, fundingaddress, eltooaddress, function(triggertxn){
 			
 			//Create the FIRST Settlement
-			createSettlementTxn(0, eltooaddress, sqlrow.TOTALAMOUNT, sqlrow.USER1AMOUNT, sqlrow.USER1ADDRESS, sqlrow.USER2AMOUNT, sqlrow.USER2ADDRESS, function(settletxn){
+			createSettlementTxn(sqlrow.HASHID, 0, eltooaddress, sqlrow.TOTALAMOUNT, sqlrow.USER1AMOUNT, sqlrow.USER1ADDRESS, sqlrow.USER2AMOUNT, sqlrow.USER2ADDRESS, function(settletxn){
 				
 				//And send it all back
 				var txndata = {};
