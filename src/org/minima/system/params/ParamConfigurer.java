@@ -474,8 +474,13 @@ public class ParamConfigurer {
                     .forEach(pk -> System.out.format("%-20s%-15s%n", new Object[] {"-" + pk.key,pk.helpMsg}));
             System.exit(1);
         }),
-    	seed("seed", "Use this seed phrase if starting a new node", (args, configurer) -> {
-            GeneralParams.SEED_PHRASE = args;
+    	seed("seed", "Use this BIP39 seed phrase when starting a new node", (args, configurer) -> {
+            GeneralParams.SEED_PHRASE 		= args;
+            GeneralParams.ANYSEED_PHRASE 	= false;
+        }),
+    	anyseed("anyseed", "Use this seed (ANY phrase and does not have to be BIP39 words) when starting a new node", (args, configurer) -> {
+            GeneralParams.SEED_PHRASE 	 = args;
+            GeneralParams.ANYSEED_PHRASE = true;
         }),
     	megaprune("megaprune", "Prune unspendable addresses from the megammr", (args, configurer) -> {
             if ("true".equals(args)) {

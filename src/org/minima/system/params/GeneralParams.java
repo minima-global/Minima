@@ -268,7 +268,12 @@ public class GeneralParams {
 	/**
 	 * Specify seed phrase on launch!
 	 */
-	public static String SEED_PHRASE = ""; 
+	public static String SEED_PHRASE = "";
+	
+	/**
+	 * Can the seed phrase be anything - or does it HAVE to be BIP39 words
+	 */
+	public static boolean ANYSEED_PHRASE = false;
 	
 	/**
 	 * Do we log peers checker messages
@@ -409,6 +414,7 @@ public class GeneralParams {
 		RPC_AUTHSTYLE 		  = "basic";
 		RPC_PASSWORD 		  = "none";
 		SEED_PHRASE 		  = "";
+		ANYSEED_PHRASE 		  = false;
 		PEERSCHECKER_lOG 	  = false;
 		IS_MEGAMMR 			  = false;
 		NOTIFY_ALL_TXPOW 	  = false;
