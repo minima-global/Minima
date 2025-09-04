@@ -23,13 +23,13 @@ function requestNewChannel(maximaid, myamount, requestamount,  callback){
 				//And set YOUR public key
 				updateMyPublicKey(details.hashid, details.user.publickey, function(){
 					if(callback){
-						callback(true);
+						callback(true,hashid);
 					}	
 				});	
 			});
 		}else{
 			if(callback){
-				callback(false);
+				callback(false,hashid);
 			}	
 		}
 	});

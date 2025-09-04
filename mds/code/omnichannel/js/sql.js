@@ -67,7 +67,7 @@ function createDB(callback){
 					+"  `id` bigint auto_increment, "
 					+"  `hashid` varchar(256) NOT NULL, "
 					+"  `type` varchar(256) NOT NULL, "
-					+"  `message` varchar(1024) NOT NULL, "
+					+"  `message` varchar(4096) NOT NULL, "
 					+"  `date` bigint NOT NULL "
 					+" )";
 					
@@ -334,6 +334,7 @@ function updateFundingSpent(hashid, callback){
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
+		//MDS.log("FUNDING UPDATE:"+JSON.stringify(msg));
 		
 		//Now select the NEW details
 		sqlSelectChannel(hashid, function(select){
@@ -369,13 +370,21 @@ function updatePayoutFound(hashid, amount, callback){
 function updateClosedChannels(callback){
 	
 	//Find a record
-	var checksql = "SELECT state, fundingspent, payoutfound FROM channels WHERE state!='STATE_CHANNEL_CLOSED' AND fundingspent=1 AND payoutfound=1";
+	var checksql = "SELECT hashid, state, fundingspent, payoutfound FROM channels WHERE state!='STATE_CHANNEL_CLOSED' AND fundingspent=1 AND payoutfound=1";
 	
 	//Run this..
 	var closedfound=false;
 	MDS.sql(checksql,function(checkmsg){
 		if(checkmsg.count>0){
 			closedfound=true;
+		}
+		
+		//Insert a LOG for each channel
+		for(var i=0;i<checkmsg.count;i++){
+			MDS.log("CLOSE CHANNEL LOG FOR CHANNEL "+checkmsg.rows[i].HASHID);
+			
+			//LOGS
+			insertLog(checkmsg.rows[i].HASHID,"CHANNEL_CLOSE","The channel was successfully closed")	
 		}
 		
 		//Did we find any channels
@@ -413,7 +422,12 @@ function insertLog(hashid, type, message, callback){
 	});
 }
 
-function getLogs(hashid){
-	
+function getLogs(hashid, callback){
+	var sql = "SELECT * FROM logs WHERE hashid='"+hashid+"'";
+	MDS.sql(sql,function(msg){
+		if(callback){
+			callback(msg);	
+		}
+	});
 }
 
