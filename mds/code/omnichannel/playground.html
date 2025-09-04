@@ -128,8 +128,10 @@
 				+"<br>FND:"+channel.FUNDINGADDRESS+" ELTOO:"+channel.ELTOOADDRESS
 				
 				+"<br>TRIGGERTXN:"+trimToSize(channel.TRIGGERTXN)+" SETTLETXN:"+trimToSize(channel.SETTLETXN)+" UPDATETXN:"+trimToSize(channel.UPDATETXN)
-								
-				+"<br>";
+				
+				+"<br>FUNDSPENT:"+channel.FUNDINGSPENT+" PAYOUTFOUND:"+channel.PAYOUTFOUND+" PAYOUTAMOUNT:"+channel.PAYOUTAMOUNT
+												
+				+"<br><br>";
 				
 				if(channel.STATE == "STATE_SENT_START_CHANNEL"){
 					//Add buttons..
@@ -336,9 +338,18 @@
 		
 		}else if(msg.event == "NEWBLOCK"){
 			
+			//Should only check every 10 blocks..
 			var block = +msg.data.txpow.header.block;		
 			MDS.log("NEW BLOCK "+block);
 			//return;
+			
+			//Check for closed channels
+			updateClosedChannels(function(found){
+				if(found){
+					MDS.log("FOUND closed channels!");
+					showChannels();
+				}
+			});
 			
 			//RUN CHECKS.. Are there ANY ELTOO COINS..relevant to us..
 			MDS.cmd("coins relevant:true",function(allcoins){
@@ -394,13 +405,6 @@
 										settle(eltoohashid);
 									}	
 								}
-								
-								//Update state - if not already done..
-								if(eltoorow.STATE != "STATE_CHANNEL_START_CLOSE"){
-									updateChannelState(eltoohashid, "STATE_CHANNEL_START_CLOSE", function(upd){
-										showChannels();
-									});
-								}
 							}
 						}
 					}
@@ -427,14 +431,19 @@
 					if(msg.data.coin.spent){
 						MDS.log("FUNDING COIN SPENT!! ADDRESS:"+msg.data.coin.miniaddress+" TOTALAMOUNT:"+msg.data.coin.amount+" PAYOUT:"+payout);
 						
-						if(new Decimal(payout).equals(DECIMAL_ZERO)){
-							MDS.log("Channel "+sqlrow.HASHID+" closed as no payout expected!");
+						//Update the table..
+						updateFundingSpent(sqlrow.HASHID, function(){
 							
-							//No COIN will apear so set state to closed
-							updateChannelState(sqlrow.HASHID, "STATE_CHANNEL_CLOSED", function(sqlrow){
-								showChannels();
-							});
-						}
+							//Are we waiting for a payout..
+							if(new Decimal(payout).equals(DECIMAL_ZERO)){
+								MDS.log("Channel "+sqlrow.HASHID+" closed as no payout expected!");
+								
+								//Payout received..
+								updatePayoutFound(sqlrow.HASHID, '0', function(){
+									showChannels();
+								});
+							}	
+						});
 												
 					}else{
 						MDS.log("NEW FUNDING COIN!! ADDRESS:"+msg.data.coin.miniaddress+" TOTALAMOUNT:"+msg.data.coin.amount+" PAYOUT:"+payout);	
@@ -449,12 +458,6 @@
 					//Update the Database!!
 					if(msg.data.coin.spent){
 						MDS.log("ELTOO COIN SPENT!! ADDRESS:"+msg.data.coin.miniaddress+" STATE:"+JSON.stringify(msg.data.coin.state));
-						
-						//Is it a settlement.. ?
-						//updateChannelState(res.rows[0].HASHID, "STATE_CHANNEL_TRIGGER_CLOSED", function(sqlrow){
-						//	showChannels();
-						//});	
-						
 					}else{
 						MDS.log("NEW ELTOO COIN!! ADDRESS:"+msg.data.coin.miniaddress+" STATE:"+JSON.stringify(msg.data.coin.state));	
 					}
@@ -479,10 +482,12 @@
 						var hashid = respayout.rows[i].HASHID;
 						
 						if(payout == hashid){
-							MDS.log("CHANNEL CLOSED "+hashid+" ADDRESS:"+msg.data.coin.miniaddress+" AMOUNT:"+msg.data.coin.amount);
-															
-							updateChannelState(hashid, "STATE_CHANNEL_CLOSED", function(sqlrow){
-								showChannels();
+							
+							MDS.log("PAYOUT FOUND "+hashid+" ADDRESS:"+msg.data.coin.miniaddress+" AMOUNT:"+msg.data.coin.amount);
+							
+							//Payout received..
+							updatePayoutFound(hashid, msg.data.coin.amount, function(){
+								showChannels();	
 							});	
 						}	
 					}

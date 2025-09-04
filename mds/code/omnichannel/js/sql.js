@@ -50,7 +50,12 @@ function createDB(callback){
 				+"  `triggertxn` varchar(256000),"
 				+"  `settletxn` varchar(256000),"								
 				+"  `updatetxn` varchar(256000),"
-												
+				
+				+"  `fundingspent` int NOT NULL default 0,"
+				
+				+"  `payoutfound` int NOT NULL default 0,"
+				+"  `payoutamount` varchar(256) NOT NULL default '0',"
+																				
 				+"  `date` bigint NOT NULL "
 				+" )";
 				
@@ -317,6 +322,78 @@ function updateNewSeqeunceTxn(hashid, sequence, user1amount, user2amount, settle
 				callback(select.rows[0]);	
 			}	
 		});
+	});
+}
+
+/**
+ * Set Funding spent
+ */
+function updateFundingSpent(hashid, callback){
+	//Find a record
+	var sql = "UPDATE channels SET fundingspent=1, state='STATE_CHANNEL_START_CLOSE' WHERE hashid='"+hashid+"'";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		
+		//Now select the NEW details
+		sqlSelectChannel(hashid, function(select){
+			if(callback){
+				callback(select.rows[0]);	
+			}	
+		});
+	});
+}
+
+/**
+ * Set Payout found
+ */
+function updatePayoutFound(hashid, amount, callback){
+	//Find a record
+	var sql = "UPDATE channels SET payoutfound=1, payoutamount='"+amount+"' WHERE hashid='"+hashid+"'";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		
+		//Now select the NEW details
+		sqlSelectChannel(hashid, function(select){
+			if(callback){
+				callback(select.rows[0]);	
+			}	
+		});
+	});
+}
+
+/**
+ * Close channels
+ */
+function updateClosedChannels(callback){
+	
+	//Find a record
+	var checksql = "SELECT state, fundingspent, payoutfound FROM channels WHERE state!='STATE_CHANNEL_CLOSED' AND fundingspent=1 AND payoutfound=1";
+	
+	//Run this..
+	var closedfound=false;
+	MDS.sql(checksql,function(checkmsg){
+		if(checkmsg.count>0){
+			closedfound=true;
+		}
+		
+		//Did we find any channels
+		if(closedfound){
+			//Find a record
+			var sql = "UPDATE channels SET state='STATE_CHANNEL_CLOSED' WHERE fundingspent=1 AND payoutfound=1";
+						
+			//Run this..
+			MDS.sql(sql,function(msg){
+				if(callback){
+					callback(true);	
+				}	
+			});		
+		}else{
+			if(callback){
+				callback(false);	
+			}
+		}
 	});
 }
 

@@ -11,7 +11,7 @@ var DECIMAL_ZERO = new Decimal(0);
 function genRandomHexString() {
     const hex = '0123456789ABCDEF';
     let output = '';
-    for (let i = 0; i < 16; ++i) {
+    for (let i = 0; i < 24; ++i) {
         output += hex.charAt(Math.floor(Math.random() * hex.length));
     }
     return "0x"+output;
