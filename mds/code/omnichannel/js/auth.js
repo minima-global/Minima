@@ -1,5 +1,5 @@
 /**
- * Get you r details for this session..
+ * Get your details for this session..
  */
 
 var AUTH_MAXIMA_NAME 		= "";

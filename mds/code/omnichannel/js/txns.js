@@ -9,6 +9,10 @@ var ELTOO_SCRIPT = "LET randid=[#HASHID] "
 				  +"IF settlement THEN IF sequence EQ prevsequence AND @COINAGE GTE #SETTLETIMEOUT THEN RETURN TRUE ENDIF "
 				  +"ELSE IF sequence GT prevsequence THEN RETURN TRUE ENDIF ENDIF";
 
+//Some DEFAULTS
+var MIN_UPDATE_COINAGE = 5;
+var MIN_SETTLE_COINAGE = 10;
+  
 //Create a randomg txnid.. when creating transactions..
 function randomString() {
     const hex = '0123456789ABCDEF';
@@ -444,7 +448,7 @@ function postTxn(txndata, auto, callback){
 function createDefaultAddresses(sqlrow, callback){
 	
 	//The Timeout in blocks..
-	var timeout = 5;
+	var timeout = MIN_UPDATE_COINAGE;
 	
 	createFundingAddress(sqlrow.HASHID, sqlrow.USER1PUBLICKEY, sqlrow.USER2PUBLICKEY, function(fundingaddress){
 		

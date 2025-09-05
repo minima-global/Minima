@@ -268,7 +268,6 @@ function updateChannelAddresses(hashid, alldata, callback){
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
-		//logJSON(msg, "UPDATEADDRESS");
 		
 		//Now select the NEW details
 		sqlSelectChannel(hashid, function(select){
@@ -289,6 +288,7 @@ function updateDefaultChannelTransactions(hashid, alldata, callback){
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
+		
 		//Now select the NEW details
 		sqlSelectChannel(hashid, function(select){
 			if(callback){
@@ -310,7 +310,6 @@ function updateNewSeqeunceTxn(hashid, sequence, user1amount, user2amount, settle
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
-		logJSON(msg, "UPDATE_SEQUENCE");
 		
 		//Now select the NEW details
 		sqlSelectChannel(hashid, function(select){
@@ -330,7 +329,6 @@ function updateFundingSpent(hashid, callback){
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
-		//MDS.log("FUNDING UPDATE:"+JSON.stringify(msg));
 		
 		//Now select the NEW details
 		sqlSelectChannel(hashid, function(select){
@@ -405,7 +403,13 @@ function updateClosedChannels(callback){
 /**
  * Add a log
 */
+var PRINT_LOGS = true;
 function insertLog(hashid, type, message, callback){
+	
+	//Do we print to stdio
+	if(PRINT_LOGS){
+		MDS.log(hashid+"> "+type+": "+message);
+	}
 	
 	//Insert this unread message
 	var sql = "INSERT INTO logs(hashid, type, message, date) "

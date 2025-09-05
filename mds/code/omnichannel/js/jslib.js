@@ -22,7 +22,7 @@ function jumpToHome(){
 }
 
 function jumpToNewChannel(){
-	location.href="playground.html?uid="+MDS.minidappuid;	
+	location.href="newchannel.html?uid="+MDS.minidappuid;	
 }
 
 function jumpToHelp(){
