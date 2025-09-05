@@ -8,7 +8,6 @@ function wipeDB(callback){
 		MDS.sql("DROP TABLE `logs`",function(msg){
 			MDS.log("DB Wiped..");
 			
-			
 			if(callback){
 				callback();
 			}
@@ -362,9 +361,12 @@ function updatePayoutFound(hashid, amount, callback){
  * Close channels
  */
 function updateClosedChannels(callback){
+
+	//The records we are looking for	
+	var where = " state!='STATE_CHANNEL_CLOSED' AND ((fundingspent=1 AND payoutfound=1) OR state='STATE_REQUEST_CANCELLED' OR state='STATE_REQUEST_DENIED')"
 	
 	//Find a record
-	var checksql = "SELECT hashid, state, fundingspent, payoutfound FROM channels WHERE state!='STATE_CHANNEL_CLOSED' AND fundingspent=1 AND payoutfound=1";
+	var checksql = "SELECT hashid, state, fundingspent, payoutfound FROM channels WHERE "+where;
 	
 	//Run this..
 	var closedfound=false;
@@ -375,8 +377,6 @@ function updateClosedChannels(callback){
 		
 		//Insert a LOG for each channel
 		for(var i=0;i<checkmsg.count;i++){
-			MDS.log("CLOSE CHANNEL LOG FOR CHANNEL "+checkmsg.rows[i].HASHID);
-			
 			//LOGS
 			insertLog(checkmsg.rows[i].HASHID,"CHANNEL_CLOSE","The channel was successfully closed")	
 		}
@@ -384,7 +384,7 @@ function updateClosedChannels(callback){
 		//Did we find any channels
 		if(closedfound){
 			//Find a record
-			var sql = "UPDATE channels SET state='STATE_CHANNEL_CLOSED' WHERE fundingspent=1 AND payoutfound=1";
+			var sql = "UPDATE channels SET state='STATE_CHANNEL_CLOSED' WHERE "+where;
 						
 			//Run this..
 			MDS.sql(sql,function(msg){

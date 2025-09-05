@@ -82,7 +82,7 @@ function denyStartChannel(maximaid, hashid, callback){
 		if(ackdelivered){
 			
 			//Remove the channel..
-			updateChannelState(hashid, "STATE_USER_DENIED", function(){
+			updateChannelState(hashid, "STATE_REQUEST_DENIED", function(){
 				if(callback){
 					callback(true);
 				}
