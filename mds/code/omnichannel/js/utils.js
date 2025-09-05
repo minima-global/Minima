@@ -46,7 +46,7 @@ function decodeStringFromDB(str){
 }
 
 //Check this is a safe and valid hashid
-function checkSafeHashID(hashid, callback){
+function checkSafeHashID(hashid){
 	var regex = new RegExp("^[A-Za-z0-9]*$");
 	return regex.test(hashid); 
 }

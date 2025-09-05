@@ -337,8 +337,7 @@ function signTxn(txndata, publickey, callback){
 				 "";
 	
 	MDS.cmd(create,function(fundresp){
-		logJSON(fundresp,"SIGNTXN");
-		
+		//logJSON(fundresp,"SIGNTXN");
 		callback(fundresp[2].response.data);
 	}); 
 }
@@ -418,8 +417,6 @@ function checkTxn(txndata, callback){
 				 "";
 	
 	MDS.cmd(create,function(fundresp){
-		//logJSON(fundresp,"TXNCHECK");
-		
 		callback(fundresp[1]);
 	}); 
 }
@@ -536,7 +533,75 @@ function addDefaultScripts(alldata, callback){
 	});
 }
 
+/**
+ * Check a data TXN
+ */
+function checkTXN(txndata, callback){
+	
+	//Check is valid HEX
+	if(!checkSafeHashID(txndata)){
+		callback(false);
+		return;
+	}
+	
+	var txid = randomString();
+			
+	var create = "txnimport id:"+txid+" data:"+txndata+";"+
+				 "txncheck id:"+txid+";"+
+				 "txndelete id:"+txid+";";
+	
+	MDS.cmd(create,function(fundresp){
+		callback(fundresp.response[2]);
+	}); 
+}
 
+/**
+ * Check a data TXN
+ */
+function viewTXN(txndata, callback){
+	
+	//Check is valid HEX
+	if(!checkSafeHashID(txndata)){
+		callback(false);
+		return;
+	}
+	
+	MDS.cmd("txnview data:"+txndata,function(fundresp){
+		callback(fundresp.response);
+	}); 
+}
+
+/**
+ * Check the default transactions
+ */
+function checkDefaultTransactions(hashid, sentdata, mydata, callback){
+	
+	//Check the addresses..
+	if( sentdata.addresses.fundingaddress.address != mydata.addresses.fundingaddress.address ||
+		sentdata.addresses.eltooaddress.address != mydata.addresses.eltooaddress.address ){
+			
+		callback(false);
+		return;
+	}
+	
+	//Now check the transactionid..
+	viewTXN(mydata.transactions.triggertxn, function(mytriggertxnjson){
+		viewTXN(mydata.transactions.settletxn, function(mysettletxnjson){
+			viewTXN(sentdata.transactions.triggertxn, function(senttriggertxnjson){
+				viewTXN(sentdata.transactions.settletxn, function(sentsettletxnjson){
+					
+					//Check all the transactionID..
+					if(mytriggertxnjson.transaction.transactionid != senttriggertxnjson.transaction.transactionid ||
+					   mysettletxnjson.transaction.transactionid != sentsettletxnjson.transaction.transactionid){
+						callback(false);
+					}else{
+						callback(true);
+					}		
+				});
+			});
+		});
+	});
+}
 
 
 	

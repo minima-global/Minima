@@ -468,7 +468,7 @@
 			
 		}else if(msg.event == "NEWCOIN"){
 			
-			MDS.log("NEW COIN:"+JSON.stringify(msg.data));	
+			//MDS.log("NEW COIN:"+JSON.stringify(msg.data));	
 			
 			//Is it a FUNDING coin
 			sqlSelectRelevantFundingCoin(msg.data.coin.miniaddress, function(resfund){
@@ -700,42 +700,52 @@
 								//ok - Lets create the default transactions and addresses OURSELVES - so we can check
 								createDefaultTxnAndAddresses(maxmsg.hashid, function(alldata){
 									
-									//check those against the ones sent in the message.. transactionid + addresses MUST be the same / SIGNATURES etc
-									//..
-									
-									//Now - add these addresses to our script database
-									addDefaultScripts(alldata, function(){
+									//check those against the ones sent in the message.. transactionid + addresses etc..
+									checkDefaultTransactions(maxmsg.hashid, maxmsg.txndata, alldata, function(checkresp){
 										
-										//And update the SQL
-										updateChannelAddresses(maxmsg.hashid, alldata, function(sqlrow){
+										//did it pass..
+										if(!checkresp){
+											MDS.log("INVALID START TXNS..!");
 											
-											//Add YOUR amount to the FUNDING
-											addToFundingTxn(maxmsg.txndata.transactions.fundingtxn, sqlrow.USER2AMOUNT, function(newfundingtxn){
+											//LOGS
+											insertLog(maxmsg.hashid, "INVALID_START_TXNS", "Invalid initial txns sent by user!");
+																			
+											return;
+										}
+									
+										//Now - add these addresses to our script database
+										addDefaultScripts(alldata, function(){
+											
+											//And update the SQL
+											updateChannelAddresses(maxmsg.hashid, alldata, function(sqlrow){
 												
-												//Set the Scripts and MMR for the FUNDING
-												scriptsMMRTxn(newfundingtxn,function(mmrtxn){
+												//Add YOUR amount to the FUNDING
+												addToFundingTxn(maxmsg.txndata.transactions.fundingtxn, sqlrow.USER2AMOUNT, function(newfundingtxn){
 													
-													//SET this..
-													maxmsg.txndata.transactions.fundingtxn = mmrtxn;
-													
-													//Now - SIGN ALL THREE.. 
-													signAllTxn(maxmsg.txndata, sqlrow.USERPUBLICKEY, function(signeddata){
+													//Set the Scripts and MMR for the FUNDING
+													scriptsMMRTxn(newfundingtxn,function(mmrtxn){
 														
-														//STORE the TRIGGER and CURRENT Settlement
-														updateDefaultChannelTransactions(maxmsg.hashid, signeddata, function(){
+														//SET this..
+														maxmsg.txndata.transactions.fundingtxn = mmrtxn;
+														
+														//Now - SIGN ALL THREE.. 
+														signAllTxn(maxmsg.txndata, sqlrow.USERPUBLICKEY, function(signeddata){
 															
-															//You now have a half-signed FUNDING.. FULL SIGNED Trigger and Settle
-															sendCreateChannel("CHANNEL_CREATE_2", maximapubkey, maxmsg.hashid, signeddata, function(){
-																showChannels();
-															});	
-														});
-													});		
-												});
+															//STORE the TRIGGER and CURRENT Settlement
+															updateDefaultChannelTransactions(maxmsg.hashid, signeddata, function(){
+																
+																//You now have a half-signed FUNDING.. FULL SIGNED Trigger and Settle
+																sendCreateChannel("CHANNEL_CREATE_2", maximapubkey, maxmsg.hashid, signeddata, function(){
+																	showChannels();
+																});	
+															});
+														});		
+													});
+												});	
 											});	
-										});	
-									});
+										});
+									});								
 								});	
-							
 							}
 						});	
 						
@@ -765,7 +775,6 @@
 										
 										//POST IT!
 										postTxn(signtxn, false, function(postresp){
-											logJSON(postresp,"POST TXN");
 											
 											//IT's DONE! Channel now Open!
 											updateChannelState(maxmsg.hashid,"STATE_CHANNEL_OPEN_1",function(){
@@ -796,11 +805,6 @@
 						
 					}else if(maxmsg.type == "SPEND_CHANNEL"){
 						
-						MDS.log("SPEND CHANNEL REC!!");
-						
-						//DO CHECKS!!
-						//..
-						
 						//Sign it..
 						sqlSelectChannel(maxmsg.hashid,function(sql){
 							var sqlrow = sql.rows[0];
@@ -820,12 +824,6 @@
 					
 					}else if(maxmsg.type == "SEND_FUNDS"){
 						
-						MDS.log("SEND FUNDS REC!!");
-						
-						//DO CHECKS!!
-						//1)create a Transaction and check the transaction id
-						
-						
 						//Sign it..
 						sqlSelectChannel(maxmsg.hashid,function(sql){
 							var sqlrow = sql.rows[0];
@@ -834,6 +832,10 @@
 							var newvalues = calculateNewValues(sqlrow, maxmsg.amount, sqlrow.USERNUM);
 							if(!newvalues.valid){
 								MDS.log("INVALID AMOUNT SENT! "+maxmsg.amount);
+								
+								//LOGS
+								insertLog(maxmsg.hashid, "INVALID_AMOUNT_SENT", "The user tried to send an invalid amount "+maxmsg.amount);
+															
 								return;
 							}
 							
@@ -863,9 +865,6 @@
 					}else if(maxmsg.type == "REPLY_SEND_FUNDS"){
 						
 						MDS.log("REPLY SEND FUNDS REC!!");
-																		
-						//DO CHECKS!!
-						//..
 						
 						//Sign it..
 						sqlSelectChannel(maxmsg.hashid,function(sql){
