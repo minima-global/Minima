@@ -94,43 +94,14 @@
 <br>
 
 <!-- The Hidden Popup -->
-<div id="popup" class="centerDialog" style="display:none;"></div>
+<div id="main_popup" class="centerDialog" style="display:none;"></div>
 
 <script type="text/javascript">
-	
-	//Hidden Popup functions..
-	var POPUP_TEXT = "";
-	function showPopup(showhide, text){
-		//Show popup..
-		if(showhide){
-			popup.style.display="block";	
-		}else{
-			popup.style.display="none";
-		}
-		
-		if(text){
-			POPUP_TEXT 		= text;
-			popup.innerHTML = text;
-		}
-	}
-	
-	var DOTS_INTERVAL;
-	function startPopUpDots(){
-		POPUP_TEXT +="<br><br>";
-		DOTS_INTERVAL = setInterval(function(){
-			showPopup(true, POPUP_TEXT+".");
-		},1000);
-	}
-	
-	function stopPopupDots(){
-		clearInterval(DOTS_INTERVAL);
-	}
 	
 	//The list of Contacts
 	MAXIMA_CONTACTS = [];
 	
 	//Did we get a valid response..
-	var VALID_RESPONSE 	= false;
 	var USERNAME 		= "";
 	
 	//Load the default jquery buttons
@@ -190,15 +161,7 @@
 					startPopUpDots();
 					
 					//Start a timeout..
-					setTimeout(function() { 
-							if(!VALID_RESPONSE){
-								stopPopupDots();
-								
-								//Was not able to contact User.. 
-								showPopup(true, "No response from <b>"+USERNAME+"</b>..<br><br><a href='' >Close Popup..</a>");	
-							}
-						}, 
-						10000);
+					startTimerChecker();
 				});
 			}
 		});
@@ -240,7 +203,6 @@
 					//DB created..
 					MDS.cmd("maxcontacts",function(maxcont){
 						MAXIMA_CONTACTS = maxcont.response.contacts;
-						
 						listContacts();
 					});
 				});		
@@ -270,7 +232,7 @@
 						
 						//Tell the User..
 						stopPopupDots();
-						VALID_RESPONSE = true;
+						VALID_POPUP_RESPONSE = true;
 						showPopup(true, "<b>"+USERNAME+"</b> contacted successfully!<br><br>Please wait for his response..<br><br>"
 										+"<a href='index.html?uid="+MDS.minidappuid+"'>Home</a>");	
 					}					

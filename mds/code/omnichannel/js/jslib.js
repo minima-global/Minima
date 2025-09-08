@@ -35,21 +35,46 @@ function showTitleOnAndroid(){
 	}
 }
 
-//POPUP functions..
-/*function showPopup(showhide, text){
+/*
+ * POPUP functions..
+ */
+ 
+var VALID_POPUP_RESPONSE 	= false;
+var POPUP_TEXT 		= "";
+function showPopup(showhide, text){
 	//Show popup..
 	if(showhide){
-		popup.style.display="block";	
+		main_popup.style.display="block";	
 	}else{
-		popup.style.display="none";
+		main_popup.style.display="none";
 	}
 	
 	if(text){
-		popup.innerHTML = text;
+		POPUP_TEXT = text;
+		main_popup.innerHTML = text;
 	}
 }
 
-function refreshPage(){
-	location.reload();
+function startTimerChecker(){
+	setTimeout(function() { 
+		if(!VALID_POPUP_RESPONSE){
+			stopPopupDots();
+			
+			//Was not able to contact User.. 
+			showPopup(true, "No response from User..<br><br><a href='' >Close Popup..</a>");	
+		}
+	}, 
+	10000);
 }
-*/
+
+var DOTS_INTERVAL;
+function startPopUpDots(){
+	POPUP_TEXT +="<br><br>";
+	DOTS_INTERVAL = setInterval(function(){
+		showPopup(true, POPUP_TEXT+"<b>.</b>");
+	},1000);
+}
+
+function stopPopupDots(){
+	clearInterval(DOTS_INTERVAL);
+}
