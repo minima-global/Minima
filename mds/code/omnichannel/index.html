@@ -207,8 +207,36 @@
 		location.href="logs.html?uid="+MDS.minidappuid+"&hashid="+hashid;
 	}
 	
-	function accept(hashid, maximaid){
+	/*function accept(hashid, maximaid){
 		
+		//Try and accept this..
+		acceptStartChannel(maximaid, hashid, function(delivered){
+			if(!delivered){
+				
+				//LOGS
+				insertLog(hashid, "YOU_ACCEPT_CHANNEL", "Channel was accepted for user "+trimToSize(maximaid));
+				
+				var userdets = getUserDetails();
+				
+				//Update user details..
+				updateChannelUser2(hashid, userdets, function(){
+					
+					//Set YOUR public key
+					updateMyPublicKey(hashid, userdets.publickey, function(){
+						
+						updateChannelState(hashid, "STATE_REQUEST_ACCEPTED", function(upd){
+							showChannels();		
+						});		
+					});	
+				});			
+			}else{
+				alert("Could not contact User..");
+			}
+		});
+	}*/
+	
+	function accept(hashid, maximaid){
+			
 		//LOGS
 		insertLog(hashid, "YOU_ACCEPT_CHANNEL", "Channel was accepted for user "+trimToSize(maximaid));
 		

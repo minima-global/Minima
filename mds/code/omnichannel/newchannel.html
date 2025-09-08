@@ -200,10 +200,14 @@
 				//Do stuff.. from now..	
 				createDB(function(){
 					
-					//DB created..
-					MDS.cmd("maxcontacts",function(maxcont){
-						MAXIMA_CONTACTS = maxcont.response.contacts;
-						listContacts();
+					//Init AUTH details
+					initAuthDetails(function(){
+						
+						//Get maxcontact details
+						MDS.cmd("maxcontacts",function(maxcont){
+							MAXIMA_CONTACTS = maxcont.response.contacts;
+							listContacts();
+						});	
 					});
 				});		
 			}
