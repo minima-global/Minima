@@ -111,6 +111,12 @@ function createFundingTxn(fundingaddress, addamount, total, callback){
 
 function addToFundingTxn(txndata, addamount, callback){
 	
+	//Cannot add this amount..
+	if(new Decimal(addamount).lessThanOrEqualTo(DECIMAL_ZERO)){
+		callback(txndata);
+		return;
+	}
+	
 	var txid = randomString();
 	
 	var create = "txnimport id:"+txid+" data:"+txndata+";"+

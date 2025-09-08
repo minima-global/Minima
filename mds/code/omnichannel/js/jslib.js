@@ -34,3 +34,22 @@ function showTitleOnAndroid(){
 		Android.showTitleBar();
 	}
 }
+
+//POPUP functions..
+/*function showPopup(showhide, text){
+	//Show popup..
+	if(showhide){
+		popup.style.display="block";	
+	}else{
+		popup.style.display="none";
+	}
+	
+	if(text){
+		popup.innerHTML = text;
+	}
+}
+
+function refreshPage(){
+	location.reload();
+}
+*/

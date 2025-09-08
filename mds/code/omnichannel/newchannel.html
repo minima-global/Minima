@@ -70,52 +70,154 @@
 		<tr>
 			<td class=alignright>Maxima Contact :</td>
 			<td>
-			<select>
-				<option value="popo"> POPO </option>
-				<option value="popo"> Paddy </option>
-				<option value="popo"> Bazza </option>
+			<select id=allcontacts>
 			</select>
 			</td>
 		</tr>
 		
 		<tr>
 			<td class=alignright> You will add : </td>
-			<td> <input type="number" value=0> </td>
+			<td> <input id="youadd" type="number" value=0> </td>
 		</tr>
 		
 		<tr>
 			<td class=alignright> They will add : </td>
-			<td> <input type="number" value=0> </td>
+			<td> <input id="theyadd" type="number" value=0> </td>
 		</tr>
 	
 	</table>
 	
 	<br> 
-	<button id="button-startchannel">Start Channel</button>
-	
-
-	<br>
+	<button id="buttonstartchannel">Request New Channel</button><br>
 	<br>
 </div>
 <br>
 
+<!-- The Hidden Popup -->
+<div id="popup" class="centerDialog" style="display:none;"></div>
+
 <script type="text/javascript">
+	
+	//Hidden Popup functions..
+	var POPUP_TEXT = "";
+	function showPopup(showhide, text){
+		//Show popup..
+		if(showhide){
+			popup.style.display="block";	
+		}else{
+			popup.style.display="none";
+		}
+		
+		if(text){
+			POPUP_TEXT 		= text;
+			popup.innerHTML = text;
+		}
+	}
+	
+	var DOTS_INTERVAL;
+	function startPopUpDots(){
+		POPUP_TEXT +="<br><br>";
+		DOTS_INTERVAL = setInterval(function(){
+			showPopup(true, POPUP_TEXT+".");
+		},1000);
+	}
+	
+	function stopPopupDots(){
+		clearInterval(DOTS_INTERVAL);
+	}
+	
+	//The list of Contacts
+	MAXIMA_CONTACTS = [];
+	
+	//Did we get a valid response..
+	var VALID_RESPONSE 	= false;
+	var USERNAME 		= "";
 	
 	//Load the default jquery buttons
 	$(document).ready(function() {
 	    startupButtons();
-	    
-	    $( "#button-startchannel" ).button({
+	
+		//buttonstartchannel.disabled=true;
+		MDS.log("Startup..");
+				    
+	    $( "#buttonstartchannel" ).button({
 			icon: "ui-icon-mail-send",
 			showLabel: true
 		}).click(function(){
 			
+			//Get the number values..	
+			var you,them;
+			try{
+				you 	= getValidDecimalNumber(youadd.value);
+				them 	= getValidDecimalNumber(theyadd.value);				
+			}catch(Error){
+				MDS.log("INVALID Channel amounts! must both be positive : ");
+				alert("Invalid amounts chosen..");
+				return;
+			}
+			
+			//Check the amounts..
+			if(!checkStartValues(you.toString(), them.toString())){
+				MDS.log("INVALID Channel amounts! must both be positive : ");
+				alert("Invalid amounts chosen..");
+				return;
+			}
+			
 			//Start Channel Request..
-			
-			
-			
+			var selcontact 	= allcontacts.selectedIndex;
+			var pubkey 		= MAXIMA_CONTACTS[selcontact].publickey;
+			USERNAME 		= MAXIMA_CONTACTS[selcontact].extradata.name;
+						
+			//Check ok..
+			if(confirm("You are about to ask "+USERNAME+" to start a new payment channel.\n\nYou will add "+you.toString()+" Minima\n\nThey will add "+them.toString()+" Minima")){
+				
+				//SEND IT!
+				requestNewChannel(pubkey, you.toString(), them.toString(),  function(delivered, hashid){
+					if(!delivered){
+						//Could not contact user.. show an immediate message
+						alert("Could not contact "+USERNAME+"\n\nCheck your Maxima connections and try again later..");
+						return;
+					}
+					
+					//LOGS
+					insertLog(hashid, "YOU_REQUEST_CHANNEL", "You requested a channel with "+USERNAME);
+					
+					//Disable button..
+					setTimeout(function() { buttonstartchannel.disabled=true; $('#buttonstartchannel').button("refresh"); }, 50);
+					
+					//Show popup..
+					showPopup(true, "Please wait..<br><br>Contacting <b>"+USERNAME+"</b>..<br><br>Do not close this page..");
+					startPopUpDots();
+					
+					//Start a timeout..
+					setTimeout(function() { 
+							if(!VALID_RESPONSE){
+								stopPopupDots();
+								
+								//Was not able to contact User.. 
+								showPopup(true, "No response from <b>"+USERNAME+"</b>..<br><br><a href='' >Close Popup..</a>");	
+							}
+						}, 
+						10000);
+				});
+			}
 		});
 	});
+	
+	function listContacts(){
+		var contacts = document.getElementById("allcontacts");
+		
+		var maxlen = MAXIMA_CONTACTS.length;
+		for(var i=0;i<maxlen;i++){
+			
+			var contact = MAXIMA_CONTACTS[i];
+			
+			var option = document.createElement("option");
+	    	option.value = contact.publickey;
+	    	option.text  = contact.extradata.name;
+	    	contacts.appendChild(option);
+		}
+	}
 	
 	
 	//Main message handler..
@@ -136,11 +238,44 @@
 				createDB(function(){
 					
 					//DB created..
-					
-					
+					MDS.cmd("maxcontacts",function(maxcont){
+						MAXIMA_CONTACTS = maxcont.response.contacts;
+						
+						listContacts();
+					});
 				});		
 			}
 			
+		}else if(msg.event == "MAXIMA"){
+						
+			//Is it for maxsolo..
+			if(msg.data.application == "thunderpay"){
+				
+				//Relevant data
+				var maximapubkey 	= msg.data.from;
+				
+				//Get the data
+				var datahex	= msg.data.data;
+				
+				//Convert back to JSON
+				convertHEXtoJSON(datahex,function(maxmsg){
+					if(true){
+						logJSON(maxmsg,"MAXIMA RECEIVED FROM "+maximapubkey+" : ");
+					}
+					
+					//What type of Message is it..?
+					if(maxmsg.type == "SYNACK_MESSAGE"){
+						//OK! - we can proceed.. call the function this message represents 
+						synackMessageReceived(maxmsg);
+						
+						//Tell the User..
+						stopPopupDots();
+						VALID_RESPONSE = true;
+						showPopup(true, "<b>"+USERNAME+"</b> contacted successfully!<br><br>Please wait for his response..<br><br>"
+										+"<a href='index.html?uid="+MDS.minidappuid+"'>Home</a>");	
+					}					
+				});
+			}
 		}
 	});
 

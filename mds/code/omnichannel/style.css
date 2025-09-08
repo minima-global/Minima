@@ -51,3 +51,29 @@ body {
 	text-align: right;
 	white-space: nowrap;
 }
+
+.centerDialog {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+	transform: translate(-50%, -50%);
+    width: 280; 
+    height: 150;
+	border: 2px solid #0000ff;
+	border-radius: 10px;
+	background : white;
+	text-align:left;
+	padding:20;
+}
+
+#centerDialogOld {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 200; 
+    height: 80;
+	border: 2px solid #0000ff;
+	border-radius: 10px;
+	background : red;
+}

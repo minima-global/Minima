@@ -248,16 +248,25 @@ MDS.init(function(msg){
 				}
 				
 				//What type of message is it..
-				if(maxmsg.type == "REQUEST_NEW_CHANNEL"){
+				if(maxmsg.type == "ACK_MESSAGE"){
 					
+					//Send a SYN_ACKMESSAGE -  to show we received the ACK message
+					sendMaximaMessage(maximapubkey, synackMessage(maxmsg));
+					
+				}else if(maxmsg.type == "REQUEST_NEW_CHANNEL"){
+
 					//First check hash
 					if(!checkSafeHashID(maxmsg.hashid)){
 						MDS.log("INVALID unsafe HashID : "+JSON.stringify(maxmsg));
 						return;
 					}
 					
+					//Check the amounts.. 16 decimals
+					var you 	= getValidDecimalNumber(maxmsg.useramount);
+					var them 	= getValidDecimalNumber(maxmsg.requestamount);
+					
 					//Check BOTH amounts are positive
-					if(!checkPositiveValues(maxmsg.useramount, maxmsg.requestamount)){
+					if(!checkStartValues(you.toString(), them.toString())){
 						MDS.log("INVALID Channel amounts! must both be positive : "+JSON.stringify(maxmsg));
 						return;
 					}
@@ -487,13 +496,16 @@ MDS.init(function(msg){
 					sqlSelectChannel(maxmsg.hashid,function(sql){
 						var sqlrow = sql.rows[0];
 						
+						//calculate
+						var sendamount = getValidDecimalNumber(maxmsg.amount);
+										
 						//Add amounto this user and subtrsct from the other user
-						var newvalues = calculateNewValues(sqlrow, maxmsg.amount, sqlrow.USERNUM);
+						var newvalues = calculateNewValues(sqlrow, sendamount.toString(), sqlrow.USERNUM);
 						if(!newvalues.valid){
-							MDS.log("INVALID AMOUNT SENT! "+maxmsg.amount);
+							MDS.log("INVALID AMOUNT SENT! "+sendamount.toString());
 							
 							//LOGS
-							insertLog(maxmsg.hashid, "INVALID_AMOUNT_SENT", "The user tried to send an invalid amount "+maxmsg.amount);
+							insertLog(maxmsg.hashid, "INVALID_AMOUNT_SENT", "The user tried to send an invalid amount "+sendamount.toString());
 														
 							return;
 						}
@@ -529,15 +541,18 @@ MDS.init(function(msg){
 					sqlSelectChannel(maxmsg.hashid,function(sql){
 						var sqlrow = sql.rows[0];
 						
+						//calculate
+						var sendamount = getValidDecimalNumber(maxmsg.amount);
+												
 						var newvalues 	= {};
 						if(sqlrow.USERNUM == 1){
-							newvalues = calculateNewValues(sqlrow, maxmsg.amount, 2);
+							newvalues = calculateNewValues(sqlrow, sendamount.toString(), 2);
 						}else{
-							newvalues = calculateNewValues(sqlrow, maxmsg.amount, 1);
+							newvalues = calculateNewValues(sqlrow, sendamount.toString(), 1);
 						}
 					
 						//LOGS
-						insertLog(maxmsg.hashid, "FUNDS_SENT", "You sent "+maxmsg.amount);
+						insertLog(maxmsg.hashid, "FUNDS_SENT", "You sent "+sendamount.toString());
 													
 						//Now store these..
 						updateNewSeqeunceTxn(maxmsg.hashid, maxmsg.sequence, 

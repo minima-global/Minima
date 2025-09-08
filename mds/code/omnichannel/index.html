@@ -170,7 +170,7 @@
 	var MAXIMA_USER2 = "0x30819F300D06092A864886F70D010101050003818D00308189028181008494D460B183563CCE456CAE7A241D234AE7C000126F47EF07F2D9BA0B4964DEA3F4ED3EEFC197100AB7C1D4BEB64A923EB3E2FD0423B9FD8C4B5CA62B35DFCA72F277B550AE15A809BEE1829070A72B203C54A58F07B785A7BFF9AE6AE600E36EF71F2DA174054BE4A3DE79C1397D894428CD47119DB541BEC38CFA0A4428F90203010001";
 	
 	function requestChannel(){
-		requestNewChannel(MAXIMA_USER2, 1, 1.1,  function(delivered, hashid){
+		requestNewChannel(MAXIMA_USER2, 1, 0,  function(delivered, hashid){
 			if(!delivered){
 				//Could not contact user.. show an immediate message
 				alert("Could not contact User..");
@@ -379,12 +379,7 @@
 					}
 					
 					//What type of Message is it..?
-					if(maxmsg.type == "ACK_MESSAGE"){
-						
-						//Send a SYN_ACKMESSAGE -  to show we received the ACK message
-						sendMaximaMessage(maximapubkey, synackMessage(maxmsg));
-						
-					}else if(maxmsg.type == "SYNACK_MESSAGE"){
+					if(maxmsg.type == "SYNACK_MESSAGE"){
 						//OK! - we can proceed.. call the function this message represents 
 						synackMessageReceived(maxmsg);	
 					}					

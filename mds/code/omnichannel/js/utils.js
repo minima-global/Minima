@@ -8,6 +8,9 @@ Decimal.set({precision: 60,defaults: true});
 //A ZERO value
 var DECIMAL_ZERO = new Decimal(0);
 
+//MAX decimal places..
+var MAX_DECIMALS	 = 16;
+
 function genRandomHexString() {
     const hex = '0123456789ABCDEF';
     let output = '';
@@ -88,15 +91,25 @@ function calculateNewValues(sqlrow, amount, touser){
 	return ret;	
 }
 
-function checkPositiveValues(amount1, amount2){
+function checkStartValues(amount1, amount2){
 	 
 	var user1 	= new Decimal(amount1);
 	var user2 	= new Decimal(amount2);
 	
-	if(user1.lessThanOrEqualTo(DECIMAL_ZERO) || user2.lessThanOrEqualTo(DECIMAL_ZERO)){
+	//Check ONE is not zero..
+	if(user1.equals(DECIMAL_ZERO) && user2.equals(DECIMAL_ZERO)){
+		return false; 
+	}
+	
+	///Check neither is below xero
+	if(user1.lessThan(DECIMAL_ZERO) || user2.lessThan(DECIMAL_ZERO)){
 		return false; 
 	}
 		
 	return true;	
+}
+
+function getValidDecimalNumber(num){
+	return new Decimal(num).toDecimalPlaces(MAX_DECIMALS);
 }
 
