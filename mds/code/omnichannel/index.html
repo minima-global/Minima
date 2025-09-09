@@ -54,7 +54,7 @@
 
 <br>
 
-<div id="channelview" style="font-size:12;text-align:left;">
+<div id="channelview" style="font-size:12;text-align:left;max-width:840;">
 	
 	
 </div>
@@ -74,8 +74,9 @@
 		<tr>
 			<td><button class="mybtn" onclick="hideChooseClose();">CANCEL</button></td>
 			<td class="alignRight">
+				<button class="mybtn" onclick="closeTrigger(CLOSE_HASHID);">CLOSE UNILATERAL</button>
 				<button class="mybtn" onclick="closeChannel(CLOSE_HASHID);">CLOSE COOP</button>
-				<button class="mybtn" onclick="closeTrigger(CLOSE_HASHID);">CLOSE UNILATERAL</button></td>	
+			</td>	
 		</tr>	
 	</table> 
 </div>
@@ -145,18 +146,20 @@
 		var ret ="		<div class=channelrow>"
 			+"<table border=0 style='width:100%;padding-left:10;padding-right:10;''>"
 				+"<tr>"
-					+"<td><b>"+getContactFromPublicKey(counterpartymaximaid)+"</b></td>"
-					+"<td class='alignright'><b>"+myamount+"</b> / "+totalamount+"</td>"	
+					+"<td class='largeboldtext'>"+getContactFromPublicKey(counterpartymaximaid)+"</td>"
+					+"<td class='alignright'><span class='largeboldtext'>"+myamount+"</span> / "+totalamount+"</td>"	
 				+"</tr>"	
 				+"<tr>"
-					+"<td class='smallgreytext'>[ "+channeldata.STATE+" ]</td>"	
+					+"<td>&nbsp;</td>"
+					//+"<td class='smallgreytext'>[ "+channeldata.STATE+" ]</td>"	
 				+"</tr>";
 				
 		if(channeldata.STATE == "STATE_SENT_START_CHANNEL"){
 			cancelid = "cancel_"+channeldata.HASHID;
 			
 			ret+="<tr>"
-					+"<td><button class='mybtn' onclick='cancelRequest(\""+channeldata.HASHID+"\", \""+counterpartymaximaid+"\");'>CANCEL</button></td>"		
+					+"<td><button class='mybtn' onclick='cancelRequest(\""+channeldata.HASHID+"\", \""+counterpartymaximaid+"\");'>CANCEL</button></td>"
+					+"<td class='alignright'><button class='mybtn' onclick='showLogs(\""+channeldata.HASHID+"\");'>LOGS</button></td>"		
 				+"</tr>"
 		}else if(channeldata.STATE == "STATE_REQUEST_START_CHANNEL"){
 			//Add buttons..
@@ -182,10 +185,17 @@
 				+"</tr>"	
 			}
 		
-		}else{
+		}else if(channeldata.STATE.startsWith("STATE_CHANNEL_START_CLOSE")){
 			//Add buttons..
 			ret+="<tr>"
 				+"<td>Channel closing.. check logs</td>"
+				+"<td class='alignright'><button class='mybtn' onclick='showLogs(\""+channeldata.HASHID+"\");'>LOGS</button></td>"		
+			+"</tr>"
+		
+		}else{
+			//Add buttons..
+			ret+="<tr>"
+				+"<td>&nbsp;</td>"
 				+"<td class='alignright'><button class='mybtn' onclick='showLogs(\""+channeldata.HASHID+"\");'>LOGS</button></td>"		
 			+"</tr>"
 		}

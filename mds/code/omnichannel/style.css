@@ -15,7 +15,7 @@ body {
 
 .titlebar{
   width:100%;
-  min-width:360;
+  min-width:300;
   height:50px;
   text-align: left;
   max-width:840;
@@ -67,6 +67,11 @@ body {
 	color:#777777;	
 }
 
+.largeboldtext{
+	font-size:18;
+	font-weight:bold;	
+}
+
 .alignright{
 	text-align: right;
 	white-space: nowrap;
@@ -92,7 +97,7 @@ body {
     top: 50%;
 	transform: translate(-50%, -50%);
     width: 400; 
-    height: 280;
+    height: 270;
 	border: 2px solid #0000ff;
 	border-radius: 10px;
 	background : white;

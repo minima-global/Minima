@@ -46,41 +46,26 @@
 </div>
 
 <br>
-	<div class=helpdiv>
+<div class=helpdiv>
 	
 	<div style="padding:8">
 	
 <h3>Help</h3>
 
-Every Minima user has a chainmail address, like an email address.<br>
+ThunderPay is an Omnia channel peer-to-peer payment application.<br>
 <br>
-Users of chainmail can add contacts and send on-chain messages to other chainmail users.<br>
+Payments occur on layer 2 and not on the main base chain.<br>
 <br>
-All messages are signed and end-to-end encrypted so the sender, recipient and content are hidden.<br>
+Setting up and closing a payment channel both require an on-chain transaction<br>
 <br>
-Each message costs 0.001 Minima<br>
+Every 'Send' during that is performed off-chain<br>
 <br>
-When using ChainMail in <b>READ</b> mode, you must approve transactions before they will be sent.<br>
-<br>
-
-<h3>Technical Overview</h3>
-
-A user's chain mail address is an RSA public key.<br>
-<br> 
-A 'chainmail' message is a transaction sent to the chainmail address : 0x434841494E4D41494C<br>
-<br>
-The transaction includes an encrypted data packet that ONLY the recipient can decrypt.. no details about the message, recipient or sender are public.<br>
-<br>
-All chainmail Users try to decrypt the message.. but only the intended recipient succeeds.<br>
-<br>
-The decrypted message includes the sender public key, a message and a signature.<br>
-<br>
-Simple and secure.<br>
+You can only send and receive as much as is in the channel in total.<br>
 <br>
 
 	</div>
 
-	</div>
+</div>
 
 
 <script type="text/javascript">
