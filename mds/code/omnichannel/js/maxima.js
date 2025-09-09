@@ -2,7 +2,7 @@
  * MAXIMA message handling
  */
 
-var MAXIMA_LOGS = false;
+var MAXIMA_LOGS = true;
 
 /**
  * Utility functions

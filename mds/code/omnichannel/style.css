@@ -47,6 +47,26 @@ body {
   border-spacing:8;
 }
 
+.channelrow{
+  width:100%;
+  min-width:360;
+  text-align: left;
+  
+  max-width:840;
+  border: 2px solid #0000ff;
+  border-radius: 10px;
+  
+  border-spacing:8;
+  
+  padding-top:10;
+  padding-bottom:10;
+}
+
+.smallgreytext{
+	font-size:10;
+	color:#777777;	
+}
+
 .alignright{
 	text-align: right;
 	white-space: nowrap;
@@ -66,14 +86,22 @@ body {
 	padding:20;
 }
 
-#centerDialogOld {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 200; 
-    height: 80;
-	border: 2px solid #0000ff;
-	border-radius: 10px;
-	background : red;
+/* Style buttons */
+.mybtn {
+  background-color: DodgerBlue; /* Blue background */
+  border: none; /* Remove borders */
+  border-radius: 10px;
+  color: white; /* White text */
+  padding: 6px 8px; /* Some padding */
+  font-size: 12px; /* Set a font size */
+  cursor: pointer; /* Mouse pointer on hover */
+}
+
+/* Darker background on mouse-over */
+.mybtn:hover {
+  background-color: RoyalBlue;
+}
+
+.mybtn:active {
+  background-color: red;
 }

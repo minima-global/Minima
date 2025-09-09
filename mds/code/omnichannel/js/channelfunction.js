@@ -79,20 +79,13 @@ function denyStartChannel(maximaid, hashid, callback){
 	//Now try and start a conmnection
 	ackFunctionCall(maximaid, _denyStartChannel, details, function(ackdelivered){
 		
-		if(ackdelivered){
-			
-			//Remove the channel..
-			updateChannelState(hashid, "STATE_REQUEST_DENIED", function(){
-				if(callback){
-					callback(true);
-				}
-			});
-			
-		}else{
+		//Remove the channel..
+		updateChannelState(hashid, "STATE_REQUEST_DENIED", function(){
 			if(callback){
-				callback(false);
-			}	
-		}
+				callback(ackdelivered);
+			}
+		});
+		
 	});
 }
 

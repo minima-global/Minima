@@ -126,6 +126,36 @@ function sqlSelectAllChannels(callback){
 }
 
 /**
+ * Get details for open channels
+ */
+function sqlSelectAllOpenChannels(callback){
+	//Find a record
+	var sql = "SELECT * FROM channels WHERE state !='STATE_CHANNEL_CLOSED'";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		if(callback){
+			callback(msg);
+		}
+	});
+}
+
+/**
+ * Get details for closed channels
+ */
+function sqlSelectAllClosedChannels(callback){
+	//Find a record
+	var sql = "SELECT * FROM channels WHERE state ='STATE_CHANNEL_CLOSED'";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		if(callback){
+			callback(msg);
+		}
+	});
+}
+
+/**
  * Get ELTOO check details for ALL channels
  */
 function sqlSelectEltooChannels(callback){

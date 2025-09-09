@@ -68,6 +68,14 @@
 
 <script type="text/javascript">
 	
+	//List of your contacts
+	var MAX_CONTACTS 		= [];
+	var CHANNELS_CLOSING 	= [];
+	
+	function getContactFromPublicKey(pubkey){
+		return "popo";
+	}
+	
 	//Load the default jquery buttons
 	$(document).ready(function() {
 	    startupButtons();
@@ -76,36 +84,19 @@
 			icon: "ui-icon-mail-send",
 			showLabel: true
 		}).click(function(){
-			
 			//Start Channel Request..
-			
-			
-			
 		});
 	});
 	
 	function wipedb(){
 		wipeDB(function(){
-			MDS.log("DB WIPED!");
-			//Do stuff.. from now..	
 			createDB(function(){
-				MDS.log("DB CREATED!");
-				
 				location.reload()
-				//showChannels();
-				
 			});
 		});
 	}
 	
-	function logAllData(){
-		//Get the DB
-		sqlSelectAllChannels(function(allchannels){
-			logJSON(allchannels,"CHANNEL DB");	
-		});		
-	}  
-	
-	function showChannels(){
+	/*function showChannels(){
 		sqlSelectAllChannels(function(allchannels){
 			
 			var output = "";
@@ -160,6 +151,136 @@
 				
 			channelview.innerHTML = output;
 		});		
+	}*/
+	
+	function createRow(channeldata){
+		
+		//Which user are we..
+		var counterpartymaximaid = "";
+		var totalamount = channeldata.TOTALAMOUNT;
+		var myamount = "";
+		
+		if(channeldata.USERNUM == "1"){
+			counterpartymaximaid = channeldata.USER2MAXIMAID;
+			myamount			 = channeldata.USER1AMOUNT;
+		}else{
+			counterpartymaximaid = channeldata.USER1MAXIMAID
+			myamount			 = channeldata.USER2AMOUNT;
+		}
+		
+		//Convert Datetime
+		var date = new Date(+channeldata.DATE);
+		
+		//Button id
+		var cancelid = "";
+		
+		//The view
+		var ret ="		<div class=channelrow>"
+			+"<table border=1 style='width:100%;padding-left:10;padding-right:10;''>"
+				+"<tr>"
+					+"<td><b>"+getContactFromPublicKey(counterpartymaximaid)+"</b></td>"
+					+"<td class='alignright'><b>"+myamount+"</b> / "+totalamount+"</td>"	
+				+"</tr>"	
+				+"<tr>"
+					+"<td class='smallgreytext'>[ "+channeldata.STATE+" ]</td>"	
+				+"</tr>";
+				
+		if(channeldata.STATE == "STATE_SENT_START_CHANNEL"){
+			cancelid = "cancel_"+channeldata.HASHID;
+			
+			ret+="<tr>"
+					+"<td><button class='mybtn' onclick='cancelRequest(\""+channeldata.HASHID+"\", \""+counterpartymaximaid+"\");'>CANCEL</button></td>"		
+				+"</tr>"
+		}else if(channeldata.STATE == "STATE_REQUEST_START_CHANNEL"){
+			//Add buttons..
+			ret+="<tr>"
+				+"<td>Channel request..</td>"
+				+"<td class='alignright'> <button class='mybtn' onclick='deny(\""+channeldata.HASHID+"\", \""+counterpartymaximaid+"\");'>DENY</button> "
+										+"<button class='mybtn' onclick='accept(\""+channeldata.HASHID+"\", \""+counterpartymaximaid+"\");'>ACCEPT</button> </td>"		
+			+"</tr>"
+		}else if(channeldata.STATE.startsWith("STATE_CHANNEL_OPEN")){
+			
+			//Are we closing this channel ?
+			if(CHANNELS_CLOSING.includes(channeldata.HASHID)){
+				ret+="<tr>"
+					+"<td>Closing channel.. pls wait..</td>"		
+				+"</tr>"
+			}else{
+				//Add buttons..
+				ret+="<tr>"
+					+"<td>"
+						+"<button class='mybtn' onclick='closeChannel(\""+channeldata.HASHID+"\");'>CLOSE COOP</button>&nbsp;"
+						+"<button class='mybtn' onclick='closeTrigger(\""+channeldata.HASHID+"\");'>TRIGGER CLOSE</button>"
+					+"</td>"
+					+"<td class='alignright'><button class='mybtn' onclick='showLogs(\""+channeldata.HASHID+"\");'>LOGS</button>&nbsp;<button class='mybtn'>SEND</button></td>"		
+				+"</tr>"	
+			}
+		}
+				
+		//And clean up
+		ret+="</table></div>";
+		
+		return ret;
+	}
+	
+	function showChannels(){
+		sqlSelectAllOpenChannels(function(allchannels){
+			
+			var output = "";
+			
+			var length = allchannels.rows.length;
+			for(var i=0;i<length;i++){
+				
+				var channel = allchannels.rows[i];
+				
+				var row = createRow(channel);
+				
+				/*var row = i+") ID:"+channel.HASHID+" TOTAL:"+channel.TOTALAMOUNT+" USERNUM:"+channel.USERNUM+"<br>STATE:"+channel.STATE
+				+"<br>MYKEY:"+trimToSize(channel.USERPUBLICKEY)
+				+"<br>AMT1:<b>"+channel.USER1AMOUNT +"</b> U1PUBK:"+trimToSize(channel.USER1PUBLICKEY)+" U1ADDRES:"+trimToSize(channel.USER1ADDRESS)
+				+"<br>AMT2:<b>"+channel.USER2AMOUNT +"</b> U2PUBK:"+trimToSize(channel.USER2PUBLICKEY)+" U2ADDRES:"+trimToSize(channel.USER2ADDRESS)
+				
+				+"<br>SEQUENCE:"+channel.SEQUENCE
+				+"<br>FND:"+channel.FUNDINGADDRESS+" ELTOO:"+channel.ELTOOADDRESS
+				
+				+"<br>TRIGGERTXN:"+trimToSize(channel.TRIGGERTXN)+" SETTLETXN:"+trimToSize(channel.SETTLETXN)+" UPDATETXN:"+trimToSize(channel.UPDATETXN)
+				
+				+"<br>FUNDSPENT:"+channel.FUNDINGSPENT+" PAYOUTFOUND:"+channel.PAYOUTFOUND+" PAYOUTAMOUNT:"+channel.PAYOUTAMOUNT
+												
+				+"<br><br>";
+				
+				if(channel.STATE == "STATE_SENT_START_CHANNEL"){
+					//Add buttons..
+					row += "&nbsp;&nbsp;&nbsp; <button onclick='cancelRequest(\""+channel.HASHID+"\", \""+channel.USER2MAXIMAID+"\");'>CANCEL</button>"
+										
+				}else if(channel.STATE == "STATE_REQUEST_START_CHANNEL"){
+					//Add buttons..
+					row += "&nbsp;&nbsp;&nbsp; <button onclick='deny(\""+channel.HASHID+"\", \""+channel.USER1MAXIMAID+"\");'>DENY</button> <button onclick='accept(\""+channel.HASHID+"\", \""+channel.USER1MAXIMAID+"\");'>ACCEPT</button>"				
+				
+				}else if(channel.STATE == "STATE_CHANNEL_OPEN_1"){
+					//Add buttons..
+					row += "&nbsp;&nbsp;&nbsp; <button onclick='closeChannel(\""+channel.HASHID+"\");'>CLOSE COOP</button>"
+						  +"&nbsp;&nbsp;&nbsp; <button onclick='closeTrigger(\""+channel.HASHID+"\");'>TRIGGER CLOSE</button>"
+						  +"&nbsp;&nbsp;&nbsp; <button onclick='sendFunds(\""+channel.HASHID+"\",\"0.01\");'>SEND 0.01</button>"
+						  +"&nbsp;&nbsp;&nbsp; <button onclick='sendFunds(\""+channel.HASHID+"\",\""+channel.USER1AMOUNT+"\");'>SEND ALL</button>";
+						  
+				}else if(channel.STATE == "STATE_CHANNEL_OPEN_2"){
+  					//Add buttons..
+  					row += "&nbsp;&nbsp;&nbsp; <button onclick='closeChannel(\""+channel.HASHID+"\");'>CLOSE COOP</button>"
+  						  +"&nbsp;&nbsp;&nbsp; <button onclick='closeTrigger(\""+channel.HASHID+"\");'>TRIGGER CLOSE</button>"
+  						  +"&nbsp;&nbsp;&nbsp; <button onclick='sendFunds(\""+channel.HASHID+"\",0.01);'>SEND 0.01</button>"
+						  +"&nbsp;&nbsp;&nbsp; <button onclick='sendFunds(\""+channel.HASHID+"\",\""+channel.USER2AMOUNT+"\");'>SEND ALL</button>";  				
+				}
+				
+				//Always add the LOGS
+				row+="&nbsp;&nbsp;&nbsp; <button onclick='showLogs(\""+channel.HASHID+"\");'>LOGS</button>"
+				*/
+				
+				output += row+"<br>"
+			}
+				
+			channelview.innerHTML = output;
+		});		
 	}
 	
 	//TESTER
@@ -195,11 +316,16 @@
 	
 	function deny(hashid, maximaid){
 		
-		//LOGS
-		insertLog(hashid, "YOU_DENY_CHANNEL", "Channel was denied for user "+trimToSize(maximaid));
-		
 		denyStartChannel(maximaid, hashid, function(delivered){
+			
+			//LOGS
+			insertLog(hashid, "YOU_DENY_CHANNEL", "Channel was denied for user "+trimToSize(maximaid));
+						
 			showChannels();
+			
+			if(!delivered){
+				alert("Channel request denied.. but could not contact User");				
+			}
 		});
 	}
 	
@@ -207,39 +333,8 @@
 		location.href="logs.html?uid="+MDS.minidappuid+"&hashid="+hashid;
 	}
 	
-	/*function accept(hashid, maximaid){
-		
-		//Try and accept this..
-		acceptStartChannel(maximaid, hashid, function(delivered){
-			if(!delivered){
-				
-				//LOGS
-				insertLog(hashid, "YOU_ACCEPT_CHANNEL", "Channel was accepted for user "+trimToSize(maximaid));
-				
-				var userdets = getUserDetails();
-				
-				//Update user details..
-				updateChannelUser2(hashid, userdets, function(){
-					
-					//Set YOUR public key
-					updateMyPublicKey(hashid, userdets.publickey, function(){
-						
-						updateChannelState(hashid, "STATE_REQUEST_ACCEPTED", function(upd){
-							showChannels();		
-						});		
-					});	
-				});			
-			}else{
-				alert("Could not contact User..");
-			}
-		});
-	}*/
-	
 	function accept(hashid, maximaid){
 			
-		//LOGS
-		insertLog(hashid, "YOU_ACCEPT_CHANNEL", "Channel was accepted for user "+trimToSize(maximaid));
-		
 		var userdets = getUserDetails();
 		
 		//Update user details..
@@ -250,9 +345,17 @@
 				
 				acceptStartChannel(maximaid, hashid, function(delivered){
 					if(delivered){
+						
+						//LOGS
+						insertLog(hashid, "YOU_ACCEPT_CHANNEL", "Channel was accepted for user "+trimToSize(maximaid));
+						
+						//Update channel state..		
 						updateChannelState(hashid, "STATE_REQUEST_ACCEPTED", function(upd){
 							showChannels();		
 						});	
+						
+					}else{
+						alert("Could not contact User..");
 					}
 				});	
 			});	
@@ -261,6 +364,20 @@
 	
 	//Send a message asking for a NEW txn to spend the FUNDING and send the correct amounts back..
 	function closeChannel(hashid){
+		
+		//First Check..
+		if(!confirm("Are you sure you wish to close this channel ?")){
+			return;
+		}
+		
+		
+		//Now set this as closing..
+		CHANNELS_CLOSING.push(hashid);
+		
+		//And refresh the list..
+		showChannels();
+		
+		return;
 		
 		//Get this channel
 		sqlSelectChannel(hashid, function(sql){
@@ -275,6 +392,7 @@
 					
 					if(+coinage<3){
 						alert("Funding coin age too young ("+coinage+").. pls wait a few more blocks (min 3).. ");
+						return;
 					}else{
 						//Are we USER1 or USER2
 						var othermaximaid = sqlrow.USER2MAXIMAID; 
@@ -287,10 +405,20 @@
 							
 							sendSpendFunding(hashid, othermaximaid, spendtxn, function(delivered){
 								
-								//LOGS
-								insertLog(hashid, "COOP_CLOSE_REQUESTED", "You try to close the channel co-operatively");
+								if(delivered){
+									//LOGS
+									insertLog(hashid, "COOP_CLOSE_REQUESTED", "You try to close the channel co-operatively");
+									
+									//Now set this as closing..
+									CHANNELS_CLOSING.push(hashid);
+									
+									//And refresh the list..
+									showChannels();
 										
-								MDS.log("SPEND FUNDING REQUEST SENT!");
+								}else{
+									alert("Could not contact User over Maxima..");
+									return;						
+								}
 							});	
 						});
 					}
