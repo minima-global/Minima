@@ -18,11 +18,14 @@ function log(msg){
 	}
 }
 
-function showChannels(){
-	MDS.log("REFRESH CHANNELS!!");
+function showChannels(hashid){
+	
+	var msg 	= {};
+	msg.type 	= "REFRESH_CHANNEL";
+	msg.hashid	= hashid;
 	
 	//And reload the main table
-	MDS.comms.solo("REFRESH_CHANNELS");
+	MDS.comms.solo(JSON.stringify(msg));
 }
 
 
@@ -62,8 +65,11 @@ MDS.init(function(msg){
 	//Do initialisation
 	if(msg.event == "inited"){
 		
-		//Init AUTH details
-		initAuthDetails(function(){});
+		//Do stuff.. from now..	
+		createDB(function(){
+			//Init AUTH details
+			initAuthDetails(function(){});	
+		});
 		
 	}else if(msg.event == "NEWBLOCK"){
 				
@@ -75,8 +81,7 @@ MDS.init(function(msg){
 		//Check for closed channels
 		updateClosedChannels(function(found){
 			if(found){
-				log("FOUND closed channels!");
-				showChannels();
+				showChannels("0x00");
 			}
 		});
 		
@@ -171,10 +176,10 @@ MDS.init(function(msg){
 							
 							//Payout received..
 							updatePayoutFound(sqlrow.HASHID, '0', function(){
-								showChannels();
+								showChannels(sqlrow.HASHID);
 							});
 						}else{
-							showChannels();
+							showChannels(sqlrow.HASHID);
 						}	
 					});
 											
@@ -223,7 +228,7 @@ MDS.init(function(msg){
 												
 						//Payout received..
 						updatePayoutFound(hashid, msg.data.coin.amount, function(){
-							showChannels();	
+							showChannels(hashid);	
 						});	
 					}	
 				}
@@ -285,7 +290,7 @@ MDS.init(function(msg){
 						
 						//Add to the database..
 						sqlInsertNewChannel(maxmsg, "STATE_REQUEST_START_CHANNEL", 2, function(){
-							showChannels();
+							showChannels(maxmsg.hashid);
 						});	
 					});
 										
@@ -299,7 +304,7 @@ MDS.init(function(msg){
 														
 							//CANCEL this request
 							updateChannelState(maxmsg.hashid, "STATE_REQUEST_CANCELLED", function(upd){
-								showChannels();
+								showChannels(maxmsg.hashid);
 							});			
 						}
 					});
@@ -314,7 +319,7 @@ MDS.init(function(msg){
 															
 							//DENIED this request
 							updateChannelState(maxmsg.hashid, "STATE_REQUEST_DENIED", function(upd){
-								showChannels();
+								showChannels(maxmsg.hashid);
 							});			
 						}
 					});
@@ -351,7 +356,7 @@ MDS.init(function(msg){
 													
 													//Send back to the OTHER user
 													sendCreateChannel("CHANNEL_CREATE_1", maximapubkey, maxmsg.hashid, signeddata, function(){
-														showChannels();
+														showChannels(maxmsg.hashid);
 													});
 												});
 											});		
@@ -404,7 +409,7 @@ MDS.init(function(msg){
 															
 															//You now have a half-signed FUNDING.. FULL SIGNED Trigger and Settle
 															sendCreateChannel("CHANNEL_CREATE_2", maximapubkey, maxmsg.hashid, signeddata, function(){
-																showChannels();
+																showChannels(maxmsg.hashid);
 															});	
 														});
 													});		
@@ -449,7 +454,7 @@ MDS.init(function(msg){
 											
 											//And send to other party
 											sendMaximaMessage(maximapubkey, replySimpleMessage(maxmsg.hashid, "CHANNEL_CREATE_3"), function(maxresp){
-												showChannels();
+												showChannels(maxmsg.hashid);
 											});
 										});
 									});
@@ -467,7 +472,7 @@ MDS.init(function(msg){
 					
 						//The FUNDING has been SENT!!
 						updateChannelState(maxmsg.hashid,"STATE_CHANNEL_OPEN_2",function(){
-							showChannels();
+							showChannels(maxmsg.hashid);
 						});
 					});
 					
@@ -476,16 +481,14 @@ MDS.init(function(msg){
 					//Sign it..
 					sqlSelectChannel(maxmsg.hashid,function(sql){
 						var sqlrow = sql.rows[0];
-						
-						//LOGS
-						insertLog(maxmsg.hashid, "CHANNEL_CLOSE_COOP_POSTED", "You posted the close coop channel close txn");
-																					
+																			
 						//Now SIGN it
 						signTxn(maxmsg.spendfundingtxn, sqlrow.USERPUBLICKEY, function(fulltxn){
 							
 							//POST IT..
 							postTxn(fulltxn, "true", function(poastreq){
-								MDS.log("CHANNEL CLOSE POSTED");	
+								//LOGS
+								insertLog(maxmsg.hashid, "CHANNEL_CLOSE_COOP_POSTED", "You posted the close coop channel txn ");	
 							});
 						});
 					});
@@ -524,9 +527,9 @@ MDS.init(function(msg){
 									//Create the reply message
 									var replymsg = replySendChannelMessage(maxmsg.hashid, maxmsg.sequence, maxmsg.amount, newsettletxn, newupdatetxn);
 									
-									//AND  - send these back to the USER
+									//AND - send these back to the USER
 									sendMaximaMessage(maximapubkey, replymsg, function(maxresp){
-										showChannels();
+										showChannels(maxmsg.hashid);
 									});
 								});													
 							});	
@@ -558,7 +561,7 @@ MDS.init(function(msg){
 						updateNewSeqeunceTxn(maxmsg.hashid, maxmsg.sequence, 
 											 newvalues.useramount1.toString(), newvalues.useramount2.toString(), 
 											 maxmsg.settletxn, maxmsg.updatetxn, function(newsqlrow){
-							showChannels();
+							showChannels(maxmsg.hashid);
 						});
 					});															
 				}

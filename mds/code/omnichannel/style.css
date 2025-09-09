@@ -86,11 +86,25 @@ body {
 	padding:20;
 }
 
+.closeDialog {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+	transform: translate(-50%, -50%);
+    width: 400; 
+    height: 280;
+	border: 2px solid #0000ff;
+	border-radius: 10px;
+	background : white;
+	text-align:left;
+	padding:20;
+}
+
 /* Style buttons */
 .mybtn {
   background-color: DodgerBlue; /* Blue background */
   border: none; /* Remove borders */
-  border-radius: 10px;
+  border-radius: 4px;
   color: white; /* White text */
   padding: 6px 8px; /* Some padding */
   font-size: 12px; /* Set a font size */

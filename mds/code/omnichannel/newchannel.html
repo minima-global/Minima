@@ -197,19 +197,16 @@
 					createDB(function(){});
 				});
 			}else{
-				//Do stuff.. from now..	
-				createDB(function(){
+				
+				//Init AUTH details
+				initAuthDetails(function(){
 					
-					//Init AUTH details
-					initAuthDetails(function(){
-						
-						//Get maxcontact details
-						MDS.cmd("maxcontacts",function(maxcont){
-							MAXIMA_CONTACTS = maxcont.response.contacts;
-							listContacts();
-						});	
-					});
-				});		
+					//Get maxcontact details
+					MDS.cmd("maxcontacts",function(maxcont){
+						MAXIMA_CONTACTS = maxcont.response.contacts;
+						listContacts();
+					});	
+				});	
 			}
 			
 		}else if(msg.event == "MAXIMA"){

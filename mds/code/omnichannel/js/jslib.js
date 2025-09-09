@@ -38,9 +38,8 @@ function showTitleOnAndroid(){
 /*
  * POPUP functions..
  */
- 
 var VALID_POPUP_RESPONSE 	= false;
-var POPUP_TEXT 		= "";
+var POPUP_TEXT 				= "";
 function showPopup(showhide, text){
 	//Show popup..
 	if(showhide){
