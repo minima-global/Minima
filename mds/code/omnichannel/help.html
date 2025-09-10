@@ -47,15 +47,15 @@
 </div>
 
 <br>
-<div class=helpdiv>
-	
-	<div style="padding:8">
-	
+<div class=blueborder>
+
+<table width=100% style="padding:8"><tr><td>
+		
 <h3>Help</h3>
 
-ThunderPay is an Omnia channel peer-to-peer payment application.<br>
+ThunderPay is an Eltoo channel peer-to-peer payment application.<br>
 <br>
-Payments occur on layer 2 and not on the main base chain.<br>
+Payments occur on Layer 2, off-chain, and not on the main base chain.<br>
 <br>
 Setting up and closing a payment channel both require an on-chain transaction<br>
 <br>
@@ -63,9 +63,47 @@ Every 'Send' during that is performed off-chain<br>
 <br>
 You can only send and receive as much as is in the channel in total.<br>
 <br>
+As we test this new technology.. the current maximum channel size is set to 1000 Minima for each User.<br>
+<br>
 
-	</div>
+<h3>Technical</h3>
 
+Starting a channel involves creating the initial funding, trigger and settlement transactions.<br>
+<br>
+This involves sending multiple Maxima messages back and forward where the transactions are ONLY signed by you when you have the correct signed response transactions.<br>
+<br>
+Once you have all the correct signed transactions, the Funding transaction is posted on-chain.<br>
+<br>  
+Sending money involves creating a new signed Update and Settlement transaction.. but NOT posting them on-chain. These are Layer 2 transactions.<br>
+<br>
+These transactions include a <i>sequence</i> number.. which means the LATEST transactions can always be posted and earlier transactions can be overridden.<br>
+<br>
+You can keep doing this as long as you like.<br>
+<br>
+When you are ready to close the channel there are 2 options :<br>
+<br>
+<b>1)</b> Close the channel cooperatively - which only requires 1 transaction and occurs immediately.<br>
+<br>
+<b>2)</b> Close the channel un-cooperatively (if you can't get hold of the User ) - which requires sending 3 transactions in the correct order.. the trigger, latest update and latest settlement.<br>
+<br>
+The fact that you can close the channel <b>unilaterally</b> allows you to ensure that the CORRECT final amounts are always made to each user.<br>
+<br>
+Since these transactions are not occuring on-chain.. all users can perform payments in this way, at the same time.. allowing for almost limitless transactions per second globally.<br>
+<br>
+For more details you can read the original <a target='_blank' href='eltoo.pdf'>Eltoo PDF</a> 
+<br>
+<br>
+<h3>Personal</h3>
+
+I <i>believe</i> this application is the first full ELTOO implementation ever running on a live blockchain..<br>
+<br>
+On Minima..we call this <b>Omnia</b><br>
+<br>
+Enjoy &#128513;
+
+
+</td></tr></table>
+	
 </div>
 
 
