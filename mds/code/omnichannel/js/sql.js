@@ -446,7 +446,7 @@ function updateClosedChannels(callback){
 /**
  * Add a log
 */
-var PRINT_LOGS = true;
+var PRINT_LOGS = false;
 function insertLog(hashid, type, message, callback){
 	
 	//Do we print to stdio
