@@ -135,6 +135,12 @@
 				return;
 			}
 			
+			//Check SIZE
+			if(you.greaterThan(MAX_CHANNEL_AMOUNT) || them.greaterThan(MAX_CHANNEL_AMOUNT)){
+				alert("Amounts too large!\n\nCurrent max is "+MAX_CHANNEL_AMOUNT+" per User..");
+				return;
+			}
+			
 			//Start Channel Request..
 			var selcontact 	= allcontacts.selectedIndex;
 			var pubkey 		= MAXIMA_CONTACTS[selcontact].publickey;
@@ -236,7 +242,7 @@
 						stopPopupDots();
 						VALID_POPUP_RESPONSE = true;
 						showPopup(true, "<b>"+USERNAME+"</b> contacted successfully!<br><br>Please wait for his response..<br><br>"
-										+"<a href='index.html?uid="+MDS.minidappuid+"'>Home</a>");	
+										+"<button class='mybtn' onclick='jumpToHome();'>Return to Home page</button>");	
 					}					
 				});
 			}

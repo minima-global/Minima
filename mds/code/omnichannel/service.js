@@ -269,6 +269,12 @@ MDS.init(function(msg){
 						return;
 					}
 					
+					//Check is within limits..
+					if(you.greaterThan(MAX_CHANNEL_AMOUNT) || them.greaterThan(MAX_CHANNEL_AMOUNT)){
+						MDS.log("INVALID Channel amounts! Too Large! : request"+them+" them:"+you);
+						return;
+					}
+					
 					//LOGS
 					insertLog(maxmsg.hashid, "REQUEST_CHANNEL", "Channel was requested from user "+trimToSize(maximapubkey));
 							

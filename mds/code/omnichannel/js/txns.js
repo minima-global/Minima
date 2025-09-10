@@ -12,7 +12,10 @@ var ELTOO_SCRIPT = "LET randid=[#HASHID] "
 //Some DEFAULTS
 var MIN_UPDATE_COINAGE = 5;
 var MIN_SETTLE_COINAGE = 30;
-  
+
+//MAXIMUM amount allowed..for now..
+var MAX_CHANNEL_AMOUNT = 1000;  
+
 //Create a randomg txnid.. when creating transactions..
 function randomString() {
     const hex = '0123456789ABCDEF';

@@ -400,6 +400,13 @@
 		
 		//Choose an amount..
 		var mydec= new Decimal(myamount);
+		
+		//Do you have funds..
+		if(mydec.equals(DECIMAL_ZERO)){
+			alert("You do not have any funds in this channel..");	
+			return;
+		}
+		
 		var samount = prompt("How much do you want to send ?\n\nMax : "+myamount+"\n"); 
 		if(!samount){
 			return;	
@@ -411,15 +418,14 @@
 			amount = getValidDecimalNumber(samount.trim());	
 			if(amount.greaterThan(mydec)){
 				alert("Invalid amount entered..\n\nMust be less than or equal to "+myamount+"\n");	
+				return;
 			}
+			
 		}catch(Error){
 			MDS.log(Error);
 			alert("Invalid amount entered..\n\n"+samount.trim());
 			return;
 		}
-		
-		//OK - Lets go!..
-		MDS.log("SEND : "+amount);
 		
 		//Get this channel
 		sqlSelectChannel(hashid, function(sql){
@@ -454,6 +460,7 @@
 				}
 				
 				CHANNELS_SENDING.push(hashid);
+				
 				showChannels();
 			});	
 		});

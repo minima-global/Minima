@@ -155,6 +155,19 @@ function sqlSelectAllClosedChannels(callback){
 	});
 }
 
+function sqlDeleteAllClosedChannels(callback){
+	//Find a record
+	var sql = "DELETE FROM channels WHERE state ='STATE_CHANNEL_CLOSED'";
+				
+	//Run this..
+	MDS.sql(sql,function(msg){
+		if(callback){
+			callback(msg);
+		}
+	});
+}
+
+
 /**
  * Get ELTOO check details for ALL channels
  */
