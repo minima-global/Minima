@@ -34,10 +34,6 @@ function settle(hashid){
 			
 	//Publish the Trigger..
 	sqlSelectChannel(hashid, function(sql){
-		
-		//LOGS
-		insertLog(hashid, "POST_SETTLE", "You post the SETTLE txn");
-					
 		postTxn(sql.rows[0].SETTLETXN, true, function(postresp){
 			//logJSON(postresp,"POST SETTLE");
 		});
@@ -49,10 +45,6 @@ function update(hashid){
 			
 	//Publish the Trigger..
 	sqlSelectChannel(hashid, function(sql){
-		
-		//LOGS
-		insertLog(hashid, "POST_UPDATE", "You post the UPDATE txn");
-				
 		postTxn(sql.rows[0].UPDATETXN, true, function(postresp){
 			//logJSON(postresp,"POST UPDATE");
 		});
@@ -73,10 +65,11 @@ MDS.init(function(msg){
 		
 	}else if(msg.event == "NEWBLOCK"){
 				
-		//Should only check every 10 blocks..
-		//var block = +msg.data.txpow.header.block;		
-		//MDS.log("NEW BLOCK "+block);
-		//return;
+		//Should only check every 5 blocks..
+		var block = +msg.data.txpow.header.block;		
+		if(block % 5 != 0){
+			return;
+		}
 		
 		//Check for closed channels
 		updateClosedChannels(function(found){
@@ -126,7 +119,7 @@ MDS.init(function(msg){
 								}
 								
 								//If coin old enough (3 blocks) POST the latest UPDATE
-								if(age > MIN_UPDATE_COINAGE){
+								if(age>=MIN_UPDATE_COINAGE){
 									insertLog(eltoohashid, "POST_LATEST_UPDATE", "Posting latest update txn sequence:"+eltoosequence);
 									update(eltoohashid);
 								} 
@@ -136,8 +129,8 @@ MDS.init(function(msg){
 								//LOGS
 								insertLog(eltoohashid, "VALID_ELTOO_FOUND", "Valid ELTOO coin found.. waiting to post settlement txn.. coinage:"+age+"/"+MIN_SETTLE_COINAGE+" sequence:"+eltoosequence);
 																		
-								if(age>MIN_SETTLE_COINAGE){
-									insertLog(eltoohashid, "POST_SETTLEMENT", "Posting settlementt txn.. sequence:"+eltoosequence);
+								if(age>=MIN_SETTLE_COINAGE){
+									insertLog(eltoohashid, "POST_LATEST_SETTLEMENT", "Posting settlementt txn.. sequence:"+eltoosequence);
 									settle(eltoohashid);
 								}	
 							}
@@ -449,6 +442,8 @@ MDS.init(function(msg){
 									//POST IT!
 									postTxn(signtxn, false, function(postresp){
 										
+										insertLog(maxmsg.hashid, "POST_FUNDING_TXN", "You posted the funding txn");
+										
 										//IT's DONE! Channel now Open!
 										updateChannelState(maxmsg.hashid,"STATE_CHANNEL_OPEN_1",function(){
 											
@@ -488,7 +483,7 @@ MDS.init(function(msg){
 							//POST IT..
 							postTxn(fulltxn, "true", function(poastreq){
 								//LOGS
-								insertLog(maxmsg.hashid, "CHANNEL_CLOSE_COOP_POSTED", "You posted the close coop channel txn ");	
+								insertLog(maxmsg.hashid, "POST_CHANNEL_CLOSE_COOP", "You posted the close coop channel txn ");	
 							});
 						});
 					});

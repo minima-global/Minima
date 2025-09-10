@@ -23,23 +23,21 @@ body {
   border-radius: 10px;
 }
 
+.blueborder{
+  width:100%;
+  min-width:300;
+  text-align: left;
+  max-width:840;
+  border: 2px solid #0000ff;
+  border-radius: 10px;
+}
+
+
 .helpdiv{
   width:100%;
   min-width:360;
   text-align: left;
   margin:8;
-  max-width:840;
-  border: 2px solid #0000ff;
-  border-radius: 10px;
-  
-  border-spacing:8;
-}
-
-.blueborder{
-  width:100%;
-  min-width:360;
-  text-align: left;
-  
   max-width:840;
   border: 2px solid #0000ff;
   border-radius: 10px;
@@ -123,4 +121,8 @@ body {
 
 .mybtn:active {
   background-color: red;
+}
+
+.mybtn:disabled {
+  background-color: RoyalBlue;
 }

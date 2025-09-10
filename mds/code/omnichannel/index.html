@@ -45,6 +45,7 @@
 			
 			<td class='topicdate' nowrap>
 				<button id="button-help">Help</button>
+				<button id="button-history">History</button>
 				<button id="button-newchannel">New Channel</button>
 				<button id="button-home">Home</button>
 			</td>
@@ -60,15 +61,13 @@
 </div>
 
 <!-- The Hidden Popup -->
-<div id="main_popup" class="centerDialog" style="display:none;"></div>
-
 <div id="close_popup" class="closeDialog" style="display:none;">
 	
 	There are 2 ways to close a channel<br>
 	<br>
 	You can close co-operatively.. where you both agree to shut the channel down in 1 transaction. This is the prefered way.<br>
 	<br>
-	Or you can close the channel unilaterally. This does not involve the other party but takes longer.. Use this if you cannot close the channel cooperatively.<br>
+	Or you can close the channel unilaterally. This does not involve the other party but takes longer (30 mins).. Use this if you cannot close the channel cooperatively.<br>
 	<br>
 	<table width=100%>
 		<tr>
@@ -81,14 +80,17 @@
 	</table> 
 </div>
 
+<!--
 <button onclick="logAllData();">LOG DATA</button> <button onclick="wipedb();">WIPEDB</button><br><br>
 <br>
+-->
 
 <script type="text/javascript">
 	
 	//List of your contacts
 	var MAXIMA_CONTACTS 	= [];
 	var CHANNELS_CLOSING 	= [];
+	var CHANNELS_SENDING 	= [];
 	
 	function getContactFromPublicKey(pubkey){
 		for(var i=0;i<MAXIMA_CONTACTS.length;i++){
@@ -136,6 +138,9 @@
 			myamount			 = channeldata.USER2AMOUNT;
 		}
 		
+		//How much is left..
+		//var remainder = new Decimal(totalamount).sub(new Decimal(myamount)).toString();
+		
 		//Convert Datetime
 		var date = new Date(+channeldata.DATE);
 		
@@ -150,8 +155,8 @@
 					+"<td class='alignright'><span class='largeboldtext'>"+myamount+"</span> / "+totalamount+"</td>"	
 				+"</tr>"	
 				+"<tr>"
-					+"<td>&nbsp;</td>"
-					//+"<td class='smallgreytext'>[ "+channeldata.STATE+" ]</td>"	
+					//+"<td>&nbsp;</td>"
+					+"<td class='smallgreytext'>[ "+channeldata.STATE+" ]</td>"	
 				+"</tr>";
 				
 		if(channeldata.STATE == "STATE_SENT_START_CHANNEL"){
@@ -173,16 +178,29 @@
 			//Are we closing this channel ?
 			if(CHANNELS_CLOSING.includes(channeldata.HASHID)){
 				ret+="<tr>"
-					+"<td>Closing channel.. pls wait..</td>"		
+					+"<td>Closing channel.. pls wait..</td>"
+					+"<td class='alignright'><button class='mybtn' onclick='showLogs(\""+channeldata.HASHID+"\");'>LOGS</button></td>"		
 				+"</tr>"
 			}else{
 				//Add buttons..
-				ret+="<tr>"
-					+"<td>"
-						+"<button class='mybtn' onclick='showChooseClose(\""+channeldata.HASHID+"\");'>CLOSE</button>&nbsp;"
-					+"</td>"
-					+"<td class='alignright'><button class='mybtn' onclick='showLogs(\""+channeldata.HASHID+"\");'>LOGS</button>&nbsp;<button class='mybtn'>SEND</button></td>"		
-				+"</tr>"	
+				if(CHANNELS_SENDING.includes(channeldata.HASHID)){
+					ret+="<tr>"
+						+"<td>"
+							+"<button class='mybtn' onclick='showChooseClose(\""+channeldata.HASHID+"\");' disabled>CLOSE</button>&nbsp;"
+						+"</td>"
+						+"<td class='alignright'><button class='mybtn' onclick='showLogs(\""+channeldata.HASHID+"\");'>LOGS</button>&nbsp;"
+							+"<button class='mybtn' onclick='sendFunds(\""+channeldata.HASHID+"\",\""+myamount+"\")' disabled>SENDING..</button></td>"		
+					+"</tr>"
+				}else{
+					ret+="<tr>"
+						+"<td>"
+							+"<button class='mybtn' onclick='showChooseClose(\""+channeldata.HASHID+"\");'>CLOSE</button>&nbsp;"
+						+"</td>"
+						+"<td class='alignright'><button class='mybtn' onclick='showLogs(\""+channeldata.HASHID+"\");'>LOGS</button>&nbsp;"
+							+"<button class='mybtn' onclick='sendFunds(\""+channeldata.HASHID+"\",\""+myamount+"\")'>SEND</button></td>"		
+					+"</tr>"	
+				}
+					
 			}
 		
 		}else if(channeldata.STATE.startsWith("STATE_CHANNEL_START_CLOSE")){
@@ -351,10 +369,57 @@
 		});
 	}
 	
-	//SEND 0.01
-	function sendFunds(hashid, sendamount){
+	function closeTrigger(hashid){
+			
+		//Hide popup
+		hideChooseClose();
 		
-		var amount = new Decimal(sendamount);
+		//First Check..
+		if(!confirm("Are you sure you wish to close this channel ?")){
+			return;
+		}
+		
+		//Publish the Trigger..
+		sqlSelectChannel(hashid, function(sql){
+			postTxn(sql.rows[0].TRIGGERTXN, true, function(postresp){
+				
+				//Now set this as closing..
+				CHANNELS_CLOSING.push(hashid);
+				
+				//And refresh the list..
+				showChannels();
+													
+				//LOGS
+				insertLog(hashid, "POST_TRIGGER_CLOSE_CHANNEL", "You close the channel non co-operatively");
+			});
+		});
+	}
+	
+	//SEND An Amount
+	function sendFunds(hashid, myamount){
+		
+		//Choose an amount..
+		var mydec= new Decimal(myamount);
+		var samount = prompt("How much do you want to send ?\n\nMax : "+myamount+"\n"); 
+		if(!samount){
+			return;	
+		}
+		
+		//Check is less than MAX
+		var amount;
+		try{
+			amount = getValidDecimalNumber(samount.trim());	
+			if(amount.greaterThan(mydec)){
+				alert("Invalid amount entered..\n\nMust be less than or equal to "+myamount+"\n");	
+			}
+		}catch(Error){
+			MDS.log(Error);
+			alert("Invalid amount entered..\n\n"+samount.trim());
+			return;
+		}
+		
+		//OK - Lets go!..
+		MDS.log("SEND : "+amount);
 		
 		//Get this channel
 		sqlSelectChannel(hashid, function(sql){
@@ -383,31 +448,14 @@
 				
 			//Send this message to the USER
 			sendFundsChannel(hashid, othermaximaid, newsequence, amount.toString(), touser, function(ackdelivered){
-				MDS.log("Send funds message sent! ");
-			});	
-		});
-	}
-	
-	function closeTrigger(hashid){
-		
-		//Hide popup
-		hideChooseClose();
-		
-		//First Check..
-		if(!confirm("Are you sure you wish to close this channel ?")){
-			return;
-		}
-		
-		//Publish the Trigger..
-		sqlSelectChannel(hashid, function(sql){
-			postTxn(sql.rows[0].TRIGGERTXN, true, function(postresp){
+				if(!ackdelivered){
+					alert("Could not contact User..");
+					return;
+				}
 				
-				//Now set this as closing..
-				CHANNELS_CLOSING.push(hashid);
-													
-				//LOGS
-				insertLog(hashid, "TRIGGER_CLOSE_CHANNEL", "You close the channel non co-operatively");
-			});
+				CHANNELS_SENDING.push(hashid);
+				showChannels();
+			});	
 		});
 	}
 	
@@ -442,6 +490,10 @@
 				var comms = JSON.parse(msg.data.message);
 				
 				logJSON(comms, "COMMS");
+				
+				//Rem,ove from our temp lists..
+				removeItemOnce(CHANNELS_CLOSING,comms.hashid);
+				removeItemOnce(CHANNELS_SENDING,comms.hashid);
 				
 				if(comms.type == "REFRESH_CHANNEL"){
 					MDS.log("RECEIVED REFRESH_CHANNEL comms.. "+comms.hashid);

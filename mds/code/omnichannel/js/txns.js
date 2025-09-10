@@ -11,7 +11,7 @@ var ELTOO_SCRIPT = "LET randid=[#HASHID] "
 
 //Some DEFAULTS
 var MIN_UPDATE_COINAGE = 5;
-var MIN_SETTLE_COINAGE = 10;
+var MIN_SETTLE_COINAGE = 30;
   
 //Create a randomg txnid.. when creating transactions..
 function randomString() {

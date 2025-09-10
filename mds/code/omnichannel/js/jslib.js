@@ -11,6 +11,11 @@ function startupButtons(){
 		showLabel: false
 	}).click(function(){jumpToNewChannel();});
     
+	$( "#button-history" ).button({
+		icon: "ui-icon-history",
+		showLabel: false
+	}).click(function(){jumpToHistory();});
+	
     $( "#button-home" ).button({
 		icon: "ui-icon-home",
 		showLabel: false
@@ -19,6 +24,10 @@ function startupButtons(){
 
 function jumpToHome(){
 	location.href="index.html?uid="+MDS.minidappuid;	
+}
+
+function jumpToHistory(){
+	location.href="history.html?uid="+MDS.minidappuid;	
 }
 
 function jumpToNewChannel(){
