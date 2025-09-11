@@ -224,12 +224,27 @@
 		return ret;
 	}
 	
+	function showInitMessage(){
+		channelview.innerHTML = 
+			"<h2>Welcome</h2><br>"+
+			"<span style='font-size:16;'>Payment Channels you create will appear here<br><br>"+
+			"Navigate to the Help Section for more information<br><br>"+
+			"</span>";
+	}
+	
 	function showChannels(){
 		sqlSelectAllOpenChannels(function(allchannels){
 			
 			var output = "";
 			
 			var length = allchannels.rows.length;
+			
+			//Show
+			if(length == 0){
+				showInitMessage();
+				return;
+			}
+			
 			for(var i=0;i<length;i++){
 				var row = createRow(allchannels.rows[i]);
 				output += row+"<br>"
