@@ -65,6 +65,10 @@ tasks.withType(AbstractArchiveTask) {
     reproducibleFileOrder = true
 }
 
+tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+  minimize()
+}
+
 compileJava {
 	sourceCompatibility = '1.8'
     targetCompatibility = '1.8'

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Iterator;
 
+import org.h2.Driver;
 import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.CommandRunner;
@@ -141,6 +142,15 @@ public class Minima {
 		MinimaLogger.log("Welcome to Minima "+GlobalParams.getFullMicroVersion()+" - for assistance type help. Then press enter.");
 		
 		//Load the required MySQL classes
+		//try {
+			Driver dd = new Driver();
+			MinimaLogger.log("Load H2 Driver..");
+			//Class.forName("org.h2.Driver");
+		//} catch (ClassNotFoundException e1) {
+		//	e1.printStackTrace();
+		//}
+		
+		//Load the required H2 classes
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
 		} catch (ClassNotFoundException e1) {
