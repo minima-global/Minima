@@ -15,12 +15,9 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.brains.TxPoWProcessor;
 import org.minima.system.commands.CommandRunner;
-import org.minima.system.commands.backup.mysql;
 import org.minima.system.genesis.GenesisMMR;
 import org.minima.system.genesis.GenesisTxPoW;
-import org.minima.system.mds.MDSManager;
 import org.minima.system.network.NetworkManager;
-import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.network.p2p.P2PFunctions;
@@ -37,7 +34,6 @@ import org.minima.utils.messages.MessageListener;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
 import org.minima.utils.messages.TimerProcessor;
-import org.minima.utils.mysql.MySQLConnect;
 import org.minima.utils.ssl.SSLManager;
 
 public class Main extends MessageProcessor {
@@ -189,16 +185,6 @@ public class Main extends MessageProcessor {
 	NetworkManager mNetwork;
 	
 	/**
-	 * Maxima
-	 */
-	MaximaManager mMaxima;
-	
-	/**
-	 * MDS
-	 */
-	MDSManager mMDS;
-	
-	/**
 	 * Send POll Manager
 	 */
 	SendPollManager mSendPoll;
@@ -293,13 +279,6 @@ public class Main extends MessageProcessor {
 			MinimaLogger.log("Load all DB.. finish");
 		}
 		
-		//Are we connecting to a MySQL DB automatically
-		if(!GeneralParams.MYSQL_DB_DETAILS.equals("")) {
-				
-			//Set the details.. and start AUTO backup..
-			mysql.convertMySQLParams(GeneralParams.MYSQL_DB_DETAILS);
-		}
-		
 		//Are we in Slave node mode
 		boolean slavemode = MinimaDB.getDB().getUserDB().isSlaveNode();
 		if(slavemode) {
@@ -376,12 +355,6 @@ public class Main extends MessageProcessor {
 		//Start the networking..
 		mNetwork = new NetworkManager();
 				
-		//Start up Maxima
-		mMaxima = new MaximaManager();
-				
-		//Start MDS
-		mMDS = new MDSManager();
-		
 		//New Send POll Manager
 		mSendPoll = new SendPollManager();
 		
@@ -638,9 +611,6 @@ public class Main extends MessageProcessor {
 		//Shut down the network
 		mNetwork.shutdownNetwork();
 		
-		//Shut down Maxima
-		mMaxima.shutdown();
-				
 		//Stop the Miner
 		mTxPoWMiner.stopMessageProcessor();
 		
@@ -665,13 +635,9 @@ public class Main extends MessageProcessor {
 	}
 	
 	public void shutdownFinalProcs(boolean zShutDownMDS) {
-				
-		if(zShutDownMDS) {
-			if(!mHaveShutDownMDS) {
-				mHaveShutDownMDS = true;
-				shutdownMDS();
-			}
-		}
+		
+		//Shut down the Notify Manager
+		mNotifyManager.shutDown();
 				
 		//Stop the main TxPoW processor
 		MinimaLogger.log("Shutdown TxPoWProcessor..");
@@ -679,17 +645,8 @@ public class Main extends MessageProcessor {
 		mTxPoWProcessor.waitToShutDown();
 	}
 	
-	public void shutdownMDS() {
-		//ShutDown MDS
-		MinimaLogger.log("Shutdown MDS..");
-		mMDS.shutdown();
-		
-		//Shut down the Notify Manager
-		mNotifyManager.shutDown();
-	}
-	
 	/**
-	 * USed when Syncing to clear memory
+	 * Used when Syncing to clear memory
 	 */
 	public void resetMemFull() {
 		//MinimaLogger.log("System full memory clean..");
@@ -800,14 +757,6 @@ public class Main extends MessageProcessor {
 		return mTxPoWMiner;
 	}
 	
-	public MaximaManager getMaxima() {
-		return mMaxima;
-	}
-	
-	public MDSManager getMDSManager() {
-		return mMDS;
-	}
-	
 	public SendPollManager getSendPoll() {
 		return mSendPoll;
 	}
@@ -899,9 +848,6 @@ public class Main extends MessageProcessor {
 			//Now close and Re-open the SQL db..
 			MinimaDB.getDB().refreshSQLDB();
 			
-			//Clear the Maxima Poll Stack
-			getMaxima().checkPollMessages();
-			
 		}else if(zMessage.getMessageType().equals(MAIN_AUTOBACKUP_MYSQL)) {
 		
 			UserDB udb = MinimaDB.getDB().getUserDB();
@@ -982,41 +928,6 @@ public class Main extends MessageProcessor {
 				return;
 			}
 			
-			//Are we storing all the TxPoW
-			if(GeneralParams.MYSQL_STORE_ALLTXPOW) {
-			
-				UserDB udb = MinimaDB.getDB().getUserDB();
-				
-				//Are we enabled..
-				if(udb.getAutoBackupMySQL()) {
-					
-					//Get the TxPoW
-					TxPoW txp = (TxPoW) zMessage.getObject("txpow");
-					
-					MySQLConnect mysql = new MySQLConnect(
-							udb.getAutoMySQLHost(), 
-							udb.getAutoMySQLDB(), 
-							udb.getAutoMySQLUser(), 
-							udb.getAutoMySQLPassword());
-					mysql.init();
-					
-					//Now save..
-					boolean status = mysql.saveTxPoW(txp);
-					
-					//Shutdown..
-					mysql.shutdown();
-					
-					//Output
-					if(!status) {
-						MinimaLogger.log("[ERROR] MYSQL TXPOW AUTOBACKUP "
-								+ " host:"+udb.getAutoMySQLHost()
-								+ " user:"+udb.getAutoMySQLUser()
-								+ " db:"+udb.getAutoMySQLDB()
-								);
-					}
-				}
-			}
-		
 		}else if(zMessage.getMessageType().equals(MAIN_CLEANDB_SQL)) {
 			
 			//Do it again..
@@ -1110,10 +1021,6 @@ public class Main extends MessageProcessor {
 			//Now wait..
 			MinimaLogger.log("Wait 10 seconds..");
 			Thread.sleep(10000);
-			
-			//Stop and restart the MDS..
-			MinimaLogger.log("Clear MDS");
-			mMDS.clearExceptString("MDS_TIMER");
 			
 			//Reset the IBD timer
 			getTxPoWProcessor().resetFirstIBDTimer();
@@ -1293,14 +1200,6 @@ public class Main extends MessageProcessor {
 				//And post
 				getNotifyManager().PostEvent(notify);
 			}
-		}
-		
-		//Tell the MDS..
-		if(getMDSManager() != null) {
-			Message poll = new Message(MDSManager.MDS_POLLMESSAGE);
-			poll.addObject("poll", notify);
-			poll.addObject("to", zTo);
-			getMDSManager().PostMessage(poll);
 		}
 	}
 	

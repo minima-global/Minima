@@ -7,14 +7,9 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.minima.database.MinimaDB;
-import org.minima.database.minidapps.MiniDAPP;
-import org.minima.system.Main;
 import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.backup;
 import org.minima.system.commands.backup.decryptbackup;
-import org.minima.system.commands.backup.mysql;
-import org.minima.system.commands.backup.mysqlcoins;
 import org.minima.system.commands.backup.reset;
 import org.minima.system.commands.backup.restore;
 import org.minima.system.commands.backup.restoresync;
@@ -60,19 +55,6 @@ import org.minima.system.commands.base.timemilli;
 import org.minima.system.commands.base.tokencreate;
 import org.minima.system.commands.base.tokenvalidate;
 import org.minima.system.commands.base.trace;
-import org.minima.system.commands.maxima.maxcontacts;
-import org.minima.system.commands.maxima.maxcreate;
-import org.minima.system.commands.maxima.maxdecrypt;
-import org.minima.system.commands.maxima.maxencrypt;
-import org.minima.system.commands.maxima.maxextra;
-import org.minima.system.commands.maxima.maxima;
-import org.minima.system.commands.maxima.maxmessage;
-import org.minima.system.commands.maxima.maxsign;
-import org.minima.system.commands.maxima.maxverify;
-import org.minima.system.commands.mds.checkmode;
-import org.minima.system.commands.mds.checkpending;
-import org.minima.system.commands.mds.checkrestore;
-import org.minima.system.commands.mds.mds;
 import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.disconnect;
 import org.minima.system.commands.network.message;
@@ -145,23 +127,22 @@ public class CommandRunner {
 			new send(), new balance(), new tokencreate(), new tokenvalidate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
 			new incentivecash(), new webhooks(), new peers(), new p2pstate(),
 
-			new mds(), new sendpoll(), new healthcheck(), new mempool(), new block(), new reset(),
+			new sendpoll(), new healthcheck(), new mempool(), new block(), new reset(),
 			
 			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(), new sendview(),
 			new sendfrom(), new createfrom(), new signfrom(), new postfrom(), new constructfrom(), new consolidatefrom(),
 			
 			new archive(), new logs(), new history(), new convert(),new maths(),
-			new checkpending(), new checkmode(), new restoresync(), new timemilli(),
+			new restoresync(), new timemilli(),
 			
 			new decryptbackup(), new megammrsync(), new systemcheck(), new scanchain(),
 			
 			new multisig(), new multisigread(), new checkaddress(),
-			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
-			new maxencrypt(), new maxdecrypt(),
 			
-			new ping(), new random(), new seedrandom(), new mysql(), new mysqlcoins(), new slavenode(), new checkrestore(),
+			new ping(), new random(), new seedrandom(), new slavenode(),
+			
 			//new file(),
-			new megammr(), new maxmessage(),
+			new megammr(),
 			
 			new vault(), new consolidate(), new coinnotify(),
 			new backup(), new restore(), new test(), 
@@ -177,8 +158,6 @@ public class CommandRunner {
 			new coinimport(), new coinexport(),new cointrack(), new coincheck(),
 			
 			new hash(), new hashtest(), new sign(), new verify(),
-			
-			new maxima(), new maxcontacts(),
 			
 			new mmrcreate(), new mmrproof()
 		};
@@ -255,57 +234,6 @@ public class CommandRunner {
 			
 			//What is the command
 			String comname = cmd.getName();
-			
-			//Check this MiniDAPP can make this call..
-			boolean allowed = isCommandAllowed(comname);
-			
-			//Is this a MiniDAPP..
-			if(zMiniDAPPID.equals(Main.getInstance().getMDSManager().getPublicMiniDAPPID())) {
-				
-				//Public MiniDAPPs cannot add to pending..
-				if(!allowed) {
-					result=  new JSONObject();
-					result.put("command", command);
-					result.put("status", false);
-					result.put("pending", false);
-					result.put("error", "Public MDS cannot run WRITE commands");
-					
-					//Add to the List..
-					finalresult.add(result);
-					
-					//And that's all folks..
-					break;
-				}
-				
-			}else if(!zMiniDAPPID.equals("0x00")) {
-				
-				if(!allowed) {
-					
-					//Get the MiniDAPP
-					MiniDAPP md = Main.getInstance().getMDSManager().getMiniDAPP(zMiniDAPPID);
-					
-					//Does it have WRITE permission..
-					if(!md.getPermission().equalsIgnoreCase("write")) {
-					
-						//Add to pending..
-						String puid = Main.getInstance().getMDSManager().addPendingCommand(md, command);
-						
-						//And return..
-						result=  new JSONObject();
-						result.put("command", command);
-						result.put("status", false);
-						result.put("pending", true);
-						result.put("pendinguid", puid);
-						result.put("error", "This command needs to be confirmed and is now pending..");
-						
-						//Add to the List..
-						finalresult.add(result);
-						
-						//And that's all folks..
-						break;
-					}
-				}
-			}
 			
 			try {
 				result = cmd.runCommand();

@@ -160,14 +160,14 @@ public class CMDHandler implements Runnable {
 				//MinimaLogger.log("RPC:"+fileRequested+" User:"+authuser.toString());
 				
 				//Now run this function..
-				JSONArray res = null;
-				if(authuser.getString("mode").equals("read")) {
+				JSONArray res = CommandRunner.getRunner().runMultiCommand(fileRequested);
+				/*if(authuser.getString("mode").equals("read")) {
 					res = CommandRunner.getRunner().runMultiCommand(Main.getInstance().getMDSManager().getUntrustedMiniDAPPID(), fileRequested);
 				}else if(authuser.getString("mode").equals("write")) {
 					res = CommandRunner.getRunner().runMultiCommand(fileRequested);
 				}else {
 					throw new IllegalArgumentException("Invalid mode for RPC user : "+authuser.getString("mode"));
-				}
+				}*/
 				
 				//Get the result.. is it a multi command or single.. 
 				if(res.size() == 1) {

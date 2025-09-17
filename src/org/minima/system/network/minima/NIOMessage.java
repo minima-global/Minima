@@ -29,9 +29,6 @@ import org.minima.system.brains.TxPoWSearcher;
 import org.minima.system.commands.backup.mmrsync.MegaMMRIBD;
 import org.minima.system.commands.backup.mmrsync.MegaMMRSyncData;
 import org.minima.system.commands.backup.mmrsync.megammrsync;
-import org.minima.system.network.maxima.MaximaCTRLMessage;
-import org.minima.system.network.maxima.MaximaManager;
-import org.minima.system.network.maxima.message.MaxTxPoW;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.network.p2p.messages.InetSocketAddressIO;
@@ -364,13 +361,6 @@ public class NIOMessage implements Runnable {
 				newconn.addBoolean("incoming", nioclient.isIncoming());
 				newconn.addObject("client", nioclient);
 				Main.getInstance().getNetworkManager().getP2PManager().PostMessage(newconn);
-				
-				//Tell MAXIMA
-				Message maxconn = new Message(MaximaManager.MAXIMA_CONNECTED);
-				maxconn.addObject("nioclient", nioclient);
-				maxconn.addString("uid", nioclient.getUID());
-				maxconn.addBoolean("incoming", nioclient.isIncoming());
-				Main.getInstance().getMaxima().PostMessage(maxconn);
 				
 				//Is this an incoming connection.. send a greeting!
 				if(nioclient.isIncoming()) {
@@ -967,92 +957,6 @@ public class NIOMessage implements Runnable {
 					P2PFunctions.addInvalidPeer(nioclient.getFullAddress());
 					
 					Main.getInstance().getNIOManager().disconnect(mClientUID, true);
-				}
-				
-			}else if(type.isEqual(MSG_MAXIMA_CTRL)) {
-				
-				//Make sure acceptable length
-				if(mData.getLength() > 65535) {
-					MinimaLogger.log("Maxima CTRL message too Large! from "+mClientUID);
-					return;
-				}
-				
-				//Get the message
-				MaximaCTRLMessage msg = MaximaCTRLMessage.ReadFromStream(dis);
-				
-				//Get the client
-				NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(mClientUID);
-				
-				//Check not null
-				if(nioclient != null) {
-					
-					//And post it to the Maxima Manager..
-					Message maxmsg = new Message(MaximaManager.MAXIMA_CTRLMESSAGE);
-					maxmsg.addObject("nioclient", nioclient);
-					maxmsg.addObject("maximactrl", msg);
-					
-					Main.getInstance().getMaxima().PostMessage(maxmsg);
-				}
-				
-			}else if(type.isEqual(MSG_MAXIMA_TXPOW)) {
-				
-				//Convert to a MaxTxPOW
-				MaxTxPoW mxtxpow = MaxTxPoW.ReadFromStream(dis);
-				
-				//Check the TxPoW unit is correct
-				if(!mxtxpow.checkValidTxPoW()) {
-					MinimaLogger.log("Invalid Maxima message : Incorrect TxPoW Hash from "+mClientUID);
-
-					//Tell them it's a fail!
-					NIOManager.sendNetworkMessage(mClientUID, MSG_PING, MaximaManager.MAXIMA_WRONGHASH);
-					
-					return;
-				}
-								
-				//How large is the Maxima Package
-				MiniData mp = MiniData.getMiniDataVersion(mxtxpow.getMaximaPackage());
-				
-				//Make sure acceptable length - 256K
-				if(mp.getLength() > 262144) {
-					MinimaLogger.log("Maxima message too Large! from "+mClientUID+" "+MiniFormat.formatSize(mp.getLength()));
-					
-					//Tell them it's a fail!
-					NIOManager.sendNetworkMessage(mClientUID, MSG_PING, MaximaManager.MAXIMA_TOOBIG);
-					
-					return;
-				}
-				
-				//Get the client
-				NIOClient nioclient = Main.getInstance().getNIOManager().getNIOServer().getClient(mClientUID);
-				
-				//Are we still connected..
-				if(nioclient == null) {
-					//Already disconnected
-					return;
-				}
-				
-				//And send it on to Maxima..
-				Message maxmsg = new Message(MaximaManager.MAXIMA_RECMESSAGE);
-				maxmsg.addObject("nioclient", nioclient);
-				maxmsg.addObject("maxtxpow", mxtxpow);
-				
-				//Send to the Maxima Manager
-				Main.getInstance().getMaxima().PostMessage(maxmsg);
-				
-				//Is it a block or a transaction..
-				TxPoW txpow = mxtxpow.getTxPoW();
-				if(txpow.isTransaction() || txpow.isBlock()) {
-					
-					//And Now post the TxPoW on the stack..
-					MiniData niodata = NIOManager.createNIOMessage(NIOMessage.MSG_TXPOW, txpow);
-
-					//And post on out stack
-					Message newniomsg = new Message(NIOManager.NIO_INCOMINGMSG);
-					newniomsg.addString("uid", "0x01");
-					newniomsg.addObject("data", niodata);
-
-					//Post to the NIOManager - which will check it and forward if correct
-					Main.getInstance().getNetworkManager().getNIOManager().PostMessage(newniomsg);
 				}
 				
 			}else if(type.isEqual(MSG_SINGLE_PING)) {

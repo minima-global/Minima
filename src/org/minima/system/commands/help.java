@@ -6,8 +6,6 @@ import java.util.Arrays;
 import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.backup;
 import org.minima.system.commands.backup.decryptbackup;
-import org.minima.system.commands.backup.mysql;
-import org.minima.system.commands.backup.mysqlcoins;
 import org.minima.system.commands.backup.reset;
 import org.minima.system.commands.backup.restore;
 import org.minima.system.commands.backup.restoresync;
@@ -42,16 +40,6 @@ import org.minima.system.commands.base.timemilli;
 import org.minima.system.commands.base.tokencreate;
 import org.minima.system.commands.base.tokenvalidate;
 import org.minima.system.commands.base.trace;
-import org.minima.system.commands.maxima.maxcontacts;
-import org.minima.system.commands.maxima.maxcreate;
-import org.minima.system.commands.maxima.maxextra;
-import org.minima.system.commands.maxima.maxima;
-import org.minima.system.commands.maxima.maxsign;
-import org.minima.system.commands.maxima.maxverify;
-import org.minima.system.commands.mds.checkmode;
-import org.minima.system.commands.mds.checkpending;
-import org.minima.system.commands.mds.checkrestore;
-import org.minima.system.commands.mds.mds;
 import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.disconnect;
 import org.minima.system.commands.network.message;
@@ -221,24 +209,12 @@ public class help extends Command {
 			addCommand(details, new txnminepost());
 			
 			addCommand(details, new network());
-			addCommand(details, new maxima());
-			addCommand(details, new maxcontacts());
-			addCommand(details, new maxextra());
-			
-			addCommand(details, new maxcreate());
-			addCommand(details, new maxsign());
-			addCommand(details, new maxverify());
 			
 			addCommand(details, new message());
 			addCommand(details, new connect());
 			addCommand(details, new disconnect());
 			addCommand(details, new rpc());
 			addCommand(details, new webhooks());
-			
-			addCommand(details, new mds());
-			addCommand(details, new checkpending());
-			addCommand(details, new checkmode());
-			addCommand(details, new checkrestore());
 			
 			addCommand(details, new backup());
 			addCommand(details, new restore());
@@ -250,9 +226,6 @@ public class help extends Command {
 			
 			addCommand(details, new megammr());
 			addCommand(details, new megammrsync());
-			
-			addCommand(details, new mysql());
-			addCommand(details, new mysqlcoins());
 			
 			//addCommand(details, new nodecount());
 			addCommand(details, new quit());
