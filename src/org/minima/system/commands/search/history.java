@@ -9,7 +9,6 @@ import java.util.Hashtable;
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowdb.sql.TxPoWSqlDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
-import org.minima.database.txpowtree.TxPowTree;
 import org.minima.database.wallet.Wallet;
 import org.minima.objects.Coin;
 import org.minima.objects.Transaction;

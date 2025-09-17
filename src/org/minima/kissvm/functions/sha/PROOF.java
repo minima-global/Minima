@@ -2,8 +2,6 @@ package org.minima.kissvm.functions.sha;
 
 import java.io.IOException;
 
-import org.minima.database.mmr.MMRData;
-import org.minima.database.mmr.MMRProof;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.functions.MinimaFunction;
@@ -12,6 +10,8 @@ import org.minima.kissvm.values.HexValue;
 import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
+import org.minima.objects.mmr.MMRData;
+import org.minima.objects.mmr.MMRProof;
 
 public class PROOF extends MinimaFunction {
 

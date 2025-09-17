@@ -14,7 +14,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import org.junit.Test;
-import org.minima.objects.base.MiniNumber;
 
 public class MiniNumberTests {
 

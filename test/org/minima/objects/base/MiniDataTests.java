@@ -13,7 +13,6 @@ import java.io.InputStream;
 import java.util.Arrays;
 
 import org.junit.Test;
-import org.minima.objects.base.MiniData;
 
 public class MiniDataTests {
     @Test

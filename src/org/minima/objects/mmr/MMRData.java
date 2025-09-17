@@ -1,4 +1,4 @@
-package org.minima.database.mmr;
+package org.minima.objects.mmr;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

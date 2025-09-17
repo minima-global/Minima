@@ -1,6 +1,5 @@
 package org.minima.system.network.p2p2;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -13,15 +12,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.network.minima.NIOClientInfo;
 import org.minima.system.network.minima.NIOManager;
-import org.minima.system.network.minima.NIOMessage;
-import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
-import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 
 public class P2P2Functions {

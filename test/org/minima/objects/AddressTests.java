@@ -14,7 +14,6 @@ import java.io.InputStream;
 
 import org.junit.Test;
 import org.junit.internal.ArrayComparisonFailure;
-import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 
 public class AddressTests {

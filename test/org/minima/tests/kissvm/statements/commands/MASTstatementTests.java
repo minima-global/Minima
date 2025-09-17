@@ -15,7 +15,6 @@ import org.minima.kissvm.values.HexValue;
 import org.minima.objects.ScriptProof;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
-import org.minima.utils.MinimaLogger;
 
 public class MASTstatementTests {
 

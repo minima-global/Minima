@@ -1,15 +1,6 @@
 package org.minima.system.brains;
 
-import static org.junit.Assert.*;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.minima.database.MinimaDB;
-import org.minima.database.txpowdb.TxPoWDB;
-import org.minima.database.txpowtree.TxPoWTreeNode;
-import org.minima.database.txpowtree.TxPowTree;
-import org.minima.objects.TxPoW;
 
 public class TxPoWProcessorTest {
 

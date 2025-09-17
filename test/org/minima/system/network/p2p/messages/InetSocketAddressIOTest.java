@@ -1,10 +1,10 @@
 package org.minima.system.network.p2p.messages;
 
-import junit.framework.TestCase;
-
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+
+import junit.framework.TestCase;
 
 public class InetSocketAddressIOTest extends TestCase {
 

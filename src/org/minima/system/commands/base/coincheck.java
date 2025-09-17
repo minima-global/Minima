@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.mmr.MMRData;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Coin;
 import org.minima.objects.CoinProof;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.mmr.MMRData;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.utils.json.JSONObject;

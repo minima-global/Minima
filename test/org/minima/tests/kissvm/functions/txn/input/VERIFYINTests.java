@@ -7,7 +7,6 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 
 import org.junit.Test;
-import org.minima.database.MinimaDB;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;

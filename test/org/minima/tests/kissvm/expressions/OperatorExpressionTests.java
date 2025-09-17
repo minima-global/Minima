@@ -17,7 +17,6 @@ import org.minima.kissvm.values.NumberValue;
 import org.minima.kissvm.values.StringValue;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
-import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 
 public class OperatorExpressionTests {

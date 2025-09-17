@@ -1,13 +1,10 @@
 package org.minima.system.commands.base;
 
 import java.io.InputStream;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.archive.ArchiveManager;
-import org.minima.database.txpowtree.TxPowTree;
 import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.system.commands.Command;

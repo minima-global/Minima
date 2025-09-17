@@ -7,8 +7,6 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 
 import org.junit.Test;
-import org.minima.database.MinimaDB;
-import org.minima.database.mmr.MMRProof;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.exceptions.MinimaParseException;
@@ -29,6 +27,7 @@ import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.mmr.MMRProof;
 
 //HEXValue GETINID (NumberValue input)
 public class GETINIDTests {

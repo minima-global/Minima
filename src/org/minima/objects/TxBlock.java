@@ -7,12 +7,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import org.minima.database.mmr.MMR;
-import org.minima.database.mmr.MMREntry;
-import org.minima.database.mmr.MMREntryNumber;
-import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.mmr.MMR;
+import org.minima.objects.mmr.MMREntry;
+import org.minima.objects.mmr.MMREntryNumber;
+import org.minima.objects.mmr.MMRProof;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 

@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.junit.Test;
-import org.minima.objects.base.MiniString;
 
 public class MiniStringTests {
 

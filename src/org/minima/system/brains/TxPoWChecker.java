@@ -5,8 +5,6 @@ import java.util.HashSet;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.cascade.CascadeNode;
-import org.minima.database.mmr.MMR;
-import org.minima.database.mmr.MMRData;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.kissvm.Contract;
@@ -24,6 +22,8 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.keys.Signature;
 import org.minima.objects.keys.TreeKey;
+import org.minima.objects.mmr.MMR;
+import org.minima.objects.mmr.MMRData;
 import org.minima.system.network.minima.RelayPolicy;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;

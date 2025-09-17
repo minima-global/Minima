@@ -1,23 +1,17 @@
 package org.minima.system.network.p2p;
 
-import junit.framework.TestCase;
-import org.junit.Rule;
-import org.junit.rules.ExpectedException;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+
 import org.minima.objects.base.MiniData;
 import org.minima.system.network.minima.NIOClientInfo;
 import org.minima.system.network.p2p.messages.P2PGreeting;
-import org.minima.system.network.p2p.testingutils.QuickClients;
-import org.minima.system.network.p2p.testingutils.QuickInetLists;
 import org.minima.system.network.p2p.testingutils.QuickState;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import junit.framework.TestCase;
 
 public class SwapLinksFunctionsTest extends TestCase {
 

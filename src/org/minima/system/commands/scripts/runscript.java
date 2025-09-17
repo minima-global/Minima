@@ -3,7 +3,6 @@ package org.minima.system.commands.scripts;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.minima.database.mmr.MMRProof;
 import org.minima.kissvm.Contract;
 import org.minima.kissvm.values.StringValue;
 import org.minima.kissvm.values.Value;
@@ -14,6 +13,7 @@ import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.mmr.MMRProof;
 import org.minima.system.commands.Command;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;

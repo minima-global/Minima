@@ -1,11 +1,12 @@
 package org.minima.system.network.p2p.messages;
 
-import junit.framework.TestCase;
-import org.minima.utils.json.JSONObject;
-
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+
+import org.minima.utils.json.JSONObject;
+
+import junit.framework.TestCase;
 
 public class GreetingTest extends TestCase {
 

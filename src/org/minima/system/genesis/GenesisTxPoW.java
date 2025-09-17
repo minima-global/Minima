@@ -2,9 +2,6 @@ package org.minima.system.genesis;
 
 import java.util.ArrayList;
 
-import org.minima.database.mmr.MMRData;
-import org.minima.database.mmr.MMREntryNumber;
-import org.minima.database.mmr.MMRProof;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
@@ -17,6 +14,9 @@ import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.mmr.MMRData;
+import org.minima.objects.mmr.MMREntryNumber;
+import org.minima.objects.mmr.MMRProof;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
