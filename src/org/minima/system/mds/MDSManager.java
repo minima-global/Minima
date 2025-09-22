@@ -712,7 +712,14 @@ public class MDSManager extends MessageProcessor {
 			MinimaLogger.log("Shutdown MDS databases..");
 			Enumeration<MiniDAPPDB> dbs = mSqlDB.elements();
 			while(dbs.hasMoreElements()) {
-				dbs.nextElement().saveDB(false);
+				try {
+					MiniDAPPDB mdb 	= dbs.nextElement();
+					MiniDAPP dapp 	= getMiniDAPP(mdb.mUID);
+					MinimaLogger.log("Shutdown "+dapp.getName()+" database..");
+					mdb.saveDB(false);
+				}catch(Exception exc) {
+					MinimaLogger.log("Fail shutdown : "+exc);
+				}
 			}
 			
 			stopMessageProcessor();
