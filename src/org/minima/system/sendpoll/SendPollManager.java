@@ -2,9 +2,8 @@ package org.minima.system.sendpoll;
 
 import java.util.ArrayList;
 
-import org.minima.system.mds.handler.CMDcommand;
+import org.minima.system.commands.CommandRunner;
 import org.minima.utils.json.JSONObject;
-import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
@@ -74,10 +73,12 @@ public class SendPollManager extends MessageProcessor{
 				}
 				
 				//Create a Command..
-				CMDcommand cmd 	= new CMDcommand("0x00", command.getCommand());
-				String result 	= cmd.runCommand();
+				JSONObject res = CommandRunner.getRunner().runSingleCommand(command.getCommand());
 				
-				JSONObject res  = (JSONObject) new JSONParser().parse(result);
+				//CMDcommand cmd 	= new CMDcommand("0x00", command.getCommand());
+				//String result 	= cmd.runCommand();
+				//JSONObject res  = (JSONObject) new JSONParser().parse(result);
+				
 				if((boolean)res.get("status")) {
 					
 					//It worked..remove from the list..

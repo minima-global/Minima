@@ -18,7 +18,6 @@ import org.minima.system.commands.CommandRunner;
 import org.minima.system.commands.backup.mysql;
 import org.minima.system.genesis.GenesisMMR;
 import org.minima.system.genesis.GenesisTxPoW;
-import org.minima.system.mds.MDSManager;
 import org.minima.system.network.NetworkManager;
 import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.minima.NIOManager;
@@ -192,11 +191,6 @@ public class Main extends MessageProcessor {
 	 * Maxima
 	 */
 	MaximaManager mMaxima;
-	
-	/**
-	 * MDS
-	 */
-	MDSManager mMDS;
 	
 	/**
 	 * Send POll Manager
@@ -379,9 +373,6 @@ public class Main extends MessageProcessor {
 		//Start up Maxima
 		mMaxima = new MaximaManager();
 				
-		//Start MDS
-		mMDS = new MDSManager();
-		
 		//New Send POll Manager
 		mSendPoll = new SendPollManager();
 		
@@ -669,7 +660,9 @@ public class Main extends MessageProcessor {
 		if(zShutDownMDS) {
 			if(!mHaveShutDownMDS) {
 				mHaveShutDownMDS = true;
-				shutdownMDS();
+				
+				//Shut down the Notify Manager
+				mNotifyManager.shutDown();
 			}
 		}
 				
@@ -677,15 +670,6 @@ public class Main extends MessageProcessor {
 		MinimaLogger.log("Shutdown TxPoWProcessor..");
 		mTxPoWProcessor.stopMessageProcessor();
 		mTxPoWProcessor.waitToShutDown();
-	}
-	
-	public void shutdownMDS() {
-		//ShutDown MDS
-		MinimaLogger.log("Shutdown MDS..");
-		mMDS.shutdown();
-		
-		//Shut down the Notify Manager
-		mNotifyManager.shutDown();
 	}
 	
 	/**
@@ -802,10 +786,6 @@ public class Main extends MessageProcessor {
 	
 	public MaximaManager getMaxima() {
 		return mMaxima;
-	}
-	
-	public MDSManager getMDSManager() {
-		return mMDS;
 	}
 	
 	public SendPollManager getSendPoll() {
@@ -1111,10 +1091,6 @@ public class Main extends MessageProcessor {
 			MinimaLogger.log("Wait 10 seconds..");
 			Thread.sleep(10000);
 			
-			//Stop and restart the MDS..
-			MinimaLogger.log("Clear MDS");
-			mMDS.clearExceptString("MDS_TIMER");
-			
 			//Reset the IBD timer
 			getTxPoWProcessor().resetFirstIBDTimer();
 			
@@ -1240,6 +1216,7 @@ public class Main extends MessageProcessor {
 			
 			//Check the P2P message count - can explode..
 			if(GeneralParams.P2P_ENABLED) {
+
 				
 				//How many messages are in the stack..
 	        	int count = Main.getInstance().getNetworkManager().getP2PManager().getSize();
@@ -1293,14 +1270,6 @@ public class Main extends MessageProcessor {
 				//And post
 				getNotifyManager().PostEvent(notify);
 			}
-		}
-		
-		//Tell the MDS..
-		if(getMDSManager() != null) {
-			Message poll = new Message(MDSManager.MDS_POLLMESSAGE);
-			poll.addObject("poll", notify);
-			poll.addObject("to", zTo);
-			getMDSManager().PostMessage(poll);
 		}
 	}
 	
