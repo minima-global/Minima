@@ -177,10 +177,7 @@ public class status extends Command {
 		
 		if(complete) {
 
-			long mdsfiles = MiniFile.getTotalFileSize(Main.getInstance().getMDSManager().getRootMDSFolder());
-			database.put("mds", MiniFormat.formatSize(mdsfiles));
-			
-			//Get ALKL the files
+			//Get ALL the files
 			JSONObject allthefiles = new JSONObject();
 			MiniFile.getTotalFileSizeWithNames(new File(GeneralParams.DATA_FOLDER), allthefiles,3,0);
 			database.put("allfiles", allthefiles);

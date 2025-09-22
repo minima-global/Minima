@@ -7,8 +7,6 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.minima.database.minidapps.MiniDAPP;
-import org.minima.system.Main;
 import org.minima.system.commands.backup.archive;
 import org.minima.system.commands.backup.backup;
 import org.minima.system.commands.backup.decryptbackup;
@@ -68,10 +66,6 @@ import org.minima.system.commands.maxima.maxima;
 import org.minima.system.commands.maxima.maxmessage;
 import org.minima.system.commands.maxima.maxsign;
 import org.minima.system.commands.maxima.maxverify;
-import org.minima.system.commands.mds.checkmode;
-import org.minima.system.commands.mds.checkpending;
-import org.minima.system.commands.mds.checkrestore;
-import org.minima.system.commands.mds.mds;
 import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.disconnect;
 import org.minima.system.commands.network.message;
@@ -146,13 +140,13 @@ public class CommandRunner {
 			new send(), new balance(), new tokencreate(), new tokenvalidate(), new tokens(),new getaddress(), new newaddress(), new debugflag(),
 			new incentivecash(), new webhooks(), new peers(), new p2pstate(),
 
-			new mds(), new sendpoll(), new healthcheck(), new mempool(), new block(), new reset(),
+			new sendpoll(), new healthcheck(), new mempool(), new block(), new reset(),
 			
 			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(), new sendview(),
 			new sendfrom(), new createfrom(), new rawfrom(), new signfrom(), new postfrom(), new constructfrom(), new consolidatefrom(),
 			
 			new archive(), new logs(), new history(), new convert(),new maths(),
-			new checkpending(), new checkmode(), new restoresync(), new timemilli(),
+			new restoresync(), new timemilli(),
 			
 			new decryptbackup(), new megammrsync(), new systemcheck(), new scanchain(),
 			
@@ -160,7 +154,7 @@ public class CommandRunner {
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
 			new maxencrypt(), new maxdecrypt(),
 			
-			new ping(), new random(), new seedrandom(), new mysql(), new mysqlcoins(), new slavenode(), new checkrestore(),
+			new ping(), new random(), new seedrandom(), new mysql(), new mysqlcoins(), new slavenode(),
 			//new file(),
 			new megammr(), new maxmessage(),
 			
@@ -261,7 +255,7 @@ public class CommandRunner {
 			boolean allowed = isCommandAllowed(comname);
 			
 			//Is this a MiniDAPP..
-			if(zMiniDAPPID.equals(Main.getInstance().getMDSManager().getPublicMiniDAPPID())) {
+			/*if(zMiniDAPPID.equals(Main.getInstance().getMDSManager().getPublicMiniDAPPID())) {
 				
 				//Public MiniDAPPs cannot add to pending..
 				if(!allowed) {
@@ -306,7 +300,7 @@ public class CommandRunner {
 						break;
 					}
 				}
-			}
+			}*/
 			
 			try {
 				result = cmd.runCommand();
