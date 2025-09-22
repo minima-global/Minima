@@ -140,6 +140,13 @@ public class Minima {
 		MinimaLogger.log("**********************************************");
 		MinimaLogger.log("Welcome to Pure Minima "+GlobalParams.getFullMicroVersion()+" - for assistance type help. Then press enter.");
 		
+		//Load the required H2 classes
+		try {
+			org.h2.Driver driver = new org.h2.Driver();
+		} catch (Exception e1) {
+			//e1.printStackTrace();
+		}
+		
 		//Load the required MySQL classes
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
