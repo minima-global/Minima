@@ -4,13 +4,13 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import org.minima.database.mmr.MMR;
-import org.minima.database.mmr.MMRData;
-import org.minima.database.mmr.MMREntry;
-import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
+import org.minima.objects.mmr.MMR;
+import org.minima.objects.mmr.MMRData;
+import org.minima.objects.mmr.MMREntry;
+import org.minima.objects.mmr.MMRProof;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 

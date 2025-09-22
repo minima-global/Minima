@@ -1,7 +1,7 @@
 package org.minima.system.commands.base;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.mmr.MMR;
+import org.minima.objects.mmr.MMR;
 import org.minima.system.commands.Command;
 import org.minima.utils.json.JSONObject;
 

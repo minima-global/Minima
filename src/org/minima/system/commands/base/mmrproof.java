@@ -3,11 +3,11 @@ package org.minima.system.commands.base;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.minima.database.mmr.MMRData;
-import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
+import org.minima.objects.mmr.MMRData;
+import org.minima.objects.mmr.MMRProof;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.utils.json.JSONObject;

@@ -1,9 +1,9 @@
 package org.minima.system.genesis;
 
-import org.minima.database.mmr.MMR;
-import org.minima.database.mmr.MMRData;
 import org.minima.objects.Coin;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.mmr.MMR;
+import org.minima.objects.mmr.MMRData;
 
 public class GenesisMMR extends MMR {
 

@@ -1,4 +1,4 @@
-package org.minima.database.mmr;
+package org.minima.objects.mmr;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;

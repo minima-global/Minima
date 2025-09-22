@@ -9,7 +9,6 @@ import java.util.Comparator;
 import java.util.Date;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.mmr.MMRData;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.UserDB;
@@ -22,6 +21,7 @@ import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.mmr.MMRData;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;

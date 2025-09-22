@@ -3,8 +3,8 @@ package org.minima.objects.keys;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.mmr.MMRProof;
 import org.minima.utils.MinimaLogger;
 
 public class TreeKey {
