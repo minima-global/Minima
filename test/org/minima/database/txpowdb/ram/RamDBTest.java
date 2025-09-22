@@ -4,11 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import java.math.BigInteger;
-
 import org.junit.Test;
 import org.minima.objects.TxPoW;
-import org.minima.objects.base.MiniNumber;
 import org.minima.utils.TestUtils;
 
 public class RamDBTest {

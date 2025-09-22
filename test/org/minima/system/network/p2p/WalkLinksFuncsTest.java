@@ -1,21 +1,17 @@
 package org.minima.system.network.p2p;
 
-import junit.framework.TestCase;
-import org.minima.system.network.minima.NIOClientInfo;
-import org.minima.system.network.p2p.messages.InetSocketAddressIO;
-import org.minima.system.network.p2p.messages.P2PWalkLinks;
-import org.minima.system.network.p2p.testingutils.QuickClients;
-import org.minima.system.network.p2p.testingutils.QuickInetLists;
-import org.minima.system.network.p2p.testingutils.QuickState;
-import org.minima.utils.json.JSONObject;
-import org.minima.utils.messages.Message;
-
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.minima.system.network.p2p.messages.P2PWalkLinks;
+import org.minima.system.network.p2p.testingutils.QuickInetLists;
+import org.minima.system.network.p2p.testingutils.QuickState;
+import org.minima.utils.messages.Message;
+
+import junit.framework.TestCase;
 
 public class WalkLinksFuncsTest extends TestCase {
 

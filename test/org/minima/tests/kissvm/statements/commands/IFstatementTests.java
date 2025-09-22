@@ -16,7 +16,6 @@ import org.minima.kissvm.statements.commands.RETURNstatement;
 import org.minima.kissvm.values.BooleanValue;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
-import org.minima.utils.MinimaLogger;
 
 public class IFstatementTests {
 

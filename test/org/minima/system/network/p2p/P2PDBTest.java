@@ -1,9 +1,8 @@
 package org.minima.system.network.p2p;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.minima.system.network.p2p.params.P2PParams;
-import org.minima.system.params.GeneralParams;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -11,7 +10,9 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.minima.system.network.p2p.params.P2PParams;
 
 public class P2PDBTest {
 

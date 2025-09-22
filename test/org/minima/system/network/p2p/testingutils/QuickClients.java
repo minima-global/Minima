@@ -1,9 +1,9 @@
 package org.minima.system.network.p2p.testingutils;
 
-import org.minima.system.network.minima.NIOClientInfo;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.minima.system.network.minima.NIOClientInfo;
 
 public class QuickClients {
 

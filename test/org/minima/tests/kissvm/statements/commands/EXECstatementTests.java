@@ -14,7 +14,6 @@ import org.minima.kissvm.statements.commands.EXECstatement;
 import org.minima.kissvm.values.StringValue;
 import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
-import org.minima.utils.MinimaLogger;
 
 public class EXECstatementTests {
 

@@ -1,9 +1,9 @@
 package org.minima.system.network.p2p.testingutils;
 
-import org.minima.system.network.p2p.P2PState;
-
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+
+import org.minima.system.network.p2p.P2PState;
 
 public class QuickState {
 

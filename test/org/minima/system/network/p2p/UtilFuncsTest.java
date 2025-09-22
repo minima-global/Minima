@@ -1,14 +1,13 @@
 package org.minima.system.network.p2p;
 
-import junit.framework.TestCase;
-import org.minima.system.network.minima.NIOClientInfo;
-import org.minima.system.network.p2p.testingutils.QuickClients;
-import org.minima.system.network.p2p.testingutils.QuickInetLists;
-
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.minima.system.network.p2p.testingutils.QuickInetLists;
+
+import junit.framework.TestCase;
 
 public class UtilFuncsTest extends TestCase {
 
