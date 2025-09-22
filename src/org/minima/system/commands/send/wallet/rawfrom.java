@@ -25,6 +25,27 @@ public class rawfrom extends Command {
 	}
 	
 	@Override
+	public String getFullHelp() {
+		return "\nrawfrom\n"
+				+ "\n"
+				+ "Create an unsigned transaction with a list of input and output JSON coins.\n"
+				+ "\n"
+				+ "inputs:\n"
+				+ "    A JSONArray of input JSON coins with a coinid and script value.\n"
+				+ "\n"
+				+ "outputs:\n"
+				+ "    A JSONArray of output JSON coins with an address, amount and optional tokenid and storestate.\n"
+				+ "\n"
+				+ "state: (optional)\n"
+				+ "    The JSON state.\n"
+				+ "\n"
+				+ "Examples:\n"
+				+ "\n"
+				+ "rawfrom inputs:[{\"coinid\":\"0x859EC55D1DC0DD66E72C1D8B6CDBD5E12D0EC5CB56255F629BAEC590047C22C4\",\"script\":\"RETURN SIGNEDBY(0x677228489AD4C14AC0D04F9BA054974A2B1D60C5A8E8D710CF9F2BF64D1EE81E)\"}] outputs:[{\"address\":\"0x6A3A060CE9D8E876E9B12DBE5D8F6A6864183BA1A63EA8CBCC14D668B5BECACF\",\"amount\":\"9.9996\",\"storestate\":false,\"tokenid\":\"0x00\"}] state:{\"0\":\"98\",\"1\":\"[MESSAGE]\"}\n"
+				;
+	}
+	
+	@Override
 	public JSONObject runCommand() throws Exception {
 		JSONObject ret = getJSONReply();
 	

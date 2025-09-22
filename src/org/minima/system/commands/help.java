@@ -76,6 +76,7 @@ import org.minima.system.commands.send.sendsign;
 import org.minima.system.commands.send.sendview;
 import org.minima.system.commands.send.wallet.createfrom;
 import org.minima.system.commands.send.wallet.postfrom;
+import org.minima.system.commands.send.wallet.rawfrom;
 import org.minima.system.commands.send.wallet.sendfrom;
 import org.minima.system.commands.send.wallet.signfrom;
 import org.minima.system.commands.signatures.sign;
@@ -169,6 +170,7 @@ public class help extends Command {
 			addCommand(details, new multisig());
 			
 			addCommand(details, new sendfrom());
+			addCommand(details, new rawfrom());
 			addCommand(details, new createfrom());
 			addCommand(details, new signfrom());
 			addCommand(details, new postfrom());
