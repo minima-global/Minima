@@ -15,12 +15,12 @@ import org.minima.utils.json.JSONObject;
 public class postfrom extends Command {
 
 	public postfrom() {
-		super("postfrom","[data:] (mine:) - Post a signfrom txn ");
+		super("postfrom","[data:] (mine:true|false) (mmr:true|false) - Post a signfrom txn ");
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"data","mine"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"data","mine","mmr"}));
 	}
 	
 	@Override
@@ -38,13 +38,20 @@ public class postfrom extends Command {
 			tx.setID(getParam("id"));
 		}
 		
+		boolean sortmmr = getBooleanParam("mmr", false);
+		
 		String randomid = tx.getID();
 		
 		//Add to the DB
 		db.addCompleteTransaction(tx);
 		
 		//Are we mining
-		boolean mine 		= getBooleanParam("mine", false);
+		boolean mine = getBooleanParam("mine", false);
+		
+		//Do we sort the MMR
+		if(sortmmr) {
+			runCommand("txnmmr id:"+randomid);
+		}
 		
 		//And POST!
 		JSONObject result = runCommand("txnpost id:"+randomid+" mine:"+mine);
