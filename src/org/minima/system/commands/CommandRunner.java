@@ -57,15 +57,6 @@ import org.minima.system.commands.base.timemilli;
 import org.minima.system.commands.base.tokencreate;
 import org.minima.system.commands.base.tokenvalidate;
 import org.minima.system.commands.base.trace;
-import org.minima.system.commands.maxima.maxcontacts;
-import org.minima.system.commands.maxima.maxcreate;
-import org.minima.system.commands.maxima.maxdecrypt;
-import org.minima.system.commands.maxima.maxencrypt;
-import org.minima.system.commands.maxima.maxextra;
-import org.minima.system.commands.maxima.maxima;
-import org.minima.system.commands.maxima.maxmessage;
-import org.minima.system.commands.maxima.maxsign;
-import org.minima.system.commands.maxima.maxverify;
 import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.disconnect;
 import org.minima.system.commands.network.message;
@@ -151,12 +142,11 @@ public class CommandRunner {
 			new decryptbackup(), new megammrsync(), new systemcheck(), new scanchain(),
 			
 			new multisig(), new multisigread(), new checkaddress(),
-			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
-			new maxencrypt(), new maxdecrypt(),
 			
 			new ping(), new random(), new seedrandom(), new mysql(), new mysqlcoins(), new slavenode(),
 			//new file(),
-			new megammr(), new maxmessage(),
+			
+			new megammr(), 
 			
 			new vault(), new consolidate(), new coinnotify(),
 			new backup(), new restore(), new test(), 
@@ -172,8 +162,6 @@ public class CommandRunner {
 			new coinimport(), new coinexport(),new cointrack(), new coincheck(),
 			
 			new hash(), new hashtest(), new sign(), new verify(),
-			
-			new maxima(), new maxcontacts(),
 			
 			new mmrcreate(), new mmrproof()
 		};

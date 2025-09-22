@@ -8,7 +8,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.minima.database.archive.ArchiveManager;
 import org.minima.database.archive.TxBlockDB;
 import org.minima.database.cascade.Cascade;
-import org.minima.database.maxima.MaximaDB;
 import org.minima.database.mmr.MegaMMR;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowtree.TxPowTree;
@@ -46,7 +45,6 @@ public class MinimaDB {
 	UserDB			mUserDB;
 	TxnDB			mTxnDB;
 	Wallet			mWallet;
-	MaximaDB	 	mMaximaDB;
 	TxBlockDB		mTxBlockDB;
 	
 	/**
@@ -87,7 +85,6 @@ public class MinimaDB {
 		mCascade	= new Cascade();
 		mUserDB		= new UserDB();
 		mWallet		= new Wallet();
-		mMaximaDB	= new MaximaDB();
 		mTxBlockDB	= new TxBlockDB();
 		
 		//The P2P
@@ -250,10 +247,6 @@ public class MinimaDB {
 		return mArchive;
 	}
 	
-	public MaximaDB getMaximaDB() {
-		return mMaximaDB;
-	}
-	
 	public P2PDB getP2PDB() {
 		return mP2PDB;
 	}
@@ -349,37 +342,6 @@ public class MinimaDB {
 			//Load the Maxima DB
 			if(Main.STARTUP_DEBUG_LOGS) {
 				MinimaLogger.log("MinimaDB load MaximaDB..");
-			}
-			File maxsqlfolder = new File(basedb,"maximasql");
-			try {
-				
-				if(!GeneralParams.IS_MAIN_DBPASSWORD_SET) {
-					mMaximaDB.loadDB(new File(maxsqlfolder,"maxima"));
-				}else {
-					mMaximaDB.loadEncryptedSQLDB(new File(maxsqlfolder,"maxima"),GeneralParams.MAIN_DBPASSWORD);
-				}
-				
-			}catch(Exception exc) {
-				
-				//Log the complete error
-				MinimaLogger.log(exc);
-				
-				//There wqas an issue.. wipe it.. and resync..
-				MinimaLogger.log("ERROR loading MaximaDB.. WIPE and RESTART.. ");
-				
-				//Close the DB
-				mMaximaDB.hardCloseDB();
-				
-				//Delete the ArchiveDB folder
-				MiniFile.deleteFileOrFolder(maxsqlfolder.getAbsolutePath(), maxsqlfolder);
-				
-				//And reload..
-				mMaximaDB	= new MaximaDB();
-				if(!GeneralParams.IS_MAIN_DBPASSWORD_SET) {
-					mMaximaDB.loadDB(new File(maxsqlfolder,"maxima"));
-				}else {
-					mMaximaDB.loadEncryptedSQLDB(new File(maxsqlfolder,"maxima"),GeneralParams.MAIN_DBPASSWORD);
-				}
 			}
 			
 			//Load the User Prefs
@@ -595,8 +557,6 @@ public class MinimaDB {
 			//Clean shutdown of SQL DBs
 			MinimaLogger.log("Wallet shutdown..");
 			mWallet.saveDB(true);
-			MinimaLogger.log("Maxima shutdown..");
-			mMaximaDB.saveDB(zCompact);
 			MinimaLogger.log("TxPowDB shutdown..");
 			mTxPoWDB.saveDB(zCompact);
 			MinimaLogger.log("ArchiveDB shutdown..");

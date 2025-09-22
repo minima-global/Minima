@@ -3,7 +3,6 @@ package org.minima.system.commands.base;
 import org.minima.database.MinimaDB;
 import org.minima.database.cascade.Cascade;
 import org.minima.database.cascade.CascadeNode;
-import org.minima.database.maxima.MaximaDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.commands.Command;
@@ -76,19 +75,6 @@ public class healthcheck extends Command {
 		}else {
 			resp.put("cascade", "nocacade");
 		}
-		
-		
-		//Now check Maxima..
-		MaximaDB maxdb = MinimaDB.getDB().getMaximaDB();
-		JSONObject maxima = new JSONObject();
-		
-		int hosts 	 = maxdb.getAllHosts().size();
-		int contacts = maxdb.getAllContacts().size();
-		
-		maxima.put("hosts", hosts);
-		maxima.put("contacts", contacts);
-		
-		resp.put("maxima", maxima);
 		
 		ret.put("response", resp);
 		

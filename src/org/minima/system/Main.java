@@ -19,7 +19,6 @@ import org.minima.system.commands.backup.mysql;
 import org.minima.system.genesis.GenesisMMR;
 import org.minima.system.genesis.GenesisTxPoW;
 import org.minima.system.network.NetworkManager;
-import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
 import org.minima.system.network.p2p.P2PFunctions;
@@ -186,11 +185,6 @@ public class Main extends MessageProcessor {
 	 * Network Manager
 	 */
 	NetworkManager mNetwork;
-	
-	/**
-	 * Maxima
-	 */
-	MaximaManager mMaxima;
 	
 	/**
 	 * Send POll Manager
@@ -369,9 +363,6 @@ public class Main extends MessageProcessor {
 		
 		//Start the networking..
 		mNetwork = new NetworkManager();
-				
-		//Start up Maxima
-		mMaxima = new MaximaManager();
 				
 		//New Send POll Manager
 		mSendPoll = new SendPollManager();
@@ -628,9 +619,6 @@ public class Main extends MessageProcessor {
 				
 		//Shut down the network
 		mNetwork.shutdownNetwork();
-		
-		//Shut down Maxima
-		mMaxima.shutdown();
 				
 		//Stop the Miner
 		mTxPoWMiner.stopMessageProcessor();
@@ -784,10 +772,6 @@ public class Main extends MessageProcessor {
 		return mTxPoWMiner;
 	}
 	
-	public MaximaManager getMaxima() {
-		return mMaxima;
-	}
-	
 	public SendPollManager getSendPoll() {
 		return mSendPoll;
 	}
@@ -878,9 +862,6 @@ public class Main extends MessageProcessor {
 			
 			//Now close and Re-open the SQL db..
 			MinimaDB.getDB().refreshSQLDB();
-			
-			//Clear the Maxima Poll Stack
-			getMaxima().checkPollMessages();
 			
 		}else if(zMessage.getMessageType().equals(MAIN_AUTOBACKUP_MYSQL)) {
 		

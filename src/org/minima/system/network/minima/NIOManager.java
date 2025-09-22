@@ -31,7 +31,6 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.commands.network.connect;
 import org.minima.system.network.NetworkManager;
-import org.minima.system.network.maxima.MaximaManager;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.params.GeneralParams;
@@ -520,12 +519,6 @@ public class NIOManager extends MessageProcessor {
 				
 				//We are no  longer attempting to connect
 				mConnectingClients.remove(nc.getUID());
-				
-				//Tell MAXIMA
-				Message maxconn = new Message(MaximaManager.MAXIMA_DISCONNECTED);
-				maxconn.addObject("nioclient", nc);
-				maxconn.addBoolean("reconnect", false);
-				Main.getInstance().getMaxima().PostMessage(maxconn);
 			}
 		
 		}else if(zMessage.getMessageType().equals(NIO_DISCONNECTALL)) {
@@ -625,12 +618,6 @@ public class NIOManager extends MessageProcessor {
 			newconn.addBoolean("incoming", nioc.isIncoming());
 			newconn.addBoolean("reconnect", reconnect);
 			mNetworkManager.getP2PManager().PostMessage(newconn);
-
-			//Tell MAXIMA
-			Message maxconn = new Message(MaximaManager.MAXIMA_DISCONNECTED);
-			maxconn.addObject("nioclient", nioc);
-			maxconn.addBoolean("reconnect", reconnect);
-			Main.getInstance().getMaxima().PostMessage(maxconn);
 			
 		}else if(zMessage.getMessageType().equals(NIO_NEWCONNECTION)) {
 			//New connection.. 
