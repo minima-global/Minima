@@ -1,4 +1,4 @@
-package org.minima.system.sendpoll;
+package org.minima.system.commands.sendpoll;
 
 import java.util.ArrayList;
 

@@ -1,4 +1,4 @@
-package org.minima.system.sendpoll;
+package org.minima.system.commands.sendpoll;
 
 import org.minima.objects.base.MiniData;
 import org.minima.utils.json.JSONObject;

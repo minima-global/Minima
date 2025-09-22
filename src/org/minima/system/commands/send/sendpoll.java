@@ -6,8 +6,8 @@ import java.util.Arrays;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
-import org.minima.system.sendpoll.SendPollManager;
-import org.minima.system.sendpoll.SendPollMessage;
+import org.minima.system.commands.sendpoll.SendPollManager;
+import org.minima.system.commands.sendpoll.SendPollMessage;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
