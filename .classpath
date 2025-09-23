@@ -12,8 +12,8 @@
 	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-169.jar"/>
 	<classpathentry kind="lib" path="lib/bcprov-jdk15on-169.jar"/>
 	<classpathentry kind="lib" path="lib/bcutil-jdk15on-169.jar"/>
-	<classpathentry kind="lib" path="lib/h2-2.1.214.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.13.jar"/>
 	<classpathentry kind="lib" path="lib/mysql-connector-java-8.0.24.jar"/>
+	<classpathentry kind="lib" path="lib/h2-2.3.232.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
