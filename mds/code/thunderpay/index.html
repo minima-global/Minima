@@ -89,8 +89,81 @@
 	
 	//List of your contacts
 	var MAXIMA_CONTACTS 	= [];
+	
+	//Is a channel CLOSING or SENDING
 	var CHANNELS_CLOSING 	= [];
 	var CHANNELS_SENDING 	= [];
+	
+	function addItemToClosingList(item, callback){
+		CHANNELS_CLOSING.push(item);
+		
+		//And add a permanent record
+		addTimedItemToList("CHANNELS_CLOSING_LIST", item, function(fulllist){
+			if(callback){
+				callback(fulllist);
+			}
+		});
+	}
+	
+	function addItemToSendingList(item, callback){
+		CHANNELS_SENDING.push(item);
+		
+		//And add a permanent record
+		addTimedItemToList("CHANNELS_SENDING_LIST", item, function(fulllist){
+			if(callback){
+				callback(fulllist);
+			}
+		});
+	}
+	
+	function setupLists(callback){
+		
+		//First the CLOSING list
+		getTimedItemList("CHANNELS_CLOSING_LIST", function(closingresp){
+			logJSON(closingresp,"CLOSING_LIST");
+			
+			CHANNELS_CLOSING = closingresp;
+			
+			//Now the SENDING list
+			getTimedItemList("CHANNELS_SENDING_LIST", function(sendingresp){
+				logJSON(sendingresp,"SENDING_LIST");
+				
+				CHANNELS_SENDING = sendingresp;
+				
+				if(callback){
+					callback();
+				}
+			});
+		});
+	}
+	
+	function removeItemFromAllLists(hashid, callback){
+		
+		//Remove from temp list
+		removeItemOnce(CHANNELS_CLOSING,hashid);
+		removeItemOnce(CHANNELS_SENDING,hashid);
+						
+		//Remove from perm lists
+		removeItemFromList("CHANNELS_CLOSING_LIST", hashid, function(){
+			removeItemFromList("CHANNELS_SENDING_LIST", hashid, function(){
+				if(callback){
+					callback();
+				}
+			});
+		});
+	}
+	
+	function removeOldItems(callback){
+		//Check for items in list and remove the old ones
+		removeOldTimedItems("CHANNELS_CLOSING_LIST", 1000*60*5, function(){
+			removeOldTimedItems("CHANNELS_SENDING_LIST", 1000*20, function(){
+				if(callback){
+					callback();
+				}
+			});				
+		});
+	}
+	
 	
 	function getContactFromPublicKey(pubkey){
 		for(var i=0;i<MAXIMA_CONTACTS.length;i++){
@@ -366,7 +439,7 @@
 									insertLog(hashid, "COOP_CLOSE_REQUESTED", "You try to close the channel co-operatively");
 									
 									//Now set this as closing..
-									CHANNELS_CLOSING.push(hashid);
+									addItemToClosingList(hashid);
 									
 									//And refresh the list..
 									showChannels();
@@ -400,7 +473,7 @@
 			postTxn(sql.rows[0].TRIGGERTXN, true, function(postresp){
 				
 				//Now set this as closing..
-				CHANNELS_CLOSING.push(hashid);
+				addItemToClosingList(hashid);
 				
 				//And refresh the list..
 				showChannels();
@@ -475,9 +548,9 @@
 					return;
 				}
 				
-				CHANNELS_SENDING.push(hashid);
-				
-				showChannels();
+				addItemToSendingList(hashid, function(){
+					showChannels();	
+				});
 			});	
 		});
 	}
@@ -502,7 +575,17 @@
 					//Get maxcontact details
 					MDS.cmd("maxcontacts",function(maxcont){
 						MAXIMA_CONTACTS = maxcont.response.contacts;
-						showChannels();
+						
+						//Remove old items from lists
+						removeOldItems(function(){
+							
+							//Set up the CLOSING and SENDING lists
+							setupLists(function(){
+								
+								//Load channels
+								showChannels();	
+							});	
+						});
 					});
 				});		
 			}
@@ -514,21 +597,23 @@
 				
 				logJSON(comms, "COMMS");
 				
-				//Rem,ove from our temp lists..
-				removeItemOnce(CHANNELS_CLOSING,comms.hashid);
-				removeItemOnce(CHANNELS_SENDING,comms.hashid);
-				
-				if(comms.type == "REFRESH_CHANNEL"){
-					MDS.log("RECEIVED REFRESH_CHANNEL comms.. "+comms.hashid);
-					showChannels();
-				}	
+				//Remove from our temp lists..
+				removeItemFromAllLists(comms.hashid, function(){
+					if(comms.type == "REFRESH_CHANNEL"){
+						MDS.log("RECEIVED REFRESH_CHANNEL comms.. "+comms.hashid);
+						showChannels();
+					}	
+				});	
 			}			
 			
 		}else if(msg.event == "NEWBLOCK"){
 			
+			//Check for items in list and remove the old ones
+			removeOldItems();
+			
 			//Should only check every 10 blocks..
-			var block = +msg.data.txpow.header.block;		
-			MDS.log("NEW BLOCK "+block);
+			//var block = +msg.data.txpow.header.block;		
+			//MDS.log("NEW BLOCK "+block);
 			
 		}else if(msg.event == "MAXIMA"){
 				

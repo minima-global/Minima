@@ -94,6 +94,22 @@ function trackScript(script, callback){
 }
 
 /**
+ * Remove Script - once Channel closed remove the script 
+ */
+function removeScript(address, callback){
+	
+	//Add and track the script
+	MDS.cmd("removescript address:"+address, function(scriptresp){
+		//MDS.log(JSON.stringify(scriptresp));
+		
+		//Send the details back
+		if(callback){
+			callback(scriptresp);	
+		}
+	});
+}
+
+/**
  * Create the FUNDING TXN to start the channel
  */
 function createFundingTxn(fundingaddress, addamount, total, callback){

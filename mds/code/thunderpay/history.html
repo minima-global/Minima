@@ -25,6 +25,7 @@
 	<script type="text/javascript" src="./js/jslib.js"></script>
 	<script type="text/javascript" src="./js/utils.js"></script>
 	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/txns.js"></script>
 		
 </head>
 
@@ -83,9 +84,25 @@
 	
 	function clearHistory(){
 		if(confirm("Are you sure you want to delete History ?")){
-			sqlDeleteAllClosedChannels(function(){
-				//And reload..
-				loadHistory();
+			
+			//First load all closed channels
+			sqlSelectAllClosedChannels(function(sqlres){
+				
+				//Now delete all the scripts..
+				for(var i=0;i<sqlres.count;i++){
+					
+					var row = sqlres.rows[i];
+					
+					//Remove the scripts..
+					removeScript(row.FUNDINGADDRESS);
+					removeScript(row.ELTOOADDRESS);
+				}
+				
+				//And delete all channels
+				sqlDeleteAllClosedChannels(function(){
+					//And reload..
+					loadHistory();
+				});
 			});
 		}
 	}
