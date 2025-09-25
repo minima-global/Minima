@@ -718,7 +718,7 @@ public class MDSManager extends MessageProcessor {
 					MinimaLogger.log("Shutdown "+dapp.getName()+" database..");
 					mdb.saveDB(false);
 				}catch(Exception exc) {
-					MinimaLogger.log("Fail shutdown : "+exc);
+					MinimaLogger.log(exc);
 				}
 			}
 			
