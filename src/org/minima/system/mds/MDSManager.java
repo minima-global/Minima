@@ -200,7 +200,7 @@ public class MDSManager extends MessageProcessor {
 		PostMessage(MDS_SHUTDOWN);
 		
 		//Waiting for shutdown..
-		waitToShutDown();
+		waitToShutDown(25000);
 		
 		//No longer started
 		mHasStarted = false;
