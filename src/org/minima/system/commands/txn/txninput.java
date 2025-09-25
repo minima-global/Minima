@@ -7,6 +7,7 @@ import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.objects.Coin;
+import org.minima.objects.Token;
 import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -129,12 +130,33 @@ public class txninput extends Command {
 		}else {
 			
 			//Get the details..
-			String address  = getAddressParam("address");
-			String amount   = getParam("amount");
-			String tokenid  = getParam("tokenid","0x00");
+			String address  	= getAddressParam("address");
+			String amount   	= getParam("amount");
+			MiniData tokenid  	= new MiniData(getParam("tokenid","0x00"));
+			
+			Token tok = null;
+			MiniNumber miniamount = new MiniNumber(amount);
+			
+			//Is it a token
+			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
+				
+				//Get the token..
+				tok = TxPoWSearcher.getToken(tokenid);
+				if(tok == null) {
+					throw new CommandException("Could not find token : "+tokenid.to0xString());
+				}
+				
+				//And the correct amount
+				miniamount = tok.getScaledMinimaAmount(miniamount);
+			}
 			
 			//Create a COIN..
-			cc = new Coin(Coin.COINID_ELTOO, new MiniData(address), new MiniNumber(amount), new MiniData(tokenid));
+			cc = new Coin(Coin.COINID_ELTOO, new MiniData(address), miniamount, tokenid);
+			
+			//Do we need to add the token details
+			if(tok!=null) {
+				cc.setToken(tok);
+			}
 		}
 		
 		//Get the transaction..
