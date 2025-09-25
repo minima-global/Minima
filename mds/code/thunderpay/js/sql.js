@@ -39,6 +39,10 @@ function createDB(callback){
 				+"  `user2address` varchar(256),"
 				+"  `user2amount` varchar(256),"
 				
+				+"  `tokenname` varchar(256),"
+				+"  `tokenid` varchar(256),"
+				+"  `tokendata` varchar(256000),"
+																
 				+"  `totalamount` varchar(256),"
 												
 				+"  `fundingaddress` varchar(256),"
@@ -88,7 +92,7 @@ function sqlInsertNewChannel(details, state, usernum, callback){
 	
 	//Insert this unread message
 	var sql = "INSERT INTO channels(hashid, state, usernum, user1maximaid, user1publickey, user1address, user1amount, "
-									+"user2maximaid, user2amount, totalamount, date) "
+									+"user2maximaid, user2amount, tokenname, tokenid, tokendata, totalamount, date) "
 			 +"VALUES ('"+details.hashid+"','"+state+"',"+usernum+",'"
 				//User details
 				+details.user.maximaid+"','"+details.user.publickey+"','"+details.user.address+"','"+details.useramount
@@ -96,6 +100,11 @@ function sqlInsertNewChannel(details, state, usernum, callback){
 				//Counterpary User
 				+"','"+details.tomaximapublickey
 				+"','"+details.requestamount
+				
+				//Token Details
+				+"','"+details.tokenname
+				+"','"+details.tokenid
+				+"','"+details.tokendata
 				
 				//Total amount in channel
 				+"','"+details.totalamount
@@ -446,7 +455,7 @@ function updateClosedChannels(callback){
 /**
  * Add a log
 */
-var PRINT_LOGS = false;
+var PRINT_LOGS = true;
 function insertLog(hashid, type, message, callback){
 	
 	//Do we print to stdio

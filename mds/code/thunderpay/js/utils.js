@@ -128,7 +128,7 @@ function addTimedItemToList(itemname, hashid, callback){
 	
 	//Get the current list
 	MDS.keypair.get(itemname, function(itemlist){
-		logJSON(itemlist, "GET ITEMLIST "+itemname);
+		//logJSON(itemlist, "GET ITEMLIST "+itemname);
 		
 		//Does it exists
 		var list = [];
@@ -144,7 +144,6 @@ function addTimedItemToList(itemname, hashid, callback){
 		
 		//And push that
 		MDS.keypair.set(itemname, JSON.stringify(list), function(setlist){
-			//logJSON(setlist, "SET ITEMLIST "+itemname);
 			if(callback){
 				callback(list);
 			}
@@ -220,6 +219,8 @@ function removeItemFromList(itemname, hashid, callback){
  */
 function removeOldTimedItems(itemname, maxtimediff, callback){
 	
+	var itemremoved = false;
+	
 	//Get the current list
 	MDS.keypair.get(itemname, function(itemlist){
 		//logJSON(itemlist, "REMOVE GET ITEMLIST "+itemname);
@@ -245,17 +246,41 @@ function removeOldTimedItems(itemname, maxtimediff, callback){
 				newlist.push(item);
 			}else{
 				MDS.log("REMOVING : "+item.data+" FROM "+itemname);
+				itemremoved = true;
 			}
 		}
 		
 		//And push that
 		MDS.keypair.set(itemname, JSON.stringify(newlist), function(setlist){
-			//logJSON(setlist, "NEW ITEMLIST "+itemname);
-			
 			if(callback){
-				callback(newlist);
+				callback(itemremoved, newlist);
 			}
 		});
+	});
+}
+
+function checkBalance(amount, tokenid, callback){
+	
+	MDS.cmd("balance",function(bal){
+		var required = new Decimal(amount);
+		
+		if(required.equals(DECIMAL_ZERO)){
+			callback(true);
+			return;
+		}
+		
+		for(var i=0;i<bal.response.length;i++){
+			var balance = bal.response[i];
+			
+			if(balance.tokenid == tokenid){
+				if(required.lessThanOrEqualTo(new Decimal(balance.confirmed))){
+					callback(true);
+					return;
+				}	
+			}
+		}
+		
+		callback(false);
 	});
 }
 

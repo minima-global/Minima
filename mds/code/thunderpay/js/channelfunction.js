@@ -5,13 +5,13 @@
 /**
  * START HERE.. send an ACK message and on receipt of a SYNACK will continue to ask for a channel
  */
-function requestNewChannel(maximaid, myamount, requestamount,  callback){
+function requestNewChannel(maximaid, myamount, requestamount, tokenname, tokenid, tokendata, callback){
 	
 	//First create a new Random HashID.. so EVERY Funding and ELTOO address is unique
 	var hashid = genRandomHexString();
 	
 	//Now create the initial params.. which are called AFTER the ACK / SYNACK messages
-	var details = startChannelMessage(hashid, myamount, maximaid, requestamount);	
+	var details = startChannelMessage(hashid, myamount, maximaid, requestamount, tokenname, tokenid, tokendata);	
 		
 	//Now try and start a conmnection
 	ackFunctionCall(maximaid, _requestNewChannel, details, function(ackdelivered){

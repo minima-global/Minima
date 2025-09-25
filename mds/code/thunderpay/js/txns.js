@@ -100,9 +100,6 @@ function removeScript(address, callback){
 	
 	//Add and track the script
 	MDS.cmd("removescript address:"+address, function(scriptresp){
-		//MDS.log(JSON.stringify(scriptresp));
-		
-		//Send the details back
 		if(callback){
 			callback(scriptresp);	
 		}
@@ -112,23 +109,32 @@ function removeScript(address, callback){
 /**
  * Create the FUNDING TXN to start the channel
  */
-function createFundingTxn(fundingaddress, addamount, total, callback){
+function createFundingTxn(fundingaddress, addamount, total, tokenid, callback){
 	
 	var txid = randomString();
 	
 	var create = "txncreate id:"+txid+";"+
-				 "txnoutput id:"+txid+" amount:"+total+" address:"+fundingaddress+";"+
-				 "txnaddamount id:"+txid+" onlychange:true amount:"+addamount+";"+
+				 "txnoutput id:"+txid+" amount:"+total+" tokenid:"+tokenid+" address:"+fundingaddress+";"+
+				 "txnaddamount id:"+txid+" onlychange:true tokenid:"+tokenid+" amount:"+addamount+";"+
 				 "txnexport id:"+txid+";"+
 				 "txndelete id:"+txid+";"+
 				 "";
 	
 	MDS.cmd(create,function(fundresp){
-		callback(fundresp[3].response.data);
+		MDS.log("createFundingTxn : "+JSON.stringify(fundresp));
+		
+		//Did we add the funds..
+		if(!fundresp[2].status){
+			//NOT ENOUGH FUNDS..
+			MDS.log("NOT ENOUGH FUNDS to create Channel!");
+			callback("0x00");	
+		}else{
+			callback(fundresp[3].response.data);	
+		}
 	}); 	
 }
 
-function addToFundingTxn(txndata, addamount, callback){
+function addToFundingTxn(txndata, addamount, tokenid, callback){
 	
 	//Cannot add this amount..
 	if(new Decimal(addamount).lessThanOrEqualTo(DECIMAL_ZERO)){
@@ -139,7 +145,7 @@ function addToFundingTxn(txndata, addamount, callback){
 	var txid = randomString();
 	
 	var create = "txnimport id:"+txid+" data:"+txndata+";"+
-				 "txnaddamount id:"+txid+" onlychange:true amount:"+addamount+";"+
+				 "txnaddamount id:"+txid+" onlychange:true tokenid:"+tokenid+" amount:"+addamount+";"+
 				 "txnexport id:"+txid+";"+
 				 "txndelete id:"+txid+";"+
 				 "";
@@ -160,20 +166,22 @@ function spendFundingTxn(sqlrow, callback){
 		signkey = sqlrow.USER2PUBLICKEY;	
 	}
 	
+	var tokenid = sqlrow.TOKENID;
+	
 	var create = "txncreate id:"+txid+";"+
 		
 	//Input the Funding txn address - floating
-	"txninput id:"+txid+" amount:"+sqlrow.TOTALAMOUNT+" address:"+sqlrow.FUNDINGADDRESS+" floating:true;";
+	"txninput id:"+txid+" tokenid:"+tokenid+" amount:"+sqlrow.TOTALAMOUNT+" address:"+sqlrow.FUNDINGADDRESS+" floating:true;";
 	
 	//Output the correct amount to EACH User
 	if(!new Decimal(sqlrow.USER1AMOUNT).lessThanOrEqualTo(DECIMAL_ZERO)){
-		create +="txnoutput id:"+txid+" amount:"+sqlrow.USER1AMOUNT+" address:"+sqlrow.USER1ADDRESS+";";	
+		create +="txnoutput id:"+txid+" tokenid:"+tokenid+" amount:"+sqlrow.USER1AMOUNT+" address:"+sqlrow.USER1ADDRESS+";";	
 	}else{
 		cmdnum--;
 	}
 	
 	if(!new Decimal(sqlrow.USER2AMOUNT).lessThanOrEqualTo(DECIMAL_ZERO)){
-		create +="txnoutput id:"+txid+" amount:"+sqlrow.USER2AMOUNT+" address:"+sqlrow.USER2ADDRESS+";";
+		create +="txnoutput id:"+txid+" tokenid:"+tokenid+" amount:"+sqlrow.USER2AMOUNT+" address:"+sqlrow.USER2ADDRESS+";";
 	}else{
 		cmdnum--;
 	}
@@ -193,6 +201,8 @@ function spendFundingTxn(sqlrow, callback){
 	"";
 	
 	MDS.cmd(create,function(fundresp){
+		//logJSON(fundresp,"SPEND FUNDING!");
+		
 		callback(fundresp[cmdnum].response.data);
 	}); 	
 }
@@ -200,17 +210,17 @@ function spendFundingTxn(sqlrow, callback){
 /**
  * Create ther TRIGGER TXN that spends the funding and sets up the ELTOO sequence value 0
  */
-function createTriggerTxn(amount, fundingaddress, eltooaddress, callback){
+function createTriggerTxn(amount, fundingaddress, eltooaddress, tokenid, callback){
 	
 	var txid = randomString();
 	
 	var create = "txncreate id:"+txid+";"+
 	
 	//Input the Funding txn address - floating
-	"txninput id:"+txid+" amount:"+amount+" address:"+fundingaddress+" floating:true;"+
+	"txninput id:"+txid+" tokenid:"+tokenid+" amount:"+amount+" address:"+fundingaddress+" floating:true;"+
 	
 	//Output BACK to the ELTOO
-	"txnoutput id:"+txid+" storestate:true amount:"+amount+" address:"+eltooaddress+";"+
+	"txnoutput id:"+txid+" tokenid:"+tokenid+" storestate:true amount:"+amount+" address:"+eltooaddress+";"+
 	
 	//Set the state var - sequence number
 	"txnstate id:"+txid+" port:101 value:0;"+
@@ -224,6 +234,8 @@ function createTriggerTxn(amount, fundingaddress, eltooaddress, callback){
 	"";
 	
 	MDS.cmd(create,function(fundresp){
+		//logJSON(fundresp,"createTrigger");
+		
 		callback(fundresp[4].response.data);
 	});
 }
@@ -231,7 +243,7 @@ function createTriggerTxn(amount, fundingaddress, eltooaddress, callback){
 /**
  * Create a Settlement Txn
  */
-function createSettlementTxn(hashid, sequence, eltooaddress, eltooamount, user1amount, user1address, user2amount, user2address, callback){
+function createSettlementTxn(hashid, sequence, eltooaddress, eltooamount, user1amount, user1address, user2amount, user2address, tokenid, callback){
 	
 	var txid 	= randomString();
 	var cmdnum 	= 7;
@@ -241,18 +253,18 @@ function createSettlementTxn(hashid, sequence, eltooaddress, eltooamount, user1a
 	"txncreate id:"+txid+";"+
 	
 	//Input the ELTOO coin
-	"txninput id:"+txid+" amount:"+eltooamount+"  address:"+eltooaddress+" floating:true;";
+	"txninput id:"+txid+" amount:"+eltooamount+" tokenid:"+tokenid+" address:"+eltooaddress+" floating:true;";
 	
 	//Output Funds BACK to User 1 - if POSITIVE
 	if(!new Decimal(user1amount).lessThanOrEqualTo(DECIMAL_ZERO)){
-		create +="txnoutput id:"+txid+" storestate:true amount:"+user1amount+" address:"+user1address+";";	
+		create +="txnoutput id:"+txid+" storestate:true amount:"+user1amount+" tokenid:"+tokenid+" address:"+user1address+";";	
 	}else{
 		cmdnum--;
 	}
 	
 	//Output Funds BACK to User 2 - if POSITIVE
 	if(!new Decimal(user2amount).lessThanOrEqualTo(DECIMAL_ZERO)){
-		create +="txnoutput id:"+txid+" storestate:true amount:"+user2amount+" address:"+user2address+";";
+		create +="txnoutput id:"+txid+" storestate:true amount:"+user2amount+" tokenid:"+tokenid+" address:"+user2address+";";
 	}else{
 		cmdnum--;
 	}
@@ -280,7 +292,7 @@ function createSettlementTxn(hashid, sequence, eltooaddress, eltooamount, user1a
 /**
  * Create an Update TXN
  */
-function createUpdateTxn(sequence, eltooaddress, eltooamount, callback){
+function createUpdateTxn(sequence, eltooaddress, eltooamount, tokenid, callback){
 	
 	var txid = randomString();
 		
@@ -290,10 +302,10 @@ function createUpdateTxn(sequence, eltooaddress, eltooamount, callback){
 	"txncreate id:"+txid+";"+
 	
 	//Input the Funding txn address - floating
-	"txninput id:"+txid+" amount:"+eltooamount+" address:"+eltooaddress+" floating:true;"+
+	"txninput id:"+txid+" tokenid:"+tokenid+" amount:"+eltooamount+" address:"+eltooaddress+" floating:true;"+
 	
 	//Output BACK to the ELTOO
-	"txnoutput id:"+txid+" amount:"+eltooamount+" storestate:true address:"+eltooaddress+";"+
+	"txnoutput id:"+txid+" tokenid:"+tokenid+" amount:"+eltooamount+" storestate:true address:"+eltooaddress+";"+
 	
 	//Set the state var - update / sequence number
 	"txnstate id:"+txid+" port:100 value:FALSE;"+
@@ -334,10 +346,10 @@ function newSettleUpdateTxn(details, callback){
 		//Create a NEW SETTLEMENT txn..
 		createSettlementTxn(sqlrow.HASHID,newsequence, sqlrow.ELTOOADDRESS, sqlrow.TOTALAMOUNT, 
 							newvalues.useramount1.toString(), sqlrow.USER1ADDRESS, 
-							newvalues.useramount2.toString(), sqlrow.USER2ADDRESS, function(settletxn){
+							newvalues.useramount2.toString(), sqlrow.USER2ADDRESS, sqlrow.TOKENID, function(settletxn){
 			
 			//Create a NEW UPDATE txn..
-			createUpdateTxn(newsequence, sqlrow.ELTOOADDRESS, sqlrow.TOTALAMOUNT, function(updatetxn){
+			createUpdateTxn(newsequence, sqlrow.ELTOOADDRESS, sqlrow.TOTALAMOUNT, sqlrow.TOKENID, function(updatetxn){
 				
 				//Sign them..
 				signTxn(settletxn, sqlrow.USERPUBLICKEY, function(newsettletxn){
@@ -492,16 +504,60 @@ function createDefaultAddresses(sqlrow, callback){
 /**
  * Create the startup multiple txns!
  */
-function createDefaultTransactions(sqlrow, fundingaddress, eltooaddress, callback){
+function createDefaultTransactions(sqlrow, fundingaddress, eltooaddress, createfunding, callback){
 	
-	//The funding txn
-	createFundingTxn(fundingaddress, sqlrow.USER1AMOUNT, sqlrow.TOTALAMOUNT, function(fundingtxn){
-		
+	if(createfunding){
+		//The funding txn
+		createFundingTxn(fundingaddress, sqlrow.USER1AMOUNT, sqlrow.TOTALAMOUNT, sqlrow.TOKENID, function(fundingtxn){
+			
+			//Create the Trigger
+			createTriggerTxn(sqlrow.TOTALAMOUNT, fundingaddress, eltooaddress, sqlrow.TOKENID, function(triggertxn){
+				
+				//Create the FIRST Settlement
+				createSettlementTxn(sqlrow.HASHID, 0, eltooaddress, sqlrow.TOTALAMOUNT, sqlrow.USER1AMOUNT, 
+								sqlrow.USER1ADDRESS, sqlrow.USER2AMOUNT, sqlrow.USER2ADDRESS, sqlrow.TOKENID, function(settletxn){
+					
+					//And send it all back
+					var txndata = {};
+					
+					txndata.fundingtxn = fundingtxn;
+					txndata.triggertxn = triggertxn;
+					txndata.settletxn  = settletxn;
+					
+					callback(txndata);		
+				});
+			});	
+		});
+	}else{
+				
 		//Create the Trigger
-		createTriggerTxn(sqlrow.TOTALAMOUNT, fundingaddress, eltooaddress, function(triggertxn){
+		createTriggerTxn(sqlrow.TOTALAMOUNT, fundingaddress, eltooaddress, sqlrow.TOKENID, function(triggertxn){
 			
 			//Create the FIRST Settlement
-			createSettlementTxn(sqlrow.HASHID, 0, eltooaddress, sqlrow.TOTALAMOUNT, sqlrow.USER1AMOUNT, sqlrow.USER1ADDRESS, sqlrow.USER2AMOUNT, sqlrow.USER2ADDRESS, function(settletxn){
+			createSettlementTxn(sqlrow.HASHID, 0, eltooaddress, sqlrow.TOTALAMOUNT, sqlrow.USER1AMOUNT, 
+							sqlrow.USER1ADDRESS, sqlrow.USER2AMOUNT, sqlrow.USER2ADDRESS, sqlrow.TOKENID, function(settletxn){
+				
+				//And send it all back
+				var txndata = {};
+				
+				//txndata.fundingtxn = fundingtxn;
+				txndata.triggertxn = triggertxn;
+				txndata.settletxn  = settletxn;
+				
+				callback(txndata);		
+			});
+		});	
+	}
+	
+	//The funding txn
+/*	createFundingTxn(fundingaddress, sqlrow.USER1AMOUNT, sqlrow.TOTALAMOUNT, sqlrow.TOKENID, function(fundingtxn){
+		
+		//Create the Trigger
+		createTriggerTxn(sqlrow.TOTALAMOUNT, fundingaddress, eltooaddress, sqlrow.TOKENID, function(triggertxn){
+			
+			//Create the FIRST Settlement
+			createSettlementTxn(sqlrow.HASHID, 0, eltooaddress, sqlrow.TOTALAMOUNT, sqlrow.USER1AMOUNT, 
+							sqlrow.USER1ADDRESS, sqlrow.USER2AMOUNT, sqlrow.USER2ADDRESS, sqlrow.TOKENID, function(settletxn){
 				
 				//And send it all back
 				var txndata = {};
@@ -514,12 +570,14 @@ function createDefaultTransactions(sqlrow, fundingaddress, eltooaddress, callbac
 			});
 		});	
 	});
+*/
+
 }
 
 /**
  * Create the startup addresses and txns..
  */
-function createDefaultTxnAndAddresses(hashid, callback){
+function createDefaultTxnAndAddresses(hashid, createfunding, callback){
 	
 	//Get all the channel details
 	sqlSelectChannel(hashid, function(sql){
@@ -528,7 +586,7 @@ function createDefaultTxnAndAddresses(hashid, callback){
 		createDefaultAddresses(sql.rows[0], function(addressdata){
 			
 			//Create the default txns
-			createDefaultTransactions(sql.rows[0], addressdata.fundingaddress.address, addressdata.eltooaddress.address, function(txndata){
+			createDefaultTransactions(sql.rows[0], addressdata.fundingaddress.address, addressdata.eltooaddress.address, createfunding, function(txndata){
 				
 				//Create a data package
 				var alldata 			= {};
@@ -560,28 +618,6 @@ function addDefaultScripts(alldata, callback){
 			}
 		});	
 	});
-}
-
-/**
- * Check a data TXN
- */
-function checkTXN(txndata, callback){
-	
-	//Check is valid HEX
-	if(!checkSafeHashID(txndata)){
-		callback(false);
-		return;
-	}
-	
-	var txid = randomString();
-			
-	var create = "txnimport id:"+txid+" data:"+txndata+";"+
-				 "txncheck id:"+txid+";"+
-				 "txndelete id:"+txid+";";
-	
-	MDS.cmd(create,function(fundresp){
-		callback(fundresp.response[2]);
-	}); 
 }
 
 /**

@@ -1104,7 +1104,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("soko", "default/soko-1.1.1.mds.zip", allminis, false);
 			checkInstalled("sql bench", "default/sqlbench-0.6.1.mds.zip", allminis, false);
 			checkInstalled("terminal", "default/terminal-3.1.8.mds.zip", allminis, false);
-			checkInstalled("thunder pay", "default/thunderpay-0.9.mds.zip", allminis, false);
+			checkInstalled("thunder pay", "default/thunderpay-0.9.1.mds.zip", allminis, false);
 			checkInstalled("token studio", "default/tokenstudio-1.5.0.mds.zip", allminis, false);
 			checkInstalled("the safe", "default/thesafe-1.7.0.mds.zip", allminis, false);
 			checkInstalled("vestr", "default/vestr-1.8.1.mds.zip", allminis, false);

@@ -93,6 +93,7 @@
 	//Is a channel CLOSING or SENDING
 	var CHANNELS_CLOSING 	= [];
 	var CHANNELS_SENDING 	= [];
+	var CHANNELS_ACCEPTING 	= [];
 	
 	function addItemToClosingList(item, callback){
 		CHANNELS_CLOSING.push(item);
@@ -110,6 +111,19 @@
 		
 		//And add a permanent record
 		addTimedItemToList("CHANNELS_SENDING_LIST", item, function(fulllist){
+			logJSON(fulllist,"SENDING_LIST : ");
+			
+			if(callback){
+				callback(fulllist);
+			}
+		});
+	}
+	
+	function addItemToAcceptList(item, callback){
+		CHANNELS_ACCEPTING.push(item);
+		
+		//And add a permanent record
+		addTimedItemToList("CHANNELS_ACCEPTING_LIST", item, function(fulllist){
 			if(callback){
 				callback(fulllist);
 			}
@@ -120,19 +134,20 @@
 		
 		//First the CLOSING list
 		getTimedItemList("CHANNELS_CLOSING_LIST", function(closingresp){
-			logJSON(closingresp,"CLOSING_LIST");
-			
 			CHANNELS_CLOSING = closingresp;
 			
 			//Now the SENDING list
 			getTimedItemList("CHANNELS_SENDING_LIST", function(sendingresp){
-				logJSON(sendingresp,"SENDING_LIST");
-				
 				CHANNELS_SENDING = sendingresp;
 				
-				if(callback){
-					callback();
-				}
+				//Now the ACCEPTING list
+				getTimedItemList("CHANNELS_ACCEPTING_LIST", function(acceptresp){
+					CHANNELS_ACCEPTING = sendingresp;
+					
+					if(callback){
+						callback();
+					}
+				});
 			});
 		});
 	}
@@ -142,24 +157,35 @@
 		//Remove from temp list
 		removeItemOnce(CHANNELS_CLOSING,hashid);
 		removeItemOnce(CHANNELS_SENDING,hashid);
+		removeItemOnce(CHANNELS_ACCEPTING,hashid);
 						
 		//Remove from perm lists
 		removeItemFromList("CHANNELS_CLOSING_LIST", hashid, function(){
 			removeItemFromList("CHANNELS_SENDING_LIST", hashid, function(){
-				if(callback){
-					callback();
-				}
+				removeItemFromList("CHANNELS_ACCEPTING_LIST", hashid, function(){
+					if(callback){
+						callback();
+					}
+				});
 			});
 		});
 	}
 	
-	function removeOldItems(callback){
+	function removeAllOldItems(callback){
 		//Check for items in list and remove the old ones
-		removeOldTimedItems("CHANNELS_CLOSING_LIST", 1000*60*5, function(){
-			removeOldTimedItems("CHANNELS_SENDING_LIST", 1000*20, function(){
-				if(callback){
-					callback();
-				}
+		removeOldTimedItems("CHANNELS_CLOSING_LIST", 1000*60*5, function(closerem, newlistclose){
+			CHANNELS_CLOSING = newlistclose;
+			
+			removeOldTimedItems("CHANNELS_SENDING_LIST", 1000*20, function(sendrem, newlistsend){
+				CHANNELS_SENDING = newlistsend;
+				
+				removeOldTimedItems("CHANNELS_ACCEPTING_LIST", 1000*60, function(acceptrem, newlistaccept){
+					CHANNELS_ACCEPTING = newlistaccept;
+					
+					if(callback){
+						callback(closerem || sendrem || acceptrem);
+					}
+				});	
 			});				
 		});
 	}
@@ -198,6 +224,10 @@
 	
 	function createRow(channeldata){
 		
+		/*viewTXN(channeldata.TRIGGERTXN, function(viewtxn){
+			logJSON(viewtxn,"TRIGGERTXN");
+		});*/
+		
 		//Which user are we..
 		var counterpartymaximaid = "";
 		var totalamount = channeldata.TOTALAMOUNT;
@@ -217,15 +247,12 @@
 		//Convert Datetime
 		var date = new Date(+channeldata.DATE);
 		
-		//Button id
-		var cancelid = "";
-		
 		//The view
 		var ret ="		<div class=channelrow>"
 			+"<table border=0 style='width:100%;padding-left:10;padding-right:10;''>"
 				+"<tr>"
 					+"<td class='largeboldtext'>"+getContactFromPublicKey(counterpartymaximaid)+"</td>"
-					+"<td class='alignright'><span class='largeboldtext'>"+myamount+"</span> / "+totalamount+"</td>"	
+					+"<td class='alignright'> <b>"+channeldata.TOKENNAME+"</b>&nbsp;:&nbsp;&nbsp;<span class='largeboldtext'>"+myamount+"</span> / "+totalamount+"</td>"	
 				+"</tr>"	
 				+"<tr>"
 					//+"<td>&nbsp;</td>"
@@ -233,8 +260,6 @@
 				+"</tr>";
 				
 		if(channeldata.STATE == "STATE_SENT_START_CHANNEL"){
-			cancelid = "cancel_"+channeldata.HASHID;
-			
 			ret+="<tr>"
 					+"<td><button class='mybtn' onclick='cancelRequest(\""+channeldata.HASHID+"\", \""+counterpartymaximaid+"\");'>CANCEL</button></td>"
 					+"<td class='alignright'><button class='mybtn' onclick='showLogs(\""+channeldata.HASHID+"\");'>LOGS</button></td>"		
@@ -246,6 +271,22 @@
 				+"<td class='alignright'> <button class='mybtn' onclick='deny(\""+channeldata.HASHID+"\", \""+counterpartymaximaid+"\");'>DENY</button> "
 										+"<button class='mybtn' onclick='accept(\""+channeldata.HASHID+"\", \""+counterpartymaximaid+"\");'>ACCEPT</button> </td>"		
 			+"</tr>"
+		}else if(channeldata.STATE == "STATE_REQUEST_ACCEPTED"){
+			//Add buttons..
+			if(CHANNELS_ACCEPTING.includes(channeldata.HASHID)){
+				ret+="<tr>"
+					+"<td>Channel acccepted.. pls wait..</td>"
+					+"<td class='alignright'><button class='mybtn' onclick='showLogs(\""+channeldata.HASHID+"\");'>LOGS</button></td>"		
+				+"</tr>"
+			}else{
+				//Add buttons..
+				ret+="<tr>"
+					+"<td><button class='mybtn' onclick='cancelRequest(\""+channeldata.HASHID+"\", \""+counterpartymaximaid+"\");'>CANCEL</button></td>"
+					+"<td class='alignright'><button class='mybtn' onclick='showLogs(\""+channeldata.HASHID+"\");'>LOGS</button></td>"		
+				+"</tr>"
+				
+			}
+				
 		}else if(channeldata.STATE.startsWith("STATE_CHANNEL_OPEN")){
 			
 			//Are we closing this channel ?
@@ -286,7 +327,7 @@
 		}else{
 			//Add buttons..
 			ret+="<tr>"
-				+"<td>&nbsp;</td>"
+				+"<td><button class='mybtn' onclick='cancelRequest(\""+channeldata.HASHID+"\", \""+counterpartymaximaid+"\");'>CANCEL</button></td>"
 				+"<td class='alignright'><button class='mybtn' onclick='showLogs(\""+channeldata.HASHID+"\");'>LOGS</button></td>"		
 			+"</tr>"
 		}
@@ -361,27 +402,39 @@
 		var userdets = getUserDetails();
 		
 		//Update user details..
-		updateChannelUser2(hashid, userdets, function(){
+		updateChannelUser2(hashid, userdets, function(sqlrow){
 			
-			//Set YOUR public key
-			updateMyPublicKey(hashid, userdets.publickey, function(){
+			//Check amount
+			checkBalance(sqlrow.USER2AMOUNT, sqlrow.TOKENID, function(valid){
+			
+				if(!valid){
+					alert("Insufficient funds!!");
+					return;
+				}
 				
-				acceptStartChannel(maximaid, hashid, function(delivered){
-					if(delivered){
-						
-						//LOGS
-						insertLog(hashid, "YOU_ACCEPT_CHANNEL", "Channel was accepted for user "+trimToSize(maximaid));
-						
-						//Update channel state..		
-						updateChannelState(hashid, "STATE_REQUEST_ACCEPTED", function(upd){
-							showChannels();		
-						});	
-						
-					}else{
-						alert("Could not contact User..");
-					}
+				//Set YOUR public key
+				updateMyPublicKey(hashid, userdets.publickey, function(){
+					
+					acceptStartChannel(maximaid, hashid, function(delivered){
+						if(delivered){
+							
+							//LOGS
+							insertLog(hashid, "YOU_ACCEPT_CHANNEL", "Channel was accepted for user "+trimToSize(maximaid));
+							
+							//Update channel state..		
+							updateChannelState(hashid, "STATE_REQUEST_ACCEPTED", function(upd){
+								
+								addItemToAcceptList(hashid, function(){
+									showChannels();	
+								});		
+							});	
+							
+						}else{
+							alert("Could not contact User..");
+						}
+					});	
 				});	
-			});	
+			});
 		});
 	}
 	
@@ -564,7 +617,6 @@
 			var wipedb= false;
 			if(wipedb){
 				wipeDB(function(){
-					MDS.log("DB WIPED!");
 					//Do stuff.. from now..	
 					createDB(function(){});
 				});
@@ -577,7 +629,7 @@
 						MAXIMA_CONTACTS = maxcont.response.contacts;
 						
 						//Remove old items from lists
-						removeOldItems(function(){
+						removeAllOldItems(function(){
 							
 							//Set up the CLOSING and SENDING lists
 							setupLists(function(){
@@ -595,21 +647,33 @@
 				//Convert the message
 				var comms = JSON.parse(msg.data.message);
 				
-				logJSON(comms, "COMMS");
+				logJSON(comms,"COMMS : ");
 				
 				//Remove from our temp lists..
 				removeItemFromAllLists(comms.hashid, function(){
 					if(comms.type == "REFRESH_CHANNEL"){
 						MDS.log("RECEIVED REFRESH_CHANNEL comms.. "+comms.hashid);
 						showChannels();
-					}	
+					
+					}else if(comms.type == "CLOSING_CHANNEL"){
+						MDS.log("RECEIVED CLOSING_CHANNEL comms.. "+comms.hashid);
+						
+						//Add to closing..
+						addItemToClosingList(comms.hashid);
+						
+					}	showChannels();
 				});	
 			}			
 			
 		}else if(msg.event == "NEWBLOCK"){
 			
 			//Check for items in list and remove the old ones
-			removeOldItems();
+			removeAllOldItems(function(somerem){
+				if(somerem){
+					MDS.log("CLose / Send items changed..  refresh channels");
+					showChannels();
+				}
+			});
 			
 			//Should only check every 10 blocks..
 			//var block = +msg.data.txpow.header.block;		

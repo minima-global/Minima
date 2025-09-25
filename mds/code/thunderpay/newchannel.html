@@ -62,7 +62,7 @@
 
 	Channels can be started with any of your Maxima contacts<br>
 	<br>
-	Choose how much Minima each of you adds to the channel<br>
+	Choose how much each of you adds to the channel<br>
 	<br>
 	The contact must accept for the Channel to be created<br>
 	<br>
@@ -71,7 +71,15 @@
 		<tr>
 			<td class=alignright>Maxima Contact :</td>
 			<td>
-			<select id=allcontacts>
+			<select id=allcontacts style="width:160;">
+			</select>
+			</td>
+		</tr>
+		
+		<tr>
+			<td class=alignright>Token :</td>
+			<td>
+			<select id=alltokens style="width:160;">
 			</select>
 			</td>
 		</tr>
@@ -101,6 +109,9 @@
 	
 	//The list of Contacts
 	MAXIMA_CONTACTS = [];
+	
+	//Current Coins in Balance
+	USER_BALANCE 	= [];
 	
 	//Did we get a valid response..
 	var USERNAME 		= "";
@@ -145,34 +156,90 @@
 			var selcontact 	= allcontacts.selectedIndex;
 			var pubkey 		= MAXIMA_CONTACTS[selcontact].publickey;
 			USERNAME 		= MAXIMA_CONTACTS[selcontact].extradata.name;
-						
-			//Check ok..
-			if(confirm("You are about to ask "+USERNAME+" to start a new payment channel.\n\nYou will add "+you.toString()+" Minima\n\nThey will add "+them.toString()+" Minima")){
+			
+			//What Token
+			var token		= alltokens.selectedIndex;
+			var tokendets	= USER_BALANCE[token];
+			
+			var TOKENNAME   = "Minima";
+			var TOKENID     = tokendets.tokenid; 
+			if(tokendets.tokenid != "0x00"){
+				TOKENNAME = tokendets.token.name;
+			}
+
+			checkBalance(you.toString(), TOKENID, function(valid){
 				
-				//SEND IT!
-				requestNewChannel(pubkey, you.toString(), them.toString(),  function(delivered, hashid){
-					if(!delivered){
-						//Could not contact user.. show an immediate message
-						alert("Could not contact "+USERNAME+"\n\nCheck your Maxima connections and try again later..");
-						return;
+				if(!valid){
+					alert("Insufficient funds!");
+					return;
+				}
+				
+				//Check ok..
+				if(confirm("You are about to ask "+USERNAME+" to start a new payment channel.\n\nYou will add "+you.toString()
+								+" "+TOKENNAME+"\n\nThey will add "+them.toString()+" "+TOKENNAME)){
+					
+					//Export the token
+					if(TOKENID == "0x00"){
+						requestChannelStart(USERNAME, pubkey, you, them, TOKENNAME, TOKENID, "");	
+					}else{
+						//alert("NOT YET!");
+						//return;
+						
+						MDS.cmd("tokens action:export tokenid:"+TOKENID,function(tok){
+							requestChannelStart(USERNAME, pubkey, you, them, TOKENNAME, TOKENID, tok.response.data);	
+						});
 					}
 					
-					//LOGS
-					insertLog(hashid, "YOU_REQUEST_CHANNEL", "You requested a channel with "+USERNAME);
-					
-					//Disable button..
-					setTimeout(function() { buttonstartchannel.disabled=true; $('#buttonstartchannel').button("refresh"); }, 50);
-					
-					//Show popup..
-					showPopup(true, "Please wait..<br><br>Contacting <b>"+USERNAME+"</b>..<br><br>Do not close this page..");
-					startPopUpDots();
-					
-					//Start a timeout..
-					startTimerChecker();
-				});
-			}
+									
+					/*//SEND IT!
+					requestNewChannel(pubkey, you.toString(), them.toString(), TOKENNAME, TOKENID, function(delivered, hashid){
+						if(!delivered){
+							//Could not contact user.. show an immediate message
+							alert("Could not contact "+USERNAME+"\n\nCheck your Maxima connections and try again later..");
+							return;
+						}
+						
+						//LOGS
+						insertLog(hashid, "YOU_REQUEST_CHANNEL", "You requested a channel with "+USERNAME);
+						
+						//Disable button..
+						setTimeout(function() { buttonstartchannel.disabled=true; $('#buttonstartchannel').button("refresh"); }, 50);
+						
+						//Show popup..
+						showPopup(true, "Please wait..<br><br>Contacting <b>"+USERNAME+"</b>..<br><br>Do not close this page..");
+						startPopUpDots();
+						
+						//Start a timeout..
+						startTimerChecker();
+					});*/
+				}	
+			});
 		});
 	});
+	
+	function requestChannelStart(USERNAME, pubkey, you, them, TOKENNAME, TOKENID, TOKENDATA){
+		//SEND IT!
+		requestNewChannel(pubkey, you.toString(), them.toString(), TOKENNAME, TOKENID, TOKENDATA, function(delivered, hashid){
+			if(!delivered){
+				//Could not contact user.. show an immediate message
+				alert("Could not contact "+USERNAME+"\n\nCheck your Maxima connections and try again later..");
+				return;
+			}
+			
+			//LOGS
+			insertLog(hashid, "YOU_REQUEST_CHANNEL", "You requested a channel with "+USERNAME);
+			
+			//Disable button..
+			setTimeout(function() { buttonstartchannel.disabled=true; $('#buttonstartchannel').button("refresh"); }, 50);
+			
+			//Show popup..
+			showPopup(true, "Please wait..<br><br>Contacting <b>"+USERNAME+"</b>..<br><br>Do not close this page..");
+			startPopUpDots();
+			
+			//Start a timeout..
+			startTimerChecker();
+		});
+	}
 	
 	function listContacts(){
 		var contacts = document.getElementById("allcontacts");
@@ -186,6 +253,25 @@
 	    	option.value = contact.publickey;
 	    	option.text  = contact.extradata.name;
 	    	contacts.appendChild(option);
+		}
+		
+		var tokens = document.getElementById("alltokens");
+		maxlen = USER_BALANCE.length;
+		for(var i=0;i<maxlen;i++){
+			
+			var balance = USER_BALANCE[i];
+			
+			if(balance.tokenid == "0x00"){
+				var option = document.createElement("option");
+		    	option.value = "0x00";
+		    	option.text  = "Minima";
+		    	tokens.appendChild(option);	
+			}else{
+				var option = document.createElement("option");
+		    	option.value = balance.tokenid;
+		    	option.text  = balance.token.name;
+		    	tokens.appendChild(option);
+			}
 		}
 	}
 	
@@ -211,7 +297,12 @@
 					//Get maxcontact details
 					MDS.cmd("maxcontacts",function(maxcont){
 						MAXIMA_CONTACTS = maxcont.response.contacts;
-						listContacts();
+						
+						MDS.cmd("balance", function(balresp){
+							USER_BALANCE = balresp.response;
+							
+							listContacts();	
+						});
 					});	
 				});	
 			}

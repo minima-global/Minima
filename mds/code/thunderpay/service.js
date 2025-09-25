@@ -28,6 +28,16 @@ function showChannels(hashid){
 	MDS.comms.solo(JSON.stringify(msg));
 }
 
+function closingChannel(hashid){
+	
+	var msg 	= {};
+	msg.type 	= "CLOSING_CHANNEL";
+	msg.hashid	= hashid;
+	
+	//And reload the main table
+	MDS.comms.solo(JSON.stringify(msg));
+}
+
 
 //Post the settle txn
 function settle(hashid){
@@ -64,12 +74,6 @@ MDS.init(function(msg){
 		});
 		
 	}else if(msg.event == "NEWBLOCK"){
-				
-		//Should only check every 5 blocks..
-		var block = +msg.data.txpow.header.block;		
-		if(block % 5 != 0){
-			return;
-		}
 		
 		//Check for closed channels
 		updateClosedChannels(function(found){
@@ -77,6 +81,12 @@ MDS.init(function(msg){
 				showChannels("0x00");
 			}
 		});
+				
+		//Should only check every 5 blocks..
+		var block = +msg.data.txpow.header.block;		
+		if(block % 5 != 0){
+			return;
+		}
 		
 		//RUN CHECKS.. Are there ANY ELTOO COINS..relevant to us..
 		MDS.cmd("coins simplestate:true relevant:true",function(allcoins){
@@ -287,10 +297,25 @@ MDS.init(function(msg){
 							return;
 						}
 						
-						//Add to the database..
-						sqlInsertNewChannel(maxmsg, "STATE_REQUEST_START_CHANNEL", 2, function(){
-							showChannels(maxmsg.hashid);
-						});	
+						//IS This a TOKEN we need.. ?
+						if(maxmsg.tokenid != "0x00"){
+							
+							insertLog(maxmsg.hashid, "TOKEN_IMPORTED", "Tokendetails imported "+maxmsg.tokenid);
+							
+							//Add the token..
+							MDS.cmd("tokens action:import data:"+maxmsg.tokendata, function(tokimport){
+								//Add to the database..
+								sqlInsertNewChannel(maxmsg, "STATE_REQUEST_START_CHANNEL", 2, function(){
+									showChannels(maxmsg.hashid);
+								});		
+							});
+							
+						}else{
+							//Add to the database..
+							sqlInsertNewChannel(maxmsg, "STATE_REQUEST_START_CHANNEL", 2, function(){
+								showChannels(maxmsg.hashid);
+							});	
+						}	
 					});
 										
 				}else if(maxmsg.type == "CANCEL_NEW_CHANNEL"){
@@ -336,7 +361,7 @@ MDS.init(function(msg){
 							updateChannelUser2(maxmsg.hashid, maxmsg.user, function(sqlrow){
 								
 								//Create the default txns and addresses
-								createDefaultTxnAndAddresses(maxmsg.hashid, function(alldata){
+								createDefaultTxnAndAddresses(maxmsg.hashid, true, function(alldata){
 									
 									//Now - add these addresses to our script database - so we listen for txns
 									addDefaultScripts(alldata, function(){
@@ -371,7 +396,7 @@ MDS.init(function(msg){
 						if(valid){
 							
 							//ok - Lets create the default transactions and addresses OURSELVES - so we can check
-							createDefaultTxnAndAddresses(maxmsg.hashid, function(alldata){
+							createDefaultTxnAndAddresses(maxmsg.hashid, false, function(alldata){
 								
 								//check those against the ones sent in the message.. transactionid + addresses etc..
 								checkDefaultTransactions(maxmsg.hashid, maxmsg.txndata, alldata, function(checkresp){
@@ -392,7 +417,7 @@ MDS.init(function(msg){
 										updateChannelAddresses(maxmsg.hashid, alldata, function(sqlrow){
 											
 											//Add YOUR amount to the FUNDING
-											addToFundingTxn(maxmsg.txndata.transactions.fundingtxn, sqlrow.USER2AMOUNT, function(newfundingtxn){
+											addToFundingTxn(maxmsg.txndata.transactions.fundingtxn, sqlrow.USER2AMOUNT, sqlrow.TOKENID, function(newfundingtxn){
 												
 												//Set the Scripts and MMR for the FUNDING
 												scriptsMMRTxn(newfundingtxn,function(mmrtxn){
@@ -428,9 +453,6 @@ MDS.init(function(msg){
 							MDS.log("INVALID MESSAGE FOR STATE.. check logs");
 							return;	
 						}
-						
-						//CHECK ALL THE TXNS!!
-						//..
 						
 						//STORE the TRIGGER and CURRENT Settlement
 						updateDefaultChannelTransactions(maxmsg.hashid, maxmsg.txndata, function(){
@@ -487,9 +509,12 @@ MDS.init(function(msg){
 						signTxn(maxmsg.spendfundingtxn, sqlrow.USERPUBLICKEY, function(fulltxn){
 							
 							//POST IT..
-							postTxn(fulltxn, "true", function(poastreq){
+							postTxn(fulltxn, "true", function(postreq){
 								//LOGS
-								insertLog(maxmsg.hashid, "POST_CHANNEL_CLOSE_COOP", "You posted the close coop channel txn ");	
+								insertLog(maxmsg.hashid, "POST_CHANNEL_CLOSE_COOP", "You posted the close coop channel txn ");
+								
+								//Tell frontend
+								closingChannel(maxmsg.hashid);	
 							});
 						});
 					});

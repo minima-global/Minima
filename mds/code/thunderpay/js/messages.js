@@ -35,7 +35,7 @@ function replySimpleMessage(hashid, msgtype){
 /**
  * Sent to request a Channel
  */
-function startChannelMessage(hashid, myamount, tomaximapublickey, requestamount){
+function startChannelMessage(hashid, myamount, tomaximapublickey, requestamount, tokenname, tokenid, tokendata){
 
 	var msg 	={};
 	
@@ -45,7 +45,12 @@ function startChannelMessage(hashid, myamount, tomaximapublickey, requestamount)
 	
 	//MY details
 	msg.user			= getUserDetails();
-		
+	
+	//What Token
+	msg.tokenname		= tokenname;
+	msg.tokenid			= tokenid;
+	msg.tokendata		= tokendata;
+			
 	//Who to ?
 	msg.tomaximapublickey = tomaximapublickey;
 	
