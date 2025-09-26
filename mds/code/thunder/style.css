@@ -1,0 +1,128 @@
+@font-face {
+	font-family: Manrope;
+	src: url('./Manrope-Regular.ttf');
+}
+
+body {
+	font-family: Manrope; 
+    margin: 20;   /* Remove body margins */
+}
+
+.ui-icon {
+	zoom:150%;
+	color : #5555ff
+}
+
+.titlebar{
+  width:100%;
+  min-width:300;
+  height:50px;
+  text-align: left;
+  max-width:840;
+  border: 2px solid #0000ff;
+  border-radius: 10px;
+}
+
+.blueborder{
+  width:100%;
+  min-width:300;
+  text-align: left;
+  max-width:840;
+  border: 2px solid #0000ff;
+  border-radius: 10px;
+}
+
+
+.helpdiv{
+  width:100%;
+  min-width:360;
+  text-align: left;
+  margin:8;
+  max-width:840;
+  border: 2px solid #0000ff;
+  border-radius: 10px;
+  
+  border-spacing:8;
+}
+
+.channelrow{
+  width:100%;
+  min-width:360;
+  text-align: left;
+  
+  max-width:840;
+  border: 2px solid #0000ff;
+  border-radius: 10px;
+  
+  border-spacing:8;
+  
+  padding-top:10;
+  padding-bottom:10;
+}
+
+.smallgreytext{
+	font-size:10;
+	color:#777777;	
+}
+
+.largeboldtext{
+	font-size:18;
+	font-weight:bold;	
+}
+
+.alignright{
+	text-align: right;
+	white-space: nowrap;
+}
+
+.centerDialog {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+	transform: translate(-50%, -50%);
+    width: 280; 
+    height: 150;
+	border: 2px solid #0000ff;
+	border-radius: 10px;
+	background : white;
+	text-align:left;
+	padding:20;
+}
+
+.closeDialog {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+	transform: translate(-50%, -50%);
+    width: 400; 
+    height: 270;
+	border: 2px solid #0000ff;
+	border-radius: 10px;
+	background : white;
+	text-align:left;
+	padding:20;
+}
+
+/* Style buttons */
+.mybtn {
+  background-color: DodgerBlue; /* Blue background */
+  border: none; /* Remove borders */
+  border-radius: 4px;
+  color: white; /* White text */
+  padding: 6px 8px; /* Some padding */
+  font-size: 12px; /* Set a font size */
+  cursor: pointer; /* Mouse pointer on hover */
+}
+
+/* Darker background on mouse-over */
+.mybtn:hover {
+  background-color: RoyalBlue;
+}
+
+.mybtn:active {
+  background-color: red;
+}
+
+.mybtn:disabled {
+  background-color: RoyalBlue;
+}

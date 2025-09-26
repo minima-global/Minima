@@ -40,23 +40,27 @@ function closingChannel(hashid){
 
 
 //Post the settle txn
-function settle(hashid){
+function settle(hashid, callback){
 			
 	//Publish the Trigger..
 	sqlSelectChannel(hashid, function(sql){
 		postTxn(sql.rows[0].SETTLETXN, true, function(postresp){
-			//logJSON(postresp,"POST SETTLE");
+			if(callback){
+				callback();
+			}
 		});
 	});
 }
 
 //Post the Update txn
-function update(hashid){
+function update(hashid, callback){
 			
 	//Publish the Trigger..
 	sqlSelectChannel(hashid, function(sql){
 		postTxn(sql.rows[0].UPDATETXN, true, function(postresp){
-			//logJSON(postresp,"POST UPDATE");
+			if(callback){
+				callback();
+			}
 		});
 	});
 }
@@ -131,7 +135,11 @@ MDS.init(function(msg){
 								//If coin old enough (3 blocks) POST the latest UPDATE
 								if(age>=MIN_UPDATE_COINAGE){
 									insertLog(eltoohashid, "POST_LATEST_UPDATE", "Posting latest update txn sequence:"+eltoosequence);
-									update(eltoohashid);
+									update(eltoohashid, function(){
+										showChannels(eltoohashid);
+									});
+								}else{
+									showChannels(eltoohashid);
 								} 
 									
 							}else{
@@ -141,7 +149,11 @@ MDS.init(function(msg){
 																		
 								if(age>=MIN_SETTLE_COINAGE){
 									insertLog(eltoohashid, "POST_LATEST_SETTLEMENT", "Posting settlementt txn.. sequence:"+eltoosequence);
-									settle(eltoohashid);
+									settle(eltoohashid, function(){
+										showChannels(eltoohashid);
+									});
+								}else{
+									showChannels(eltoohashid);
 								}	
 							}
 						}
@@ -149,6 +161,7 @@ MDS.init(function(msg){
 				}
 			});
 		});
+		
 	}else if(msg.event == "NEWCOIN"){
 		
 		//Is it a FUNDING coin
@@ -175,7 +188,6 @@ MDS.init(function(msg){
 						
 						//Are we waiting for a payout..
 						if(new Decimal(payout).equals(DECIMAL_ZERO)){
-							//log("Channel "+sqlrow.HASHID+" closed as no payout expected!");
 							
 							//Payout received..
 							updatePayoutFound(sqlrow.HASHID, '0', function(){
@@ -190,12 +202,15 @@ MDS.init(function(msg){
 					//LOGS
 					insertLog(sqlrow.HASHID, "NEW_FUNDING_COIN", "Funding coin created.. address:"+msg.data.coin.miniaddress
 													+" totalamount:"+msg.data.coin.amount+" payout:"+payout);								
+				
+					//refresh
+					showChannels(sqlrow.HASHID);
 				}					 
 			}
 		});
 		
 		//Is it an ELTOO coin
-		sqlSelectRelevantEltooCoin(msg.data.coin.miniaddress, function(reseltoo){
+		/*sqlSelectRelevantEltooCoin(msg.data.coin.miniaddress, function(reseltoo){
 			if(reseltoo.count>0){
 				
 				//Update the Database!!
@@ -205,7 +220,7 @@ MDS.init(function(msg){
 					log("NEW ELTOO COIN!! ADDRESS:"+msg.data.coin.miniaddress+" STATE:"+JSON.stringify(msg.data.coin.state));	
 				}
 			}
-		});
+		});*/
 		
 		//Is it one of our Omnia Addresses
 		if(!msg.data.coin.spent){
@@ -286,7 +301,7 @@ MDS.init(function(msg){
 					}
 					
 					//LOGS
-					insertLog(maxmsg.hashid, "REQUEST_CHANNEL", "Channel was requested from user "+trimToSize(maximapubkey));
+					insertLog(maxmsg.hashid, "REQUEST_CHANNEL", "Channel was requested from user "+maxmsg.user.name);
 							
 					//CHECK the hashid is UNIQUE - and VALID
 					sqlSelectChannel(maxmsg.hashid,function(sql){
@@ -339,7 +354,7 @@ MDS.init(function(msg){
 					checkValidMaximaUserState(maximapubkey,maxmsg.hashid, "STATE_SENT_START_CHANNEL", function(valid){
 						if(valid){
 							//LOGS
-							insertLog(maxmsg.hashid, "CANCEL_CHANNEL", "User cancelled channel");
+							insertLog(maxmsg.hashid, "DENIED_CHANNEL", "User denied channel");
 															
 							//DENIED this request
 							updateChannelState(maxmsg.hashid, "STATE_REQUEST_DENIED", function(upd){
@@ -355,7 +370,7 @@ MDS.init(function(msg){
 						if(valid){
 							
 							//LOGS
-							insertLog(maxmsg.hashid, "REQUEST_ACCEPTED", "Channel was accepted by user "+trimToSize(maximapubkey));
+							insertLog(maxmsg.hashid, "REQUEST_ACCEPTED", "Channel was accepted by user "+maxmsg.user.name);
 													
 							//Update user details
 							updateChannelUser2(maxmsg.hashid, maxmsg.user, function(sqlrow){
@@ -563,8 +578,6 @@ MDS.init(function(msg){
 					});
 					
 				}else if(maxmsg.type == "REPLY_SEND_FUNDS"){
-					
-					MDS.log("REPLY SEND FUNDS REC!!");
 					
 					//Sign it..
 					sqlSelectChannel(maxmsg.hashid,function(sql){

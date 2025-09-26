@@ -1,0 +1,349 @@
+<html>
+
+<head>
+	<title>Thunder Cats</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="./js/mds.js"></script>
+	
+	<!--  JQUERY CSS + JS -->
+	<link rel="stylesheet" href="./jquery/jquery-ui-1.14.1/jquery-ui.css">
+	<link rel="stylesheet" href="./jquery/jquery-ui-1.14.1/jquery-ui.icon-font.css">
+	<script type="text/javascript" src="./jquery/jquery-3.7.1.min.js"></script>
+	<script type="text/javascript" src="./jquery/jquery-ui-1.14.1/jquery-ui.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS libs -->
+	<script type="text/javascript" src="./js/decimal.js"></script>
+	<script type="text/javascript" src="./js/jslib.js"></script>
+	<script type="text/javascript" src="./js/utils.js"></script>
+	<script type="text/javascript" src="./js/auth.js"></script>
+	<script type="text/javascript" src="./js/txns.js"></script>
+	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/messages.js"></script>
+	<script type="text/javascript" src="./js/maxima.js"></script>
+	<script type="text/javascript" src="./js/channelfunction.js"></script>
+		
+</head>
+
+<body>
+
+<center>
+
+<div class="titlebar" onclick="showTitleOnAndroid();">
+	<table width=100% border=0>
+		<tr>
+			<td><img height=45 src="./thunderpay.png"></td>
+			<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>Thunder</b></td>
+			
+			<td class='topicdate' nowrap>
+				<button id="button-help">Help</button>
+				<button id="button-history">History</button>
+				<button id="button-newchannel">New Channel</button>
+				<button id="button-home">Home</button>
+			</td>
+		</tr>
+	</table>
+</div>
+
+<br>
+
+<div id=youraddress class=blueborder style="word-wrap:break-word;text-align:center;">
+	<br>
+	
+	<h3>Start a NEW Omnia Channel</h3>
+
+	Channels can be started with any of your Maxima contacts<br>
+	<br>
+	Choose how much each of you adds to the channel<br>
+	<br>
+	The contact must accept for the Channel to be created<br>
+	<br>
+	<br>
+	<table border=0 style="margin: 0 auto;">
+		<tr>
+			<td class=alignright>Maxima Contact :</td>
+			<td>
+			<select id=allcontacts style="width:160;">
+			</select>
+			</td>
+		</tr>
+		
+		<tr>
+			<td class=alignright>Token :</td>
+			<td>
+			<select id=alltokens style="width:160;">
+			</select>
+			</td>
+		</tr>
+		
+		<tr>
+			<td class=alignright> You will add : </td>
+			<td> <input id="youadd" type="number" value=0> </td>
+		</tr>
+		
+		<tr>
+			<td class=alignright> They will add : </td>
+			<td> <input id="theyadd" type="number" value=0> </td>
+		</tr>
+	
+	</table>
+	
+	<br> 
+	<button id="buttonstartchannel">Request New Channel</button><br>
+	<br>
+</div>
+<br>
+
+<!-- The Hidden Popup -->
+<div id="main_popup" class="centerDialog" style="display:none;"></div>
+
+<script type="text/javascript">
+	
+	//The list of Contacts
+	MAXIMA_CONTACTS = [];
+	
+	//Current Coins in Balance
+	USER_BALANCE 	= [];
+	
+	//Did we get a valid response..
+	var USERNAME 		= "";
+	
+	//Load the default jquery buttons
+	$(document).ready(function() {
+	    startupButtons();
+	
+		//buttonstartchannel.disabled=true;
+		MDS.log("Startup..");
+				    
+	    $( "#buttonstartchannel" ).button({
+			icon: "ui-icon-mail-send",
+			showLabel: true
+		}).click(function(){
+			
+			//Get the number values..	
+			var you,them;
+			try{
+				you 	= getValidDecimalNumber(youadd.value);
+				them 	= getValidDecimalNumber(theyadd.value);				
+			}catch(Error){
+				MDS.log("INVALID Channel amounts! must both be positive : ");
+				alert("Invalid amounts chosen..");
+				return;
+			}
+			
+			//Check the amounts..
+			if(!checkStartValues(you.toString(), them.toString())){
+				MDS.log("INVALID Channel amounts! must both be positive : ");
+				alert("Invalid amounts chosen..");
+				return;
+			}
+			
+			//Check SIZE
+			if(you.greaterThan(MAX_CHANNEL_AMOUNT) || them.greaterThan(MAX_CHANNEL_AMOUNT)){
+				alert("Amounts too large!\n\nCurrent max is "+MAX_CHANNEL_AMOUNT+" per User..");
+				return;
+			}
+			
+			//Start Channel Request..
+			var selcontact 	= allcontacts.selectedIndex;
+			var pubkey 		= MAXIMA_CONTACTS[selcontact].publickey;
+			USERNAME 		= MAXIMA_CONTACTS[selcontact].extradata.name;
+			
+			//What Token
+			var token		= alltokens.selectedIndex;
+			var tokendets	= USER_BALANCE[token];
+			
+			var TOKENNAME   = "Minima";
+			var TOKENID     = tokendets.tokenid; 
+			if(tokendets.tokenid != "0x00"){
+				TOKENNAME = tokendets.token.name;
+			}
+
+			checkBalance(you.toString(), TOKENID, function(valid){
+				
+				if(!valid){
+					alert("Insufficient funds!");
+					return;
+				}
+				
+				//Check ok..
+				if(confirm("You are about to ask "+USERNAME+" to start a new payment channel.\n\nYou will add "+you.toString()
+								+" "+TOKENNAME+"\n\nThey will add "+them.toString()+" "+TOKENNAME)){
+					
+					//Export the token
+					if(TOKENID == "0x00"){
+						requestChannelStart(USERNAME, pubkey, you, them, TOKENNAME, TOKENID, "");	
+					}else{
+						//alert("NOT YET!");
+						//return;
+						
+						MDS.cmd("tokens action:export tokenid:"+TOKENID,function(tok){
+							requestChannelStart(USERNAME, pubkey, you, them, TOKENNAME, TOKENID, tok.response.data);	
+						});
+					}
+					
+									
+					/*//SEND IT!
+					requestNewChannel(pubkey, you.toString(), them.toString(), TOKENNAME, TOKENID, function(delivered, hashid){
+						if(!delivered){
+							//Could not contact user.. show an immediate message
+							alert("Could not contact "+USERNAME+"\n\nCheck your Maxima connections and try again later..");
+							return;
+						}
+						
+						//LOGS
+						insertLog(hashid, "YOU_REQUEST_CHANNEL", "You requested a channel with "+USERNAME);
+						
+						//Disable button..
+						setTimeout(function() { buttonstartchannel.disabled=true; $('#buttonstartchannel').button("refresh"); }, 50);
+						
+						//Show popup..
+						showPopup(true, "Please wait..<br><br>Contacting <b>"+USERNAME+"</b>..<br><br>Do not close this page..");
+						startPopUpDots();
+						
+						//Start a timeout..
+						startTimerChecker();
+					});*/
+				}	
+			});
+		});
+	});
+	
+	function requestChannelStart(USERNAME, pubkey, you, them, TOKENNAME, TOKENID, TOKENDATA){
+		//SEND IT!
+		requestNewChannel(pubkey, you.toString(), them.toString(), TOKENNAME, TOKENID, TOKENDATA, function(delivered, hashid){
+			if(!delivered){
+				//Could not contact user.. show an immediate message
+				alert("Could not contact "+USERNAME+"\n\nCheck your Maxima connections and try again later..");
+				return;
+			}
+			
+			//LOGS
+			insertLog(hashid, "YOU_REQUEST_CHANNEL", "You requested a channel with "+USERNAME);
+			
+			//Disable button..
+			setTimeout(function() { buttonstartchannel.disabled=true; $('#buttonstartchannel').button("refresh"); }, 50);
+			
+			//Show popup..
+			showPopup(true, "Please wait..<br><br>Contacting <b>"+USERNAME+"</b>..<br><br>Do not close this page..");
+			startPopUpDots();
+			
+			//Start a timeout..
+			startTimerChecker();
+		});
+	}
+	
+	function listContacts(){
+		var contacts = document.getElementById("allcontacts");
+		
+		var maxlen = MAXIMA_CONTACTS.length;
+		for(var i=0;i<maxlen;i++){
+			
+			var contact = MAXIMA_CONTACTS[i];
+			
+			var option = document.createElement("option");
+	    	option.value = contact.publickey;
+	    	option.text  = contact.extradata.name;
+	    	contacts.appendChild(option);
+		}
+		
+		var tokens = document.getElementById("alltokens");
+		maxlen = USER_BALANCE.length;
+		for(var i=0;i<maxlen;i++){
+			
+			var balance = USER_BALANCE[i];
+			
+			if(balance.tokenid == "0x00"){
+				var option = document.createElement("option");
+		    	option.value = "0x00";
+		    	option.text  = "Minima";
+		    	tokens.appendChild(option);	
+			}else{
+				var option = document.createElement("option");
+		    	option.value = balance.tokenid;
+		    	option.text  = balance.token.name;
+		    	tokens.appendChild(option);
+			}
+		}
+	}
+	
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			var wipedb= false;
+			if(wipedb){
+				wipeDB(function(){
+					MDS.log("DB WIPED!");
+					//Do stuff.. from now..	
+					createDB(function(){});
+				});
+			}else{
+				
+				//Init AUTH details
+				initAuthDetails(function(){
+					
+					//Get maxcontact details
+					MDS.cmd("maxcontacts",function(maxcont){
+						MAXIMA_CONTACTS = maxcont.response.contacts;
+						
+						MDS.cmd("balance", function(balresp){
+							USER_BALANCE = balresp.response;
+							
+							listContacts();	
+						});
+					});	
+				});	
+			}
+			
+		}else if(msg.event == "MAXIMA"){
+						
+			//Is it for maxsolo..
+			if(msg.data.application == "thunderpay"){
+				
+				//Relevant data
+				var maximapubkey 	= msg.data.from;
+				
+				//Get the data
+				var datahex	= msg.data.data;
+				
+				//Convert back to JSON
+				convertHEXtoJSON(datahex,function(maxmsg){
+					if(true){
+						logJSON(maxmsg,"MAXIMA RECEIVED FROM "+maximapubkey+" : ");
+					}
+					
+					//What type of Message is it..?
+					if(maxmsg.type == "SYNACK_MESSAGE"){
+						//OK! - we can proceed.. call the function this message represents 
+						synackMessageReceived(maxmsg);
+						
+						//Tell the User..
+						stopPopupDots();
+						VALID_POPUP_RESPONSE = true;
+						showPopup(true, "<b>"+USERNAME+"</b> contacted successfully!<br><br>Please wait for his response..<br><br>"
+										+"<button class='mybtn' onclick='jumpToHome();'>Return to Home page</button>");	
+					}					
+				});
+			}
+		}
+	});
+
+</script>
+
+</center>
+
+</body>
+
+</html>

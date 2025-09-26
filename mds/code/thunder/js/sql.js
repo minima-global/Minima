@@ -91,11 +91,11 @@ function createDB(callback){
 function sqlInsertNewChannel(details, state, usernum, callback){
 	
 	//Insert this unread message
-	var sql = "INSERT INTO channels(hashid, state, usernum, user1maximaid, user1publickey, user1address, user1amount, "
+	var sql = "INSERT INTO channels(hashid, state, usernum, user1name, user1maximaid, user1publickey, user1address, user1amount, "
 									+"user2maximaid, user2amount, tokenname, tokenid, tokendata, totalamount, date) "
 			 +"VALUES ('"+details.hashid+"','"+state+"',"+usernum+",'"
 				//User details
-				+details.user.maximaid+"','"+details.user.publickey+"','"+details.user.address+"','"+details.useramount
+				+details.user.name+"','"+details.user.maximaid+"','"+details.user.publickey+"','"+details.user.address+"','"+details.useramount
 				
 				//Counterpary User
 				+"','"+details.tomaximapublickey
@@ -295,7 +295,7 @@ function updateChannelState(hashid, state, callback){
  */
 function updateChannelUser2(hashid, user, callback){
 	//Find a record
-	var sql = "UPDATE channels SET user2publickey='"+user.publickey+"', user2address='"+user.address+"' WHERE hashid='"+hashid+"'";
+	var sql = "UPDATE channels SET user2name='"+user.name+"', user2publickey='"+user.publickey+"', user2address='"+user.address+"' WHERE hashid='"+hashid+"'";
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
