@@ -153,7 +153,7 @@
 			+"<table border=0 style='width:100%;padding-left:10;padding-right:10;''>"
 				+"<tr>"
 					+"<td class='largeboldtext'>"+getContactFromPublicKey(counterpartymaximaid)+"</td>"
-					+"<td class='alignright'> <b>"+channeldata.TOKENNAME+"</b>&nbsp;:&nbsp;&nbsp;<span class='largeboldtext'>"+myamount+"</span> / "+totalamount+"</td>"	
+					+"<td class='alignright'> <b>"+decodeStringFromDB(channeldata.TOKENNAME)+"</b>&nbsp;:&nbsp;&nbsp;<span class='largeboldtext'>"+myamount+"</span> / "+totalamount+"</td>"	
 				+"</tr>"	
 				+"<tr>"
 					//+"<td>&nbsp;</td>"
@@ -327,7 +327,7 @@
 						if(delivered){
 							
 							//LOGS
-							insertLog(hashid, "YOU_ACCEPT_CHANNEL", "Channel was accepted for user "+sqlrow.USER1NAME);
+							insertLog(hashid, "YOU_ACCEPT_CHANNEL", "Channel was accepted for user "+decodeStringFromDB(sqlrow.USER1NAME));
 							
 							//Update channel state..		
 							updateChannelState(hashid, "STATE_REQUEST_ACCEPTED", function(upd){
