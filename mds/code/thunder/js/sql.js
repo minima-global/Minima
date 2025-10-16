@@ -95,14 +95,14 @@ function sqlInsertNewChannel(details, state, usernum, callback){
 									+"user2maximaid, user2amount, tokenname, tokenid, tokendata, totalamount, date) "
 			 +"VALUES ('"+details.hashid+"','"+state+"',"+usernum+",'"
 				//User details
-				+details.user.name+"','"+details.user.maximaid+"','"+details.user.publickey+"','"+details.user.address+"','"+details.useramount
+				+encodeStringForDB(details.user.name)+"','"+details.user.maximaid+"','"+details.user.publickey+"','"+details.user.address+"','"+details.useramount
 				
 				//Counterpary User
 				+"','"+details.tomaximapublickey
 				+"','"+details.requestamount
 				
 				//Token Details
-				+"','"+details.tokenname
+				+"','"+encodeStringForDB(details.tokenname)
 				+"','"+details.tokenid
 				+"','"+details.tokendata
 				
@@ -295,7 +295,7 @@ function updateChannelState(hashid, state, callback){
  */
 function updateChannelUser2(hashid, user, callback){
 	//Find a record
-	var sql = "UPDATE channels SET user2name='"+user.name+"', user2publickey='"+user.publickey+"', user2address='"+user.address+"' WHERE hashid='"+hashid+"'";
+	var sql = "UPDATE channels SET user2name='"+encodeStringForDB(user.name)+"', user2publickey='"+user.publickey+"', user2address='"+user.address+"' WHERE hashid='"+hashid+"'";
 				
 	//Run this..
 	MDS.sql(sql,function(msg){
