@@ -38,7 +38,10 @@ dependencies {
     //implementation 'com.h2database:h2:2.3.232'
     implementation 'com.h2database:h2:2.1.214'
     
+    //Bouncy Castle
     implementation 'org.bouncycastle:bcpkix-jdk15on:1.69'
+    
+    //MySQL connector
  	implementation "mysql:mysql-connector-java:8.0.26"
 }
 
@@ -67,7 +70,9 @@ tasks.withType(AbstractArchiveTask) {
 }
 
 tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
-  minimize()
+  minimize(){
+    exclude(dependency('org.bouncycastle:.*:.*'))
+  }
 }
 
 compileJava {
