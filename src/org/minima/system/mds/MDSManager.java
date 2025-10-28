@@ -20,8 +20,6 @@ import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.mds.pending.PendingCommand;
 import org.minima.system.mds.polling.PollStack;
-import org.minima.system.mds.runnable.MDSJS;
-import org.minima.system.mds.runnable.NullCallable;
 import org.minima.system.mds.runnable.api.APICallback;
 import org.minima.system.mds.runnable.shutter.SandboxContextFactory;
 import org.minima.system.mds.sql.MiniDAPPDB;
@@ -40,12 +38,7 @@ import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
-import org.mozilla.javascript.ClassShutter;
-import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
-import org.mozilla.javascript.NativeJSON;
-import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.ScriptableObject;
 
 public class MDSManager extends MessageProcessor {
 
@@ -207,7 +200,7 @@ public class MDSManager extends MessageProcessor {
 		PostMessage(MDS_SHUTDOWN);
 		
 		//Waiting for shutdown..
-		waitToShutDown();
+		waitToShutDown(25000);
 		
 		//No longer started
 		mHasStarted = false;
@@ -719,7 +712,14 @@ public class MDSManager extends MessageProcessor {
 			MinimaLogger.log("Shutdown MDS databases..");
 			Enumeration<MiniDAPPDB> dbs = mSqlDB.elements();
 			while(dbs.hasMoreElements()) {
-				dbs.nextElement().saveDB(false);
+				try {
+					MiniDAPPDB mdb 	= dbs.nextElement();
+					MiniDAPP dapp 	= getMiniDAPP(mdb.mUID);
+					MinimaLogger.log("Shutdown "+dapp.getName()+" database..");
+					mdb.saveDB(false);
+				}catch(Exception exc) {
+					MinimaLogger.log(exc);
+				}
 			}
 			
 			stopMessageProcessor();
@@ -1065,7 +1065,7 @@ public class MDSManager extends MessageProcessor {
 		ArrayList<MiniDAPP> allminis = mdb.getAllMiniDAPPs();
 				
 		//Check for HUB
-		checkInstalled("minihub", "minihub/minihub-0.24.3.mds.zip", allminis, true, true);
+		checkInstalled("minihub", "minihub/minihub-0.24.4.mds.zip", allminis, true, true);
 		
 		//Do we Install the Default MiniDAPPs
 		if(GeneralParams.DEFAULT_MINIDAPPS) {
@@ -1082,7 +1082,7 @@ public class MDSManager extends MessageProcessor {
 			//The rest are normal
 			checkInstalled("axe s3", "default/axes3-1.0.0.mds.zip", allminis, false);
 			checkInstalled("block", "default/block-3.3.4.mds.zip", allminis, false);
-			checkInstalled("chainmail", "default/chainmail-1.12.5.mds.zip", allminis, false);
+			checkInstalled("chainmail", "default/chainmail-1.13.0.mds.zip", allminis, false);
 			checkInstalled("chatter", "default/chatter-1.12.0.mds.zip", allminis, false);
 			checkInstalled("docs", "default/docs-2.1.0.mds.zip", allminis, false);
 			checkInstalled("ethwallet", "default/ethwallet-1.11.0.mds.zip", allminis, false);
@@ -1095,15 +1095,16 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("maxcontacts", "default/maxcontacts-1.14.0.mds.zip", allminis, false);
 			checkInstalled("maximize", "default/maximize-1.3.0.mds.zip", allminis, false);
 			checkInstalled("maxsolo", "default/maxsolo-2.7.2.mds.zip", allminis, false);
-			checkInstalled("miniswap", "default/miniswap-2.20.0.mds.zip", allminis, false);
+			checkInstalled("miniswap", "default/miniswap-2.21.0.mds.zip", allminis, false);
 			checkInstalled("minifs", "default/minifs-1.4.4.mds.zip", allminis, false);
 			checkInstalled("miniweb", "default/miniweb-1.6.1.mds.zip", allminis, false);
 			checkInstalled("news feed", "default/news-2.0.1.mds.zip", allminis, false);
 			checkInstalled("script ide", "default/scriptide-3.1.4.mds.zip", allminis, false);
 			checkInstalled("shout out", "default/shoutout-1.4.1.mds.zip", allminis, false);
-			checkInstalled("soko", "default/soko-1.0.1.mds.zip", allminis, false);
+			checkInstalled("soko", "default/soko-1.1.1.mds.zip", allminis, false);
 			checkInstalled("sql bench", "default/sqlbench-0.6.1.mds.zip", allminis, false);
 			checkInstalled("terminal", "default/terminal-3.1.8.mds.zip", allminis, false);
+			checkInstalled("thunder", "default/thunder-1.0.1.mds.zip", allminis, false);
 			checkInstalled("token studio", "default/tokenstudio-1.5.0.mds.zip", allminis, false);
 			checkInstalled("the safe", "default/thesafe-1.7.0.mds.zip", allminis, false);
 			checkInstalled("vestr", "default/vestr-1.8.1.mds.zip", allminis, false);

@@ -16,12 +16,13 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.params.GlobalParams;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class txnmmr extends Command {
 
 	public txnmmr() {
-		super("txnmmr","[id:] - Add all MMR proofs to a transaction");
+		super("txnmmr","[id:] - Add MMR proofs to a transaction leaving those already present");
 	}
 	
 	
@@ -48,6 +49,8 @@ public class txnmmr extends Command {
 		Transaction trans 	= txnrow.getTransaction();
 		Witness witness 	= txnrow.getWitness();
 		
+		int proofs = witness.getAllCoinProofs().size();
+		
 		//get the tip..
 		TxPoWTreeNode tip 		= MinimaDB.getDB().getTxPoWTree().getTip();
 		MiniNumber currentblock = tip.getBlockNumber();
@@ -69,8 +72,15 @@ public class txnmmr extends Command {
 		//Now get that Tree node
 		TxPoWTreeNode mmrnode = tip.getPastNode(minblock);
 		
-		//Cycle through thte inputs..
+		//Cycle through the inputs..
+		int counter=0;
 		for(Coin input : coins) {
+			
+			//Only add coins AFTER the current proofs
+			counter++;
+			if(counter<=proofs) {
+				continue;
+			}
 			
 			//Get the proof..
 			MMRProof proof = mmrnode.getMMR().getProofToPeak(input.getMMREntryNumber());

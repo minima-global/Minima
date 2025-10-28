@@ -37,13 +37,35 @@ function sendMessage(sendjson, callback){
 				var state = {};
 				state[99]  = maxmess.response.data;
 				
-				//Now construct a txn
-				var txn = "sendpoll amount:0.001 address:"+CHAINMAIL_ADDRESS+" state:"+JSON.stringify(state);
-				
-				//Now post..
-				MDS.cmd(txn,function(resp){	
-					callback(true,resp);
-				});		
+				//Are we locked or not..
+				MDS.cmd("checkmode",function(statusresp){
+					
+					//Are we locked
+					var locked 		= statusresp.response.dblocked;
+					var readmode 	= !statusresp.response.writemode;
+					
+					var sendfunc = "sendpoll";
+					if(locked){
+						//sendpoll doesn't work through pending if node locked..
+						sendfunc = "send";
+					}
+					
+					//Now construct a txn
+					var txn = sendfunc+" amount:0.001 address:"+CHAINMAIL_ADDRESS+" state:"+JSON.stringify(state);
+					
+					//Now post..
+					MDS.cmd(txn,function(resp){
+						if(!resp.status && !resp.pending){
+							if(locked && !readmode){
+								callback(false,"Your DB is locked.\n\nEither Unlock your node..\n\nOR put this Minidapp into READ mode so you can unlock and send via the Pending MiniDAPP.");	
+							}else{
+								callback(false,resp.error);	
+							}
+						}else{
+							callback(true,resp);	
+						}
+					});	
+				});
 			});
 		});	
 		

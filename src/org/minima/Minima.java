@@ -28,7 +28,7 @@ public class Minima {
 	public Minima() {}
 	
 	/**
-	 * Call main() with a set of variables
+	 * Call main() with a set of variables..
 	 */
 	public void mainStarter(final String[] zArgs) {
 		

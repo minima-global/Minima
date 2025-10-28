@@ -76,6 +76,7 @@ import org.minima.system.commands.send.sendsign;
 import org.minima.system.commands.send.sendview;
 import org.minima.system.commands.send.wallet.createfrom;
 import org.minima.system.commands.send.wallet.postfrom;
+import org.minima.system.commands.send.wallet.rawfrom;
 import org.minima.system.commands.send.wallet.sendfrom;
 import org.minima.system.commands.send.wallet.signfrom;
 import org.minima.system.commands.signatures.sign;
@@ -93,11 +94,13 @@ import org.minima.system.commands.txn.txninput;
 import org.minima.system.commands.txn.txnlist;
 import org.minima.system.commands.txn.txnmine;
 import org.minima.system.commands.txn.txnminepost;
+import org.minima.system.commands.txn.txnmmr;
 import org.minima.system.commands.txn.txnoutput;
 import org.minima.system.commands.txn.txnpost;
 import org.minima.system.commands.txn.txnscript;
 import org.minima.system.commands.txn.txnsign;
 import org.minima.system.commands.txn.txnstate;
+import org.minima.system.commands.txn.txnview;
 import org.minima.utils.json.JSONObject;
 
 public class help extends Command {
@@ -167,6 +170,7 @@ public class help extends Command {
 			addCommand(details, new multisig());
 			
 			addCommand(details, new sendfrom());
+			addCommand(details, new rawfrom());
 			addCommand(details, new createfrom());
 			addCommand(details, new signfrom());
 			addCommand(details, new postfrom());
@@ -210,11 +214,13 @@ public class help extends Command {
 			addCommand(details, new txnoutput());
 			addCommand(details, new txnstate());
 			addCommand(details, new txnscript());
+			addCommand(details, new txnmmr());
 			addCommand(details, new txnsign());
 			addCommand(details, new txnclear());
 			addCommand(details, new txnpost());
 			addCommand(details, new txnimport());
 			addCommand(details, new txnexport());
+			addCommand(details, new txnview());
 			addCommand(details, new txnmine());
 			addCommand(details, new txnminepost());
 			

@@ -21,7 +21,7 @@ import org.minima.utils.json.JSONObject;
 public class keys extends Command {
 
 	public keys() {
-		super("keys","(action:list|new|checkkeys) (publickey:) - Get a list of all your public keys or create a new key");
+		super("keys","(action:list|new|checkkeys|genkey) (publickey:) - Get a list of all your public keys or create a new key");
 	}
 	
 	@Override
@@ -127,7 +127,7 @@ public class keys extends Command {
 			JSONObject resp = new JSONObject();
 			resp.put("keys", arr);
 			resp.put("total", arr.size());
-			resp.put("maxuses", maxuses);
+			resp.put("maxuses", maxuses+1);
 			
 			//Put the details in the response..
 			ret.put("response", resp);

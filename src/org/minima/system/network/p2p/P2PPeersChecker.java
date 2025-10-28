@@ -11,7 +11,6 @@ import org.minima.objects.Greeting;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.params.GeneralParams;
-import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -184,7 +183,7 @@ public class P2PPeersChecker extends MessageProcessor {
                     } 
                     
                     //Is it correct
-                    if(testcheck && greetstr.startsWith(GlobalParams.MINIMA_BASE_VERSION)) {
+                    if(testcheck) {
                     	validversion = true;
                     }
                     

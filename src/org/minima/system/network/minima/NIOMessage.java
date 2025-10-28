@@ -295,7 +295,7 @@ public class NIOMessage implements Runnable {
 					testcheck = false;
 				} 
 				
-				if(!testcheck || !greetstr.startsWith(GlobalParams.MINIMA_BASE_VERSION)) {
+				if(!testcheck) {
 					
 					MinimaLogger.log("Greeting with Incompatible Version! "+greet.getVersion().toString()+" .. we are "+GlobalParams.MINIMA_VERSION+" from "+nioclient.getFullAddress()+" incoming:"+nioclient.isIncoming());
 					

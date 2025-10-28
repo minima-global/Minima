@@ -81,7 +81,7 @@ public class maxima extends Command {
 				+ "\n"
 				+ "maxima action:send to:MxG18H.. application:appname data:0xFED5..\n"
 				+ "\n"
-				+ "maxima action:send publickey:0xCD34.. application:ip:port data:0xFED5.. poll:true\n"
+				+ "maxima action:send publickey:0xCD34.. application:appname data:0xFED5.. poll:true\n"
 				+ "\n"
 				+ "maxima action:refresh\n";
 	}

@@ -108,8 +108,18 @@ public class ServiceJSRunner extends MessageProcessor{
 				ctx.evaluateString(scope, code, "<mds_"+mMiniDapp.getName()+"_"+mMiniDapp.getUID()+">", 1, null);
 			
 			}catch(Exception exc) {
-				MinimaLogger.log("ERROR starting service "+mMiniDapp.getName()+" "+exc);
+				MinimaLogger.log("Exception starting service "+mMiniDapp.getName()+" "+exc);
+			
+			}catch(Error noclass){
+	        	MinimaLogger.log("**SERIOUS ERROR starting service "+mMiniDapp.getName()+" "+noclass);
+	        	
+	        	//Now the Stack Trace
+	    		for(StackTraceElement stack : noclass.getStackTrace()) {
+	    			//Print it..
+	    			MinimaLogger.log("     "+stack.toString());
+	    		}
 			}
+        	
 		}else {
 			MinimaLogger.log("ERROR starting service with no service.js : "+mMiniDapp.getName());
 		}
@@ -119,7 +129,7 @@ public class ServiceJSRunner extends MessageProcessor{
 	protected void processMessage(Message zMessage) throws Exception {
 		
 		if(zMessage.getMessageType().equals(SERVICEJS_INIT)) {
-			
+
 			//Start the service
 			setupMiniDAPP();
 		

@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.archive.ArchiveManager;
 import org.minima.database.txpowdb.onchain.TxPoWOnChainDB;
 import org.minima.database.txpowdb.sql.TxPoWSqlDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
@@ -18,7 +17,6 @@ import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.CommandRunner;
 import org.minima.system.params.GeneralParams;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 

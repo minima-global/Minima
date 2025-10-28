@@ -20,7 +20,6 @@ import java.util.StringTokenizer;
 import java.util.function.BiConsumer;
 
 import org.minima.objects.base.MiniNumber;
-import org.minima.system.commands.backup.mysql;
 import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.params.P2PParams;
 import org.minima.utils.MinimaLogger;
@@ -475,8 +474,13 @@ public class ParamConfigurer {
                     .forEach(pk -> System.out.format("%-20s%-15s%n", new Object[] {"-" + pk.key,pk.helpMsg}));
             System.exit(1);
         }),
-    	seed("seed", "Use this seed phrase if starting a new node", (args, configurer) -> {
-            GeneralParams.SEED_PHRASE = args;
+    	seed("seed", "Use this BIP39 seed phrase when starting a new node", (args, configurer) -> {
+            GeneralParams.SEED_PHRASE 		= args;
+            GeneralParams.ANYSEED_PHRASE 	= false;
+        }),
+    	anyseed("anyseed", "Use this seed (ANY phrase and does not have to be BIP39 words) when starting a new node", (args, configurer) -> {
+            GeneralParams.SEED_PHRASE 	 = args;
+            GeneralParams.ANYSEED_PHRASE = true;
         }),
     	megaprune("megaprune", "Prune unspendable addresses from the megammr", (args, configurer) -> {
             if ("true".equals(args)) {

@@ -10,6 +10,7 @@ import org.minima.kissvm.exceptions.ExecutionException;
 import org.minima.kissvm.expressions.Expression;
 import org.minima.kissvm.statements.Statement;
 import org.minima.kissvm.values.Value;
+import org.minima.utils.MinimaLogger;
 
 /**
  * @author Spartacus Rex
@@ -98,10 +99,24 @@ public class LETstatement implements Statement{
 		
 		//It's an array LET
 		String let = "LET ( ";
-		for(Expression exp : mArrayPos) {
-			let += exp.toString().trim()+" ";
+		
+		try {
+			
+			for(Expression exp : mArrayPos) {
+				let += exp.toString().trim()+" ";
+			}
+			let = let.trim()+" ) = "+mValue;
+			
+		}catch(Error serious) {
+			
+			MinimaLogger.log("**SERIOUS ERROR in LET (caught) "+serious.toString());
+			
+			//Now the Stack Trace
+    		for(StackTraceElement stack : serious.getStackTrace()) {
+    			//Print it..
+    			MinimaLogger.log("     "+stack.toString());
+    		}
 		}
-		let = let.trim()+" ) = "+mValue;
 		
 		return let;
 	}

@@ -3,24 +3,26 @@ package org.minima.system.commands.send.wallet;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.minima.objects.StateVariable;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.CommandRunner;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class sendfrom extends Command {
 	
 	public sendfrom() {
-		super("sendfrom","[fromaddress:] [address:] [amount:] (tokenid:) [script:] [privatekey:] [keyuses:] (burn:) (mine:) - Send Minima or Tokens from a certain address");
+		super("sendfrom","[fromaddress:] [address:] [amount:] (tokenid:) (state:) [script:] [privatekey:] [keyuses:] (burn:) (mine:) - Send Minima or Tokens from a certain address");
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"fromaddress","address",
-				"amount","tokenid","script","privatekey","keyuses","mine","burn"}));
+				"amount","tokenid","script","privatekey","keyuses","mine","burn","state"}));
 	}
 	
 	@Override
@@ -39,7 +41,7 @@ public class sendfrom extends Command {
 			throw new CommandException("Currently BURN on precreated transactions only works for Minima.. tokenid:0x00.. not tokens.");
 		}
 		
-		//Thew script of the address
+		//The script of the address
 		String script 		= getParam("script");
 		
 		//The private key we need to sign with
@@ -51,6 +53,12 @@ public class sendfrom extends Command {
 		
 		//Are we mining
 		boolean mine 		= getBooleanParam("mine", true);
+		
+		//Is there a state
+		JSONObject state = null;
+		if(existsParam("state")) {
+			state = getJSONObjectParam("state");
+		}
 		
 		//Now construct the transaction..
 		JSONObject result 	= runCommand("txncreate id:"+randomid);
@@ -69,6 +77,29 @@ public class sendfrom extends Command {
 		
 		//Add the scripts..
 		runCommand("txnscript id:"+randomid+" scripts:{\""+script+"\":\"\"}");
+		
+		//Add the state is exists
+		if(state != null) {
+			
+			//Cycle..
+			for(Object key : state.keySet()) {
+				
+				//The Key is a String
+				String portstr = (String)key; 
+				
+				//The port
+				int port = Integer.parseInt(portstr);
+				
+				//Get the state var..
+				String var = state.get(key)+"";
+
+				//Create a state variable..
+				StateVariable sv = new StateVariable(port, var);
+				
+				//Add to the transaction..
+				runCommand("txnstate id:"+randomid+" port:"+sv.getPort()+" value:\""+sv.getData()+"\"");
+			}
+		}
 		
 		//Sort the MMR
 		runCommand("txnmmr id:"+randomid);

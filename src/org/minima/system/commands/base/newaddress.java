@@ -34,9 +34,15 @@ public class newaddress extends Command {
 		
 		//Create a new address - not a default address!
 		ScriptRow srow = wallet.createNewSimpleAddress(false);
-			
+		
+		//How many keys in total are there
+		int keynumber = wallet.getAllKeys().size();
+		
+		JSONObject newkey = srow.toJSON();
+		newkey.put("total", keynumber);
+		
 		//Put the details in the response..
-		ret.put("response", srow.toJSON());
+		ret.put("response", newkey);
 		
 		return ret;
 	}

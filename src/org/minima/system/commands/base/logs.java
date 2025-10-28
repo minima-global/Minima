@@ -3,7 +3,6 @@ package org.minima.system.commands.base;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowdb.sql.TxPoWSqlDB;
 import org.minima.system.commands.Command;
 import org.minima.system.params.GeneralParams;

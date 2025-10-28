@@ -33,12 +33,12 @@ import org.minima.utils.json.JSONObject;
 public class txnauto extends Command {
 
 	public txnauto() {
-		super("txnauto","[id:] [amount:] [address:] (tokenid:) (sign:) (burn:) - Create a transaction automatically");
+		super("txnauto","[id:] [amount:] [address:] (tokenid:) (sign:) (burn:) (mmrscript:) - Create a transaction automatically");
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id","amount","address","tokenid","sign","burn"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","amount","address","tokenid","sign","burn","mmrscript"}));
 	}
 	
 	@Override
@@ -54,6 +54,7 @@ public class txnauto extends Command {
 		MiniNumber amount 	= getNumberParam("amount");
 		String tokenid 		= getAddressParam("tokenid", "0x00");
 		boolean sign 		= getBooleanParam("sign",false);
+		boolean mmrscript 	= getBooleanParam("mmrscript",true);
 		
 		//Get the BURN
 		MiniNumber burn 	= getNumberParam("burn",MiniNumber.ZERO);
@@ -87,8 +88,10 @@ public class txnauto extends Command {
 		Witness wit		  = txnrow.getWitness();
 		
 		//Set the MMR data and Scripts
-		txnutils.setMMRandScripts(trans, wit);
-	
+		if(mmrscript) {
+			txnutils.setMMRandScripts(trans, wit);
+		}
+		
 		//Do we sign..
 		if(sign) {
 			command = "txnsign id:"+id+" publickey:auto";

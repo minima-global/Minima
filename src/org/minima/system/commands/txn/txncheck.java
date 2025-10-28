@@ -14,10 +14,13 @@ import org.minima.objects.TxPoW;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.keys.Signature;
+import org.minima.objects.keys.TreeKey;
 import org.minima.system.brains.TxPoWChecker;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -121,17 +124,26 @@ public class txncheck extends Command {
 		
 		//Get some details
 		details.put("tokens", tokens.size());
+		
 		details.put("inputs", inputs.size());
+		details.put("mmrproofs", wit.getAllCoinProofs().size());
+		details.put("scripts", wit.getAllScripts().size());
+		
+		boolean correctmmrnum = (inputs.size() == wit.getAllCoinProofs().size());
+		
 		MiniNumber totminimain = MiniNumber.ZERO;
 		for(Coin cc: inputs) {
 			totminimain = totminimain.add(cc.getAmount());
 		}
 		
 		details.put("outputs", outputs.size());
+		JSONArray allouts = new JSONArray();
 		MiniNumber totminimaout = MiniNumber.ZERO;
 		for(Coin cc: outputs) {
 			totminimaout = totminimaout.add(cc.getAmount());
+			allouts.add(cc.toJSON());
 		}
+		details.put("alloutputs", allouts);
 		
 		MiniNumber diff = totminimain.sub(totminimaout);
 		
@@ -150,26 +162,58 @@ public class txncheck extends Command {
 		//Redo any checks..
 		txn.clearIsMonotonic();
 		
-		boolean validbasic 		= TxPoWChecker.checkTxPoWBasic(temp); 
-		boolean validsig 		= TxPoWChecker.checkSignatures(temp); 
-		boolean validmmr 		= TxPoWChecker.checkMMR(tip.getMMR(), temp);
+		
+		boolean validbasic 		= TxPoWChecker.checkTxPoWBasic(temp);
+		
+		//Now check signature data
+		JSONArray allsigdata = new JSONArray();
+		
+		MiniData transid = txn.getTransactionID();
+		ArrayList<Signature> allsigs = wit.getAllSignatures();
+		boolean allsigsvalid = true;
+		for(Signature sig : allsigs) {
+			
+			JSONObject sigdata = new JSONObject();
+			
+			//Create a signature scheme checker..
+			TreeKey tk = new TreeKey();
+			tk.setPublicKey(sig.getRootPublicKey());
+
+			//Add the Public key
+			sigdata.put("publickey", sig.getRootPublicKey().to0xString());
+			
+			boolean valid = tk.verify(transid, sig);
+			if(!valid) {
+				allsigsvalid = false;
+			}
+			sigdata.put("valid", valid);
+			
+			allsigdata.add(sigdata);
+		}
+		details.put("allsignaturesvalid", allsigsvalid);
+		//boolean validsig 		= TxPoWChecker.checkSignatures(temp); 
+		
+		//Now check MMR data
+		boolean validmmr 		= correctmmrnum && TxPoWChecker.checkMMR(tip.getMMR(), temp);
 		boolean validscripts 	= TxPoWChecker.checkTxPoWScripts(tip.getMMR(), temp, tip.getTxPoW());
 
 		JSONObject valid = new JSONObject();
 		valid.put("basic", validbasic);
-		valid.put("signatures", validsig);
+		valid.put("signatures", allsigdata);
 		valid.put("mmrproofs", validmmr);
 		valid.put("scripts", validscripts);
 		
 		details.put("valid", valid);
 		
+		//One final 
+		details.put("validtransaction", validbasic && validmmr && validscripts);
 		
 		JSONObject resp = new JSONObject();
 		ret.put("response", details);
 		
 		return ret;
 	}
-
+	
 	@Override
 	public Command getFunction() {
 		return new txncheck();

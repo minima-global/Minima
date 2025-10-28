@@ -177,6 +177,14 @@ public abstract class Command {
 		return (JSONObject) mParams.get(zParamName);
 	}
 	
+	public JSONObject getJSONObjectParam(String zParamName, JSONObject zDefault) throws CommandException{
+		if(!existsParam(zParamName)) {
+			return zDefault;
+		}
+		
+		return (JSONObject) mParams.get(zParamName);
+	}
+	
 	public JSONArray getJSONArrayParam(String zParamName) throws CommandException {
 		if(!existsParam(zParamName)) {
 			throw new CommandException("param not specified : "+zParamName);

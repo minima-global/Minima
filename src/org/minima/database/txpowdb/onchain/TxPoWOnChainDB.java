@@ -6,15 +6,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Date;
 
-import org.minima.database.txpowdb.sql.TxPoWSqlDB;
-import org.minima.objects.TxPoW;
-import org.minima.objects.base.MiniByte;
-import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.SqlDB;
 import org.minima.utils.json.JSONArray;

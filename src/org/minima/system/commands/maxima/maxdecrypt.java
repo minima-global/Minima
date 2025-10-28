@@ -3,14 +3,10 @@ package org.minima.system.commands.maxima;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.minima.database.MinimaDB;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniString;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
-import org.minima.system.network.maxima.MaximaManager;
 import org.minima.utils.encrypt.CryptoPackage;
-import org.minima.utils.encrypt.SignVerify;
 import org.minima.utils.json.JSONObject;
 
 public class maxdecrypt extends Command {
