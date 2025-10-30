@@ -8,13 +8,13 @@ public class GlobalParams {
 	 * Which Version fo Minima are we running
 	 */
 	public static String MINIMA_BASE_VERSION 	= "1.0";
-	public static String MINIMA_BUILD_NUMBER 	= "46";
+	public static String MINIMA_BUILD_NUMBER 	= "47";
 	public static String MINIMA_VERSION 		= MINIMA_BASE_VERSION+"."+MINIMA_BUILD_NUMBER;
 	
 	/**
 	 * The MICRO build number
 	 */
-	public static String MINIMA_MICRO_BUILD		= "8";
+	public static String MINIMA_MICRO_BUILD		= "0";
 	public static String getFullMicroVersion() {
 		return MINIMA_VERSION+"."+MINIMA_MICRO_BUILD;
 	}
