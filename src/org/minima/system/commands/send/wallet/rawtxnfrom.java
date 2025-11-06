@@ -13,28 +13,31 @@ import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
-public class rawfrom extends Command {
+public class rawtxnfrom extends Command {
 	
-	public rawfrom() {
-		super("rawfrom","[inputs:] [outputs:] (state:) - [DEPRECATED USE rawtxnfrom ] Create an unsigned transaction from a set of inputs, outputs and state");
+	public rawtxnfrom() {
+		super("rawtxnfrom","[inputs:] [outputs:] [scripts:] (state:) - Create an unsigned transaction from a set of inputs, outputs, scripts and state");
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"inputs","outputs","state"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"inputs","outputs","scripts","state"}));
 	}
 	
 	@Override
 	public String getFullHelp() {
-		return "\nrawfrom\n"
+		return "\nrawtxnfrom\n"
 				+ "\n"
 				+ "Create an unsigned transaction with a list of input and output JSON coins.\n"
 				+ "\n"
 				+ "inputs:\n"
-				+ "    A JSONArray of input JSON coins with a coinid and script value.\n"
+				+ "    A JSONArray of coinids.\n"
 				+ "\n"
 				+ "outputs:\n"
-				+ "    A JSONArray of output JSON coins with an address, amount and optional tokenid and storestate.\n"
+				+ "    A JSONArray of output JSON coins with an address, amount, optional tokenid and storestate.\n"
+				+ "\n"
+				+ "scripts:\n"
+				+ "    A JSONArray of scripts for all the input coins.\n"
 				+ "\n"
 				+ "state: (optional)\n"
 				+ "    The JSON state.\n"
@@ -55,6 +58,9 @@ public class rawfrom extends Command {
 		//Get a list of output coins
 		JSONArray outputs = getJSONArrayParam("outputs");
 		
+		//Get a list of scripts
+		JSONArray scripts = getJSONArrayParam("scripts");
+				
 		//Is there a state
 		JSONObject state = null;
 		if(existsParam("state")) {
@@ -67,18 +73,12 @@ public class rawfrom extends Command {
 		//Now construct the transaction..
 		JSONObject result 	= runCommand("txncreate id:"+randomid);
 		
-		//Add the Inputs
+		//Add the Inputs - list of coinid
 		for(Object input : inputs) {
-			JSONObject in = (JSONObject)input;
-			
-			String coinid = in.getString("coinid");
-			String script = in.getString("script");
+			String coinid = (String)input;
 			
 			//Now add this coin..
 			runCommand("txninput id:"+randomid+" coinid:"+coinid);
-			
-			//And add the script
-			runCommand("txnscript id:"+randomid+" scripts:{\""+script+"\":\"\"}");
 		}
 		
 		//Add the outputs
@@ -102,6 +102,14 @@ public class rawfrom extends Command {
 			
 			//Now add this coin..
 			runCommand("txnoutput id:"+randomid+" address:"+address+" amount:"+amount+" tokenid:"+tokenid+" storestate:"+storestate);
+		}
+		
+		//Add the Scripts
+		for(Object script : scripts) {
+			String scr = (String)script;
+			
+			//And add the script
+			runCommand("txnscript id:"+randomid+" scripts:{\""+scr+"\":\"\"}");
 		}
 		
 		//Add the state is exists
@@ -147,6 +155,6 @@ public class rawfrom extends Command {
 
 	@Override
 	public Command getFunction() {
-		return new rawfrom();
+		return new rawtxnfrom();
 	}	
 }
