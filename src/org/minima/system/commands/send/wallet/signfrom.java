@@ -10,6 +10,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandRunner;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -68,15 +69,18 @@ public class signfrom extends Command {
 		//Get the result
 		JSONObject resresp = (JSONObject) result.get("response");
 		resresp.put("post", post);
-		//if(post) {
-			resresp.put("txpow", "");
-		//}
-		
-		//Add post info..
+		if(post) {
+			try {
+				JSONObject ss = (JSONObject) signres.get("response");
+				resresp.put("txpow", ss.get("txpow"));
+			}catch(Exception exc) {
+				MinimaLogger.log(exc);
+			}
+		}
 		
 		//And return..
 		ret.put("response", resresp);
-		
+			
 		return ret;
 	}
 	
