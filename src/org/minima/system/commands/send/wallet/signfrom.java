@@ -16,12 +16,12 @@ import org.minima.utils.json.JSONObject;
 public class signfrom extends Command {
 
 	public signfrom() {
-		super("signfrom","[data:] [privatekey:] [keyuses:] - Sign a creatfrom txn");
+		super("signfrom","[data:] [privatekey:] [keyuses:] (post:) - Sign a creatfrom txn");
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id","data","privatekey","keyuses"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","data","privatekey","keyuses","post"}));
 	}
 	
 	@Override
@@ -48,8 +48,16 @@ public class signfrom extends Command {
 		String privatekey	= getAddressParam("privatekey");
 		MiniNumber keyuses  = getNumberParam("keyuses");
 		
+		//Are we posting..
+		boolean post = getBooleanParam("post", false);
+		
 		//Now SIGN
-		runCommand("txnsign id:"+randomid+" publickey:custom privatekey:"+privatekey+" keyuses:"+keyuses);
+		JSONObject signres = null; 
+		if(!post) {
+			signres = runCommand("txnsign id:"+randomid+" publickey:custom privatekey:"+privatekey+" keyuses:"+keyuses);
+		}else {
+			signres = runCommand("txnsign id:"+randomid+" publickey:custom privatekey:"+privatekey+" keyuses:"+keyuses+" txnpostauto:true txnpostmine:true");
+		}
 		
 		//Now export the txn..
 		JSONObject result = runCommand("txnexport id:"+randomid);
@@ -57,8 +65,17 @@ public class signfrom extends Command {
 		//And delete..
 		runCommand("txndelete id:"+randomid);
 		
+		//Get the result
+		JSONObject resresp = (JSONObject) result.get("response");
+		resresp.put("post", post);
+		//if(post) {
+			resresp.put("txpow", "");
+		//}
+		
+		//Add post info..
+		
 		//And return..
-		ret.put("response", result.get("response"));
+		ret.put("response", resresp);
 		
 		return ret;
 	}
