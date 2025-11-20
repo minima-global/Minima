@@ -54,6 +54,9 @@ public class sendfrom extends Command {
 		//Are we mining
 		boolean mine 		= getBooleanParam("mine", true);
 		
+		//Is there a split output
+		MiniNumber split = getNumberParam("split", MiniNumber.ONE);
+				
 		//Is there a state
 		JSONObject state = null;
 		if(existsParam("state")) {
@@ -62,9 +65,6 @@ public class sendfrom extends Command {
 		
 		//Now construct the transaction..
 		JSONObject result 	= runCommand("txncreate id:"+randomid);
-		
-		//Is there a split
-		MiniNumber split = getNumberParam("split", MiniNumber.ONE);
 		
 		//Add the mounts..
 		String command 		= "txnaddamount id:"+randomid+" split:"+split+" burn:"+burn
