@@ -56,7 +56,7 @@ public class txnaddamount extends Command {
 	
 	
 	public txnaddamount() {
-		super("txnaddamount","[id:] [amount:] (address) (onlychange:) (tokenid:) (burn:) - Add inputs and calculate change for a certain amount");
+		super("txnaddamount","[id:] [amount:] (address) (onlychange:) (tokenid:) (split:) (burn:) - Add inputs and calculate change for a certain amount");
 	}
 	
 	@Override
@@ -73,7 +73,7 @@ public class txnaddamount extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id","amount","address","onlychange","tokenid","fromaddress","burn","storestate"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","amount","address","onlychange","tokenid","fromaddress","burn","storestate","split"}));
 	}
 	
 	@Override
@@ -223,15 +223,34 @@ public class txnaddamount extends Command {
 		
 		//And add the output
 		if(!addonlychange) {
+			
+			//Where to
 			String addr = getAddressParam("address");
-			Coin maincoin = new Coin(new MiniData(addr), tokenamount, tokenid, storestate);
+			
+			//Create the coins..
+			int split = getNumberParam("split", MiniNumber.ONE).getAsInt();
+			MiniNumber splitamount = tokenamount.div(new MiniNumber(split));
+			
+			for(int i=0;i<split;i++) {
+				
+				Coin spltcoin = new Coin(new MiniData(addr), splitamount, tokenid, storestate);
+				
+				//Do we need to add the Token..
+				if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
+					spltcoin.setToken(token);
+				}
+				
+				trans.addOutput(spltcoin);
+			}
+			
+			/*Coin maincoin = new Coin(new MiniData(addr), tokenamount, tokenid, storestate);
 			
 			//Do we need to add the Token..
 			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
 				maincoin.setToken(token);
 			}
 			
-			trans.addOutput(maincoin);
+			trans.addOutput(maincoin);*/
 		}
 		
 		if(change.isMore(MiniNumber.ZERO)) {

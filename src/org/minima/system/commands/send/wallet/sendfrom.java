@@ -16,13 +16,13 @@ import org.minima.utils.json.JSONObject;
 public class sendfrom extends Command {
 	
 	public sendfrom() {
-		super("sendfrom","[fromaddress:] [address:] [amount:] (tokenid:) (state:) [script:] [privatekey:] [keyuses:] (burn:) (mine:) - Send Minima or Tokens from a certain address");
+		super("sendfrom","[fromaddress:] [address:] [amount:] [script:] [privatekey:] [keyuses:] (tokenid:) (state:) (split:) (burn:) (mine:) - Send Minima or Tokens from a certain address");
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"fromaddress","address",
-				"amount","tokenid","script","privatekey","keyuses","mine","burn","state"}));
+				"amount","tokenid","script","privatekey","keyuses","mine","burn","state","split"}));
 	}
 	
 	@Override
@@ -63,8 +63,12 @@ public class sendfrom extends Command {
 		//Now construct the transaction..
 		JSONObject result 	= runCommand("txncreate id:"+randomid);
 		
+		//Is there a split
+		MiniNumber split = getNumberParam("split", MiniNumber.ONE);
+		
 		//Add the mounts..
-		String command 		= "txnaddamount id:"+randomid+" burn:"+burn+" fromaddress: "+fromaddress+" address:"+toaddress+" amount:"+amount+" tokenid:"+tokenid;
+		String command 		= "txnaddamount id:"+randomid+" split:"+split+" burn:"+burn
+				+" fromaddress: "+fromaddress+" address:"+toaddress+" amount:"+amount+" tokenid:"+tokenid;
 		result = runCommand(command);
 		if(!(boolean)result.get("status")) {
 			
