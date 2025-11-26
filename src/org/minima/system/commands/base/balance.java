@@ -55,6 +55,9 @@ public class balance extends Command {
 				+ "coinlist: (optional)\n"
 				+ "    true or flase - List all the valid coins.\n"
 				+ "\n"
+				+ "tokendetails: (optional)\n"
+				+ "    true or flase - Show all the token details.\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "balance\n"
@@ -85,6 +88,9 @@ public class balance extends Command {
 		boolean simpleview 	= getBooleanParam("simple", false);
 		boolean listcoins 	= getBooleanParam("coinlist", false);
 		
+		//Do we print ALL the token details..
+		boolean tokendetails = getBooleanParam("tokendetails", false);
+				
 		String onlytokenid = getParam("tokenid", "");
 		
 		//Get all the coins you own..
@@ -247,9 +253,6 @@ public class balance extends Command {
 				}
 			}
 		}
-		
-		//Do we print ALL the token details..
-		boolean tokendetails = getBooleanParam("tokendetails", false);
 		
 		//Lets print out..
 		for(String token : alltokens) {
