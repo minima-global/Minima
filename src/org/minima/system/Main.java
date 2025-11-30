@@ -303,7 +303,9 @@ public class Main extends MessageProcessor {
 		if(STARTUP_DEBUG_LOGS) {
 			MinimaLogger.log("SSL Key.. start");
 		}
-		SSLManager.makeKeyFile();
+		if(GeneralParams.GENERATE_SSL) {
+			SSLManager.makeKeyFile();
+		}
 		if(STARTUP_DEBUG_LOGS) {
 			MinimaLogger.log("SSL Key.. finish");
 		}
@@ -315,10 +317,10 @@ public class Main extends MessageProcessor {
 		MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
 		
 		//Now do the actual check..
-		MiniNumber hashcheck 	= new MiniNumber("250000");
+		MiniNumber hashcheck 	= new MiniNumber(GeneralParams.INIT_HASHTEST_AMOUNT);
 		MiniNumber hashrate 	= TxPoWMiner.calculateHashSpeed(hashcheck);
 		MinimaDB.getDB().getUserDB().setHashRate(hashrate);
-		MinimaLogger.log("Calculate device hash rate : "+hashrate.div(MiniNumber.MILLION).setSignificantDigits(4)+" MHs");
+		MinimaLogger.log("Calculate device hash rate ("+GeneralParams.INIT_HASHTEST_AMOUNT+" hashes) : "+hashrate.div(MiniNumber.MILLION).setSignificantDigits(4)+" MHs");
 		
 		//Create the Initial Key Set
 		try {

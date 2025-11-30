@@ -356,6 +356,16 @@ public class GeneralParams {
 	public static boolean SHOW_NETWORK_POLLS = true;
 	
 	/**
+	 * Reduce the hastext at the beggining
+	 */
+	public static int INIT_HASHTEST_AMOUNT = 250000;
+	
+	/**
+	 * Reduce the hastext at the beggining
+	 */
+	public static boolean GENERATE_SSL = true;
+	
+	/**
 	 * Reset all params to their default settings.. ANDROID keeps them after shutdown
 	 */
 	public static void resetDefaults() {
@@ -435,6 +445,9 @@ public class GeneralParams {
 		
 		P2P2_ENABLED 		  	= false;
 		SHOW_NETWORK_CALLS 		= false;
+		
+		INIT_HASHTEST_AMOUNT 	= 250000;
+		GENERATE_SSL 			= true;
 	}
 	
 }

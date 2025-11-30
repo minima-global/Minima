@@ -474,7 +474,13 @@ public class ParamConfigurer {
                     .forEach(pk -> System.out.format("%-20s%-15s%n", new Object[] {"-" + pk.key,pk.helpMsg}));
             System.exit(1);
         }),
-    	seed("seed", "Use this BIP39 seed phrase when starting a new node", (args, configurer) -> {
+        hashtest("hashtest", "At startup how many hashes to use to test hashrate", (arg, configurer) -> {
+        	GeneralParams.INIT_HASHTEST_AMOUNT 	= Integer.parseInt(arg.trim());	
+        }),
+        nossl("nossl", "Do not generate an SSL certificate at startup", (arg, configurer) -> {
+        	GeneralParams.GENERATE_SSL 	= false;	
+        }),
+        seed("seed", "Use this BIP39 seed phrase when starting a new node", (args, configurer) -> {
             GeneralParams.SEED_PHRASE 		= args;
             GeneralParams.ANYSEED_PHRASE 	= false;
         }),
