@@ -477,6 +477,9 @@ public class ParamConfigurer {
         hashtest("hashtest", "At startup how many hashes to use to test hashrate", (arg, configurer) -> {
         	GeneralParams.INIT_HASHTEST_AMOUNT 	= Integer.parseInt(arg.trim());	
         }),
+        enablejni("enablejni", "Load the JNI lib - libnative.so", (arg, configurer) -> {
+        	GeneralParams.LOAD_JNI = true;	
+        }),
         nossl("nossl", "Do not generate an SSL certificate at startup", (arg, configurer) -> {
         	GeneralParams.GENERATE_SSL 	= false;	
         }),

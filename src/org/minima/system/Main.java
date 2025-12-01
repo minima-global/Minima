@@ -234,6 +234,17 @@ public class Main extends MessageProcessor {
 		//Reset the static values
 		mMainInstance 	= this;
 		
+		//Do we load the JNI Lib
+		if(GeneralParams.LOAD_JNI) {
+			try {
+				System.loadLibrary("native");
+				MinimaLogger.log("JNI library loaded");
+			}catch(Error exc) {
+				MinimaLogger.log("ERROR : Could not load native JNI lib (MUST add -Djava.library.path=..) "+exc.toString());
+				System.exit(1);
+			}
+		}
+		
 		//Create the timer processor
 		TimerProcessor.createTimerProcessor();
 		

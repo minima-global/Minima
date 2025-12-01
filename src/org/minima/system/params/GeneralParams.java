@@ -366,6 +366,11 @@ public class GeneralParams {
 	public static boolean GENERATE_SSL = true;
 	
 	/**
+	 * Do we load the JNI LIB
+	 */
+	public static boolean LOAD_JNI = false;
+	
+	/**
 	 * Reset all params to their default settings.. ANDROID keeps them after shutdown
 	 */
 	public static void resetDefaults() {
@@ -448,6 +453,8 @@ public class GeneralParams {
 		
 		INIT_HASHTEST_AMOUNT 	= 250000;
 		GENERATE_SSL 			= true;
+		
+		LOAD_JNI 				= false;
 	}
 	
 }

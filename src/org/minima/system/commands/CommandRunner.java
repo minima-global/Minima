@@ -36,6 +36,7 @@ import org.minima.system.commands.base.hash;
 import org.minima.system.commands.base.hashtest;
 import org.minima.system.commands.base.healthcheck;
 import org.minima.system.commands.base.incentivecash;
+import org.minima.system.commands.base.jnitest;
 import org.minima.system.commands.base.logs;
 import org.minima.system.commands.base.maths;
 import org.minima.system.commands.base.mempool;
@@ -145,6 +146,8 @@ public class CommandRunner {
 			
 			new ping(), new random(), new seedrandom(), new mysql(), new mysqlcoins(), new slavenode(),
 			//new file(),
+			
+			new jnitest(),
 			
 			new megammr(), 
 			
