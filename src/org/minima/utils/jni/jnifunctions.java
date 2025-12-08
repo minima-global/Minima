@@ -18,4 +18,8 @@ public class jnifunctions {
 	public native String sayHelloToMe(String name, boolean isFemale);
     
 	public native byte[] hashHeader(byte[] headerbytes);
+	
+	//Returns the NONCE as byte array
+	//I have added mytestnonce just so I can return a valid MiniNumber from the JNI for testing.. you don't need to use it!
+	public native byte[] hashHeaderWithDiff(byte[] mytestnonce, int maxattempts, byte[] txndifficulty, byte[] headerbytes);
 }

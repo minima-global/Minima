@@ -1,15 +1,19 @@
 package org.minima.system.commands.base;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.minima.objects.Magic;
 import org.minima.objects.TxHeader;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.system.brains.TxPoWMiner;
 import org.minima.system.commands.Command;
+import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.jni.jnifunctions;
 import org.minima.utils.json.JSONObject;
@@ -47,7 +51,7 @@ public class jnitest extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"amount"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"testnonce", "maxattempts", "targetdifficulty"}));
 	}
 	
 	private String outputByteArray(byte[] zData) {
@@ -62,8 +66,13 @@ public class jnitest extends Command {
 	public JSONObject runCommand() throws Exception{
 		JSONObject ret = getJSONReply();
 
-		//Time the function..
-		long timenow = System.currentTimeMillis();
+		//Get the input variables..
+		int maxattempts 		= getNumberParam("maxattempts", new MiniNumber(1000)).getAsInt();
+		MiniData targetdiff  	= getDataParam("targetdifficulty", Magic.MIN_TXPOW_WORK);
+		
+		//Create a TEST MiniNumber to return by default..
+		MiniNumber testnonce = getNumberParam("testnonce", new MiniNumber("12345.54321"));
+		byte[] testnoncedata = MiniData.getMiniDataVersion(testnonce).getBytes();
 		
 		//First create a random header
 		TxPoW txp = new TxPoW();
@@ -91,28 +100,40 @@ public class jnitest extends Command {
 		//Say hello test
 		jni.sayHello();
 		
-		//Now send this to the JNI function..
-		byte[] result = jni.hashHeader(data);
+		//Time the function..
+		long timenow = System.currentTimeMillis();
+			
+		//Now send the data to the JNI function..
+		byte[] result = jni.hashHeaderWithDiff(testnoncedata, maxattempts, targetdiff.getBytes(), data);
 		
-		//Now convert to a TxHeader
-		TxHeader txh = TxHeader.convertMiniDataVersion(new MiniData(result));
-		
-		//What was the nonce..
-		MiniNumber finalnonce = txh.mNonce;
-		
+		//Time it..
 		long timediff = System.currentTimeMillis() - timenow;
 		
-		//Now set the final nonce..
+		//Convert Byte array to MiniNumber
+		DataInputStream dis = new DataInputStream(new ByteArrayInputStream(result));
+		
+		//Now check the returned MiniNumber nonce value..
+		MiniNumber finalnonce = MiniNumber.ReadFromStream(dis);
+		
+		//Set this..
 		txp.setNonce(finalnonce);
 		
 		//Calculate TxPoWID
 		txp.calculateTXPOWID();
 		
+		//Have we found a valid txpow
+		boolean foundvalidtxpow = false;
+		if(txp.getTxPoWIDData().isLess(targetdiff)) {
+			foundvalidtxpow = true;
+		}
+		
 		JSONObject resp = new JSONObject();
 		resp.put("result", outputByteArray(result));
 		resp.put("nonce", finalnonce);
 		resp.put("millitime", timediff);
+		resp.put("targetdifficulty", targetdiff.to0xString());
 		resp.put("txpowid", txp.getTxPoWID());
+		resp.put("success", foundvalidtxpow);
 		
 		//Add balance..
 		ret.put("response", resp);

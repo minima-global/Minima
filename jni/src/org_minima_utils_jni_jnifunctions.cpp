@@ -37,3 +37,12 @@ JNIEXPORT jbyteArray JNICALL Java_org_minima_utils_jni_jnifunctions_hashHeader
 	
 	return headerbytes;
 }
+
+JNIEXPORT jbyteArray JNICALL Java_org_minima_utils_jni_jnifunctions_hashHeaderWithDiff
+  (JNIEnv * env, jobject thisObject, jbyteArray mytestnonce, jint maxattempts, jbyteArray targetdifficulty, jbyteArray headerbytes){
+	
+   //DO STUFF!!
+	//..
+	
+	return mytestnonce;		
+}

@@ -39,6 +39,14 @@ JNIEXPORT jstring JNICALL Java_org_minima_utils_jni_jnifunctions_sayHelloToMe
 JNIEXPORT jbyteArray JNICALL Java_org_minima_utils_jni_jnifunctions_hashHeader
   (JNIEnv *, jobject, jbyteArray);
 
+/*
+ * Class:     org_minima_utils_jni_jnifunctions
+ * Method:    hashHeaderWithDiff
+ * Signature: ([BI[B[B)[B
+ */
+JNIEXPORT jbyteArray JNICALL Java_org_minima_utils_jni_jnifunctions_hashHeaderWithDiff
+  (JNIEnv *, jobject, jbyteArray, jint, jbyteArray, jbyteArray);
+
 #ifdef __cplusplus
 }
 #endif
