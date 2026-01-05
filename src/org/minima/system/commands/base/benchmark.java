@@ -18,15 +18,15 @@ import org.minima.utils.MinimaLogger;
 import org.minima.utils.jni.jnifunctions;
 import org.minima.utils.json.JSONObject;
 
-public class jnitest extends Command {
+public class benchmark extends Command {
 
 	/**
 	 * The Large Byte MiniNumber to set the Header up for hashing
 	 */
 	private static MiniNumber START_NONCE_BYTES = new MiniNumber("100000000000000000.00000000000000000000000000000000000000001");
 	
-	public jnitest() {
-		super("jnitest","(maxattempts:) - Check the speed of header hashing with JNI calls. Defaults to 1000 hashes");
+	public benchmark() {
+		super("benchmark","(hashes:) - Check the speed of header hashing with JNI and JAVA calls. Defaults to 1000 hashes");
 	}
 	
 	@Override
@@ -46,12 +46,12 @@ public class jnitest extends Command {
 				+ "\n"
 				+ "hashtest\n"
 				+ "\n"
-				+ "hashtest maxattempts:2000000\n";
+				+ "benchmark hashes:2000000\n";
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"testnonce", "maxattempts", "targetdifficulty"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"hashes","testnonce", "maxattempts", "targetdifficulty"}));
 	}
 	
 	private String outputByteArray(byte[] zData) {
@@ -67,7 +67,7 @@ public class jnitest extends Command {
 		JSONObject ret = getJSONReply();
 
 		//Get the input variables..
-		int maxattempts 		= getNumberParam("maxattempts", new MiniNumber(1000)).getAsInt();
+		int amount 		= getNumberParam("hashes", new MiniNumber(1000)).getAsInt();
 		MiniData targetdiff  	= getDataParam("targetdifficulty", Magic.MIN_TXPOW_WORK);
 		
 		//Create a TEST MiniNumber to return by default..
@@ -84,7 +84,26 @@ public class jnitest extends Command {
 		txp.setNonce(START_NONCE_BYTES);
 		
 		//Get the byte data
-		byte[] data = MiniData.getMiniDataVersion(txp.getTxHeader()).getBytes();
+		byte[] data 	= MiniData.getMiniDataVersion(txp.getTxHeader()).getBytes();
+		byte[] datajava = MiniData.getMiniDataVersion(txp.getTxHeader()).getBytes();
+		
+		//First do the hashing using JAVA
+		long timenowjava 		= System.currentTimeMillis();
+		BigInteger newnoncejava = BigInteger.ZERO;
+		for(int i=0;i<amount;i++) {
+			
+			byte[] noncebytesjava = newnoncejava.toByteArray();
+			newnoncejava 		  = newnoncejava.add(BigInteger.ONE);
+			
+			//Copy into the data array
+			System.arraycopy(noncebytesjava, 0, datajava, 4, noncebytesjava.length);
+			
+			//Hash the data
+			byte[] hashedbytes = Crypto.getInstance().hashData(datajava);
+		}
+		long timediffjava = System.currentTimeMillis() - timenowjava;
+		
+		//NOW DO THE JNI
 		
 		//Set the initial Nonce..
 		BigInteger newnonce = BigInteger.ZERO;
@@ -104,7 +123,7 @@ public class jnitest extends Command {
 		long timenow = System.currentTimeMillis();
 			
 		//Now send the data to the JNI function..
-		byte[] result = jni.hashHeaderWithDiff(testnoncedata, maxattempts, targetdiff.getBytes(), data);
+		byte[] result = jni.hashHeaderWithDiff(testnoncedata, amount, targetdiff.getBytes(), data);
 		
 		//Time it..
 		long timediff = System.currentTimeMillis() - timenow;
@@ -128,12 +147,15 @@ public class jnitest extends Command {
 		}
 		
 		JSONObject resp = new JSONObject();
-		resp.put("result", outputByteArray(result));
-		resp.put("nonce", finalnonce);
-		resp.put("millitime", timediff);
-		resp.put("targetdifficulty", targetdiff.to0xString());
-		resp.put("txpowid", txp.getTxPoWID());
-		resp.put("success", foundvalidtxpow);
+		resp.put("hashes", amount);
+		
+		JSONObject javaresp = new JSONObject();
+		javaresp.put("millitime", timediffjava);
+		resp.put("java", javaresp);
+		
+		JSONObject jniresp = new JSONObject();
+		jniresp.put("millitime", timediff);
+		resp.put("jni", jniresp);
 		
 		//Add balance..
 		ret.put("response", resp);
@@ -143,7 +165,7 @@ public class jnitest extends Command {
 
 	@Override
 	public Command getFunction() {
-		return new jnitest();
+		return new benchmark();
 	}
 
 }

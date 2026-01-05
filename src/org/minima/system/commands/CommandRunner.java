@@ -20,6 +20,7 @@ import org.minima.system.commands.backup.mmrsync.megammr;
 import org.minima.system.commands.backup.mmrsync.megammrsync;
 import org.minima.system.commands.base.automine;
 import org.minima.system.commands.base.balance;
+import org.minima.system.commands.base.benchmark;
 import org.minima.system.commands.base.block;
 import org.minima.system.commands.base.burn;
 import org.minima.system.commands.base.checkaddress;
@@ -147,7 +148,7 @@ public class CommandRunner {
 			new ping(), new random(), new seedrandom(), new mysql(), new mysqlcoins(), new slavenode(),
 			//new file(),
 			
-			new jnitest(),
+			new jnitest(), new benchmark(),
 			
 			new megammr(), 
 			
