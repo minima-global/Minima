@@ -223,8 +223,6 @@ public class txnaddamount extends Command {
 		boolean storestate = getBooleanParam("storestate", true);
 		
 		//And add the output
-		MinimaLogger.log("TOTAL AMOUNT : "+tokenamount);
-		
 		if(!addonlychange) {
 			
 			//Where to
