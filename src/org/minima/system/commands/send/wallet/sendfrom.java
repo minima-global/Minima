@@ -117,6 +117,12 @@ public class sendfrom extends Command {
 		//And delete..
 		runCommand("txndelete id:"+randomid);
 		
+		//Check succeeded..
+		if(!(boolean)result.get("status")) {
+			//Didn't work..
+			throw new CommandException((String)result.get("error"));
+		}
+		
 		//And return..
 		ret.put("response", result.get("response"));
 		
