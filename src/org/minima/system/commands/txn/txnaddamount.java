@@ -19,6 +19,7 @@ import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.send.send;
 import org.minima.system.params.GeneralParams;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -222,6 +223,8 @@ public class txnaddamount extends Command {
 		boolean storestate = getBooleanParam("storestate", true);
 		
 		//And add the output
+		MinimaLogger.log("TOTAL AMOUNT : "+tokenamount);
+		
 		if(!addonlychange) {
 			
 			//Where to
@@ -231,6 +234,8 @@ public class txnaddamount extends Command {
 			int split = getNumberParam("split", MiniNumber.ONE).getAsInt();
 			MiniNumber splitamount = tokenamount.div(new MiniNumber(split));
 			
+			//Is it enough..
+			MiniNumber totalsplitadded = MiniNumber.ZERO;
 			for(int i=0;i<split;i++) {
 				
 				Coin spltcoin = new Coin(new MiniData(addr), splitamount, tokenid, storestate);
@@ -239,17 +244,28 @@ public class txnaddamount extends Command {
 				if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
 					spltcoin.setToken(token);
 				}
+				trans.addOutput(spltcoin);
 				
+				//Add to the total
+				totalsplitadded = totalsplitadded.add(splitamount);
+			}
+			
+			//Was enough added..
+			MiniNumber splitremain = tokenamount.sub(totalsplitadded);
+			if(splitremain.isMore(MiniNumber.ZERO)) {
+				//Send this..
+				Coin spltcoin = new Coin(new MiniData(addr), splitremain, tokenid, storestate);
+				if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
+					spltcoin.setToken(token);
+				}
 				trans.addOutput(spltcoin);
 			}
 			
 			/*Coin maincoin = new Coin(new MiniData(addr), tokenamount, tokenid, storestate);
-			
 			//Do we need to add the Token..
 			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
 				maincoin.setToken(token);
 			}
-			
 			trans.addOutput(maincoin);*/
 		}
 		
