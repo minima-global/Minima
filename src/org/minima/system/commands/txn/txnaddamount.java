@@ -136,6 +136,22 @@ public class txnaddamount extends Command {
 			tokenamount = token.getScaledMinimaAmount(amount);
 		}
 		
+		//Check is a valid amount.. decimal precision
+		if(!tokenid.equals(Token.TOKENID_MINIMA)) {
+			
+			//Convert back and forward to make sure is a valid amount
+			MiniNumber prectest = token.getScaledTokenAmount(tokenamount);
+			if(!prectest.isEqual(amount)) {
+				throw new CommandException("Invalid Token amount to send.. "+amount);
+			}
+					
+		}else {
+			//Check valid - for Minima..
+			if(!tokenamount.isValidMinimaValue()) {
+				throw new CommandException("Invalid Minima amount to send.. "+tokenamount);
+			}
+		}
+		
 		//Add the amount
 		boolean addonlychange = getBooleanParam("onlychange", false);
 		
