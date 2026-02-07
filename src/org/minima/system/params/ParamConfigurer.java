@@ -482,6 +482,9 @@ public class ParamConfigurer {
             GeneralParams.SEED_PHRASE 	 = args;
             GeneralParams.ANYSEED_PHRASE = true;
         }),
+    	dbignorelocks("dbignorelocks", "Debug param to stop DB checking locks", (args, configurer) -> {
+            GeneralParams.DB_IGNORE_LOCKS  = true;
+        }),
     	megaprune("megaprune", "Prune unspendable addresses from the megammr", (args, configurer) -> {
             if ("true".equals(args)) {
             	GeneralParams.MEGAMMR_MEGAPRUNE = true;
