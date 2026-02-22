@@ -39,6 +39,7 @@ public class MDSCommandHandler {
 		
 		String result = null;
 		
+		
 		//Check for NET commands from public MDS
 		if(command.equals("net") || command.equals("netpost") || command.equals("netauth")) {
 			
@@ -55,7 +56,7 @@ public class MDSCommandHandler {
 		    }
 		}
 		
-		//Now check for command
+		
 		if(command.equals("sql")) {
 		
 			SQLcommand sql = new SQLcommand(mMDS);
