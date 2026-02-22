@@ -45,6 +45,13 @@ public class NETcommand {
 		statfalse.put("pending", false);
 		String result = statfalse.toJSONString();
 		
+		//Is it a blocked Host!
+		if(isBlockedURL(mURL)) {
+			statfalse.put("error", "Blocked Host URL..");
+			
+			return statfalse.toJSONString();
+		}
+		
 		try {
 			
 			String resp = null;
@@ -85,5 +92,35 @@ public class NETcommand {
 		return result;
 	}
 	
+	private static boolean isBlockedURL(String url) {
+	    try {
+	        java.net.URL parsed = new java.net.URL(url);
+	        String host 		= parsed.getHost();
+
+	        // Resolve hostname to IP
+	        java.net.InetAddress addr = java.net.InetAddress.getByName(host);
+
+	        // Block private, link-local, loopback, multicast
+	        if (addr.isLoopbackAddress()       // 127.0.0.0/8
+	            || addr.isLinkLocalAddress()    // 169.254.0.0/16
+	            || addr.isSiteLocalAddress()    // 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16
+	            || addr.isAnyLocalAddress()     // 0.0.0.0
+	            || addr.isMulticastAddress()) { // 224.0.0.0/4
+	            return true;
+	        }
+
+	        // Block cloud metadata IPs
+	        byte[] bytes = addr.getAddress();
+	        if (bytes[0] == (byte)169 && bytes[1] == (byte)254) return true;
+
+	        // Block known metadata hostnames
+	        if (host.equals("metadata.google.internal")) return true;
+	        if (host.endsWith(".internal")) return true;
+
+	        return false;
+	    } catch (Exception e) {
+	        return true; // Block on error — fail closed
+	    }
+	}
 
 }

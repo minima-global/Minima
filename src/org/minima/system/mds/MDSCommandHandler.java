@@ -38,6 +38,24 @@ public class MDSCommandHandler {
 	public String runCommand(String minidappid, String command, String data) throws UnsupportedEncodingException, MDSCommandException {
 		
 		String result = null;
+		
+		//Check for NET commands from public MDS
+		if(command.equals("net") || command.equals("netpost") || command.equals("netauth")) {
+			
+			// Block public/untrusted MiniDapps from using net commands
+		    if (minidappid.equals(mMDS.getPublicMiniDAPPID()) ||
+		        minidappid.equals(mMDS.getUntrustedMiniDAPPID())) {
+		    	
+		        JSONObject error = new JSONObject();
+		        error.put("status", false);
+		        error.put("error", "net command not allowed for public MiniDapps");
+		        result = error.toString();
+		        
+		        return result;
+		    }
+		}
+		
+		//Now check for command
 		if(command.equals("sql")) {
 		
 			SQLcommand sql = new SQLcommand(mMDS);
