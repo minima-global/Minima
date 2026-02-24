@@ -1,5 +1,6 @@
 package org.minima.system.mds.handler;
 
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.RPCClient;
 import org.minima.utils.json.JSONObject;
 
@@ -47,8 +48,7 @@ public class NETcommand {
 		
 		//Is it a blocked Host!
 		if(isBlockedURL(mURL)) {
-			statfalse.put("error", "Blocked Host URL..");
-			
+			statfalse.put("error", "Blocked host URL.. use -allowallip to enable this host : "+mURL);
 			return statfalse.toJSONString();
 		}
 		
@@ -94,6 +94,12 @@ public class NETcommand {
 	
 	private static boolean isBlockedURL(String url) {
 	    try {
+	    	
+	    	//Do we allow ALL IP
+	    	if(GeneralParams.ALLOW_ALL_IP) {
+	    		return false;
+	    	}
+	    	
 	        java.net.URL parsed = new java.net.URL(url);
 	        String host 		= parsed.getHost();
 
