@@ -358,6 +358,9 @@ public class ParamConfigurer {
                 GeneralParams.P2P_ENABLED  = false;
             }
         }),
+        allowgenmessage("allowgenmessage", "Allow simple messages sent from peers", (args, configurer) -> {
+            GeneralParams.ALLOW_GEN_MESSAGE = true;
+        }),
         connect("connect", "Disable the p2p and manually connect to this list of host:port", (args, configurer) -> {
             GeneralParams.P2P_ENABLED = false;
             GeneralParams.CONNECT_LIST = args;
