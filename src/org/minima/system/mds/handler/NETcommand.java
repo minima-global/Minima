@@ -92,12 +92,17 @@ public class NETcommand {
 		return result;
 	}
 	
-	private static boolean isBlockedURL(String url) {
+	public static boolean isBlockedURL(String url) {
 	    try {
 	    	
 	    	//Do we allow ALL IP
 	    	if(GeneralParams.ALLOW_ALL_IP) {
 	    		return false;
+	    	}
+	    	
+	    	//Make sure is an http / https - not file..
+	    	if(!url.toLowerCase().startsWith("http")) {
+	    		return true;
 	    	}
 	    	
 	        java.net.URL parsed = new java.net.URL(url);
