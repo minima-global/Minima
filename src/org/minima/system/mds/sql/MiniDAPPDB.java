@@ -30,6 +30,25 @@ public class MiniDAPPDB extends SqlDB {
 		JSONObject results = new JSONObject();
 		results.put("sql", zSQL);
 		
+		//Check the SQL for banned words..
+		String upperSQL = zSQL.toUpperCase();
+		for(int i=0;i<BANNED_COMMANDS.length;i++) {
+			if(upperSQL.contains(BANNED_COMMANDS[i])) {
+				
+				//No good.. return false
+				MinimaLogger.log("MiniDAPPSQL uid:"+mUID+" sql:"+zSQL+" error:BANNED_COMMAND "+BANNED_COMMANDS[i],false);
+				
+				results.put("status", false);
+				results.put("count",0);
+				results.put("rows", new JSONArray());
+				results.put("results", false);
+				results.put("error", "BANNED_COMMAND:"+BANNED_COMMANDS[i]);
+				
+				return results;
+			}
+		}
+		
+		//Run the SQL
 		try {
 			
 			//Check is OPEN
@@ -106,4 +125,8 @@ public class MiniDAPPDB extends SqlDB {
 		return results;
 	}
 
+	//A list of banned commands..
+	private String[] BANNED_COMMANDS = {"FILE_READ","FILE_WRITE","ALIAS ","CALL ","CSVWRITE"};
+	
+	
 }
