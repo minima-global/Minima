@@ -40,16 +40,25 @@ public class MDSCommandHandler {
 		String result = null;
 		
 		
-		//Check for NET commands from public MDS
-		if(command.equals("net") || command.equals("netpost") || command.equals("netauth")) {
+		//Certain cvommands not allowed from PUBLIC dapps..
+		if(	command.equals("net") || 
+			command.equals("netpost") ||
+			command.equals("sql") ||
+			command.equals("file") ||
+			command.equals("keypair") ||
+			command.equals("comms") ||
+			command.equals("dapplink") ||
+			command.equals("netauth")) {
 			
-			// Block public/untrusted MiniDapps from using net commands
+			// Block public/untrusted MiniDapps from using these commands
 		    if (minidappid.equals(mMDS.getPublicMiniDAPPID()) ||
 		        minidappid.equals(mMDS.getUntrustedMiniDAPPID())) {
 		    	
+		    	MinimaLogger.log(minidappid+" : Public MiniDAPP NOT allowed function : "+command+" > "+data);
+		    	
 		        JSONObject error = new JSONObject();
 		        error.put("status", false);
-		        error.put("error", "net command not allowed for public MiniDapps");
+		        error.put("error", command+" : not allowed for public MiniDapps");
 		        result = error.toString();
 		        
 		        return result;

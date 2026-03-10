@@ -548,8 +548,12 @@ public class MDSManager extends MessageProcessor {
 			}
 		}
 		
+		//Get the MiniDAPP
+		MiniDAPP md 	= getMiniDAPP(minidappid);
+		boolean write 	= md.getPermission().equalsIgnoreCase("write");
+		
 		//Now run the SQL
-		JSONObject res = db.executeSQL(zSQL);
+		JSONObject res = db.executeSQL(zSQL, write);
 		
 		return res;
 	}

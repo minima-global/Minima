@@ -25,26 +25,31 @@ public class MiniDAPPDB extends SqlDB {
 	/**
 	 * Only one thread can access the db at a time
 	 */
-	public synchronized JSONObject executeSQL(String zSQL) {
+	public synchronized JSONObject executeSQL(String zSQL, boolean zWriteMode) {
 		
 		JSONObject results = new JSONObject();
 		results.put("sql", zSQL);
 		
 		//Check the SQL for banned words..
-		String upperSQL = zSQL.toUpperCase();
-		for(int i=0;i<BANNED_COMMANDS.length;i++) {
-			if(upperSQL.contains(BANNED_COMMANDS[i])) {
-				
-				//No good.. return false
-				MinimaLogger.log("MiniDAPPSQL uid:"+mUID+" sql:"+zSQL+" error:BANNED_COMMAND "+BANNED_COMMANDS[i],false);
-				
-				results.put("status", false);
-				results.put("count",0);
-				results.put("rows", new JSONArray());
-				results.put("results", false);
-				results.put("error", "BANNED_COMMAND:"+BANNED_COMMANDS[i]);
-				
-				return results;
+		if(!zWriteMode) {
+			String upperSQL = zSQL.toUpperCase();
+			for(int i=0;i<BANNED_COMMANDS.length;i++) {
+				if(upperSQL.contains(BANNED_COMMANDS[i])) {
+					
+					int index = upperSQL.indexOf(BANNED_COMMANDS[i]); 
+					
+					//No good.. return false
+					MinimaLogger.log("MiniDAPPSQL uid:"+mUID+" sql:"+zSQL+" error:BANNED_COMMAND "
+							+BANNED_COMMANDS[i]+" @ "+index+" :.. "+zSQL.substring(index),false);
+					
+					results.put("status", false);
+					results.put("count",0);
+					results.put("rows", new JSONArray());
+					results.put("results", false);
+					results.put("error", "BANNED_COMMAND:"+BANNED_COMMANDS[i]);
+					
+					return results;
+				}
 			}
 		}
 		
@@ -126,7 +131,10 @@ public class MiniDAPPDB extends SqlDB {
 	}
 
 	//A list of banned commands..
-	private String[] BANNED_COMMANDS = {"FILE_READ","FILE_WRITE","ALIAS ","CALL ","CSVWRITE"};
+	private String[] BANNED_COMMANDS = {"CSVREAD", "CSVWRITE", "FILE_READ", "FILE_WRITE",
+									    "RUNSCRIPT", "SCRIPT ", "SCRIPT TO", "SHUTDOWN",
+									    "LINK", "LINKED", "ALIAS ",
+									    "EXEC", "SHELL(", "CALL "};
 	
 	
 }
