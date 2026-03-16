@@ -613,7 +613,8 @@ public class CommandRunner {
 		{"send","sendpoll","sendsign","multisig","tokencreate","consolidate",
 		 "cointrack","sign","txnsign","mds","backup","removescript",
 		 "restore","restoresync","vault","archive","mysql","mysqlcoins",
-		 "rpc","magic","quit","seedrandom","megammrsync"};
+		 "rpc","magic","quit","seedrandom","megammrsync","megammr","decryptbackup",
+		 "reset"};
 	
 	private final ArrayList<String> ALL_WRITE_COMMANDS_ARRAY = new ArrayList<String>(Arrays.asList(ALL_WRITE_COMMANDS));
 	
