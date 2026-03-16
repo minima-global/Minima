@@ -105,9 +105,15 @@ public class NETcommand {
 	    		return true;
 	    	}
 	    	
+	    	if(url.toLowerCase().contains("localhost")) {
+	    		return true;
+	    	}
+	    	
 	        java.net.URL parsed = new java.net.URL(url);
 	        String host 		= parsed.getHost();
 
+	        
+	        
 	        // Resolve hostname to IP
 	        java.net.InetAddress addr = java.net.InetAddress.getByName(host);
 

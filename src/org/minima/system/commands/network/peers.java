@@ -154,8 +154,8 @@ public class peers extends Command {
 			}
 			
 			JSONObject resp = new JSONObject();
-			resp.put("valid",validpeers.toString());
-			resp.put("invalid",invalidpeers.toString());
+			resp.put("valid",validpeers.size());
+			resp.put("invalid",invalidpeers.size());
 			resp.put("message","Valid peers added to checking queue..");
 			ret.put("response", resp);
 			
