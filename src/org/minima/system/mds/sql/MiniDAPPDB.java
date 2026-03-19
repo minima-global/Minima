@@ -134,7 +134,7 @@ public class MiniDAPPDB extends SqlDB {
 	private String[] BANNED_COMMANDS = {"CSVREAD", "CSVWRITE", "FILE_READ", "FILE_WRITE",
 									    "RUNSCRIPT", "SCRIPT ", "SCRIPT TO", "SHUTDOWN",
 									    "LINK", "LINKED", "ALIAS ",
-									    "EXEC", "SHELL(", "CALL "};
+									    "EXEC", "SHELL", "CALL "};
 	
 	
 }
