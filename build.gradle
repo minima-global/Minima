@@ -35,8 +35,8 @@ dependencies {
 
 	//implementation 'org.mozilla:rhino:1.7.14'
     
-    //implementation 'com.h2database:h2:2.3.232'
-    implementation 'com.h2database:h2:2.1.214'
+    implementation 'com.h2database:h2:2.4.240'
+    //implementation 'com.h2database:h2:2.1.214'
     
     //Bouncy Castle
     implementation 'org.bouncycastle:bcpkix-jdk15on:1.69'
@@ -71,7 +71,7 @@ tasks.withType(AbstractArchiveTask) {
 
 tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
   minimize(){
-    exclude(dependency('org.bouncycastle:.*:.*'))
+    //exclude(dependency('org.bouncycastle:.*:.*'))
   }
 }
 
