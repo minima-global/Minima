@@ -356,10 +356,9 @@ public class GeneralParams {
 	public static boolean SHOW_NETWORK_POLLS = true;
 	
 	/**
-<<<<<<< HEAD
 	 * Reduce the hastext at the beggining
 	 */
-	public static int INIT_HASHTEST_AMOUNT = 250000;
+	public static int INIT_HASHTEST_AMOUNT = 500000;
 	
 	/**
 	 * Reduce the hastext at the beggining
@@ -462,7 +461,7 @@ public class GeneralParams {
 		P2P2_ENABLED 		  	= false;
 		SHOW_NETWORK_CALLS 		= false;
 		
-		INIT_HASHTEST_AMOUNT 	= 250000;
+		INIT_HASHTEST_AMOUNT 	= 500000;
 		GENERATE_SSL 			= true;
 		
 		LOAD_JNI 				= false;
