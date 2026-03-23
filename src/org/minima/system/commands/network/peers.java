@@ -208,6 +208,7 @@ public class peers extends Command {
 			P2PPeersChecker p2pchecker 	= p2pmanager.getPeersChecker();
 	        
 			//And now add those peers
+			int peersfound = 0;
 			StringTokenizer strtok = new StringTokenizer(peerstr,",");
 			while(strtok.hasMoreTokens()) {
 				String peer = strtok.nextToken();
@@ -215,6 +216,8 @@ public class peers extends Command {
 				//Get the IP..
 				Message checker = connect.createConnectMessage(peer);
 				if(checker != null) {
+					peersfound++;
+					
 					//Create an address
 					InetSocketAddress addr = new InetSocketAddress(checker.getString("host"), checker.getInteger("port"));
 					
@@ -227,7 +230,7 @@ public class peers extends Command {
 			}
 			
 			JSONObject resp = new JSONObject();
-			resp.put("peers",peerstr);
+			resp.put("peers",peersfound);
 			resp.put("location",url);
 			resp.put("message","Valid peers added to checking queue..");
 			ret.put("response", resp);
