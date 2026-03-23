@@ -4,12 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import org.minima.objects.base.MiniData;
-<<<<<<< HEAD
 import org.minima.objects.mmr.MMRProof;
-=======
 import org.minima.utils.MiniFormat;
->>>>>>> refs/heads/dev-spartacus
 import org.minima.utils.MinimaLogger;
+
 
 public class TreeKey {
 

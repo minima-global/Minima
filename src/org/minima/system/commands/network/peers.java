@@ -193,9 +193,9 @@ public class peers extends Command {
 				url = getParam("url");
 				
 				//Check is valid..
-				if(NETcommand.isBlockedURL(url)) {
-					throw new CommandException("Cannot read peers from local urls (use -allowallip)..");
-				}
+				//if(NETcommand.isBlockedURL(url)) {
+				//	throw new CommandException("Cannot read peers from local urls (use -allowallip)..");
+				//}
 				
 				peerstr = RPCClient.sendGET(url);
 			}
