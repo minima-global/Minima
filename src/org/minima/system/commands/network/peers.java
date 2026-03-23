@@ -12,7 +12,6 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
-import org.minima.system.mds.handler.NETcommand;
 import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.network.p2p.P2PPeersChecker;
 import org.minima.system.params.GeneralParams;
@@ -208,6 +207,7 @@ public class peers extends Command {
 			P2PPeersChecker p2pchecker 	= p2pmanager.getPeersChecker();
 	        
 			//And now add those peers
+			int peersfound = 0;
 			StringTokenizer strtok = new StringTokenizer(peerstr,",");
 			while(strtok.hasMoreTokens()) {
 				String peer = strtok.nextToken();
@@ -215,6 +215,8 @@ public class peers extends Command {
 				//Get the IP..
 				Message checker = connect.createConnectMessage(peer);
 				if(checker != null) {
+					peersfound++;
+					
 					//Create an address
 					InetSocketAddress addr = new InetSocketAddress(checker.getString("host"), checker.getInteger("port"));
 					
@@ -227,7 +229,7 @@ public class peers extends Command {
 			}
 			
 			JSONObject resp = new JSONObject();
-			resp.put("peers",peerstr);
+			resp.put("peers",peersfound);
 			resp.put("location",url);
 			resp.put("message","Valid peers added to checking queue..");
 			ret.put("response", resp);

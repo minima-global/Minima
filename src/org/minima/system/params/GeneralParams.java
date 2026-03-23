@@ -370,7 +370,8 @@ public class GeneralParams {
 	 * Do we load the JNI LIB
 	 */
 	public static boolean LOAD_JNI = false;
-=======
+
+	/**
 	 * IF show net calls do we show POLL
 	 */
 	public static boolean DB_IGNORE_LOCKS = false;
@@ -379,7 +380,6 @@ public class GeneralParams {
 	 * Allow simple message from peers
 	 */
 	public static boolean ALLOW_GEN_MESSAGE = false;
->>>>>>> refs/heads/dev-spartacus
 	
 	/**
 	 * Reset all params to their default settings.. ANDROID keeps them after shutdown
@@ -462,14 +462,12 @@ public class GeneralParams {
 		P2P2_ENABLED 		  	= false;
 		SHOW_NETWORK_CALLS 		= false;
 		
-<<<<<<< HEAD
 		INIT_HASHTEST_AMOUNT 	= 250000;
 		GENERATE_SSL 			= true;
 		
 		LOAD_JNI 				= false;
-=======
+
 		ALLOW_GEN_MESSAGE 		= false;
->>>>>>> refs/heads/dev-spartacus
 	}
 	
 }
