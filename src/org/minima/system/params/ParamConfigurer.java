@@ -358,6 +358,9 @@ public class ParamConfigurer {
                 GeneralParams.P2P_ENABLED  = false;
             }
         }),
+        allowgenmessage("allowgenmessage", "Allow simple messages sent from peers", (args, configurer) -> {
+            GeneralParams.ALLOW_GEN_MESSAGE = true;
+        }),
         connect("connect", "Disable the p2p and manually connect to this list of host:port", (args, configurer) -> {
             GeneralParams.P2P_ENABLED = false;
             GeneralParams.CONNECT_LIST = args;
@@ -490,6 +493,9 @@ public class ParamConfigurer {
     	anyseed("anyseed", "Use this seed (ANY phrase and does not have to be BIP39 words) when starting a new node", (args, configurer) -> {
             GeneralParams.SEED_PHRASE 	 = args;
             GeneralParams.ANYSEED_PHRASE = true;
+        }),
+    	dbignorelocks("dbignorelocks", "Debug param to stop DB checking locks", (args, configurer) -> {
+            GeneralParams.DB_IGNORE_LOCKS  = true;
         }),
     	megaprune("megaprune", "Prune unspendable addresses from the megammr", (args, configurer) -> {
             if ("true".equals(args)) {

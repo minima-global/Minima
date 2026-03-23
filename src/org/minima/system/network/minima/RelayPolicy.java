@@ -17,13 +17,13 @@ public class RelayPolicy {
 		//Check Total Outputs..
 		int outsize = zTxPow.getTransaction().getAllOutputs().size();
 		if(outsize>GeneralParams.MAX_RELAY_OUTPUTCOINS) {
-			MinimaLogger.log("MAX Coin outpouts in Transaction @ "+zTxPow.getTxPoWID());
+			MinimaLogger.log("MAX Coin outputs in Transaction @ "+zTxPow.getTxPoWID());
 			return false;
 		}
 		
 		outsize = zTxPow.getBurnTransaction().getAllOutputs().size();
 		if(outsize>GeneralParams.MAX_RELAY_OUTPUTCOINS) {
-			MinimaLogger.log("MAX Coin outpouts in Burn Transaction @ "+zTxPow.getTxPoWID());
+			MinimaLogger.log("MAX Coin outputs in Burn Transaction @ "+zTxPow.getTxPoWID());
 			return false;
 		}
 		

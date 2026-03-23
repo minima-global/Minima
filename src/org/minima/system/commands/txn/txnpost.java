@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.objects.CoinProof;
@@ -15,6 +16,8 @@ import org.minima.system.Main;
 import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.commands.backup.vault;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 
 public class txnpost extends Command {
@@ -160,6 +163,19 @@ public class txnpost extends Command {
 		
 		//Calculate the size..
 		txpow.calculateTXPOWID();
+		
+		//Check Size is acceptable..
+		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
+		if(tip == null) {
+			//Not enough blocks..
+			throw new CommandException("Could not find chain tip..");
+		}
+		
+		long size = txpow.getSizeinBytesWithoutBlockTxns();
+		long max  = tip.getTxPoW().getMagic().getMaxTxPoWSize().getAsLong();
+		if(size > max) {
+			throw new CommandException("TxPoW size too large.. "+size+"/"+max);
+		}
 		
 		//Sync or Async mining..
 		if(zMineSync) {

@@ -109,16 +109,20 @@ public class txnutils {
 			//Add it to the witness data
 			zWitness.addCoinProof(cp);
 			
-			//Add the script proofs
-			String scraddress 	= input.getAddress().to0xString();
-			ScriptRow srow 		= walletdb.getScriptFromAddress(scraddress);
-			if(srow == null) {
-				if(zExitOnFail) {
-					throw new Exception("SERIOUS ERROR script missing for simple address : "+scraddress);
+			//Do we need to add the script
+			if(zWitness.getScript(input.getAddress()) == null) {
+			
+				//Add the script proofs
+				String scraddress 	= input.getAddress().to0xString();
+				ScriptRow srow 		= walletdb.getScriptFromAddress(scraddress);
+				if(srow == null) {
+					if(zExitOnFail) {
+						throw new Exception("SERIOUS ERROR script missing for simple address : "+scraddress);
+					}
+				}else {
+					ScriptProof pscr = new ScriptProof(srow.getScript());
+					zWitness.addScript(pscr);
 				}
-			}else {
-				ScriptProof pscr = new ScriptProof(srow.getScript());
-				zWitness.addScript(pscr);
 			}
 		}
 	}

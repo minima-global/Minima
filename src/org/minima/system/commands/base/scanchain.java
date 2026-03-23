@@ -18,12 +18,12 @@ import org.minima.utils.json.JSONObject;
 public class scanchain extends Command {
 
 	public scanchain() {
-		super("scanchain","(depth:) - Scan back through the chain and see all transaction data");
+		super("scanchain","(depth:) (offset:) - Scan back through the chain and see all transaction data");
 	}
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"depth"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"depth","offset"}));
 	}
 	
 	@Override
@@ -37,14 +37,35 @@ public class scanchain extends Command {
 			throw new CommandException("NO Blocks yet..");
 		}
 		
-		MiniNumber startblock = tip.getBlockNumber(); 
+		//What offset
+		int counter = 0;
+		JSONArray blockdata = new JSONArray();
+		
+		//Offset
+		int offset = getNumberParam("offset", MiniNumber.ZERO).getAsInt();
 		
 		//How deep..
 		int depth = getNumberParam("depth", new MiniNumber(16)).getAsInt();
+				
+		//First do the offset
+		while(tip != null && counter<=offset) {
+			tip = tip.getParent();
+			counter++;
+		}
+		
+		if(tip == null) {
+			JSONObject resp = new JSONObject();
+			resp.put("depth", depth);
+			resp.put("offset", offset);
+			resp.put("blocks", blockdata);
+			ret.put("response", resp);
+			
+			return ret;
+		}
 		
 		//Now search back through the chain
-		JSONArray blockdata = new JSONArray();
-		int counter = 0;
+		MiniNumber startblock = tip.getBlockNumber(); 
+		counter = 0;
 		while(tip != null && counter<=depth) {
 			
 			TxPoW topblock = tip.getTxPoW();
@@ -86,6 +107,7 @@ public class scanchain extends Command {
 		
 		JSONObject resp = new JSONObject();
 		resp.put("depth", depth);
+		resp.put("offset", offset);
 		resp.put("blocks", blockdata);
 		ret.put("response", resp);
 		

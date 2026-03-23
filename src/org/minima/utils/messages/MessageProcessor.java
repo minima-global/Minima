@@ -100,12 +100,16 @@ public abstract class MessageProcessor extends MessageStack implements Runnable{
     }
     
     public void waitToShutDown() {
+    	waitToShutDown(15000);
+    }
+    
+    public void waitToShutDown(long zTimeout) {
     	long timewaited = 0;
     	while(!isShutdownComplete()) {
 			try {Thread.sleep(250);} catch (InterruptedException e) {}
 			timewaited +=250;
-			if(timewaited>15000) {
-				MinimaLogger.log("Failed to shutdown in 15 secs for "+mName);
+			if(timewaited>zTimeout) {
+				MinimaLogger.log("Failed to shutdown in "+zTimeout+" millisecs for "+mName);
 				
 				//Hard shutdown
 				mShutDownComplete 	= true;

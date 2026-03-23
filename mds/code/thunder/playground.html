@@ -1,0 +1,902 @@
+<html>
+
+<head>
+	<title>Thunder Cats</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the main MDS JS lib -->
+	<script type="text/javascript" src="./js/mds.js"></script>
+	
+	<!--  JQUERY CSS + JS -->
+	<link rel="stylesheet" href="./jquery/jquery-ui-1.14.1/jquery-ui.css">
+	<link rel="stylesheet" href="./jquery/jquery-ui-1.14.1/jquery-ui.icon-font.css">
+	<script type="text/javascript" src="./jquery/jquery-3.7.1.min.js"></script>
+	<script type="text/javascript" src="./jquery/jquery-ui-1.14.1/jquery-ui.js"></script>
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	
+	<!-- Load the local JS libs -->
+	<script type="text/javascript" src="./js/decimal.js"></script>
+	<script type="text/javascript" src="./js/jslib.js"></script>
+	<script type="text/javascript" src="./js/utils.js"></script>
+	<script type="text/javascript" src="./js/auth.js"></script>
+	<script type="text/javascript" src="./js/txns.js"></script>
+	<script type="text/javascript" src="./js/sql.js"></script>
+	<script type="text/javascript" src="./js/messages.js"></script>
+	<script type="text/javascript" src="./js/maxima.js"></script>
+	<script type="text/javascript" src="./js/channelfunction.js"></script>
+		
+</head>
+
+<body>
+
+<center>
+
+<div class="titlebar" onclick="showTitleOnAndroid();">
+	<table width=100% border=0>
+		<tr>
+			<td><img height=45 src="./thunderpay.png"></td>
+			<td style="text-align:left;font-size:26px;width:100%">&nbsp;<b>Thunder Pay</b></td>
+			
+			<td class='topicdate' nowrap>
+				<button id="button-newchannel">New Channel</button>
+				<button id="button-help">Help</button>
+				<button id="button-home">Home</button>
+			</td>
+		</tr>
+	</table>
+</div>
+
+<br>
+
+<div id="channelview" style="font-size:12;text-align:left;">
+	
+	
+</div>
+	
+	
+
+<button onclick="logAllData();">LOG DATA</button> <button onclick="wipedb();">WIPEDB</button><br><br>
+<br>
+<button onclick="sendack();">SEND_ACK</button> <br>
+<br>
+<button onclick="requestChannel();">CREATE CHANNEL</button> <br>
+<br>
+
+
+
+<script type="text/javascript">
+	
+	//Load the default jquery buttons
+	$(document).ready(function() {
+	    startupButtons();
+	    
+	    $( "#button-startchannel" ).button({
+			icon: "ui-icon-mail-send",
+			showLabel: true
+		}).click(function(){
+			
+			//Start Channel Request..
+			
+			
+			
+		});
+	});
+	
+	function wipedb(){
+		wipeDB(function(){
+			MDS.log("DB WIPED!");
+			//Do stuff.. from now..	
+			createDB(function(){
+				MDS.log("DB CREATED!");
+				
+				location.reload()
+				//showChannels();
+				
+			});
+		});
+	}
+	
+	function logAllData(){
+		//Get the DB
+		sqlSelectAllChannels(function(allchannels){
+			logJSON(allchannels,"CHANNEL DB");	
+		});		
+	}  
+	
+	function showChannels(){
+		sqlSelectAllChannels(function(allchannels){
+			
+			var output = "";
+			
+			var length = allchannels.rows.length;
+			for(var i=0;i<length;i++){
+				
+				var channel = allchannels.rows[i];
+				
+				var row = i+") ID:"+channel.HASHID+" TOTAL:"+channel.TOTALAMOUNT+" USERNUM:"+channel.USERNUM+"<br>STATE:"+channel.STATE
+				+"<br>MYKEY:"+trimToSize(channel.USERPUBLICKEY)
+				+"<br>AMT1:<b>"+channel.USER1AMOUNT +"</b> U1PUBK:"+trimToSize(channel.USER1PUBLICKEY)+" U1ADDRES:"+trimToSize(channel.USER1ADDRESS)
+				+"<br>AMT2:<b>"+channel.USER2AMOUNT +"</b> U2PUBK:"+trimToSize(channel.USER2PUBLICKEY)+" U2ADDRES:"+trimToSize(channel.USER2ADDRESS)
+				
+				+"<br>SEQUENCE:"+channel.SEQUENCE
+				+"<br>FND:"+channel.FUNDINGADDRESS+" ELTOO:"+channel.ELTOOADDRESS
+				
+				+"<br>TRIGGERTXN:"+trimToSize(channel.TRIGGERTXN)+" SETTLETXN:"+trimToSize(channel.SETTLETXN)+" UPDATETXN:"+trimToSize(channel.UPDATETXN)
+				
+				+"<br>FUNDSPENT:"+channel.FUNDINGSPENT+" PAYOUTFOUND:"+channel.PAYOUTFOUND+" PAYOUTAMOUNT:"+channel.PAYOUTAMOUNT
+												
+				+"<br><br>";
+				
+				if(channel.STATE == "STATE_SENT_START_CHANNEL"){
+					//Add buttons..
+					row += "&nbsp;&nbsp;&nbsp; <button onclick='cancelRequest(\""+channel.HASHID+"\", \""+channel.USER2MAXIMAID+"\");'>CANCEL</button>"
+										
+				}else if(channel.STATE == "STATE_REQUEST_START_CHANNEL"){
+					//Add buttons..
+					row += "&nbsp;&nbsp;&nbsp; <button onclick='deny(\""+channel.HASHID+"\", \""+channel.USER1MAXIMAID+"\");'>DENY</button> <button onclick='accept(\""+channel.HASHID+"\", \""+channel.USER1MAXIMAID+"\");'>ACCEPT</button>"				
+				
+				}else if(channel.STATE == "STATE_CHANNEL_OPEN_1"){
+					//Add buttons..
+					row += "&nbsp;&nbsp;&nbsp; <button onclick='closeChannel(\""+channel.HASHID+"\");'>CLOSE COOP</button>"
+						  +"&nbsp;&nbsp;&nbsp; <button onclick='closeTrigger(\""+channel.HASHID+"\");'>TRIGGER CLOSE</button>"
+						  +"&nbsp;&nbsp;&nbsp; <button onclick='sendFunds(\""+channel.HASHID+"\",\"0.01\");'>SEND 0.01</button>"
+						  +"&nbsp;&nbsp;&nbsp; <button onclick='sendFunds(\""+channel.HASHID+"\",\""+channel.USER1AMOUNT+"\");'>SEND ALL</button>";
+						  
+				}else if(channel.STATE == "STATE_CHANNEL_OPEN_2"){
+  					//Add buttons..
+  					row += "&nbsp;&nbsp;&nbsp; <button onclick='closeChannel(\""+channel.HASHID+"\");'>CLOSE COOP</button>"
+  						  +"&nbsp;&nbsp;&nbsp; <button onclick='closeTrigger(\""+channel.HASHID+"\");'>TRIGGER CLOSE</button>"
+  						  +"&nbsp;&nbsp;&nbsp; <button onclick='sendFunds(\""+channel.HASHID+"\",0.01);'>SEND 0.01</button>"
+						  +"&nbsp;&nbsp;&nbsp; <button onclick='sendFunds(\""+channel.HASHID+"\",\""+channel.USER2AMOUNT+"\");'>SEND ALL</button>";  				
+				}
+				
+				//Always add the LOGS
+				row+="&nbsp;&nbsp;&nbsp; <button onclick='showLogs(\""+channel.HASHID+"\");'>LOGS</button>"
+				
+				output += row+"<br><br>"
+			}
+				
+			channelview.innerHTML = output;
+		});		
+	}
+	
+	//TESTER
+	function printHello(params){MDS.log("PRINT HELLO "+JSON.stringify(params));}
+	function sendack(){ackFunctionCall(MAXIMA_USER2, printHello, {"hello":"you"} );}
+	
+	var MAXIMA_USER1 = "0x30819F300D06092A864886F70D010101050003818D0030818902818100826686DA551C7AF8D0EF133D87E47D00630ED181D2CD2C3C3CB668C8CD2E24E3B06493F54009367C710470F05552DAD0643D136D832E8DAD29744718231B66E15C1AF87E0E6BC66484FAFFA14235A815ECF06C20D14D40292412128F670448FC2C86A7DA93BDE67FE309829A3E75484EFF730B941C8F22091BA85F24241907330203010001";
+	var MAXIMA_USER2 = "0x30819F300D06092A864886F70D010101050003818D00308189028181008494D460B183563CCE456CAE7A241D234AE7C000126F47EF07F2D9BA0B4964DEA3F4ED3EEFC197100AB7C1D4BEB64A923EB3E2FD0423B9FD8C4B5CA62B35DFCA72F277B550AE15A809BEE1829070A72B203C54A58F07B785A7BFF9AE6AE600E36EF71F2DA174054BE4A3DE79C1397D894428CD47119DB541BEC38CFA0A4428F90203010001";
+	
+	function requestChannel(){
+		requestNewChannel(MAXIMA_USER2, 1, 1.1,  function(delivered, hashid){
+			if(!delivered){
+				//Could not contact user.. show an immediate message
+				alert("Could not contact User..");
+				return;
+			}
+			
+			//LOGS
+			insertLog(hashid, "YOU_REQUEST_CHANNEL", "You requested a channel "+trimToSize(MAXIMA_USER2));
+					
+			showChannels();	
+		});
+	}
+	
+	function cancelRequest(hashid, maximaid){
+		//LOGS
+		insertLog(hashid, "YOU_CANCEL_REQUEST", "Channel was cancelled for user "+trimToSize(maximaid));
+				
+		cancelNewChannel(hashid, maximaid, function(ackdelivered){
+			showChannels();
+		});
+	}
+	
+	function deny(hashid, maximaid){
+		
+		//LOGS
+		insertLog(hashid, "YOU_DENY_CHANNEL", "Channel was denied for user "+trimToSize(maximaid));
+		
+		denyStartChannel(maximaid, hashid, function(delivered){
+			showChannels();
+		});
+	}
+	
+	function showLogs(hashid){
+		location.href="logs.html?uid="+MDS.minidappuid+"&hashid="+hashid;
+	}
+	
+	function accept(hashid, maximaid){
+		
+		//LOGS
+		insertLog(hashid, "YOU_ACCEPT_CHANNEL", "Channel was accepted for user "+trimToSize(maximaid));
+		
+		var userdets = getUserDetails();
+		
+		//Update user details..
+		updateChannelUser2(hashid, userdets, function(){
+			
+			//Set YOUR public key
+			updateMyPublicKey(hashid, userdets.publickey, function(){
+				
+				acceptStartChannel(maximaid, hashid, function(delivered){
+					if(delivered){
+						updateChannelState(hashid, "STATE_REQUEST_ACCEPTED", function(upd){
+							showChannels();		
+						});	
+					}
+				});	
+			});	
+		});
+	}
+	
+	//Send a message asking for a NEW txn to spend the FUNDING and send the correct amounts back..
+	function closeChannel(hashid){
+		
+		//Get this channel
+		sqlSelectChannel(hashid, function(sql){
+			var sqlrow = sql.rows[0];
+			
+			//Find the funding coin age
+			MDS.cmd("coins address:"+sqlrow.FUNDINGADDRESS,function(fcoins){
+				
+				//Did we find the coin..
+				if(fcoins.response.length>0){
+					var coinage=fcoins.response[0].age;
+					
+					if(+coinage<3){
+						alert("Funding coin age too young ("+coinage+").. pls wait a few more blocks (min 3).. ");
+					}else{
+						//Are we USER1 or USER2
+						var othermaximaid = sqlrow.USER2MAXIMAID; 
+						if(sqlrow.USERNUM != 1){
+							othermaximaid = sqlrow.USER1MAXIMAID;
+						}
+						
+						//Create a SPEND txn..
+						spendFundingTxn(sqlrow, function(spendtxn){
+							
+							sendSpendFunding(hashid, othermaximaid, spendtxn, function(delivered){
+								
+								//LOGS
+								insertLog(hashid, "COOP_CLOSE_REQUESTED", "You try to close the channel co-operatively");
+										
+								MDS.log("SPEND FUNDING REQUEST SENT!");
+							});	
+						});
+					}
+				}else{
+					alert("Funding coin not found.. pls wait for txn to be processed");
+				}
+			});
+		});
+	}
+	
+	//SEND 0.01
+	function sendFunds(hashid, sendamount){
+		
+		var amount = new Decimal(sendamount);
+		
+		//Get this channel
+		sqlSelectChannel(hashid, function(sql){
+			var sqlrow = sql.rows[0];
+			
+			//Are we USER1 or USER2
+			var othermaximaid 	= ""; 
+			var touser 			= 1;
+			
+			if(sqlrow.USERNUM == 1){
+				othermaximaid = sqlrow.USER2MAXIMAID;
+				touser 			= 2;
+			}else{
+				othermaximaid = sqlrow.USER1MAXIMAID;
+				touser 			= 1;
+			}
+			
+			var newvalues = calculateNewValues(sqlrow, amount, touser);
+			if(!newvalues.valid){
+				MDS.log("TRYING TO SEND INVALID AMOUNT!! "+amount);
+				return;
+			}
+			
+			//The NEW sequence number
+			var newsequence = new Decimal(sqlrow.SEQUENCE).plus(1);
+				
+			//Send this message to the USER
+			sendFundsChannel(hashid, othermaximaid, newsequence, amount.toString(), touser, function(ackdelivered){
+				MDS.log("Send funds message sent! ");
+			});	
+		});
+	}
+	
+	function closeTrigger(hashid){
+		
+		//LOGS
+		insertLog(hashid, "TRIGGER_CLOSE_CHANNEL", "You close the channel non co-operatively");
+										
+		//Publish the Trigger..
+		sqlSelectChannel(hashid, function(sql){
+			postTxn(sql.rows[0].TRIGGERTXN, true, function(postresp){
+				logJSON(postresp,"POST TRIGGER");
+			});
+		});
+	}
+	
+	function settle(hashid){
+			
+		//Publish the Trigger..
+		sqlSelectChannel(hashid, function(sql){
+			
+			//LOGS
+			insertLog(hashid, "POST_SETTLE", "You post the SETTLE txn");
+						
+			postTxn(sql.rows[0].SETTLETXN, true, function(postresp){
+				logJSON(postresp,"POST SETTLE");
+			});
+		});
+	}
+	
+	function update(hashid){
+				
+		//Publish the Trigger..
+		sqlSelectChannel(hashid, function(sql){
+			
+			//LOGS
+			insertLog(hashid, "POST_UPDATE", "You post the UPDATE txn");
+					
+			postTxn(sql.rows[0].UPDATETXN, true, function(postresp){
+				logJSON(postresp,"POST UPDATE");
+			});
+		});
+	}
+
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			var wipedb= false;
+			if(wipedb){
+				wipeDB(function(){
+					MDS.log("DB WIPED!");
+					//Do stuff.. from now..	
+					createDB(function(){});
+				});
+			}else{
+				//Do stuff.. from now..	
+				createDB(function(){
+					
+					//DB created..
+					initAuthDetails(function(){
+						
+						showChannels();
+							
+					});
+				});		
+			}
+		
+		}else if(msg.event == "NEWBLOCK"){
+			
+			//Should only check every 10 blocks..
+			var block = +msg.data.txpow.header.block;		
+			MDS.log("NEW BLOCK "+block);
+			//return;
+			
+			//Check for closed channels
+			updateClosedChannels(function(found){
+				if(found){
+					MDS.log("FOUND closed channels!");
+					showChannels();
+				}
+			});
+			
+			//RUN CHECKS.. Are there ANY ELTOO COINS..relevant to us..
+			MDS.cmd("coins relevant:true",function(allcoins){
+				var coincount = allcoins.response.length;
+				
+				//Now get all my eltoo coins..
+				sqlSelectEltooChannels(function(eltoocoins){
+						
+					//Are there any ELTOO coins.. 
+					for(var i=0;i<coincount;i++){
+						var coinrow 	= allcoins.response[i];
+						var coinaddress = coinrow.miniaddress;
+						
+						for(var j=0;j<eltoocoins.count;j++){
+							var eltoorow 	  = eltoocoins.rows[j];
+							
+							var eltoohashid   = eltoorow.HASHID;
+							var eltooaddress  = eltoorow.ELTOOADDRESS;
+							var eltoosequence = eltoorow.SEQUENCE;
+							
+							//Are they the same address
+							if(eltooaddress == coinaddress){
+								
+								//Get the Sequence value..
+								var age	= coinrow.age;
+								var seq = MDS.util.getStateVariable(coinrow,101);
+								
+								MDS.log("ELTOO COIN FOUND : "+JSON.stringify(coinrow))
+								
+								//IS the SEQUENCE Correct ?
+								if(eltoosequence > seq){
+									
+									//Is it the trigger..
+									if(seq == 0){
+										MDS.log("TRIGGER ELTOO COIN FOUND .. will post latest updatetxn : "+eltoosequence);
+										
+										//LOGS
+										insertLog(eltoohashid, "TRIGGER_ELTOO_FOUND", "Valid TRIGGER ELTOO coin found.. waiting to post lastest update");
+														
+									}else{
+										MDS.log("INVALID!! ELTOO COIN SEQUENCE "+seq+" should be : "+eltoosequence+" ..will post latest update txn");
+										
+										//LOGS
+										insertLog(eltoohashid, "INVALID_ELTOO_SEQUENCE_FOUND", "Invalid ELTOO coin found.. waiting to post lastest update");								
+									}
+									
+									//If coin old enough (3 blocks) POST the latest UPDATE
+									if(age > 5){
+										MDS.log("POSTING LATEST UPDATE TXN!!");
+										update(eltoohashid);
+									} 
+										
+								}else{
+									
+									//Collect
+									MDS.log("VALID ELTOO COIN FOUND : "+eltoorow.HASHID+" age:"+age+" sequence:"+seq);	
+									
+									//LOGS
+									insertLog(eltoohashid, "VALID_ELTOO_FOUND", "Valid ELTOO coin found.. waiting to post lastest update");
+																			
+									if(age>10){
+										MDS.log("COLLECTING!!");
+										settle(eltoohashid);
+									}	
+								}
+							}
+						}
+					}
+				});
+			});
+			
+		}else if(msg.event == "NEWCOIN"){
+			
+			//MDS.log("NEW COIN:"+JSON.stringify(msg.data));	
+			
+			//Is it a FUNDING coin
+			sqlSelectRelevantFundingCoin(msg.data.coin.miniaddress, function(resfund){
+				if(resfund.count>0){
+					
+					//Check if you have any money coming..
+					var sqlrow = resfund.rows[0];
+					var payout = ""; 
+					if(sqlrow.STATE == "STATE_CHANNEL_OPEN_1"){
+						payout = sqlrow.USER1AMOUNT;
+					}else{
+						payout = sqlrow.USER2AMOUNT;	
+					}
+					
+					if(msg.data.coin.spent){
+						MDS.log("FUNDING COIN SPENT!! ADDRESS:"+msg.data.coin.miniaddress+" TOTALAMOUNT:"+msg.data.coin.amount+" PAYOUT:"+payout);
+						
+						//LOGS
+						insertLog(sqlrow.HASHID, "FUNDING_COIN_SPENT", "Funding coin spent");
+															
+						//Update the table..
+						updateFundingSpent(sqlrow.HASHID, function(){
+							
+							//Are we waiting for a payout..
+							if(new Decimal(payout).equals(DECIMAL_ZERO)){
+								MDS.log("Channel "+sqlrow.HASHID+" closed as no payout expected!");
+								
+								//Payout received..
+								updatePayoutFound(sqlrow.HASHID, '0', function(){
+									showChannels();
+								});
+							}else{
+								showChannels();
+							}	
+						});
+												
+					}else{
+						MDS.log("NEW FUNDING COIN!! ADDRESS:"+msg.data.coin.miniaddress+" TOTALAMOUNT:"+msg.data.coin.amount+" PAYOUT:"+payout);
+						
+						//LOGS
+						insertLog(sqlrow.HASHID, "NEW_FUNDING_COIN", "Funding coin created");								
+					}					 
+				}
+			});
+			
+			//Is it an ELTOO coin
+			sqlSelectRelevantEltooCoin(msg.data.coin.miniaddress, function(reseltoo){
+				if(reseltoo.count>0){
+					
+					//Update the Database!!
+					if(msg.data.coin.spent){
+						MDS.log("ELTOO COIN SPENT!! ADDRESS:"+msg.data.coin.miniaddress+" STATE:"+JSON.stringify(msg.data.coin.state));
+					}else{
+						MDS.log("NEW ELTOO COIN!! ADDRESS:"+msg.data.coin.miniaddress+" STATE:"+JSON.stringify(msg.data.coin.state));	
+					}
+				}
+			});
+			
+			//Is it one of our Omnia Addresses
+			if(!msg.data.coin.spent){
+				
+				//Is there a Payout HashID
+				var payout = msg.data.coin.state["200"];
+				if(payout === undefined){
+					//Not a payout channel..
+					return;
+				}
+				
+				//Get all channels with that coin
+				sqlSelectPayoutCoin(msg.data.coin.miniaddress, function(respayout){
+					
+					//CYCLE through all the Channels found.. 
+					for(var i=0;i<respayout.count;i++){
+						var hashid = respayout.rows[i].HASHID;
+						
+						if(payout == hashid){
+							
+							MDS.log("PAYOUT FOUND "+hashid+" ADDRESS:"+msg.data.coin.miniaddress+" AMOUNT:"+msg.data.coin.amount);
+							
+							//LOGS
+							insertLog(hashid, "PAYOUT_COIN_FOUND", "Payout coin found");
+													
+							//Payout received..
+							updatePayoutFound(hashid, msg.data.coin.amount, function(){
+								showChannels();	
+							});	
+						}	
+					}
+				});
+			}
+			
+		}else if(msg.event == "MAXIMA"){
+				
+			//Is it for maxsolo..
+			if(msg.data.application == "thunderpay"){
+				
+				//Relevant data
+				var maximapubkey 	= msg.data.from;
+				
+				//Get the data
+				var datahex	= msg.data.data;
+				
+				//Convert back to JSON
+				convertHEXtoJSON(datahex,function(maxmsg){
+					if(MAXIMA_LOGS){
+						logJSON(maxmsg,"MAXIMA RECEIVED FROM "+maximapubkey+" : ");
+					}
+					
+					//What type of Message is it..?
+					if(maxmsg.type == "ACK_MESSAGE"){
+						
+						//Send a SYN_ACKMESSAGE -  to show we received the ACK message
+						sendMaximaMessage(maximapubkey, synackMessage(maxmsg));
+						
+					}else if(maxmsg.type == "SYNACK_MESSAGE"){
+						
+						//OK! - we can proceed.. call the function this message represents 
+						synackMessageReceived(maxmsg);	
+					
+					}else if(maxmsg.type == "REQUEST_NEW_CHANNEL"){
+						
+						//First check hash
+						if(!checkSafeHashID(maxmsg.hashid)){
+							MDS.log("INVALID unsafe HashID : "+JSON.stringify(maxmsg));
+							return;
+						}
+						
+						//Check BOTH amounts are positive
+						if(!checkPositiveValues(maxmsg.useramount, maxmsg.requestamount)){
+							MDS.log("INVALID VALUES must both be positive : "+JSON.stringify(maxmsg));
+							return;
+						}
+						
+						//LOGS
+						insertLog(maxmsg.hashid, "REQUEST_CHANNEL", "Channel was requested from user "+trimToSize(maximapubkey));
+								
+						//CHECK the hashid is UNIQUE - and VALID
+						sqlSelectChannel(maxmsg.hashid,function(sql){
+						
+							//Do we already have this ID
+							if(sql.count > 0){
+								MDS.log("INVALID non-unique HashID : "+maxmsg.hashid);
+								return;
+							}
+							
+							//Add to the database..
+							sqlInsertNewChannel(maxmsg, "STATE_REQUEST_START_CHANNEL", 2, function(){
+								showChannels();
+							});	
+						});
+											
+					}else if(maxmsg.type == "CANCEL_NEW_CHANNEL"){
+											
+						//Check state and user
+						checkValidMaximaUserState(maximapubkey,maxmsg.hashid, "STATE_REQUEST_START_CHANNEL", function(valid){
+							if(valid){
+								//LOGS
+								insertLog(maxmsg.hashid, "CANCEL_CHANNEL", "User cancelled channel");
+															
+								//CANCEL this request
+								updateChannelState(maxmsg.hashid, "STATE_REQUEST_CANCELLED", function(upd){
+									showChannels();
+								});			
+							}
+						});
+									
+					}else if(maxmsg.type == "REQUEST_DENIED"){
+						
+						//Check state and user
+						checkValidMaximaUserState(maximapubkey,maxmsg.hashid, "STATE_SENT_START_CHANNEL", function(valid){
+							if(valid){
+								//LOGS
+								insertLog(maxmsg.hashid, "CANCEL_CHANNEL", "User cancelled channel");
+																
+								//DENIED this request
+								updateChannelState(maxmsg.hashid, "STATE_REQUEST_DENIED", function(upd){
+									showChannels();
+								});			
+							}
+						});
+									
+					}else if(maxmsg.type == "REQUEST_ACCEPTED"){
+										
+						//Lets go..
+						checkValidMaximaUserState(maximapubkey,maxmsg.hashid, "STATE_SENT_START_CHANNEL", function(valid){
+							if(valid){
+								
+								//LOGS
+								insertLog(maxmsg.hashid, "REQUEST_ACCEPTED", "Channel was accepted by user "+trimToSize(maximapubkey));
+														
+								//Update user details
+								updateChannelUser2(maxmsg.hashid, maxmsg.user, function(sqlrow){
+									
+									//Create the default txns and addresses
+									createDefaultTxnAndAddresses(maxmsg.hashid, function(alldata){
+										
+										//Now - add these addresses to our script database - so we listen for txns
+										addDefaultScripts(alldata, function(){
+											
+											//And update the SQL
+											updateChannelAddresses(maxmsg.hashid, alldata, function(){
+												
+												//Sort the SCRIPTS and MMR for the FUNDING
+												scriptsMMRTxn(alldata.transactions.fundingtxn,function(mmrtxn){
+													
+													//Set This
+													alldata.transactions.fundingtxn = mmrtxn;
+													
+													//Sign the TRIGGER and SETTLEMENT.. NOT the FUNDING 
+													signTriggerAndSettlement(alldata, sqlrow.USERPUBLICKEY, function(signeddata){
+														
+														//Send back to the OTHER user
+														sendCreateChannel("CHANNEL_CREATE_1", maximapubkey, maxmsg.hashid, signeddata, function(){
+															showChannels();
+														});
+													});
+												});		
+											});
+										});
+									});
+								});
+							}
+						});
+					
+					}else if(maxmsg.type == "CHANNEL_CREATE_1"){
+						checkValidMaximaUserState(maximapubkey,maxmsg.hashid, "STATE_REQUEST_ACCEPTED", function(valid){
+							if(valid){
+								
+								//ok - Lets create the default transactions and addresses OURSELVES - so we can check
+								createDefaultTxnAndAddresses(maxmsg.hashid, function(alldata){
+									
+									//check those against the ones sent in the message.. transactionid + addresses etc..
+									checkDefaultTransactions(maxmsg.hashid, maxmsg.txndata, alldata, function(checkresp){
+										
+										//did it pass..
+										if(!checkresp){
+											MDS.log("INVALID START TXNS..!");
+											
+											//LOGS
+											insertLog(maxmsg.hashid, "INVALID_START_TXNS", "Invalid initial txns sent by user!");
+																			
+											return;
+										}
+									
+										//Now - add these addresses to our script database
+										addDefaultScripts(alldata, function(){
+											
+											//And update the SQL
+											updateChannelAddresses(maxmsg.hashid, alldata, function(sqlrow){
+												
+												//Add YOUR amount to the FUNDING
+												addToFundingTxn(maxmsg.txndata.transactions.fundingtxn, sqlrow.USER2AMOUNT, function(newfundingtxn){
+													
+													//Set the Scripts and MMR for the FUNDING
+													scriptsMMRTxn(newfundingtxn,function(mmrtxn){
+														
+														//SET this..
+														maxmsg.txndata.transactions.fundingtxn = mmrtxn;
+														
+														//Now - SIGN ALL THREE.. 
+														signAllTxn(maxmsg.txndata, sqlrow.USERPUBLICKEY, function(signeddata){
+															
+															//STORE the TRIGGER and CURRENT Settlement
+															updateDefaultChannelTransactions(maxmsg.hashid, signeddata, function(){
+																
+																//You now have a half-signed FUNDING.. FULL SIGNED Trigger and Settle
+																sendCreateChannel("CHANNEL_CREATE_2", maximapubkey, maxmsg.hashid, signeddata, function(){
+																	showChannels();
+																});	
+															});
+														});		
+													});
+												});	
+											});	
+										});
+									});								
+								});	
+							}
+						});	
+						
+					}else if(maxmsg.type == "CHANNEL_CREATE_2"){
+						
+						checkValidMaximaUserState(maximapubkey,maxmsg.hashid, "STATE_CHANNEL_CREATE_1", function(valid){
+							if(!valid){
+								MDS.log("INVALID MESSAGE FOR STATE.. check logs");
+								return;	
+							}
+							
+							//CHECK ALL THE TXNS!!
+							//..
+							
+							//STORE the TRIGGER and CURRENT Settlement
+							updateDefaultChannelTransactions(maxmsg.hashid, maxmsg.txndata, function(){
+								
+								//Sign the FUNDING!
+								signTxn(maxmsg.txndata.transactions.fundingtxn, "auto", function(signtxn){
+									
+									checkTxn(signtxn,function(resp){
+										if(!resp.response.validtransaction){
+											MDS.log("INVALID Funding transaction..!");
+											logJSON(resp,"CHECK TXN FAIL");
+											return;	
+										}
+										
+										//POST IT!
+										postTxn(signtxn, false, function(postresp){
+											
+											//IT's DONE! Channel now Open!
+											updateChannelState(maxmsg.hashid,"STATE_CHANNEL_OPEN_1",function(){
+												
+												//And send to other party
+												sendMaximaMessage(maximapubkey, replySimpleMessage(maxmsg.hashid, "CHANNEL_CREATE_3"), function(maxresp){
+													showChannels();
+												});
+											});
+										});
+									});
+								});	
+							});
+						});
+					
+					}else if(maxmsg.type == "CHANNEL_CREATE_3"){
+						checkValidMaximaUserState(maximapubkey,maxmsg.hashid, "STATE_CHANNEL_CREATE_2", function(valid){
+							if(!valid){
+								MDS.log("INVALID MESSAGE FOR STATE.. check logs");
+								return;	
+							}
+						
+							//The FUNDING has been SENT!!
+							updateChannelState(maxmsg.hashid,"STATE_CHANNEL_OPEN_2",function(){
+								showChannels();
+							});
+						});
+						
+					}else if(maxmsg.type == "SPEND_CHANNEL"){
+						
+						//Sign it..
+						sqlSelectChannel(maxmsg.hashid,function(sql){
+							var sqlrow = sql.rows[0];
+							
+							//LOGS
+							insertLog(maxmsg.hashid, "CHANNEL_CLOSE_COOP_POSTED", "You posted the close coop channel close txn");
+																						
+							//Now SIGN it
+							signTxn(maxmsg.spendfundingtxn, sqlrow.USERPUBLICKEY, function(fulltxn){
+								
+								//POST IT..
+								postTxn(fulltxn, "true", function(poastreq){
+									MDS.log("CHANNEL CLOSE POSTED");	
+								});
+							});
+						});
+					
+					}else if(maxmsg.type == "SEND_FUNDS"){
+						
+						//Sign it..
+						sqlSelectChannel(maxmsg.hashid,function(sql){
+							var sqlrow = sql.rows[0];
+							
+							//Add amounto this user and subtrsct from the other user
+							var newvalues = calculateNewValues(sqlrow, maxmsg.amount, sqlrow.USERNUM);
+							if(!newvalues.valid){
+								MDS.log("INVALID AMOUNT SENT! "+maxmsg.amount);
+								
+								//LOGS
+								insertLog(maxmsg.hashid, "INVALID_AMOUNT_SENT", "The user tried to send an invalid amount "+maxmsg.amount);
+															
+								return;
+							}
+							
+							//LOGS
+							insertLog(maxmsg.hashid, "FUNDS_RECEIVED", "You received "+maxmsg.amount);
+														
+							signTxn(maxmsg.settletxn, sqlrow.USERPUBLICKEY, function(newsettletxn){
+								signTxn(maxmsg.updatetxn, sqlrow.USERPUBLICKEY, function(newupdatetxn){
+									
+									//Now store these..
+									updateNewSeqeunceTxn(maxmsg.hashid, maxmsg.sequence, 
+														 newvalues.useramount1.toString(), newvalues.useramount2.toString(), 
+														 newsettletxn, newupdatetxn, function(newsqlrow){
+										
+										//Create the reply message
+										var replymsg = replySendChannelMessage(maxmsg.hashid, maxmsg.sequence, maxmsg.amount, newsettletxn, newupdatetxn);
+										
+										//AND  - send these back to the USER
+										sendMaximaMessage(maximapubkey, replymsg, function(maxresp){
+											showChannels();
+										});
+									});													
+								});	
+							});
+						});
+						
+					}else if(maxmsg.type == "REPLY_SEND_FUNDS"){
+						
+						MDS.log("REPLY SEND FUNDS REC!!");
+						
+						//Sign it..
+						sqlSelectChannel(maxmsg.hashid,function(sql){
+							var sqlrow = sql.rows[0];
+							
+							var newvalues 	= {};
+							if(sqlrow.USERNUM == 1){
+								newvalues = calculateNewValues(sqlrow, maxmsg.amount, 2);
+							}else{
+								newvalues = calculateNewValues(sqlrow, maxmsg.amount, 1);
+							}
+						
+							//LOGS
+							insertLog(maxmsg.hashid, "FUNDS_SENT", "You sent "+maxmsg.amount);
+														
+							//Now store these..
+							updateNewSeqeunceTxn(maxmsg.hashid, maxmsg.sequence, 
+												 newvalues.useramount1.toString(), newvalues.useramount2.toString(), 
+												 maxmsg.settletxn, maxmsg.updatetxn, function(newsqlrow){
+								showChannels();
+							});
+						});															
+					}
+				});
+			}
+		}
+	});
+
+</script>
+
+</center>
+
+</body>
+
+</html>

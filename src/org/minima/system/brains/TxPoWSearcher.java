@@ -599,10 +599,58 @@ public class TxPoWSearcher {
 	}
 	
 	public static Token getToken(MiniData zTokenID) {
+
+		//Start node position
+		TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
 		
-		synchronized (mImportedTokens) {
+		//Are we MEGAMMR
+		boolean MEGACHECK = false; 
+		
+		//Cycle through
+		while(tip!=null || MEGACHECK) {
+		
+
+			//Get ALL the coins..
+			ArrayList<Coin> coins = null;
+			if(!MEGACHECK) {
+				coins = tip.getAllCoins();
+			}else {
+				//Need to LOCK DB
+				MinimaDB.getDB().readLock(true);
+				
+				//Get the MEGAMMR COINS..
+				coins = new ArrayList<Coin>(MinimaDB.getDB().getMegaMMR().getAllCoins().values());
+			}
 			
-			//Search the imported tokens first as faster.. 
+			//Get the details..
+			for(Coin coin : coins) {
+				
+				//Is this the one..
+				if(coin.getTokenID().isEqual(zTokenID)) {
+					return coin.getToken();
+				}
+			}
+			
+			if(!MEGACHECK) {
+				//And move back up the tree
+				tip = tip.getParent();
+				
+				//Are we at the end..
+				if(tip == null && GeneralParams.IS_MEGAMMR) {
+					MEGACHECK = true;
+				}
+			}else {
+				
+				//Need to LOCK DB
+				MinimaDB.getDB().readLock(false);
+				
+				//we just did a MEGAMMR check.. that's it..
+				break;
+			}
+		}
+		
+		//NOW - Search the imported tokens 
+		synchronized (mImportedTokens) {
 			for(Token tok : mImportedTokens) {
 				
 				//Check the tokenid
@@ -610,58 +658,10 @@ public class TxPoWSearcher {
 					return tok;
 				}
 			}
-			
-			//Start node position
-			TxPoWTreeNode tip = MinimaDB.getDB().getTxPoWTree().getTip();
-			
-			//Are we MEGAMMR
-			boolean MEGACHECK = false; 
-			
-			//Cycle through
-			while(tip!=null || MEGACHECK) {
-			
-	
-				//Get ALL the coins..
-				ArrayList<Coin> coins = null;
-				if(!MEGACHECK) {
-					coins = tip.getAllCoins();
-				}else {
-					//Need to LOCK DB
-					MinimaDB.getDB().readLock(true);
-					
-					//Get the MEGAMMR COINS..
-					coins = new ArrayList<Coin>(MinimaDB.getDB().getMegaMMR().getAllCoins().values());
-				}
-				
-				//Get the details..
-				for(Coin coin : coins) {
-					
-					//Is this the one..
-					if(coin.getTokenID().isEqual(zTokenID)) {
-						return coin.getToken();
-					}
-				}
-				
-				if(!MEGACHECK) {
-					//And move back up the tree
-					tip = tip.getParent();
-					
-					//Are we at the end..
-					if(tip == null && GeneralParams.IS_MEGAMMR) {
-						MEGACHECK = true;
-					}
-				}else {
-					
-					//Need to LOCK DB
-					MinimaDB.getDB().readLock(false);
-					
-					//we just did a MEGAMMR check.. that's it..
-					break;
-				}
-			}
-			
-			return null;
 		}
+		
+		return null;
+		
 	}
 }
 

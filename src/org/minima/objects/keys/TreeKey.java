@@ -4,7 +4,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import org.minima.objects.base.MiniData;
+<<<<<<< HEAD
 import org.minima.objects.mmr.MMRProof;
+=======
+import org.minima.utils.MiniFormat;
+>>>>>>> refs/heads/dev-spartacus
 import org.minima.utils.MinimaLogger;
 
 public class TreeKey {
@@ -255,35 +259,9 @@ public class TreeKey {
 	
 	public static void main(String[] zArgs) {
 		
-	
-	/*	long timestart = System.currentTimeMillis();
+		MiniData seed 	= new MiniData("0x000102");
 		
-		MiniData priv 	= new MiniData("0x51D9F403271E267229B6C2A95C5EAED527846A1AF89F8B1CF5574B0E79A49CF1");
-		MiniData pub 	= new MiniData("0x61B23ACB575490ACEAC2C4F24A78B1E28AF10D9E209EAA49F2CC75292089551F");
-		
-		TreeKey tester 	= new TreeKey(priv, 64, 4);
-		MiniData pktest = tester.getPublicKey();
-		
-		long timefinish  = System.currentTimeMillis();
-		
-		System.out.println("time:"+(timefinish-timestart));
-		System.out.println("Root:"+pktest);
-		
-		if(true) {
-			return;
-		}
-		*/
-		
-		MiniData seed = new MiniData("0x000102");
-		
-		int maxsigs = 5;
-		
-		long timenow = System.currentTimeMillis();
-		
-		TreeKey kt 	 = new TreeKey(seed, 64, 4);
-//		TreeKey kt 	 = TreeKey.createDefault(seed);
-		long timediff = System.currentTimeMillis() - timenow;
-		System.out.println("Create Key Time "+timediff);
+		TreeKey kt 	 	= new TreeKey(seed, 4, 4);
 		
 		//Set the pub key
 		MiniData pk = kt.getPublicKey();
@@ -292,26 +270,13 @@ public class TreeKey {
 //		MiniData data = MiniData.getRandomData(32);
 //		MinimaLogger.log("DATA "+data.to0xString(32));
 		
-		TreeKey ktverify = new TreeKey();
-		ktverify.setPublicKey(pk);
+		Signature sig = kt.sign(data);
+		MinimaLogger.log("1");
+		MinimaLogger.log(MiniFormat.JSONPretty(sig.toJSON()));
 		
-		for(int i=0;i<maxsigs;i++) {
-			System.out.println();
-			
-			timenow = System.currentTimeMillis();
-			Signature sig = kt.sign(data);
-			timediff = System.currentTimeMillis() - timenow;
-			System.out.println("sign time "+timediff);
-			
-			timenow = System.currentTimeMillis();
-			MiniData sigdata = MiniData.getMiniDataVersion(sig);
-			System.out.println("Sig "+i+" : "+sigdata.to0xString(32)+" "+sigdata.getLength());
-			
-			//And verify..
-			MinimaLogger.log("VERIFY : "+ktverify.verify(data, sig));
-			timediff = System.currentTimeMillis() - timenow;
-			System.out.println("verify time "+timediff);
-		}
+		sig = kt.sign(data);
+		MinimaLogger.log("2");
+		MinimaLogger.log(MiniFormat.JSONPretty(sig.toJSON()));
 		
 //		MinimaLogger.log(convertBase(10, 16).toString());
 //		MinimaLogger.log(baseConversion(new MiniNumber(27), 29, 4).toString());

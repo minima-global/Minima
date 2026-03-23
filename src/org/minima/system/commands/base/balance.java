@@ -52,6 +52,12 @@ public class balance extends Command {
 				+ "simple: (optional)\n"
 				+ "    true or flase - show a much simpler view.. just the name and confirmed amount.\n"
 				+ "\n"
+				+ "coinlist: (optional)\n"
+				+ "    true or flase - List all the valid coins.\n"
+				+ "\n"
+				+ "tokendetails: (optional)\n"
+				+ "    true or flase - Show all the token details.\n"
+				+ "\n"
 				+ "Examples:\n"
 				+ "\n"
 				+ "balance\n"
@@ -66,7 +72,7 @@ public class balance extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"address","tokenid","confirmations",
-				"tokendetails","megammr","simple"}));
+				"tokendetails","megammr","simple","coinlist"}));
 	}
 	
 	@Override
@@ -80,7 +86,11 @@ public class balance extends Command {
 		//Are we in debug mode
 		boolean debug  		= getBooleanParam("debug", false);
 		boolean simpleview 	= getBooleanParam("simple", false);
+		boolean listcoins 	= getBooleanParam("coinlist", false);
 		
+		//Do we print ALL the token details..
+		boolean tokendetails = getBooleanParam("tokendetails", false);
+				
 		String onlytokenid = getParam("tokenid", "");
 		
 		//Get all the coins you own..
@@ -102,6 +112,9 @@ public class balance extends Command {
 		Hashtable<String, MiniNumber> unconfirmed 	= new Hashtable<>();
 		Hashtable<String, MiniNumber> sendable 		= new Hashtable<>();
 		Hashtable<String, MiniNumber> totalcoins 	= new Hashtable<>();
+		
+		//A list of all the coins..
+		Hashtable<String, ArrayList<Coin>> coinlist = new Hashtable<>();
 		
 		//Get the wallet.. to find the sendable coins..
 		Wallet walletdb = MinimaDB.getDB().getWallet();
@@ -134,6 +147,7 @@ public class balance extends Command {
 		//Always show a Minima Balance
 		alltokens.add(Token.TOKENID_MINIMA.to0xString());
 		totalcoins.put(Token.TOKENID_MINIMA.to0xString(), MiniNumber.ZERO);
+		coinlist.put(Token.TOKENID_MINIMA.to0xString(), new ArrayList<Coin>()); 
 		
 		if(debug) {
 			MinimaLogger.log("List of found relevant coins");
@@ -189,12 +203,20 @@ public class balance extends Command {
 			}
 			
 			//Total coins.
-			MiniNumber totcoin 	= totalcoins.get(tokenid); 
+			MiniNumber totcoin 	= totalcoins.get(tokenid);
 			if(totcoin == null) {
 				totalcoins.put(tokenid, MiniNumber.ONE);
 			}else {
 				totalcoins.put(tokenid, totcoin.increment());
 			}
+			
+			//And the coinlist
+			ArrayList<Coin> clist = coinlist.get(tokenid);
+			if(clist == null) {
+				clist = new ArrayList<Coin>();
+			}
+			clist.add(coin);
+			coinlist.put(tokenid, clist);
 			
 			//Are we adding to the sendable pile..
 			if(debug) {
@@ -232,9 +254,6 @@ public class balance extends Command {
 			}
 		}
 		
-		//Do we print ALL the token details..
-		boolean tokendetails = getBooleanParam("tokendetails", false);
-		
 		//Lets print out..
 		for(String token : alltokens) {
 			
@@ -266,6 +285,12 @@ public class balance extends Command {
 					tokbal.put("unconfirmed", unconf.toString());
 					tokbal.put("sendable", send.toString());
 					tokbal.put("coins", totcoins.toString());
+					
+					//Do we add the coinlist
+					if(listcoins) {
+						tokbal.put("coinlist", coinlist.get(token));
+					}
+					
 					tokbal.put("total", "1000000000");
 					
 					//And add to the total..
@@ -291,6 +316,12 @@ public class balance extends Command {
 				tokbal.put("unconfirmed", tok.getScaledTokenAmount(unconf).toString());
 				tokbal.put("sendable", tok.getScaledTokenAmount(send).toString());
 				tokbal.put("coins", totcoins.toString());
+				
+				//Do we add the coinlist
+				if(listcoins) {
+					tokbal.put("coinlist", coinlist.get(token));
+				}
+				
 				tokbal.put("total", tok.getTotalTokens().toString());
 				
 				if(tokendetails) {

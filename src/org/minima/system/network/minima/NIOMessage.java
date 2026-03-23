@@ -791,6 +791,16 @@ public class NIOMessage implements Runnable {
 				}
 				
 			}else if(type.isEqual(MSG_GENMESSAGE)) {
+				
+				if(!GeneralParams.ALLOW_GEN_MESSAGE) {
+					MinimaLogger.log("Simple Message from  "+mClientUID+" not allowed.. disconnecting");
+					
+					//Disconnect
+					Main.getInstance().getNIOManager().disconnect(mClientUID, true);
+					
+					return;
+				}
+				
 				//Read in the message
 				MiniString msg = MiniString.ReadFromStream(dis);
 				

@@ -7,14 +7,23 @@ public class GlobalParams {
 	/**
 	 * Which Version fo Minima are we running
 	 */
+<<<<<<< HEAD
 	public static String MINIMA_BASE_VERSION 	= "1.1";
 	public static String MINIMA_BUILD_NUMBER 	= "1";
+=======
+	public static String MINIMA_BASE_VERSION 	= "1.0";
+	public static String MINIMA_BUILD_NUMBER 	= "47";
+>>>>>>> refs/heads/dev-spartacus
 	public static String MINIMA_VERSION 		= MINIMA_BASE_VERSION+"."+MINIMA_BUILD_NUMBER;
 	
 	/**
 	 * The MICRO build number
 	 */
+<<<<<<< HEAD
 	public static String MINIMA_MICRO_BUILD		= "5";
+=======
+	public static String MINIMA_MICRO_BUILD		= "15";
+>>>>>>> refs/heads/dev-spartacus
 	public static String getFullMicroVersion() {
 		return MINIMA_VERSION+"."+MINIMA_MICRO_BUILD;
 	}

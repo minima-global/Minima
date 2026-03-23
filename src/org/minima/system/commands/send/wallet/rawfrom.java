@@ -13,7 +13,7 @@ import org.minima.utils.json.JSONObject;
 public class rawfrom extends Command {
 	
 	public rawfrom() {
-		super("rawfrom","[inputs:] [outputs:] (state:) - Create an unsigned transaction from a set of inputs, outputs and state");
+		super("rawfrom","[inputs:] [outputs:] (state:) - [DEPRECATED USE rawtxnfrom ] Create an unsigned transaction from a set of inputs, outputs and state");
 	}
 	
 	@Override

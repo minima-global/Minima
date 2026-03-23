@@ -1,0 +1,26 @@
+/* Is this a SETTLEMENT or an UPDATE  - boolean TRUE / FALSE */
+LET settlement=STATE(100)
+
+/* What Sequence number is this */
+LET sequence=STATE(101)
+LET prevsequence=PREVSTATE(101)
+
+/* BOTH txn types require BOTH Signatures */
+ASSERT MULTISIG(2 0xff 0xee)
+
+/* Different check depending on TXN type */
+IF settlement THEN 
+
+    /* MUST have the same sequenmce number - and be OLD enough..  */ 
+    IF sequence EQ prevsequence AND @COINAGE GTE 256 THEN 
+        RETURN TRUE
+    ENDIF
+
+ELSE
+
+    /* Update TXN */
+    IF sequence GT prevsequence THEN 
+        RETURN TRUE
+    ENDIF
+
+ENDIF

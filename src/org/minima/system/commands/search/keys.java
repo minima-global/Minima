@@ -35,7 +35,8 @@ public class keys extends Command {
 				+ "action: (optional)\n"
 				+ "    list : List your existing public keys. The default.\n"
 				+ "    checkkeys : Checks if your Public and Private keys are correct.\n"
-				+ "    new : Create a new key pair.\n"
+				+ "    new : Create a new key pair that is stored and managed in your DB.\n"
+				+ "    genkey : Generate a new key NOT stored in the DB.\n"
 				+ "\n"
 				+ "publickey: (optional)\n"
 				+ "    Search for a specific public key.\n"
@@ -45,6 +46,8 @@ public class keys extends Command {
 				+ "keys\n"
 				+ "\n"
 				+ "keys action:list\n"
+				+ "\n"
+				+ "keys action:genkey\n"
 				+ "\n"
 				+ "keys action:checkkeys\n"
 				+ "\n"
@@ -127,7 +130,7 @@ public class keys extends Command {
 			JSONObject resp = new JSONObject();
 			resp.put("keys", arr);
 			resp.put("total", arr.size());
-			resp.put("maxuses", maxuses);
+			resp.put("maxuses", maxuses+1);
 			
 			//Put the details in the response..
 			ret.put("response", resp);

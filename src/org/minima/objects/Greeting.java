@@ -10,10 +10,14 @@ import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.base.MiniString;
+import org.minima.system.Main;
+import org.minima.system.network.p2p.P2PManager;
+import org.minima.system.network.p2p.messages.InetSocketAddressIO;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.json.parser.ParseException;
@@ -75,6 +79,14 @@ public class Greeting implements Streamable {
 			while(tip != null) {
 				mChain.add(tip.getTxPoW().getTxPoWIDData());
 				tip = tip.getParent();
+			}
+			
+			//Add the peers list - if p2p enabled
+			if(GeneralParams.P2P_ENABLED) {
+				//Get the peers list
+				P2PManager p2PManager 	= (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();
+				JSONArray peers 		= InetSocketAddressIO.addressesListToJSONArray(p2PManager.getPeersCopy());
+				getExtraData().put("peers", peers);
 			}
 			
 		}catch(Exception exc) {

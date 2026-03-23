@@ -12,6 +12,7 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
+import org.minima.system.mds.handler.NETcommand;
 import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.network.p2p.P2PPeersChecker;
 import org.minima.system.params.GeneralParams;
@@ -153,8 +154,8 @@ public class peers extends Command {
 			}
 			
 			JSONObject resp = new JSONObject();
-			resp.put("valid",validpeers.toString());
-			resp.put("invalid",invalidpeers.toString());
+			resp.put("valid",validpeers.size());
+			resp.put("invalid",invalidpeers.size());
 			resp.put("message","Valid peers added to checking queue..");
 			ret.put("response", resp);
 			
@@ -180,15 +181,24 @@ public class peers extends Command {
 			
 			String url = "";
 			if(existsParam("file")) {
-				url = getParam("file");
-				File ff = MiniFile.createBaseFile(url);
-				byte[] pdata = MiniFile.readCompleteFile(ff);
-				peerstr = new String(pdata);
+				
+				throw new CommandException("Cannot read peers from local files..");
+				
+				//url = getParam("file");
+				//File ff = MiniFile.createBaseFile(url);
+				//byte[] pdata = MiniFile.readCompleteFile(ff);
+				//peerstr = new String(pdata);
+				
 			}else{
 				url = getParam("url");
+				
+				//Check is valid..
+				if(NETcommand.isBlockedURL(url)) {
+					throw new CommandException("Cannot read peers from local urls (use -allowallip)..");
+				}
+				
 				peerstr = RPCClient.sendGET(url);
 			}
-			
 			
 			if(peerstr.equals("")) {
 				throw new CommandException("No peers found in location "+url);
