@@ -110,6 +110,12 @@ public class MinimaDB {
 	 * You need to do this for the IBD and Greeting messages so they are consistent
 	 */
 	public void readLock(boolean zLock) {
+		
+		//FINDING BUG..
+		if(GeneralParams.DB_IGNORE_LOCKS) {
+			return;
+		}
+		
 		if(zLock) {
 			mRWLock.readLock().lock();
 		}else {
@@ -125,6 +131,11 @@ public class MinimaDB {
 	
 	public void writeLock(boolean zLock) {
 		
+		//FINDING BUG..
+		if(GeneralParams.DB_IGNORE_LOCKS) {
+			return;
+		}
+		
 		if(zLock) {
 			mRWLock.writeLock().lock();
 			
@@ -139,6 +150,11 @@ public class MinimaDB {
 	}
 	
 	public void safeReleaseReadWriteLock() {
+		
+		//FINDING BUG..
+		if(GeneralParams.DB_IGNORE_LOCKS) {
+			return;
+		}
 		
 		//Release it if held by this thread..
 		try {

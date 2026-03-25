@@ -38,6 +38,34 @@ public class MDSCommandHandler {
 	public String runCommand(String minidappid, String command, String data) throws UnsupportedEncodingException, MDSCommandException {
 		
 		String result = null;
+		
+		
+		//Certain cvommands not allowed from PUBLIC dapps..
+		if(	command.equals("net") || 
+			command.equals("netpost") ||
+			command.equals("sql") ||
+			command.equals("file") ||
+			command.equals("keypair") ||
+			command.equals("comms") ||
+			command.equals("dapplink") ||
+			command.equals("netauth")) {
+			
+			// Block public/untrusted MiniDapps from using these commands
+		    if (minidappid.equals(mMDS.getPublicMiniDAPPID()) ||
+		        minidappid.equals(mMDS.getUntrustedMiniDAPPID())) {
+		    	
+		    	MinimaLogger.log(minidappid+" : Public MiniDAPP NOT allowed function : "+command+" > "+data);
+		    	
+		        JSONObject error = new JSONObject();
+		        error.put("status", false);
+		        error.put("error", command+" : not allowed for public MiniDapps");
+		        result = error.toString();
+		        
+		        return result;
+		    }
+		}
+		
+		
 		if(command.equals("sql")) {
 		
 			SQLcommand sql = new SQLcommand(mMDS);

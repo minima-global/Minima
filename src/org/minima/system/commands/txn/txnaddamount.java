@@ -19,6 +19,7 @@ import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.send.send;
 import org.minima.system.params.GeneralParams;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -56,7 +57,7 @@ public class txnaddamount extends Command {
 	
 	
 	public txnaddamount() {
-		super("txnaddamount","[id:] [amount:] (address) (onlychange:) (tokenid:) (burn:) - Add inputs and calculate change for a certain amount");
+		super("txnaddamount","[id:] [amount:] (address) (onlychange:) (tokenid:) (split:) (burn:) - Add inputs and calculate change for a certain amount");
 	}
 	
 	@Override
@@ -73,7 +74,7 @@ public class txnaddamount extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"id","amount","address","onlychange","tokenid","fromaddress","burn","storestate"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"id","amount","address","onlychange","tokenid","fromaddress","burn","storestate","split"}));
 	}
 	
 	@Override
@@ -133,6 +134,22 @@ public class txnaddamount extends Command {
 		MiniNumber tokenamount = amount;
 		if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
 			tokenamount = token.getScaledMinimaAmount(amount);
+		}
+		
+		//Check is a valid amount.. decimal precision
+		if(!tokenid.equals(Token.TOKENID_MINIMA)) {
+			
+			//Convert back and forward to make sure is a valid amount
+			MiniNumber prectest = token.getScaledTokenAmount(tokenamount);
+			if(!prectest.isEqual(amount)) {
+				throw new CommandException("Invalid Token amount to send.. "+amount);
+			}
+					
+		}else {
+			//Check valid - for Minima..
+			if(!tokenamount.isValidMinimaValue()) {
+				throw new CommandException("Invalid Minima amount to send.. "+tokenamount);
+			}
 		}
 		
 		//Add the amount
@@ -223,15 +240,47 @@ public class txnaddamount extends Command {
 		
 		//And add the output
 		if(!addonlychange) {
-			String addr = getAddressParam("address");
-			Coin maincoin = new Coin(new MiniData(addr), tokenamount, tokenid, storestate);
 			
+			//Where to
+			String addr = getAddressParam("address");
+			
+			//Create the coins..
+			int split = getNumberParam("split", MiniNumber.ONE).getAsInt();
+			MiniNumber splitamount = tokenamount.div(new MiniNumber(split));
+			
+			//Is it enough..
+			MiniNumber totalsplitadded = MiniNumber.ZERO;
+			for(int i=0;i<split;i++) {
+				
+				Coin spltcoin = new Coin(new MiniData(addr), splitamount, tokenid, storestate);
+				
+				//Do we need to add the Token..
+				if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
+					spltcoin.setToken(token);
+				}
+				trans.addOutput(spltcoin);
+				
+				//Add to the total
+				totalsplitadded = totalsplitadded.add(splitamount);
+			}
+			
+			//Was enough added..
+			MiniNumber splitremain = tokenamount.sub(totalsplitadded);
+			if(splitremain.isMore(MiniNumber.ZERO)) {
+				//Send this..
+				Coin spltcoin = new Coin(new MiniData(addr), splitremain, tokenid, storestate);
+				if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
+					spltcoin.setToken(token);
+				}
+				trans.addOutput(spltcoin);
+			}
+			
+			/*Coin maincoin = new Coin(new MiniData(addr), tokenamount, tokenid, storestate);
 			//Do we need to add the Token..
 			if(!tokenid.isEqual(Token.TOKENID_MINIMA)) {
 				maincoin.setToken(token);
 			}
-			
-			trans.addOutput(maincoin);
+			trans.addOutput(maincoin);*/
 		}
 		
 		if(change.isMore(MiniNumber.ZERO)) {

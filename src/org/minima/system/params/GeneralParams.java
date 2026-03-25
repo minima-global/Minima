@@ -351,9 +351,19 @@ public class GeneralParams {
 	public static boolean SHOW_NETWORK_CALLS = false;
 	
 	/**
-	 * IF dhownet calls do we show POLL
+	 * IF show net calls do we show POLL
 	 */
 	public static boolean SHOW_NETWORK_POLLS = true;
+	
+	/**
+	 * IF show net calls do we show POLL
+	 */
+	public static boolean DB_IGNORE_LOCKS = false;
+	
+	/**
+	 * Allow simple message from peers
+	 */
+	public static boolean ALLOW_GEN_MESSAGE = false;
 	
 	/**
 	 * Reset all params to their default settings.. ANDROID keeps them after shutdown
@@ -435,6 +445,8 @@ public class GeneralParams {
 		
 		P2P2_ENABLED 		  	= false;
 		SHOW_NETWORK_CALLS 		= false;
+		
+		ALLOW_GEN_MESSAGE 		= false;
 	}
 	
 }
