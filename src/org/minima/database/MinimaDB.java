@@ -12,6 +12,7 @@ import org.minima.database.maxima.MaximaDB;
 import org.minima.database.minidapps.MDSDB;
 import org.minima.database.mmr.MegaMMR;
 import org.minima.database.txpowdb.TxPoWDB;
+import org.minima.database.txpowtree.CoinDB;
 import org.minima.database.txpowtree.TxPowTree;
 import org.minima.database.userprefs.UserDB;
 import org.minima.database.userprefs.txndb.TxnDB;
@@ -420,6 +421,11 @@ public class MinimaDB {
 			//Load the custom Txns..
 			mTxnDB = new TxnDB();
 			mTxnDB.loadDB();
+			
+			//Create the CoinDB used by the TxPoWTree - delete the old one first
+			File coindbsqlfolder = new File(basedb,"coindb");
+			MiniFile.deleteFileOrFolder(coindbsqlfolder.getAbsolutePath(), coindbsqlfolder);
+			CoinDB.createCoinDB(new File(coindbsqlfolder,"coins.db"));
 			
 			//Load the Cascade
 			mCascade.loadDB(new File(basedb,"cascade.db"));
