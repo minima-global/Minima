@@ -1,13 +1,18 @@
 package org.minima.database.txpowdb.ram;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.minima.database.MinimaDB;
+import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.objects.CoinProof;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.system.params.GeneralParams;
+import org.minima.utils.MinimaLogger;
 
 public class RamDB {
 
@@ -15,6 +20,11 @@ public class RamDB {
 	 * How long does data remain in RAM DB in milli seconds
 	 */
 	public long MAX_TIME = 1000 * 60 * 60 * GeneralParams.NUMBER_HOURS_RAMTXPOWDB;
+	
+	/**
+	 * Max number of unused transactions
+	 */
+	public int MAX_UNUSED_TXNS	= 500;
 	
 	ConcurrentHashMap<String, RamData> mTxPoWDB;
 	
@@ -83,6 +93,28 @@ public class RamDB {
 		mTxPoWDB = newmap;
 	}
 
+	public void cleanUnusedTxn() {
+		
+		//Get all unused transactions
+		ArrayList<TxPoW> mempool = getAllUnusedTxns();
+		
+		//Order the mempool txns by BURN..
+		Collections.sort(mempool, new Comparator<TxPoW>() {
+			@Override
+			public int compare(TxPoW o1, TxPoW o2) {
+				return o2.getBurn().compareTo(o1.getBurn());
+			}
+		});
+		
+		int counter					= 0;
+		for(TxPoW memtxp : mempool) {
+			if(counter > MAX_UNUSED_TXNS) {
+				remove(memtxp.getTxPoWID());
+			}
+			counter++;
+		}
+	}
+	
 	public int getSize() {
 		return mTxPoWDB.size();
 	}
