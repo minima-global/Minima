@@ -900,12 +900,12 @@ public class Main extends MessageProcessor {
 			//Now close and Re-open the SQL db..
 			MinimaDB.getDB().refreshSQLDB();
 			
+			//Clear the Maxima Poll Stack
+			getMaxima().checkPollMessages();
+			
 			//Clear the CoinDB
 			long cblock = MinimaDB.getDB().getTxPoWTree().getRoot().getBlockNumber().getAsLong();
 			CoinDB.getTxPoWTreeCoinDB().clearOldCoins(cblock-5);
-			
-			//Clear the Maxima Poll Stack
-			getMaxima().checkPollMessages();
 			
 		}else if(zMessage.getMessageType().equals(MAIN_AUTOBACKUP_MYSQL)) {
 		
