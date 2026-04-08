@@ -6,8 +6,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.minima.database.MinimaDB;
 import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.database.txpowdb.ram.RamData;
+import org.minima.database.txpowtree.CoinDB;
 import org.minima.objects.TxPoW;
 import org.minima.system.commands.Command;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -65,6 +67,7 @@ public class mempool extends Command {
 		resp.put("cascade", cascade);
 		resp.put("transactions", txnnum);
 		resp.put("blocks", blknum);
+		resp.put("sqlcoindb", CoinDB.getTxPoWTreeCoinDB().getSize());
 		
 		//Add balance..
 		ret.put("response", resp);

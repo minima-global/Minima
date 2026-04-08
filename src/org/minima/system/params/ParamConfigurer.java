@@ -407,6 +407,11 @@ public class ParamConfigurer {
                 GeneralParams.ARCHIVESYNC_LIMIT_BANDWIDTH = true;
             }
         }),
+        sqlcoindb("sqlcoindb", "For Low ram systems.. Use a SQL coindb in txpowtree", (args, configurer) -> {
+            if ("true".equals(args)) {
+                GeneralParams.USE_SQL_COINDB = true;
+            }
+        }),
         genesis("genesis", "Create a genesis block, -clean and -automine", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.CLEAN = true;

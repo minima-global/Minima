@@ -366,6 +366,11 @@ public class GeneralParams {
 	public static boolean ALLOW_GEN_MESSAGE = false;
 	
 	/**
+	 * Use a SQL backed CoinDB in TxpowTree
+	 */
+	public static boolean USE_SQL_COINDB = false;
+	
+	/**
 	 * Reset all params to their default settings.. ANDROID keeps them after shutdown
 	 */
 	public static void resetDefaults() {
@@ -447,6 +452,8 @@ public class GeneralParams {
 		SHOW_NETWORK_CALLS 		= false;
 		
 		ALLOW_GEN_MESSAGE 		= false;
+		
+		USE_SQL_COINDB 			= false;
 	}
 	
 }

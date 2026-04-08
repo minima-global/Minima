@@ -28,7 +28,8 @@ public class CoinDB extends SqlDB {
 	 */
 	PreparedStatement SQL_INSERT_COIN 				= null;
 	PreparedStatement SQL_SELECT_ALLCOINS 			= null;
-	PreparedStatement SQL_SELECT_RELEVANTCOINS 		= null;
+	PreparedStatement SQL_CLEAR_COINS 				= null;
+	PreparedStatement SQL_SIZE 						= null;
 	
 	private CoinDB(File zFile){
 		 
@@ -67,12 +68,16 @@ public class CoinDB extends SqlDB {
 		stmt.close();
 	
 		//Prepared Statements
-		SQL_INSERT_COIN	 			= mSQLConnection.prepareStatement("INSERT INTO coins ( txpowtreeid, blockheight, coindata ) VALUES ( ?, ?, ? )");
-		SQL_SELECT_ALLCOINS 		= mSQLConnection.prepareStatement("SELECT * FROM coins WHERE txpowtreeid=?");
+		SQL_INSERT_COIN	 	= mSQLConnection.prepareStatement("INSERT INTO coins ( txpowtreeid, blockheight, coindata ) VALUES ( ?, ?, ? )");
+		SQL_SELECT_ALLCOINS = mSQLConnection.prepareStatement("SELECT * FROM coins WHERE txpowtreeid=?");
+		SQL_CLEAR_COINS 	= mSQLConnection.prepareStatement("DELETE FROM coins WHERE blockheight<?");
+		SQL_SIZE 			= mSQLConnection.prepareStatement("SELECT Count(*) as tot FROM coins");
 	}
 	
 	public synchronized boolean insertCoin(MiniData zTxPoWTreeID, Coin zCoin, MiniNumber zBlock) {
 		try {
+			
+			//MinimaLogger.log("INSERT COIN : "+zBlock+" "+zCoin.getAddress()+" "+zCoin.getAmount());
 			
 			//Make sure..
 			checkOpen();
@@ -142,4 +147,49 @@ public class CoinDB extends SqlDB {
 		return coins;
 	}
 	
+	public synchronized void clearOldCoins(long zMinimumBlock) {
+		
+		try {
+			
+			//Make sure..
+			checkOpen();
+			
+			//Get the Query ready
+			SQL_CLEAR_COINS.clearParameters();
+		
+			//Set main params
+			SQL_CLEAR_COINS.setLong(1, zMinimumBlock);
+			
+			//Do it.
+			SQL_CLEAR_COINS.execute();
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+	}
+	
+	public synchronized int getSize() {
+		try {
+			//Make sure..
+			checkOpen();
+			
+			//Get the query ready
+			SQL_SIZE.clearParameters();
+			
+			//Run the query
+			ResultSet rs = SQL_SIZE.executeQuery();
+			
+			//Could be multiple results
+			if(rs.next()) {
+				//Get the total numer of rows
+				return rs.getInt("tot");
+			}
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+		
+		//Error has occurred
+		return -1;
+	}
 }

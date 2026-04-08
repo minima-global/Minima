@@ -423,6 +423,9 @@ public class MinimaDB {
 			mTxnDB.loadDB();
 			
 			//Create the CoinDB used by the TxPoWTree - delete the old one first
+			if(GeneralParams.USE_SQL_COINDB) {
+				MinimaLogger.log("Using low ram SQL CoinDB in TxPoWTree");
+			}
 			File coindbsqlfolder = new File(basedb,"coindb");
 			MiniFile.deleteFileOrFolder(coindbsqlfolder.getAbsolutePath(), coindbsqlfolder);
 			CoinDB.createCoinDB(new File(coindbsqlfolder,"coins.db"));
