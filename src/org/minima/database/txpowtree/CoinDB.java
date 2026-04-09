@@ -74,10 +74,29 @@ public class CoinDB extends SqlDB {
 		SQL_SIZE 			= mSQLConnection.prepareStatement("SELECT Count(*) as tot FROM coins");
 	}
 	
-	public synchronized boolean insertCoin(MiniData zTxPoWTreeID, Coin zCoin, MiniNumber zBlock) {
+	/**
+	 * This cleans the JDBC Connection.. so it can start and shutdown quicker
+	 */
+	public synchronized void closeAndReopen() {
+		
 		try {
 			
-			//MinimaLogger.log("INSERT COIN : "+zBlock+" "+zCoin.getAddress()+" "+zCoin.getAmount());
+			//First close the Connection and save DB.. compact
+			saveDB(true);
+			
+			//And now reopen the DB..
+			mSQLConnection = null;
+			
+			//And now re-open..
+			checkOpen(false);
+			
+		} catch (SQLException e) {
+			MinimaLogger.log(e);
+		}
+	}
+	
+	public synchronized boolean insertCoin(MiniData zTxPoWTreeID, Coin zCoin, MiniNumber zBlock) {
+		try {
 			
 			//Make sure..
 			checkOpen();

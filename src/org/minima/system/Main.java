@@ -903,9 +903,12 @@ public class Main extends MessageProcessor {
 			//Clear the Maxima Poll Stack
 			getMaxima().checkPollMessages();
 			
-			//Clear the CoinDB
+			//Clear the CoinDB keep 200 blocks..
 			long cblock = MinimaDB.getDB().getTxPoWTree().getRoot().getBlockNumber().getAsLong();
-			CoinDB.getTxPoWTreeCoinDB().clearOldCoins(cblock-5);
+			CoinDB.getTxPoWTreeCoinDB().clearOldCoins(cblock-200);
+			
+			//And now close and reopen.. to clear the deleted and refresh the JDBC Driver
+			CoinDB.getTxPoWTreeCoinDB().closeAndReopen();
 			
 		}else if(zMessage.getMessageType().equals(MAIN_AUTOBACKUP_MYSQL)) {
 		
