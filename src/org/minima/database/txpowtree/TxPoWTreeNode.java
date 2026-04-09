@@ -420,9 +420,6 @@ public class TxPoWTreeNode implements Streamable {
 		}else {
 			return mCoins;
 		}
-		
-		//ArrayList<Coin> allcoins = CoinDB.getTxPoWTreeCoinDB().getAllCoins(mTxPoWTreeID);
-		//return allcoins;
 	}
 	
 	public boolean isRelevantEntry(MMREntryNumber zMMREntryNumber) {
@@ -509,9 +506,6 @@ public class TxPoWTreeNode implements Streamable {
 		
 		//We may be adding..
 		mMMR.setFinalized(false);
-		
-		//Get the CoinDB
-		CoinDB coinDB = CoinDB.getTxPoWTreeCoinDB();
 		
 		//copy all of these to the new root..
 		for(Coin coin : unspentcoins) {
