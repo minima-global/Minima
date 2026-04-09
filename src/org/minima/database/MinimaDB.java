@@ -751,6 +751,9 @@ public class MinimaDB {
 				mMegaMMR.saveMMR(new File(basedb,"megammr.mmr"));
 			}
 			
+			//Close the CoinDB
+			CoinDB.getTxPoWTreeCoinDB().saveDB(false);
+			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);
 		}
