@@ -15,7 +15,7 @@ public class GlobalParams {
 	/**
 	 * The MICRO build number
 	 */
-	public static String MINIMA_MICRO_BUILD		= "7";
+	public static String MINIMA_MICRO_BUILD		= "20";
 
 	public static String getFullMicroVersion() {
 		return MINIMA_VERSION+"."+MINIMA_MICRO_BUILD;
@@ -45,7 +45,7 @@ public class GlobalParams {
 	/**
 	 * Depth before we cascade..
 	 */
-	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(2048);
+	public static MiniNumber MINIMA_CASCADE_START_DEPTH = new MiniNumber(1024);
 	
 	/**
 	 * Number of blocks at each cascade level 

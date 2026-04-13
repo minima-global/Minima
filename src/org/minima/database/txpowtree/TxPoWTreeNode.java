@@ -1,5 +1,6 @@
 package org.minima.database.txpowtree;
 
+import java.awt.geom.GeneralPath;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -23,12 +24,18 @@ import org.minima.objects.mmr.MMREntryNumber;
 import org.minima.objects.mmr.MMRProof;
 import org.minima.system.Main;
 import org.minima.system.brains.TxPoWSearcher;
+import org.minima.system.params.GeneralParams;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONObject;
 
 public class TxPoWTreeNode implements Streamable {
 
+	/**
+	 * The UniqueID for this TxPoWTree
+	 */
+	private MiniData mTxPoWTreeID = MiniData.getRandomData(32);
+	
 	/**
 	 * The SyncBlock that represents this Node
 	 */
@@ -55,9 +62,9 @@ public class TxPoWTreeNode implements Streamable {
 	MMR mMMR;
 	
 	/**
-	 * ALL The Coins - both spent and unspent
+	 * ALL The Coins (if not using SQL )- both spent and unspent
 	 */
-	ArrayList<Coin>	mCoins = new ArrayList<>();
+	ArrayList<Coin>	mCoins 	= new ArrayList<>();
 	
 	/**
 	 * The Coins that are relevant to THIS USER
@@ -148,7 +155,10 @@ public class TxPoWTreeNode implements Streamable {
 			mMMR.updateEntry(entrynumber, input.getMMRProof(), mmrdata);
 			
 			//Add to the total List of coins fro this block
-			mCoins.add(spentcoin);
+			if(zFindRelevant) {
+				addCoinToNode(spentcoin);
+			}
+			//mCoins.add(spentcoin);
 			
 			//Is this Relevant to us..
 			if(zFindRelevant) {
@@ -216,7 +226,10 @@ public class TxPoWTreeNode implements Streamable {
 			mMMR.addEntry(mmrdata);	
 			
 			//Add to the total List of coins for this block
-			mCoins.add(newcoin);
+			if(zFindRelevant) {
+				addCoinToNode(newcoin);
+			}
+			//mCoins.add(newcoin);
 			
 			//Is this Relevant to us..
 			if(zFindRelevant){
@@ -356,8 +369,11 @@ public class TxPoWTreeNode implements Streamable {
 		//Clear and start again
 		mComputedRelevantCoins = new ArrayList<>();
 		
+		//Get all the coins in this TxPoWTree
+		ArrayList<Coin> coins = getAllCoins();
+		
 		//Cycle through both lists..
-		for(Coin coin : mCoins) {
+		for(Coin coin : coins) {
 			
 			//Cycle the relevant
 			for(MMREntryNumber relentry : mRelevantMMRCoins) {
@@ -367,6 +383,16 @@ public class TxPoWTreeNode implements Streamable {
 					break;
 				}
 			}
+		}
+	}
+	
+	public void addCoinToNode(Coin zCoin) {
+		
+		//Are we using SQL ?
+		if(GeneralParams.USE_SQL_COINDB) {
+			CoinDB.getTxPoWTreeCoinDB().insertCoin(mTxPoWTreeID, zCoin, getBlockNumber());
+		}else {
+			mCoins.add(zCoin);
 		}
 	}
 	
@@ -388,7 +414,12 @@ public class TxPoWTreeNode implements Streamable {
 	}
 	
 	public ArrayList<Coin> getAllCoins(){
-		return mCoins;
+		
+		if(GeneralParams.USE_SQL_COINDB) {
+			return CoinDB.getTxPoWTreeCoinDB().getAllCoins(mTxPoWTreeID);
+		}else {
+			return mCoins;
+		}
 	}
 	
 	public boolean isRelevantEntry(MMREntryNumber zMMREntryNumber) {
@@ -492,7 +523,8 @@ public class TxPoWTreeNode implements Streamable {
 			mMMR.updateEntry(entry, proof, data);
 			
 			//Add to all coins..
-			mCoins.add(coin);
+			addCoinToNode(coin);
+			//mCoins.add(coin);
 			
 			//And add this to our list of relevant coins..
 			mRelevantMMRCoins.add(entry);
@@ -553,9 +585,12 @@ public class TxPoWTreeNode implements Streamable {
 		mTxBlock.writeDataStream(zOut);
 		mMMR.writeDataStream(zOut);
 		
-		int len = mCoins.size();
+		//Get all the coins..
+		ArrayList<Coin> allcoins = getAllCoins();
+		
+		int len = allcoins.size();
 		MiniNumber.WriteToStream(zOut, len);
-		for(Coin cmmr : mCoins) {
+		for(Coin cmmr : allcoins) {
 			cmmr.writeDataStream(zOut);
 		}
 		
@@ -571,15 +606,25 @@ public class TxPoWTreeNode implements Streamable {
 		mChildren 	 		= new ArrayList<>();
 		mTotalWeight 		= BigDecimal.ZERO;
 		mParent				= null;
-		mCoins 				= new ArrayList<>();
 		mRelevantMMRCoins 	= new ArrayList<>();
 		
 		mTxBlock			= TxBlock.ReadFromStream(zIn);
 		mMMR				= MMR.ReadFromStream(zIn);
 		
+		CoinDB coindb 		= CoinDB.getTxPoWTreeCoinDB();
+		MiniNumber block 	= mTxBlock.getTxPoW().getBlockNumber();
+		
 		int len = MiniNumber.ReadFromStream(zIn).getAsInt();
 		for(int i=0;i<len;i++) {
-			mCoins.add(Coin.ReadFromStream(zIn));
+			Coin coin = Coin.ReadFromStream(zIn);
+			
+			if(GeneralParams.USE_SQL_COINDB) {
+				coindb.insertCoin(mTxPoWTreeID, coin, block);
+			}else {
+				mCoins.add(coin);
+			}
+			
+			//mCoins.add(Coin.ReadFromStream(zIn));
 		}
 		
 		len = MiniNumber.ReadFromStream(zIn).getAsInt();

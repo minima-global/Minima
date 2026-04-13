@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.txpowtree.CoinDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.UserDB;
 import org.minima.database.wallet.ScriptRow;
@@ -875,6 +876,13 @@ public class Main extends MessageProcessor {
 			
 			//Now close and Re-open the SQL db..
 			MinimaDB.getDB().refreshSQLDB();
+			
+			//Clear the CoinDB keep 200 blocks..
+			long cblock = MinimaDB.getDB().getTxPoWTree().getRoot().getBlockNumber().getAsLong();
+			CoinDB.getTxPoWTreeCoinDB().clearOldCoins(cblock-200);
+			
+			//And now close and reopen.. to clear the deleted and refresh the JDBC Driver
+			CoinDB.getTxPoWTreeCoinDB().closeAndReopen();
 			
 		}else if(zMessage.getMessageType().equals(MAIN_AUTOBACKUP_MYSQL)) {
 		
