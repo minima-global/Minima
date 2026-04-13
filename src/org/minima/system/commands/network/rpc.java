@@ -1,19 +1,16 @@
 package org.minima.system.commands.network;
 
-import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.UserDB;
-import org.minima.objects.base.MiniData;
 import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
-import org.minima.utils.ssl.SSLManager;
 
 public class rpc extends Command {
 
@@ -92,9 +89,6 @@ public class rpc extends Command {
 			//Store
 			GeneralParams.RPC_ENABLED = enable;
 			
-			//Are we setting a password or SSL
-			GeneralParams.RPC_SSL = getBooleanParam("ssl", false);
-	
 			//Is there a password
 			if(existsParam("password")) {
 				GeneralParams.RPC_PASSWORD = getParam("password");
@@ -167,13 +161,6 @@ public class rpc extends Command {
 		JSONObject rpcdets = new JSONObject();
 		rpcdets.put("enabled", GeneralParams.RPC_ENABLED);
 		rpcdets.put("port", GeneralParams.RPC_PORT);
-		rpcdets.put("ssl", GeneralParams.RPC_SSL);
-		
-		//Get the Public Key..
-		Certificate cert 	= SSLManager.getSSLKeyStore().getCertificate("MINIMA_NODE");
-		MiniData pubk 		= new MiniData(cert.getPublicKey().getEncoded());
-		rpcdets.put("sslpubkey",pubk.to0xString());
-		
 		rpcdets.put("authenticate", GeneralParams.RPC_AUTHENTICATE);
 		rpcdets.put("username", "minima");
 		rpcdets.put("password", "***");

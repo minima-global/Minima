@@ -33,7 +33,6 @@ import org.minima.utils.encrypt.GenerateKey;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
 import org.minima.utils.messages.MessageListener;
-import org.minima.utils.ssl.SSLManager;
 
 public class restoresync extends Command {
 
@@ -200,9 +199,6 @@ public class restoresync extends Command {
 		
 		//And now clean up..
 		MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, restorefolder);
-		
-		//And will need to recreate the SSL
-		MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, SSLManager.getSSLFolder());
 		
 		//Now reopen the required SQL Dbs..
 		Main.getInstance().restoreReadyForSync();

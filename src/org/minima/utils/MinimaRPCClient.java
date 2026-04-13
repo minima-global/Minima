@@ -6,14 +6,11 @@ import java.io.InputStreamReader;
 import java.net.URLEncoder;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
 
-import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.json.parser.JSONParser;
 import org.minima.utils.json.parser.ParseException;
-import org.minima.utils.ssl.MinimaTrustManager;
 
 public class MinimaRPCClient {
 
@@ -76,7 +73,7 @@ public class MinimaRPCClient {
 		//Are we in SSL mode..
 		boolean ssl = false;
 		SSLContext sslcontext = null;
-		if(host.startsWith("https://")) {
+		/*if(host.startsWith("https://")) {
 			ssl = true;
 			
 			//Create the Trust Manager
@@ -95,7 +92,7 @@ public class MinimaRPCClient {
 				MinimaLogger.log(exc);
 				System.exit(1);
 			}
-		}
+		}*/
 		
 		//make sure host
 		if(!host.endsWith("/")) {

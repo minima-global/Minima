@@ -261,7 +261,7 @@ public class GeneralParams {
 	 */
 	public static boolean RPC_ENABLED 		= false;
 	public static boolean RPC_AUTHENTICATE 	= false;
-	public static boolean RPC_SSL			= false;
+	//public static boolean RPC_SSL			= false;
 	public static String RPC_AUTHSTYLE 		= "basic";
 	public static String RPC_PASSWORD 		= "none";
 	
@@ -440,7 +440,7 @@ public class GeneralParams {
 		DEFAULT_MINIDAPPS 	  = true;
 		RPC_ENABLED 		  =  false;
 		RPC_AUTHENTICATE 	  = false;
-		RPC_SSL				  = false;
+		//RPC_SSL				  = false;
 		RPC_AUTHSTYLE 		  = "basic";
 		RPC_PASSWORD 		  = "none";
 		SEED_PHRASE 		  = "";

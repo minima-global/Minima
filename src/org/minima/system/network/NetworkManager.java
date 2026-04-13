@@ -8,8 +8,6 @@ import java.time.Duration;
 import java.util.Date;
 import java.util.Enumeration;
 
-import javax.net.ssl.SSLSocket;
-
 import org.minima.database.MinimaDB;
 import org.minima.database.userprefs.UserDB;
 import org.minima.system.network.minima.NIOManager;
@@ -18,7 +16,6 @@ import org.minima.system.network.p2p.P2PFunctions;
 import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.network.p2p2.P2P2Manager;
 import org.minima.system.network.rpc.CMDHandler;
-import org.minima.system.network.rpc.HTTPSServer;
 import org.minima.system.network.rpc.HTTPServer;
 import org.minima.system.network.rpc.Server;
 import org.minima.system.params.GeneralParams;
@@ -216,30 +213,16 @@ public class NetworkManager {
 	
 	public void startRPC() {
 		if(mRPCServer == null) {
-			
-			//Are we SSL
-			if(GeneralParams.RPC_SSL) {
+		
+			//Start The RPC server
+			mRPCServer = new HTTPServer(GeneralParams.RPC_PORT) {
 				
-				//Start The RPC server
-				mRPCServer = new HTTPSServer(GeneralParams.RPC_PORT) {
-					
-					@Override
-					public Runnable getSocketHandler(SSLSocket zSocket) {
-						return new CMDHandler(zSocket);
-					}
-				};
-				
-			}else {
-				
-				//Start The RPC server
-				mRPCServer = new HTTPServer(GeneralParams.RPC_PORT) {
-					
-					@Override
-					public Runnable getSocketHandler(Socket zSocket) {
-						return new CMDHandler(zSocket);
-					}
-				};				
-			}
+				@Override
+				public Runnable getSocketHandler(Socket zSocket) {
+					return new CMDHandler(zSocket);
+				}
+			};				
+		
 		}
 	}
 	

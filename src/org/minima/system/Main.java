@@ -37,7 +37,6 @@ import org.minima.utils.messages.MessageProcessor;
 import org.minima.utils.messages.TimerMessage;
 import org.minima.utils.messages.TimerProcessor;
 import org.minima.utils.mysql.MySQLConnect;
-import org.minima.utils.ssl.SSLManager;
 
 public class Main extends MessageProcessor {
 
@@ -311,16 +310,7 @@ public class Main extends MessageProcessor {
             MinimaLogger.log("Slave Mode ENABLED master:"+GeneralParams.CONNECT_LIST);
 		}
 		
-		//Create the SSL Keystore..
-		if(STARTUP_DEBUG_LOGS) {
-			MinimaLogger.log("SSL Key.. start");
-		}
-		if(GeneralParams.GENERATE_SSL) {
-			SSLManager.makeKeyFile();
-		}
-		if(STARTUP_DEBUG_LOGS) {
-			MinimaLogger.log("SSL Key.. finish");
-		}
+		
 		//Calculate the User hashrate.. start her up as seems to make a difference.. initialises..
 		TxPoWMiner.calculateHashRateOld(new MiniNumber(10000));
 		

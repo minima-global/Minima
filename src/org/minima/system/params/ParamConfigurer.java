@@ -209,13 +209,13 @@ public class ParamConfigurer {
         	GeneralParams.RPC_PASSWORD 		= args;
         	GeneralParams.RPC_AUTHENTICATE 	= true;
         }),
-        rpcssl("rpcssl", "Use Self Signed SSL cert to run RPC", (args, configurer) -> {
+        /*rpcssl("rpcssl", "Use Self Signed SSL cert to run RPC", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.RPC_SSL = true;
             }else {
             	GeneralParams.RPC_SSL = false;
             }
-        }),
+        }),*/
         rpccrlf("rpccrlf", "Use CRLF at the end of the RPC headers (NodeJS)", (args, configurer) -> {
             if ("true".equals(args)) {
                 GeneralParams.RPC_CRLF = true;

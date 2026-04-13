@@ -25,7 +25,6 @@ import org.minima.utils.MinimaLogger;
 import org.minima.utils.encrypt.PasswordCrypto;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
-import org.minima.utils.ssl.SSLManager;
 
 public class vault extends Command {
 
@@ -250,9 +249,6 @@ public class vault extends Command {
 			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, new File(basedb,"chaintree.db"));
 			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, new File(basedb,"userprefs.db"));
 			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, new File(basedb,"p2p.db"));
-			
-			//And will need to recreate the SSL
-			MiniFile.deleteFileOrFolder(GeneralParams.DATA_FOLDER, SSLManager.getSSLFolder());
 			
 			//Reset all the private and public keys
 			Wallet wallet = MinimaDB.getDB().getWallet();
