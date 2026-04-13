@@ -32,8 +32,6 @@ dependencies {
     
     // Use JUnit test framework
     testImplementation 'junit:junit:4.13'
-
-	//implementation 'org.mozilla:rhino:1.7.14'
     
     implementation 'com.h2database:h2:2.4.240'
     //implementation 'com.h2database:h2:2.1.214'
