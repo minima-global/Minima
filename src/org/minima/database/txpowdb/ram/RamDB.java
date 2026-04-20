@@ -6,13 +6,10 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.minima.database.MinimaDB;
-import org.minima.database.txpowdb.TxPoWDB;
 import org.minima.objects.CoinProof;
 import org.minima.objects.TxPoW;
 import org.minima.objects.base.MiniData;
 import org.minima.system.params.GeneralParams;
-import org.minima.utils.MinimaLogger;
 
 public class RamDB {
 

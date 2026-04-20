@@ -1,4 +1,4 @@
-package org.minima.system.network.p2p;
+package org.minima.database.p2p;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;

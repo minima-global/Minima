@@ -10,6 +10,7 @@ import java.util.Random;
 import java.util.StringTokenizer;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.p2p.P2PDB;
 import org.minima.objects.Greeting;
 import org.minima.system.commands.network.connect;
 import org.minima.system.network.minima.NIOClient;

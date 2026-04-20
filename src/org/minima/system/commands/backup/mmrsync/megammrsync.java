@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.StringTokenizer;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.p2p.P2PDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.wallet.KeyRow;
 import org.minima.database.wallet.ScriptRow;
@@ -35,7 +36,6 @@ import org.minima.system.commands.network.connect;
 import org.minima.system.commands.network.peers;
 import org.minima.system.network.minima.NIOManager;
 import org.minima.system.network.minima.NIOMessage;
-import org.minima.system.network.p2p.P2PDB;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.BIP39;
 import org.minima.utils.MinimaLogger;

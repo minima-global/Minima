@@ -1,4 +1,4 @@
-package org.minima.system.network.p2p2;
+package org.minima.database.p2p;
 
 import java.io.File;
 import java.util.ArrayList;

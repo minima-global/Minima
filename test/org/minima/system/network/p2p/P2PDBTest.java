@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.minima.database.p2p.P2PDB;
 import org.minima.system.network.p2p.params.P2PParams;
 
 public class P2PDBTest {
