@@ -11,10 +11,10 @@ public class PrivateKey {
 	 */
 	MiniData[] mPrivateKeys;
 	
-	public PrivateKey(MiniData zSeed, int zKeySizeBitParam) {
+	public PrivateKey(MiniData zSeed) {
 		
-		//How many keys in total
-		int totalkeys = (int)Math.pow(2, zKeySizeBitParam);
+		//How many keys in total - 2^16
+		int totalkeys = (int)Math.pow(2, 16);
 		
 		//Generate all the keys
 		mPrivateKeys = new MiniData[totalkeys];

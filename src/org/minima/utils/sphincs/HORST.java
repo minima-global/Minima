@@ -15,29 +15,33 @@ public class HORST {
 	public HORST(MiniData zSeed) {
 		
 		//Create a Private Key
-		mPrivateKey = new PrivateKey(zSeed, 8);
+		mPrivateKey = new PrivateKey(zSeed);
 		
 		//Create a Public Key
 		mPublicKey = new PublicKey(mPrivateKey);
 	}
 	
+	public PublicKey getPublicKey() {
+		return mPublicKey;
+	}
+	
+	public PrivateKey getPrivateKey() {
+		return mPrivateKey;
+	}
+	
 	public Signature signMessage(MiniData zMessage) {
 		
-		//Hash the message
+		//Hash the message - 32 bytes
 		MiniData hm	= new MiniData(Crypto.getInstance().hashData(zMessage.getBytes()));
 		
-		//Shrink the message
-		MiniData shrinkedmessage = HORSTUtils.shrinkData(NUMBER_OF_CHUNK_BYTES, hm);
-		
+		//Start a new signature
 		Signature sig = new Signature();
 		
-		//Set the root hash of the public key tree
-		sig.setPublicKeyTreeRoot(mPublicKey.getPublicKeyTreeRoot());
-		
+		//Calculate all the signature values
 		for(int i=0;i<NUMBER_OF_CHUNK_BYTES;i++) {
 			
 			//Get the value reference of the message
-			int ref = HORSTUtils.getKeyRef(i, shrinkedmessage);
+			int ref = HORSTUtils.getKeyRef(i, hm);
 			
 			//Add the simple Signature / Private key value (pre-image of public key)
 			sig.getSignatureValues().add(mPrivateKey.getKey(ref));
@@ -49,19 +53,16 @@ public class HORST {
 		return sig;
 	}
 	
-	public static boolean verifySignature(MiniData zMessage, Signature zSignature) {
+	public static boolean verifySignature(MiniData zMessage, Signature zSignature, MMRData zPublicKeyRoot) {
 		
 		//Hash the message
 		MiniData hm	= new MiniData(Crypto.getInstance().hashData(zMessage.getBytes()));
-		
-		//Shrink the message
-		MiniData shrinkedmessage = HORSTUtils.shrinkData(NUMBER_OF_CHUNK_BYTES, hm);
 		
 		//Now check each value of the signature
 		for(int i=0;i<NUMBER_OF_CHUNK_BYTES;i++) {
 			
 			//Get the value reference of the message
-			int ref = HORSTUtils.getKeyRef(i, shrinkedmessage);
+			int ref = HORSTUtils.getKeyRef(i, hm);
 			
 			//Get the signature / private key value
 			MiniData privkey = zSignature.getSignatureValues().get(i);
@@ -72,7 +73,7 @@ public class HORST {
 			//Now check this is in the public key tree at the correct position
 			MMRData leaf 		= MMRData.CreateMMRDataLeafNode(checkpreimage, new MiniNumber(ref));
 			MMRData checkroot 	= zSignature.getPublicKeyTreeProofs().get(i).calculateProof(leaf);
-			if(!checkroot.isEqual(zSignature.getPublicKeyTreeRoot())) {
+			if(!checkroot.isEqual(zPublicKeyRoot)) {
 				return false;
 			}
 		}

@@ -15,10 +15,24 @@ public class HORSTUtils {
 		return new MiniData(res);
 	}
 	
-	public static int getKeyRef(int zPos, MiniData zOrig) {
+	/*public static int getKeyRef(int zPos, MiniData zOrig) {
 		byte[] allbytes	= zOrig.getBytes();
 		int val 		= allbytes[zPos] & 0xFF;
 		return val;
+	}*/
+	
+	public static int getKeyRef(int zPos, MiniData zOrig) {
+		byte[] allbytes	= zOrig.getBytes();
+		
+		int pos = zPos*2;
+		
+		byte[] twobyte = new byte[2];
+		twobyte[0]	   = allbytes[pos];
+		twobyte[1]	   = allbytes[pos+1];
+		
+		MiniData chunk = new MiniData(twobyte);
+		
+		return chunk.getDataValue().intValueExact();
 	}
 	
 }

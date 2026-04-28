@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.mmr.MMRData;
 import org.minima.objects.mmr.MMRProof;
+import org.minima.utils.json.JSONObject;
 
 public class Signature {
 
@@ -16,12 +17,7 @@ public class Signature {
 	ArrayList<MiniData> mSigValues = new ArrayList<>();
 	
 	/**
-	 * This is the root of the Public Key Tree
-	 */
-	MMRData mRoot;
-	
-	/**
-	 * These are the MMRProofs of each public key value in the tree
+	 * These are the MMRProofs of each public key value in the public key tree
 	 */
 	ArrayList<MMRProof>  mPublicKeyProofs = new ArrayList<>();
 	
@@ -35,11 +31,15 @@ public class Signature {
 		return mPublicKeyProofs;
 	}
 	
-	public void setPublicKeyTreeRoot(MMRData zRoot){
-		mRoot = zRoot;
-	}
-	
-	public MMRData getPublicKeyTreeRoot(){
-		return mRoot;
+	public JSONObject toJSON() {
+		JSONObject json = new JSONObject();
+		
+		int sigsize = mSigValues.size();
+		for(int i=0;i<sigsize;i++) {
+			//json.put(""+i, mSigValues[i]);
+		}
+		
+		
+		return json;
 	}
 }
