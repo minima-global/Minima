@@ -3,8 +3,14 @@ package org.minima.objects.keys;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import org.minima.kissvm.functions.sha.PROOF;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
+import org.minima.objects.mmr.MMR;
+import org.minima.objects.mmr.MMRData;
+import org.minima.objects.mmr.MMREntryNumber;
 import org.minima.objects.mmr.MMRProof;
+import org.minima.utils.Crypto;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 
@@ -254,31 +260,184 @@ public class TreeKey {
 		return ret;
 	}
 	
+	//HORS
+	public static MiniData shrinkData(int zBytes, MiniData zOrig) {
+		
+		byte[] orig = zOrig.getBytes();
+		byte[] res 	= new byte[zBytes];
+		for(int i=0;i<zBytes;i++) {
+			res[i] = orig[i];
+		}
+		
+		return new MiniData(res);
+	}
+	
+	public static int getKeyRef(int zPos, MiniData zOrig) {
+	
+		byte[] allbytes	= zOrig.getBytes();
+		int val 		= allbytes[zPos] & 0xFF;
+		
+		return val;
+	}
 	
 	public static void main(String[] zArgs) {
 		
-		MiniData seed 	= new MiniData("0x000102");
+		int tp 	= 8;
+		int t	= (int)Math.pow(2, tp);
+		int k	= 16;
 		
-		TreeKey kt 	 	= new TreeKey(seed, 4, 4);
+		int hashlen = (tp * k) / 8;
+		MinimaLogger.log("Private Key size : "+t);
+		MinimaLogger.log("Hash Len         : "+hashlen+" ");
 		
-		//Set the pub key
-		MiniData pk = kt.getPublicKey();
+		MiniData[] privatekey = new MiniData[t];
+		MiniData[] publickey  = new MiniData[t];
 		
-		MiniData data = new MiniData("0xFF");
-//		MiniData data = MiniData.getRandomData(32);
-//		MinimaLogger.log("DATA "+data.to0xString(32));
+		MiniData privkeyseed = new MiniData("0xFFEEDD");
+		
+		MMR pubkeytree = new MMR();
+		for(int i=0;i<t;i++) {
+			privatekey[i] 	= Crypto.getInstance().hashAllObjects(privkeyseed, new MiniNumber(i));
+			publickey[i] 	= new MiniData(Crypto.getInstance().hashData(privatekey[i].getBytes()));
+		
+			//Create an MMR of the public Key
+			MMRData leaf = MMRData.CreateMMRDataLeafNode(publickey[i], new MiniNumber(i));
+			pubkeytree.addEntry(leaf);
+		}
+		pubkeytree.finalizeSet();
+		
+		MMRData pubkeytreeroot = pubkeytree.getRoot();
+		MinimaLogger.log("PUBLIC KEY ROOT HASH : "+pubkeytreeroot.getData().to0xString());
+		MinimaLogger.log("PUBLIC KEY ROOT SUM  : "+pubkeytreeroot.getValue());
+		
+		//The Message
+		MiniData message 	= new MiniData("0xFFEEDDFFEEDD");
+		
+		//First hash the message
+		MiniData hm			= Crypto.getInstance().hashObject(message);
+		MiniData shm	 	= shrinkData(hashlen, hm);
+		
+		MinimaLogger.log("Message : "+shm.getLength()+" "+shm.to0xString());
+		
+		//SIGNATURE CREATION
+		MinimaLogger.log("");
+		MinimaLogger.log("Signature:");
+		MiniData[] sig 				= new MiniData[hashlen];
+		MiniData[] sigpubkey		= new MiniData[hashlen];
+		MMRProof[] sigprooftree 	= new MMRProof[hashlen];
+		
+		for(int i=0;i<hashlen;i++) {
+		//for(int i=0;i<1;i++) {
+			int ref = getKeyRef(i, shm);
+			
+			//The signature is the private key values..
+			sig[i] = privatekey[ref];
+			
+			//Store the SigPubKey
+			sigpubkey[i] = publickey[ref];
+			
+			//Get the ptree proof..
+			sigprooftree[i] = pubkeytree.getProof(new MMREntryNumber(ref)); 
+			
+			//Simple Check..
+			MMRData leaf = MMRData.CreateMMRDataLeafNode(publickey[ref], new MiniNumber(ref));
+			MMRData root = sigprooftree[i].calculateProof(leaf);
+			if(!root.getData().isEqual(pubkeytreeroot.getData())) {
+				MinimaLogger.log("ProofTree Create  : FAIL CHECK!");
+			}
+			
+			//LOG
+			if(i<2) {
+				MinimaLogger.log("");
+				MinimaLogger.log("SIG POS       : "+i);
+				MinimaLogger.log("SIG REF       : "+ref);
+				MinimaLogger.log("SIG           : "+sig[i]);
+				MinimaLogger.log("SIGPUBKEY     : "+sigpubkey[i]);
+				MinimaLogger.log("SIGTREE       : "+MiniData.getMiniDataVersion(sigprooftree[i]).to0xString());
+			}
+		}
+		
+		/*
+		 * VERIFY Code
+		 * 
+		 * Inputs.. the 160bit message
+		 * 
+		 * Sig and tree
+		 * 
+		 * And the root public key
+		 */
+		
+		MinimaLogger.log("");
+		MinimaLogger.log("Verify:");
+		boolean valid = true;
+		for(int i=0;i<hashlen;i++) {
+			
+			//Get the ref
+			int ref = getKeyRef(i, shm);
+			
+			//Check the hash of the sig is the pub key provided
+			MiniData check = new MiniData(Crypto.getInstance().hashData(sig[i].getBytes()));
+			if(!check.isEqual(sigpubkey[i])) {
+				MinimaLogger.log("Simple  : FAIL CHECK!");
+				valid = false;
+				break;
+			}
+			
+			//Now check the sigpubkey is in the pubkeytree
+			MMRData leaf 		= MMRData.CreateMMRDataLeafNode(sigpubkey[i], new MiniNumber(ref));
+			MMRData checkroot 	= sigprooftree[i].calculateProof(leaf);
+			if(!checkroot.getData().isEqual(pubkeytree.getRoot().getData())) {
+				MinimaLogger.log("ProofTree  : FAIL CHECK!");
+				valid = false;
+				break;
+			}
+			
+		}
+		MinimaLogger.log("All checks Done! "+valid);
+		
+		
+		/*MiniData seed 	= new MiniData("0x000102");
+		
+		long timestart 	= System.currentTimeMillis();
+		System.out.println("Time Start key gen : "+timestart);
+		
+		TreeKey kt 	 	= new TreeKey(seed, 256, 4);
+		MiniData pk 	= kt.getPublicKey();
+		
+		long timefinish = System.currentTimeMillis();
+		System.out.println("Time Finish key gen: "+timestart);
+		
+		long timediff = timefinish - timestart;
+		System.out.println("TimeDiff : "+timediff);
+		
+		//First Run
+		MiniData data = MiniData.getRandomData(32);
+		MinimaLogger.log("DATA "+data.to0xString(32));
+		timestart 	= System.currentTimeMillis();
+		System.out.println("Time Start sign : "+timestart);
 		
 		Signature sig = kt.sign(data);
-		MinimaLogger.log("1");
-		MinimaLogger.log(MiniFormat.JSONPretty(sig.toJSON()));
+		
+		timefinish = System.currentTimeMillis();
+		System.out.println("Time Finish sign : "+timefinish);
+		
+		timediff = timefinish - timestart;
+		System.out.println("TimeDiff : "+timediff);
+		
+		//Second Run
+		data = MiniData.getRandomData(32);
+		MinimaLogger.log("");
+		MinimaLogger.log("DATA (2)"+data.to0xString(32));
+		timestart 	= System.currentTimeMillis();
+		System.out.println("Time Start sign : "+timestart);
 		
 		sig = kt.sign(data);
-		MinimaLogger.log("2");
-		MinimaLogger.log(MiniFormat.JSONPretty(sig.toJSON()));
 		
-//		MinimaLogger.log(convertBase(10, 16).toString());
-//		MinimaLogger.log(baseConversion(new MiniNumber(27), 29, 4).toString());
+		timefinish = System.currentTimeMillis();
+		System.out.println("Time Finish sign : "+timefinish);
 		
-		
+		timediff = timefinish - timestart;
+		System.out.println("TimeDiff : "+timediff);
+		*/
 	}
 }
