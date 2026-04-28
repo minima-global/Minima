@@ -17,6 +17,39 @@ public class TestSig {
 		log("Value 2 : "+HORSTUtils.getKeyRef(1, data));
 		*/
 		
+		log("Start FORS Test");
+		
+		//Create a message
+		MiniData message = new MiniData("0xFFEEDD");
+		log("Message : "+message.to0xString());
+		
+		//Create a Private key seed
+		MiniData privkeyseed = new MiniData("0x00112233");
+		
+		//Hash the message
+		log("Generate FORS signing key..");
+		FORS fors = new FORS(privkeyseed);
+		
+		//Get the root public key
+		MMRData rootpublickey = fors.getForsRoot();
+		
+		//Output some data
+		log("FORS public key root.. "+rootpublickey.toString());
+		
+		//Now sign the message
+		log("Sign message..");
+		FORSSignature sig = fors.signMessage(message);
+		
+		/*log("Signature : ");
+		System.out.println();
+		log(MiniFormat.JSONPretty(sig.toJSON()));
+		*/
+		
+		//Now verify the message
+		log("Verify : "+fors.verifySignature(message, sig, rootpublickey));
+		
+		
+		/*
 		log("Start HORST Test");
 		
 		//Create a message
@@ -39,16 +72,16 @@ public class TestSig {
 		
 		//Now sign the message
 		log("Sign message..");
-		Signature sig = horst.signMessage(message);
+		HORSTSignature sig = horst.signMessage(message);
 		
 		log("Signature : ");
 		System.out.println();
-		log(MiniFormat.JSONPretty(sig.toJSON()));
+		//log(MiniFormat.JSONPretty(sig.toJSON()));
 		
 		//Now verify the message
 		boolean valid = horst.verifySignature(message, sig, rootpublickey);
 		log("Verify : "+valid);
-		
+		*/
 	}
 	
 }

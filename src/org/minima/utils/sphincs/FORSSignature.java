@@ -7,7 +7,7 @@ import org.minima.objects.mmr.MMRData;
 import org.minima.objects.mmr.MMRProof;
 import org.minima.utils.json.JSONObject;
 
-public class Signature {
+public class FORSSignature {
 
 	/**
 	 * These are the Private key values at the referenced position in the private key
@@ -21,7 +21,17 @@ public class Signature {
 	 */
 	ArrayList<MMRProof>  mPublicKeyProofs = new ArrayList<>();
 	
-	public Signature() {}
+	/**
+	 * The Root key of Each HORST Tree
+	 */
+	ArrayList<MMRData> mHORSTRoots = new ArrayList<>();
+	
+	/**
+	 * These are the MMRProofs of each HORST tree used
+	 */
+	ArrayList<MMRProof>  mHORSTTreeProofs = new ArrayList<>();
+	
+	public FORSSignature() {}
 	
 	public ArrayList<MiniData> getSignatureValues(){
 		return mSigValues;
@@ -29,6 +39,14 @@ public class Signature {
 	
 	public ArrayList<MMRProof> getPublicKeyTreeProofs(){
 		return mPublicKeyProofs;
+	}
+	
+	public ArrayList<MMRData> getHORSTRoots(){
+		return mHORSTRoots;
+	}
+	
+	public ArrayList<MMRProof> getHORSTTreeProofs(){
+		return mHORSTTreeProofs;
 	}
 	
 	public JSONObject toJSON() {
@@ -44,6 +62,11 @@ public class Signature {
 			
 			MiniData proofdata = MiniData.getMiniDataVersion(mPublicKeyProofs.get(i));
 			sigval.put("SigProof", proofdata.to0xString());
+			
+			sigval.put("HORSTRoot", mHORSTRoots.get(i).toString());
+			
+			MiniData horstdata = MiniData.getMiniDataVersion(mHORSTTreeProofs.get(i));
+			sigval.put("HORSTProof", horstdata.to0xString());
 			
 			json.put("Chunk_"+i, sigval);
 		}

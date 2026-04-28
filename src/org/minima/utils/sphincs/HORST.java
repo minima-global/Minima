@@ -25,17 +25,21 @@ public class HORST {
 		return mPublicKey;
 	}
 	
+	public MMRData getPublicKeyRoot() {
+		return mPublicKey.getPublicKeyTreeRoot();
+	}
+	
 	public PrivateKey getPrivateKey() {
 		return mPrivateKey;
 	}
 	
-	public Signature signMessage(MiniData zMessage) {
+	public HORSTSignature signMessage(MiniData zMessage) {
 		
 		//Hash the message - 32 bytes
 		MiniData hm	= new MiniData(Crypto.getInstance().hashData(zMessage.getBytes()));
 		
 		//Start a new signature
-		Signature sig = new Signature();
+		HORSTSignature sig = new HORSTSignature();
 		
 		//Calculate all the signature values
 		for(int i=0;i<NUMBER_OF_CHUNK_BYTES;i++) {
@@ -53,7 +57,7 @@ public class HORST {
 		return sig;
 	}
 	
-	public static boolean verifySignature(MiniData zMessage, Signature zSignature, MMRData zPublicKeyRoot) {
+	public static boolean verifySignature(MiniData zMessage, HORSTSignature zSignature, MMRData zPublicKeyRoot) {
 		
 		//Hash the message
 		MiniData hm	= new MiniData(Crypto.getInstance().hashData(zMessage.getBytes()));
