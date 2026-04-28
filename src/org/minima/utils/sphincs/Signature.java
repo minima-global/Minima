@@ -35,10 +35,18 @@ public class Signature {
 		JSONObject json = new JSONObject();
 		
 		int sigsize = mSigValues.size();
-		for(int i=0;i<sigsize;i++) {
-			//json.put(""+i, mSigValues[i]);
-		}
+		json.put("size", sigsize);
 		
+		for(int i=0;i<sigsize;i++) {
+			
+			JSONObject sigval = new JSONObject();
+			sigval.put("SigValue", mSigValues.get(i).to0xString());
+			
+			MiniData proofdata = MiniData.getMiniDataVersion(mPublicKeyProofs.get(i));
+			sigval.put("SigProof", proofdata.to0xString());
+			
+			json.put("Chunk_"+i, sigval);
+		}
 		
 		return json;
 	}

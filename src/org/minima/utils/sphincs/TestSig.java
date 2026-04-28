@@ -46,8 +46,8 @@ public class TestSig {
 		log(MiniFormat.JSONPretty(sig.toJSON()));
 		
 		//Now verify the message
-		//boolean valid = horst.verifySignature(message, sig);
-		//log("Verify : "+valid);
+		boolean valid = horst.verifySignature(message, sig, rootpublickey);
+		log("Verify : "+valid);
 		
 	}
 	
