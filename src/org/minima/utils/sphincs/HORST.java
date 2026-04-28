@@ -1,6 +1,8 @@
 package org.minima.utils.sphincs;
 
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
+import org.minima.objects.mmr.MMRData;
 import org.minima.utils.Crypto;
 
 public class HORST {
@@ -34,7 +36,7 @@ public class HORST {
 		
 		for(int i=0;i<NUMBER_OF_CHUNK_BYTES;i++) {
 			
-			//Get the value ref of the message
+			//Get the value reference of the message
 			int ref = HORSTUtils.getKeyRef(i, shrinkedmessage);
 			
 			//Add the simple Signature / Private key value (pre-image of public key)
@@ -48,6 +50,33 @@ public class HORST {
 	}
 	
 	public static boolean verifySignature(MiniData zMessage, Signature zSignature) {
-		return false;
+		
+		//Hash the message
+		MiniData hm	= new MiniData(Crypto.getInstance().hashData(zMessage.getBytes()));
+		
+		//Shrink the message
+		MiniData shrinkedmessage = HORSTUtils.shrinkData(NUMBER_OF_CHUNK_BYTES, hm);
+		
+		//Now check each value of the signature
+		for(int i=0;i<NUMBER_OF_CHUNK_BYTES;i++) {
+			
+			//Get the value reference of the message
+			int ref = HORSTUtils.getKeyRef(i, shrinkedmessage);
+			
+			//Get the signature / private key value
+			MiniData privkey = zSignature.getSignatureValues().get(i);
+			
+			//Hash that to get the public key value
+			MiniData checkpreimage = new MiniData(Crypto.getInstance().hashData(privkey.getBytes()));
+			
+			//Now check this is in the public key tree at the correct position
+			MMRData leaf 		= MMRData.CreateMMRDataLeafNode(checkpreimage, new MiniNumber(ref));
+			MMRData checkroot 	= zSignature.getPublicKeyTreeProofs().get(i).calculateProof(leaf);
+			if(!checkroot.isEqual(zSignature.getPublicKeyTreeRoot())) {
+				return false;
+			}
+		}
+		
+		return true;
 	}
 }
