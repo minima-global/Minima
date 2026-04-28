@@ -32,7 +32,7 @@ public class FORS {
 			mHORSTLeafNodes[i] = new HORST(horsseed);
 			
 			//Get the root of that tree
-			MMRData root = mHORSTLeafNodes[i].getPublicKeyRoot();
+			MMRData root = mHORSTLeafNodes[i].getHORSTRoot();
 			
 			//Now create a leaf node..
 			MMRData leaf = MMRData.CreateMMRDataLeafNode(root.getData(), new MiniNumber(i));
@@ -42,7 +42,7 @@ public class FORS {
 		mForestHORS.finalizeSet();
 	}
 	
-	public MMRData getForsRoot() {
+	public MMRData getFORSRoot() {
 		return mForestHORS.getRoot();
 	}
 	
@@ -70,7 +70,7 @@ public class FORS {
 			sig.getPublicKeyTreeProofs().add(horst.getPublicKey().getKeyTreeProof(ref));
 			
 			//Add the root of the HORST Tree
-			MMRData horstroot = horst.getPublicKeyRoot();
+			MMRData horstroot = horst.getHORSTRoot();
 			sig.getHORSTRoots().add(horstroot);
 			
 			//And finally add a proof of the HORST Tree!

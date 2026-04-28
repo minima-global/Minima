@@ -21,12 +21,12 @@ public class HORST {
 		mPublicKey = new PublicKey(mPrivateKey);
 	}
 	
-	public PublicKey getPublicKey() {
-		return mPublicKey;
+	public MMRData getHORSTRoot() {
+		return mPublicKey.getPublicKeyTreeRoot();
 	}
 	
-	public MMRData getPublicKeyRoot() {
-		return mPublicKey.getPublicKeyTreeRoot();
+	public PublicKey getPublicKey() {
+		return mPublicKey;
 	}
 	
 	public PrivateKey getPrivateKey() {
