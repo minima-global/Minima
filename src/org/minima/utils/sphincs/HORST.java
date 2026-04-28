@@ -41,7 +41,7 @@ public class HORST {
 		for(int i=0;i<NUMBER_OF_CHUNK_BYTES;i++) {
 			
 			//Get the value reference of the message
-			int ref = HORSTUtils.getKeyRef(i, hm);
+			int ref = getKeyRef(i, hm);
 			
 			//Add the simple Signature / Private key value (pre-image of public key)
 			sig.getSignatureValues().add(mPrivateKey.getKey(ref));
@@ -62,7 +62,7 @@ public class HORST {
 		for(int i=0;i<NUMBER_OF_CHUNK_BYTES;i++) {
 			
 			//Get the value reference of the message
-			int ref = HORSTUtils.getKeyRef(i, hm);
+			int ref = getKeyRef(i, hm);
 			
 			//Get the signature / private key value
 			MiniData privkey = zSignature.getSignatureValues().get(i);
@@ -79,5 +79,19 @@ public class HORST {
 		}
 		
 		return true;
+	}
+	
+	public static int getKeyRef(int zPos, MiniData zOrig) {
+		byte[] allbytes	= zOrig.getBytes();
+		
+		int pos = zPos*2;
+		
+		byte[] twobyte = new byte[2];
+		twobyte[0]	   = allbytes[pos];
+		twobyte[1]	   = allbytes[pos+1];
+		
+		MiniData chunk = new MiniData(twobyte);
+		
+		return chunk.getDataValue().intValueExact();
 	}
 }
