@@ -40,10 +40,10 @@ public class TestSig {
 		log("Sign message..");
 		FORSSignature sig = fors.signMessage(message);
 		
-		/*log("Signature : ");
+		log("Signature : ");
 		System.out.println();
 		log(MiniFormat.JSONPretty(sig.toJSON()));
-		*/
+		
 		
 		//Now verify the message
 		log("Verify : "+fors.verifySignature(message, sig, rootpublickey));

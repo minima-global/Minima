@@ -53,23 +53,30 @@ public class FORSSignature {
 		JSONObject json = new JSONObject();
 		
 		int sigsize = mSigValues.size();
-		json.put("size", sigsize);
 		
+		int totalsize=0;
 		for(int i=0;i<sigsize;i++) {
 			
 			JSONObject sigval = new JSONObject();
 			sigval.put("SigValue", mSigValues.get(i).to0xString());
+			totalsize += mSigValues.get(i).getLength();
 			
 			MiniData proofdata = MiniData.getMiniDataVersion(mPublicKeyProofs.get(i));
 			sigval.put("SigProof", proofdata.to0xString());
+			totalsize += proofdata.getLength();
 			
-			sigval.put("HORSTRoot", mHORSTRoots.get(i).toString());
+			MiniData horstroots = MiniData.getMiniDataVersion(mHORSTRoots.get(i));
+			totalsize += horstroots.getLength();
+			sigval.put("HORSTRoot", mHORSTRoots.get(i).toJSON());
 			
 			MiniData horstdata = MiniData.getMiniDataVersion(mHORSTTreeProofs.get(i));
+			totalsize += horstdata.getLength();
 			sigval.put("HORSTProof", horstdata.to0xString());
 			
 			json.put("Chunk_"+i, sigval);
 		}
+		
+		json.put("Total Size", totalsize);
 		
 		return json;
 	}
