@@ -1,16 +1,12 @@
 /* The USER unique SPHINCS public key */
 LET sphincspublickey = 0xC05DC6D3B52BD12B182AF924F8ABC72CBDF64371E067BF4ECD018FC594915EA0
 
-/* The Message - based on the COINS! */
-/* LET message = 0x998877661 */
-
-/* Recursively add all the input coin id - MAX 8 */
+/* Recursively add all the input coinid - MAX 8 */
 LET calcinputs  = [IF $1 GTE @TOTIN THEN LET returnvalue=$2 ELSE LET returnvalue=FUNCTION(calcinputs $1+1 CONCAT($2 GETINID($1))) ENDIF]
 LET incoins     = STRING(FUNCTION(calcinputs 1 GETINID(0)))
 
 /* Now do the outputs - MAX 2*/
 LET calcoutput  = [LET returnvalue=STRING(GETOUTADDR($1))+STRING(GETOUTAMT($1))+STRING(GETOUTTOK($1))+STRING(GETOUTKEEPSTATE($1))]
-
 IF @TOTOUT EQ 1 THEN
     LET outcoins = FUNCTION(calcoutput 0)
 ELSEIF @TOTOUT EQ 2 THEN
