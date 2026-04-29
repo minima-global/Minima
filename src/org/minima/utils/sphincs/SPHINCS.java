@@ -7,6 +7,8 @@ import org.minima.objects.keys.Signature;
 import org.minima.objects.keys.TreeKey;
 import org.minima.objects.mmr.MMRData;
 import org.minima.utils.Crypto;
+import org.minima.utils.sphincs.FORS.FORS;
+import org.minima.utils.sphincs.FORS.FORSSignature;
 
 public class SPHINCS {
 

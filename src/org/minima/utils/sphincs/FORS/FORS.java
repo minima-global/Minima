@@ -1,4 +1,4 @@
-package org.minima.utils.sphincs;
+package org.minima.utils.sphincs.FORS;
 
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
@@ -7,6 +7,7 @@ import org.minima.objects.mmr.MMRData;
 import org.minima.objects.mmr.MMREntryNumber;
 import org.minima.objects.mmr.MMRProof;
 import org.minima.utils.Crypto;
+import org.minima.utils.sphincs.HORST.HORST;
 
 public class FORS {
 

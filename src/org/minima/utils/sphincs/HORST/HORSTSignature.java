@@ -1,4 +1,4 @@
-package org.minima.utils.sphincs;
+package org.minima.utils.sphincs.HORST;
 
 import java.util.ArrayList;
 

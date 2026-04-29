@@ -1,4 +1,4 @@
-package org.minima.utils.sphincs;
+package org.minima.utils.sphincs.HORST;
 
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;

@@ -3,6 +3,8 @@ package org.minima.utils.sphincs;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.mmr.MMRData;
 import org.minima.utils.MiniFormat;
+import org.minima.utils.sphincs.FORS.FORS;
+import org.minima.utils.sphincs.FORS.FORSSignature;
 
 public class TestSig {
 

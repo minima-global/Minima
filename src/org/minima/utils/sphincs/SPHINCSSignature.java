@@ -2,6 +2,7 @@ package org.minima.utils.sphincs;
 
 import org.minima.objects.keys.Signature;
 import org.minima.objects.mmr.MMRData;
+import org.minima.utils.sphincs.FORS.FORSSignature;
 
 public class SPHINCSSignature {
 

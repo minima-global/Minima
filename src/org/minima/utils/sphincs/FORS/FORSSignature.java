@@ -1,4 +1,4 @@
-package org.minima.utils.sphincs;
+package org.minima.utils.sphincs.FORS;
 
 import java.util.ArrayList;
 
