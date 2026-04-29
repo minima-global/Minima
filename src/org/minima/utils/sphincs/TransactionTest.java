@@ -12,6 +12,7 @@ import org.minima.objects.Transaction;
 import org.minima.objects.Witness;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
+import org.minima.objects.base.MiniString;
 import org.minima.objects.mmr.MMRData;
 import org.minima.objects.mmr.MMRProof;
 import org.minima.utils.sphincs.FORS.FORSSignature;
@@ -20,6 +21,10 @@ public class TransactionTest {
 
 	public static void log(String zMessage) {
 		System.out.println(zMessage);
+	}
+	
+	public static String getOutCoinString(Coin zCoin) {
+		return zCoin.getAddress().to0xString()+zCoin.getAmount().toString()+zCoin.getTokenID().to0xString();
 	}
 	
 	public static void main(String[] zArgs) {
@@ -31,30 +36,51 @@ public class TransactionTest {
 		//log("Verify : "+ verify);
 		
 		//The SPHINCS script
-		String sphincsscript = "LET sphincspublickey=0xC05DC6D3B52BD12B182AF924F8ABC72CBDF64371E067BF4ECD018FC594915EA0 IF @TOTIN EQ 1 THEN LET message=GETINID(0) ELSEIF @TOTIN EQ 2 THEN LET message=CONCAT(GETINID(0) GETINID(1)) ELSEIF @TOTIN EQ 3 THEN LET message=CONCAT(GETINID(0) CONCAT(GETINID(1) GETINID(2))) ENDIF RETURN TRUE LET message=CONCAT(GETINID(0) GETINID(1)) LET hashedmessage=SHA3(message) LET forsrootdata=STATE(101) ASSERT CHECKSIG(sphincspublickey forsrootdata STATE(100)) LET counter=0 WHILE counter LT 1 DO LET statepos=counter*5 LET horstroot=STATE(statepos) ASSERT PROOF(horstroot counter forsrootdata 120 STATE(statepos+1)) LET keypos=counter*2 LET ref=NUMBER(SUBSET(keypos keypos+2 hashedmessage)) ASSERT PROOF(SHA3(STATE(statepos+2)) ref horstroot 2147450880 STATE(statepos+3)) LET counter=INC(counter) ENDWHILE RETURN TRUE";
+		String sphincsscript = "LET sphincspublickey=0xC05DC6D3B52BD12B182AF924F8ABC72CBDF64371E067BF4ECD018FC594915EA0 LET calcinputs=[IF $1 GTE @TOTIN THEN LET returnvalue=$2 ELSE LET returnvalue=FUNCTION(calcinputs $1+1 CONCAT($2 GETINID($1))) ENDIF] LET incoins=STRING(FUNCTION(calcinputs 1 GETINID(0))) LET calcoutput=[LET returnvalue=STRING(GETOUTADDR($1))+STRING(GETOUTAMT($1))+STRING(GETOUTTOK($1))] IF @TOTOUT EQ 1 THEN LET outcoins=FUNCTION(calcoutput 0) ELSEIF @TOTOUT EQ 2 THEN LET outcoins=FUNCTION(calcoutput 0)+FUNCTION(calcoutput 1) ENDIF LET message=HEX(incoins+outcoins) LET hashedmessage=SHA3(message) LET forsrootdata=STATE(101) ASSERT CHECKSIG(sphincspublickey forsrootdata STATE(100)) LET counter=0 WHILE counter LT 16 DO LET statepos=counter*5 LET horstroot=STATE(statepos) ASSERT PROOF(horstroot counter forsrootdata 120 STATE(statepos+1)) LET keypos=counter*2 LET ref=NUMBER(SUBSET(keypos keypos+2 hashedmessage)) ASSERT PROOF(SHA3(STATE(statepos+2)) ref horstroot 2147450880 STATE(statepos+3)) LET counter=INC(counter) ENDWHILE RETURN TRUE";
 		
 		//Create  txn..
 		Transaction transaction 	= new Transaction();
 		Witness witness 			= new Witness();
 		
 		//Add some coin
-		Coin in1 = new Coin(new MiniData("0x01"), new MiniData("0x00"), MiniNumber.ONE, Token.TOKENID_MINIMA, false);
-		Coin in2 = new Coin(new MiniData("0x02"), new MiniData("0x00"), MiniNumber.ONE, Token.TOKENID_MINIMA, false);
+		ArrayList<Coin> allinputcoins = new ArrayList<>();
+		for(int i=0;i<8;i++) {
+			Coin in = new Coin(new MiniData("0x0"+i), new MiniData("0x00"), MiniNumber.ONE, Token.TOKENID_MINIMA, false);	
+			allinputcoins.add(in);
+			transaction.addInput(in);
+			witness.getAllCoinProofs().add(new CoinProof(in, new MMRProof()));
+		}
 		
-		transaction.addInput(in1);
-		transaction.addInput(in2);
+		Coin out1 = new Coin(new MiniData("0xF1"), new MiniData("0xAA"), MiniNumber.ONE, Token.TOKENID_MINIMA, false);
+		Coin out2 = new Coin(new MiniData("0xF1"), new MiniData("0xBB"), MiniNumber.TWO, Token.TOKENID_MINIMA, false);
 		
-		witness.getAllCoinProofs().add(new CoinProof(in1, new MMRProof()));
-		witness.getAllCoinProofs().add(new CoinProof(in2, new MMRProof()));
-		
-		Coin out1 = new Coin(new MiniData("0xF1"), new MiniData("0x00"), MiniNumber.ONE, Token.TOKENID_MINIMA, false);
-		Coin out2 = new Coin(new MiniData("0xF1"), new MiniData("0x00"), MiniNumber.TWO, Token.TOKENID_MINIMA, false);
+		transaction.addOutput(out1);
+		transaction.addOutput(out2);
 		
 		/**
 		 * Sign a message
 		 */
 		//MiniData message = new MiniData("0x998877661");
-		MiniData message = in1.getCoinID().concat(in2.getCoinID());
+		
+		//InputsW
+		//MiniData inmessage  = in1.getCoinID().concat(in2.getCoinID().concat(in3.getCoinID()));
+		//String instring		= inmessage.to0xString();
+		
+		MiniData inmessage = allinputcoins.get(0).getCoinID();
+		for(int i=1;i<allinputcoins.size();i++) {
+			Coin cc 	= allinputcoins.get(i);
+			inmessage	= inmessage.concat(cc.getCoinID());
+		}
+		String instring	= inmessage.to0xString();
+		
+		//Outputs
+		String outstring	= getOutCoinString(out1)+getOutCoinString(out2);
+		String fullstring	= instring+outstring;
+		
+		//Now the full message
+		MiniData message	= new MiniData(new MiniString(fullstring).getData());
+		
+		log("Message : "+message.to0xString());
 		
 		log("Start SPHINCS..");
 		
@@ -88,7 +114,6 @@ public class TransactionTest {
 			
 			//The HORST root
 			MMRData horstroot 		= forssignature.getHORSTRoots().get(i);
-			log("HORST root : "+i+" "+horstroot.toString());
 			StateVariable svhorstroot	= new StateVariable(statepos, horstroot.getData().to0xString());
 			transaction.addStateVariable(svhorstroot);
 			
@@ -116,6 +141,7 @@ public class TransactionTest {
 		Contract contract = new Contract(sphincsscript, new ArrayList<MiniData>(), witness, transaction, new ArrayList<StateVariable>(), true);
 		
 		contract.setGlobalVariable("@TOTIN", new NumberValue(transaction.getAllInputs().size()));
+		contract.setGlobalVariable("@TOTOUT", new NumberValue(transaction.getAllOutputs().size()));
 		
 		contract.run();
 		
