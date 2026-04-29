@@ -31,7 +31,7 @@ public class TestSig {
 		FORS fors = new FORS(privkeyseed);
 		
 		//Get the root public key
-		MMRData rootpublickey = fors.getFORSRoot();
+		MMRData rootpublickey = fors.getForsRoot();
 		
 		//Output some data
 		log("FORS public key root.. "+rootpublickey.toString());

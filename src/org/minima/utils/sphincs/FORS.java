@@ -42,7 +42,7 @@ public class FORS {
 		mForestHORS.finalizeSet();
 	}
 	
-	public MMRData getFORSRoot() {
+	public MMRData getForsRoot() {
 		return mForestHORS.getRoot();
 	}
 	
