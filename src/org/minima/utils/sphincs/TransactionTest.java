@@ -24,7 +24,9 @@ public class TransactionTest {
 	}
 	
 	public static String getOutCoinString(Coin zCoin) {
-		return zCoin.getAddress().to0xString()+zCoin.getAmount().toString()+zCoin.getTokenID().to0xString();
+		
+		String keepstate=(""+zCoin.storeState()).toUpperCase();
+		return zCoin.getAddress().to0xString()+zCoin.getAmount().toString()+zCoin.getTokenID().to0xString()+keepstate;
 	}
 	
 	public static void main(String[] zArgs) {
@@ -36,7 +38,7 @@ public class TransactionTest {
 		//log("Verify : "+ verify);
 		
 		//The SPHINCS script
-		String sphincsscript = "LET sphincspublickey=0xC05DC6D3B52BD12B182AF924F8ABC72CBDF64371E067BF4ECD018FC594915EA0 LET calcinputs=[IF $1 GTE @TOTIN THEN LET returnvalue=$2 ELSE LET returnvalue=FUNCTION(calcinputs $1+1 CONCAT($2 GETINID($1))) ENDIF] LET incoins=STRING(FUNCTION(calcinputs 1 GETINID(0))) LET calcoutput=[LET returnvalue=STRING(GETOUTADDR($1))+STRING(GETOUTAMT($1))+STRING(GETOUTTOK($1))] IF @TOTOUT EQ 1 THEN LET outcoins=FUNCTION(calcoutput 0) ELSEIF @TOTOUT EQ 2 THEN LET outcoins=FUNCTION(calcoutput 0)+FUNCTION(calcoutput 1) ENDIF LET message=HEX(incoins+outcoins) LET hashedmessage=SHA3(message) LET forsrootdata=STATE(101) ASSERT CHECKSIG(sphincspublickey forsrootdata STATE(100)) LET counter=0 WHILE counter LT 16 DO LET statepos=counter*5 LET horstroot=STATE(statepos) ASSERT PROOF(horstroot counter forsrootdata 120 STATE(statepos+1)) LET keypos=counter*2 LET ref=NUMBER(SUBSET(keypos keypos+2 hashedmessage)) ASSERT PROOF(SHA3(STATE(statepos+2)) ref horstroot 2147450880 STATE(statepos+3)) LET counter=INC(counter) ENDWHILE RETURN TRUE";
+		String sphincsscript = "LET sphincspublickey=0xC05DC6D3B52BD12B182AF924F8ABC72CBDF64371E067BF4ECD018FC594915EA0 LET calcinputs=[IF $1 GTE @TOTIN THEN LET returnvalue=$2 ELSE LET returnvalue=FUNCTION(calcinputs $1+1 CONCAT($2 GETINID($1))) ENDIF] LET incoins=STRING(FUNCTION(calcinputs 1 GETINID(0))) LET calcoutput=[LET returnvalue=STRING(GETOUTADDR($1))+STRING(GETOUTAMT($1))+STRING(GETOUTTOK($1))+STRING(GETOUTKEEPSTATE($1))] IF @TOTOUT EQ 1 THEN LET outcoins=FUNCTION(calcoutput 0) ELSEIF @TOTOUT EQ 2 THEN LET outcoins=FUNCTION(calcoutput 0)+FUNCTION(calcoutput 1) ENDIF LET message=HEX(incoins+outcoins) LET hashedmessage=SHA3(message) LET forsrootdata=STATE(101) ASSERT CHECKSIG(sphincspublickey forsrootdata STATE(100)) LET counter=0 WHILE counter LT 16 DO LET statepos=counter*5 LET horstroot=STATE(statepos) ASSERT PROOF(horstroot counter forsrootdata 120 STATE(statepos+1)) LET keypos=counter*2 LET ref=NUMBER(SUBSET(keypos keypos+2 hashedmessage)) ASSERT PROOF(SHA3(STATE(statepos+2)) ref horstroot 2147450880 STATE(statepos+3)) LET counter=INC(counter) ENDWHILE RETURN TRUE";
 		
 		//Create  txn..
 		Transaction transaction 	= new Transaction();
