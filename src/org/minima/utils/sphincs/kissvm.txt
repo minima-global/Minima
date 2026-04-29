@@ -1,0 +1,58 @@
+/* The USER unique SPHINCS public key */
+LET sphincspublickey = 0xC05DC6D3B52BD12B182AF924F8ABC72CBDF64371E067BF4ECD018FC594915EA0
+
+/* The Message - based on the COINS! */
+/* LET message = 0x998877661 */
+
+/* Recursively add all the input coin id - MAX 8 */
+LET calcinputs  = [IF $1 GTE @TOTIN THEN LET returnvalue=$2 ELSE LET returnvalue=FUNCTION(calcinputs $1+1 CONCAT($2 GETINID($1))) ENDIF]
+LET incoins     = STRING(FUNCTION(calcinputs 1 GETINID(0)))
+
+/* Now do the outputs - MAX 2*/
+LET calcoutput  = [LET returnvalue=STRING(GETOUTADDR($1))+STRING(GETOUTAMT($1))+STRING(GETOUTTOK($1))+STRING(GETOUTKEEPSTATE($1))]
+
+IF @TOTOUT EQ 1 THEN
+    LET outcoins = FUNCTION(calcoutput 0)
+ELSEIF @TOTOUT EQ 2 THEN
+    LET outcoins = FUNCTION(calcoutput 0)+FUNCTION(calcoutput 1)
+ENDIF
+
+/* This message is based of all the coins that make up the transaction */
+LET message = HEX(incoins+outcoins)
+
+/* Hash the message */
+LET hashedmessage = SHA3(message)
+
+/* The FORS root MMRDATA */
+LET forsrootdata = STATE(101)
+
+/* STEP 1 - check the FORS root is signed correctly */
+ASSERT CHECKSIG(sphincspublickey forsrootdata STATE(100))
+
+/* STEP 2 - NOW Verify the FORS signature */
+LET counter = 0
+WHILE counter LT 16 DO
+
+    /* The Base state variable for this position */
+    LET statepos = counter * 5
+
+    /* GET the HORST root */
+    LET horstroot = STATE(statepos)
+    
+    /* Check this HORST tree is valid */
+    ASSERT PROOF( horstroot counter forsrootdata 120 STATE(statepos+1) )
+
+    /* GET the ref in the Message */
+    LET keypos  = counter*2
+    LET ref     = NUMBER(SUBSET(keypos keypos+2 hashedmessage))
+
+    /* Check the pubkey is in the tree to root */
+    ASSERT PROOF( SHA3(STATE(statepos+2)) ref horstroot 2147450880 STATE(statepos+3) )
+
+    /* Increment the counter */
+    LET counter = INC(counter)
+
+ENDWHILE
+
+/* ALL GOOD! */
+RETURN TRUE
