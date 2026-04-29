@@ -7,6 +7,7 @@ import org.minima.objects.mmr.MMRData;
 import org.minima.objects.mmr.MMREntryNumber;
 import org.minima.objects.mmr.MMRProof;
 import org.minima.utils.Crypto;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.sphincs.HORST.HORST;
 
 public class FORS {
@@ -118,5 +119,43 @@ public class FORS {
 		}
 		
 		return true;
+	}
+	
+	public static void log(String zMessage) {
+		System.out.println(zMessage);
+	}
+	
+	public static void main(String[] zArgs) {
+		
+		log("Start FORS Test");
+		
+		//Create a message
+		MiniData message = new MiniData("0xFFEEDD");
+		log("Message : "+message.to0xString());
+		
+		//Create a Private key seed
+		MiniData privkeyseed = new MiniData("0x00112233");
+		
+		//Hash the message
+		log("Generate FORS signing key..");
+		FORS fors = new FORS(privkeyseed);
+		
+		//Get the root public key
+		MMRData rootpublickey = fors.getForsRoot();
+		
+		//Output some data
+		log("FORS public key root.. "+rootpublickey.toString());
+		
+		//Now sign the message
+		log("Sign message..");
+		FORSSignature sig = fors.signMessage(message);
+		
+		log("Signature : ");
+		System.out.println();
+		log(MiniFormat.JSONPretty(sig.toJSON()));
+		
+		
+		//Now verify the message
+		log("Verify : "+fors.verifySignature(message, sig, rootpublickey));
 	}
 }

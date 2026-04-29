@@ -4,6 +4,9 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.objects.mmr.MMRData;
 import org.minima.utils.Crypto;
+import org.minima.utils.MiniFormat;
+import org.minima.utils.sphincs.FORS.FORS;
+import org.minima.utils.sphincs.FORS.FORSSignature;
 
 public class HORST {
 
@@ -97,5 +100,46 @@ public class HORST {
 		MiniData chunk = new MiniData(twobyte);
 		
 		return chunk.getDataValue().intValueExact();
+	}
+	
+	public static void log(String zMessage) {
+		System.out.println(zMessage);
+	}
+	
+	public static void main(String[] zArgs) {
+		
+		
+		log("Start HORST Test");
+		
+		//Create a message
+		MiniData message = new MiniData("0xFFEEDD");
+		log("Message : "+message.to0xString());
+		
+		//Create a Private key seed
+		MiniData privkeyseed = new MiniData("0x00112233");
+		
+		//Hash the message
+		log("Generate HORST signing key..");
+		HORST horst = new HORST(privkeyseed);
+		
+		//Get the root public key
+		MMRData rootpublickey = horst.getPublicKey().getPublicKeyTreeRoot();
+		
+		//Output some data
+		log("HORST private key size.. "+horst.getPrivateKey().getSize());
+		log("HORST public key root.. "+rootpublickey.toString());
+		
+		//Now sign the message
+		log("Sign message..");
+		HORSTSignature sig = horst.signMessage(message);
+		
+		log("Signature : ");
+		System.out.println();
+		//log(MiniFormat.JSONPretty(sig.toJSON()));
+		
+		//Now verify the message
+		boolean valid = horst.verifySignature(message, sig, rootpublickey);
+		log("Verify : "+valid);
+		
 	}
 }
