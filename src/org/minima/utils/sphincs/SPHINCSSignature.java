@@ -1,6 +1,7 @@
 package org.minima.utils.sphincs;
 
 import org.minima.objects.keys.Signature;
+import org.minima.objects.mmr.MMRData;
 
 public class SPHINCSSignature {
 
@@ -10,16 +11,32 @@ public class SPHINCSSignature {
 	Signature mMinimaSignature;
 	
 	/**
+	 * The Root of the FORS tree..
+	 */
+	MMRData mFORSRoot;
+	
+	/**
 	 * The FORS Signature
 	 * 
 	 * The root of the FORS tree is signed by the WOTS
 	 */
 	FORSSignature mFORSSignature;
 	
-	public SPHINCSSignature(Signature zMinimaSig, FORSSignature zFORSSig) {
+	public SPHINCSSignature(Signature zMinimaSig, MMRData zFORSRoot, FORSSignature zFORSSig) {
 		mMinimaSignature 	= zMinimaSig;
+		mFORSRoot			= zFORSRoot;
 		mFORSSignature		= zFORSSig;
 	}
 	
+	public Signature getWOTSSignature() {
+		return mMinimaSignature;
+	}
 	
+	public MMRData getFORSRoot() {
+		return mFORSRoot;
+	}
+	
+	public FORSSignature getFORSSignature() {
+		return mFORSSignature;
+	}
 }

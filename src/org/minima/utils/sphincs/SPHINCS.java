@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.Signature;
 import org.minima.objects.keys.TreeKey;
+import org.minima.objects.mmr.MMRData;
 import org.minima.utils.Crypto;
 
 public class SPHINCS {
@@ -70,8 +71,6 @@ public class SPHINCS {
 		 */
 		MiniData hm		= new MiniData(Crypto.getInstance().hashData(zMessage.getBytes()));
 		byte[] hmbytes 	= hm.getBytes();
-		
-		//Now get the first 8 bytes..
 		byte[] keychoose = new byte[4];
 		for(int i=0;i<4;i++) {
 			keychoose[i] = hmbytes[i];
@@ -103,23 +102,45 @@ public class SPHINCS {
 		FORS fors = new FORS(uniqueforsseed);
 		
 		//Get the root of the FORS tree
-		MiniData forspublickey = fors.getForsRoot().getData();
+		MMRData rootforspublickey = fors.getForsRoot();
+		log("FORS root :"+rootforspublickey.toString());
 		
-		//Sign that!
-		Signature wotssig = treekey.sign(forspublickey);
+		//Sign that! - the SUM value is always the same 
+		Signature wotssig = treekey.sign(rootforspublickey.getData());
 		
 		//Now sign the MESSAGE with the fors
 		FORSSignature forssig = fors.signMessage(zMessage);
 		
 		//And create..
-		SPHINCSSignature sig = new SPHINCSSignature(wotssig,forssig);
+		SPHINCSSignature sig = new SPHINCSSignature(wotssig, rootforspublickey, forssig);
 		
 		return sig;
 	}
 	
-	public static boolean verifySignature(MiniData zMessage, SPHINCSSignature zSignature, MiniData zPublicKey) {
+	public static boolean verifySignature(MiniData zMessage, SPHINCSSignature zSignature, MiniData zSPHINCSPublicKey) {
 		
+		//The FORS root
+		MMRData forsroot = zSignature.getFORSRoot();
 		
+		//The FORS signature
+		FORSSignature forssig = zSignature.getFORSSignature();
+		
+		//First check the WOTS signature has signed the FORS tree root..
+		Signature wotssig = zSignature.getWOTSSignature();
+		
+		//Create  treeKey
+		TreeKey treekey 	= new TreeKey();
+		treekey.setPublicKey(zSPHINCSPublicKey);
+		if(!treekey.verify(forsroot.getData(), wotssig)) {
+			log("SPHINCS VERIFY wots  : FALSE");
+			return false;
+		}
+		
+		//Now check the actual message against FORS
+		if(!FORS.verifySignature(zMessage, forssig, forsroot)) {
+			log("SPHINCS VERIFY fors  : FALSE");
+			return false;
+		}
 		
 		return true;
 	}
@@ -133,14 +154,18 @@ public class SPHINCS {
 		MiniData seed 	 = new MiniData("0x0011223344"); 
 		MiniData message = new MiniData("0x998877661");
 		
-		System.out.println("Start SPHINCS..");
+		log("Start SPHINCS..");
 		
 		SPHINCS sphincs = new SPHINCS(seed);
 		
-		System.out.println("SPHINCS public key : "+sphincs.getPublicKey().to0xString());
-		System.out.println("SPHINCS total WOTS keys : "+sphincs.getTotalWotsKeys());
+		log("SPHINCS public key : "+sphincs.getPublicKey().to0xString());
+		log("SPHINCS total WOTS keys : "+sphincs.getTotalWotsKeys());
 		
-		sphincs.signMessage(message);
+		SPHINCSSignature sig = sphincs.signMessage(message);
+		
+		//Verify
+		boolean verify = SPHINCS.verifySignature(message, sig, sphincs.getPublicKey());
+		log("Verify : "+ verify);
 		
 	}
 }
