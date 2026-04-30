@@ -12,6 +12,7 @@ import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.Streamable;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class HORSTSignature implements Streamable {
@@ -42,18 +43,20 @@ public class HORSTSignature implements Streamable {
 		JSONObject json = new JSONObject();
 		
 		int sigsize = mSigValues.size();
-		json.put("size", sigsize);
 		
+		JSONArray arr = new JSONArray();
 		for(int i=0;i<sigsize;i++) {
 			
 			JSONObject sigval = new JSONObject();
-			sigval.put("SigValue", mSigValues.get(i).to0xString());
+			sigval.put("sigvalue", mSigValues.get(i).to0xString());
 			
 			MiniData proofdata = MiniData.getMiniDataVersion(mPublicKeyProofs.get(i));
-			sigval.put("SigProof", proofdata.to0xString());
+			sigval.put("sigproof", proofdata.to0xString());
 			
-			json.put("Chunk_"+i, sigval);
+			arr.add(sigval);
 		}
+		
+		json.put("values", arr);
 		
 		return json;
 	}

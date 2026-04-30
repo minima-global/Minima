@@ -21,8 +21,8 @@ public class SPHINCS {
 	/**
 	 * The WOTS key depth and keys per level
 	 */
-	private final int WOTS_DEPTH 		= 3;
-	private final int WOTS_KEYSPERLEVEL = 8;
+	private final int WOTS_DEPTH 		= 4;
+	private final int WOTS_KEYSPERLEVEL = 128;
 	
 	/**
 	 * The Public Key - is the root of the WOTS tree
@@ -215,9 +215,15 @@ public class SPHINCS {
 		
 		SPHINCSSignature sig = sphincs.signMessage(message);
 		
-		//Verify
-		boolean verify = SPHINCS.verifySignature(message, sig, sphincs.getPublicKey());
-		log("Verify : "+ verify);
+		//Write to stream
+		MiniData stream = MiniData.getMiniDataVersion(sig); 
 		
+		//Read from stream
+		SPHINCSSignature readsig = SPHINCSSignature.convertMiniDataVersion(stream);
+		log("Signature Size : "+stream.getLength());
+				
+		//Verify
+		boolean verify = SPHINCS.verifySignature(message, readsig, sphincs.getPublicKey());
+		log("Verify : "+ verify);
 	}
 }

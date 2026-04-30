@@ -129,12 +129,12 @@ public class TransactionTest {
 			transaction.addStateVariable(svhorstproof);
 			
 			//The SIG value (private key preimage of public key)
-			MiniData privkeyval = forssignature.getSignatureValues().get(i);
+			MiniData privkeyval = forssignature.getHORSTSignature().getSignatureValues().get(i);
 			StateVariable svprivkeyval	= new StateVariable(statepos+2, privkeyval.to0xString());
 			transaction.addStateVariable(svprivkeyval);
 			
 			//The Public key root proof
-			MMRProof privkeyproof		= forssignature.getPublicKeyTreeProofs().get(i);
+			MMRProof privkeyproof		= forssignature.getHORSTSignature().getPublicKeyTreeProofs().get(i);
 			MiniData privkeyproofdata	= MiniData.getMiniDataVersion(privkeyproof);
 			StateVariable svsigvalproof	= new StateVariable(statepos+3, privkeyproofdata.to0xString());
 			transaction.addStateVariable(svsigvalproof);

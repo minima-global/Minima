@@ -1,26 +1,27 @@
 package org.minima.utils.sphincs.FORS;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
+import org.minima.utils.MinimaLogger;
+import org.minima.utils.Streamable;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
+import org.minima.utils.sphincs.HORST.HORSTSignature;
 
-public class FORSSignature {
+public class FORSSignature implements Streamable {
 
 	/**
-	 * These are the Private key values at the referenced position in the private key
-	 * 
-	 * The Pre-images of the Public key values..
+	 * The HORST signaure data
 	 */
-	ArrayList<MiniData> mSigValues = new ArrayList<>();
-	
-	/**
-	 * These are the MMRProofs of each public key value in the public key tree
-	 */
-	ArrayList<MMRProof>  mPublicKeyProofs = new ArrayList<>();
+	HORSTSignature mHORSTSignature = new HORSTSignature();
 	
 	/**
 	 * The Root key of Each HORST Tree
@@ -33,13 +34,9 @@ public class FORSSignature {
 	ArrayList<MMRProof>  mHORSTTreeProofs = new ArrayList<>();
 	
 	public FORSSignature() {}
-	
-	public ArrayList<MiniData> getSignatureValues(){
-		return mSigValues;
-	}
-	
-	public ArrayList<MMRProof> getPublicKeyTreeProofs(){
-		return mPublicKeyProofs;
+		
+	public HORSTSignature getHORSTSignature() {
+		return mHORSTSignature;
 	}
 	
 	public ArrayList<MMRData> getHORSTRoots(){
@@ -53,35 +50,79 @@ public class FORSSignature {
 	public JSONObject toJSON() {
 		JSONObject json = new JSONObject();
 		
-		int sigsize = mSigValues.size();
+		//Output the HORST sig
+		json.put("horstsignature",mHORSTSignature.toJSON());
 		
-		int totalsize=0;
+		int sigsize   = mHORSTSignature.getSignatureValues().size();
 		JSONArray arr = new JSONArray();
 		for(int i=0;i<sigsize;i++) {
 			
 			JSONObject sigval = new JSONObject();
-			sigval.put("SigValue", mSigValues.get(i).to0xString());
-			totalsize += mSigValues.get(i).getLength();
-			
-			MiniData proofdata = MiniData.getMiniDataVersion(mPublicKeyProofs.get(i));
-			sigval.put("SigProof", proofdata.to0xString());
-			totalsize += proofdata.getLength();
 			
 			MiniData horstroots = MiniData.getMiniDataVersion(mHORSTRoots.get(i));
-			totalsize += horstroots.getLength();
-			sigval.put("HORSTRoot", mHORSTRoots.get(i).toJSON());
+			sigval.put("horstroot", mHORSTRoots.get(i).toJSON());
 			
 			MiniData horstdata = MiniData.getMiniDataVersion(mHORSTTreeProofs.get(i));
-			totalsize += horstdata.getLength();
-			sigval.put("HORSTProof", horstdata.to0xString());
+			sigval.put("horstproof", horstdata.to0xString());
 			
 			//Add to our array
 			arr.add(sigval);
 		}
 		
-		json.put("chunks",arr);
-		json.put("Total Size", totalsize);
+		json.put("horstroots",arr);
 		
 		return json;
+	}
+
+	@Override
+	public void writeDataStream(DataOutputStream zOut) throws IOException {
+		mHORSTSignature.writeDataStream(zOut);
+		
+		//Now write the roots
+		int sigsize   = mHORSTSignature.getSignatureValues().size();
+		MiniNumber.WriteToStream(zOut, sigsize);
+		
+		for(int i=0;i<sigsize;i++) {
+			mHORSTRoots.get(i).writeDataStream(zOut);
+			mHORSTTreeProofs.get(i).writeDataStream(zOut);
+		}
+	}
+
+	@Override
+	public void readDataStream(DataInputStream zIn) throws IOException {
+		mHORSTSignature	 =  new HORSTSignature();
+		mHORSTSignature.readDataStream(zIn);
+		
+		mHORSTRoots 	 = new ArrayList<>();
+		mHORSTTreeProofs = new ArrayList<>();
+		
+		int sigsize = MiniNumber.ReadFromStream(zIn).getAsInt();
+		for(int i=0;i<sigsize;i++) {
+			mHORSTRoots.add(MMRData.ReadFromStream(zIn));
+			mHORSTTreeProofs.add(MMRProof.ReadFromStream(zIn));
+		}
+	}
+	
+	/**
+	 * Convert a MiniData version into a FORSSignature
+	 */
+	public static FORSSignature convertMiniDataVersion(MiniData zTxpData) {
+		ByteArrayInputStream bais 	= new ByteArrayInputStream(zTxpData.getBytes());
+		DataInputStream dis 		= new DataInputStream(bais);
+		
+		FORSSignature forssig = new FORSSignature();
+		
+		try {
+			//Convert data
+			forssig.readDataStream(dis);
+		
+			dis.close();
+			bais.close();
+			
+		} catch (IOException e) {
+			MinimaLogger.log(e);
+		}
+		
+		return forssig;
 	}
 }

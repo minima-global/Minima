@@ -9,11 +9,18 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
 import org.minima.utils.MiniFormat;
 import org.minima.utils.sphincs.HORST.HORST;
+import org.minima.utils.sphincs.HORST.HORSTSignature;
 
 public class FORS {
 
+	/**
+	 * The Tree of HORST
+	 */
 	MMR mForestHORS;
 	
+	/**
+	 * The HORST Leaf nodes
+	 */
 	HORST[] mHORSTLeafNodes;
 	
 	public FORS(MiniData zSeed) {
@@ -66,10 +73,10 @@ public class FORS {
 			int ref = HORST.getKeyRef(i, hm);
 			
 			//Add the simple Signature / Private key value (pre-image of public key)
-			sig.getSignatureValues().add(horst.getPrivateKey().getKey(ref));
+			sig.getHORSTSignature().getSignatureValues().add(horst.getPrivateKey().getKey(ref));
 			
 			//Add the Public key proof
-			sig.getPublicKeyTreeProofs().add(horst.getPublicKey().getKeyTreeProof(ref));
+			sig.getHORSTSignature().getPublicKeyTreeProofs().add(horst.getPublicKey().getKeyTreeProof(ref));
 			
 			//Add the root of the HORST Tree
 			MMRData horstroot = horst.getHORSTRoot();
@@ -105,14 +112,14 @@ public class FORS {
 			int ref = HORST.getKeyRef(i, hm);
 		
 			//Get the signature / private key value
-			MiniData privkey = zSignature.getSignatureValues().get(i);
+			MiniData privkey = zSignature.getHORSTSignature().getSignatureValues().get(i);
 			
 			//Hash that to get the public key value
 			MiniData checkpreimage = new MiniData(Crypto.getInstance().hashData(privkey.getBytes()));
 			
 			//Now check this is in the public key tree at the correct position
 			MMRData leaf 		= MMRData.CreateMMRDataLeafNode(checkpreimage, new MiniNumber(ref));
-			MMRData checkroot 	= zSignature.getPublicKeyTreeProofs().get(i).calculateProof(leaf);
+			MMRData checkroot 	= zSignature.getHORSTSignature().getPublicKeyTreeProofs().get(i).calculateProof(leaf);
 			if(!checkroot.isEqual(horstroot)) {
 				return false;
 			}
@@ -150,12 +157,19 @@ public class FORS {
 		log("Sign message..");
 		FORSSignature sig = fors.signMessage(message);
 		
+		//Write to stream
+		MiniData stream = MiniData.getMiniDataVersion(sig); 
+		
+		//Read from stream
+		FORSSignature readsig = FORSSignature.convertMiniDataVersion(stream);
+		log("Signature Size : "+stream.getLength());
+		
 		log("Signature : ");
 		System.out.println();
-		log(MiniFormat.JSONPretty(sig.toJSON()));
+		//log(MiniFormat.JSONPretty(readsig.toJSON()));
 		
 		
 		//Now verify the message
-		log("Verify : "+fors.verifySignature(message, sig, rootpublickey));
+		log("Verify : "+fors.verifySignature(message, readsig, rootpublickey));
 	}
 }
