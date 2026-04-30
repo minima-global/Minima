@@ -99,7 +99,9 @@ public class CoinDB extends SqlDB {
 		try {
 			
 			//Make sure..
-			checkOpen();
+			if(checkOpen()) {
+				MinimaLogger.log("insertCoin CoinDB reopen required");
+			}
 			
 			//get the MiniData version..
 			MiniData coindata = MiniData.getMiniDataVersion(zCoin);
@@ -131,7 +133,9 @@ public class CoinDB extends SqlDB {
 		try {
 			
 			//Make sure..
-			checkOpen();
+			if(checkOpen()) {
+				MinimaLogger.log("getAllCoins CoinDB reopen required");
+			}
 			
 			//Get the Query ready
 			SQL_SELECT_ALLCOINS.clearParameters();
@@ -171,7 +175,9 @@ public class CoinDB extends SqlDB {
 		try {
 			
 			//Make sure..
-			checkOpen();
+			if(checkOpen()) {
+				MinimaLogger.log("clearOldCoins CoinDB reopen required");
+			}
 			
 			//Get the Query ready
 			SQL_CLEAR_COINS.clearParameters();
@@ -190,7 +196,9 @@ public class CoinDB extends SqlDB {
 	public synchronized int getSize() {
 		try {
 			//Make sure..
-			checkOpen();
+			if(checkOpen()) {
+				MinimaLogger.log("getSize CoinDB reopen required");
+			}
 			
 			//Get the query ready
 			SQL_SIZE.clearParameters();

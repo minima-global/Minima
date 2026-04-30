@@ -10,8 +10,10 @@ import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.utils.Crypto;
 import org.minima.utils.MiniFile;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.sphincs.SPHINCS;
+import org.minima.utils.sphincs.SPHINCSSignature;
 
 public class sphincs extends Command {
 
@@ -49,7 +51,7 @@ public class sphincs extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","seed", "data"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","seed", "data","privatekey","file","publickey","signature"}));
 	}
 	
 	@Override
@@ -76,9 +78,97 @@ public class sphincs extends Command {
 		
 		}else if(action.equals("sign")) {
 			
+			MiniData privatekey = getDataParam("privatekey");
+			MiniData message 	= getDataParam("data");
+			
+			SPHINCS sphincs = new SPHINCS();
+			sphincs.initPrivateKey(privatekey);
+			
+			SPHINCSSignature sig = sphincs.signMessage(message);
+			
+			if(existsParam("file")) {
+				String file = getParam("file");
+				
+				//Create the file
+				File backupfile = MiniFile.createBaseFile(file);
+				if(backupfile.exists()) {
+					backupfile.delete();
+				}
+				
+				MiniFile.writeObjectToFile(backupfile, sig);
+				
+				resp.put("signaturefile", backupfile.getAbsolutePath());
+				resp.put("size", backupfile.length());
+				
+			}else {
+				MiniData sigdata = MiniData.getMiniDataVersion(sig);
+				resp.put("signature", sigdata.to0xString());
+			}
+		
+		}else if(action.equals("verify")) {
+			
+			MiniData publickey = getDataParam("publickey");
 			MiniData message = getDataParam("data");
 			
+			SPHINCSSignature sig = null;
+			if(existsParam("file")) {
+				String file = getParam("file");
+				File ff = MiniFile.createBaseFile(file);
+				if(!ff.exists()) {
+					throw new CommandException("File does not exist : "+ff.getAbsolutePath());
+				}
+				
+				//Load it in..
+				byte[] txndata = MiniFile.readCompleteFile(ff);
+				
+				//Convert to MiniData
+				MiniData minitxn = new MiniData(txndata);
+				sig = SPHINCSSignature.convertMiniDataVersion(minitxn);	
+				
+			}else {
+				MiniData minitxn = getDataParam("signature");
+				sig = SPHINCSSignature.convertMiniDataVersion(minitxn);
+			}
 			
+			//NOW verify..
+			boolean valid = SPHINCS.verifySignature(message, sig, publickey);
+			resp.put("valid", valid);
+		
+		}else if(action.equals("test")) {
+			
+			//Get the string seed
+			String strseed = "xxx";
+			MiniData data = new MiniData("0x00");
+			
+			//HASH the seed
+			MiniData seed = new MiniData(Crypto.getInstance().hashData(strseed.getBytes()));
+			
+			//Generate a SPHINCS key
+			SPHINCS sphincs = new SPHINCS(seed);
+			
+			SPHINCSSignature sig = sphincs.signMessage(data);
+			
+			/*//Write to file..
+			File backupfile = MiniFile.createBaseFile("sphincs.dat");
+			if(backupfile.exists()) {
+				backupfile.delete();
+			}
+			
+			MiniFile.writeObjectToFile(backupfile, sig);
+			
+			//READ data
+			byte[] txndata = MiniFile.readCompleteFile(backupfile);
+			
+			//Convert to MiniData
+			MiniData minitxn = new MiniData(txndata);
+			MinimaLogger.log("File read size : "+minitxn.getLength());
+			*/
+			
+			MiniData minitxn = MiniData.getMiniDataVersion(sig);
+			SPHINCSSignature sigfile = SPHINCSSignature.convertMiniDataVersion(minitxn);
+			
+			boolean verify = sphincs.verifySignature(data, sigfile, sphincs.getPublicKey());
+			resp.put("verify", verify);
 			
 			
 		}else {
