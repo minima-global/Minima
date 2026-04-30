@@ -8,11 +8,11 @@ LET sphincspublickey = 0xC05DC6D3B52BD12B182AF924F8ABC72CBDF64371E067BF4ECD018FC
 /* 
     Add all the input coinid - MAX 10 IF number of outputs is 2 
 
-    GETINID ALWAYS returns a 32 byte unique hash per coin which starts with 0x - so cannot be manipulated
+    GETINID ALWAYS returns a 32 byte unique hash per coin - so cannot be manipulated
 
     @TOTIN is set by the transaction as the total amount of input coins
 
-    A VALID transaction MUST have at least 1 input and for this to work a maximum of 8 ( or the KISSVM script runs ober the 1024 operations max)
+    A VALID transaction MUST have at least 1 input and for this to work a maximum of 8 ( or the KISSVM script runs over the 1024 operations max)
 
     incoins is UNIQUE and unalterable for a given set of input coins
 */
@@ -49,7 +49,17 @@ LET hashedmessage = SHA3(incoins+[COINJOIN]+outcoins)
 /* The FORS root MMRDATA */
 LET forsrootdata = STATE(101)
 
-/* STEP 1 - check the FORS root is signed correctly */
+/* 
+    STEP 1 - check the FORS root is signed correctly by the WOTS SPINCS public key
+
+    The key used is the SAME for the same message.
+
+    And the FORS tree seed is set by the key position
+
+    Therefore each key only ever signs the same single hash 
+
+    A SPHINCS signature is the same for the same given message
+*/
 ASSERT CHECKSIG(sphincspublickey forsrootdata STATE(100))
 
 /* STEP 2 - NOW Verify the FORS signature */

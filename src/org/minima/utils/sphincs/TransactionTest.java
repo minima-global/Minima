@@ -42,7 +42,7 @@ public class TransactionTest {
 		Witness witness 			= new Witness();
 		
 		//Add some coin
-		int inputcoinnum  = 2;
+		int inputcoinnum  = 8;
 		int outputcoinnum = 2;
 		
 		ArrayList<Coin> allinputcoins = new ArrayList<>();
