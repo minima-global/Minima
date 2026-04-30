@@ -1,23 +1,50 @@
-/* The USER unique SPHINCS public key */
+/* 
+    The USER unique SPHINCS public key  -This makes each address (the hash of this script) UNIQUE
+
+    FOR NOW I have added a placeholder value - this will be REPLACED by the user
+*/
 LET sphincspublickey = 0xC05DC6D3B52BD12B182AF924F8ABC72CBDF64371E067BF4ECD018FC594915EA0
 
-/* Recursively add all the input coinid - MAX 8 */
-LET calcinputs  = [IF $1 GTE @TOTIN THEN LET returnvalue=$2 ELSE LET returnvalue=FUNCTION(calcinputs $1+1 CONCAT($2 GETINID($1))) ENDIF]
-LET incoins     = STRING(FUNCTION(calcinputs 1 GETINID(0)))
+/* 
+    Add all the input coinid - MAX 10 IF number of outputs is 2 
 
-/* Now do the outputs - MAX 2*/
-LET calcoutput  = [LET returnvalue=STRING(GETOUTADDR($1))+STRING(GETOUTAMT($1))+STRING(GETOUTTOK($1))+STRING(GETOUTKEEPSTATE($1))]
-IF @TOTOUT EQ 1 THEN
-    LET outcoins = FUNCTION(calcoutput 0)
-ELSEIF @TOTOUT EQ 2 THEN
-    LET outcoins = FUNCTION(calcoutput 0)+FUNCTION(calcoutput 1)
-ENDIF
+    GETINID ALWAYS returns a 32 byte unique hash per coin which starts with 0x - so cannot be manipulated
 
-/* This message is based of all the coins that make up the transaction */
-LET message = HEX(incoins+outcoins)
+    @TOTIN is set by the transaction as the total amount of input coins
+
+    A VALID transaction MUST have at least 1 input and for this to work a maximum of 8 ( or the KISSVM script runs ober the 1024 operations max)
+
+    incoins is UNIQUE and unalterable for a given set of input coins
+*/
+LET incoins = GETINID(0)
+LET counter = 1
+WHILE counter LT @TOTIN DO
+    LET incoins = CONCAT(incoins GETINID(counter))
+    LET counter = INC(counter)
+ENDWHILE
+LET incoins = STRING(incoins)
+
+/* 
+    Now do the outputs - MAX 5 ( IF there is only 1 input )
+
+    The output string is composed of every element of an ouitput coin
+
+    @TOTOUT is set by the transaction and is the total amount of output coins
+
+    A VALID transaction MUST have at least 1 output
+    
+    Again - this is unalterable for a given set of output coins     
+*/
+LET calcoutput  = [LET returnvalue=STRING(GETOUTADDR($1))+[SPHINCS]+STRING(GETOUTAMT($1))+[SPHINCS]+STRING(GETOUTTOK($1))+STRING(GETOUTKEEPSTATE($1))]
+LET outcoins    = FUNCTION(calcoutput 0)
+LET counter     = 1
+WHILE counter LT @TOTOUT DO
+    LET outcoins = outcoins+FUNCTION(calcoutput counter)
+    LET counter = INC(counter)
+ENDWHILE
 
 /* Hash the message */
-LET hashedmessage = SHA3(message)
+LET hashedmessage = SHA3(incoins+[COINJOIN]+outcoins)
 
 /* The FORS root MMRDATA */
 LET forsrootdata = STATE(101)
