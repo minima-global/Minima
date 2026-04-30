@@ -27,7 +27,12 @@ public class SPHINCS {
 	/**
 	 * The Public Key - is the root of the WOTS tree
 	 */
-	private MiniData PUBLIC_KEY;
+	private MiniData SPHINCS_PUBLIC_KEY;
+	
+	/**
+	 * The Private Key - Concatenation of the WOTS and FORS seeds
+	 */
+	private MiniData SPHINCS_PRIVATEKEY;
 	
 	/**
 	 * How many LEAF nodes are there in the WOTS key
@@ -37,8 +42,13 @@ public class SPHINCS {
 	/**
 	 * Set up SPHINCS private keys from a seed
 	 */
+	public SPHINCS() {}
+	
 	public SPHINCS(MiniData zSeed) {
-		
+		initSeed(zSeed);
+	}
+	
+	public void initSeed(MiniData zSeed) {
 		/*
 		 * Need to create 2*32 byte - one for the WOTS and one for the Random numbers in FORS
 		 * 
@@ -50,18 +60,57 @@ public class SPHINCS {
 		MiniData forsseed = zSeed.concat(new MiniData("0xDDEEAADD"));
 		FORS_BASE_SEED = new MiniData(Crypto.getInstance().hashData(forsseed.getBytes()));
 	
+		SPHINCS_PRIVATEKEY = WOTS_SEED.concat(FORS_BASE_SEED);
+		
 		//To get the public key create a TreeKey
 		TreeKey wotskey 	= new TreeKey(WOTS_SEED, WOTS_KEYSPERLEVEL, WOTS_DEPTH);
-		PUBLIC_KEY 			= wotskey.getPublicKey();
+		SPHINCS_PUBLIC_KEY 	= wotskey.getPublicKey();
+		WOTS_KEY_NUM 		= wotskey.getMaxUses();
+	}
+	
+	/**
+	 * Set the details from the privatekey
+	 */
+	public void initPrivateKey(MiniData zPrivateKey) {
+		
+		SPHINCS_PRIVATEKEY = zPrivateKey;
+		
+		byte[] privkey = zPrivateKey.getBytes();
+		
+		//Chop key up into 2 parts..
+		byte[] wotsbytes = new byte[32];
+		byte[] forsbytes = new byte[32];
+		for(int i=0;i<32;i++) {
+			wotsbytes[i] = privkey[i];
+			forsbytes[i] = privkey[i+32];
+		}
+		
+		//Set vars
+		WOTS_SEED 		= new MiniData(wotsbytes);
+		FORS_BASE_SEED	= new MiniData(forsbytes);
+		
+		TreeKey wotskey 	= new TreeKey(WOTS_SEED, WOTS_KEYSPERLEVEL, WOTS_DEPTH);
+		SPHINCS_PUBLIC_KEY 	= wotskey.getPublicKey();
 		WOTS_KEY_NUM 		= wotskey.getMaxUses();
 	}
 	
 	public MiniData getPublicKey() {
-		return PUBLIC_KEY;
+		return SPHINCS_PUBLIC_KEY;
+	}
+	
+	public MiniData getPrivateKey() {
+		return SPHINCS_PRIVATEKEY;
 	}
 	
 	public int getTotalWotsKeys() {
 		return WOTS_KEY_NUM;
+	}
+	
+	public static SPHINCSSignature signMessage(MiniData zMessage, MiniData zPrivateKey) {
+		SPHINCS sphincs = new SPHINCS();
+		sphincs.initPrivateKey(zPrivateKey);
+		
+		return sphincs.signMessage(zMessage); 
 	}
 	
 	public SPHINCSSignature signMessage(MiniData zMessage) {
@@ -158,7 +207,8 @@ public class SPHINCS {
 		
 		log("Start SPHINCS..");
 		
-		SPHINCS sphincs = new SPHINCS(seed);
+		SPHINCS sphincs = new SPHINCS();
+		sphincs.initSeed(seed);
 		
 		log("SPHINCS public key : "+sphincs.getPublicKey().to0xString());
 		log("SPHINCS total WOTS keys : "+sphincs.getTotalWotsKeys());

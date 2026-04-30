@@ -2,6 +2,7 @@ package org.minima.utils.sphincs;
 
 import org.minima.database.mmr.MMRData;
 import org.minima.objects.keys.Signature;
+import org.minima.utils.json.JSONObject;
 import org.minima.utils.sphincs.FORS.FORSSignature;
 
 public class SPHINCSSignature {
@@ -39,5 +40,15 @@ public class SPHINCSSignature {
 	
 	public FORSSignature getFORSSignature() {
 		return mFORSSignature;
+	}
+	
+	public JSONObject toJSON() {
+		JSONObject json = new JSONObject();
+		
+		json.put("WOTSsignature", mMinimaSignature.toJSON());
+		json.put("FORSroot", mFORSRoot.toJSON());
+		json.put("FORSsignature", mFORSSignature.toJSON());
+		
+		return json;
 	}
 }

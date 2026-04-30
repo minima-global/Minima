@@ -130,12 +130,19 @@ public class HORST {
 		log("Sign message..");
 		HORSTSignature sig = horst.signMessage(message);
 		
+		//Write to stream
+		MiniData stream = MiniData.getMiniDataVersion(sig); 
+		
+		//Read from stream
+		HORSTSignature readsig = HORSTSignature.convertMiniDataVersion(stream);
+		log("Signature Size : "+stream.getLength());
+		
 		log("Signature : ");
 		System.out.println();
 		//log(MiniFormat.JSONPretty(sig.toJSON()));
 		
 		//Now verify the message
-		boolean valid = horst.verifySignature(message, sig, rootpublickey);
+		boolean valid = horst.verifySignature(message, readsig, rootpublickey);
 		log("Verify : "+valid);
 		
 	}

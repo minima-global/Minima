@@ -37,6 +37,7 @@ import org.minima.system.commands.base.printtree;
 import org.minima.system.commands.base.quit;
 import org.minima.system.commands.base.random;
 import org.minima.system.commands.base.scanchain;
+import org.minima.system.commands.base.sphincs;
 import org.minima.system.commands.base.status;
 import org.minima.system.commands.base.timemilli;
 import org.minima.system.commands.base.tokencreate;
@@ -169,6 +170,8 @@ public class help extends Command {
 			addCommand(details, new sendsign());
 			addCommand(details, new sendpost());
 			addCommand(details, new multisig());
+			
+			addCommand(details, new sphincs());
 			
 			addCommand(details, new sendfrom());
 			addCommand(details, new rawtxnfrom());

@@ -89,7 +89,8 @@ public class TransactionTest {
 		
 		log("Start SPHINCS..");
 		
-		SPHINCS sphincs = new SPHINCS(seed);
+		SPHINCS sphincs = new SPHINCS();
+		sphincs.initSeed(seed);
 		
 		log("SPHINCS public key : "+sphincs.getPublicKey().to0xString());
 		log("SPHINCS total WOTS keys : "+sphincs.getTotalWotsKeys());

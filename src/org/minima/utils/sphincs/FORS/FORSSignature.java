@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniData;
+import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
 public class FORSSignature {
@@ -55,6 +56,7 @@ public class FORSSignature {
 		int sigsize = mSigValues.size();
 		
 		int totalsize=0;
+		JSONArray arr = new JSONArray();
 		for(int i=0;i<sigsize;i++) {
 			
 			JSONObject sigval = new JSONObject();
@@ -73,9 +75,11 @@ public class FORSSignature {
 			totalsize += horstdata.getLength();
 			sigval.put("HORSTProof", horstdata.to0xString());
 			
-			json.put("Chunk_"+i, sigval);
+			//Add to our array
+			arr.add(sigval);
 		}
 		
+		json.put("chunks",arr);
 		json.put("Total Size", totalsize);
 		
 		return json;
