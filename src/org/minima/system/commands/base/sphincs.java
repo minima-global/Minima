@@ -5,12 +5,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniString;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.utils.Crypto;
 import org.minima.utils.MiniFile;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.sphincs.SPHINCS;
 import org.minima.utils.sphincs.SPHINCSSignature;
@@ -18,16 +16,16 @@ import org.minima.utils.sphincs.SPHINCSSignature;
 public class sphincs extends Command {
 
 	public sphincs() {
-		super("sphincs","(action:) - SPHINCS signature scheme functionality");
+		super("sphincs","[action:] (seed:) (data:) (privatekey:) (publickey:) (file:) - SPHINCS signature scheme functionality");
 	}
 	
 	@Override
 	public String getFullHelp() {
 		return "\nsphincs\n"
 				+ "\n"
-				+ "Hash the data or file - default SHA3.\n"
+				+ "SPHINCS+ generate, sign and verify.\n"
 				+ "\n"
-				+ "Returns the hash of the data provided using the algorithm specified.\n"
+				+ "Generates a SPHINCS+ key signs messages and verifies.\n"
 				+ "\n"
 				+ "data:\n"
 				+ "    The data to hash. Can be HEX (0x) or a string in quotes.\n"
