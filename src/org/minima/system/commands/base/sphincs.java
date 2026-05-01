@@ -195,6 +195,10 @@ public class sphincs extends Command {
 			 */
 			int totin = inputcoins.size();
 			if(totin>8) {
+				
+				//Delete transaction
+				runCommand("txndelete id:"+randomid);
+				
 				throw new CommandException("Input Coin number too great.. MAX 8. Pls Send a smaller amount.");
 			}
 			
