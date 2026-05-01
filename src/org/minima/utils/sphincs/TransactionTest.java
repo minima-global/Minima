@@ -43,7 +43,7 @@ public class TransactionTest {
 		log("SPHINCS total WOTS keys : "+sphincs.getTotalWotsKeys());
 		
 		//The KISSVM SPHINCS script
-		String sphincsscript = SPHINCS.KISSVM_SPHINCS_SCRIPT.replace("#USER_PUBLIC_KEY", sphincs.getPublicKey().to0xString());
+		String sphincsscript = sphincs.getKISSVMScript();
 		
 		//Create  txn..
 		Transaction transaction 	= new Transaction();

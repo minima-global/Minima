@@ -104,6 +104,10 @@ public class SPHINCS {
 		WOTS_KEY_NUM 		= new BigInteger(""+wotskey.getMaxUses());
 	}
 	
+	public String getKISSVMScript() {
+		return KISSVM_SPHINCS_SCRIPT.replace("#USER_PUBLIC_KEY", getPublicKey().to0xString());
+	}
+	
 	public MiniData getPublicKey() {
 		return SPHINCS_PUBLIC_KEY;
 	}
@@ -133,12 +137,10 @@ public class SPHINCS {
 		MiniData hashmessage = new MiniData(Crypto.getInstance().hashData(zMessage.getBytes()));
 		
 		//Now do a modulo to get a value inside the wots key num..
-		BigInteger val 		 = hashmessage.getDataValue();
-		BigInteger keyval 	 = val.mod(WOTS_KEY_NUM);
+		BigInteger keyval 	 = hashmessage.getDataValue().mod(WOTS_KEY_NUM);
 		
 		//THIS is the key to use..
 		int keyuse = keyval.intValueExact();
-		log("Sphincs sign val:"+val+" keyuse:"+keyuse);
 		
 		//Now create a TREE key..
 		TreeKey treekey = new TreeKey(WOTS_SEED, WOTS_KEYSPERLEVEL, WOTS_DEPTH);
@@ -150,14 +152,11 @@ public class SPHINCS {
 		MiniData prfunique 		= FORS_BASE_SEED.concat(hashmessage); 
 		MiniData uniqueforsseed = new MiniData(Crypto.getInstance().hashData(prfunique.getBytes()));
 		
-		log("FORS key:"+uniqueforsseed.to0xString());
-		
 		//Now you can create the FORS Key
 		FORS fors = new FORS(uniqueforsseed);
 		
 		//Get the root of the FORS tree
 		MMRData rootforspublickey = fors.getForsRoot();
-		log("FORS root :"+rootforspublickey.toString());
 		
 		//Sign that! - the SUM value is always the same 
 		Signature wotssig = treekey.sign(rootforspublickey.getData());

@@ -1,12 +1,9 @@
 <html>
 
 <head>
-	<title>Mega Wallet</title>
+	<title>SPHINCS+</title>
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	
-	<!-- Load the main MDS JS lib -->
-	<script type="text/javascript" src="mds.js"></script>
 	
 	<!-- Load the CSS Style sheet -->
 	<link rel="stylesheet" href="style.css">
@@ -15,19 +12,207 @@
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	
 	<!-- Load the local JS lib -->
-	<script type="text/javascript" src="jslib.js"></script>
+	<script type="text/javascript" src="./js/mds.js"></script>
+	<script type="text/javascript" src="./js/qrcode.js"></script>
+	<script type="text/javascript" src="./js/decimal.js"></script>
+	<script type="text/javascript" src="./js/purify.min.js"></script>
+	<script type="text/javascript" src="./js/navigation.js"></script>
+	<script type="text/javascript" src="./js/balance.js"></script>
+	<script type="text/javascript" src="./js/jslib.js"></script>
 	
 </head>
 
 <body>
 
-<br>
 <center>
-
-	<h1>Minima Wallet</h1>
+	
+	<table class="maintable" border=0>
+		
+		<tr>
+			<td style="padding-top:10px;">
+				<div class="bluerounded">
+					<div class="paddedborder" style="text-align:center;">
+						
+						<b>SPHINCS Wallet</b>
+						
+					</div>
+				</div>
+				
+			</td>
+		</tr>
+		
+		<!-- MAIN PAGE -->
+		<tr style="height:100%;">
+			<td>
+				
+				<!-- BALANCE -->		
+				<div class="fullwidthheight" style="display:block;" id="id_view_balance">
+					
+					<table class="fullwidthheight"><tr>
+						<td style="padding-top:10px;padding-bottom:10px;">
+							
+							<div class="bluerounded">
+								<div class="paddedborder">
+									
+									<!-- The Balance Table -->
+									<table id="id_balance_table" style="width:100%;border-spacing:8px;" border=0>
+									</table>
+									
+								</div>
+							</div>
+							
+						</td>
+					</tr></table>
+					
+				</div>
+				
+				<!-- SEND -->		
+				<div class="fullwidthheight" style="display:none;" id="id_view_send">
+					
+					<table class="fullwidthheight"><tr>
+						<td style="padding-top:10px;padding-bottom:10px;">
+							
+							<div class="bluerounded">
+								<div class="paddedborder">
+									
+									<br>
+									
+									<table style="width:90%" border=0>
+										<tr>
+											<td class="alignright">
+												Token : &nbsp;
+											</td>
+											<td>
+												<select id="id_wallet_tokenselect" style="width:100%">	
+												</select>
+											</td>			
+										</tr>
+										<tr><td style="font-size: 4px;">&nbsp;</td></tr>
+										
+										<tr>
+											<td class="alignright">
+												Amount : &nbsp; 
+											</td>
+											<td>
+												  <input id="id_wallet_send_amount" type="number" style="width:100%" value="0"/>
+											</td>			
+										</tr>
+										<tr><td style="font-size: 4px;">&nbsp;</td></tr>
+										
+										<tr>
+											<td class="alignright">
+												Address : &nbsp;
+											</td>
+											<td>
+												<input id="id_wallet_send_address"  type="text" style="width:100%">
+											</td>			
+										</tr>
+										<tr><td style="font-size: 12px;">&nbsp;</td></tr>
+										
+										<tr>
+											<td colspan=2 style="text-align:center;">
+												<button onclick="wallet_sendfunds();" class=mybtn>&nbsp;&nbsp;Send Funds&nbsp;&nbsp;</button> 
+											</td>			
+										</tr>
+										
+									</table>
+									
+									
+								</div>
+							</div>
+							
+						</td>
+					</tr></table>
+					
+				</div>
+				
+				<!-- RECEIVE -->		
+				<div class="fullwidthheight" style="display:none;" id="id_view_receive">
+					
+					<table class="fullwidthheight"><tr>
+						<td style="padding-top:10px;padding-bottom:10px;">
+							
+							<div class="bluerounded">
+								<div class="paddedborder">
+									<br>
+									<center>
+										
+									<div id="wallet_receiveqr"></div>
+									<br>
+									
+									<div id="id_wallet_address" style="font-size:0.9em;white-space: wrap;width:350px;overflow-wrap: break-word;"></div>
+									
+									</center>
+									
+								</div>
+							</div>
+							
+						</td>
+					</tr></table>
+					
+				</div>
+				
+				<!-- HELP -->		
+				<div class="fullwidthheight" style="display:none;" id="id_view_help">
+					
+					<table class="fullwidthheight"><tr>
+						<td style="padding-top:10px;padding-bottom:10px;">
+							
+							<div class="bluerounded">
+								<div class="paddedborder">
+									<p style="width:100%;">
+									<b>Help</b><br>
+									<br>
+									This is a SPHINCS+ wallet<br>
+									<br>
+									This is different from yourt normal Minima wallet as it does not need to keep track of KEY_USES.. (very cool)<br>
+									<br>
+									The logic is performed in a KISSVM script as a special smart contract<br>
+									<br>
+									</p>
+								</div>
+							</div>
+							
+						</td>
+					</tr></table>
+					
+				</div>
+				
+			</td>
+		</tr>
+		
+		<!-- Navigation buttons -->
+		<tr>
+			<td style="padding-bottom:10px;">
+				<div class="bluerounded">
+					<div class="paddedborder">
+						
+						<table width=100%>
+							<tr>
+								<td style="text-align:center;">
+									
+									<button style="min-width:100;" class=mybtn onclick="navigate_balance();">BALANCE</button>&nbsp;&nbsp;
+									<button style="min-width:100;" class=mybtn onclick="navigate_send();">SEND</button>&nbsp;&nbsp;
+									<button style="min-width:100;" class=mybtn onclick="navigate_receive();">RECEIVE</button>&nbsp;&nbsp;
+									<button style="min-width:100;" class=mybtn onclick="navigate_help();">HELP</button>			
+									
+								</td>
+							</tr>
+						</table>
+						
+						
+					</div>
+				</div>
+				
+			</td>
+		</tr>
+		
+	</table>
+	
+	<!-- <h1>SPHINCS+ Minima Wallet</h1>
 	
 	<br>
-	Log in with your secret code :<br>
+	Log in with your secret seed :<br>
 	<br>
 		Secret : <input id="seedphrase" type="password"><br>
 		<input type="checkbox" id="rememberme">
@@ -48,12 +233,14 @@
 	<div id=newsecret>
 			
 	</div>
+	-->
 	
 </center>
 
+
 <script type="text/javascript">
 	
-	function logon(){
+	/*function logon(){
 		
 		//Get the secret
 		var secret = seedphrase.value.trim();
@@ -82,7 +269,7 @@
 		MDS.cmd("random",function(random){
 			newsecret.innerHTML = "<b>"+random.response.keycode+"</b>";
 		});
-	}
+	}*/
 	
 	//Main message handler..
 	MDS.init(function(msg){
@@ -90,7 +277,14 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			
-			//Is remember me enabled..
+			MDS.cmd("getaddress",function(resp){
+				receiveAddresQR(resp.response.miniaddress);	
+			});
+			
+			
+			fetchBalance();
+			
+			/*//Is remember me enabled..
 			var rem = getCookie("rememberme");
 			if(rem == "true"){
 				rememberme.checked 	= true;
@@ -98,11 +292,12 @@
 			}else{
 				rememberme.checked 	= false;
 				seedphrase.value	= "";
-			}	
+			}*/	
 		}
 	});
 
 </script>
+-->
 
 </body>
 
