@@ -4,6 +4,7 @@ import java.math.BigInteger;
 
 import org.minima.database.mmr.MMRData;
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniString;
 import org.minima.objects.keys.Signature;
 import org.minima.objects.keys.TreeKey;
 import org.minima.utils.Crypto;
@@ -37,7 +38,14 @@ public class SPHINCS {
 	/**
 	 * How many LEAF nodes are there in the WOTS key
 	 */
-	int WOTS_KEY_NUM;
+	BigInteger WOTS_KEY_NUM;
+	
+	/**
+	 * The SPHINCS KISSVM script
+	 * 
+	 * Replace #USER_PUBLIC_KEY with the users public key
+	 */
+	public static final String KISSVM_SPHINCS_SCRIPT = "LET sphincspublickey=#USER_PUBLIC_KEY LET incoins=STRING(GETINID(0)) LET counter=1 WHILE counter LT @TOTIN DO LET incoins=incoins+STRING(GETINID(counter)) LET counter=INC(counter) ENDWHILE LET calcoutput=[LET returnvalue=STRING(GETOUTADDR($1))+[SPHINCS]+STRING(GETOUTAMT($1))+[SPHINCS]+STRING(GETOUTTOK($1))+STRING(GETOUTKEEPSTATE($1))] LET outcoins=FUNCTION(calcoutput 0) LET counter=1 WHILE counter LT @TOTOUT DO LET outcoins=outcoins+FUNCTION(calcoutput counter) LET counter=INC(counter) ENDWHILE LET hashedmessage=SHA3(STRING(@TOTIN)+[SPHINCS]+STRING(@TOTOUT)+[SPHINCS]+incoins+[COINJOIN]+outcoins) LET forsrootdata=STATE(101) ASSERT CHECKSIG(sphincspublickey forsrootdata STATE(100)) LET counter=0 WHILE counter LT 16 DO LET statepos=counter*5 LET horstroot=STATE(statepos) ASSERT PROOF(horstroot counter forsrootdata 120 STATE(statepos+1)) LET keypos=counter*2 LET ref=NUMBER(SUBSET(keypos keypos+2 hashedmessage)) ASSERT PROOF(SHA3(STATE(statepos+2)) ref horstroot 2147450880 STATE(statepos+3)) LET counter=INC(counter) ENDWHILE RETURN TRUE";
 	
 	/**
 	 * Set up SPHINCS private keys from a seed
@@ -54,10 +62,12 @@ public class SPHINCS {
 		 * 
 		 * USE THGE ORIGINAL SEED as just hashing the private key will mean if you crack the first you get the second..
 		 */
-		MiniData wotsseed = zSeed.concat(new MiniData("0xFFEEDD99"));
+		MiniData wotsextra = new MiniData(new String("WOTS").getBytes());  
+		MiniData wotsseed  = zSeed.concat(wotsextra);
 		WOTS_SEED = new MiniData(Crypto.getInstance().hashData(wotsseed.getBytes()));
 		
-		MiniData forsseed = zSeed.concat(new MiniData("0xDDEEAADD"));
+		MiniData forsextra = new MiniData(new String("FORS").getBytes());  
+		MiniData forsseed = zSeed.concat(forsextra);
 		FORS_BASE_SEED = new MiniData(Crypto.getInstance().hashData(forsseed.getBytes()));
 	
 		SPHINCS_PRIVATEKEY = WOTS_SEED.concat(FORS_BASE_SEED);
@@ -65,7 +75,7 @@ public class SPHINCS {
 		//To get the public key create a TreeKey
 		TreeKey wotskey 	= new TreeKey(WOTS_SEED, WOTS_KEYSPERLEVEL, WOTS_DEPTH);
 		SPHINCS_PUBLIC_KEY 	= wotskey.getPublicKey();
-		WOTS_KEY_NUM 		= wotskey.getMaxUses();
+		WOTS_KEY_NUM 		= new BigInteger(""+wotskey.getMaxUses());
 	}
 	
 	/**
@@ -73,11 +83,11 @@ public class SPHINCS {
 	 */
 	public void initPrivateKey(MiniData zPrivateKey) {
 		
+		//Store this
 		SPHINCS_PRIVATEKEY = zPrivateKey;
 		
-		byte[] privkey = zPrivateKey.getBytes();
-		
 		//Chop key up into 2 parts..
+		byte[] privkey = SPHINCS_PRIVATEKEY.getBytes();
 		byte[] wotsbytes = new byte[32];
 		byte[] forsbytes = new byte[32];
 		for(int i=0;i<32;i++) {
@@ -91,7 +101,7 @@ public class SPHINCS {
 		
 		TreeKey wotskey 	= new TreeKey(WOTS_SEED, WOTS_KEYSPERLEVEL, WOTS_DEPTH);
 		SPHINCS_PUBLIC_KEY 	= wotskey.getPublicKey();
-		WOTS_KEY_NUM 		= wotskey.getMaxUses();
+		WOTS_KEY_NUM 		= new BigInteger(""+wotskey.getMaxUses());
 	}
 	
 	public MiniData getPublicKey() {
@@ -102,7 +112,7 @@ public class SPHINCS {
 		return SPHINCS_PRIVATEKEY;
 	}
 	
-	public int getTotalWotsKeys() {
+	public BigInteger getTotalWotsKeys() {
 		return WOTS_KEY_NUM;
 	}
 	
@@ -120,18 +130,11 @@ public class SPHINCS {
 		 * 
 		 * So a given WOTS key always signs the same data
 		 */
-		MiniData hm		= new MiniData(Crypto.getInstance().hashData(zMessage.getBytes()));
-		byte[] hmbytes 	= hm.getBytes();
-		byte[] keychoose = new byte[4];
-		for(int i=0;i<4;i++) {
-			keychoose[i] = hmbytes[i];
-		}
-		MiniData croppedhm = new MiniData(keychoose);
+		MiniData hashmessage = new MiniData(Crypto.getInstance().hashData(zMessage.getBytes()));
 		
 		//Now do a modulo to get a value inside the wots key num..
-		BigInteger totalwots = new BigInteger(""+WOTS_KEY_NUM);
-		BigInteger val 		 = croppedhm.getDataValue();
-		BigInteger keyval 	 = val.mod(totalwots);
+		BigInteger val 		 = hashmessage.getDataValue();
+		BigInteger keyval 	 = val.mod(WOTS_KEY_NUM);
 		
 		//THIS is the key to use..
 		int keyuse = keyval.intValueExact();
@@ -144,7 +147,7 @@ public class SPHINCS {
 		treekey.setUses(keyuse);
 		
 		//Now create a FORS tree with a UNIQUE seed - based on base FORS seed + Position (so is the same per key)
-		MiniData prfunique 		= FORS_BASE_SEED.concat(hm); 
+		MiniData prfunique 		= FORS_BASE_SEED.concat(hashmessage); 
 		MiniData uniqueforsseed = new MiniData(Crypto.getInstance().hashData(prfunique.getBytes()));
 		
 		log("FORS key:"+uniqueforsseed.to0xString());

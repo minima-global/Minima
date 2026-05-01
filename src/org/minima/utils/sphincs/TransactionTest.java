@@ -31,18 +31,26 @@ public class TransactionTest {
 	
 	public static void main(String[] zArgs) {
 	
+		log("Start SPHINCS..");
+		
 		//Base seed for SPHINCS+
 		MiniData seed 	 = new MiniData("0x0011223344"); 
 		
+		SPHINCS sphincs = new SPHINCS();
+		sphincs.initSeed(seed);
+		
+		log("SPHINCS public key : "+sphincs.getPublicKey().to0xString());
+		log("SPHINCS total WOTS keys : "+sphincs.getTotalWotsKeys());
+		
 		//The KISSVM SPHINCS script
-		String sphincsscript = "LET sphincspublickey=0xC05DC6D3B52BD12B182AF924F8ABC72CBDF64371E067BF4ECD018FC594915EA0 LET incoins=GETINID(0) LET counter=1 WHILE counter LT @TOTIN DO LET incoins=CONCAT(incoins GETINID(counter)) LET counter=INC(counter) ENDWHILE LET incoins=STRING(incoins) LET calcoutput=[LET returnvalue=STRING(GETOUTADDR($1))+[SPHINCS]+STRING(GETOUTAMT($1))+[SPHINCS]+STRING(GETOUTTOK($1))+STRING(GETOUTKEEPSTATE($1))] LET outcoins=FUNCTION(calcoutput 0) LET counter=1 WHILE counter LT @TOTOUT DO LET outcoins=outcoins+FUNCTION(calcoutput counter) LET counter=INC(counter) ENDWHILE LET hashedmessage=SHA3(incoins+[COINJOIN]+outcoins) LET forsrootdata=STATE(101) ASSERT CHECKSIG(sphincspublickey forsrootdata STATE(100)) LET counter=0 WHILE counter LT 16 DO LET statepos=counter*5 LET horstroot=STATE(statepos) ASSERT PROOF(horstroot counter forsrootdata 120 STATE(statepos+1)) LET keypos=counter*2 LET ref=NUMBER(SUBSET(keypos keypos+2 hashedmessage)) ASSERT PROOF(SHA3(STATE(statepos+2)) ref horstroot 2147450880 STATE(statepos+3)) LET counter=INC(counter) ENDWHILE RETURN TRUE";
+		String sphincsscript = SPHINCS.KISSVM_SPHINCS_SCRIPT.replace("#USER_PUBLIC_KEY", sphincs.getPublicKey().to0xString());
 		
 		//Create  txn..
 		Transaction transaction 	= new Transaction();
 		Witness witness 			= new Witness();
 		
 		//Add some coin
-		int inputcoinnum  = 8;
+		int inputcoinnum  = 7;
 		int outputcoinnum = 2;
 		
 		ArrayList<Coin> allinputcoins = new ArrayList<>();
@@ -63,37 +71,29 @@ public class TransactionTest {
 		/**
 		 * Sign a message
 		 */
-		MiniData inmessage = allinputcoins.get(0).getCoinID();
-		for(int i=1;i<allinputcoins.size();i++) {
+		int totin 		= allinputcoins.size();
+		String instring = allinputcoins.get(0).getCoinID().to0xString();
+		for(int i=1;i<totin;i++) {
 			Coin cc 	= allinputcoins.get(i);
-			inmessage	= inmessage.concat(cc.getCoinID());
+			instring	= instring+cc.getCoinID().to0xString();
 		}
-		String instring	= inmessage.to0xString();
 		
 		//Outputs
+		int totout = alloutputcoins.size();
 		String outstring = "";
-		for(int i=0;i<alloutputcoins.size();i++) {
+		for(int i=0;i<totout;i++) {
 			Coin cc 	= alloutputcoins.get(i);
 			outstring	= outstring+getOutCoinString(cc);
 		}
 		
 		//Now create the string..
-		String fullstring	= instring+"COINJOIN"+outstring;
-		log("Message IN String : "+instring);
-		log("Message OUT String : "+outstring);
+		String fullstring	= totin+"SPHINCS"+totout+"SPHINCS"+instring+"COINJOIN"+outstring;
 		
 		//Now the full message
 		MiniData message	= new MiniData(new MiniString(fullstring).getData());
-		
 		log("Message : "+message.to0xString());
 		
-		log("Start SPHINCS..");
 		
-		SPHINCS sphincs = new SPHINCS();
-		sphincs.initSeed(seed);
-		
-		log("SPHINCS public key : "+sphincs.getPublicKey().to0xString());
-		log("SPHINCS total WOTS keys : "+sphincs.getTotalWotsKeys());
 		
 		SPHINCSSignature sig = sphincs.signMessage(message);
 		

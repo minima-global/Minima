@@ -3,10 +3,10 @@
 
     FOR NOW I have added a placeholder value - this will be REPLACED by the user
 */
-LET sphincspublickey = 0xC05DC6D3B52BD12B182AF924F8ABC72CBDF64371E067BF4ECD018FC594915EA0
+LET sphincspublickey = 0x30DE42D7DE7B2F7BC5700B8C7256DF551FF24567C5C69B8528C027155FF6822E
 
 /* 
-    Add all the input coinid - MAX 10 IF number of outputs is 2 
+    Add all the input coinid - MAX 8 IF number of outputs is 2 
 
     GETINID ALWAYS returns a 32 byte unique hash per coin - so cannot be manipulated
 
@@ -16,13 +16,12 @@ LET sphincspublickey = 0xC05DC6D3B52BD12B182AF924F8ABC72CBDF64371E067BF4ECD018FC
 
     incoins is UNIQUE and unalterable for a given set of input coins
 */
-LET incoins = GETINID(0)
+LET incoins = STRING(GETINID(0))
 LET counter = 1
 WHILE counter LT @TOTIN DO
-    LET incoins = CONCAT(incoins GETINID(counter))
+    LET incoins = incoins + STRING(GETINID(counter))
     LET counter = INC(counter)
 ENDWHILE
-LET incoins = STRING(incoins)
 
 /* 
     Now do the outputs - MAX 5 ( IF there is only 1 input )
@@ -43,8 +42,8 @@ WHILE counter LT @TOTOUT DO
     LET counter = INC(counter)
 ENDWHILE
 
-/* Hash the message */
-LET hashedmessage = SHA3(incoins+[COINJOIN]+outcoins)
+/* Hash the message - no chance of a forgery */
+LET hashedmessage = SHA3(STRING(@TOTIN)+[SPHINCS]+STRING(@TOTOUT)+[SPHINCS]+incoins+[COINJOIN]+outcoins)
 
 /* The FORS root MMRDATA */
 LET forsrootdata = STATE(101)
