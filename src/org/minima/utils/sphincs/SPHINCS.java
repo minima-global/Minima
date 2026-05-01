@@ -3,6 +3,7 @@ package org.minima.utils.sphincs;
 import java.math.BigInteger;
 
 import org.minima.database.mmr.MMRData;
+import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.objects.keys.Signature;
@@ -48,6 +49,11 @@ public class SPHINCS {
 	public static final String KISSVM_SPHINCS_SCRIPT = "LET sphincspublickey=#USER_PUBLIC_KEY LET incoins=STRING(GETINID(0)) LET counter=1 WHILE counter LT @TOTIN DO LET incoins=incoins+STRING(GETINID(counter)) LET counter=INC(counter) ENDWHILE LET calcoutput=[LET returnvalue=STRING(GETOUTADDR($1))+[SPHINCS]+STRING(GETOUTAMT($1))+[SPHINCS]+STRING(GETOUTTOK($1))+STRING(GETOUTKEEPSTATE($1))] LET outcoins=FUNCTION(calcoutput 0) LET counter=1 WHILE counter LT @TOTOUT DO LET outcoins=outcoins+FUNCTION(calcoutput counter) LET counter=INC(counter) ENDWHILE LET hashedmessage=SHA3(STRING(@TOTIN)+[SPHINCS]+STRING(@TOTOUT)+[SPHINCS]+incoins+[COINJOIN]+outcoins) LET forsrootdata=STATE(101) ASSERT CHECKSIG(sphincspublickey forsrootdata STATE(100)) LET counter=0 WHILE counter LT 16 DO LET statepos=counter*5 LET horstroot=STATE(statepos) ASSERT PROOF(horstroot counter forsrootdata 120 STATE(statepos+1)) LET keypos=counter*2 LET ref=NUMBER(SUBSET(keypos keypos+2 hashedmessage)) ASSERT PROOF(SHA3(STATE(statepos+2)) ref horstroot 2147450880 STATE(statepos+3)) LET counter=INC(counter) ENDWHILE RETURN TRUE";
 	
 	/**
+	 * The SPHINCS Minima address
+	 */
+	public Address mSPHINCSAddress;
+	
+	/**
 	 * Set up SPHINCS private keys from a seed
 	 */
 	public SPHINCS() {}
@@ -76,6 +82,8 @@ public class SPHINCS {
 		TreeKey wotskey 	= new TreeKey(WOTS_SEED, WOTS_KEYSPERLEVEL, WOTS_DEPTH);
 		SPHINCS_PUBLIC_KEY 	= wotskey.getPublicKey();
 		WOTS_KEY_NUM 		= new BigInteger(""+wotskey.getMaxUses());
+		
+		mSPHINCSAddress		= new Address(getKISSVMScript());
 	}
 	
 	/**
@@ -102,10 +110,16 @@ public class SPHINCS {
 		TreeKey wotskey 	= new TreeKey(WOTS_SEED, WOTS_KEYSPERLEVEL, WOTS_DEPTH);
 		SPHINCS_PUBLIC_KEY 	= wotskey.getPublicKey();
 		WOTS_KEY_NUM 		= new BigInteger(""+wotskey.getMaxUses());
+		
+		mSPHINCSAddress		= new Address(getKISSVMScript());
 	}
 	
 	public String getKISSVMScript() {
 		return KISSVM_SPHINCS_SCRIPT.replace("#USER_PUBLIC_KEY", getPublicKey().to0xString());
+	}
+	
+	public Address getSPHINCSAddress() {
+		return mSPHINCSAddress;
 	}
 	
 	public MiniData getPublicKey() {

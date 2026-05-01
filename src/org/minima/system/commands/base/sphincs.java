@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.minima.objects.base.MiniData;
+import org.minima.objects.base.MiniNumber;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.utils.Crypto;
@@ -49,7 +50,8 @@ public class sphincs extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","seed", "data","privatekey","file","publickey","signature"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","seed", "data","privatekey",
+				"file","publickey","signature","amount","address","tokenid"}));
 	}
 	
 	@Override
@@ -71,6 +73,8 @@ public class sphincs extends Command {
 			SPHINCS sphincs = new SPHINCS(seed);
 			
 			//Get the public key
+			resp.put("address", sphincs.getSPHINCSAddress().getMinimaAddress());
+			resp.put("script", sphincs.getKISSVMScript());
 			resp.put("publickey", sphincs.getPublicKey().to0xString());
 			resp.put("privatekey", sphincs.getPrivateKey().to0xString());
 		
@@ -132,6 +136,17 @@ public class sphincs extends Command {
 			boolean valid = SPHINCS.verifySignature(message, sig, publickey);
 			resp.put("valid", valid);
 		
+		}else if(action.equals("transaction")) {
+			
+			//Details..
+			MiniNumber amount 	= getNumberParam("amount");
+			String address 		= getAddressParam("address");
+			MiniData tokenid	= getDataParam("tokenid");
+			
+			//Now construct a RAW txn..
+			
+			
+			
 		}else if(action.equals("test")) {
 			
 			//Get the string seed
