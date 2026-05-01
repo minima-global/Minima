@@ -1,14 +1,16 @@
 
-function fetchBalance(){
+function fetchBalance(callback){
 	
 	//Fetch the balance
-	MDS.cmd("balance", function(resp){
-		MDS.log(JSON.stringify(resp));
+	MDS.cmd("balance address:"+SPHINCS_ADDRESS, function(resp){
+		//MDS.log(JSON.stringify(resp));
 		
 		//Update the table
 		updateBalanceTable(resp.response);
 		
-		
+		if(callback){
+			callback();
+		}
 	});
 }
 
@@ -49,9 +51,9 @@ function updateBalanceTable(balance){
 		celltoken.style.width="100%";
 		
 		if(tokenbal.unconfirmed != "0"){
-			cellamount.innerHTML 	= sanitize(tokenbal.confirmed+" ("+tokenbal.unconfirmed+")");
+			cellamount.innerHTML 	= sanitize(maxlength(tokenbal.confirmed,16)+" ("+maxlength(tokenbal.unconfirmed,16)+")");
 		}else{
-			cellamount.innerHTML 	= sanitize(tokenbal.confirmed);	
+			cellamount.innerHTML 	= sanitize(maxlength(tokenbal.confirmed, 16));	
 		}
 		
 		//Insert row
@@ -73,12 +75,5 @@ function updateBalanceTable(balance){
         opt.innerHTML 	= tokenname;
         tokenselect.appendChild(opt);
 	}
-}
-
-function wallet_sendfunds(){
-	
-	//Get the details..
-	
-	
 }
 

@@ -10,8 +10,10 @@ function navigate_clear(){
 }
 
 function navigate_balance(){
-	navigate_clear();
-	id_view_balance.style.display="block";
+	fetchBalance(function(){
+		navigate_clear();
+		id_view_balance.style.display="block";	
+	});
 }
 
 function navigate_send(){

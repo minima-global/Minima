@@ -13,6 +13,7 @@
 	
 	<!-- Load the local JS lib -->
 	<script type="text/javascript" src="./js/mds.js"></script>
+	<script type="text/javascript" src="./js/sphincs.js"></script>
 	<script type="text/javascript" src="./js/qrcode.js"></script>
 	<script type="text/javascript" src="./js/decimal.js"></script>
 	<script type="text/javascript" src="./js/purify.min.js"></script>
@@ -111,7 +112,7 @@
 										
 										<tr>
 											<td colspan=2 style="text-align:center;">
-												<button onclick="wallet_sendfunds();" class=mybtn>&nbsp;&nbsp;Send Funds&nbsp;&nbsp;</button> 
+												<button onclick="sphincs_sendfunds();" class=mybtn>&nbsp;&nbsp;Send Funds&nbsp;&nbsp;</button> 
 											</td>			
 										</tr>
 										
@@ -277,12 +278,15 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			
-			MDS.cmd("getaddress",function(resp){
-				receiveAddresQR(resp.response.miniaddress);	
+			var seed="xxx";
+			
+			initSPHINCS(seed, function(){
+				
+				//Set the address
+				receiveAddresQR();
+			
+				fetchBalance();	
 			});
-			
-			
-			fetchBalance();
 			
 			/*//Is remember me enabled..
 			var rem = getCookie("rememberme");
