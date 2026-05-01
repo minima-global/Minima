@@ -93,8 +93,6 @@ public class TransactionTest {
 		MiniData message	= new MiniData(new MiniString(fullstring).getData());
 		log("Message : "+message.to0xString());
 		
-		
-		
 		SPHINCSSignature sig = sphincs.signMessage(message);
 		
 		/*
