@@ -344,7 +344,7 @@ public class sphincs extends Command {
 
 	private String getOutCoinString(Coin zCoin) {
 		String keepstate=(""+zCoin.storeState()).toUpperCase();
-		return zCoin.getAddress().to0xString()+"SPHINCS"+zCoin.getAmount().toString()+"SPHINCS"+zCoin.getTokenID().to0xString()+keepstate;
+		return zCoin.getAddress().to0xString()+"SPHINCS"+zCoin.getTokenAmount().toString()+"SPHINCS"+zCoin.getTokenID().to0xString()+keepstate;
 	}
 	
 	private JSONObject runCommand(String zCommand) {

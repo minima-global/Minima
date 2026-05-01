@@ -26,7 +26,7 @@ public class TransactionTest {
 	public static String getOutCoinString(Coin zCoin) {
 		
 		String keepstate=(""+zCoin.storeState()).toUpperCase();
-		return zCoin.getAddress().to0xString()+"SPHINCS"+zCoin.getAmount().toString()+"SPHINCS"+zCoin.getTokenID().to0xString()+keepstate;
+		return zCoin.getAddress().to0xString()+"AMOUNT"+zCoin.getTokenAmount().toString()+"TOKENID"+zCoin.getTokenID().to0xString()+keepstate;
 	}
 	
 	public static void main(String[] zArgs) {
@@ -43,7 +43,8 @@ public class TransactionTest {
 		log("SPHINCS total WOTS keys : "+sphincs.getTotalWotsKeys());
 		
 		//The KISSVM SPHINCS script
-		String sphincsscript = sphincs.getKISSVMScript();
+		String sphincsscript = "LET sphincspublickey=0x30DE42D7DE7B2F7BC5700B8C7256DF551FF24567C5C69B8528C027155FF6822E LET incoins=STRING(GETINID(0)) LET counter=1 WHILE counter LT @TOTIN DO LET incoins=incoins+STRING(GETINID(counter)) LET counter=INC(counter) ENDWHILE LET calcoutput=[LET returnvalue=STRING(GETOUTADDR($1))+[AMOUNT]+STRING(GETOUTAMT($1))+[TOKENID]+STRING(GETOUTTOK($1))+STRING(GETOUTKEEPSTATE($1))] LET outcoins=FUNCTION(calcoutput 0) LET counter=1 WHILE counter LT @TOTOUT DO LET outcoins=outcoins+FUNCTION(calcoutput counter) LET counter=INC(counter) ENDWHILE LET message=STRING(@TOTIN)+[SPHINCS]+STRING(@TOTOUT)+[SPHINCS]+incoins+[COINJOIN]+outcoins LET hashedmessage=SHA3(STRING(@TOTIN)+[SPHINCS]+STRING(@TOTOUT)+[SPHINCS]+incoins+[COINJOIN]+outcoins) LET forsrootdata=STATE(101) ASSERT CHECKSIG(sphincspublickey forsrootdata STATE(100)) LET counter=0 WHILE counter LT 1 DO LET statepos=counter*5 LET horstroot=STATE(statepos) ASSERT PROOF(horstroot counter forsrootdata 120 STATE(statepos+1)) LET keypos=counter*2 LET ref=NUMBER(SUBSET(keypos keypos+2 hashedmessage)) ASSERT PROOF(SHA3(STATE(statepos+2)) ref horstroot 2147450880 STATE(statepos+3)) LET counter=INC(counter) ENDWHILE RETURN TRUE";
+		//String sphincsscript = sphincs.getKISSVMScript();
 		
 		//Create  txn..
 		Transaction transaction 	= new Transaction();
@@ -53,9 +54,11 @@ public class TransactionTest {
 		int inputcoinnum  = 7;
 		int outputcoinnum = 2;
 		
+		Token tok = new Token(new MiniData("0x00"), MiniNumber.ONE, MiniNumber.ONE, new MiniString("paddy"), new MiniString("RETURN TRUE"));
+		
 		ArrayList<Coin> allinputcoins = new ArrayList<>();
 		for(int i=0;i<inputcoinnum;i++) {
-			Coin in = new Coin(new MiniData("0x0"+i), new MiniData("0x00"), MiniNumber.ONE, Token.TOKENID_MINIMA, false);	
+			Coin in = new Coin(new MiniData("0x0"+i), new MiniData("0x00"), MiniNumber.ONE, tok.getTokenID(), false);	
 			allinputcoins.add(in);
 			transaction.addInput(in);
 			witness.getAllCoinProofs().add(new CoinProof(in, new MMRProof()));
@@ -63,7 +66,8 @@ public class TransactionTest {
 		
 		ArrayList<Coin> alloutputcoins = new ArrayList<>();
 		for(int i=0;i<outputcoinnum;i++) {
-			Coin out = new Coin(new MiniData("0xF"+i), new MiniData("0xAA"), MiniNumber.ONE, Token.TOKENID_MINIMA, false);
+			Coin out = new Coin(new MiniData("0xF"+i), new MiniData("0xAA"), MiniNumber.ONE, tok.getTokenID(), false);
+			out.setToken(tok);
 			transaction.addOutput(out);
 			alloutputcoins.add(out);
 		}
@@ -88,9 +92,10 @@ public class TransactionTest {
 		
 		//Now create the string..
 		String fullstring	= totin+"SPHINCS"+totout+"SPHINCS"+instring+"COINJOIN"+outstring;
+		log("Message Str : "+fullstring);
 		
 		//Now the full message
-		MiniData message	= new MiniData(new MiniString(fullstring).getData());
+		MiniData message = new MiniData(new MiniString(fullstring).getData());
 		log("Message : "+message.to0xString());
 		
 		SPHINCSSignature sig = sphincs.signMessage(message);
@@ -150,8 +155,10 @@ public class TransactionTest {
 		
 		System.out.println("Valid Contract : "+contract.isSuccess());
 		System.out.println("Operations     : "+contract.getNumberOfInstructions());
+		System.out.println("Variables      : "+contract.getAllVariables());
+		
 		if(!contract.isSuccess()) {
-			System.out.println("Trace      : "+contract.getCompleteTraceLog());
+		//	System.out.println("Trace      : "+contract.getCompleteTraceLog());
 		}
 		
 	}
