@@ -162,8 +162,11 @@ public class SPHINCS {
 		//Set the correct key
 		treekey.setUses(keyuse);
 		
+		//Create the MinDara version
+		MiniData keysdata = new MiniData(""+keyuse);
+		
 		//Now create a FORS tree with a UNIQUE seed - based on base FORS seed + Position (so is the same per key)
-		MiniData prfunique 		= FORS_BASE_SEED.concat(hashmessage); 
+		MiniData prfunique 		= FORS_BASE_SEED.concat(keysdata); 
 		MiniData uniqueforsseed = new MiniData(Crypto.getInstance().hashData(prfunique.getBytes()));
 		
 		//Now you can create the FORS Key
