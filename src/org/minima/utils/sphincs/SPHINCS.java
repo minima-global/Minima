@@ -24,7 +24,7 @@ public class SPHINCS {
 	 * The WOTS key depth and keys per level
 	 */
 	private final int WOTS_DEPTH 		= 4;
-	private final int WOTS_KEYSPERLEVEL = 128;
+	private final int WOTS_KEYSPERLEVEL = 192;
 	
 	/**
 	 * The Public Key - is the root of the WOTS tree
