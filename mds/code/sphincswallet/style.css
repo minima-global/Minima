@@ -93,7 +93,8 @@ p {
   padding: 6px 8px; /* Some padding */
   font-size: 12px; /* Set a font size */
   cursor: pointer; /* Mouse pointer on hover */
-  min-width:90px;
+  min-width : 120px;
+  min-height: 40px;
 }
 
 /* Darker background on mouse-over */
@@ -107,4 +108,26 @@ p {
 
 .navbtn:disabled {
   background-color: grey;
+}
+
+.blackout{
+	position: absolute;
+	width:100%;
+	height:100%;
+	background-color:rgba(0, 0, 0, 0.5);
+	z-index: 10;
+	display:none;
+}
+
+.centerdiv {    
+	position: absolute;   
+	top: 50%;   
+ 	left: 50%;  
+  	transform: translate(-50%, -50%);
+	
+	width:500px;
+	height:310px;
+	
+	z-index: 20;
+	display:none;
 }

@@ -24,7 +24,7 @@ function updateBalanceTable(balance){
 	
 	//Set the Headers
 	var row   = baltable.insertRow(0);
-	row.insertCell().outerHTML = "<th class='smalltableheadertext'>Token</th>";
+	row.insertCell().outerHTML = "<th style='text-align:left;' class='smalltableheadertext'>Token</th>";
 	row.insertCell().outerHTML = "<th class='smalltableheadertext'>Amount</th>"; 
 		
 	//Get my Orders

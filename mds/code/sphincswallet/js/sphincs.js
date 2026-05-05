@@ -35,7 +35,22 @@ function initSPHINCS(seed, callback){
 	});
 }
 
+function showWaitDialog(){
+	//Show the Blackout panel..
+	document.getElementById('id_blackoutdiv').style.display="block";
+	document.getElementById('id_sendinfo_panel').style.display="block";	
+}
+
+function hideWaitDialog(){
+	//Show the Blackout panel..
+	document.getElementById('id_blackoutdiv').style.display="none";
+	document.getElementById('id_sendinfo_panel').style.display="none";	
+}
+
 function sphincs_sendfunds(){
+	
+	//Show the Blackout panel..
+	showWaitDialog();
 	
 	//Get the token
 	var selector 	= document.getElementById("id_wallet_tokenselect");
@@ -49,5 +64,19 @@ function sphincs_sendfunds(){
 	//Construct the command..
 	var sendcmd = "sphincs action:transaction amount:"+amount+" address:"+address+" tokenid:"+tokenid+" privatekey:"+SPHINCS_PRIVATEKEY;
 	
-	MDS.log(sendcmd);
+	//MDS.log(sendcmd);
+	MDS.cmd(sendcmd, function(resp){
+		if(!resp.status){
+			alert("Error sending funds : \n\n"+resp.error);	
+		}else{
+			
+			//Clear inputs..
+			id_wallet_send_amount.value = "";
+			id_wallet_send_address.value ="";
+			
+			alert("Funds Sent!");
+		}
+		
+		hideWaitDialog();
+	});
 }

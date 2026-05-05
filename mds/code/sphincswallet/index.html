@@ -9,7 +9,7 @@
 	<link rel="stylesheet" href="style.css">
 	
 	<!-- And the ICON for the page -->
-	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	<link rel="icon" type="image/x-icon" href="./images/sphincs_icon.png">
 	
 	<!-- Load the local JS lib -->
 	<script type="text/javascript" src="./js/mds.js"></script>
@@ -25,6 +25,26 @@
 
 <body>
 
+<!-- The BLACKOUT Panel-->
+<div id="id_blackoutdiv" class="blackout"></div>
+
+<!-- INFO Panel -->
+<div id="id_sendinfo_panel" class="centerdiv" style="height:280px;">
+	
+	<div class="bluerounded">
+		<div class="paddedborder">
+	
+			<b>Sending..</b><br>
+			<br>
+			<center>
+				Please wait as we send the transaction..<br>
+				<br>
+				<img width=200 style="border-radius: 30px;" src="./images/loading_icon.gif">
+			</center>
+		</div>
+	</div>
+</div>
+	
 <center>
 	
 	<table class="maintable" border=0>
@@ -34,8 +54,19 @@
 				<div class="bluerounded">
 					<div class="paddedborder" style="text-align:center;">
 						
-						<b>SPHINCS Wallet</b>
-						
+						<table width=100%>
+							<tr>
+								<td style="text-align:left;"><img height=40 src="./images/sphincs_logo.png"></td>
+								<td style="width:100%;text-align:left;font-size:20;">&nbsp;&nbsp;<b>SPHINCS+</b></td>
+								
+								<td style="text-align;right">
+									<img onclick="navigate_help();" style="cursor: pointer;" height=40 src="./images/help.png">
+								
+								</td>
+								
+							</tr>
+						</table>
+
 					</div>
 				</div>
 				
@@ -55,12 +86,11 @@
 							<div class="bluerounded">
 								<div class="paddedborder">
 									
-									<!-- The Balance Table -->
 									<table id="id_balance_table" style="width:100%;border-spacing:8px;" border=0>
 									</table>
 									
 								</div>
-							</div>
+							</div> 
 							
 						</td>
 					</tr></table>
@@ -161,16 +191,19 @@
 							
 							<div class="bluerounded">
 								<div class="paddedborder">
+									
 									<p style="width:100%;">
-									<b>Help</b><br>
-									<br>
-									This is a SPHINCS+ wallet<br>
-									<br>
-									This is different from yourt normal Minima wallet as it does not need to keep track of KEY_USES.. (very cool)<br>
-									<br>
-									The logic is performed in a KISSVM script as a special smart contract<br>
-									<br>
+										<b>Help</b><br>
+										<br>
+										This is a SPHINCS+ wallet<br>
+										<br>
+										This is different from yourt normal Minima wallet as it does not need to keep track of KEY_USES.. (very cool)<br>
+										<br>
+										The logic is performed in a KISSVM script as a special smart contract<br>
+										<br>
+										You can view the KISSVM contract <a target="_blank" href="kissvm.txt">here</a>
 									</p>
+									
 								</div>
 							</div>
 							
@@ -188,15 +221,12 @@
 				<div class="bluerounded">
 					<div class="paddedborder">
 						
-						<table width=100%>
+						<table width=100% border=0>
 							<tr>
 								<td style="text-align:center;">
-									
-									<button style="min-width:100;" class=mybtn onclick="navigate_balance();">BALANCE</button>&nbsp;&nbsp;
-									<button style="min-width:100;" class=mybtn onclick="navigate_send();">SEND</button>&nbsp;&nbsp;
-									<button style="min-width:100;" class=mybtn onclick="navigate_receive();">RECEIVE</button>&nbsp;&nbsp;
-									<button style="min-width:100;" class=mybtn onclick="navigate_help();">HELP</button>			
-									
+									<button class=navbtn onclick="navigate_balance();">BALANCE</button>&nbsp;&nbsp;
+									<button class=navbtn onclick="navigate_send();">SEND</button>&nbsp;&nbsp;
+									<button class=navbtn onclick="navigate_receive();">RECEIVE</button>&nbsp;&nbsp;			
 								</td>
 							</tr>
 						</table>
@@ -286,6 +316,8 @@
 				receiveAddresQR();
 			
 				fetchBalance();	
+				
+				//showWaitDialog();
 			});
 			
 			/*//Is remember me enabled..
@@ -301,7 +333,6 @@
 	});
 
 </script>
--->
 
 </body>
 
