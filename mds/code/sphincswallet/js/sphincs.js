@@ -74,7 +74,7 @@ function sphincs_sendfunds(){
 			id_wallet_send_amount.value = "";
 			id_wallet_send_address.value ="";
 			
-			alert("Funds Sent!");
+			alert("Funds Sent!\n\nPlease wait for transaction to confirm..");
 		}
 		
 		hideWaitDialog();

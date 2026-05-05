@@ -20,30 +20,60 @@
 	<script type="text/javascript" src="./js/navigation.js"></script>
 	<script type="text/javascript" src="./js/balance.js"></script>
 	<script type="text/javascript" src="./js/jslib.js"></script>
-	
+	<script type="text/javascript" src="./js/init.js"></script>
+		
 </head>
 
 <body>
 
-<!-- The BLACKOUT Panel-->
-<div id="id_blackoutdiv" class="blackout"></div>
-
-<!-- INFO Panel -->
-<div id="id_sendinfo_panel" class="centerdiv" style="height:280px;">
+	<!-- The BLACKOUT Panel-->
+	<div id="id_blackoutdiv" class="blackout"></div>
 	
-	<div class="bluerounded">
-		<div class="paddedborder">
-	
-			<b>Sending..</b><br>
-			<br>
-			<center>
-				Please wait as we send the transaction..<br>
+	<!-- INFO Panel -->
+	<div id="id_sendinfo_panel" class="centerdiv" style="height:280px;">
+		
+		<div class="bluerounded">
+			<div class="paddedborder">
+		
+				<b>Sending..</b><br>
 				<br>
-				<img width=200 style="border-radius: 30px;" src="./images/loading_icon.gif">
-			</center>
+				<center>
+					Please wait as we send the transaction..<br>
+					<br>
+					<img width=200 style="border-radius: 30px;" src="./images/loading_icon.gif">
+				</center>
+			</div>
 		</div>
 	</div>
-</div>
+
+	<!-- Create seed -->
+	<div id="id_login_dialog" class="centerdiv" style="height:280px;">
+		
+		<div class="bluerounded">
+			<div class="paddedborder">
+		
+				<b>Login to SPHINCS Wallet</b><br>
+				<br>
+				Please type in your seed..<br>
+				<br>
+				<table width=100%>
+					<tr>
+						<td class="alignright">Seed Phrase : </td>
+						<td><input type="password" id="id_init_seed" style="width:90%"></td>
+					</tr>
+				</table>
+				<br>
+				<center>
+					
+					<button id="id_generate_button" class="mybtn" onclick="init_generateseed();">Generate</button>
+					<button id="id_init_button" class="mybtn" onclick="init_continueseed();">Continue</button><br>
+					<br>
+					<div id="id_init_generate"></div>
+					
+				</center>
+			</div>
+		</div>
+	</div>
 	
 <center>
 	
@@ -308,7 +338,9 @@
 		//Do initialisation
 		if(msg.event == "inited"){
 			
-			var seed="xxx";
+			initSphincsWallet();
+			
+			/*var seed="xxx";
 			
 			initSPHINCS(seed, function(){
 				
@@ -318,7 +350,7 @@
 				fetchBalance();	
 				
 				//showWaitDialog();
-			});
+			});*/
 			
 			/*//Is remember me enabled..
 			var rem = getCookie("rememberme");

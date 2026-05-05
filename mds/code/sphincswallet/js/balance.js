@@ -26,6 +26,11 @@ function updateBalanceTable(balance){
 	var row   = baltable.insertRow(0);
 	row.insertCell().outerHTML = "<th style='text-align:left;' class='smalltableheadertext'>Token</th>";
 	row.insertCell().outerHTML = "<th class='smalltableheadertext'>Amount</th>"; 
+	
+	//Final gap
+	var rowgap 	= baltable.insertRow();
+	var rowgap 	= rowgap.insertCell();
+	rowgap.innerHTML = "&nbsp;";
 		
 	//Get my Orders
 	var len = balance.length;
