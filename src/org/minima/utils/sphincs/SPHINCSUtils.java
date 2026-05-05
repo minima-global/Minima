@@ -10,7 +10,6 @@ import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniString;
 import org.minima.system.brains.TxPoWGenerator;
-import org.minima.system.commands.CommandException;
 import org.minima.utils.sphincs.FORS.FORSSignature;
 
 public class SPHINCSUtils {

@@ -77,7 +77,6 @@ import org.minima.system.commands.send.sendsign;
 import org.minima.system.commands.send.sendview;
 import org.minima.system.commands.send.wallet.createfrom;
 import org.minima.system.commands.send.wallet.postfrom;
-import org.minima.system.commands.send.wallet.rawfrom;
 import org.minima.system.commands.send.wallet.rawtxnfrom;
 import org.minima.system.commands.send.wallet.sendfrom;
 import org.minima.system.commands.send.wallet.signfrom;

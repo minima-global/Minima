@@ -9,7 +9,6 @@ import org.minima.database.txpowdb.ram.RamData;
 import org.minima.database.txpowtree.CoinDB;
 import org.minima.objects.TxPoW;
 import org.minima.system.commands.Command;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 

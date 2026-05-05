@@ -7,9 +7,7 @@ import org.minima.database.mmr.MMRProof;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
 import org.minima.utils.Crypto;
-import org.minima.utils.MiniFormat;
 import org.minima.utils.sphincs.HORST.HORST;
-import org.minima.utils.sphincs.HORST.HORSTSignature;
 
 public class FORS {
 

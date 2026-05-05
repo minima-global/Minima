@@ -5,30 +5,23 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.minima.database.MinimaDB;
-import org.minima.database.mmr.MMRData;
-import org.minima.database.mmr.MMRProof;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
 import org.minima.objects.Address;
 import org.minima.objects.Coin;
-import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.base.MiniNumber;
-import org.minima.objects.base.MiniString;
-import org.minima.system.brains.TxPoWGenerator;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.CommandRunner;
 import org.minima.utils.Crypto;
 import org.minima.utils.MiniFile;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.sphincs.SPHINCS;
 import org.minima.utils.sphincs.SPHINCSSignature;
 import org.minima.utils.sphincs.SPHINCSUtils;
-import org.minima.utils.sphincs.FORS.FORSSignature;
 
 public class sphincs extends Command {
 

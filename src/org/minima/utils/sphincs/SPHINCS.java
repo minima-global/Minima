@@ -3,13 +3,10 @@ package org.minima.utils.sphincs;
 import java.math.BigInteger;
 
 import org.minima.database.mmr.MMRData;
-import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
-import org.minima.objects.base.MiniString;
 import org.minima.objects.keys.Signature;
 import org.minima.objects.keys.TreeKey;
 import org.minima.utils.Crypto;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.sphincs.FORS.FORS;
 import org.minima.utils.sphincs.FORS.FORSSignature;
 
