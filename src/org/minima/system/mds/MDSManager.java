@@ -1106,6 +1106,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("script ide", "default/scriptide-3.1.4.mds.zip", allminis, false);
 			checkInstalled("shout out", "default/shoutout-1.4.1.mds.zip", allminis, false);
 			checkInstalled("soko", "default/soko-1.1.1.mds.zip", allminis, false);
+			checkInstalled("sphincs+", "default/sphincs-0.9.mds.zip", allminis, false);
 			checkInstalled("sql bench", "default/sqlbench-0.6.1.mds.zip", allminis, false);
 			checkInstalled("terminal", "default/terminal-3.1.8.mds.zip", allminis, false);
 			checkInstalled("thunder", "default/thunder-1.0.1.mds.zip", allminis, false);

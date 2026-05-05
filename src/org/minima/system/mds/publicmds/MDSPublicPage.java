@@ -23,8 +23,9 @@ public class MDSPublicPage {
 		
 		PUBLIC_MINIDAPPS.add("docs");
 		PUBLIC_MINIDAPPS.add("news feed");
-		PUBLIC_MINIDAPPS.add("block");
+		//PUBLIC_MINIDAPPS.add("block");
 		PUBLIC_MINIDAPPS.add("web wallet");
+		PUBLIC_MINIDAPPS.add("sphincs+");
 	}
 	
 	public String getIndexPage() throws IOException {
