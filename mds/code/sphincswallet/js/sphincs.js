@@ -22,16 +22,22 @@ function initSPHINCS(seed, callback){
 			if(!SPHINCS_MEAGMMR){
 				
 				//Add the script.. so that we track it..
-				//MDS.cmd();
-				
+				MDS.cmd("newscript script:\""+SPHINCS_SCRIPT+"\" trackall:true",function(resp){
+					//MDS.log(JSON.stringify(resp));
+					MDS.log("SPHINCS script added.. so is tracked..");	
+					
+					//Finished setup
+					if(callback){
+						callback();
+					}
+				});
+			}else{
+				//Finished setup
+				if(callback){
+					callback();
+				}
 			}
-			
 		});
-		
-		//Finished setup
-		if(callback){
-			callback();
-		}
 	});
 }
 
