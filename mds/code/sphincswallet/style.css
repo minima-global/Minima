@@ -93,7 +93,8 @@ p {
   padding: 6px 8px; /* Some padding */
   font-size: 12px; /* Set a font size */
   cursor: pointer; /* Mouse pointer on hover */
-  min-width : 120px;
+  
+  min-width : 90px;
   min-height: 40px;
 }
 
@@ -125,7 +126,9 @@ p {
  	left: 50%;  
   	transform: translate(-50%, -50%);
 	
-	width:400px;
+	padding:16px;
+	
+	width:350px;
 	height:310px;
 	
 	z-index: 20;

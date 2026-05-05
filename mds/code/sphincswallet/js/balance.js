@@ -65,7 +65,7 @@ function updateBalanceTable(balance){
 		var rowid 					= baltable.insertRow();
 		var celltokenid 			= rowid.insertCell();
 		celltokenid.colSpan 		= "4";
-		celltokenid.style.fontSize 	= "0.7em";
+		celltokenid.style.fontSize 	= "0.5em";
 		celltokenid.style.color 	= "grey";
 		celltokenid.innerHTML 		= sanitize(tokenbal.tokenid);
 		

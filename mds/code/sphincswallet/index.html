@@ -81,7 +81,7 @@
 		
 		<tr>
 			<td style="padding-top:10px;">
-				<div class="bluerounded">
+				<div class="bluerounded" onclick="showTitleOnAndroid();">
 					<div class="paddedborder" style="text-align:center;">
 						
 						<table width=100%>
@@ -90,7 +90,7 @@
 								<td style="width:100%;text-align:left;font-size:20;">&nbsp;&nbsp;<b>SPHINCS+</b></td>
 								
 								<td style="text-align;right">
-									<img onclick="navigate_help();" style="cursor: pointer;" height=40 src="./images/help.png">
+									<img onclick="navigate_help();event.stopPropagation();" style="cursor: pointer;" height=40 src="./images/help.png">
 								
 								</td>
 								
@@ -201,7 +201,7 @@
 									<div id="wallet_receiveqr"></div>
 									<br>
 									
-									<div id="id_wallet_address" style="font-size:0.9em;white-space: wrap;width:350px;overflow-wrap: break-word;"></div>
+									<div id="id_wallet_address" style="font-size:0.8em;white-space: wrap;width:300px;overflow-wrap: break-word;"></div>
 									
 									</center>
 									
@@ -301,36 +301,12 @@
 
 <script type="text/javascript">
 	
-	/*function logon(){
-		
-		//Get the secret
-		var secret = seedphrase.value.trim();
-		
-		//Is remember me checked..
-		if(rememberme.checked){
-			setCookie("rememberme","true",7);
-			setCookie("secretsauce",secret,7);
-		}else{
-			setCookie("rememberme","false",365);
-			setCookie("secretsauce","",365);
+	function showTitleOnAndroid(){
+		MDS.log("Show title..");
+		if (window.navigator.userAgent.includes('Minima Browser')) {
+			Android.showTitleBar();
 		}
-		
-		//Generats a key
-		MDS.cmd("keys action:genkey phrase:\""+secret+"\"",function(resp){
-			
-			//Get the address
-			var address = resp.response.miniaddress;
-			
-			//Jump to the main balance page
-			location.href = "balance.html?uid=" + MDS.minidappuid+"&address="+address;
-		});
 	}
-	
-	function reveal(){
-		MDS.cmd("random",function(random){
-			newsecret.innerHTML = "<b>"+random.response.keycode+"</b>";
-		});
-	}*/
 	
 	//Main message handler..
 	MDS.init(function(msg){
