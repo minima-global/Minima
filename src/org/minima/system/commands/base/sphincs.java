@@ -9,6 +9,7 @@ import org.minima.database.mmr.MMRData;
 import org.minima.database.mmr.MMRProof;
 import org.minima.database.userprefs.txndb.TxnDB;
 import org.minima.database.userprefs.txndb.TxnRow;
+import org.minima.objects.Address;
 import org.minima.objects.Coin;
 import org.minima.objects.StateVariable;
 import org.minima.objects.Transaction;
@@ -26,6 +27,7 @@ import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.sphincs.SPHINCS;
 import org.minima.utils.sphincs.SPHINCSSignature;
+import org.minima.utils.sphincs.SPHINCSUtils;
 import org.minima.utils.sphincs.FORS.FORSSignature;
 
 public class sphincs extends Command {
@@ -65,7 +67,7 @@ public class sphincs extends Command {
 	@Override
 	public ArrayList<String> getValidParams(){
 		return new ArrayList<>(Arrays.asList(new String[]{"action","seed", "data","privatekey",
-				"file","publickey","signature","amount","address","tokenid"}));
+				"file","publickey","signature","amount","address","tokenid","mine"}));
 	}
 	
 	@Override
@@ -86,9 +88,13 @@ public class sphincs extends Command {
 			//Generate a SPHINCS key
 			SPHINCS sphincs = new SPHINCS(seed);
 			
+			//What is the KISSVM script
+			String kissvmscript = SPHINCSUtils.getKISSVMScript(sphincs.getPublicKey());
+			Address address  	= new Address(kissvmscript);
+			
 			//Get the public key
-			resp.put("address", sphincs.getSPHINCSAddress().getMinimaAddress());
-			resp.put("script", sphincs.getKISSVMScript());
+			resp.put("address", address.getMinimaAddress());
+			resp.put("script", kissvmscript);
 			resp.put("publickey", sphincs.getPublicKey().to0xString());
 			resp.put("privatekey", sphincs.getPrivateKey().to0xString());
 		
@@ -157,10 +163,15 @@ public class sphincs extends Command {
 			String address 		= getAddressParam("address");
 			MiniData tokenid	= getDataParam("tokenid");
 			MiniData privatekey	= getDataParam("privatekey");
+			boolean mine		= getBooleanParam("mine",false);
 			
 			//Generate the SPHINCS key
 			SPHINCS sphincs = new SPHINCS();
 			sphincs.initPrivateKey(privatekey);
+			
+			//What is the address
+			String sphincsscript 	= SPHINCSUtils.getKISSVMScript(sphincs.getPublicKey());
+			Address sphincsaddress 	= new Address(sphincsscript);
 			
 			//ID of the custom transaction
 			String randomid 	= MiniData.getRandomData(32).to0xString();
@@ -168,7 +179,7 @@ public class sphincs extends Command {
 			//Now construct the transaction..
 			JSONObject result = runCommand("txncreate id:"+randomid);
 			
-			String command 	= "txnaddamount id:"+randomid+" fromaddress:"+sphincs.getSPHINCSAddress().getMinimaAddress()
+			String command 	= "txnaddamount id:"+randomid+" fromaddress:"+sphincsaddress.getMinimaAddress()
 					+" address:"+address+" amount:"+amount+" tokenid:"+tokenid;
 			
 			result = runCommand(command);
@@ -187,14 +198,10 @@ public class sphincs extends Command {
 			TxnRow txnrow 			= db.getTransactionRow(randomid);
 			Transaction transaction = txnrow.getTransaction();
 			
-			ArrayList<Coin> inputcoins 	= transaction.getAllInputs();
-			ArrayList<Coin> outputcoins = transaction.getAllOutputs();
-			
 			/**
-			 * Calculate the message
+			 * MAX 8 Input coins - or script runs out of operations as 1024 max
 			 */
-			int totin = inputcoins.size();
-			if(totin>8) {
+			if(transaction.getAllInputs().size()>8) {
 				
 				//Delete transaction
 				runCommand("txndelete id:"+randomid);
@@ -202,85 +209,29 @@ public class sphincs extends Command {
 				throw new CommandException("Input Coin number too great.. MAX 8. Pls Send a smaller amount.");
 			}
 			
-			String instring = inputcoins.get(0).getCoinID().to0xString();
-			for(int i=1;i<totin;i++) {
-				Coin cc 	= inputcoins.get(i);
-				instring	= instring+cc.getCoinID().to0xString();
-			}
-
-			int totout = outputcoins.size();
-			String outstring = "";
-			for(int i=0;i<totout;i++) {
-				Coin cc 	= outputcoins.get(i);
-				outstring	= outstring+getOutCoinString(cc);
+			//Set all the outputs to NOT keep the state - is useless 20k
+			ArrayList<Coin> outputcoins = transaction.getAllOutputs();
+			for(int i=0;i<outputcoins.size();i++) {
+				outputcoins.get(i).setStoreState(false);
 			}
 			
-			//Now create the complete message string..
-			String fullstring	= totin+"SPHINCS"+totout+"SPHINCS"+instring+"COINJOIN"+outstring;
-			
-			//Now the full message
-			MiniData message	= new MiniData(new MiniString(fullstring).getData());
+			//Get the TransactionID - to sign
+			MiniData message	= SPHINCSUtils.calculateTransactionID(transaction);
 			
 			//Now SIGN the message
 			SPHINCSSignature sig = sphincs.signMessage(message);
 			
-			/**
-			 * Add the state Vars
-			 */
-			//The Minima Sig
-			MiniData minisig = MiniData.getMiniDataVersion(sig.getWOTSSignature()); 
-			StateVariable svminimasig 	= new StateVariable(100, minisig.to0xString());
-			transaction.addStateVariable(svminimasig);
-			
-			//The FORS root
-			StateVariable svforsroot 	= new StateVariable(101, sig.getFORSRoot().getData().to0xString());
-			transaction.addStateVariable(svforsroot);
-			
-			//HORST trees
-			FORSSignature forssignature = sig.getFORSSignature();
-			for(int i=0;i<16;i++) {
-				
-				//The base state pos
-				int statepos = i*5;
-				
-				//The HORST root
-				MMRData horstroot 		= forssignature.getHORSTRoots().get(i);
-				StateVariable svhorstroot	= new StateVariable(statepos, horstroot.getData().to0xString());
-				transaction.addStateVariable(svhorstroot);
-				
-				//The HORST root proof
-				MMRProof horstproof			= forssignature.getHORSTTreeProofs().get(i);
-				MiniData horstproofdata		= MiniData.getMiniDataVersion(horstproof);
-				StateVariable svhorstproof	= new StateVariable(statepos+1, horstproofdata.to0xString());
-				transaction.addStateVariable(svhorstproof);
-				
-				//The SIG value (private key preimage of public key)
-				MiniData privkeyval = forssignature.getHORSTSignature().getSignatureValues().get(i);
-				StateVariable svprivkeyval	= new StateVariable(statepos+2, privkeyval.to0xString());
-				transaction.addStateVariable(svprivkeyval);
-				
-				//The Public key root proof
-				MMRProof privkeyproof		= forssignature.getHORSTSignature().getPublicKeyTreeProofs().get(i);
-				MiniData privkeyproofdata	= MiniData.getMiniDataVersion(privkeyproof);
-				StateVariable svsigvalproof	= new StateVariable(statepos+3, privkeyproofdata.to0xString());
-				transaction.addStateVariable(svsigvalproof);
-			}
-			
-			//Compute the correct CoinID
-			TxPoWGenerator.precomputeTransactionCoinID(transaction);
-					
-			//Calculate transid
-			transaction.calculateTransactionID();
+			//Add the state variables
+			SPHINCSUtils.setupTransaction(transaction, sig);
 			
 			//Finally - Add the scripts..
-			runCommand("txnscript id:"+randomid+" scripts:{\""+sphincs.getKISSVMScript()+"\":\"\"}");
+			runCommand("txnscript id:"+randomid+" scripts:{\""+sphincsscript+"\":\"\"}");
 			
 			//Sort the MMR
 			runCommand("txnmmr id:"+randomid);
 			
 			//And POST!
-			result = runCommand("txnpost id:"+randomid+" mine:true");
-			//result = runCommand("txnlist id:"+randomid);
+			result = runCommand("txnpost id:"+randomid+" mine:"+mine);
 			
 			//And delete..
 			runCommand("txndelete id:"+randomid);
