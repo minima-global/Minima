@@ -53,6 +53,7 @@ import org.minima.system.commands.base.random;
 import org.minima.system.commands.base.scanchain;
 import org.minima.system.commands.base.seedrandom;
 import org.minima.system.commands.base.slavenode;
+import org.minima.system.commands.base.sphincs;
 import org.minima.system.commands.base.status;
 import org.minima.system.commands.base.systemcheck;
 import org.minima.system.commands.base.test;
@@ -147,7 +148,9 @@ public class CommandRunner {
 			
 			new multisig(), new multisigread(), new checkaddress(),
 			
-			new ping(), new random(), new seedrandom(), new mysql(), new mysqlcoins(), new slavenode(),
+			new sphincs(),
+			
+			new ping(), new random(), new seedrandom(), new mysql(), new mysqlcoins(), new slavenode(), 
 			//new file(),
 			
 			new jnitest(), new benchmark(), new jniminingtest(),

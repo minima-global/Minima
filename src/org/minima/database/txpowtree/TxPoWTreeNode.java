@@ -1,6 +1,5 @@
 package org.minima.database.txpowtree;
 
-import java.awt.geom.GeneralPath;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;

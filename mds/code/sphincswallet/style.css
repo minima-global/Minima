@@ -1,0 +1,133 @@
+@font-face {
+	font-family: Manrope;
+	src: url('./Manrope-Regular.ttf');
+}
+
+html, body {
+	font-family: Manrope; 
+    margin: 0px;
+	width:100%;
+	height:100%;
+	border:none;
+}
+
+table {
+	border-spacing:0;
+	padding:0;
+}
+
+td {
+	padding:0px;
+	margin:0;
+	white-space: nowrap;
+}
+
+p {
+    word-break: normal;
+    white-space: normal;
+}
+
+.alignright{
+	text-align:right;
+}
+
+.maintable {
+	width:100%;
+	max-width:500px;
+	height:100%;
+	padding-left:10px;
+	padding-right:10px;
+}
+
+.fullwidthheight {
+	width:100%;
+	height:100%;
+}
+
+.bluerounded {
+	text-align:left;
+	background-color: #eeeeff;
+  	border-radius: 8px;
+  	border-color: #2222ff;
+	padding:0px;
+	margin:0px;
+	width:100%;
+	height:100%;
+}
+
+.paddedborder{
+	padding:8px;
+}
+
+/* Normal buttons */
+.mybtn {
+  background-color: DodgerBlue; /* Blue background */
+  border: none; /* Remove borders */
+  border-radius: 4px;
+  color: white; /* White text */
+  padding: 6px 8px; /* Some padding */
+  font-size: 12px; /* Set a font size */
+  cursor: pointer; /* Mouse pointer on hover */
+  min-width:60px;
+}
+
+/* Darker background on mouse-over */
+.mybtn:hover {
+  background-color: RoyalBlue;
+}
+
+.mybtn:active {
+  background-color: red;
+}
+
+.mybtn:disabled {
+  background-color: grey;
+}
+
+/* Navigation buttons */
+.navbtn {
+  background-color: DodgerBlue; /* Blue background */
+  border: none; /* Remove borders */
+  border-radius: 4px;
+  color: white; /* White text */
+  padding: 6px 8px; /* Some padding */
+  font-size: 12px; /* Set a font size */
+  cursor: pointer; /* Mouse pointer on hover */
+  min-width : 120px;
+  min-height: 40px;
+}
+
+/* Darker background on mouse-over */
+.navbtn:hover {
+  background-color: RoyalBlue;
+}
+
+.navbtn:active {
+  background-color: red;
+}
+
+.navbtn:disabled {
+  background-color: grey;
+}
+
+.blackout{
+	position: absolute;
+	width:100%;
+	height:100%;
+	background-color:rgba(0, 0, 0, 0.5);
+	z-index: 10;
+	display:none;
+}
+
+.centerdiv {    
+	position: absolute;   
+	top: 50%;   
+ 	left: 50%;  
+  	transform: translate(-50%, -50%);
+	
+	width:400px;
+	height:310px;
+	
+	z-index: 20;
+	display:none;
+}

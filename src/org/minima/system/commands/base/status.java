@@ -93,6 +93,9 @@ public class status extends Command {
 		//Is the Wallet Locked..
 		details.put("locked", !MinimaDB.getDB().getWallet().isBaseSeedAvailable());
 		
+		//Is the MEGA MMR running
+		details.put("megammr", GeneralParams.IS_MEGAMMR);
+		
 		//How many Devices..
 		if(complete) {
 			

@@ -587,6 +587,10 @@ public class MinimaDB {
 			MinimaLogger.log("ArchiveDB shutdown..");
 			mArchive.saveDB(zCompact);
 			
+			//Close the CoinDB
+			MinimaLogger.log("CoinDB shutdown..");
+			CoinDB.getTxPoWTreeCoinDB().saveDB(false);
+			
 			MinimaLogger.log("All SQL DB Shutdown..");
 			
 		}catch(Exception exc) {
@@ -695,7 +699,7 @@ public class MinimaDB {
 			}
 			
 			//Close the CoinDB
-			CoinDB.getTxPoWTreeCoinDB().saveDB(false);
+			//CoinDB.getTxPoWTreeCoinDB().saveDB(false);
 			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);

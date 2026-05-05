@@ -165,10 +165,10 @@ public class Coin implements Streamable {
 		return mBlockCreated;
 	}
 	
-	/**
-	 * Do we store the state for this coin
-	 * @return
-	 */
+	public void setStoreState(boolean zStore) {
+		mStoreState = zStore;
+	}
+	
 	public boolean storeState() {
 		return mStoreState;
 	}

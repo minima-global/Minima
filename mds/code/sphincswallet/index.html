@@ -1,0 +1,371 @@
+<html>
+
+<head>
+	<title>SPHINCS+</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Load the CSS Style sheet -->
+	<link rel="stylesheet" href="style.css">
+	
+	<!-- And the ICON for the page -->
+	<link rel="icon" type="image/x-icon" href="./images/sphincs_icon.png">
+	
+	<!-- Load the local JS lib -->
+	<script type="text/javascript" src="./js/mds.js"></script>
+	<script type="text/javascript" src="./js/sphincs.js"></script>
+	<script type="text/javascript" src="./js/qrcode.js"></script>
+	<script type="text/javascript" src="./js/decimal.js"></script>
+	<script type="text/javascript" src="./js/purify.min.js"></script>
+	<script type="text/javascript" src="./js/navigation.js"></script>
+	<script type="text/javascript" src="./js/balance.js"></script>
+	<script type="text/javascript" src="./js/jslib.js"></script>
+	<script type="text/javascript" src="./js/init.js"></script>
+		
+</head>
+
+<body>
+
+	<!-- The BLACKOUT Panel-->
+	<div id="id_blackoutdiv" class="blackout"></div>
+	
+	<!-- INFO Panel -->
+	<div id="id_sendinfo_panel" class="centerdiv" style="height:280px;">
+		
+		<div class="bluerounded">
+			<div class="paddedborder">
+		
+				<b>Sending..</b><br>
+				<br>
+				<center>
+					Please wait as we send the transaction..<br>
+					<br>
+					<img width=200 style="border-radius: 30px;" src="./images/loading_icon.gif">
+				</center>
+			</div>
+		</div>
+	</div>
+
+	<!-- Create seed -->
+	<div id="id_login_dialog" class="centerdiv" style="height:280px;">
+		
+		<div class="bluerounded">
+			<div class="paddedborder">
+		
+				<b>Login to SPHINCS Wallet</b><br>
+				<br>
+				Please type in your seed..<br>
+				<br>
+				<table width=100%>
+					<tr>
+						<td class="alignright">Seed Phrase : </td>
+						<td><input type="password" id="id_init_seed" style="width:90%"></td>
+					</tr>
+				</table>
+				<br>
+				<center>
+					
+					<button id="id_generate_button" class="mybtn" onclick="init_generateseed();">Generate</button>
+					<button id="id_init_button" class="mybtn" onclick="init_continueseed();">Continue</button><br>
+					<br>
+					<div id="id_init_generate"></div>
+					
+				</center>
+			</div>
+		</div>
+	</div>
+	
+<center>
+	
+	<table class="maintable" border=0>
+		
+		<tr>
+			<td style="padding-top:10px;">
+				<div class="bluerounded">
+					<div class="paddedborder" style="text-align:center;">
+						
+						<table width=100%>
+							<tr>
+								<td style="text-align:left;"><img height=40 src="./images/sphincs_logo.png"></td>
+								<td style="width:100%;text-align:left;font-size:20;">&nbsp;&nbsp;<b>SPHINCS+</b></td>
+								
+								<td style="text-align;right">
+									<img onclick="navigate_help();" style="cursor: pointer;" height=40 src="./images/help.png">
+								
+								</td>
+								
+							</tr>
+						</table>
+
+					</div>
+				</div>
+				
+			</td>
+		</tr>
+		
+		<!-- MAIN PAGE -->
+		<tr style="height:100%;">
+			<td>
+				
+				<!-- BALANCE -->		
+				<div class="fullwidthheight" style="display:block;" id="id_view_balance">
+					
+					<table class="fullwidthheight"><tr>
+						<td style="padding-top:10px;padding-bottom:10px;">
+							
+							<div class="bluerounded">
+								<div class="paddedborder">
+									
+									<table id="id_balance_table" style="width:100%;border-spacing:8px;" border=0>
+									</table>
+									
+								</div>
+							</div> 
+							
+						</td>
+					</tr></table>
+					
+				</div>
+				
+				<!-- SEND -->		
+				<div class="fullwidthheight" style="display:none;" id="id_view_send">
+					
+					<table class="fullwidthheight"><tr>
+						<td style="padding-top:10px;padding-bottom:10px;">
+							
+							<div class="bluerounded">
+								<div class="paddedborder">
+									
+									<br>
+									
+									<table style="width:90%" border=0>
+										<tr>
+											<td class="alignright">
+												Token : &nbsp;
+											</td>
+											<td>
+												<select id="id_wallet_tokenselect" style="width:100%">	
+												</select>
+											</td>			
+										</tr>
+										<tr><td style="font-size: 4px;">&nbsp;</td></tr>
+										
+										<tr>
+											<td class="alignright">
+												Amount : &nbsp; 
+											</td>
+											<td>
+												  <input id="id_wallet_send_amount" type="number" style="width:100%" value="0"/>
+											</td>			
+										</tr>
+										<tr><td style="font-size: 4px;">&nbsp;</td></tr>
+										
+										<tr>
+											<td class="alignright">
+												Address : &nbsp;
+											</td>
+											<td>
+												<input id="id_wallet_send_address"  type="text" style="width:100%">
+											</td>			
+										</tr>
+										<tr><td style="font-size: 12px;">&nbsp;</td></tr>
+										
+										<tr>
+											<td colspan=2 style="text-align:center;">
+												<button onclick="sphincs_sendfunds();" class=mybtn>&nbsp;&nbsp;Send Funds&nbsp;&nbsp;</button> 
+											</td>			
+										</tr>
+										
+									</table>
+									
+									
+								</div>
+							</div>
+							
+						</td>
+					</tr></table>
+					
+				</div>
+				
+				<!-- RECEIVE -->		
+				<div class="fullwidthheight" style="display:none;" id="id_view_receive">
+					
+					<table class="fullwidthheight"><tr>
+						<td style="padding-top:10px;padding-bottom:10px;">
+							
+							<div class="bluerounded">
+								<div class="paddedborder">
+									<br>
+									<center>
+										
+									<div id="wallet_receiveqr"></div>
+									<br>
+									
+									<div id="id_wallet_address" style="font-size:0.9em;white-space: wrap;width:350px;overflow-wrap: break-word;"></div>
+									
+									</center>
+									
+								</div>
+							</div>
+							
+						</td>
+					</tr></table>
+					
+				</div>
+				
+				<!-- HELP -->		
+				<div class="fullwidthheight" style="display:none;" id="id_view_help">
+					
+					<table class="fullwidthheight"><tr>
+						<td style="padding-top:10px;padding-bottom:10px;">
+							
+							<div class="bluerounded">
+								<div class="paddedborder">
+									
+									<p style="width:100%;">
+										<b>Help</b><br>
+										<br>
+										This is a SPHINCS+ wallet<br>
+										<br>
+										This is different from yourt normal Minima wallet as it does not need to keep track of KEY_USES.. (very cool)<br>
+										<br>
+										The logic is performed in a KISSVM script as a special smart contract<br>
+										<br>
+										You can view the KISSVM contract <a target="_blank" href="kissvm.txt">here</a>
+									</p>
+									
+								</div>
+							</div>
+							
+						</td>
+					</tr></table>
+					
+				</div>
+				
+			</td>
+		</tr>
+		
+		<!-- Navigation buttons -->
+		<tr>
+			<td style="padding-bottom:10px;">
+				<div class="bluerounded">
+					<div class="paddedborder">
+						
+						<table width=100% border=0>
+							<tr>
+								<td style="text-align:center;">
+									<button class=navbtn onclick="navigate_balance();">BALANCE</button>&nbsp;&nbsp;
+									<button class=navbtn onclick="navigate_send();">SEND</button>&nbsp;&nbsp;
+									<button class=navbtn onclick="navigate_receive();">RECEIVE</button>&nbsp;&nbsp;			
+								</td>
+							</tr>
+						</table>
+						
+						
+					</div>
+				</div>
+				
+			</td>
+		</tr>
+		
+	</table>
+	
+	<!-- <h1>SPHINCS+ Minima Wallet</h1>
+	
+	<br>
+	Log in with your secret seed :<br>
+	<br>
+		Secret : <input id="seedphrase" type="password"><br>
+		<input type="checkbox" id="rememberme">
+		<label for="rememberme">Remember me..</label>
+		
+	<br>
+	<br>
+		<button class=btn onclick="logon();">LOGIN</button>
+	<br>
+	<br>
+	
+	If you do not have a <b>secret</b> yet.. you can get one here<br>
+	Make sure you copy it somewhere <b>safe</b><br>
+	You <b>cannot</b> retrieve it LATER..<br>
+	<br>
+	<button class=btn onclick="reveal();">CREATE SECRET</button>
+	<br><br>
+	<div id=newsecret>
+			
+	</div>
+	-->
+	
+</center>
+
+
+<script type="text/javascript">
+	
+	/*function logon(){
+		
+		//Get the secret
+		var secret = seedphrase.value.trim();
+		
+		//Is remember me checked..
+		if(rememberme.checked){
+			setCookie("rememberme","true",7);
+			setCookie("secretsauce",secret,7);
+		}else{
+			setCookie("rememberme","false",365);
+			setCookie("secretsauce","",365);
+		}
+		
+		//Generats a key
+		MDS.cmd("keys action:genkey phrase:\""+secret+"\"",function(resp){
+			
+			//Get the address
+			var address = resp.response.miniaddress;
+			
+			//Jump to the main balance page
+			location.href = "balance.html?uid=" + MDS.minidappuid+"&address="+address;
+		});
+	}
+	
+	function reveal(){
+		MDS.cmd("random",function(random){
+			newsecret.innerHTML = "<b>"+random.response.keycode+"</b>";
+		});
+	}*/
+	
+	//Main message handler..
+	MDS.init(function(msg){
+		
+		//Do initialisation
+		if(msg.event == "inited"){
+			
+			initSphincsWallet();
+			
+			/*var seed="xxx";
+			
+			initSPHINCS(seed, function(){
+				
+				//Set the address
+				receiveAddresQR();
+			
+				fetchBalance();	
+				
+				//showWaitDialog();
+			});*/
+			
+			/*//Is remember me enabled..
+			var rem = getCookie("rememberme");
+			if(rem == "true"){
+				rememberme.checked 	= true;
+				seedphrase.value 	= getCookie("secretsauce");
+			}else{
+				rememberme.checked 	= false;
+				seedphrase.value	= "";
+			}*/	
+		}
+	});
+
+</script>
+
+</body>
+
+</html>
