@@ -128,7 +128,8 @@ p {
 	
 	padding:16px;
 	
-	width:350px;
+	width:90vw;
+	max-width:360px;
 	height:310px;
 	
 	z-index: 20;
