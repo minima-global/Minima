@@ -49,6 +49,11 @@ public class Main extends MessageProcessor {
 	public String 	STARTUP_ERROR_MSG 	= "";
 	
 	/**
+	 * Is StartUp Complete
+	 */
+	boolean STARTUP_COMPLETE = false;
+	
+	/**
 	 * Uptime for the node
 	 */
 	long mUptimeMilli = System.currentTimeMillis();
@@ -422,6 +427,13 @@ public class Main extends MessageProcessor {
 			
 			MinimaLogger.log("Running in slave mode. Will Connect to "+GeneralParams.CONNECT_LIST);
 		}
+		
+		//Startup Complete
+		STARTUP_COMPLETE = true;
+	}
+	
+	public boolean isStartUpComplete() {
+		return STARTUP_COMPLETE;
 	}
 	
 	/**
