@@ -191,8 +191,11 @@ public class CommandRunner {
 	
 	public JSONObject runSingleCommand(String zCommand) {
 		JSONArray res 		= runMultiCommand(zCommand);
-		JSONObject result 	= (JSONObject) res.get(0);
-		return result;
+		if(res.size()>0) {
+			JSONObject result 	= (JSONObject) res.get(0);
+			return result;
+		}
+		return new JSONObject();
 	}
 	
 	public JSONArray runMultiCommand(String zMiniDAPPID, String zCommand) {
