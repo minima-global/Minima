@@ -130,7 +130,7 @@ public class keys extends Command {
 			JSONObject resp = new JSONObject();
 			resp.put("keys", arr);
 			resp.put("total", arr.size());
-			resp.put("maxuses", maxuses+1);
+			resp.put("maxuses", maxuses);
 			
 			//Put the details in the response..
 			ret.put("response", resp);

@@ -28,6 +28,7 @@ import org.minima.system.network.webhooks.NotifyManager;
 import org.minima.system.params.GeneralParams;
 import org.minima.system.params.GlobalParams;
 import org.minima.utils.MiniFile;
+import org.minima.utils.MiniFormat;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
@@ -434,6 +435,14 @@ public class Main extends MessageProcessor {
 	
 	public boolean isStartUpComplete() {
 		return STARTUP_COMPLETE;
+	}
+	
+	public JSONObject runSingleMinimaCMD(String zInput){
+		//trim it..
+		String input = zInput.trim();
+    	
+    	//Run it..
+    	return CommandRunner.getRunner().runSingleCommand(input);
 	}
 	
 	/**
