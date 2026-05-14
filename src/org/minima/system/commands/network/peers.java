@@ -16,6 +16,7 @@ import org.minima.system.network.p2p.P2PManager;
 import org.minima.system.network.p2p.P2PPeersChecker;
 import org.minima.system.params.GeneralParams;
 import org.minima.utils.MiniFile;
+import org.minima.utils.MinimaLogger;
 import org.minima.utils.RPCClient;
 import org.minima.utils.json.JSONObject;
 import org.minima.utils.messages.Message;
@@ -242,33 +243,46 @@ public class peers extends Command {
 	}
 
 	public static String getPeersList(int zMaxPeers) {
-		P2PManager p2PManager = (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();
 		
-		//Get the peers list
-		ArrayList<InetSocketAddress> peers = p2PManager.getPeersCopy();
-		
-		//Shuffle it..
-		Collections.shuffle(peers);
-		
-		//Now add to the list..
 		String peerslist = "";
-		int counter=0;
-		for(InetSocketAddress peer : peers) {
-			
-			//Check limit
-			if(counter>zMaxPeers) {
-				break;
-			}
-			
-			//Add it..
-			peerslist += peer.getAddress().getHostAddress() + ":" + peer.getPort()+",";
 		
-			counter++;
+		if(!GeneralParams.P2P_ENABLED || MinimaDB.getDB().getUserDB().isSlaveNode()) {
+			return peerslist;
 		}
 		
-		//Remove the final ,
-		if(peerslist.endsWith(",")) {
-			peerslist = peerslist.substring(0, peerslist.length()-1);
+		try {
+			
+			P2PManager p2PManager = (P2PManager) Main.getInstance().getNetworkManager().getP2PManager();
+			
+			//Get the peers list
+			ArrayList<InetSocketAddress> peers = p2PManager.getPeersCopy();
+			
+			//Shuffle it..
+			Collections.shuffle(peers);
+			
+			//Now add to the list..
+			
+			int counter=0;
+			for(InetSocketAddress peer : peers) {
+				
+				//Check limit
+				if(counter>zMaxPeers) {
+					break;
+				}
+				
+				//Add it..
+				peerslist += peer.getAddress().getHostAddress() + ":" + peer.getPort()+",";
+			
+				counter++;
+			}
+			
+			//Remove the final ,
+			if(peerslist.endsWith(",")) {
+				peerslist = peerslist.substring(0, peerslist.length()-1);
+			}
+			
+		}catch(Exception exc) {
+			MinimaLogger.log(exc);
 		}
 		
 		return peerslist;
