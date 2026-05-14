@@ -492,11 +492,9 @@ public class ParamConfigurer {
         	GeneralParams.GENERATE_SSL 	= false;	
         }),
         seed("seed", "Use this BIP39 seed phrase when starting a new node", (args, configurer) -> {
-            GeneralParams.SEED_PHRASE 		= args;
-            GeneralParams.ANYSEED_PHRASE 	= false;
+            GeneralParams.SEED_PHRASE 	= args;
         }),
     	anyseed("anyseed", "Use this seed (ANY phrase and does not have to be BIP39 words) when starting a new node", (args, configurer) -> {
-            GeneralParams.SEED_PHRASE 	 = args;
             GeneralParams.ANYSEED_PHRASE = true;
         }),
     	dbignorelocks("dbignorelocks", "Debug param to stop DB checking locks", (args, configurer) -> {

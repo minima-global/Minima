@@ -258,7 +258,7 @@ public class Wallet extends SqlDB {
 		//Convert to a string
 		String phrase = "";
 		if(!GeneralParams.SEED_PHRASE.equals("")) {
-			MinimaLogger.log("Using provided seed phrase from params..");
+			MinimaLogger.log("Using provided seed phrase from params.. anyseed:"+GeneralParams.ANYSEED_PHRASE);
 			
 			//Do we clean it..
 			if(!GeneralParams.ANYSEED_PHRASE) {
