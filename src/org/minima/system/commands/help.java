@@ -66,6 +66,7 @@ import org.minima.system.commands.send.sendpost;
 import org.minima.system.commands.send.sendsign;
 import org.minima.system.commands.send.sendview;
 import org.minima.system.commands.send.wallet.createfrom;
+import org.minima.system.commands.send.wallet.createtokenfrom;
 import org.minima.system.commands.send.wallet.postfrom;
 import org.minima.system.commands.send.wallet.rawtxnfrom;
 import org.minima.system.commands.send.wallet.sendfrom;
@@ -167,6 +168,7 @@ public class help extends Command {
 			addCommand(details, new createfrom());
 			addCommand(details, new signfrom());
 			addCommand(details, new postfrom());
+			addCommand(details, new createtokenfrom());
 			
 			addCommand(details, new balance());
 			addCommand(details, new tokencreate());

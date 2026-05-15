@@ -90,6 +90,7 @@ import org.minima.system.commands.send.sendview;
 import org.minima.system.commands.send.wallet.consolidatefrom;
 import org.minima.system.commands.send.wallet.constructfrom;
 import org.minima.system.commands.send.wallet.createfrom;
+import org.minima.system.commands.send.wallet.createtokenfrom;
 import org.minima.system.commands.send.wallet.postfrom;
 import org.minima.system.commands.send.wallet.rawfrom;
 import org.minima.system.commands.send.wallet.rawtxnfrom;
@@ -140,6 +141,7 @@ public class CommandRunner {
 			
 			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(), new sendview(),
 			new sendfrom(), new createfrom(), new rawfrom(), new rawtxnfrom(), new signfrom(), new postfrom(), new constructfrom(), new consolidatefrom(),
+			new createtokenfrom(),
 			
 			new archive(), new logs(), new history(), new convert(),new maths(),
 			new restoresync(), new timemilli(),
