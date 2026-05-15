@@ -59,7 +59,11 @@ public class sendfrom extends Command {
 		//Is there a state
 		JSONObject state = null;
 		if(existsParam("state")) {
-			state = getJSONObjectParam("state");
+			try {
+				state = getJSONObjectParam("state");
+			}catch(Exception exc) {
+				state = null;
+			}
 		}
 		
 		//Now construct the transaction..
