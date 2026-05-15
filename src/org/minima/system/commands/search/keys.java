@@ -10,6 +10,7 @@ import org.minima.database.wallet.Wallet;
 import org.minima.objects.Address;
 import org.minima.objects.base.MiniData;
 import org.minima.objects.keys.TreeKey;
+import org.minima.system.Main;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.utils.BIP39;
@@ -17,6 +18,7 @@ import org.minima.utils.Crypto;
 import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
+import org.minima.utils.messages.Message;
 
 public class keys extends Command {
 
@@ -58,7 +60,7 @@ public class keys extends Command {
 	
 	@Override
 	public ArrayList<String> getValidParams(){
-		return new ArrayList<>(Arrays.asList(new String[]{"action","publickey","phrase","modifier"}));
+		return new ArrayList<>(Arrays.asList(new String[]{"action","publickey","phrase","modifier","keyuses"}));
 	}
 	
 	@Override
@@ -218,6 +220,21 @@ public class keys extends Command {
 			//Create a new Key..
 			KeyRow krow = wallet.createNewKey();
 			ret.put("response", krow.toJSON());
+			
+		}else if(action.equals("createallkeys")) {
+			
+			int keyuses = getNumberParam("keyuses").getAsInt();
+			
+			Message msg = new Message(Main.MAIN_LOAD_ALL_KEYS);
+			msg.addInteger("keyuses", keyuses);
+			
+			Main.getInstance().PostMessage(msg);
+			
+			JSONObject resp = new JSONObject();
+			resp.put("message", "Keys being created..");
+			
+			//Put the details in the response..
+			ret.put("response", resp);
 			
 		}else {
 			throw new CommandException("Unknown action : "+action);

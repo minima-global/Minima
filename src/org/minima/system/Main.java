@@ -8,6 +8,7 @@ import org.minima.database.txpowtree.CoinDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.UserDB;
 import org.minima.database.wallet.ScriptRow;
+import org.minima.database.wallet.Wallet;
 import org.minima.objects.Pulse;
 import org.minima.objects.TxBlock;
 import org.minima.objects.TxPoW;
@@ -109,6 +110,11 @@ public class Main extends MessageProcessor {
 	public static final String MAIN_AUTOBACKUP_TXPOW 	= "MAIN_AUTOBACKUP_TXPOW";
 	
 	public static final String MAIN_DO_RESCUE 			= "MAIN_DO_RESCUE";
+	
+	/**
+	 * LOAD All the Keys - and SET the key uses..
+	 */
+	public static final String MAIN_LOAD_ALL_KEYS 		= "MAIN_LOAD_ALL_KEYS";
 	
 	/**
 	 * Auto backup every 24 hrs..
@@ -889,6 +895,10 @@ public class Main extends MessageProcessor {
 			MinimaDB.getDB().refreshSQLDB();
 			
 			//Clear the CoinDB keep 200 blocks..
+			if(MinimaDB.getDB().getTxPoWTree().getRoot() == null) {
+				return;
+			}
+			
 			long cblock = MinimaDB.getDB().getTxPoWTree().getRoot().getBlockNumber().getAsLong();
 			CoinDB.getTxPoWTreeCoinDB().clearOldCoins(cblock-200);
 			
@@ -1252,6 +1262,28 @@ public class Main extends MessageProcessor {
 			
 			//Clear the IBD sent list
 			NIOMessage.mHaveSentIBDRecently.clear();
+		
+		}else if(zMessage.getMessageType().equals(MAIN_LOAD_ALL_KEYS)) {
+			
+			//Load ALL the remaining Keys - with NOTIFY LIstener..
+			NotifyMainListenerOnly("LOAD_ALL_KEYS_START");
+			
+			//Now create Keys..
+			while(!mInitKeysCreated) {
+				mInitKeysCreated = MinimaDB.getDB().getWallet().initDefaultKeys(1);
+				
+				JSONObject data = new JSONObject();
+				data.put("keys", MinimaDB.getDB().getWallet().getDefaultKeysNumber());
+				
+				NotifyMainListenerOnly("LOAD_ALL_KEYS_VALUE",data);
+			}
+			
+			//Now Set the Keys Uses..
+			int keyuses = zMessage.getInteger("keyuses");
+			MinimaDB.getDB().getWallet().updateAllKeyUses(keyuses);
+			
+			//All Done..
+			NotifyMainListenerOnly("LOAD_ALL_KEYS_FINISH");
 			
 		}else if(zMessage.getMessageType().equals(MAIN_CALLCHECKER)) {
 			
@@ -1303,6 +1335,27 @@ public class Main extends MessageProcessor {
 			
 			//Notify them that something is happening..
 			getMinimaListener().processMessage(msg);
+		}
+	}
+	
+	public static void NotifyMainListenerOnly(String zEvent, JSONObject zData) throws Exception {
+		//Notify
+		try {
+			if(getMinimaListener() != null) {
+				
+				//Create the JSON Message
+				JSONObject notify = new JSONObject();
+				notify.put("event", zEvent);
+				notify.put("data", zData);
+				
+				Message msg = new Message(NotifyManager.NOTIFY_POST);
+				msg.addObject("notify", notify);
+				
+				//Notify them that something is happening..
+				getMinimaListener().processMessage(msg);
+			}
+		}catch (Exception e) {
+			
 		}
 	}
 }
