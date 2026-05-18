@@ -1283,7 +1283,9 @@ public class Main extends MessageProcessor {
 			MinimaDB.getDB().getWallet().updateAllKeyUses(keyuses);
 			
 			//All Done..
-			NotifyMainListenerOnly("LOAD_ALL_KEYS_FINISH");
+			JSONObject data = new JSONObject();
+			data.put("keys", MinimaDB.getDB().getWallet().getDefaultKeysNumber());
+			NotifyMainListenerOnly("LOAD_ALL_KEYS_FINISH", data);
 			
 		}else if(zMessage.getMessageType().equals(MAIN_CALLCHECKER)) {
 			
