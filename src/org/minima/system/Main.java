@@ -435,6 +435,12 @@ public class Main extends MessageProcessor {
 			MinimaLogger.log("Running in slave mode. Will Connect to "+GeneralParams.CONNECT_LIST);
 		}
 		
+		//Clear the Peer Invalid list
+		P2PFunctions.clearInvalidPeers();
+		
+		//Clear the IBD sent list
+		NIOMessage.mHaveSentIBDRecently.clear();
+		
 		//Startup Complete
 		STARTUP_COMPLETE = true;
 	}

@@ -386,6 +386,11 @@ public class GeneralParams {
 	public static boolean USE_SQL_COINDB = false;
 	
 	/**
+	 * Use a SQL backed CoinDB in TxpowTree
+	 */
+	public static boolean LIMIT_IBD_30MINS = false;
+	
+	/**
 	 * Reset all params to their default settings.. ANDROID keeps them after shutdown
 	 */
 	public static void resetDefaults() {
