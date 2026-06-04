@@ -464,7 +464,7 @@ public class NIOMessage implements Runnable {
 						MinimaLogger.log("[!] CONNECTED TO HEAVIER CHAIN.. from "+mClientUID+" ..disconnecting");
 						
 						//Disconnect
-						Main.getInstance().getNIOManager().disconnect(mClientUID,true);
+						//Main.getInstance().getNIOManager().disconnect(mClientUID,true);
 						
 						//Do we have a rescue NODE
 						if(!GeneralParams.RESCUE_MEGAMMR_NODE.equals("")) {
@@ -478,6 +478,10 @@ public class NIOMessage implements Runnable {
 								//Post a message that does a RESCUE..
 								Main.getInstance().PostTimerMessage(new TimerMessage(1000, Main.MAIN_DO_RESCUE));
 							}
+						}else {
+							
+							//restart Networking - so IBD Sync timer is reset
+							Main.getInstance().PostMessage(Main.MAIN_NETRESTART);
 						}
 						
 						return;

@@ -141,7 +141,8 @@ public class coinimport extends Command {
 		treenode.getMMR().finalizeSet();
 				
 		//Add to the total List of coins fro this block
-		treenode.getAllCoins().add(newcoin);
+		treenode.addCoinToNode(newcoin);
+		//treenode.getAllCoins().add(newcoin);
 		
 		//And set to relevant.. track it..
 		if(getBooleanParam("track", true)) {

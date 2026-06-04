@@ -52,6 +52,7 @@ import org.minima.system.commands.base.random;
 import org.minima.system.commands.base.scanchain;
 import org.minima.system.commands.base.seedrandom;
 import org.minima.system.commands.base.slavenode;
+import org.minima.system.commands.base.sphincs;
 import org.minima.system.commands.base.status;
 import org.minima.system.commands.base.systemcheck;
 import org.minima.system.commands.base.test;
@@ -101,6 +102,7 @@ import org.minima.system.commands.send.sendview;
 import org.minima.system.commands.send.wallet.consolidatefrom;
 import org.minima.system.commands.send.wallet.constructfrom;
 import org.minima.system.commands.send.wallet.createfrom;
+import org.minima.system.commands.send.wallet.createtokenfrom;
 import org.minima.system.commands.send.wallet.postfrom;
 import org.minima.system.commands.send.wallet.rawfrom;
 import org.minima.system.commands.send.wallet.rawtxnfrom;
@@ -152,6 +154,8 @@ public class CommandRunner {
 			new whitepaper(), new sendnosign(), new sendsign(), new sendpost(), new sendview(),
 			new sendfrom(), new createfrom(), new rawfrom(), new rawtxnfrom(), new signfrom(), new postfrom(), new constructfrom(), new consolidatefrom(),
 			
+			new createtokenfrom(),
+			
 			new archive(), new logs(), new history(), new convert(),new maths(),
 			new checkpending(), new checkmode(), new restoresync(), new timemilli(),
 			
@@ -160,6 +164,8 @@ public class CommandRunner {
 			new multisig(), new multisigread(), new checkaddress(),
 			new maxsign(), new maxverify(), new maxextra(), new maxcreate(),
 			new maxencrypt(), new maxdecrypt(),
+			
+			new sphincs(),
 			
 			new ping(), new random(), new seedrandom(), new mysql(), new mysqlcoins(), new slavenode(), new checkrestore(),
 			//new file(),

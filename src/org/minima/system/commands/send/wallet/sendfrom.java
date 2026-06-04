@@ -9,7 +9,6 @@ import org.minima.objects.base.MiniNumber;
 import org.minima.system.commands.Command;
 import org.minima.system.commands.CommandException;
 import org.minima.system.commands.CommandRunner;
-import org.minima.utils.MinimaLogger;
 import org.minima.utils.json.JSONArray;
 import org.minima.utils.json.JSONObject;
 
@@ -60,7 +59,11 @@ public class sendfrom extends Command {
 		//Is there a state
 		JSONObject state = null;
 		if(existsParam("state")) {
-			state = getJSONObjectParam("state");
+			try {
+				state = getJSONObjectParam("state");
+			}catch(Exception exc) {
+				state = null;
+			}
 		}
 		
 		//Now construct the transaction..

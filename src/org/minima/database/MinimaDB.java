@@ -12,6 +12,7 @@ import org.minima.database.maxima.MaximaDB;
 import org.minima.database.minidapps.MDSDB;
 import org.minima.database.mmr.MegaMMR;
 import org.minima.database.txpowdb.TxPoWDB;
+import org.minima.database.txpowtree.CoinDB;
 import org.minima.database.txpowtree.TxPowTree;
 import org.minima.database.userprefs.UserDB;
 import org.minima.database.userprefs.txndb.TxnDB;
@@ -421,6 +422,14 @@ public class MinimaDB {
 			mTxnDB = new TxnDB();
 			mTxnDB.loadDB();
 			
+			//Create the CoinDB used by the TxPoWTree - delete the old one first
+			if(GeneralParams.USE_SQL_COINDB) {
+				MinimaLogger.log("Using low ram SQL CoinDB in TxPoWTree");
+			}
+			File coindbsqlfolder = new File(basedb,"coindb");
+			MiniFile.deleteFileOrFolder(coindbsqlfolder.getAbsolutePath(), coindbsqlfolder);
+			CoinDB.createCoinDB(new File(coindbsqlfolder,"coins.db"));
+			
 			//Load the Cascade
 			mCascade.loadDB(new File(basedb,"cascade.db"));
 			
@@ -635,6 +644,10 @@ public class MinimaDB {
 			MinimaLogger.log("ArchiveDB shutdown..");
 			mArchive.saveDB(zCompact);
 			
+			//Close the CoinDB
+			MinimaLogger.log("CoinDB shutdown..");
+			CoinDB.getTxPoWTreeCoinDB().saveDB(false);
+			
 			MinimaLogger.log("All SQL DB Shutdown..");
 			
 		}catch(Exception exc) {
@@ -741,6 +754,9 @@ public class MinimaDB {
 			if(GeneralParams.IS_MEGAMMR) {
 				mMegaMMR.saveMMR(new File(basedb,"megammr.mmr"));
 			}
+			
+			//Close the CoinDB
+			//CoinDB.getTxPoWTreeCoinDB().saveDB(false);
 			
 		}catch(Exception exc) {
 			MinimaLogger.log(exc);

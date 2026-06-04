@@ -1,0 +1,90 @@
+/* 
+    The USER unique SPHINCS public key  -This makes each address (the hash of this script) UNIQUE
+
+    FOR NOW I have added a placeholder value - this will be REPLACED by the user
+*/
+LET sphincspublickey = 0x30DE42D7DE7B2F7BC5700B8C7256DF551FF24567C5C69B8528C027155FF6822E
+
+/* 
+    Add all the input coinid - MAX 8 IF number of outputs is 2 
+
+    GETINID ALWAYS returns a 32 byte unique hash per coin - so cannot be manipulated
+
+    @TOTIN is set by the transaction as the total amount of input coins
+
+    A VALID transaction MUST have at least 1 input and for this to work a maximum of 8 ( or the KISSVM script runs over the 1024 operations max)
+
+    incoins is UNIQUE and unalterable for a given set of input coins
+*/
+LET incoins = STRING(GETINID(0))
+LET counter = 1
+WHILE counter LT @TOTIN DO
+    LET incoins = incoins + STRING(GETINID(counter))
+    LET counter = INC(counter)
+ENDWHILE
+
+/* 
+    Now do the outputs - MAX 5 ( IF there is only 1 input )
+
+    The output string is composed of every element of an ouitput coin
+
+    @TOTOUT is set by the transaction and is the total amount of output coins
+
+    A VALID transaction MUST have at least 1 output
+    
+    Again - this is unalterable for a given set of output coins     
+*/
+LET calcoutput  = [LET returnvalue=STRING(GETOUTADDR($1))+[SPHINCS]+STRING(GETOUTAMT($1))+[SPHINCS]+STRING(GETOUTTOK($1))+STRING(GETOUTKEEPSTATE($1))]
+LET outcoins    = FUNCTION(calcoutput 0)
+LET counter     = 1
+WHILE counter LT @TOTOUT DO
+    LET outcoins = outcoins+FUNCTION(calcoutput counter)
+    LET counter = INC(counter)
+ENDWHILE
+
+/* Hash the message - no chance of a forgery */
+LET hashedmessage = SHA3(STRING(@TOTIN)+[SPHINCS]+STRING(@TOTOUT)+[SPHINCS]+incoins+[COINJOIN]+outcoins)
+
+/* The FORS root MMRDATA */
+LET forsrootdata = STATE(101)
+
+/* 
+    STEP 1 - check the FORS root is signed correctly by the WOTS SPINCS public key
+
+    The key used is the SAME for the same message.
+
+    And the FORS tree seed is set by the key position
+
+    Therefore each key only ever signs the same single hash 
+
+    A SPHINCS signature is the same for the same given message
+*/
+ASSERT CHECKSIG(sphincspublickey forsrootdata STATE(100))
+
+/* STEP 2 - NOW Verify the FORS signature */
+LET counter = 0
+WHILE counter LT 16 DO
+
+    /* The Base state variable for this position */
+    LET statepos = counter * 5
+
+    /* GET the HORST root */
+    LET horstroot = STATE(statepos)
+    
+    /* Check this HORST tree is valid */
+    ASSERT PROOF( horstroot counter forsrootdata 120 STATE(statepos+1) )
+
+    /* GET the ref in the Message */
+    LET keypos  = counter*2
+    LET ref     = NUMBER(SUBSET(keypos keypos+2 hashedmessage))
+
+    /* Check the pubkey is in the tree to root */
+    ASSERT PROOF( SHA3(STATE(statepos+2)) ref horstroot 2147450880 STATE(statepos+3) )
+
+    /* Increment the counter */
+    LET counter = INC(counter)
+
+ENDWHILE
+
+/* ALL GOOD! */
+RETURN TRUE

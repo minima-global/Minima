@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import org.minima.database.MinimaDB;
+import org.minima.database.txpowtree.CoinDB;
 import org.minima.database.txpowtree.TxPoWTreeNode;
 import org.minima.database.userprefs.UserDB;
 import org.minima.database.wallet.ScriptRow;
@@ -130,6 +131,7 @@ public class Main extends MessageProcessor {
 	 */
 	public static final String MAIN_CHECKER 	= "MAIN_CHECKER";
 	MiniData mOldTip 							= MiniData.ZERO_TXPOWID;
+	int mMainCheckerTipCount					= 0;
 	
 	/**
 	 * Create all the initial Keys
@@ -902,6 +904,13 @@ public class Main extends MessageProcessor {
 			//Clear the Maxima Poll Stack
 			getMaxima().checkPollMessages();
 			
+			//Clear the CoinDB keep 200 blocks..
+			long cblock = MinimaDB.getDB().getTxPoWTree().getRoot().getBlockNumber().getAsLong();
+			CoinDB.getTxPoWTreeCoinDB().clearOldCoins(cblock-200);
+			
+			//And now close and reopen.. to clear the deleted and refresh the JDBC Driver
+			CoinDB.getTxPoWTreeCoinDB().closeAndReopen();
+			
 		}else if(zMessage.getMessageType().equals(MAIN_AUTOBACKUP_MYSQL)) {
 		
 			UserDB udb = MinimaDB.getDB().getUserDB();
@@ -1068,6 +1077,9 @@ public class Main extends MessageProcessor {
 			
 		}else if(zMessage.getMessageType().equals(MAIN_NEWBLOCK)) {
 			
+			//Reset chain tip count
+			mMainCheckerTipCount = 0;
+			
 			//Get the TxPoW
 			TxPoW txpow = (TxPoW) zMessage.getObject("txpow");
 			
@@ -1193,7 +1205,20 @@ public class Main extends MessageProcessor {
 			
 			//Has it changed
 			if(tip.getTxPoW().getTxPoWIDData().isEqual(mOldTip)) {
-				MinimaLogger.log("Warning : Chain tip hasn't changed in 180 seconds "+tip.getTxPoW().getTxPoWID()+" "+tip.getTxPoW().getBlockNumber().toString());
+				MinimaLogger.log("Warning : ["+mMainCheckerTipCount+"] Chain tip hasn't changed in 180 seconds "+tip.getTxPoW().getTxPoWID()+" "+tip.getTxPoW().getBlockNumber().toString());
+				mMainCheckerTipCount++;
+			}
+			
+			//Do we need to restart the networking..
+			if(mMainCheckerTipCount>2) {
+				
+				//reset
+				mMainCheckerTipCount = 0;
+				
+				//Restart networking..
+				Main.getInstance().PostMessage(Main.MAIN_NETRESTART);
+				
+				return;
 			}
 			
 			//Keep for the next round
