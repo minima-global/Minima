@@ -74,8 +74,14 @@ var MDS = {
 			MDS.log("No MiniDAPP UID specified.. using test value");
 		}
 		
-		MDS.filehost = "https://"+host+":"+port+"/";
-		MDS.mainhost = "https://"+host+":"+port+"/mdscommand_/";
+		//Are we on a standard port (443/80)?
+		if(port == 0){
+			MDS.filehost = "https://"+host+"/";
+			MDS.mainhost = "https://"+host+"/mdscommand_/";
+		}else{
+			MDS.filehost = "https://"+host+":"+port+"/";
+			MDS.mainhost = "https://"+host+":"+port+"/mdscommand_/";
+		}
 		MDS.log("MDS HOST  : "+MDS.filehost);
 		
 		//Store this for poll messages

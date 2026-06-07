@@ -72,10 +72,18 @@ var MDS = {
 		//The ports..
 		var mainport 	= port+1;
 		
-		MDS.filehost = "https://"+host+":"+port+"/";
+		if(port == 0){
+			MDS.filehost = "https://"+host+"/";
+		}else{
+			MDS.filehost = "https://"+host+":"+port+"/";
+		}
 		MDS.log("MDS FILEHOST  : "+MDS.filehost);
 		
-		MDS.mainhost 	= "https://"+host+":"+mainport+"/";
+		if(port == 0){
+			MDS.mainhost 	= "https://"+host+"/";
+		}else{
+			MDS.mainhost 	= "https://"+host+":"+mainport+"/";
+		}
 		MDS.log("MDS MAINHOST : "+MDS.mainhost);
 		
 		//Store this for poll messages
