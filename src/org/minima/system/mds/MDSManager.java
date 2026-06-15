@@ -1097,7 +1097,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("lotto", "default/lotto-1.0.0.mds.zip", allminis, false);
 			checkInstalled("linux", "default/linux-0.9.5.mds.zip", allminis, false);
 			checkInstalled("maxcontacts", "default/maxcontacts-1.14.0.mds.zip", allminis, false);
-			checkInstalled("maximize", "default/maximize-1.4.0.mds.zip", allminis, false);
+			//checkInstalled("maximize", "default/maximize-1.4.0.mds.zip", allminis, false);
 			checkInstalled("maxsolo", "default/maxsolo-2.7.2.mds.zip", allminis, false);
 			checkInstalled("miniswap", "default/miniswap-2.21.0.mds.zip", allminis, false);
 			checkInstalled("minifs", "default/minifs-1.4.4.mds.zip", allminis, false);
