@@ -130,7 +130,7 @@ getaddress
 Send to an imaginary address - if you start a private network you will have 1 billion Minima.
 
 ```
-send amount:20 adress:0xFF
+send amount:20 address:0xFF
 ```
 
 Check the system
