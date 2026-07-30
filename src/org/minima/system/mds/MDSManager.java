@@ -1091,7 +1091,7 @@ public class MDSManager extends MessageProcessor {
 			checkInstalled("docs", "default/docs-2.1.0.mds.zip", allminis, false);
 			checkInstalled("ethwallet", "default/ethwallet-1.11.0.mds.zip", allminis, false);
 			checkInstalled("filez", "default/filez-1.9.4.mds.zip", allminis, false);
-			checkInstalled("future cash", "default/futurecash-2.7.1.mds.zip", allminis, false);
+			checkInstalled("future cash", "default/futurecash-3.1.21.mds.zip", allminis, false);
 			checkInstalled("health", "default/health-1.3.2.mds.zip", allminis, false);
 			checkInstalled("logs", "default/logs-1.0.4.mds.zip", allminis, false);
 			checkInstalled("lotto", "default/lotto-1.0.0.mds.zip", allminis, false);
