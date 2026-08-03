@@ -790,10 +790,10 @@ public class Wallet extends SqlDB {
 	/**
 	 * Sign a piece of data with a specific public key
 	 */
-	public Signature signData(String zPublicKey, MiniData zData) {
+	public synchronized Signature signData(String zPublicKey, MiniData zData) {
 		
 		//Check we can create new keys
-		if(!isBaseSeedAvailable()) {
+		if(mBaseSeed.getSeed().equals("0x00")) {
 			throw new IllegalArgumentException("KeysDB LOCKED. No Private Keys..");
 		}
 		
