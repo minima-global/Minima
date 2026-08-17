@@ -7,6 +7,8 @@ public class MinimaUncaughtException implements UncaughtExceptionHandler {
 	//The default Uncaught Exception.. 
 	private static UncaughtExceptionHandler mDefaultUnCaught;
 
+	private String mLastError = "***";
+	
 	public MinimaUncaughtException() {
 		//Get the current default
 		mDefaultUnCaught = Thread.getDefaultUncaughtExceptionHandler();
@@ -14,8 +16,16 @@ public class MinimaUncaughtException implements UncaughtExceptionHandler {
 	
 	@Override
 	public void uncaughtException(Thread zThread, Throwable zThrowable) {
-		MinimaLogger.log("[!] UNCAUGHT EXCEPTION at THREAD "+zThread.getName());
-		MinimaLogger.logUncaught(zThrowable,true);
+		
+		String  checkerror = zThrowable.toString();
+		
+		if(!mLastError.equals(checkerror)) {
+			MinimaLogger.log("[!] UNCAUGHT EXCEPTION at THREAD "+zThread.getName());
+			MinimaLogger.logUncaught(zThrowable,true);
+		}else {
+			return;
+		}
+		mLastError = checkerror;
 		
 		//What type of error is it!
 		if(zThrowable instanceof java.lang.OutOfMemoryError) {
@@ -44,7 +54,7 @@ public class MinimaUncaughtException implements UncaughtExceptionHandler {
 		}
 		
 		//Otherwise pass to the default..
-		MinimaLogger.log("[!] PASSING UNCAUGHT ERROR TO DEFAULT HANDLER");
+		//MinimaLogger.log("[!] PASSING UNCAUGHT ERROR TO DEFAULT HANDLER");
 		mDefaultUnCaught.uncaughtException(zThread, zThrowable);
 	}
 }

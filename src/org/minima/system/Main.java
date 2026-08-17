@@ -1209,17 +1209,17 @@ public class Main extends MessageProcessor {
 				mMainCheckerTipCount++;
 			}
 			
-			//Do we need to restart the networking..
-			if(mMainCheckerTipCount>2) {
-				
-				//reset
-				mMainCheckerTipCount = 0;
-				
-				//Restart networking..
-				Main.getInstance().PostMessage(Main.MAIN_NETRESTART);
-				
-				return;
-			}
+//			//Do we need to restart the networking..
+//			if(mMainCheckerTipCount>2) {
+//				
+//				//reset
+//				mMainCheckerTipCount = 0;
+//				
+//				//Restart networking..
+//				Main.getInstance().PostMessage(Main.MAIN_NETRESTART);
+//				
+//				return;
+//			}
 			
 			//Keep for the next round
 			mOldTip = tip.getTxPoW().getTxPoWIDData();
@@ -1232,9 +1232,16 @@ public class Main extends MessageProcessor {
 			//Repost
 			PostTimerMessage(new TimerMessage(P2PNETMDS_TIMER, MAIN_P2PNETMDS_CHECKER));
 			
+
+			//Clear the Invalid peers..
+			P2PFunctions.clearInvalidPeers();
+			
+			//Clear the IBD sent list
+			NIOMessage.mHaveSentIBDRecently.clear();
+			
 			//Are we connected to the internet
 			boolean restartsent = false;
-			if(GeneralParams.P2P_ENABLED && P2PFunctions.isNetAvailable()) {
+			if(GeneralParams.P2P_ENABLED) {
 			
 				//Current time
 				long timenow = System.currentTimeMillis();
@@ -1252,14 +1259,15 @@ public class Main extends MessageProcessor {
 				//Difference..
 				long diff 			= timenow - tiptime;
 				
-				//Is the gap too great - 2 Hours
-				if(diff > 1000 * 60 * 120) {
+				//Is the gap too great - 30 mins
+				if(diff > 1000 * 60 * 30) {
 					
 					MinimaLogger.log("[!] Chain Tip too far behind.. restart Networking!");
 					
-					//Something wrong.. restart the Networking..
+					//Something wrong.. restart the Networking..PostMessage
 					restartsent = true;
 					Main.getInstance().PostMessage(Main.MAIN_NETRESTART);
+
 				}
 			}
 			
@@ -1281,12 +1289,6 @@ public class Main extends MessageProcessor {
 	        		}
 	        	}
 			}
-			
-			//Clear the Invalid peers..
-			P2PFunctions.clearInvalidPeers();
-			
-			//Clear the IBD sent list
-			NIOMessage.mHaveSentIBDRecently.clear();
 			
 		}else if(zMessage.getMessageType().equals(MAIN_CALLCHECKER)) {
 			
