@@ -347,7 +347,15 @@ public class MDSFileHandler implements Runnable {
 				if(!root.exists()) {
 					root.mkdirs();
 				}
-				MiniFile.writeDataToFile(new File(root,filepart.getFileName()), filedata);
+				
+				//Check the File is a child of the root
+				File fup = new File(root,filepart.getFileName());
+				if(!MiniFile.isChild(root, fup)) {
+					throw new MDSInvalidIDException("Invalid File location");
+				}
+				
+				//Write data..
+				MiniFile.writeDataToFile(fup, filedata);
 				
 				//Jump to the correct page..
 				String base = "/"+minidappid+"/"+jumppage+"?uid="+minidappsessionid
@@ -435,6 +443,11 @@ public class MDSFileHandler implements Runnable {
 					File finalfile = new File(root,filename);
 					if(finalfile.exists()) {
 						finalfile.delete();
+					}
+					
+					//Check the File is a child of the root
+					if(!MiniFile.isChild(root, finalfile)) {
+						throw new MDSInvalidIDException("Invalid File location");
 					}
 					
 					for(int i=0;i<allchunks;i++) {

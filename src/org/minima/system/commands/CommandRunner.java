@@ -617,7 +617,7 @@ public class CommandRunner {
 	 */
 	private final String[] ALL_WRITE_COMMANDS = 
 		{"send","sendpoll","sendsign","multisig","tokencreate","consolidate",
-		 "cointrack","sign","txnsign","mds","backup","removescript",
+		 "cointrack","sign","txnauto","txnsign","mds","backup","removescript",
 		 "restore","restoresync","vault","archive","mysql","mysqlcoins",
 		 "rpc","magic","quit","seedrandom","megammrsync","megammr","decryptbackup",
 		 "reset"};
