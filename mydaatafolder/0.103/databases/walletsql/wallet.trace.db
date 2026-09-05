@@ -1,0 +1,12 @@
+2022-11-14 12:55:25 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SCRIPT TO '/mnt/c/Users/user/Documents/Oscar's work folder/Minima-dev/Minima-dev/mydaatafolder/0.103/backup/wallet.sql[*]'"; SQL statement:
+SCRIPT TO '/mnt/c/Users/user/Documents/Oscar's work folder/Minima-dev/Minima-dev/mydaatafolder/0.103/backup/wallet.sql' [42000-200]
+2022-11-14 12:55:25 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SCRIPT TO '/mnt/c/Users/user/Documents/Oscar's work folder/Minima-dev/Minima-dev/mydaatafolder/0.103/backup/wallet.sql[*]'"; SQL statement:
+SCRIPT TO '/mnt/c/Users/user/Documents/Oscar's work folder/Minima-dev/Minima-dev/mydaatafolder/0.103/backup/wallet.sql' [42000-200]
+2022-11-14 13:58:03 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SCRIPT TO '/mnt/c/Users/user/Documents/Oscar's work folder/Minima-dev/Minima-dev - Copy/mydaatafolder/0.103/backup/wallet.sql[*]'"; SQL statement:
+SCRIPT TO '/mnt/c/Users/user/Documents/Oscar's work folder/Minima-dev/Minima-dev - Copy/mydaatafolder/0.103/backup/wallet.sql' [42000-200]
+2022-11-14 13:58:03 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SCRIPT TO '/mnt/c/Users/user/Documents/Oscar's work folder/Minima-dev/Minima-dev - Copy/mydaatafolder/0.103/backup/wallet.sql[*]'"; SQL statement:
+SCRIPT TO '/mnt/c/Users/user/Documents/Oscar's work folder/Minima-dev/Minima-dev - Copy/mydaatafolder/0.103/backup/wallet.sql' [42000-200]
