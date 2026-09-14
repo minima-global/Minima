@@ -133,7 +133,13 @@ public class MDSFileHandler implements Runnable {
 				if(start != -1) {
 					String name  = input.substring(0,start).trim();
 					String value = input.substring(start+1).trim();
-					
+
+					//Normalize header name to be case-insensitive
+					//HTTP/1.1 headers are case-insensitive (RFC 7230)
+					//HTTP/2 mandates lowercase headers (RFC 7540)
+					//Reverse proxies like Traefik may send lowercase headers
+					name = normalizeHeaderName(name);
+
 					//Put it in the headers
 					allheaders.put(name, value);
 				}
@@ -819,5 +825,38 @@ public class MDSFileHandler implements Runnable {
 		is.close();
 		
 		return new String(file, MiniString.MINIMA_CHARSET);
+	}
+
+	/**
+	 * Normalize HTTP header names to their canonical form.
+	 * HTTP/1.1 headers are case-insensitive (RFC 7230 Section 3.2),
+	 * and HTTP/2 mandates lowercase headers (RFC 7540 Section 8.1.2).
+	 *
+	 * Reverse proxies (Traefik, nginx, HAProxy) may forward headers
+	 * in lowercase when proxying HTTP/2 to HTTP/1.1 backends.
+	 * This ensures headers like "content-length" are normalized to
+	 * "Content-Length" for consistent internal lookups.
+	 */
+	private static String normalizeHeaderName(String name) {
+		if(name == null || name.isEmpty()) {
+			return name;
+		}
+
+		//Convert to canonical HTTP header case: first letter and letter after '-' uppercase
+		StringBuilder sb = new StringBuilder(name.length());
+		boolean capitalizeNext = true;
+		for(int i = 0; i < name.length(); i++) {
+			char c = name.charAt(i);
+			if(c == '-') {
+				sb.append(c);
+				capitalizeNext = true;
+			} else if(capitalizeNext) {
+				sb.append(Character.toUpperCase(c));
+				capitalizeNext = false;
+			} else {
+				sb.append(Character.toLowerCase(c));
+			}
+		}
+		return sb.toString();
 	}
 }
