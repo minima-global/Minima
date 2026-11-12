@@ -180,7 +180,19 @@ public class balance extends Command {
 			if(!alltokens.contains(tokenid)) {
 				//Add to out token list
 				alltokens.add(tokenid);
-				tokens.put(tokenid, coin.getToken());
+
+				//A coin restored without its token details (a MegaMMR resync can do this) must not crash
+				//balance: Hashtable refuses a null value. Fill them from the chain; if the token is unknown
+				//everywhere, the coin is still counted and reported without details (see the output below).
+				Token ctok = coin.getToken();
+				if(ctok == null) {
+					ctok = TxPoWSearcher.getToken(coin.getTokenID());
+				}
+				if(ctok != null) {
+					tokens.put(tokenid, ctok);
+				}else {
+					MinimaLogger.log("balance : no token details for "+tokenid+" - counted without them");
+				}
 			}
 			
 			//How deep is this coin
@@ -239,9 +251,10 @@ public class balance extends Command {
 				}
 			}else {
 				
-				//Check tokenscript..
-				String script = coin.getToken().getTokenScript().toString();
-				if(script.equals("RETURN TRUE")) {
+				//Check tokenscript.. from the details found above: the coin's own may be missing (see above).
+				//Without details the script is unknown, so the coin is not counted as sendable.
+				Token stok = tokens.get(tokenid);
+				if(stok != null && stok.getTokenScript().toString().equals("RETURN TRUE")) {
 					if(isconfirmed && walletdb.isAddressSimple(coin.getAddress().to0xString())) {
 						total = sendable.get(tokenid); 
 						if(total == null) {
@@ -294,6 +307,21 @@ public class balance extends Command {
 					tokbal.put("total", "1000000000");
 					
 					//And add to the total..
+					balance.add(tokbal);
+				}
+			}else if(tokens.get(token) == null) {
+				//Token details unknown on this node: count and raw (unscaled) amounts only, never a crash
+				if(onlytokenid.equals("") || onlytokenid.equals(token)) {
+					tokbal.put("token", "unknown");
+					tokbal.put("tokenid", token);
+					tokbal.put("confirmed", conf.toString());
+					tokbal.put("unconfirmed", unconf.toString());
+					tokbal.put("sendable", send.toString());
+					tokbal.put("coins", totcoins == null ? "0" : totcoins.toString());
+					tokbal.put("details", "unknown");
+					if(listcoins) {
+						tokbal.put("coinlist", coinlist.get(token));
+					}
 					balance.add(tokbal);
 				}
 			}else {
